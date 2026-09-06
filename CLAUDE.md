@@ -18,10 +18,13 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements (REQ-n), edge cases E1–E12, acceptance criteria A1–A8. |
-| `docs/stories.md` | User stories US-1 through US-8, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-25, each with a runnable exit condition. |
-| `docs/decisions.md` | D1–D5, kill criteria, open questions. Append-only. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-40 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-33, each with a runnable exit condition. |
+| `docs/decisions.md` | D1–D15, kill criteria, open questions. Append-only. |
+
+IDs are load-bearing and numbering is not contiguous. Split a requirement rather
+than renumber it; anything already referencing an ID must keep resolving.
 
 **The constitution outranks the prompt.** If Troy asks for something that
 violates an article, say which article and why, and do not comply. A task that
@@ -36,7 +39,11 @@ The articles most likely to be violated by accident:
   counting, set membership, booleans are all code.
 - **III** — every claim carries `(document_id, char_start, char_end)`, verified
   by slicing the source before acceptance.
-- **VIII** — no task closes without a command that returns zero.
+- **IV** — `NOT_MET`, `INSUFFICIENT_EVIDENCE` and `ERROR` are three states that
+  never collapse into each other. Easy to violate by accident, because all three
+  read as "not approved." *(See D9.)*
+- **VIII** — no task closes without a command that returns zero. A grep for a
+  string in a doc is not a check. *(See D10.)*
 - **IX** — the decision entry is written *before* the code it justifies.
 
 ## Working rules
@@ -50,7 +57,9 @@ The articles most likely to be violated by accident:
 4. **Every task closes on a command that returns zero.** "Looks right" is not an
    exit condition. A task without a runnable check is not yet specified.
 5. **Log the decision in `docs/decisions.md` before writing the code.** Name the
-   rejected alternative and the condition that would reverse the choice.
+   rejected alternative and the condition that would reverse the choice. This
+   covers rewriting a task's exit condition — a weak exit condition is a design
+   decision.
 6. **Discovered work becomes a new numbered task**, not a silent addition to the
    current one.
 7. **Close stories, not layers.** A story with four of five tasks done has
@@ -92,6 +101,8 @@ pa_agent/            package: resolver, criteria, spans, cli
   agent/             adk create writes here
 data/policies/
   source/            T-02 lands here
+spike/
+  spike_001/         T-00: notes/, results.json, run.py
 scripts/
 tests/
 eval/
@@ -100,9 +111,14 @@ docs/
 
 ## Current state
 
-Repo is empty except for `docs/`, `LICENSE`, and an unmatched `venv/`. Nothing is
-built. Spike 001 (T-00) has not run.
+Nothing is built. The tree holds `docs/`, `LICENSE`, `.gitignore`,
+`requirements.txt`, and an unmatched `venv/`. No package, no tests, no data.
+Spike 001 (T-00) has not run, so D2 — the assumption the whole design rests on —
+is still untested.
 
 Active task: **T-03 — repo skeleton and environment.**
-Exit condition: `adk web` serves a hello-world agent on `localhost:8000`.
+Exit condition: `python scripts/check_skeleton.py` — target layout present,
+`google-adk` imports at exactly 2.8.0, `pa_agent.agent` imports, and an `adk web`
+subprocess answers HTTP 200 on `localhost:8000` within the timeout before the
+script terminates it.
 Timebox: two hours.
