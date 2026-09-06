@@ -122,6 +122,15 @@ criterion text, the span, and the claimed verdict. *(Art. V)*
 **REQ-18** A rejected verdict triggers retrieval retry. After N attempts the
 criterion resolves to `INSUFFICIENT_EVIDENCE`. N is configurable and recorded.
 
+**REQ-23** A criterion resolves to `ERROR` when the system fails to evaluate it:
+model API failure, timeout, response that fails schema validation, or an
+unhandled exception in a predicate. `ERROR` is distinct from `NOT_MET` and
+`INSUFFICIENT_EVIDENCE` and is never collapsed into either.
+
+**REQ-24** An `ERROR` on any criterion aborts the determination. No determination
+containing an `ERROR` is presented to a specialist. The underlying exception is
+surfaced, not swallowed.
+
 ### Aggregation
 
 **REQ-19** The overall result is computed by evaluating the policy's boolean
@@ -137,6 +146,10 @@ resolved `MET`, with the reason.
 
 **REQ-22** Every model call records model name, input tokens, output tokens, and
 wall time. Totals appear on the determination. *(Art. X)*
+
+**REQ-25** Retrieval recall is measured per criterion on the eval set: the
+fraction of cases where the retrieved set contains the span holding the
+ground-truth fact. Reported in `eval/report.md`.
 
 ---
 
@@ -171,17 +184,24 @@ v1 is done when all of the following hold on the labeled eval set.
 | Gate | Threshold |
 |---|---|
 | A1 | Every case in §6 present and labeled |
-| A2 | Per-criterion precision ≥ 0.90 on `MET` verdicts |
+| A2 | Per-criterion precision ≥ 0.90 on `MET` verdicts, reported alongside the `MET` base rate in the eval set and the precision of a trivial always-`MET` baseline |
 | A3 | Zero `MET` verdicts with an invalid span |
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | Abstention rate reported, with the coverage/accuracy curve |
 | A6 | Cost and latency per determination reported from instrumentation |
 | A7 | Every REQ mapped to a passing check |
 | A8 | Failure modes documented in the README, including where the system degrades |
+| A9 | Zero determinations presented with a criterion in `ERROR` state |
 
 A2 is asymmetric on purpose. A false `MET` produces a denial the specialist did
 not expect. A false `NOT_MET` produces an unnecessary chart review. The first is
 worse, so precision on `MET` is gated and recall is only reported.
+
+A2 also carries a baseline because 0.90 alone is not a result. On an eval set
+where 0.90 of cases are truly `MET`, a system that answers `MET` unconditionally
+clears the gate while knowing nothing. The base rate and the always-`MET` score
+are what make the measured number mean something, so they are reported next to
+it rather than left to the reader to reconstruct.
 
 A8 is not a formality. A README that names the point at which the system becomes
 useless is the deliverable.

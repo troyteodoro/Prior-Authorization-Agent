@@ -193,6 +193,32 @@ in week 2.
 
 ---
 
+## Discovered — design review
+
+Work that came out of the design review rather than out of a story. Kept in its
+own section because none of it changes an existing story's closing condition, and
+folding it into US-1 or US-7 would silently move those goalposts. *(Working rule 6)*
+
+### `[ ] T-26` `ERROR` state and no-silent-failure audit
+**REQ:** 23, 24 · **Depends:** T-09 · **Gates:** A9
+**Exit:** `pytest tests/test_error_state.py` — a forced model timeout, a
+schema-invalid response, and a raised exception in a predicate each produce
+`ERROR` and abort the determination; grep the package for bare `except:` and
+`except Exception:` without re-raise and find none.
+
+### `[ ] T-27` Retrieval recall instrumentation
+**REQ:** 25 · **Depends:** T-21 · **Serves:** US-7
+**Exit:** `python eval/run_eval.py` prints per-criterion recall@k against the
+manifest ground truth.
+Makes D4's stated reversal condition executable instead of rhetorical.
+
+### `[ ] T-28` Baseline and base rate in the metrics report
+**Depends:** T-22 · **Serves:** US-7
+**Exit:** `eval/report.md` contains the `MET` base rate and an always-`MET`
+baseline score next to measured precision.
+
+---
+
 ## Working rules
 
 1. One task in `in_progress` at a time.
