@@ -78,8 +78,8 @@ you.** Do not override these from prior knowledge.
 
 - `google-adk` installs at **2.8.0**. Pin exactly: `google-adk==2.8.0`.
 - **Python 3.12** is the target. `python3.12` is at `/opt/homebrew/bin/python3.12`.
-  ⚠️ The `venv/` currently in the working tree is **Python 3.14.7** and does not
-  match. T-03 rebuilds it on 3.12.
+  The `venv/` in the working tree is **Python 3.12.14** and matches. Rebuilt in
+  T-03.
 - Top-level API surface: `Agent`, `Context`, `Event`, `Runner`, `Workflow`.
 - `Workflow` is a Pydantic model. Its `edges` field is a **static list of edges
   supplied at construction**. Other fields: `retry_config`, `max_concurrency`,
@@ -89,7 +89,13 @@ you.** Do not override these from prior knowledge.
   from deterministic Python values only.
 - CLI verbs: `adk web`, `run`, `create`, `eval`, `eval_set`, `test`,
   `conformance`, `migrate`, `api_server`, `deploy`.
-- `adk create <name>` writes `__init__.py`, `agent.py`, `.env`, `.gitignore`.
+- `adk create <name>` writes `__init__.py`, `agent.py`, `.env`, `.gitignore`
+  directly into `<name>/`. It does not create an agent subfolder — the move into
+  `pa_agent/agent/` was manual. *(D16)*
+- `adk web [AGENTS_DIR]` treats each **subdirectory** of `AGENTS_DIR` as one app,
+  so `adk web pa_agent` serves the app named `agent`.
+- `GET /` on `adk web` returns **307** to `/dev-ui/`, not 200. `GET /list-apps`
+  returns 200 with a JSON array of discovered app names. *(D16)*
 
 Per D5: develop against the AI Studio free tier, run final evals and any demo
 through Vertex, because Vertex does not train on submitted data.
@@ -111,14 +117,19 @@ docs/
 
 ## Current state
 
-Nothing is built. The tree holds `docs/`, `LICENSE`, `.gitignore`,
-`requirements.txt`, and an unmatched `venv/`. No package, no tests, no data.
+**T-03 is closed.** `python scripts/check_skeleton.py` returns zero: target
+layout present, `google-adk` at 2.8.0, `pa_agent.agent` imports with a reachable
+`root_agent`, and a spawned `adk web` answers 200 on `/list-apps` naming the
+agent before the script terminates it.
+
+The skeleton is empty scaffolding. `pa_agent/agent/agent.py` is still the
+unmodified `adk create` template — a generic assistant on the default model, not
+any part of the design. Directories carry `.gitkeep` and nothing else. No
+criteria tree, no schemas, no data, no tests.
+
 Spike 001 (T-00) has not run, so D2 — the assumption the whole design rests on —
 is still untested.
 
-Active task: **T-03 — repo skeleton and environment.**
-Exit condition: `python scripts/check_skeleton.py` — target layout present,
-`google-adk` imports at exactly 2.8.0, `pa_agent.agent` imports, and an `adk web`
-subprocess answers HTTP 200 on `localhost:8000` within the timeout before the
-script terminates it.
-Timebox: two hours.
+Active task: **none. Pick the next one before writing code.** T-00 is the
+candidate with the most leverage, since it is the only task that can invalidate
+D2, and T-09, T-15 and all of US-4 sit behind it.

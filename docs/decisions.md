@@ -354,6 +354,57 @@ change.
 
 ---
 
+## D16 — The probe hits `/list-apps`, and the ADK agent stays a subpackage
+
+*Refines D6, which specified the probe before ADK 2.8.0 was on the machine. D6's
+shape stands: layout, imports, and a live server, scripted.*
+
+**Chosen, three parts.**
+
+*The agent is `pa_agent/agent/`.* `adk create pa_agent` had written `agent.py`,
+`.env` and a nested `.gitignore` into `pa_agent/` itself. They move down a level
+into `pa_agent/agent/`, which is where the repo layout always said they go.
+`adk web pa_agent` resolves the subdirectory as the app.
+
+*The probe requests `/list-apps` and asserts the body names `agent`.* Measured on
+2.8.0: `GET /` returns **307**, redirecting to `/dev-ui/`. The exit condition as
+written in T-03 and D6 — "answers HTTP 200" against the root — fails on a
+perfectly healthy server.
+
+*Port 8000 stays, with a preflight and a `--port` override.* The script checks the
+port before spawning and fails with a named error when it is occupied.
+
+**Rejected: collapsing the package, leaving `agent.py` beside `resolver.py`.**
+Zero work, and `adk web pa_agent` serves it either way. But Articles I and II are
+boundary claims — the graph is fixed Python, the deterministic computations are
+Python — and the boundary is easiest to defend when it is a directory someone can
+point at. A reviewer asking "where does the model touch this" should get a path,
+not a list of which files in a flat package happen to be the model-facing ones.
+
+**Rejected: probing `/dev-ui/` or following the redirect from `/`.** Both return
+200 and both are closer to the letter of D6. `/list-apps` returns the discovered
+app names, so it fails when ADK starts but does not find the agent — a state the
+static UI asset reports as healthy. The stronger assertion costs nothing.
+
+**Rejected: an ephemeral port.** It removes the contention flake D6 anticipated,
+but D6 wants a stale `adk web` to *fail* the check, and a fresh port every run
+makes the check pass while a stale server holds 8000. Contention is a real
+condition worth surfacing, not routing around. The preflight converts it from a
+confusing HTTP failure into a legible one.
+
+**Cost:** The `/list-apps` contract is 2.8.0-specific and undocumented as stable.
+An ADK upgrade can rename it, and the failure will read as "the server is broken"
+rather than "the endpoint moved." The pin to `google-adk==2.8.0` is what makes
+this acceptable; the check and the pin move together.
+
+**Reverses if:** `/list-apps` disappears or stops naming apps in a later ADK,
+in which case the probe drops to `/dev-ui/` and loses the discovery assertion. Or
+the preflight fires on runs where no stale server exists, which would mean port
+8000 is contended by something else on this machine and the port becomes a
+constant in the script rather than a default.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

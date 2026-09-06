@@ -47,12 +47,13 @@ three questions, each with a quote and a `(document_id, char_start, char_end)`:
 An answer without a span does not close this task. Criteria-tree constants trace
 to source text the same way a determination's claims do.
 
-### `[~] T-03` Repo skeleton and environment
+### `[x] T-03` Repo skeleton and environment
 **Timebox:** two hours
 **Exit:** `python scripts/check_skeleton.py` — target layout present,
 `google-adk` imports at exactly 2.8.0, `pa_agent.agent` imports, and an `adk web`
-subprocess answers HTTP 200 on `localhost:8000` within the timeout before the
-script terminates it. *(D6)*
+subprocess answers HTTP 200 on `localhost:8000/list-apps` naming the agent,
+within the timeout before the script terminates it. *(D6, refined by D16)*
+The probe hits `/list-apps`, not `/`: on 2.8.0 `GET /` returns 307 to `/dev-ui/`.
 
 ---
 
