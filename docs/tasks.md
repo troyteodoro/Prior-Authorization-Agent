@@ -328,6 +328,32 @@ modules and finds no path to a patient-data module, walks it from the
 patient-data modules and finds no path to the policy corpus or an index over it,
 and asserts `Criterion` is the only type crossing
 
+### `[ ] T-34` Pin the model a measurement runs against
+**Guards:** D19 · **Depends:** none · **Discovered in:** T-00
+**Timebox:** one hour
+**Exit:** `pytest tests/test_model_pin.py` —
+- the model a bare `python spike/spike_001/run.py` would measure on equals the
+  model `results.json` records, so re-running cannot silently replace D19's
+  finding with one measured somewhere else
+- no model identifier appears as a bare string literal in tracked Python outside
+  the single module that defines the pin
+
+`DEFAULT_MODEL` in `run.py` reads `gemini-2.5-flash-lite` while D19 was measured
+on `gemini-3.5-flash-lite`. Nothing catches that today: a bare re-run would
+overwrite a recorded finding with numbers from a different model and every gate
+would still return zero, because each check is internally consistent with the
+file it reads. A finding whose provenance can drift without failing anything is
+not a finding.
+
+Second bullet covers the undocumented model edit sitting in `pa_agent/agent/agent.py`.
+That file is `adk create` scaffolding T-15 replaces, so the fix is a decision about
+which model the pin names, not a second literal somewhere else.
+
+Per D5 the entry naming the pinned model also has to say which tier it runs
+against, since development is AI Studio and final evals are Vertex — the pin is
+one identifier with two credentials behind it, and conflating them is how a demo
+ends up training on submitted data.
+
 ---
 
 ## Working rules

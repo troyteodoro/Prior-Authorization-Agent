@@ -142,10 +142,10 @@ Outside the spike the skeleton is still empty scaffolding.
 assistant, not any part of the design. No criteria tree, no schemas, no policy
 data, no tests.
 
-Two loose ends, both needing a decision before anything depends on them:
-`DEFAULT_MODEL` in `spike/spike_001/run.py` is `gemini-2.5-flash-lite` while D19
-was measured on `gemini-3.5-flash-lite`, so a bare `run.py` re-measures on a
-different model and overwrites the finding; and the working tree carries an
+**T-34 is open and holds both loose ends.** `DEFAULT_MODEL` in
+`spike/spike_001/run.py` is `gemini-2.5-flash-lite` while D19 was measured on
+`gemini-3.5-flash-lite`, so a bare `run.py` re-measures on a different model and
+overwrites the finding without failing any gate; and the working tree carries an
 undocumented model change to `pa_agent/agent/agent.py`.
 
 Active task: **none. Pick the next one before writing code.** T-15 is now
