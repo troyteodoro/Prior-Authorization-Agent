@@ -237,6 +237,13 @@ Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
 closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-10, T-24,
-T-26, T-31 and T-35**. T-35 blocks US-1's close and edits `docs/spec.md`, so it
+T-26, T-31, T-35 and T-39**. T-35 blocks US-1's close and edits `docs/spec.md`, so it
 comes before any US-1 work is trusted, and **T-38 unblocks behind it** — T-24
 cannot close until one of them lands the procedure sets.
+
+**One gate is weak and will start lying on a schedule (T-39).**
+`_open_questions()` in `tests/test_criteria_tree.py` matches resolved questions
+as readily as open ones, so a `provisional` constant may cite a question that is
+already answered. It passes today only because questions 4 and 5 are genuinely
+open. **T-39 comes before T-13 and T-33**, which close those two questions and
+would otherwise each be graded by the check they defeat.

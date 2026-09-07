@@ -189,9 +189,11 @@ spans all rejected; no model imported in the module
 dates, from all six bundles
 
 ### `[ ] T-13` Deterministic criteria (a) and (b)
-**REQ:** 11, 12 · **Depends:** T-05, T-12
+**REQ:** 11, 12 · **Depends:** T-05, T-12, T-39
 **Exit:** `pytest tests/test_criteria_ab.py` — includes the BMI 35.0 boundary;
 asserts zero model calls
+Closes open question 4, so T-39 comes first: until it does, unflagging the
+lookback is not checked by anything.
 
 **US-2 closes when:** E12 passes and every span produced in the run survives T-11.
 
@@ -262,7 +264,7 @@ describes a fault, and one field for both is the collapse Article IV forbids.
 Test the empty list, a single event, and events out of chronological order.
 
 ### `[ ] T-33` Source reconciliation for criterion (a)
-**REQ:** 31, 34, 39 · **Depends:** T-13, T-15, T-31
+**REQ:** 31, 34, 39 · **Depends:** T-13, T-15, T-31, T-39
 **Exit:** `pytest tests/test_reconciliation.py` — E10 (same side of 35.0, beyond
 tolerance) keeps the structured verdict and records one `discrepancies[]` entry;
 E10c (below tolerance) records none; E10b (34.8 against 36.2) resolves
@@ -527,6 +529,35 @@ Not folded into T-24 for the reason T-37 gives: a requirement changed by the tas
 that implements it is a requirement nobody agreed to. Not merged into T-36
 because T-36 decides what the resolver returns and this decides what the tree
 records, and T-36's exit needs a resolver that does not exist yet.
+
+### `[ ] T-39` A provisional constant must name an *open* question, not any question
+**REQ:** 39 · **Discovered in:** T-37 · **Timebox:** one hour
+**Exit:** a decision entry choosing how a question's status is recorded, then
+`pytest tests/test_criteria_tree.py` —
+- a provisional constant naming a **resolved** question fails the gate, asserted
+  by mutation the way T-01's eight cases are
+- the open/resolved split is read from something the spec states, not inferred
+  from `~~` strike-through markup
+- the two live provisional constants still pass: criterion (a)'s lookback
+  (question 4) and `discrepancy_tolerance` (question 5)
+
+`_open_questions()` in `tests/test_criteria_tree.py` collects section numbers
+with `^(\d+)\.\s`, which matches resolved questions as readily as open ones.
+Questions 1, 2, 3 and 6 are all closed and all still in the returned set, so
+`test_provisional_constants_name_an_open_question_that_exists` currently accepts
+a constant citing any of them.
+
+The gate passes today because questions 4 and 5 are genuinely open, which is
+exactly why this is worth a task rather than a note: it is a gate that will start
+lying at a predictable moment. When T-13 closes question 4 and T-33 closes
+question 5, a constant left `provisional` against a question that has since been
+answered keeps passing, and the flag that was supposed to stop a defaulted
+constant from reaching a predicate stops meaning anything. D23's whole argument
+is that a flagged constant names the thing that would unflag it.
+
+Not folded into T-13 or T-33: whichever of them lands first would be the task
+that repairs the check it is about to defeat, and it would be graded by that
+check. The repair belongs before either of them.
 
 ---
 
