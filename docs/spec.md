@@ -138,9 +138,11 @@ zero events is `INSUFFICIENT_EVIDENCE`. *(D12)*
 encounter with a documented BMI. A recorded weight with a height on file
 elsewhere does not count — a derived value has no single span to cite. *(D15)*
 
-**REQ-37** c5 is `MET` when the qualifying run contains at least
-`c5_min_documented_events` events carrying both `diet_documented` and
-`activity_documented`. The count is read from the criteria tree. *(Art. VII, D13)*
+**REQ-37** c5 is `MET` when every month of the qualifying run contains an event
+carrying both `diet_documented` and `activity_documented`. The rate is read from
+the criteria tree, where it is the same constant c4 carries, cited to the same
+sentence. A month documenting only one of the two does not count.
+*(Art. VII, D13, D24)*
 
 **REQ-15** c4 and c5 are scoped to the qualifying run identified by c3. If c3
 fails, both return `INSUFFICIENT_EVIDENCE`, not `NOT_MET`.
@@ -326,7 +328,8 @@ into a hashed document, recorded in `data/policies/source/answers.json`.
 1. ~~Does A53028 require diet and activity documentation monthly or once?~~
    **Monthly.** `a53028[6339:6503]`. The same sentence is also the source for c4
    (BMI documented) and shows c5 covers diet and activity together, not
-   separately. Feeds `c5_min_documented_events`.
+   separately. Feeds c5's `documentation_rate`, and settled question 6 a task
+   before anyone asked it *(D24)*.
 2. ~~Is c2's recency window 12 months?~~ **Yes, 12 months.** `a53028[6123:6337]`.
    The same sentence fixes c3's qualifying run at four consecutive months, which
    is what E4 is labeled against.
@@ -345,7 +348,8 @@ One opened in their place, and it is a design question rather than a source one:
 
 Three more opened in T-01, each one a constant the criteria tree carries as
 `provisional: true` rather than as a bare number *(D23)*. Each names the task
-that must resolve it before that task can be trusted.
+that must resolve it before that task can be trusted. Question 6 has since
+closed, leaving two constants still flagged.
 
 4. **What lookback window applies to criterion (a)'s BMI?** REQ-11 evaluates (a)
    against the most recent BMI observation "within its lookback window" and
@@ -358,14 +362,15 @@ that must resolve it before that task can be trusted.
    threshold so a structured 38.1 against a note 38.0 is not listed beside 38.1
    against 45. No source text bounds it — it is a judgment about what wastes
    Sam's attention, not a coverage rule. **T-33 must not supply its own default.**
-6. **Is c5 a count or a rate?** A53028 governs c4 and c5 in one sentence —
-   "monthly documentation of patient's weight and BMI, current dietary regimen and
-   physical activity". REQ-40 renders the first half as *every month of the
-   qualifying run*; REQ-37 renders the second as *at least
-   `c5_min_documented_events` events*. One sentence, two shapes, and the count
-   shape is permissive in the false-`MET` direction: a seven-month run with diet
-   and activity in four months passes. **T-37** owns the reconciliation. Until it
-   lands, the constant is 4 and flagged.
+6. ~~Is c5 a count or a rate?~~ **A rate**, and the same rate c4 carries.
+   `a53028[6339:6503]` is one sentence in which `monthly` governs a three-item
+   list — weight and BMI, dietary regimen, physical activity — so there is no
+   reading where it applies to the first item only. Question 1 had already
+   answered this in T-02 and the disagreement survived because REQ-37 and REQ-40
+   were drafted before anyone read the source. REQ-37 is rewritten to the
+   per-month shape, `c5_min_documented_events` is gone, and a seven-month run
+   documenting diet and activity in four months is now `NOT_MET`. Closed by T-37,
+   see D24.
 
 Also settled by T-02 and worth stating once: every quantified constant in the
 criteria tree comes from A53028, a **Noridian Jurisdiction F** article, not from

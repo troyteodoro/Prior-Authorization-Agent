@@ -82,7 +82,7 @@ ANSWERS: list[dict[str, Any]] = [
     {
         "question_id": "q1",
         "question": "Does A53028 require diet and activity documentation monthly or once?",
-        "feeds": "c5_min_documented_events",
+        "feeds": "c5 documentation_rate",
         "answer": "monthly",
         "document_id": "a53028",
         "quote": "The weight-management program must include monthly documentation of "
