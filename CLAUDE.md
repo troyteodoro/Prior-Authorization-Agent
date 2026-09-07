@@ -152,5 +152,10 @@ assistant, not any part of the design, though it now reads the pin instead of a
 literal. No criteria tree, no schemas, no policy data, and the only test is
 T-34's.
 
-Active task: **none. Pick the next one before writing code.** T-15 is now
-unblocked, and T-09's schemas are what most other work sits behind.
+Active task: **none. Pick the next one before writing code.**
+
+T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
+closed. T-11 sits behind T-08, which sits behind T-02. The tasks whose
+dependencies are actually satisfied are **T-01, T-02, T-04 and T-09**. T-02 is an
+enabler the board places before any story, and it settles the coverage assumption
+T-25 currently makes from memory, so US-1 should not close ahead of it.
