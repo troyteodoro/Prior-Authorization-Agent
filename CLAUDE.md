@@ -192,9 +192,58 @@ assistant, not any part of the design, though it now reads the pin instead of a
 literal. No criteria tree, no schemas, no policy data, and the only test is
 T-34's.
 
+**The end state is a production deployment against two databases (D25)** — one
+holding insurance codes, one holding patient data. That target is now a
+constraint on code being written, not a someday: T-09 defines `PolicyStore` and
+`PatientStore` as two Protocols with file-backed local implementations, and
+REQ-41 forbids any module outside an adapter from opening a file path or holding
+a connection. Production becomes a second adapter. **Criteria trees do not move
+into a database write path** — Article VII wants a diff and a reviewer for every
+clinical rule change, so git stays the source of truth and a store may serve a
+deploy-time read-only projection. The database fixes lookup scaling and does not
+touch the real wall: c1–c5 are hand-written Python for one policy's shape, so
+policy #2 costs a developer. A predicate DSL is the answer to that and is
+deliberately not open.
+
+**REQ-2 names a field no artifact carries (D26).** `covered_procedures` exists
+only in the spec, and absence from it would mean *denied*, *delegated to the MAC*
+and *no bariatric policy applies* all at once. **T-38** lands three spanned,
+disjoint procedure sets in the tree and rewrites REQ-2 to read membership. It
+depends on T-35 and blocks T-24, so it is on US-1's critical path.
+
+**T-09 is closed.** `pytest tests/test_schemas.py` returns zero.
+`pa_agent/contracts.py` holds the models; `pa_agent/stores/policy.py` and
+`pa_agent/stores/patient.py` hold the two ports and their file-backed adapters.
+`pa_agent/stores/__init__.py` imports neither submodule on purpose — a
+package-level re-export would be the module that reaches both planes. Three
+invariants are validators, not conventions: `Document` verifies its hash on
+construction, `EvidenceSpan` refuses reversed and negative offsets, and
+`CriterionResult` refuses a `MET`/`NOT_MET` without a span *and* an
+`INSUFFICIENT_EVIDENCE` with one. `Criterion.require()` raises on a provisional
+constant rather than returning `None`.
+
+**Both unimplemented halves raise and name their task.**
+`LocalPolicyStore.resolve` raises `NotImplementedError` citing T-38 — the tree
+has no procedure sets to read. Every `LocalPatientStore` method raises citing
+T-04. Do not "fix" either by returning `None` or `[]`: the first reports
+`NO_POLICY_FOUND` for all of Medicare, the second manufactures E7 for every
+patient, and in both cases the downstream tests agree with it.
+
+`CriterionVerdict` has two of Article IV's three states. **`ERROR` is T-26's**,
+and `tests/test_schemas.py` asserts its absence so adding it without the
+classifying enum and the determination validator fails loudly.
+
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is **T-04, T-08, T-09 and T-35**.
-T-09's schemas are what most other work sits behind. T-35 blocks US-1's close and
-edits `docs/spec.md`, so it is the one to do before any US-1 work is trusted.
+closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-10, T-24,
+T-26, T-31, T-35 and T-39**. T-35 blocks US-1's close and edits `docs/spec.md`, so it
+comes before any US-1 work is trusted, and **T-38 unblocks behind it** — T-24
+cannot close until one of them lands the procedure sets.
+
+**One gate is weak and will start lying on a schedule (T-39).**
+`_open_questions()` in `tests/test_criteria_tree.py` matches resolved questions
+as readily as open ones, so a `provisional` constant may cite a question that is
+already answered. It passes today only because questions 4 and 5 are genuinely
+open. **T-39 comes before T-13 and T-33**, which close those two questions and
+would otherwise each be graded by the check they defeat.

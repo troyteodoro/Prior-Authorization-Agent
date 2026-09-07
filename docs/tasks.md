@@ -89,10 +89,54 @@ The probe hits `/list-apps`, not `/`: on 2.8.0 `GET /` returns 307 to `/dev-ui/`
 
 Closes before you sleep on day one.
 
-### `[ ] T-09` Data contracts as Pydantic models
-**REQ:** 5, 22 · **Depends:** T-00
-**Exit:** `pytest tests/test_schemas.py` — `Criterion`, `EvidenceSpan`,
-`CriterionVerdict`, `CriterionResult`, `Determination`, `WmEvent`, `CallMetrics`.
+### `[x] T-09` Data contracts and the two storage ports
+**REQ:** 5, 22, 33, 41 · **Depends:** T-00 · **Blocks:** everything
+**Exit:** `pytest tests/test_schemas.py` —
+- the models: `Criterion`, `EvidenceSpan`, `CriterionVerdict`, `CriterionResult`,
+  `Determination`, `WmEvent`, `CallMetrics`
+- `Document` carrying text and `sha256`, so a span's target is addressable and
+  its content verifiable without touching whatever stored it
+- two Protocols, `PolicyStore` and `PatientStore`, with the methods D25 names
+- file-backed implementations of both, reading the artifacts that exist today:
+  `LocalPolicyStore` over `data/policies/` returns the T-01 tree and the T-02
+  corpus with hashes matching `sources.json`; `LocalPatientStore` is defined and
+  raises `NotImplementedError` until T-04 lands bundles for it to read
+- no single class satisfies both Protocols, asserted directly *(REQ-41)*
+- a round trip: `get_document()` then slice at a T-02 answer's offsets returns
+  that answer's quote — the storage port preserves Article III's guarantee
+
+**Scope changed by D25** *(was: the seven models alone)*. Troy's end state is a
+production deployment against a code database and a patient database. The ports
+are the whole of what that costs the code written now; everything above an
+adapter is unchanged when the adapter becomes Postgres and FHIR. Defined here it
+is a few hours. Defined after T-25 it is a rewrite of US-1 and US-2.
+
+Criteria trees do **not** move into a store's write path. Article VII wants a
+diff and a reviewer for every clinical rule change, and `get_tree()` reading a
+deploy-time projection satisfies it while an `UPDATE` does not. *(D25)*
+
+**Closed.** `pa_agent/contracts.py` and `pa_agent/stores/{policy,patient}.py`;
+39 tests in `tests/test_schemas.py`. Three invariants are enforced by validators
+rather than by convention, so the objects that break them cannot be built: a
+`Document` whose text does not hash to its record (REQ-7), a span that is
+reversed or negative (Art. III), and a `CriterionResult` whose spans disagree
+with its verdict in **either** direction (REQ-5 — an abstention carrying a
+citation is refused as firmly as a `MET` carrying none).
+
+`Criterion.require()` raises on a provisional constant instead of returning
+`None`, which makes "T-13 must not invent a default" mechanical rather than
+advisory. Both unimplemented halves raise and name their task —
+`LocalPolicyStore.resolve` cites T-38, `LocalPatientStore` cites T-04 — because
+a store that returned `None` or `[]` would report `NO_POLICY_FOUND` for all of
+Medicare, or manufacture E7 for every patient, while every downstream test
+agreed with it.
+
+Mutation-tested six ways, each caught by the test that should catch it: dropping
+the REQ-5 validator, adding `ERROR` to `CriterionVerdict` without doing T-26,
+making `require()` return a provisional value, a class satisfying both
+Protocols, a package-level re-export in `stores/__init__.py`, and
+`get_document` hashing the file it just read instead of checking it against
+`sources.json`.
 
 ### `[ ] T-10` Eval harness with US-1 acceptance cases, failing
 **Depends:** T-09
@@ -145,9 +189,11 @@ spans all rejected; no model imported in the module
 dates, from all six bundles
 
 ### `[ ] T-13` Deterministic criteria (a) and (b)
-**REQ:** 11, 12 · **Depends:** T-05, T-12
+**REQ:** 11, 12 · **Depends:** T-05, T-12, T-39
 **Exit:** `pytest tests/test_criteria_ab.py` — includes the BMI 35.0 boundary;
 asserts zero model calls
+Closes open question 4, so T-39 comes first: until it does, unflagging the
+lookback is not checked by anything.
 
 **US-2 closes when:** E12 passes and every span produced in the run survives T-11.
 
@@ -218,7 +264,7 @@ describes a fault, and one field for both is the collapse Article IV forbids.
 Test the empty list, a single event, and events out of chronological order.
 
 ### `[ ] T-33` Source reconciliation for criterion (a)
-**REQ:** 31, 34, 39 · **Depends:** T-13, T-15, T-31
+**REQ:** 31, 34, 39 · **Depends:** T-13, T-15, T-31, T-39
 **Exit:** `pytest tests/test_reconciliation.py` — E10 (same side of 35.0, beyond
 tolerance) keeps the structured verdict and records one `discrepancies[]` entry;
 E10c (below tolerance) records none; E10b (34.8 against 36.2) resolves
@@ -352,11 +398,17 @@ manifest ground truth
 Makes D4's reversal condition measurable against the 0.85 kill criterion.
 
 ### `[ ] T-32` Plane separation check
-**REQ:** 33 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
+**REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
 **Exit:** `pytest tests/test_planes.py` — walks the import graph from the policy
 modules and finds no path to a patient-data module, walks it from the
 patient-data modules and finds no path to the policy corpus or an index over it,
 and asserts `Criterion` is the only type crossing
+
+Second assertion, added by D25: no module outside `pa_agent/stores/` opens a file
+path, holds a connection, or names a storage location, and no class satisfies
+both Protocols. Under the production target the planes are two connections rather
+than two package trees, and an assertion that only reads imports would pass a
+module that reaches the wrong database at runtime.
 
 ### `[x] T-34` Pin the model a measurement runs against
 **Guards:** D19 · **Depends:** none · **Discovered in:** T-00
@@ -447,6 +499,65 @@ T-02 had already answered this as open question 1 without anyone connecting it.
 same span, sourced rather than provisional. REQ-37 rewritten, open question 6
 closed, and the seven-month run documented in four months is `NOT_MET` in
 `tests/test_criteria_tree.py`. See D24. T-16 builds against the rate.
+
+### `[ ] T-38` Procedure sets in the criteria tree, and REQ-2 rewritten to read them
+**REQ:** 1, 2 · **Depends:** T-35 · **Blocks:** T-24, and US-1's close ·
+**Discovered in:** a design walkthrough, not a task *(D26)*
+**Timebox:** two hours
+**Exit:** `pytest tests/test_criteria_tree.py` —
+- the tree carries three named procedure sets: nationally covered, nationally
+  non-covered, and contractor-determined
+- every code in every set carries a `(document_id, char_start, char_end)` that
+  slices back to a quote naming that code, the way D23 requires of every other
+  constant in the file
+- the three sets are pairwise disjoint, so no code has two answers
+- 43775 is in the contractor-determined set and in neither of the others *(D22)*
+- the code T-35 picked for E3 is in the nationally non-covered set
+- a code in the non-covered set and a code in none of the three are
+  distinguishable **from the tree alone**, with no resolver involved — the test
+  asserts the two conditions are different lookups and not one absence
+- REQ-2 in `docs/spec.md` reads membership in the non-covered set; REQ-1's
+  `NO_POLICY_FOUND` covers the code in no set
+
+`covered_procedures` is named in REQ-2 and exists nowhere else in the repository.
+Worse than missing: absence from a single covered list means *denied*,
+*delegated to the MAC*, and *no bariatric policy applies* all at once, and REQ-2
+answers `NOT_COVERED` to all three. D22 caught one code in the wrong bucket; this
+is the bucket structure. *(D26)*
+
+Not folded into T-24 for the reason T-37 gives: a requirement changed by the task
+that implements it is a requirement nobody agreed to. Not merged into T-36
+because T-36 decides what the resolver returns and this decides what the tree
+records, and T-36's exit needs a resolver that does not exist yet.
+
+### `[ ] T-39` A provisional constant must name an *open* question, not any question
+**REQ:** 39 · **Discovered in:** T-37 · **Timebox:** one hour
+**Exit:** a decision entry choosing how a question's status is recorded, then
+`pytest tests/test_criteria_tree.py` —
+- a provisional constant naming a **resolved** question fails the gate, asserted
+  by mutation the way T-01's eight cases are
+- the open/resolved split is read from something the spec states, not inferred
+  from `~~` strike-through markup
+- the two live provisional constants still pass: criterion (a)'s lookback
+  (question 4) and `discrepancy_tolerance` (question 5)
+
+`_open_questions()` in `tests/test_criteria_tree.py` collects section numbers
+with `^(\d+)\.\s`, which matches resolved questions as readily as open ones.
+Questions 1, 2, 3 and 6 are all closed and all still in the returned set, so
+`test_provisional_constants_name_an_open_question_that_exists` currently accepts
+a constant citing any of them.
+
+The gate passes today because questions 4 and 5 are genuinely open, which is
+exactly why this is worth a task rather than a note: it is a gate that will start
+lying at a predictable moment. When T-13 closes question 4 and T-33 closes
+question 5, a constant left `provisional` against a question that has since been
+answered keeps passing, and the flag that was supposed to stop a defaulted
+constant from reaching a predicate stops meaning anything. D23's whole argument
+is that a flagged constant names the thing that would unflag it.
+
+Not folded into T-13 or T-33: whichever of them lands first would be the task
+that repairs the check it is about to defeat, and it would be graded by that
+check. The repair belongs before either of them.
 
 ---
 
