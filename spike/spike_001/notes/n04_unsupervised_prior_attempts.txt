@@ -1,0 +1,33 @@
+LAKESHORE PRIMARY CARE
+Patient: Brennan-Achebe, Siobhan      MRN: 610455
+DOB: 1988-07-09                       Sex: F
+
+WEIGHT HISTORY
+The patient reports a long history of self-directed weight loss attempts. She
+enrolled in a commercial weight loss program on 03/07/2022 and discontinued it
+on 09/19/2022. This was not physician supervised and no clinician followed her
+during that period. She also describes an unsupervised ketogenic diet trial
+beginning 01/15/2023 which she abandoned after roughly two months.
+
+PHYSICIAN-SUPERVISED WEIGHT MANAGEMENT PROGRAM
+Enrolled under P. Nakagawa, MD.
+
+08/05/2025 - Program visit. Weight 103.6 kg, height 160 cm, BMI 40.5.
+Structured meal plan at 1500 kcal reviewed with the patient. Exercise
+prescription: 20 minutes of walking, four days per week.
+
+09/02/2025 - Program visit. Weight 101.9 kg, BMI 39.8. Food log reviewed.
+Reports meeting the walking goal most weeks.
+
+09/16/2025 - Outreach call to confirm the next appointment. No answer;
+voicemail left. No clinical encounter.
+
+10/07/2025 - Program visit. Weight 100.4 kg, BMI 39.2. Discussed sodium and
+prepared foods. Activity advanced to 30 minutes, four days per week.
+
+11/04/2025 - Program visit. Weight 99.1 kg, BMI 38.7. Dietary adherence good.
+Continues 30 minutes of activity four days per week.
+
+ASSESSMENT
+Class II obesity with hypertension. Four months of documented supervised
+participation to date.

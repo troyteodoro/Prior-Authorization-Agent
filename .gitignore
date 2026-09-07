@@ -1,0 +1,20 @@
+# Environment
+venv/
+venv.old/
+.venv/
+
+# Secrets - placeholder only, never a real key
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# MacOs
+.DS_Store
