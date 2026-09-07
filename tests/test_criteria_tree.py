@@ -39,8 +39,16 @@ REQUIRED_CONSTANTS = [
     ("c2", "recency_window_months"),
     ("c3", "min_consecutive_months"),
     ("c4", "documentation_rate"),
-    ("c5", "c5_min_documented_events"),
+    ("c5", "documentation_rate"),
 ]
+
+# The rate vocabulary the tree speaks, decoded here so T-37's seven-month case can
+# be evaluated before T-16 exists to evaluate it properly. This is deliberately
+# not the c5 predicate — it is the least machinery that can ask whether the
+# constant in the file means what D24 says it means.
+RATE_MONTHS_REQUIRED = {
+    "every_month_of_run": lambda run_months: run_months,
+}
 
 TYPE_CHECKS = {
     "number": lambda v: isinstance(v, (int, float)) and not isinstance(v, bool),
@@ -252,6 +260,78 @@ def test_the_national_floor_is_cited_where_it_is_claimed(tree, criteria, source_
     assert text[floor["char_start"] : floor["char_end"]] == floor["quote"]
     assert floor["document_id"] == "ncd_100_1", (
         "the national floor must cite the NCD; A53028 is one MAC's article (D21)"
+    )
+
+
+# --------------------------------------------------------------------------
+# c5 is a rate, and it is c4's rate (T-37, D24)
+# --------------------------------------------------------------------------
+
+
+def test_c4_and_c5_declare_the_same_documentation_rate(criteria):
+    """One sentence, one shape.
+
+    A53028[6339:6503] says `monthly` once and then lists three things. If c4 and
+    c5 ever disagree about the rate again, one of them has stopped reading the
+    sentence it cites.
+    """
+    c4 = criteria["c4"]["constants"]["documentation_rate"]
+    c5 = criteria["c5"]["constants"]["documentation_rate"]
+    assert c4["value"] == c5["value"] == "every_month_of_run"
+    assert c4["source"] == c5["source"], (
+        "c4 and c5 quantify from the same sentence, so they cite the same span"
+    )
+
+
+def test_c5_declares_no_event_count(criteria):
+    """The shape D24 removed, kept out.
+
+    Re-adding a count is the regression, because the count was `MET` on runs the
+    source does not cover and nothing else in the tree would notice.
+    """
+    constants = criteria["c5"]["constants"]
+    assert "c5_min_documented_events" not in constants, (
+        "the count is back. D24 replaced it with a rate; see its reversal condition"
+    )
+    counts = [
+        name
+        for name, body in constants.items()
+        if body.get("type") in ("integer", "number") and not isinstance(body["value"], bool)
+    ]
+    assert not counts, f"c5 declares a numeric threshold again: {counts}"
+
+
+def test_c5s_rate_is_sourced_and_no_longer_provisional(criteria):
+    """T-37's exit condition, on the branch it took."""
+    rate = criteria["c5"]["constants"]["documentation_rate"]
+    assert not rate.get("provisional"), "open question 6 is closed by D24"
+    assert "open_question" not in rate
+    assert rate.get("source"), "a rate is a policy claim and carries a span like any other"
+
+
+def test_a_seven_month_run_documented_in_four_months_is_not_met(criteria):
+    """The case T-37 exists to settle.
+
+    Under the old count of 4 this run was `MET` — four qualifying events cleared a
+    floor of four, while three months of the run held no diet or activity
+    documentation at all. Under the rate the same run is `NOT_MET`, which is the
+    conservative direction and the one the source actually states.
+
+    `NOT_MET` and not `INSUFFICIENT_EVIDENCE`: c3 identified a run, so the months
+    were looked at and found undocumented. That is evidence of absence, which is
+    Article IV's distinction and D13's.
+    """
+    run_months = 7
+    months_documenting_both = 4
+
+    rate = criteria["c5"]["constants"]["documentation_rate"]["value"]
+    assert rate in RATE_MONTHS_REQUIRED, f"unknown rate vocabulary {rate!r}"
+    required = RATE_MONTHS_REQUIRED[rate](run_months)
+
+    assert required == run_months, "every_month_of_run means every month of the run"
+    assert months_documenting_both < required, (
+        f"a {run_months}-month run documented in {months_documenting_both} months "
+        f"needs {required} and would resolve MET. The count shape is back."
     )
 
 

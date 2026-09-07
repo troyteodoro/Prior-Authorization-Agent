@@ -888,6 +888,81 @@ is superseded rather than edited.
 
 ---
 
+## D24 — c5 is a rate, not a count, and REQ-37 is rewritten to say so
+
+Supersedes D23's third section, on the condition D23 named. Answers spec open
+question 6.
+
+**Chosen:** c5 takes c4's shape. `c5_min_documented_events` is removed from the
+criteria tree and replaced by `documentation_rate: "every_month_of_run"` — the
+same constant name and the same value c4 carries, cited to the same span. c5 is
+`MET` when **every** month of the qualifying run contains an event documenting
+both diet and activity. REQ-37 is rewritten in `docs/spec.md` to match.
+
+**Why.** The sentence is one requirement, not two:
+
+> The weight-management program must include monthly documentation of patient's
+> weight and BMI, current dietary regimen and physical activity (e.g. exercise
+> program).
+
+`monthly` modifies `documentation`, and `documentation` takes a three-item
+coordinate object — weight and BMI, dietary regimen, physical activity. There is
+no reading of that sentence in which the adverbial governs the first item and
+lapses for the other two. The split was an artifact of drafting order: REQ-37 and
+REQ-40 were written before T-02 had read A53028, so each guessed a shape and the
+guesses disagreed. T-02 then answered it independently without anyone noticing —
+open question 1 closed as **"Monthly"** on `a53028[6339:6503]`, which is the
+identical span both constants already cite.
+
+So this is not a judgment call between two defensible readings. One shape matches
+the source and the other does not.
+
+**What changes in behavior.** The case T-37's exit condition names: a seven-month
+qualifying run documenting diet and activity in four of its months. Under the
+count it was `MET` — four events clears a floor of four. Under the rate it is
+`NOT_MET`, because three months of that run are undocumented. That is the whole
+substance of the reconciliation, and it moves in the conservative direction: a
+determination this system previously would have approved it now declines to.
+
+**Rejected — keep the count, and set it equal to the run length at evaluation
+time.** Arithmetically identical on the pass/fail bit, and worse everywhere else.
+It puts a computation in the policy file, where Article II wants it in code. It
+also destroys the gap list: a rate knows *which* months are missing and can tell
+Sam what to go collect, while a count that came up short knows only that it did.
+A count that must equal the run length is a rate wearing a disguise.
+
+**Rejected — keep `4` as a floor and accept the permissiveness.** This is the
+status quo D23 landed under protest. It is a false `MET`, and the entire argument
+for this system is that it abstains rather than approves on evidence it does not
+have. A design that tolerates a known false `MET` because fixing it costs a spec
+edit has lost the argument it was built to make.
+
+**Rejected — raise the count to a large number.** Carried forward from D23,
+rejected for the same reason: it trades a false `MET` for a false `NOT_MET` and
+misreports the policy in the other direction.
+
+**Rejected — merge c5 into c4.** They now share a rate and a source span, so the
+merge is tempting. They do not share a predicate: c4 asks for a documented BMI in
+the month, c5 asks for diet **and** activity in the month, and a real chart fails
+one without the other constantly. Merging them would report a single gap where
+Sam needs two different things collected, which is Article IV's argument applied
+one level down — states that read alike must not merge before anyone notices.
+`requires_both_diet_and_activity` stays exactly as it is.
+
+**Why this needed its own task.** REQ-37 is spec, and spec outranks a prompt.
+D23 could have quietly written the per-month shape while implementing the tree
+and been right on the merits; that is precisely the move working rule 5 exists to
+prevent, because the resulting tree would satisfy a requirement nobody had
+agreed to. The reconciliation gets a task, an entry, and a spec edit that is
+visible in the diff.
+
+**Reverses if:** a source turns up quantifying diet and activity documentation
+separately from weight and BMI — a second jurisdiction's article stating a count,
+or an A53028 revision splitting the sentence. Then c5 stops sharing c4's shape
+and the count returns, sourced this time rather than provisional.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

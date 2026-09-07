@@ -117,7 +117,7 @@ docs/
 
 ## Current state
 
-**T-03, T-00, T-34, T-02 and T-01 are closed.** `python scripts/check_skeleton.py` returns zero:
+**T-03, T-00, T-34, T-02, T-01 and T-37 are closed.** `python scripts/check_skeleton.py` returns zero:
 target layout present, `google-adk` at 2.8.0, `pa_agent.agent` imports with a
 reachable `root_agent`, and a spawned `adk web` answers 200 on `/list-apps`
 naming the agent before the script terminates it.
@@ -144,15 +144,18 @@ consecutive months**.
 test slices out of the hashed corpus, and the tree records the corpus hashes so a
 moved document fails the gate. Sourced: BMI ≥ 35 inclusive, one comorbidity, c2
 12 months, c3 four consecutive months, c4 per-month BMI, c5 both diet and
-activity. **Three constants are provisional and must not be defaulted by the task
-that consumes them** — criterion (a)'s lookback (question 4, T-13),
-`discrepancy_tolerance` (question 5, T-33), `c5_min_documented_events`
-(question 6, T-37).
+activity. **Two constants are provisional and must not be defaulted by the task
+that consumes them** — criterion (a)'s lookback (question 4, T-13) and
+`discrepancy_tolerance` (question 5, T-33).
 
-**c5's shape does not match its source (T-37).** A53028 governs c4 and c5 in one
-sentence, but REQ-40 renders it per-month and REQ-37 as a fixed count. The count
-is permissive in the false-`MET` direction: a seven-month run with diet and
-activity in four months passes. Resolve before T-16 builds the predicate.
+**c5 is a rate, not a count (D24).** A53028's `monthly` governs the whole
+three-item list in the sentence that quantifies c4 and c5, so c5 carries c4's
+`documentation_rate` — `every_month_of_run`, same span, sourced rather than
+provisional. `c5_min_documented_events` is gone and REQ-37 is rewritten to the
+per-month shape. A seven-month run documenting diet and activity in four months
+was `MET` under the count and is `NOT_MET` under the rate. c4 and c5 share the
+rate and differ in their predicate, so they stay separate criteria. **T-16 builds
+against the rate.**
 
 **43775 is not the non-covered case (D22).** NCD 100.1 non-covers laparoscopic
 sleeve gastrectomy only *"prior to June 27, 2012"*; after that it is delegated to
@@ -192,6 +195,6 @@ T-34's.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is **T-04, T-08, T-09, T-35 and
-T-37**. T-09's schemas are what most other work sits behind; T-37 is cheap and
-gets cheaper the sooner it lands, since T-16 builds against whichever shape wins.
+closed. T-11 sits behind T-08. The ready set is **T-04, T-08, T-09 and T-35**.
+T-09's schemas are what most other work sits behind. T-35 blocks US-1's close and
+edits `docs/spec.md`, so it is the one to do before any US-1 work is trusted.

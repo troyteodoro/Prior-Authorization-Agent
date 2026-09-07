@@ -40,6 +40,10 @@ c3 at four consecutive months, c4 per-month BMI, c5 requiring both diet and
 activity. Provisional and flagged: criterion (a)'s lookback (question 4),
 `discrepancy_tolerance` (question 5), `c5_min_documented_events` (question 6).
 
+*Superseded in part by T-37:* `c5_min_documented_events` is gone. c5 carries
+c4's `documentation_rate` instead, sourced rather than provisional, so two
+constants are flagged now and not three *(D24)*.
+
 Beyond the stated exit, every sourced constant carries a
 `(document_id, char_start, char_end)` the test slices out of the hashed corpus,
 and the tree records the corpus hashes so a moved document fails the gate rather
@@ -204,7 +208,9 @@ describes a fault, and one field for both is the collapse Article IV forbids.
 - c3 `NOT_MET` on a one-to-three-month run, `INSUFFICIENT_EVIDENCE` on zero
   events — two distinct cases
 - c4 `NOT_MET` on E6, asserting no BMI derived from weight plus on-file height
-- c5 reads `c5_min_documented_events` from the tree
+- c5 reads `documentation_rate` from the tree and requires diet and activity in
+  every month of the run, not a count of qualifying events *(T-37, D24)*. A
+  seven-month run documented in four months is `NOT_MET`.
 - c4 and c5 return `INSUFFICIENT_EVIDENCE` when c3 fails
 - E7 carries `NO_EVIDENCE_RETRIEVED`, E8 `UNSUBSTANTIATED_ASSERTION`
 - identical verdicts across three runs
@@ -412,7 +418,7 @@ looks academic; it stops being academic the moment a second jurisdiction exists,
 and Article IV's whole argument is that states which read alike must not merge
 before anyone notices.
 
-### `[ ] T-37` Reconcile REQ-37 with the source: is c5 a count or a rate?
+### `[x] T-37` Reconcile REQ-37 with the source: is c5 a count or a rate?
 **REQ:** 37, 40 · **Blocks:** T-16 · **Discovered in:** T-01 *(D23)* ·
 **Answers:** open question 6
 **Exit:** a decision entry resolving it, then `pytest tests/test_criteria_tree.py`
@@ -434,6 +440,13 @@ it is a requirement nobody agreed to.
 
 Do this before T-16 builds the predicate. Afterwards it is a behavior change with
 eval cases already labeled against it.
+
+**Closed: a rate.** `monthly` governs the sentence's whole three-item list, and
+T-02 had already answered this as open question 1 without anyone connecting it.
+`c5_min_documented_events` is gone; c5 carries c4's `documentation_rate` from the
+same span, sourced rather than provisional. REQ-37 rewritten, open question 6
+closed, and the seven-month run documented in four months is `NOT_MET` in
+`tests/test_criteria_tree.py`. See D24. T-16 builds against the rate.
 
 ---
 

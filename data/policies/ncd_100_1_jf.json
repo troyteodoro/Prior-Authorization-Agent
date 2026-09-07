@@ -154,18 +154,16 @@
       "evaluation": "deterministic",
       "scoped_to": "c3",
       "constants": {
-        "c5_min_documented_events": {
-          "value": 4,
-          "type": "integer",
-          "provisional": true,
-          "open_question": 6,
+        "documentation_rate": {
+          "value": "every_month_of_run",
+          "type": "rate",
           "source": {
             "document_id": "a53028",
             "char_start": 6339,
             "char_end": 6503,
             "quote": "The weight-management program must include monthly documentation of patient’s weight and BMI, current dietary regimen and physical activity (e.g. exercise program)."
           },
-          "note": "The value is monthly documentation across c3's four-month minimum run, so at the minimum run length it is exact. Above it the constant is a floor where the source states a rate, which is permissive in the false-MET direction. The same sentence is rendered per-month for c4 (REQ-40) and as a count here (REQ-37); one sentence, two shapes. T-37 reconciles them (D23)."
+          "note": "REQ-37. The same rate c4 carries, from the same sentence: 'monthly' governs a three-item list, so it does not lapse after weight and BMI. Replaced the count c5_min_documented_events, which was MET on a seven-month run documented in four (D24). c4 and c5 share this rate and differ in their predicate, so they stay separate criteria."
         },
         "requires_both_diet_and_activity": {
           "value": true,
@@ -176,7 +174,7 @@
             "char_end": 6503,
             "quote": "The weight-management program must include monthly documentation of patient’s weight and BMI, current dietary regimen and physical activity (e.g. exercise program)."
           },
-          "note": "One sentence requires both, so c5 counts an event only when diet_documented and activity_documented are both true (REQ-38)."
+          "note": "One sentence requires both, so c5 credits a month only when that month holds an event with diet_documented and activity_documented both true (REQ-38). This is what keeps c5 distinct from c4 now that they share a rate."
         },
         "pharmacological_management_alone_insufficient": {
           "value": true,
