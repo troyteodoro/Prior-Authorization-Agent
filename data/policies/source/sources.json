@@ -1,0 +1,29 @@
+{
+  "extractor_version": 1,
+  "documents": [
+    {
+      "document_id": "ncd_100_1",
+      "title": "NCD 100.1 - Bariatric Surgery for Treatment of Co-Morbid Conditions Related to Morbid Obesity",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/ncd.aspx?ncdid=57",
+      "authority": "national",
+      "publisher": "Centers for Medicare & Medicaid Services",
+      "filename": "ncd_100_1.txt",
+      "sha256": "90d811fe52412f8128df8997428f14215d6a99aa839e6f1bab057e359a399908",
+      "char_count": 30926,
+      "retrieved_at": "2026-09-07T05:44:48.075795+00:00",
+      "extractor_version": 1
+    },
+    {
+      "document_id": "a53028",
+      "title": "Article A53028 - Billing and Coding: Bariatric Surgery Coverage",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=53028",
+      "authority": "mac_jurisdiction_f",
+      "publisher": "Noridian Healthcare Solutions, LLC (A/B MAC, Jurisdiction F)",
+      "filename": "a53028.txt",
+      "sha256": "7c1ae27731a1da5ca2631d70f2712a0360673adcf9258f43d933f43157e338ec",
+      "char_count": 103795,
+      "retrieved_at": "2026-09-07T05:44:48.510173+00:00",
+      "extractor_version": 1
+    }
+  ]
+}

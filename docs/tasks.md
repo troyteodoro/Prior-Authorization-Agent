@@ -34,8 +34,8 @@ policy-supplied constant is present and typed: c2's recency window,
 `c5_min_documented_events`, and `discrepancy_tolerance` per reconciled fact. Any
 provisional value carries `provisional: true` naming the open question it awaits.
 
-### `[ ] T-02` Download and hash policy source documents
-**Serves:** US-2, since spans anchor here · **Answers:** open questions 1, 5
+### `[x] T-02` Download and hash policy source documents
+**Serves:** US-2, since spans anchor here · **Answers:** open questions 1, 2
 **Exit:** `python scripts/verify_sources.py` — every source document present,
 content-hashed, re-downloadable to the same hash, plus `answers.json` resolving
 three questions, each with a quote and a `(document_id, char_start, char_end)`:
@@ -46,6 +46,16 @@ three questions, each with a quote and a `(document_id, char_start, char_end)`:
 
 An answer without a span does not close this task. Criteria-tree constants trace
 to source text the same way a determination's claims do.
+
+**Closed by D21 and D22.** Two documents, stored as extracted text because the
+MCD emits a fresh CSP nonce per response and raw HTML has no reproducible hash:
+`ncd_100_1` (national) and `a53028` (Noridian, **Jurisdiction F — not
+national**). Answers: c5 is **monthly**; c2's window is **12 months**, and the
+same sentence fixes c3's run at four consecutive months; **43775 is not
+nationally covered and not nationally non-covered either** — CMS delegated it to
+the MACs in 2012 and this MAC covers it, so T-25 and E3 are wrong (T-35, T-36).
+Mutation-tested: altering a document, shifting an offset by one, bumping the
+extractor version, and a quote that is not verbatim each fail the gate.
 
 ### `[x] T-03` Repo skeleton and environment
 **Timebox:** two hours
@@ -358,6 +368,35 @@ ends up training on submitted data.
 against AI Studio. `run.py` and `agent/agent.py` import it; all three former
 literals are gone. Each check was mutation-tested: moving the pin, restoring a
 literal default, and re-adding a third identifier each fail the suite.
+
+### `[ ] T-35` Re-point E3 and T-25 at a genuinely non-covered procedure
+**REQ:** 2 · **Blocks:** T-25, and US-1's close · **Discovered in:** T-02 *(D22)*
+**Exit:** `pytest tests/test_resolver.py` — E3's procedure code is one NCD 100.1
+names as non-covered for all Medicare beneficiaries, and the choice cites
+`ncd_100_1` with a span the way T-02's answers do. 43775 appears in a covered
+case instead.
+
+The NCD's national non-covered list is the candidate pool: open adjustable
+gastric banding, open sleeve gastrectomy, open and laparoscopic vertical banded
+gastroplasty, intestinal bypass surgery, gastric balloon. Pick one, span it, and
+carry the code through spec §6's E3 row and T-25's CLI example.
+
+Not folded into T-25: the code is wrong in `docs/spec.md` too, and a task that
+edits a higher-precedence document is its own decision.
+
+### `[ ] T-36` Decide whether sc1 needs a third outcome
+**REQ:** 1, 2 · **Depends:** T-35 · **Discovered in:** T-02 *(D22)*
+**Exit:** a decision entry resolving it, and `pytest tests/test_resolver.py`
+asserting the chosen behavior for a procedure NCD 100.1 leaves to MAC discretion
+— distinct from both `NOT_COVERED` and a covered code, or explicitly and in
+writing not distinct.
+
+REQ-1 returns `NO_POLICY_FOUND`, REQ-2 returns `NOT_COVERED`, and neither
+describes "no national determination, delegated to the contractor." Under a
+single-jurisdiction corpus (D21) the MAC's article settles it and the question
+looks academic; it stops being academic the moment a second jurisdiction exists,
+and Article IV's whole argument is that states which read alike must not merge
+before anyone notices.
 
 ---
 

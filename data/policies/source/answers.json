@@ -1,0 +1,45 @@
+{
+  "resolves": "spec section 9 open questions 1 and 2, and T-25's coverage assumption for 43775",
+  "answered_at": "2026-09-07T05:44:16.226382+00:00",
+  "answers": [
+    {
+      "question_id": "q1",
+      "question": "Does A53028 require diet and activity documentation monthly or once?",
+      "feeds": "c5_min_documented_events",
+      "answer": "monthly",
+      "document_id": "a53028",
+      "quote": "The weight-management program must include monthly documentation of patient\u2019s weight and BMI, current dietary regimen and physical activity (e.g. exercise program).",
+      "note": "Monthly, and over the same run c3 identifies. The same sentence is the source for c4 (BMI documented) and for c5 covering diet and activity together rather than separately.",
+      "char_start": 6339,
+      "char_end": 6503
+    },
+    {
+      "question_id": "q2",
+      "question": "Is c2's recency window 12 months?",
+      "feeds": "c2 recency window",
+      "answer": "12 months",
+      "document_id": "a53028",
+      "quote": "active participation within the last 12 months prior to bariatric surgery in a weight-management program that is supervised by a physician or other health care professionals for a minimum of four consecutive months",
+      "note": "Confirms E5's label of 12. The same sentence also fixes c3's qualifying run at four consecutive months, which is what E4 is labeled against.",
+      "char_start": 6123,
+      "char_end": 6337
+    },
+    {
+      "question_id": "q3",
+      "question": "Is CPT 43775 (laparoscopic sleeve gastrectomy) nationally covered?",
+      "feeds": "sc1 / REQ-2, and T-25's demo case",
+      "answer": "no - not nationally covered, and not nationally non-covered either; delegated to the MACs on and after 2012-06-27, and this MAC covers it",
+      "document_id": "ncd_100_1",
+      "quote": "Effective for services performed on and after June 27, 2012, Medicare Administrative Contractors (MACs) acting within their respective jurisdictions may determine coverage of stand-alone laparoscopic sleeve gastrectomy (LSG) for the treatment of co-morbid conditions related to obesity in Medicare beneficiaries",
+      "note": "D22. The nationally non-covered entry for LSG is scoped 'prior to June 27, 2012'. A53028 records this MAC exercising the discretion, so under this corpus 43775 is covered and runs the full tree. T-25 and E3 assume the opposite; T-35 and T-36 carry the consequence.",
+      "corroborating_quote": {
+        "document_id": "a53028",
+        "quote": "This article is revised to include contractor determined coverage for laparoscopic sleeve gastrectomy (43775).",
+        "char_start": 71315,
+        "char_end": 71425
+      },
+      "char_start": 7426,
+      "char_end": 7737
+    }
+  ]
+}

@@ -708,6 +708,106 @@ go back to loose literals.
 
 ---
 
+## D21 — The policy corpus is two documents, hashed as extracted text, and the jurisdiction is pinned
+
+**Chosen:** `data/policies/source/` holds two documents, stored as extracted
+plain text and content-hashed:
+
+| `document_id` | Source | Supplies |
+|---|---|---|
+| `ncd_100_1` | NCD 100.1, MCD `ncdid=57` | national coverage, and what is *not* nationally decided |
+| `a53028` | Article A53028, MCD `articleid=53028` | every operational constant in the criteria tree |
+
+`scripts/verify_sources.py` fetches with `--fetch` and verifies by default:
+documents present, hashes match, a live re-download re-extracts to the same
+hash, and every answer's quote slices out of the named document at the recorded
+offsets.
+
+**Rejected — hash the raw HTML.** It cannot work. The MCD emits a fresh CSP
+`nonce` on every response, so two fetches one second apart differ. Measured, not
+assumed: the raw pages differ while the extracted text is byte-identical across
+independent fetches. A gate on the raw bytes would fail on the first re-run and
+teach us to stop running it.
+
+**Rejected — store the raw HTML alongside the text.** An artifact whose hash
+cannot be reproduced is an artifact nothing can verify, and keeping one in the
+tree invites a span into it. Article III wants offsets into the text we cite.
+The manifest records the URL and retrieval time instead, which is the part of
+provenance that survives.
+
+**Extraction is structural, not a scrape.** Text is taken from the MCD's
+`document-view-section` containers and normalized — entities decoded, whitespace
+collapsed per line, blank runs capped. Stdlib `html.parser` only; no new
+dependency (working rule 9). The extractor version is recorded in the manifest,
+because changing it changes every offset in `answers.json` and that must break
+the gate rather than pass quietly.
+
+**The jurisdiction is pinned and it is not national.** A53028 is published by
+Noridian Healthcare Solutions, A/B MAC, **Jurisdiction F** — AK, AZ, ID, MT, ND,
+OR, SD, UT, WA, WY. NCD 100.1 sets a national floor and quantifies nothing; every
+number the criteria tree needs comes from Noridian. So the system determines
+coverage *as Noridian would*, and saying otherwise in a review would be a
+misstatement. A different MAC is a different criteria tree over the same NCD.
+
+**Why two documents rather than one.** NCD 100.1 contains the word "month"
+exactly once, in an unrelated passage about supplemented fasting, and contains
+"supervis", "consecutive", "documented" and "duration" zero times. Its only
+prior-treatment requirement is the unquantified "previously unsuccessful with
+medical treatment for obesity". A criteria tree built from the NCD alone could
+not express c2, c3, c4 or c5 at all. The spec anticipated this — open question 1
+already named A53028 — and this entry records that it is load-bearing rather
+than supplementary.
+
+**Answers carry spans or they do not count.** Each of the three answers records
+`(document_id, char_start, char_end)` plus the verbatim quote, and the gate
+re-slices the document and compares. An answer whose quote does not appear
+exactly once in its document fails the fetch, so a paraphrase cannot become a
+citation.
+
+**Reverses if:** the target jurisdiction changes, or a second MAC is added. Then
+`document_id` stops being unique per question and the answer set grows a
+jurisdiction key. It does not reverse by editing the constants in place —
+D3's argument holds, a coverage-rule change arrives as a reviewable diff.
+
+---
+
+## D22 — 43775 is not nationally covered, and that is not `NOT_COVERED`
+
+**Found while closing T-02**, against source text rather than memory.
+
+NCD 100.1 places laparoscopic sleeve gastrectomy in **three** states, not two:
+
+- nationally non-covered **only** "prior to June 27, 2012";
+- on and after that date, "Medicare Administrative Contractors (MACs) acting
+  within their respective jurisdictions **may determine coverage** of stand-alone
+  laparoscopic sleeve gastrectomy";
+- absent from section B, the nationally covered list, entirely.
+
+And A53028 records that this MAC exercised that discretion: "This article is
+revised to include contractor determined coverage for laparoscopic sleeve
+gastrectomy (43775)". Under the document pair this project adjudicates against,
+**43775 is covered** and runs the full criteria tree.
+
+**Consequence:** T-25 and E3 are wrong as written. Both assume 43775 exits
+through sc1 as `NOT_COVERED`, chosen from memory and explicitly flagged for T-02
+to confirm. T-02 confirms the opposite. E3 needs a code that is nationally
+non-covered for all beneficiaries — the NCD names open adjustable gastric
+banding, open sleeve gastrectomy, open and laparoscopic vertical banded
+gastroplasty, intestinal bypass surgery, and gastric balloon. Picking one and
+re-pointing T-25 is **T-35**.
+
+**Why this is not a small correction.** "Not nationally covered" and
+"nationally non-covered" read alike and are opposite determinations — one
+delegates, the other denies. Shipping 43775 as `NOT_COVERED` would have produced
+a confidently wrong denial for a procedure the governing MAC covers, and US-1's
+acceptance case would have certified it. That is Article IV's collapse in a new
+place: the states that must not merge here are *denied* and *not decided
+nationally*, and REQ-1's `NO_POLICY_FOUND` is the closer neighbor of the two.
+Whether sc1 needs a third outcome is **T-36**, and it is a spec question, not an
+implementation detail.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
