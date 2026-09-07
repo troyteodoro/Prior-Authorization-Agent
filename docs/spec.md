@@ -80,6 +80,16 @@ patient-data modules import no policy corpus and no index over it. The only type
 crossing is the compiled `Criterion`, enforced by an import-graph assertion.
 *(Art. VI)*
 
+**REQ-41** All data reaches the system through two storage ports, `PolicyStore`
+and `PatientStore`. No module outside a store adapter opens a file path, holds a
+connection, or names a storage location. The ports are separate types with
+separate implementations; no single object satisfies both. *(Art. VI, D25)*
+
+The ports are what makes a production database a second adapter rather than a
+rewrite. They are also how Article VI stops being a lint check: two planes become
+two connections, and a module that could read both would have to hold both
+handles to do it.
+
 ### Evidence and citation
 
 **REQ-5** A criterion verdict of `MET` or `NOT_MET` carries at least one span as

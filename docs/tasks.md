@@ -89,10 +89,54 @@ The probe hits `/list-apps`, not `/`: on 2.8.0 `GET /` returns 307 to `/dev-ui/`
 
 Closes before you sleep on day one.
 
-### `[ ] T-09` Data contracts as Pydantic models
-**REQ:** 5, 22 · **Depends:** T-00
-**Exit:** `pytest tests/test_schemas.py` — `Criterion`, `EvidenceSpan`,
-`CriterionVerdict`, `CriterionResult`, `Determination`, `WmEvent`, `CallMetrics`.
+### `[x] T-09` Data contracts and the two storage ports
+**REQ:** 5, 22, 33, 41 · **Depends:** T-00 · **Blocks:** everything
+**Exit:** `pytest tests/test_schemas.py` —
+- the models: `Criterion`, `EvidenceSpan`, `CriterionVerdict`, `CriterionResult`,
+  `Determination`, `WmEvent`, `CallMetrics`
+- `Document` carrying text and `sha256`, so a span's target is addressable and
+  its content verifiable without touching whatever stored it
+- two Protocols, `PolicyStore` and `PatientStore`, with the methods D25 names
+- file-backed implementations of both, reading the artifacts that exist today:
+  `LocalPolicyStore` over `data/policies/` returns the T-01 tree and the T-02
+  corpus with hashes matching `sources.json`; `LocalPatientStore` is defined and
+  raises `NotImplementedError` until T-04 lands bundles for it to read
+- no single class satisfies both Protocols, asserted directly *(REQ-41)*
+- a round trip: `get_document()` then slice at a T-02 answer's offsets returns
+  that answer's quote — the storage port preserves Article III's guarantee
+
+**Scope changed by D25** *(was: the seven models alone)*. Troy's end state is a
+production deployment against a code database and a patient database. The ports
+are the whole of what that costs the code written now; everything above an
+adapter is unchanged when the adapter becomes Postgres and FHIR. Defined here it
+is a few hours. Defined after T-25 it is a rewrite of US-1 and US-2.
+
+Criteria trees do **not** move into a store's write path. Article VII wants a
+diff and a reviewer for every clinical rule change, and `get_tree()` reading a
+deploy-time projection satisfies it while an `UPDATE` does not. *(D25)*
+
+**Closed.** `pa_agent/contracts.py` and `pa_agent/stores/{policy,patient}.py`;
+39 tests in `tests/test_schemas.py`. Three invariants are enforced by validators
+rather than by convention, so the objects that break them cannot be built: a
+`Document` whose text does not hash to its record (REQ-7), a span that is
+reversed or negative (Art. III), and a `CriterionResult` whose spans disagree
+with its verdict in **either** direction (REQ-5 — an abstention carrying a
+citation is refused as firmly as a `MET` carrying none).
+
+`Criterion.require()` raises on a provisional constant instead of returning
+`None`, which makes "T-13 must not invent a default" mechanical rather than
+advisory. Both unimplemented halves raise and name their task —
+`LocalPolicyStore.resolve` cites T-38, `LocalPatientStore` cites T-04 — because
+a store that returned `None` or `[]` would report `NO_POLICY_FOUND` for all of
+Medicare, or manufacture E7 for every patient, while every downstream test
+agreed with it.
+
+Mutation-tested six ways, each caught by the test that should catch it: dropping
+the REQ-5 validator, adding `ERROR` to `CriterionVerdict` without doing T-26,
+making `require()` return a provisional value, a class satisfying both
+Protocols, a package-level re-export in `stores/__init__.py`, and
+`get_document` hashing the file it just read instead of checking it against
+`sources.json`.
 
 ### `[ ] T-10` Eval harness with US-1 acceptance cases, failing
 **Depends:** T-09
@@ -352,11 +396,17 @@ manifest ground truth
 Makes D4's reversal condition measurable against the 0.85 kill criterion.
 
 ### `[ ] T-32` Plane separation check
-**REQ:** 33 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
+**REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
 **Exit:** `pytest tests/test_planes.py` — walks the import graph from the policy
 modules and finds no path to a patient-data module, walks it from the
 patient-data modules and finds no path to the policy corpus or an index over it,
 and asserts `Criterion` is the only type crossing
+
+Second assertion, added by D25: no module outside `pa_agent/stores/` opens a file
+path, holds a connection, or names a storage location, and no class satisfies
+both Protocols. Under the production target the planes are two connections rather
+than two package trees, and an assertion that only reads imports would pass a
+module that reaches the wrong database at runtime.
 
 ### `[x] T-34` Pin the model a measurement runs against
 **Guards:** D19 · **Depends:** none · **Discovered in:** T-00
@@ -447,6 +497,36 @@ T-02 had already answered this as open question 1 without anyone connecting it.
 same span, sourced rather than provisional. REQ-37 rewritten, open question 6
 closed, and the seven-month run documented in four months is `NOT_MET` in
 `tests/test_criteria_tree.py`. See D24. T-16 builds against the rate.
+
+### `[ ] T-38` Procedure sets in the criteria tree, and REQ-2 rewritten to read them
+**REQ:** 1, 2 · **Depends:** T-35 · **Blocks:** T-24, and US-1's close ·
+**Discovered in:** a design walkthrough, not a task *(D26)*
+**Timebox:** two hours
+**Exit:** `pytest tests/test_criteria_tree.py` —
+- the tree carries three named procedure sets: nationally covered, nationally
+  non-covered, and contractor-determined
+- every code in every set carries a `(document_id, char_start, char_end)` that
+  slices back to a quote naming that code, the way D23 requires of every other
+  constant in the file
+- the three sets are pairwise disjoint, so no code has two answers
+- 43775 is in the contractor-determined set and in neither of the others *(D22)*
+- the code T-35 picked for E3 is in the nationally non-covered set
+- a code in the non-covered set and a code in none of the three are
+  distinguishable **from the tree alone**, with no resolver involved — the test
+  asserts the two conditions are different lookups and not one absence
+- REQ-2 in `docs/spec.md` reads membership in the non-covered set; REQ-1's
+  `NO_POLICY_FOUND` covers the code in no set
+
+`covered_procedures` is named in REQ-2 and exists nowhere else in the repository.
+Worse than missing: absence from a single covered list means *denied*,
+*delegated to the MAC*, and *no bariatric policy applies* all at once, and REQ-2
+answers `NOT_COVERED` to all three. D22 caught one code in the wrong bucket; this
+is the bucket structure. *(D26)*
+
+Not folded into T-24 for the reason T-37 gives: a requirement changed by the task
+that implements it is a requirement nobody agreed to. Not merged into T-36
+because T-36 decides what the resolver returns and this decides what the tree
+records, and T-36's exit needs a resolver that does not exist yet.
 
 ---
 

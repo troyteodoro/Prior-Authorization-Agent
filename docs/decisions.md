@@ -963,6 +963,180 @@ and the count returns, sourced this time rather than provisional.
 
 ---
 
+## D25 — Storage is two ports defined before T-09, and git stays the source of truth for policy
+
+**Target set by Troy:** the end state is a production deployment reading a
+database of insurance codes and a separate database of patient data. This entry
+decides what that requires of the code being written now, and what it is not
+allowed to change.
+
+**Chosen:** T-09 defines two storage protocols and nothing else changes shape.
+
+```
+PolicyStore   resolve(code) -> PolicyRef | None
+              get_tree(policy_version_id) -> CriteriaTree
+              get_document(document_id) -> Document        # text + sha256
+
+PatientStore  get_observations(patient_id) -> [Observation]
+              get_conditions(patient_id) -> [Condition]
+              get_notes(patient_id) -> [Document]
+```
+
+Local implementations read the repository as it stands today —
+`data/policies/ncd_100_1_jf.json`, the hashed corpus in
+`data/policies/source/`, and the Synthea bundles T-04 lands. Production
+implementations are a policy database and a FHIR-backed patient store. No module
+outside an adapter opens a file or holds a connection. That requirement is
+**REQ-41**, added to `docs/spec.md` by this entry, and T-32 grows a second
+assertion to enforce it.
+
+**Why the seam lands now.** T-09 is what most other work sits behind, and T-24
+and T-12 are the two tasks that would otherwise reach for storage directly.
+Defined before T-09, production is a second adapter. Defined after T-25, it is a
+rewrite of the resolver, the FHIR extractor and determination assembly — the
+whole of US-1 and US-2. The cost is a few hours now against a task that has not
+been started, and it is the last moment at which that price holds.
+
+**Two ports, not one.** Article VI is the reason. A single `Store` handle is a
+module that can reach both planes, and REQ-33's import-graph assertion stops
+being provable the moment such a type exists. Two protocols, two adapters, two
+connections, and the only object crossing between them is still the compiled
+`Criterion`. The production shape is *more* constitutional than the local one:
+plane separation becomes a connection boundary rather than a lint.
+
+**What the database is not allowed to hold: criteria trees.** Article VII —
+"criteria trees live in the repo. A change to a clinical rule arrives as a diff
+with a reviewer. No policy change reaches a determination without human
+approval." An `UPDATE` on a criteria-tree row is a clinical rule change with no
+diff and no reviewer, which is precisely the event the article exists to prevent.
+The split is therefore:
+
+| In the database | In git |
+|---|---|
+| code → policy mapping | criteria trees |
+| source documents, content-hashed, immutable, versioned | predicates |
+| emitted determinations, audit trail | |
+
+If trees must be queryable at runtime, the database holds a **read-only
+projection synced at deploy time** with git as the source of truth. Same data at
+the query, approval gate intact. `get_tree()` is on `PolicyStore` either way, so
+this choice is invisible above the adapter.
+
+**A defect this fixes.** REQ-7 says a document whose content hash changes
+invalidates every span into it. Under files that is an outage every time a MAC
+revises an article. Under immutable versioned document rows it is a no-op: an
+emitted determination stays pinned to the document version it cited, which is
+what REQ-4 already promises when it requires a determination be replayable.
+
+**Rejected — read files directly and retrofit the seam later.** The retrofit
+touches every module that consumes data, which by then is all of them, and it
+lands after the eval set is labeled against their behavior. The current
+`file_path` reads are three or four call sites that do not exist yet.
+
+**Rejected — put the criteria trees in the database.** Article VII, stated
+above. Not a tradeoff and not negotiable at the prompt level; a task that cannot
+close without it is a wrong task.
+
+**Rejected — build an actual database now.** Working rule 9: no infrastructure
+the project has not earned. A Protocol and a file-backed implementation are not
+infrastructure — no GCP, no Terraform, no container, no new dependency. The
+production adapter is written when there is a production environment to point it
+at, and spec §3's "local execution, no deployment" survives this entry unchanged.
+
+**Rejected — a generic repository or ORM layer.** The ports are narrow on
+purpose. Six methods that name exactly what this system reads are auditable
+against Article VI by reading them; a generic query interface is not, because
+what crosses the boundary becomes a runtime property of the caller.
+
+**What this does not fix.** Code → policy lookup was never the part that did not
+scale. c1 through c5 are hand-written Python for bariatric surgery's shape, so
+policy #2 needs a developer and not a row. Two databases and ten thousand codes
+produce a system that can resolve ten thousand policies and adjudicate one. The
+predicate DSL that would change that is a separate problem, deliberately not
+opened here, and this entry should not be read as having addressed it.
+
+**Reverses if:** the production patient store turns out not to expose stable
+document identity — notes that cannot be addressed and re-fetched byte-identical.
+Article III's spans have nowhere to anchor in that case, and the failure is
+upstream of the port design. Measure it against one real store before writing the
+production adapter.
+
+---
+
+## D26 — REQ-2 names a field no artifact carries, and its absence test collapses three outcomes into one
+
+**Found in a design walkthrough, not while closing a task.** Recorded that way
+because the provenance is the point: nothing on the board would have caught this
+until T-24 tried to run, and T-24's exit condition would have been rewritten to
+fit whatever it found.
+
+Two defects, one root.
+
+**1. The field does not exist.** `covered_procedures` appears exactly once in the
+repository — in REQ-2 — and in no data file.
+`data/policies/ncd_100_1_jf.json` carries `policy_version_id`, `jurisdiction`,
+`sources`, `decision_expression`, `criteria` and `reconciled_facts`, and no
+procedure list of any kind. T-24's exit asserts that E3 returns `NOT_COVERED` and
+an unknown code returns `NO_POLICY_FOUND`. There is no artifact either assertion
+can read.
+
+**2. Absence carries three meanings and REQ-2 returns one verdict for all
+three.** A code can be missing from a covered list because:
+
+- NCD 100.1 names it **nationally non-covered** for all beneficiaries — open
+  adjustable gastric banding, open sleeve gastrectomy, open and laparoscopic
+  vertical banded gastroplasty, intestinal bypass, gastric balloon. A denial.
+- CMS **delegated it to the MACs** and made no national determination. D22's
+  finding about 43775, and D22 is explicit that this is not `NOT_COVERED`.
+- It is **not a bariatric procedure at all** and no bariatric policy governs it.
+  REQ-1's `NO_POLICY_FOUND`.
+
+REQ-2 as written answers `NOT_COVERED` to all three. That is Article IV's
+collapse sitting in the resolver, one layer beneath where D22 found it: D22
+caught a single code filed in the wrong bucket, and this is the bucket structure
+having too few buckets. The consequence is the one D22 already named — a
+confidently wrong denial for a procedure the governing MAC covers, or for a
+procedure this policy was never about.
+
+**Chosen:** **T-38.** The criteria tree carries the procedure sets explicitly,
+every code spanned to source the way D23 requires of every other constant, and
+REQ-2 is rewritten to test membership in the non-covered set rather than absence
+from the covered set.
+
+**Rejected — fold it into T-24.** T-24 implements REQ-2. A task that also
+supplies the data REQ-2 names is a task deciding what REQ-2 means, which is the
+move working rule 5 exists to prevent and which D24 spent an entry arguing
+against. It also edits `docs/spec.md`, and T-35's note already establishes that a
+task editing a higher-precedence document is its own task.
+
+**Rejected — add a bare `covered_procedures: [...]` and move on.** It clears the
+only failing grep and preserves defect 2 intact. The resolver would still deny a
+code no bariatric policy governs, and no acceptance case would see it: E3 is the
+only case exercising sc1, and E3 is a genuinely non-covered code under either
+design. A defect the eval set structurally cannot catch is the kind that has to
+be caught in the tree.
+
+**Rejected — merge it into T-36.** T-36 decides what the resolver *returns* for a
+delegated procedure; T-38 decides what the tree *records*. Splitting them lets
+T-38 land the source faithfully without pre-empting T-36 — the tree records a
+contractor-determined set as a fact about the corpus whether or not the resolver
+gives that set its own outcome. The exit conditions come apart cleanly too: T-38
+runs against `tests/test_criteria_tree.py`, which has existed since T-01, while
+T-36 runs against `tests/test_resolver.py`, which does not exist until T-24.
+Merged, the task could not close until the thing it blocks was built.
+
+**Ordering:** T-35 first, so the non-covered code it picks and spans is settled
+before T-38 builds the list around it; then T-38; then T-24, which can finally
+read something. T-36 adds its case to the resolver suite afterwards. T-38 is on
+US-1's critical path — T-24 cannot close without it.
+
+**Reverses if:** T-36 rules that a delegated procedure is indistinguishable from
+a covered one and no second jurisdiction is ever added. The contractor-determined
+set then has no consumer and folds into the covered set. It stays in the tree
+either way, because it is what the source says, but it stops being load-bearing.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
