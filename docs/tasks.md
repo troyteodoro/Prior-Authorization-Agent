@@ -328,7 +328,7 @@ modules and finds no path to a patient-data module, walks it from the
 patient-data modules and finds no path to the policy corpus or an index over it,
 and asserts `Criterion` is the only type crossing
 
-### `[ ] T-34` Pin the model a measurement runs against
+### `[x] T-34` Pin the model a measurement runs against
 **Guards:** D19 · **Depends:** none · **Discovered in:** T-00
 **Timebox:** one hour
 **Exit:** `pytest tests/test_model_pin.py` —
@@ -353,6 +353,11 @@ Per D5 the entry naming the pinned model also has to say which tier it runs
 against, since development is AI Studio and final evals are Vertex — the pin is
 one identifier with two credentials behind it, and conflating them is how a demo
 ends up training on submitted data.
+
+**Closed by D20.** `pa_agent/model_pin.py` pins `gemini-3.5-flash-lite`, measured
+against AI Studio. `run.py` and `agent/agent.py` import it; all three former
+literals are gone. Each check was mutation-tested: moving the pin, restoring a
+literal default, and re-adding a third identifier each fail the suite.
 
 ---
 

@@ -42,7 +42,21 @@ RESULTS_PATH = SPIKE_DIR / "results.json"
 DECISIONS_PATH = REPO_ROOT / "docs" / "decisions.md"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
 
-DEFAULT_MODEL = "gemini-2.5-flash-lite"
+# Run directly (`python spike/spike_001/run.py`) and sys.path[0] is this
+# directory, not the repo root, so `pa_agent` is not importable. Same insertion
+# scripts/check_skeleton.py makes, for the same reason: no installed package
+# yet, and packaging to save three lines is infrastructure the project has not
+# earned (working rule 9).
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from pa_agent.model_pin import PINNED_MODEL  # noqa: E402
+
+# D20: the model measured on is the pinned one, never a literal written here.
+# The mismatch this replaces -- a default naming one model while results.json
+# recorded another -- would have overwritten D19 on a bare re-run with nothing
+# failing.
+DEFAULT_MODEL = PINNED_MODEL
 DEFAULT_RUNS = 3
 EXPECTED_NOTE_COUNT = 5
 
@@ -1079,7 +1093,12 @@ def verify() -> int:
     return 0
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """Built here rather than inline in `main` so T-34's test can ask it what a
+    bare run would measure on, instead of reading `DEFAULT_MODEL` and assuming
+    the two agree. The assumption that a constant matches the value actually
+    used is the exact class of drift D20 exists to catch.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--verify",
@@ -1093,7 +1112,11 @@ def main() -> int:
     )
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--runs", type=int, default=DEFAULT_RUNS)
-    args = parser.parse_args()
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
 
     if args.verify:
         return verify()

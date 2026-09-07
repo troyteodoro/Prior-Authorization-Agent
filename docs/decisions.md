@@ -646,6 +646,68 @@ written for the spike. That is T-15's first job, not a reason to hold T-00 open.
 
 ---
 
+## D20 — One module names the model, and the pin is checked against the record
+
+**Chosen:** `pa_agent/model_pin.py` is the only tracked Python file permitted to
+write a model identifier. It pins `gemini-3.5-flash-lite`. Every other module
+imports it. `tests/test_model_pin.py` asserts two things:
+
+1. the model a bare `python spike/spike_001/run.py` would measure on is the model
+   `spike/spike_001/results.json` records;
+2. no model identifier appears as a string literal in tracked Python outside the
+   pin module.
+
+**Rejected — edit `DEFAULT_MODEL` in `run.py` and stop.** That repairs today's
+mismatch and leaves tomorrow's. The defect is not that the strings differ, it is
+that nothing notices when they do: three model identifiers sat in two files
+disagreeing with each other and with the recorded measurement for a whole commit,
+and both gates returned zero the entire time, because each gate was internally
+consistent with the file it read. A one-line fix restores that condition with the
+strings temporarily equal.
+
+**Rejected — carry the model in `.env`.** `.env` is gitignored (working rule 10),
+so the identifier a recorded measurement ran against would live outside the repo,
+absent from the diff and unrecoverable from history. D3's argument applies
+unchanged: a value that changes what a determination says belongs in git.
+
+**Why the pin is `gemini-3.5-flash-lite` and not `gemini-2.5-flash-lite`.**
+3.5-flash-lite is the model that produced D19. Pinning `run.py`'s existing
+`DEFAULT_MODEL` would make the code self-consistent and the finding false — no
+measurement on 2.5 exists anywhere in this repo. Between a recorded number and an
+unrecorded default, the number wins. The same reasoning retires the third
+literal: `pa_agent/agent/agent.py` carried an undocumented `gemini-3.5-flash`,
+which is `adk create` scaffolding T-15 replaces and was never measured on
+anything.
+
+**Tier, per D5.** D19 was measured against **AI Studio**, on a `GOOGLE_API_KEY`
+— the retry loop in `run.py` exists because of that tier's 429/503 behavior under
+load. The pin is one identifier with two credentials behind it: a Vertex run uses
+the same model name with Vertex credentials, and D5 requires final evals and any
+demo go that way. So **D19's numbers are AI Studio numbers**, and a Vertex run of
+the same corpus is a new measurement, not a confirmation of this one. Conflating
+the two is how a demo ends up submitting data to the tier that trains on it.
+
+**The check does not forbid re-measurement.** A deliberate move to another model
+updates `results.json` and the pin together and the test passes again. What it
+forbids is the two diverging in silence, which is the only failure mode that
+leaves a recorded finding attributed to a model that never produced it.
+
+**Cost.** Two, both accepted. `run.py` gains a `sys.path` insertion of the repo
+root to import the pin, matching what `scripts/check_skeleton.py` already does —
+there is no installed package yet, and adding packaging to avoid three lines
+would be infrastructure the project has not earned (working rule 9). And the
+literal scan reads string constants but skips docstrings, so prose may still name
+a model: a docstring cannot be passed to a model call, which makes a stale one a
+documentation defect rather than a provenance defect. Scanning them too would
+tax every honest sentence about D19 in this repo.
+
+**Reverses if:** a second model is legitimately required — a cheaper verifier
+model under Article V is the likely one. Then the pin module holds two named
+constants and each is checked against the artifact that records it. It does not
+go back to loose literals.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

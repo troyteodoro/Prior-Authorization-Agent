@@ -117,11 +117,20 @@ docs/
 
 ## Current state
 
-**T-03 and T-00 are closed.** `python scripts/check_skeleton.py` returns zero:
+**T-03, T-00 and T-34 are closed.** `python scripts/check_skeleton.py` returns zero:
 target layout present, `google-adk` at 2.8.0, `pa_agent.agent` imports with a
 reachable `root_agent`, and a spawned `adk web` answers 200 on `/list-apps`
 naming the agent before the script terminates it.
 `python spike/spike_001/run.py --verify` returns zero and spends no model call.
+`pytest tests/test_model_pin.py` returns zero.
+
+**One module names the model (D20).** `pa_agent/model_pin.py` pins
+`gemini-3.5-flash-lite` — the model D19 was measured on — and it is the only
+tracked Python file allowed to write a model identifier. Everything else imports
+`PINNED_MODEL`. T-34's test asserts a bare `python spike/spike_001/run.py` would
+measure on the model `results.json` records, and scans tracked Python for stray
+literals. **D19's numbers are AI Studio numbers**; a Vertex run of the same
+corpus is a new measurement, not a confirmation.
 
 **D2 survives first contact (D19).** Three complete runs of five hand-labeled
 notes on `gemini-3.5-flash-lite` at temperature 0: event precision 1.000, recall
@@ -139,14 +148,9 @@ offsets directly is dead.
 
 Outside the spike the skeleton is still empty scaffolding.
 `pa_agent/agent/agent.py` remains the `adk create` template — a generic
-assistant, not any part of the design. No criteria tree, no schemas, no policy
-data, no tests.
-
-**T-34 is open and holds both loose ends.** `DEFAULT_MODEL` in
-`spike/spike_001/run.py` is `gemini-2.5-flash-lite` while D19 was measured on
-`gemini-3.5-flash-lite`, so a bare `run.py` re-measures on a different model and
-overwrites the finding without failing any gate; and the working tree carries an
-undocumented model change to `pa_agent/agent/agent.py`.
+assistant, not any part of the design, though it now reads the pin instead of a
+literal. No criteria tree, no schemas, no policy data, and the only test is
+T-34's.
 
 Active task: **none. Pick the next one before writing code.** T-15 is now
 unblocked, and T-09's schemas are what most other work sits behind.
