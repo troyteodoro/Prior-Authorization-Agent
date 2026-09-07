@@ -117,12 +117,34 @@ docs/
 
 ## Current state
 
-**T-03, T-00 and T-34 are closed.** `python scripts/check_skeleton.py` returns zero:
+**T-03, T-00, T-34 and T-02 are closed.** `python scripts/check_skeleton.py` returns zero:
 target layout present, `google-adk` at 2.8.0, `pa_agent.agent` imports with a
 reachable `root_agent`, and a spawned `adk web` answers 200 on `/list-apps`
 naming the agent before the script terminates it.
 `python spike/spike_001/run.py --verify` returns zero and spends no model call.
-`pytest tests/test_model_pin.py` returns zero.
+`pytest tests/test_model_pin.py` and `python scripts/verify_sources.py` return
+zero. The latter hits the network; `--offline` skips the re-download and does not
+close T-02.
+
+**The policy corpus is two documents and one jurisdiction (D21).**
+`data/policies/source/` holds `ncd_100_1` (national) and `a53028` (Noridian
+Healthcare Solutions, A/B MAC, **Jurisdiction F**), stored as extracted text —
+the MCD emits a fresh CSP nonce per response, so raw HTML has no reproducible
+hash. NCD 100.1 quantifies **nothing**: no months, no visit counts, no recency.
+Every constant in the criteria tree comes from A53028, so this system determines
+coverage *as Noridian would*, and a different MAC is a different tree over the
+same NCD. Say that plainly in a review rather than calling the thresholds CMS's.
+
+Answered with spans in `answers.json`: c5 documentation is **monthly**; c2's
+window is **12 months**, and the same sentence fixes c3's run at **four
+consecutive months**.
+
+**43775 is not the non-covered case (D22).** NCD 100.1 non-covers laparoscopic
+sleeve gastrectomy only *"prior to June 27, 2012"*; after that it is delegated to
+the MACs, and A53028 records this MAC covering it. E3 and T-25 assume the
+opposite. **T-35** re-points them at a genuinely non-covered code; **T-36** asks
+whether "left to the contractor" is a third sc1 outcome. Do not close US-1 on the
+current E3 code.
 
 **One module names the model (D20).** `pa_agent/model_pin.py` pins
 `gemini-3.5-flash-lite` — the model D19 was measured on — and it is the only
@@ -155,7 +177,6 @@ T-34's.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08, which sits behind T-02. The tasks whose
-dependencies are actually satisfied are **T-01, T-02, T-04 and T-09**. T-02 is an
-enabler the board places before any story, and it settles the coverage assumption
-T-25 currently makes from memory, so US-1 should not close ahead of it.
+closed. T-11 sits behind T-08. With T-02 closed, the ready set is **T-01, T-04,
+T-08, T-09 and T-35**. T-01 is the natural next one — T-02 just handed it every
+constant it needs, with spans.

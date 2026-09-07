@@ -1,0 +1,3529 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02101 - MAC A
+
+J - F
+
+Alaska
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02102 - MAC B
+
+J - F
+
+Alaska
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02201 - MAC A
+
+J - F
+
+Idaho
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02202 - MAC B
+
+J - F
+
+Idaho
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02301 - MAC A
+
+J - F
+
+Oregon
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02302 - MAC B
+
+J - F
+
+Oregon
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02401 - MAC A
+
+J - F
+
+Washington
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+02402 - MAC B
+
+J - F
+
+Washington
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03101 - MAC A
+
+J - F
+
+Arizona
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03102 - MAC B
+
+J - F
+
+Arizona
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03201 - MAC A
+
+J - F
+
+Montana
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03202 - MAC B
+
+J - F
+
+Montana
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03301 - MAC A
+
+J - F
+
+North Dakota
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03302 - MAC B
+
+J - F
+
+North Dakota
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03401 - MAC A
+
+J - F
+
+South Dakota
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03402 - MAC B
+
+J - F
+
+South Dakota
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03501 - MAC A
+
+J - F
+
+Utah
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03502 - MAC B
+
+J - F
+
+Utah
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03601 - MAC A
+
+J - F
+
+Wyoming
+
+Noridian Healthcare Solutions, LLC
+
+A and B MAC
+
+03602 - MAC B
+
+J - F
+
+Wyoming
+
+Article Information
+
+General Information
+
+Source Article ID
+
+N/A
+
+Article ID
+
+A53028
+
+Original ICD-9 Article ID
+
+Not Applicable
+
+Article Title
+
+Billing and Coding: Bariatric Surgery Coverage
+
+Article Type
+
+Billing and Coding
+
+Original Effective Date
+
+10/01/2015
+
+Revision Effective Date
+
+10/01/2024
+
+Revision Ending Date
+
+09/25/2025
+
+Retirement Date
+
+09/25/2025
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+CMS National Coverage Policy
+N/A
+
+Article Guidance
+
+Article Text
+
+Background
+Coverage of bariatric surgery is described in the Internet Only Manual (IOM) Medicare National Coverage Determinations Manual, Publication 100-03, Section 100.1 Bariatric Surgery for Treatment of Co-morbid Conditions Related to Morbid Obesity and Medicare Claims Processing Manual, Publication 100-04, Chapter 32, Section 150.
+
+The following coding guidance is published based on the requirements in effect as of the effective date of this article and no longer addresses past coverage. Prior coverage may be different depending upon the date of service and can be obtained from the National Coverage Determination 100.1.
+
+As of the effective date of this article revision Medicare (CMS) has established by NCD 100.1 that the following bariatric surgery procedures are reasonable and necessary under specified conditions for the treatment of complications of morbid obesity.
+1. Roux-en-Y Gastric Bypass (RYGBP)
+2. Biliopancreatic Diversion with Duodenal Switch (BPD/DS) or Gastric Reduction Duodenal Switch (BPD/GRDS)
+3. Laparoscopic Adjustable Gastric Banding (AGB)
+4. Laparoscopic Sleeve Gastrectomy
+
+To be eligible for bariatric surgery the patient must have a body-mass index (BMI) ≥ 35, and at least one co-morbidity related to obesity. Further, the documentation must clearly demonstrate the failure of reasonable non-invasive/non-surgical treatments for obesity with which the beneficiary has been compliant.
+
+Noridian considers the following, based on national guidelines for bariatric care, to be the minimum specifications to be documented in the patient record in order to demonstrate the beneficiary has been previously unsuccessful with medical treatment for obesity as required by the NCD:
+
+1. The beneficiary has been previously unsuccessful with medical treatments for obesity. The latter includes but is not limited to: active participation within the last 12 months prior to bariatric surgery in a weight-management program that is supervised by a physician or other health care professionals for a minimum of four consecutive months. The weight-management program must include monthly documentation of patient’s weight and BMI, current dietary regimen and physical activity (e.g. exercise program).
+2. Physician-supervised programs consisting exclusively of pharmacological management are not sufficient to meet this requirement.
+3. A thorough multidisciplinary evaluation is required within the previous six months which includes ALL of the following:
+a. an evaluation by a bariatric surgeon recommending surgical treatment, including a description of the proposed procedure(s)
+b. a separate medical evaluation from a physician other than a surgeon and preferably the beneficiary’s primary care physician that includes both a recommendation for bariatric surgery as well as a medical clearance for the proposed bariatric surgery
+c. mental health and psychosocial clearance for bariatric surgery by a mental health provider including a statement regarding motivation and ability to follow post-surgical requirements
+d. a nutritional evaluation by a physician or registered dietician.
+
+Noridian Covered Inpatient Facility ICD-10-CM Procedure Codes for Laparoscopic Sleeve Gastrectomy: 0DV64CZ
+
+Nationally Covered Inpatient Facility ICD-10-CM Procedure Codes
+
+For services on or after October 1, 2014, the following ICD-10 procedure codes are covered for bariatric surgery:
+
+Laparoscopic gastroenterostomy (laparoscopic Roux-en-Y), or ONE of the following ICD-10-PCS codes:
+
+0DB64Z3
+0DV64CZ
+0D16479
+0D1647A
+0D1647B
+0D1647L
+0D164J9
+0D164JA
+0D164JB
+0D164JL
+0D164K9
+0D164KA
+0D164KB
+0D164KL
+0D164Z9
+0D164ZA
+0D164ZB
+0D164ZL
+
+Other gastroenterostomy (open Roux-en-Y), or ONE of the following ICD-10-PCS codes:
+
+0D16079
+0D1607A
+0D1607B
+0D1607L
+0D160J9
+0D160JA
+0D160JB
+0D160JL
+0D160K9
+0D160KA
+0D160KB
+0D160KL
+0D160Z9
+0D160ZA
+0D160ZB
+0D160ZL
+0D16879
+0D1687A
+0D1687B
+0D1687L
+0D168J9
+0D168JA
+0D168JB
+0D168JL
+0D168K9
+0D168KA
+0D168KB
+0D168KL
+0D168Z9
+0D168ZA
+0D168ZB
+0D168ZL
+
+To describe either laparoscopic or open BPD with DS or GRDS, one code from each of the following three groups must be on the claim:
+
+Group 1:
+0DB60Z3
+0DB60ZZ
+0DB63Z3
+0DB63ZZ
+0DB67Z3
+0DB67ZZ
+0DB68Z3
+
+Group 2:
+One code from Groups A-C below is required.
+
+Group A:
+0DB80ZZ
+0DB90ZZ
+0DBB0ZZ
+
+Group B:
+0D160ZB
+
+Group C:
+0F190Z3
+
+Group 3:
+0D19079
+0D1907A
+0D1907B
+0D190J9
+0D190JA
+0D190JB
+0D190K9
+0D190KA
+0D190KB
+0D190Z9
+0D190ZA
+0D190ZB
+0D19479
+0D1947A
+0D1947B
+0D194J9
+0D194JA
+0D194JB
+0D194K9
+0D194KA
+0D194KB
+0D194Z9
+0D194ZA
+0D194ZB
+0D19879
+0D1987A
+0D1987B
+0D198J9
+0D198JA
+0D198JB
+0D198K9
+0D198KA
+0D198KB
+0D198Z9
+0D198ZA
+0D198ZB
+0D1A07A
+0D1A07B
+0D1A0JA
+0D1A0JB
+0D1A0KA
+0D1A0KB
+0D1A0ZA
+0D1A0ZB
+0D1A47A
+0D1A47B
+0D1A4JA
+0D1A4JB
+0D1A4KA
+0D1A4KB
+0D1A4ZA
+0D1A4ZB
+0D1A87A
+0D1A87B
+0D1A8JA
+0D1A8JB
+0D1A8KA
+0D1A8KB
+0D1A8ZA
+0D1A8ZB
+0D1A8ZH
+0D1B07B
+0D1B0JB
+0D1B0KB
+0D1B0ZB
+0D1B47B
+0D1B4JB
+0D1B4KB
+0D1B4ZB
+0D1B87B
+0D1B8JB
+0D1B8KB
+0D1B8ZB
+0D1B8ZH
+
+NOTE: There is no distinction between open and laparoscopic BPD with DS or GRDS for the inpatient setting. For either approach, one code from each of the above three groups must appear on the claim to be covered.
+
+Nationally Non-Covered Procedures
+
+For services on or after February 21, 2006, Medicare (CMS) has determined that the following bariatric surgery procedures are not reasonable and necessary for the treatment of morbid obesity (primary ICD-10-CM diagnosis code E66.01):
+• Open adjustable gastric banding (Billed with a Not Otherwise Classified (NOC) code)
+• Open sleeve gastrectomy;
+• Laparoscopic sleeve gastrectomy (prior to June 27, 2012);
+• Open and laparoscopic vertical banded gastroplasty;
+• Intestinal bypass surgery; and,
+• Gastric balloon for treatment of obesity.
+
+Response To Comments
+
+Number
+Comment
+Response
+
+1
+
+N/A
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Modifiers
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+(543 Codes)
+
+Group 1 Paragraph
+
+To ensure proper claims processing, claims must contain the following information:
+• CPT 43775 or ICD-10-PCS 0DV64CZ
+• The ICD-10-CM code E66.01 (Morbid (severe) obesity due to excess calories), E66.812 (Obesity, class 2), or E66.813 (Obesity, class 3)
+• An ICD-10-CM code reflecting the co-morbid condition necessitating the procedure (e.g., diabetes, hypertension, cardiac or respiratory diseases) and
+• An ICD-10-CM code describing the patient’s BMI.
+
+Acceptable ICD-10-CM codes describing the co-morbid condition and supporting medical necessity for bariatric surgical procedures are:
+
+Group 1 Codes
+
+Code
+Description
+
+E08.00
+
+Diabetes mellitus due to underlying condition with hyperosmolarity without nonketotic hyperglycemic-hyperosmolar coma (NKHHC)
+
+E08.01
+
+Diabetes mellitus due to underlying condition with hyperosmolarity with coma
+
+E08.10
+
+Diabetes mellitus due to underlying condition with ketoacidosis without coma
+
+E08.11
+
+Diabetes mellitus due to underlying condition with ketoacidosis with coma
+
+E08.21
+
+Diabetes mellitus due to underlying condition with diabetic nephropathy
+
+E08.22
+
+Diabetes mellitus due to underlying condition with diabetic chronic kidney disease
+
+E08.29
+
+Diabetes mellitus due to underlying condition with other diabetic kidney complication
+
+E08.311
+
+Diabetes mellitus due to underlying condition with unspecified diabetic retinopathy with macular edema
+
+E08.319
+
+Diabetes mellitus due to underlying condition with unspecified diabetic retinopathy without macular edema
+
+E08.3211
+
+Diabetes mellitus due to underlying condition with mild nonproliferative diabetic retinopathy with macular edema, right eye
+
+E08.3212
+
+Diabetes mellitus due to underlying condition with mild nonproliferative diabetic retinopathy with macular edema, left eye
+
+E08.3213
+
+Diabetes mellitus due to underlying condition with mild nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E08.3291
+
+Diabetes mellitus due to underlying condition with mild nonproliferative diabetic retinopathy without macular edema, right eye
+
+E08.3292
+
+Diabetes mellitus due to underlying condition with mild nonproliferative diabetic retinopathy without macular edema, left eye
+
+E08.3293
+
+Diabetes mellitus due to underlying condition with mild nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E08.3311
+
+Diabetes mellitus due to underlying condition with moderate nonproliferative diabetic retinopathy with macular edema, right eye
+
+E08.3312
+
+Diabetes mellitus due to underlying condition with moderate nonproliferative diabetic retinopathy with macular edema, left eye
+
+E08.3313
+
+Diabetes mellitus due to underlying condition with moderate nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E08.3391
+
+Diabetes mellitus due to underlying condition with moderate nonproliferative diabetic retinopathy without macular edema, right eye
+
+E08.3392
+
+Diabetes mellitus due to underlying condition with moderate nonproliferative diabetic retinopathy without macular edema, left eye
+
+E08.3393
+
+Diabetes mellitus due to underlying condition with moderate nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E08.3411
+
+Diabetes mellitus due to underlying condition with severe nonproliferative diabetic retinopathy with macular edema, right eye
+
+E08.3412
+
+Diabetes mellitus due to underlying condition with severe nonproliferative diabetic retinopathy with macular edema, left eye
+
+E08.3413
+
+Diabetes mellitus due to underlying condition with severe nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E08.3491
+
+Diabetes mellitus due to underlying condition with severe nonproliferative diabetic retinopathy without macular edema, right eye
+
+E08.3492
+
+Diabetes mellitus due to underlying condition with severe nonproliferative diabetic retinopathy without macular edema, left eye
+
+E08.3493
+
+Diabetes mellitus due to underlying condition with severe nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E08.3511
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with macular edema, right eye
+
+E08.3512
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with macular edema, left eye
+
+E08.3513
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with macular edema, bilateral
+
+E08.3521
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with traction retinal detachment involving the macula, right eye
+
+E08.3522
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with traction retinal detachment involving the macula, left eye
+
+E08.3523
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with traction retinal detachment involving the macula, bilateral
+
+E08.3531
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, right eye
+
+E08.3532
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, left eye
+
+E08.3533
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, bilateral
+
+E08.3541
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, right eye
+
+E08.3542
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, left eye
+
+E08.3543
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, bilateral
+
+E08.3551
+
+Diabetes mellitus due to underlying condition with stable proliferative diabetic retinopathy, right eye
+
+E08.3552
+
+Diabetes mellitus due to underlying condition with stable proliferative diabetic retinopathy, left eye
+
+E08.3553
+
+Diabetes mellitus due to underlying condition with stable proliferative diabetic retinopathy, bilateral
+
+E08.3591
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy without macular edema, right eye
+
+E08.3592
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy without macular edema, left eye
+
+E08.3593
+
+Diabetes mellitus due to underlying condition with proliferative diabetic retinopathy without macular edema, bilateral
+
+E08.36
+
+Diabetes mellitus due to underlying condition with diabetic cataract
+
+E08.37X1
+
+Diabetes mellitus due to underlying condition with diabetic macular edema, resolved following treatment, right eye
+
+E08.37X2
+
+Diabetes mellitus due to underlying condition with diabetic macular edema, resolved following treatment, left eye
+
+E08.37X3
+
+Diabetes mellitus due to underlying condition with diabetic macular edema, resolved following treatment, bilateral
+
+E08.39
+
+Diabetes mellitus due to underlying condition with other diabetic ophthalmic complication
+
+E08.40
+
+Diabetes mellitus due to underlying condition with diabetic neuropathy, unspecified
+
+E08.41
+
+Diabetes mellitus due to underlying condition with diabetic mononeuropathy
+
+E08.42
+
+Diabetes mellitus due to underlying condition with diabetic polyneuropathy
+
+E08.43
+
+Diabetes mellitus due to underlying condition with diabetic autonomic (poly)neuropathy
+
+E08.44
+
+Diabetes mellitus due to underlying condition with diabetic amyotrophy
+
+E08.49
+
+Diabetes mellitus due to underlying condition with other diabetic neurological complication
+
+E08.51
+
+Diabetes mellitus due to underlying condition with diabetic peripheral angiopathy without gangrene
+
+E08.52
+
+Diabetes mellitus due to underlying condition with diabetic peripheral angiopathy with gangrene
+
+E08.59
+
+Diabetes mellitus due to underlying condition with other circulatory complications
+
+E08.610
+
+Diabetes mellitus due to underlying condition with diabetic neuropathic arthropathy
+
+E08.618
+
+Diabetes mellitus due to underlying condition with other diabetic arthropathy
+
+E08.620
+
+Diabetes mellitus due to underlying condition with diabetic dermatitis
+
+E08.621
+
+Diabetes mellitus due to underlying condition with foot ulcer
+
+E08.622
+
+Diabetes mellitus due to underlying condition with other skin ulcer
+
+E08.628
+
+Diabetes mellitus due to underlying condition with other skin complications
+
+E08.630
+
+Diabetes mellitus due to underlying condition with periodontal disease
+
+E08.638
+
+Diabetes mellitus due to underlying condition with other oral complications
+
+E08.641
+
+Diabetes mellitus due to underlying condition with hypoglycemia with coma
+
+E08.649
+
+Diabetes mellitus due to underlying condition with hypoglycemia without coma
+
+E08.65
+
+Diabetes mellitus due to underlying condition with hyperglycemia
+
+E08.69
+
+Diabetes mellitus due to underlying condition with other specified complication
+
+E08.8
+
+Diabetes mellitus due to underlying condition with unspecified complications
+
+E08.9
+
+Diabetes mellitus due to underlying condition without complications
+
+E09.00
+
+Drug or chemical induced diabetes mellitus with hyperosmolarity without nonketotic hyperglycemic-hyperosmolar coma (NKHHC)
+
+E09.01
+
+Drug or chemical induced diabetes mellitus with hyperosmolarity with coma
+
+E09.10
+
+Drug or chemical induced diabetes mellitus with ketoacidosis without coma
+
+E09.11
+
+Drug or chemical induced diabetes mellitus with ketoacidosis with coma
+
+E09.21
+
+Drug or chemical induced diabetes mellitus with diabetic nephropathy
+
+E09.22
+
+Drug or chemical induced diabetes mellitus with diabetic chronic kidney disease
+
+E09.29
+
+Drug or chemical induced diabetes mellitus with other diabetic kidney complication
+
+E09.311
+
+Drug or chemical induced diabetes mellitus with unspecified diabetic retinopathy with macular edema
+
+E09.319
+
+Drug or chemical induced diabetes mellitus with unspecified diabetic retinopathy without macular edema
+
+E09.3211
+
+Drug or chemical induced diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, right eye
+
+E09.3212
+
+Drug or chemical induced diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, left eye
+
+E09.3213
+
+Drug or chemical induced diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E09.3291
+
+Drug or chemical induced diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, right eye
+
+E09.3292
+
+Drug or chemical induced diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, left eye
+
+E09.3293
+
+Drug or chemical induced diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E09.3311
+
+Drug or chemical induced diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, right eye
+
+E09.3312
+
+Drug or chemical induced diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, left eye
+
+E09.3313
+
+Drug or chemical induced diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E09.3391
+
+Drug or chemical induced diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, right eye
+
+E09.3392
+
+Drug or chemical induced diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, left eye
+
+E09.3393
+
+Drug or chemical induced diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E09.3411
+
+Drug or chemical induced diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, right eye
+
+E09.3412
+
+Drug or chemical induced diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, left eye
+
+E09.3413
+
+Drug or chemical induced diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E09.3491
+
+Drug or chemical induced diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, right eye
+
+E09.3492
+
+Drug or chemical induced diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, left eye
+
+E09.3493
+
+Drug or chemical induced diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E09.3511
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with macular edema, right eye
+
+E09.3512
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with macular edema, left eye
+
+E09.3513
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with macular edema, bilateral
+
+E09.3521
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, right eye
+
+E09.3522
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, left eye
+
+E09.3523
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, bilateral
+
+E09.3531
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, right eye
+
+E09.3532
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, left eye
+
+E09.3533
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, bilateral
+
+E09.3541
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, right eye
+
+E09.3542
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, left eye
+
+E09.3543
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, bilateral
+
+E09.3551
+
+Drug or chemical induced diabetes mellitus with stable proliferative diabetic retinopathy, right eye
+
+E09.3552
+
+Drug or chemical induced diabetes mellitus with stable proliferative diabetic retinopathy, left eye
+
+E09.3553
+
+Drug or chemical induced diabetes mellitus with stable proliferative diabetic retinopathy, bilateral
+
+E09.3591
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy without macular edema, right eye
+
+E09.3592
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy without macular edema, left eye
+
+E09.3593
+
+Drug or chemical induced diabetes mellitus with proliferative diabetic retinopathy without macular edema, bilateral
+
+E09.36
+
+Drug or chemical induced diabetes mellitus with diabetic cataract
+
+E09.37X1
+
+Drug or chemical induced diabetes mellitus with diabetic macular edema, resolved following treatment, right eye
+
+E09.37X2
+
+Drug or chemical induced diabetes mellitus with diabetic macular edema, resolved following treatment, left eye
+
+E09.37X3
+
+Drug or chemical induced diabetes mellitus with diabetic macular edema, resolved following treatment, bilateral
+
+E09.39
+
+Drug or chemical induced diabetes mellitus with other diabetic ophthalmic complication
+
+E09.40
+
+Drug or chemical induced diabetes mellitus with neurological complications with diabetic neuropathy, unspecified
+
+E09.41
+
+Drug or chemical induced diabetes mellitus with neurological complications with diabetic mononeuropathy
+
+E09.42
+
+Drug or chemical induced diabetes mellitus with neurological complications with diabetic polyneuropathy
+
+E09.43
+
+Drug or chemical induced diabetes mellitus with neurological complications with diabetic autonomic (poly)neuropathy
+
+E09.44
+
+Drug or chemical induced diabetes mellitus with neurological complications with diabetic amyotrophy
+
+E09.49
+
+Drug or chemical induced diabetes mellitus with neurological complications with other diabetic neurological complication
+
+E09.51
+
+Drug or chemical induced diabetes mellitus with diabetic peripheral angiopathy without gangrene
+
+E09.52
+
+Drug or chemical induced diabetes mellitus with diabetic peripheral angiopathy with gangrene
+
+E09.59
+
+Drug or chemical induced diabetes mellitus with other circulatory complications
+
+E09.610
+
+Drug or chemical induced diabetes mellitus with diabetic neuropathic arthropathy
+
+E09.618
+
+Drug or chemical induced diabetes mellitus with other diabetic arthropathy
+
+E09.620
+
+Drug or chemical induced diabetes mellitus with diabetic dermatitis
+
+E09.621
+
+Drug or chemical induced diabetes mellitus with foot ulcer
+
+E09.622
+
+Drug or chemical induced diabetes mellitus with other skin ulcer
+
+E09.628
+
+Drug or chemical induced diabetes mellitus with other skin complications
+
+E09.630
+
+Drug or chemical induced diabetes mellitus with periodontal disease
+
+E09.638
+
+Drug or chemical induced diabetes mellitus with other oral complications
+
+E09.641
+
+Drug or chemical induced diabetes mellitus with hypoglycemia with coma
+
+E09.649
+
+Drug or chemical induced diabetes mellitus with hypoglycemia without coma
+
+E09.65
+
+Drug or chemical induced diabetes mellitus with hyperglycemia
+
+E09.69
+
+Drug or chemical induced diabetes mellitus with other specified complication
+
+E09.8
+
+Drug or chemical induced diabetes mellitus with unspecified complications
+
+E09.9
+
+Drug or chemical induced diabetes mellitus without complications
+
+E10.3211
+
+Type 1 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, right eye
+
+E10.3212
+
+Type 1 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, left eye
+
+E10.3213
+
+Type 1 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E10.3291
+
+Type 1 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, right eye
+
+E10.3292
+
+Type 1 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, left eye
+
+E10.3293
+
+Type 1 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E10.3311
+
+Type 1 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, right eye
+
+E10.3312
+
+Type 1 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, left eye
+
+E10.3313
+
+Type 1 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E10.3391
+
+Type 1 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, right eye
+
+E10.3392
+
+Type 1 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, left eye
+
+E10.3393
+
+Type 1 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E10.3411
+
+Type 1 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, right eye
+
+E10.3412
+
+Type 1 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, left eye
+
+E10.3413
+
+Type 1 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E10.3491
+
+Type 1 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, right eye
+
+E10.3492
+
+Type 1 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, left eye
+
+E10.3493
+
+Type 1 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E10.3511
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with macular edema, right eye
+
+E10.3512
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with macular edema, left eye
+
+E10.3513
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with macular edema, bilateral
+
+E10.3521
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, right eye
+
+E10.3522
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, left eye
+
+E10.3523
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, bilateral
+
+E10.3531
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, right eye
+
+E10.3532
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, left eye
+
+E10.3533
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, bilateral
+
+E10.3541
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, right eye
+
+E10.3542
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, left eye
+
+E10.3543
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, bilateral
+
+E10.3551
+
+Type 1 diabetes mellitus with stable proliferative diabetic retinopathy, right eye
+
+E10.3552
+
+Type 1 diabetes mellitus with stable proliferative diabetic retinopathy, left eye
+
+E10.3553
+
+Type 1 diabetes mellitus with stable proliferative diabetic retinopathy, bilateral
+
+E10.3591
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy without macular edema, right eye
+
+E10.3592
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy without macular edema, left eye
+
+E10.3593
+
+Type 1 diabetes mellitus with proliferative diabetic retinopathy without macular edema, bilateral
+
+E10.37X1
+
+Type 1 diabetes mellitus with diabetic macular edema, resolved following treatment, right eye
+
+E10.37X2
+
+Type 1 diabetes mellitus with diabetic macular edema, resolved following treatment, left eye
+
+E10.37X3
+
+Type 1 diabetes mellitus with diabetic macular edema, resolved following treatment, bilateral
+
+E11.00
+
+Type 2 diabetes mellitus with hyperosmolarity without nonketotic hyperglycemic-hyperosmolar coma (NKHHC)
+
+E11.01
+
+Type 2 diabetes mellitus with hyperosmolarity with coma
+
+E11.10
+
+Type 2 diabetes mellitus with ketoacidosis without coma
+
+E11.11
+
+Type 2 diabetes mellitus with ketoacidosis with coma
+
+E11.21
+
+Type 2 diabetes mellitus with diabetic nephropathy
+
+E11.22
+
+Type 2 diabetes mellitus with diabetic chronic kidney disease
+
+E11.29
+
+Type 2 diabetes mellitus with other diabetic kidney complication
+
+E11.311
+
+Type 2 diabetes mellitus with unspecified diabetic retinopathy with macular edema
+
+E11.319
+
+Type 2 diabetes mellitus with unspecified diabetic retinopathy without macular edema
+
+E11.3211
+
+Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, right eye
+
+E11.3212
+
+Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, left eye
+
+E11.3213
+
+Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E11.3291
+
+Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, right eye
+
+E11.3292
+
+Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, left eye
+
+E11.3293
+
+Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E11.3311
+
+Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, right eye
+
+E11.3312
+
+Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, left eye
+
+E11.3313
+
+Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E11.3391
+
+Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, right eye
+
+E11.3392
+
+Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, left eye
+
+E11.3393
+
+Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E11.3411
+
+Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, right eye
+
+E11.3412
+
+Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, left eye
+
+E11.3413
+
+Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E11.3491
+
+Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, right eye
+
+E11.3492
+
+Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, left eye
+
+E11.3493
+
+Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E11.3511
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with macular edema, right eye
+
+E11.3512
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with macular edema, left eye
+
+E11.3513
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with macular edema, bilateral
+
+E11.3521
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, right eye
+
+E11.3522
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, left eye
+
+E11.3523
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, bilateral
+
+E11.3531
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, right eye
+
+E11.3532
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, left eye
+
+E11.3533
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, bilateral
+
+E11.3541
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, right eye
+
+E11.3542
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, left eye
+
+E11.3543
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, bilateral
+
+E11.3551
+
+Type 2 diabetes mellitus with stable proliferative diabetic retinopathy, right eye
+
+E11.3552
+
+Type 2 diabetes mellitus with stable proliferative diabetic retinopathy, left eye
+
+E11.3553
+
+Type 2 diabetes mellitus with stable proliferative diabetic retinopathy, bilateral
+
+E11.3591
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy without macular edema, right eye
+
+E11.3592
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy without macular edema, left eye
+
+E11.3593
+
+Type 2 diabetes mellitus with proliferative diabetic retinopathy without macular edema, bilateral
+
+E11.36
+
+Type 2 diabetes mellitus with diabetic cataract
+
+E11.37X1
+
+Type 2 diabetes mellitus with diabetic macular edema, resolved following treatment, right eye
+
+E11.37X2
+
+Type 2 diabetes mellitus with diabetic macular edema, resolved following treatment, left eye
+
+E11.37X3
+
+Type 2 diabetes mellitus with diabetic macular edema, resolved following treatment, bilateral
+
+E11.39
+
+Type 2 diabetes mellitus with other diabetic ophthalmic complication
+
+E11.40
+
+Type 2 diabetes mellitus with diabetic neuropathy, unspecified
+
+E11.41
+
+Type 2 diabetes mellitus with diabetic mononeuropathy
+
+E11.42
+
+Type 2 diabetes mellitus with diabetic polyneuropathy
+
+E11.43
+
+Type 2 diabetes mellitus with diabetic autonomic (poly)neuropathy
+
+E11.44
+
+Type 2 diabetes mellitus with diabetic amyotrophy
+
+E11.49
+
+Type 2 diabetes mellitus with other diabetic neurological complication
+
+E11.51
+
+Type 2 diabetes mellitus with diabetic peripheral angiopathy without gangrene
+
+E11.52
+
+Type 2 diabetes mellitus with diabetic peripheral angiopathy with gangrene
+
+E11.59
+
+Type 2 diabetes mellitus with other circulatory complications
+
+E11.610
+
+Type 2 diabetes mellitus with diabetic neuropathic arthropathy
+
+E11.618
+
+Type 2 diabetes mellitus with other diabetic arthropathy
+
+E11.620
+
+Type 2 diabetes mellitus with diabetic dermatitis
+
+E11.621
+
+Type 2 diabetes mellitus with foot ulcer
+
+E11.622
+
+Type 2 diabetes mellitus with other skin ulcer
+
+E11.628
+
+Type 2 diabetes mellitus with other skin complications
+
+E11.630
+
+Type 2 diabetes mellitus with periodontal disease
+
+E11.638
+
+Type 2 diabetes mellitus with other oral complications
+
+E11.641
+
+Type 2 diabetes mellitus with hypoglycemia with coma
+
+E11.649
+
+Type 2 diabetes mellitus with hypoglycemia without coma
+
+E11.65
+
+Type 2 diabetes mellitus with hyperglycemia
+
+E11.69
+
+Type 2 diabetes mellitus with other specified complication
+
+E11.8
+
+Type 2 diabetes mellitus with unspecified complications
+
+E11.9
+
+Type 2 diabetes mellitus without complications
+
+E13.00
+
+Other specified diabetes mellitus with hyperosmolarity without nonketotic hyperglycemic-hyperosmolar coma (NKHHC)
+
+E13.01
+
+Other specified diabetes mellitus with hyperosmolarity with coma
+
+E13.10
+
+Other specified diabetes mellitus with ketoacidosis without coma
+
+E13.11
+
+Other specified diabetes mellitus with ketoacidosis with coma
+
+E13.21
+
+Other specified diabetes mellitus with diabetic nephropathy
+
+E13.22
+
+Other specified diabetes mellitus with diabetic chronic kidney disease
+
+E13.29
+
+Other specified diabetes mellitus with other diabetic kidney complication
+
+E13.311
+
+Other specified diabetes mellitus with unspecified diabetic retinopathy with macular edema
+
+E13.319
+
+Other specified diabetes mellitus with unspecified diabetic retinopathy without macular edema
+
+E13.3211
+
+Other specified diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, right eye
+
+E13.3212
+
+Other specified diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, left eye
+
+E13.3213
+
+Other specified diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E13.3291
+
+Other specified diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, right eye
+
+E13.3292
+
+Other specified diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, left eye
+
+E13.3293
+
+Other specified diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E13.3311
+
+Other specified diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, right eye
+
+E13.3312
+
+Other specified diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, left eye
+
+E13.3313
+
+Other specified diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E13.3391
+
+Other specified diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, right eye
+
+E13.3392
+
+Other specified diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, left eye
+
+E13.3393
+
+Other specified diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E13.3411
+
+Other specified diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, right eye
+
+E13.3412
+
+Other specified diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, left eye
+
+E13.3413
+
+Other specified diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, bilateral
+
+E13.3491
+
+Other specified diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, right eye
+
+E13.3492
+
+Other specified diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, left eye
+
+E13.3493
+
+Other specified diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, bilateral
+
+E13.3511
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with macular edema, right eye
+
+E13.3512
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with macular edema, left eye
+
+E13.3513
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with macular edema, bilateral
+
+E13.3521
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, right eye
+
+E13.3522
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, left eye
+
+E13.3523
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, bilateral
+
+E13.3531
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, right eye
+
+E13.3532
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, left eye
+
+E13.3533
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, bilateral
+
+E13.3541
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, right eye
+
+E13.3542
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, left eye
+
+E13.3543
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, bilateral
+
+E13.3551
+
+Other specified diabetes mellitus with stable proliferative diabetic retinopathy, right eye
+
+E13.3552
+
+Other specified diabetes mellitus with stable proliferative diabetic retinopathy, left eye
+
+E13.3553
+
+Other specified diabetes mellitus with stable proliferative diabetic retinopathy, bilateral
+
+E13.3591
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy without macular edema, right eye
+
+E13.3592
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy without macular edema, left eye
+
+E13.3593
+
+Other specified diabetes mellitus with proliferative diabetic retinopathy without macular edema, bilateral
+
+E13.36
+
+Other specified diabetes mellitus with diabetic cataract
+
+E13.37X1
+
+Other specified diabetes mellitus with diabetic macular edema, resolved following treatment, right eye
+
+E13.37X2
+
+Other specified diabetes mellitus with diabetic macular edema, resolved following treatment, left eye
+
+E13.37X3
+
+Other specified diabetes mellitus with diabetic macular edema, resolved following treatment, bilateral
+
+E13.39
+
+Other specified diabetes mellitus with other diabetic ophthalmic complication
+
+E13.40
+
+Other specified diabetes mellitus with diabetic neuropathy, unspecified
+
+E13.41
+
+Other specified diabetes mellitus with diabetic mononeuropathy
+
+E13.42
+
+Other specified diabetes mellitus with diabetic polyneuropathy
+
+E13.43
+
+Other specified diabetes mellitus with diabetic autonomic (poly)neuropathy
+
+E13.44
+
+Other specified diabetes mellitus with diabetic amyotrophy
+
+E13.49
+
+Other specified diabetes mellitus with other diabetic neurological complication
+
+E13.51
+
+Other specified diabetes mellitus with diabetic peripheral angiopathy without gangrene
+
+E13.52
+
+Other specified diabetes mellitus with diabetic peripheral angiopathy with gangrene
+
+E13.59
+
+Other specified diabetes mellitus with other circulatory complications
+
+E13.610
+
+Other specified diabetes mellitus with diabetic neuropathic arthropathy
+
+E13.618
+
+Other specified diabetes mellitus with other diabetic arthropathy
+
+E13.620
+
+Other specified diabetes mellitus with diabetic dermatitis
+
+E13.621
+
+Other specified diabetes mellitus with foot ulcer
+
+E13.622
+
+Other specified diabetes mellitus with other skin ulcer
+
+E13.628
+
+Other specified diabetes mellitus with other skin complications
+
+E13.630
+
+Other specified diabetes mellitus with periodontal disease
+
+E13.638
+
+Other specified diabetes mellitus with other oral complications
+
+E13.641
+
+Other specified diabetes mellitus with hypoglycemia with coma
+
+E13.649
+
+Other specified diabetes mellitus with hypoglycemia without coma
+
+E13.65
+
+Other specified diabetes mellitus with hyperglycemia
+
+E13.69
+
+Other specified diabetes mellitus with other specified complication
+
+E13.8
+
+Other specified diabetes mellitus with unspecified complications
+
+E13.9
+
+Other specified diabetes mellitus without complications
+
+E28.2
+
+Polycystic ovarian syndrome
+
+E28.39
+
+Other primary ovarian failure
+
+E28.8
+
+Other ovarian dysfunction
+
+G47.30
+
+Sleep apnea, unspecified
+
+G47.33
+
+Obstructive sleep apnea (adult) (pediatric)
+
+G93.2
+
+Benign intracranial hypertension
+
+I10
+
+Essential (primary) hypertension
+
+I11.0
+
+Hypertensive heart disease with heart failure
+
+I11.9
+
+Hypertensive heart disease without heart failure
+
+I12.0
+
+Hypertensive chronic kidney disease with stage 5 chronic kidney disease or end stage renal disease
+
+I12.9
+
+Hypertensive chronic kidney disease with stage 1 through stage 4 chronic kidney disease, or unspecified chronic kidney disease
+
+I13.0
+
+Hypertensive heart and chronic kidney disease with heart failure and stage 1 through stage 4 chronic kidney disease, or unspecified chronic kidney disease
+
+I13.10
+
+Hypertensive heart and chronic kidney disease without heart failure, with stage 1 through stage 4 chronic kidney disease, or unspecified chronic kidney disease
+
+I13.11
+
+Hypertensive heart and chronic kidney disease without heart failure, with stage 5 chronic kidney disease, or end stage renal disease
+
+I13.2
+
+Hypertensive heart and chronic kidney disease with heart failure and with stage 5 chronic kidney disease, or end stage renal disease
+
+I15.2
+
+Hypertension secondary to endocrine disorders
+
+I15.8
+
+Other secondary hypertension
+
+I15.9
+
+Secondary hypertension, unspecified
+
+I1A.0
+
+Resistant hypertension
+
+I27.20
+
+Pulmonary hypertension, unspecified
+
+I27.21
+
+Secondary pulmonary arterial hypertension
+
+I27.22
+
+Pulmonary hypertension due to left heart disease
+
+I27.23
+
+Pulmonary hypertension due to lung diseases and hypoxia
+
+I27.24
+
+Chronic thromboembolic pulmonary hypertension
+
+I27.29
+
+Other secondary pulmonary hypertension
+
+I27.83
+
+Eisenmenger's syndrome
+
+I27.89
+
+Other specified pulmonary heart diseases
+
+I50.1
+
+Left ventricular failure, unspecified
+
+I50.21
+
+Acute systolic (congestive) heart failure
+
+I50.22
+
+Chronic systolic (congestive) heart failure
+
+I50.23
+
+Acute on chronic systolic (congestive) heart failure
+
+I50.31
+
+Acute diastolic (congestive) heart failure
+
+I50.32
+
+Chronic diastolic (congestive) heart failure
+
+I50.33
+
+Acute on chronic diastolic (congestive) heart failure
+
+I50.41
+
+Acute combined systolic (congestive) and diastolic (congestive) heart failure
+
+I50.42
+
+Chronic combined systolic (congestive) and diastolic (congestive) heart failure
+
+I50.43
+
+Acute on chronic combined systolic (congestive) and diastolic (congestive) heart failure
+
+I50.810
+
+Right heart failure, unspecified
+
+I50.811
+
+Acute right heart failure
+
+I50.812
+
+Chronic right heart failure
+
+I50.813
+
+Acute on chronic right heart failure
+
+I50.814
+
+Right heart failure due to left heart failure
+
+I50.82
+
+Biventricular heart failure
+
+I50.83
+
+High output heart failure
+
+I50.84
+
+End stage heart failure
+
+I50.89
+
+Other heart failure
+
+I67.4
+
+Hypertensive encephalopathy
+
+I83.011
+
+Varicose veins of right lower extremity with ulcer of thigh
+
+I83.012
+
+Varicose veins of right lower extremity with ulcer of calf
+
+I83.013
+
+Varicose veins of right lower extremity with ulcer of ankle
+
+I83.014
+
+Varicose veins of right lower extremity with ulcer of heel and midfoot
+
+I83.015
+
+Varicose veins of right lower extremity with ulcer other part of foot
+
+I83.018
+
+Varicose veins of right lower extremity with ulcer other part of lower leg
+
+I83.021
+
+Varicose veins of left lower extremity with ulcer of thigh
+
+I83.022
+
+Varicose veins of left lower extremity with ulcer of calf
+
+I83.023
+
+Varicose veins of left lower extremity with ulcer of ankle
+
+I83.024
+
+Varicose veins of left lower extremity with ulcer of heel and midfoot
+
+I83.025
+
+Varicose veins of left lower extremity with ulcer other part of foot
+
+I83.028
+
+Varicose veins of left lower extremity with ulcer other part of lower leg
+
+I83.201
+
+Varicose veins of unspecified lower extremity with both ulcer of thigh and inflammation
+
+I83.202
+
+Varicose veins of unspecified lower extremity with both ulcer of calf and inflammation
+
+I83.203
+
+Varicose veins of unspecified lower extremity with both ulcer of ankle and inflammation
+
+I83.204
+
+Varicose veins of unspecified lower extremity with both ulcer of heel and midfoot and inflammation
+
+I83.205
+
+Varicose veins of unspecified lower extremity with both ulcer other part of foot and inflammation
+
+I83.208
+
+Varicose veins of unspecified lower extremity with both ulcer of other part of lower extremity and inflammation
+
+I83.211
+
+Varicose veins of right lower extremity with both ulcer of thigh and inflammation
+
+I83.212
+
+Varicose veins of right lower extremity with both ulcer of calf and inflammation
+
+I83.213
+
+Varicose veins of right lower extremity with both ulcer of ankle and inflammation
+
+I83.214
+
+Varicose veins of right lower extremity with both ulcer of heel and midfoot and inflammation
+
+I83.215
+
+Varicose veins of right lower extremity with both ulcer other part of foot and inflammation
+
+I83.218
+
+Varicose veins of right lower extremity with both ulcer of other part of lower extremity and inflammation
+
+I83.221
+
+Varicose veins of left lower extremity with both ulcer of thigh and inflammation
+
+I83.222
+
+Varicose veins of left lower extremity with both ulcer of calf and inflammation
+
+I83.223
+
+Varicose veins of left lower extremity with both ulcer of ankle and inflammation
+
+I83.224
+
+Varicose veins of left lower extremity with both ulcer of heel and midfoot and inflammation
+
+I83.225
+
+Varicose veins of left lower extremity with both ulcer other part of foot and inflammation
+
+I83.228
+
+Varicose veins of left lower extremity with both ulcer of other part of lower extremity and inflammation
+
+I83.811
+
+Varicose veins of right lower extremity with pain
+
+I83.812
+
+Varicose veins of left lower extremity with pain
+
+I83.813
+
+Varicose veins of bilateral lower extremities with pain
+
+I83.891
+
+Varicose veins of right lower extremity with other complications
+
+I83.892
+
+Varicose veins of left lower extremity with other complications
+
+I83.893
+
+Varicose veins of bilateral lower extremities with other complications
+
+K21.9
+
+Gastro-esophageal reflux disease without esophagitis
+
+M07.651
+
+Enteropathic arthropathies, right hip
+
+M07.652
+
+Enteropathic arthropathies, left hip
+
+M07.661
+
+Enteropathic arthropathies, right knee
+
+M07.662
+
+Enteropathic arthropathies, left knee
+
+M07.671
+
+Enteropathic arthropathies, right ankle and foot
+
+M07.672
+
+Enteropathic arthropathies, left ankle and foot
+
+M07.68
+
+Enteropathic arthropathies, vertebrae
+
+M12.851
+
+Other specific arthropathies, not elsewhere classified, right hip
+
+M12.852
+
+Other specific arthropathies, not elsewhere classified, left hip
+
+M12.861
+
+Other specific arthropathies, not elsewhere classified, right knee
+
+M12.862
+
+Other specific arthropathies, not elsewhere classified, left knee
+
+M12.871
+
+Other specific arthropathies, not elsewhere classified, right ankle and foot
+
+M12.872
+
+Other specific arthropathies, not elsewhere classified, left ankle and foot
+
+M16.0
+
+Bilateral primary osteoarthritis of hip
+
+M16.11
+
+Unilateral primary osteoarthritis, right hip
+
+M16.12
+
+Unilateral primary osteoarthritis, left hip
+
+M16.2
+
+Bilateral osteoarthritis resulting from hip dysplasia
+
+M16.31
+
+Unilateral osteoarthritis resulting from hip dysplasia, right hip
+
+M16.32
+
+Unilateral osteoarthritis resulting from hip dysplasia, left hip
+
+M16.4
+
+Bilateral post-traumatic osteoarthritis of hip
+
+M16.51
+
+Unilateral post-traumatic osteoarthritis, right hip
+
+M16.52
+
+Unilateral post-traumatic osteoarthritis, left hip
+
+M16.6
+
+Other bilateral secondary osteoarthritis of hip
+
+M16.7
+
+Other unilateral secondary osteoarthritis of hip
+
+M17.0
+
+Bilateral primary osteoarthritis of knee
+
+M17.11
+
+Unilateral primary osteoarthritis, right knee
+
+M17.12
+
+Unilateral primary osteoarthritis, left knee
+
+M17.2
+
+Bilateral post-traumatic osteoarthritis of knee
+
+M17.31
+
+Unilateral post-traumatic osteoarthritis, right knee
+
+M17.32
+
+Unilateral post-traumatic osteoarthritis, left knee
+
+M17.4
+
+Other bilateral secondary osteoarthritis of knee
+
+M17.5
+
+Other unilateral secondary osteoarthritis of knee
+
+M19.071
+
+Primary osteoarthritis, right ankle and foot
+
+M19.072
+
+Primary osteoarthritis, left ankle and foot
+
+M19.09
+
+Primary osteoarthritis, other specified site
+
+M19.171
+
+Post-traumatic osteoarthritis, right ankle and foot
+
+M19.172
+
+Post-traumatic osteoarthritis, left ankle and foot
+
+M19.19
+
+Post-traumatic osteoarthritis, other specified site
+
+M19.271
+
+Secondary osteoarthritis, right ankle and foot
+
+M19.272
+
+Secondary osteoarthritis, left ankle and foot
+
+M19.29
+
+Secondary osteoarthritis, other specified site
+
+M19.91
+
+Primary osteoarthritis, unspecified site
+
+M24.151
+
+Other articular cartilage disorders, right hip
+
+M24.152
+
+Other articular cartilage disorders, left hip
+
+M24.171
+
+Other articular cartilage disorders, right ankle
+
+M24.172
+
+Other articular cartilage disorders, left ankle
+
+M24.174
+
+Other articular cartilage disorders, right foot
+
+M24.175
+
+Other articular cartilage disorders, left foot
+
+M24.19
+
+Other articular cartilage disorders, other specified site
+
+M25.151
+
+Fistula, right hip
+
+M25.152
+
+Fistula, left hip
+
+M25.161
+
+Fistula, right knee
+
+M25.162
+
+Fistula, left knee
+
+M25.171
+
+Fistula, right ankle
+
+M25.172
+
+Fistula, left ankle
+
+M25.174
+
+Fistula, right foot
+
+M25.175
+
+Fistula, left foot
+
+M25.18
+
+Fistula, other specified site
+
+M25.851
+
+Other specified joint disorders, right hip
+
+M25.852
+
+Other specified joint disorders, left hip
+
+M25.861
+
+Other specified joint disorders, right knee
+
+M25.862
+
+Other specified joint disorders, left knee
+
+M25.871
+
+Other specified joint disorders, right ankle and foot
+
+M25.872
+
+Other specified joint disorders, left ankle and foot
+
+M43.21
+
+Fusion of spine, occipito-atlanto-axial region
+
+M43.22
+
+Fusion of spine, cervical region
+
+M43.23
+
+Fusion of spine, cervicothoracic region
+
+M43.24
+
+Fusion of spine, thoracic region
+
+M43.25
+
+Fusion of spine, thoracolumbar region
+
+M43.26
+
+Fusion of spine, lumbar region
+
+M43.27
+
+Fusion of spine, lumbosacral region
+
+M43.28
+
+Fusion of spine, sacral and sacrococcygeal region
+
+M43.8X9
+
+Other specified deforming dorsopathies, site unspecified
+
+M46.46
+
+Discitis, unspecified, lumbar region
+
+M46.47
+
+Discitis, unspecified, lumbosacral region
+
+M51.06
+
+Intervertebral disc disorders with myelopathy, lumbar region
+
+M51.14
+
+Intervertebral disc disorders with radiculopathy, thoracic region
+
+M51.15
+
+Intervertebral disc disorders with radiculopathy, thoracolumbar region
+
+M51.16
+
+Intervertebral disc disorders with radiculopathy, lumbar region
+
+M51.17
+
+Intervertebral disc disorders with radiculopathy, lumbosacral region
+
+M51.34
+
+Other intervertebral disc degeneration, thoracic region
+
+M51.35
+
+Other intervertebral disc degeneration, thoracolumbar region
+
+M51.360
+
+Other intervertebral disc degeneration, lumbar region with discogenic back pain only
+
+M51.361
+
+Other intervertebral disc degeneration, lumbar region with lower extremity pain only
+
+M51.362
+
+Other intervertebral disc degeneration, lumbar region with discogenic back pain and lower extremity pain
+
+M51.369
+
+Other intervertebral disc degeneration, lumbar region without mention of lumbar back pain or lower extremity pain
+
+M51.370
+
+Other intervertebral disc degeneration, lumbosacral region with discogenic back pain only
+
+M51.371
+
+Other intervertebral disc degeneration, lumbosacral region with lower extremity pain only
+
+M51.372
+
+Other intervertebral disc degeneration, lumbosacral region with discogenic back pain and lower extremity pain
+
+M51.379
+
+Other intervertebral disc degeneration, lumbosacral region without mention of lumbar back pain or lower extremity pain
+
+M51.86
+
+Other intervertebral disc disorders, lumbar region
+
+M51.87
+
+Other intervertebral disc disorders, lumbosacral region
+
+M53.2X7
+
+Spinal instabilities, lumbosacral region
+
+M53.2X8
+
+Spinal instabilities, sacral and sacrococcygeal region
+
+M53.3
+
+Sacrococcygeal disorders, not elsewhere classified
+
+M53.84
+
+Other specified dorsopathies, thoracic region
+
+M53.85
+
+Other specified dorsopathies, thoracolumbar region
+
+M53.86
+
+Other specified dorsopathies, lumbar region
+
+M53.87
+
+Other specified dorsopathies, lumbosacral region
+
+M53.88
+
+Other specified dorsopathies, sacral and sacrococcygeal region
+
+M54.03
+
+Panniculitis affecting regions of neck and back, cervicothoracic region
+
+M54.04
+
+Panniculitis affecting regions of neck and back, thoracic region
+
+M54.05
+
+Panniculitis affecting regions of neck and back, thoracolumbar region
+
+M54.06
+
+Panniculitis affecting regions of neck and back, lumbar region
+
+M54.07
+
+Panniculitis affecting regions of neck and back, lumbosacral region
+
+M54.08
+
+Panniculitis affecting regions of neck and back, sacral and sacrococcygeal region
+
+M54.09
+
+Panniculitis affecting regions, neck and back, multiple sites in spine
+
+M54.14
+
+Radiculopathy, thoracic region
+
+M54.15
+
+Radiculopathy, thoracolumbar region
+
+M54.16
+
+Radiculopathy, lumbar region
+
+M54.17
+
+Radiculopathy, lumbosacral region
+
+M54.31
+
+Sciatica, right side
+
+M54.32
+
+Sciatica, left side
+
+M54.41
+
+Lumbago with sciatica, right side
+
+M54.42
+
+Lumbago with sciatica, left side
+
+M54.51
+
+Vertebrogenic low back pain
+
+M54.59
+
+Other low back pain
+
+M54.89
+
+Other dorsalgia
+
+M62.830
+
+Muscle spasm of back
+
+M62.85
+
+Dysfunction of the multifidus muscles, lumbar region
+
+N39.3
+
+Stress incontinence (female) (male)
+
+N39.41
+
+Urge incontinence
+
+N39.46
+
+Mixed incontinence
+
+R06.3
+
+Periodic breathing
+
+R06.83
+
+Snoring
+
+R06.89
+
+Other abnormalities of breathing
+
+R26.2
+
+Difficulty in walking, not elsewhere classified
+
+R32
+
+Unspecified urinary incontinence
+
+Group 2
+(10 Codes)
+
+Group 2 Paragraph
+
+Acceptable ICD-10 Diagnosis Codes for BMI ≥ 35 are:
+
+Group 2 Codes
+
+Code
+Description
+
+Z68.35
+
+Body mass index [BMI] 35.0-35.9, adult
+
+Z68.36
+
+Body mass index [BMI] 36.0-36.9, adult
+
+Z68.37
+
+Body mass index [BMI] 37.0-37.9, adult
+
+Z68.38
+
+Body mass index [BMI] 38.0-38.9, adult
+
+Z68.39
+
+Body mass index [BMI] 39.0-39.9, adult
+
+Z68.41
+
+Body mass index [BMI] 40.0-44.9, adult
+
+Z68.42
+
+Body mass index [BMI] 45.0-49.9, adult
+
+Z68.43
+
+Body mass index [BMI] 50.0-59.9, adult
+
+Z68.44
+
+Body mass index [BMI] 60.0-69.9, adult
+
+Z68.45
+
+Body mass index [BMI] 70 or greater, adult
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+ICD-10-PCS Codes
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+
+N/A
+
+Bill Type Codes
+
+Contractors may specify Bill Types to help providers identify those Bill Types typically
+used to report this service. Absence of a Bill Type does not guarantee that the
+article does not apply to that Bill Type. Complete absence of all Bill Types indicates
+that coverage is not influenced by Bill Type and the article should be assumed to
+apply equally to all claims.
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Contractors may specify Revenue Codes to help providers identify those Revenue Codes typically used to report this service.
+In most instances Revenue Codes are purely advisory. Unless specified in the article, services reported under other
+Revenue Codes are equally subject to this coverage determination. Complete absence of all Revenue Codes indicates
+that coverage is not influenced by Revenue Code and the article should be assumed to apply equally to all Revenue Codes.
+
+N/A
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Other Coding Information
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Coding Table Information
+
+Excluded CPT/HCPCS Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+N/A
+
+N/A
+
+Non-Excluded CPT/HCPCS Ended Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+
+09/25/2025
+
+R19
+
+Retirement Effective Date: 09/25/2025
+
+This final billing and cording (B&C) article is being retired and combined into the JE B&C article so that JE and JF will have one unified document.
+
+10/01/2024
+
+R18
+
+Revision Effective Date: 10/01/2024
+
+Under ICD-10-CM Codes that Support Medical Necessity, Group 1 Paragraph, added the following codes to the second bullet:
+
+E66.812 (Obesity, class 2), E66.813 (Obesity, class 3)
+
+10/01/2024
+
+R17
+
+Revision Effective Date: 10/01/2024
+ICD-10-CM CODES THAT SUPPORT MEDICAL NECESSITY:
+Added: ICD-10-CM codes M51.360, M51.361, M51.362, M51.369, M51.370, M51.371, M51.372, M51.379, M62.85 to Group 1 Codes
+
+Deleted: ICD-10-CM codes M51.36, M51.37 from Group 1 Codes
+
+10/01/2024: At this time 21st Century Cures Act applies to new and revised LCDs which require comment and notice. This revision is to an article that is not a local coverage determination. This revision is due to the 2024 Annual ICD-10 updates.
+
+10/01/2023
+
+R16
+
+Updated to indicate this article is not an LCD Reference Article.
+
+10/01/2023
+
+R15
+
+Per Annual ICD-10 Updates:
+
+The following codes were added to Group 1: I1A.0
+
+10/01/2021
+
+R14
+
+Under group I codes: Added M54.51 and M54.59 and deleted M54.5
+
+Under group II codes: Descriptor change for Z68.41
+
+These revisions are due to the annual ICD-10 updates and become effective 10/01/2021
+
+10/01/2020
+
+R13
+
+Under ICD-10 Codes that support Medical Necessity Group I Coding added: M19.09; M19.19; M19.29; M24.19.
+Deleted Code in Group I: K61.0
+Descriptor Changes in Group II: Z68.35; Z68.36; Z68.37; Z68.38; Z68.39; Z68.41; Z68.42; Z68.43 Z68.44; Z68.45
+These revisions are due to the Annual ICD-10 Updates and become effective on 10/1/2020.
+
+10/01/2018
+
+R12
+
+Converted to Billing and Coding article only. No changes to article content.
+
+10/01/2018
+
+R11
+
+08.09.2018 - At this time 21st Century Cures Act will apply to new and revised Articles that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the Article are applicable as noted in this policy.
+
+ICD-10 Coding update for the following ICD-10 code descriptions were changed in the Covered ICD-10 Codes field: Z68.43 descriptor was changed in Group 2
+
+10/01/2017
+
+R10
+
+Effective 10/1/2017, article is revised per the annual ICD-10 code update to:
+
+Add ICD-10-CM codes: E11.10, E11.11, I27.20, I27.21, I27.22, I27.23, I27.24, I27.29, I27.83, I50.810, I50.811, I50.812, I50.813, I50.814, I50.82, I50.83, I50.84 and I50.89.
+
+Delete ICD-10-CM code I27.2.
+
+Revise ICD-10-CM codes: I50.1, I83.11, I83.12, I83.19, I83.91 and I83.92.
+
+10/01/2016
+
+R9
+
+Article is revised to add ICD-10-PCS code 0DB64Z3 and 0DV64CZ to the listing for laparoscopic gastroenterostomy (laparoscopic roux-en-y).
+
+10/01/2016
+
+R8
+
+Article is revised to add ICD-10-PCS codes for Other gastroenterostomy (open Roux-en-Y) and to clarify that only one procedure code (either 43775 or 0DV64CZ) is required for billing laparoscopic sleeve gastrectomy.
+
+10/01/2016
+
+R7
+
+Article is revised to remove diagnoses including unspecified eye in the description which were added in error due to the annual ICD-10 code update. Coding to the highest level of specificity is required and codes for right and left eye are included for each indication where appropriate. Codes deleted: E08.3219, E08.3299, E08.3319, E08.3399, E08.3419, E08.3499, E08.3519, E08.3529, E08.3539, E08.3549, E08.3559, E08.3599, E08.37X9, E09.3219, E09.3299, E09.3319, E09.3399, E09.3419, E09.3499, E09.3519, E09.3529, E09.3539, E09.3549, E09.3559, E09.3599, E09.37X9, E10.3219, E10.3299, E10.3319, E10.3399, E10.3419, E10.3499, E10.3519, E10.3529, E10.3539, E10.3549, E10.3559, E10.3599, E10.37X9, E11.3219, E11.3299, E11.3319, E11.3399, E11.3419, E11.3499, E11.3519, E11.3529, E11.3539, E11.3549, E11.3559, E11.3599, E11.37X9, E13.3219, E13.3299, E13.3319, E13.3399, E13.3419, E13.3499, E13.3519, E13.3529, E13.3539, E13.3549, E13.3559, E13.3599, E13.37X9.
+
+10/01/2016
+
+R6
+
+The following diagnoses were added due to 2017 ICD-10 code updates effective 10/1/2016:
+E08.3211, E08.3212, E08.3213, E08.3219, E08.3291, E08.3292, E08.3293, E08.3299, E08.3311, E08.3312, E08.3313, E08.3319, E08.3391, E08.3392, E08.3393, E08.3399, E08.3411, E08.3412, E08.3413, E08.3419, E08.3491, E08.3492, E08.3493, E08.3499, E08.3511, E08.3512, E08.3513, E08.3519, E08.3521, E08.3522, E08.3523, E08.3529, E08.3531, E08.3532, E08.3533, E08.3539, E08.3541, E08.3542, E08.3543, E08.3549, E08.3551, E08.3552, E08.3553, E08.3559, E08.3591, E08.3592, E08.3593, E08.3599, E08.37X1, E08.37X2, E08.37X3, E08.37X9, E09.3211, E09.3212, E09.3213, E09.3219, E09.3291, E09.3292, E09.3293, E09.3299, E09.3311, E09.3312, E09.3313, E09.3319, E09.3391, E09.3392, E09.3393, E09.3399, E09.3411, E09.3412, E09.3413, E09.3419, E09.3491, E09.3492, E09.3493, E09.3499, E09.3511, E09.3512, E09.3513, E09.3519, E09.3521, E09.3522, E09.3523, E09.3529, E09.3531, E09.3532, E09.3533, E09.3539, E09.3541, E09.3542, E09.3543, E09.3549, E09.3551, E09.3552, E09.3553, E09.3559, E09.3591, E09.3592, E09.3593, E09.3599, E09.37X1, E09.37X2, E09.37X3, E09.37X9, E10.3211, E10.3212, E10.3213, E10.3219, E10.3291, E10.3292, E10.3293, E10.3299, E10.3311, E10.3312, E10.3313, E10.3319, E10.3391, E10.3392, E10.3393, E10.3399, E10.3411, E10.3412, E10.3413, E10.3419, E10.3491, E10.3492, E10.3493, E10.3499, E10.3511, E10.3512, E10.3513, E10.3519, E10.3521, E10.3522, E10.3523, E10.3529, E10.3531, E10.3532, E10.3533, E10.3539, E10.3541, E10.3542, E10.3543, E10.3549, E10.3551, E10.3552, E10.3553, E10.3559, E10.3591, E10.3592, E10.3593, E10.3599, E10.37X1, E10.37X2, E10.37X3, E10.37X9, E11.3211, E11.3212, E11.3213, E11.3219, E11.3291, E11.3292, E11.3293, E11.3299, E11.3311, E11.3312, E11.3313, E11.3319, E11.3391, E11.3392, E11.3393, E11.3399, E11.3411, E11.3412, E11.3413, E11.3419, E11.3491, E11.3492, E11.3493, E11.3499, E11.3511, E11.3512, E11.3513, E11.3519, E11.3521, E11.3522, E11.3523, E11.3529, E11.3531, E11.3532, E11.3533, E11.3539, E11.3541, E11.3542, E11.3543, E11.3549, E11.3551, E11.3552, E11.3553, E11.3559, E11.3591, E11.3592, E11.3593, E11.3599, E11.37X1, E11.37X2, E11.37X3, E11.37X9, E13.3211, E13.3212, E13.3213, E13.3219, E13.3291, E13.3292, E13.3293, E13.3299, E13.3311, E13.3312, E13.3313, E13.3319, E13.3391, E13.3392, E13.3393, E13.3399, E13.3411, E13.3412, E13.3413, E13.3419, E13.3491, E13.3492, E13.3493, E13.3499, E13.3511, E13.3512, E13.3513, E13.3519, E13.3521, E13.3522, E13.3523, E13.3529, E13.3531, E13.3532, E13.3533, E13.3539 , E13.3541, E13.3542, E13.3543, E13.3549, E13.3551, E13.3552, E13.3553, E13.3559, E13.3591, E13.3592, E13.3593, E13.3599, E13.37X1, E13.37X2, E13.37X3, E13.37X9.
+
+The following diagnoses were deleted due to 2017 ICD-10 code updates effective 9/30/2016:
+E08.321, E08.329, E08.331, E08.339, E08.341, E08.349, E08.351, E08.359, E09.321, E09.329, E09.331, E09.339, E09.341, E09.349, E09.351, E09.359, E11.321, E11.329, E11.331, E11.339, E11.341, E11.349, E11.351, E11.359, E13.321, E13.329, E13.331, E13.339, E13.341, E13.349, E13.351, E13.359.
+
+In-Patient procedure codes duplicated in Indications and Limitations of Coverage under Nationally Covered Inpatient Facility ICD-10-CM Procedure Codes were deleted.
+
+05/01/2016
+
+R5
+
+Added the following sentence back to the text of the article which was inadvertently removed in the previous update, "Noridian Covered Inpatient Facility ICD-10-CM Procedure Codes for Laparoscopic Sleeve Gastrectomy: 0DB64Z3" and added a second CPT/HCPCS grouping for 43775.
+
+05/01/2016
+
+R4
+
+This article is revised to include contractor determined coverage for laparoscopic sleeve gastrectomy (43775). This coverage was previously provided in LCD's L34166 JFA and L34157 JFB, which are retired as of May 01, 2016. The JFA Bariatric Services Coverage article (A53027) is retired and JFA contract numbers are added to this JFB coverage article so that JFA and JFB will have the same MCD article ID. Coverage has not changed from the LCD to its inclusion in this coverage article.
+
+10/01/2015
+
+R3
+
+Diagnosis E11.9 is added as payable per CR 9252, effective 10/1/2015.
+
+10/01/2015
+
+R2
+
+This article is revised to accurately reflect NCD non-covered procedures, per Change Request 8484 and to add diagnosis G47.33 as a payable co-morbid condition effective 10/01/2015.
+
+10/01/2015
+
+R1
+
+For dates of service January 01, 2015 the age restriction is removed. This change is made based on new scientific literature that supported this change. The other requirements mentioned above remain in effect other than the date of service.
+
+N/A
+
+Associated Documents
+
+Medicare BPM Ch 15.50.2 SAD Determinations
+
+Medicare BPM Ch 15.50.2
+
+Related Local Coverage Documents
+
+N/A
+
+Related National Coverage Documents
+
+NCDs
+100.1 - Bariatric Surgery for Treatment of Co-Morbid Conditions Related to Morbid Obesity
+
+SAD Process URL 1
+
+N/A
+
+SAD Process URL 2
+
+N/A
+
+Statutory Requirements URLs
+
+N/A
+
+Rules and Regulations URLs
+
+N/A
+
+CMS Manual Explanations URLs
+
+N/A
+
+Other URLs
+
+N/A
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+09/25/2025
+10/01/2024 - 09/25/2025
+Retired
+
+You are here
+
+04/18/2025
+10/01/2024 - N/A
+Superseded
+
+View
+
+09/25/2024
+10/01/2024 - N/A
+Superseded
+
+View
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+N/A
+
+Read the Article Disclaimer
+
+Email this document to yourself or someone else
+
+An asterisk (*) indicates a required field.
+This email will be sent to the
+recipient email address(es) you enter and will include the text entered into
+the Your Name and Your Email fields. You can specify multiple email
+addresses by separating the email addresses with a comma or semi-colon.
+Please do not use this feature to contact CMS. To submit a comment or
+question to CMS, please use the Feedback/Ask a Question link available at
+the bottom of every MCD page. By submitting information here, you
+acknowledge that this data will be logged. For more information see the CMS Privacy Policy.
+
+*
+Your Name:
+
+*
+Your Name:
+
+Your Email:
+
+Your Email:
+
+*
+Recipient's Email(s):
+
+*
+Recipient's Email(s):
+
+Message:
+Message:
+
+Send Email
+Cancel
+
+Code Range
+
+Close
+
+Contractor Detail
+
+Close
+
+Article Disclaimer
+
+The Centers for Medicare & Medicaid Services (CMS), the federal agency responsible for administration of the Medicare,
+Medicaid and the State Children's Health Insurance Programs, contracts with certain organizations to assist in the administration
+of the Medicare program. Medicare contractors are required to develop and disseminate Articles. CMS believes that the Internet is
+an effective method to share Articles that Medicare contractors develop. While every effort has been made to provide accurate and
+complete information, CMS does not guarantee that there are no errors in the information displayed on this web site. THE UNITED STATES
+GOVERNMENT AND ITS EMPLOYEES ARE NOT LIABLE FOR ANY ERRORS, OMISSIONS, OR OTHER INACCURACIES IN THE INFORMATION, PRODUCT, OR PROCESSES
+DISCLOSED HEREIN. Neither the United States Government nor its employees represent that use of such information, product, or processes
+will not infringe on privately owned rights. In no event shall CMS be liable for direct, indirect, special, incidental, or consequential
+damages arising out of the use of such information, product, or process.
+
+Close
+
+LCD Reference Article
+
+Articles are a type of document published by the Medicare Administrative Contractors (MACs).
+Articles often contain coding or other guidelines and may or may not be in support of a Local Coverage Determination (LCD).
+
+Articles identified as “Not an LCD Reference Article" are articles that do not directly support a Local Coverage Determination (LCD).
+They do not include a citation of an LCD. An example would include, but is not limited to, the Self-Administered Drug (SAD) Exclusion List Articles.
+If you have a question about this kind of article, please contact the MAC listed within the Contractor Information section of the article.
+
+Articles which directly support an LCD are known as “LCD Reference Articles".
+The referenced LCD may be cited in the Article Text field and may also be linked to in the Related Documents field.
+Examples may include but are not limited to Response to Comments and some Billing and Coding Articles.
+If you have a question about this kind of article, please contact the MAC listed within the Contractor Information section of the article.
+
+Close
+
+License Agreements
+
+License Agreements
+
+American Medical Association Current Procedural Terminology
+
+American Dental Association Current Dental Terminology
+
+American Hospital Association NUBC UB-04
+
+Please review the licensing information below and indicate your agreement and acceptance.
+
+License For Use Of Current Procedural Terminology, Fourth Edition (“CPT®”)
+
+License For Use Of Current Procedural Terminology, Fourth Edition (“CPT®”)
+
+CPT codes, descriptions and other data only are copyright 2025 American Medical Association (or such other date of publication of CPT). All rights reserved. CPT is a registered trademark of the American Medical Association (AMA).
+
+You are authorized to use CPT only as contained herein for your personal use only. Personal use means non-commercial uses for display on personal computers or other devices. Any use not authorized herein is prohibited, including by way of illustration and not by way of limitation, making copies of CPT for resale and/or license, transferring copies of CPT to any party not bound by this agreement, creating any modified or derivative work of CPT, or making any commercial use of CPT. License to use CPT for any use not authorized herein must be obtained through the AMA, Intellectual Property Services, 330 N. Wabash Ave., Suite 39300, Chicago, IL 60611-5885. Applications are available at the AMA Web site,
+https://www.ama-assn.org/practice-management/cpt
+https://www.ama-assn.org/practice-management/cpt.
+
+Applicable FARS Restrictions Apply to Government Use.
+
+This product includes CPT which is commercial technical data and/or computer data bases and/or commercial computer software and/or commercial computer software documentation, as applicable which were developed exclusively at private expense by the American Medical Association, AMA Plaza, 330 N. Wabash Ave., Suite 39300, Chicago, IL 60611-5885. U.S. Government rights to use, modify, reproduce, release, perform, display, or disclose these technical data and/or computer data bases and/or computer software and/or computer software documentation are subject to the limited rights restrictions of FAR 52.227-14 (December 2007) and/or subject to the restricted rights provisions of FAR 52.227-14 (December 2007) and FAR 52.227-19 (December 2007), as applicable, and any applicable agency FAR Supplements, for non-Department of Defense Federal procurements.
+
+AMA Disclaimer of Warranties and Liabilities
+
+CPT is provided “as is” without warranty of any kind, either expressed or implied, including but not limited to, the implied warranties of merchantability and fitness for a particular purpose. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The responsibility for the content of the following materials is with CMS and no endorsement by the AMA is intended or implied. The AMA disclaims responsibility for any consequences or liability attributable to or related to any use, non-use, or interpretation of information contained or not contained in the materials. This Agreement will terminate upon notice if you violate its terms. The AMA is a third party beneficiary to this Agreement.
+
+CMS Disclaimer
+
+The scope of this license is determined by the AMA, the copyright holder. Any questions pertaining to the license or use of the CPT should be addressed to the AMA. End users do not act for or on behalf of the CMS. CMS DISCLAIMS RESPONSIBILITY FOR ANY LIABILITY ATTRIBUTABLE TO END USER USE OF THE CPT. CMS WILL NOT BE LIABLE FOR ANY CLAIMS ATTRIBUTABLE TO ANY ERRORS, OMISSIONS, OR OTHER INACCURACIES IN THE INFORMATION OR MATERIAL CONTAINED ON THIS PAGE. In no event shall CMS be liable for direct, indirect, special, incidental, or consequential damages arising out of the use of such information or material.
+
+Should the foregoing terms and conditions be acceptable to you, please indicate your agreement and acceptance by clicking below on the button labeled “accept”.
+
+License For Use of Current Dental Terminology (CDTTM)
+
+License For Use of Current Dental Terminology (CDT™)
+
+These materials contain Current Dental Terminology (CDTTM), Copyright© 2025 American Dental Association (ADA). All rights reserved. CDT is a trademark of the ADA.
+
+The license granted herein is expressly conditioned upon your acceptance of all terms and conditions contained in this Agreement. By clicking below in the button labeled “I ACCEPT” you hereby acknowledge that you have read, understood, and agree to all terms and conditions set forth in this Agreement.
+If you do not agree with all terms and conditions set forth herein, click below on the button labeled “I DO NOT ACCEPT” and exit from this screen.
+
+If you are acting on behalf of an organization, you represent that you are authorized to act on behalf of such organization and that your acceptance of the terms of this Agreement creates a legally enforceable obligation of the organization. As used herein “YOU” and “YOUR” refer to you and any organization on behalf of which you are acting.
+
+Subject to the terms and conditions contained in this Agreement, you, your employees, and agents are authorized to use CDT only as contained in the following authorized materials and solely for internal use by yourself, employees, and agents within your organization within the United States and its territories. Use of CDT is limited to use in programs administered by Centers for Medicare & Medicaid Services (CMS). You agree to take all necessary steps to ensure that your employees and agents abide by the terms of this Agreement. You acknowledge that the ADA holds all copyright, trademark, and other rights in CDT. You shall not remove, alter, or obscure any ADA copyright notices or other proprietary rights notices included in the materials.
+
+Any use not authorized herein is prohibited, including by way of illustration and not by way of limitation, making copies of CDT for resale and/or license, distributing to commercial third-parties outputs in which the CDT is embedded but not directly accessible but the output relies on the embedded CDT (e.g. Artificial Intelligence outputs), transferring copies of CDT to any party not bound by this Agreement, creating any modified or derivative work of CDT, or making any commercial use of CDT. License to use CDT for any use not authorized herein must be obtained through the American Dental Association, 401 North Michigan Avenue, Chicago, IL 60611. Applications are available at the American Dental Association website,
+https://www.ADA.org
+https://www.ADA.org.
+
+Applicable Federal Acquisition Regulation Clauses (FARS)/Department of Defense Federal Acquisition Regulation supplement (DFARS) Restrictions Apply to Government Use. U.S. Government Rights. This product includes Current Dental Terminology ("CDT"), which is commercial technical data and/or computer data bases and/or commercial computer software and/or commercial computer software documentation, as applicable, which was developed exclusively at private expense by the American Dental Association, 401 North Michigan Avenue, Chicago, Illinois, 60611. U.S. Government rights to use, modify, reproduce, release, perform, display, or disclose these technical data and/or computer data bases and/or computer software and/or computer software documentation are subject to the limited rights restrictions of HHSAR 327.4 (as it may from time to time be amended, superseded or replaced) and the limited rights restrictions of FAR 52.227-14 (June 1987) and/or subject to the restricted rights provisions of FAR 52.227-14 (June 1987) and FAR 52.227-19 (June 1987), as applicable, and any applicable agency FAR Supplements, for non-Department of Defense Federal procurements.
+
+Organizations who contract with CMS acknowledge that they may have a commercial CDT license with the ADA, and that use of CDT codes as permitted herein for the administration of CMS programs does not extend to any other programs or services the organization may administer and royalties dues for the use of the CDT codes are governed by their commercial license.
+
+ADA DISCLAIMER OF WARRANTIES AND LIABILITIES. CDT is provided “AS IS” without warranty of any kind, either expressed or implied, including but not limited to, the implied warranties of merchantability and fitness for a particular purpose. No fee schedules, basic unit, relative values, or related listings are included in CDT. The ADA does not directly or indirectly practice medicine or dispense dental services. ADA has no responsibility for the software, including any CDT and other content contained therein; and no endorsement by the ADA is intended or implied. The ADA expressly disclaims responsibility for any consequences or liability attributable to or related to any use, nonuse, or interpretation of information contained or not contained in this file/product. This Agreement will terminate upon notice to you if you violate the terms of this Agreement. The ADA is a third-party beneficiary to this Agreement.
+
+CMS DISCLAIMER. The scope of this license is determined by the ADA, the copyright holder. Any questions pertaining to the license or use of the CDT should be addressed to the ADA. End Users do not act for or on behalf of CMS. CMS disclaims responsibility for any liability attributable to end user use of the CDT. CMS will not be liable for any claims attributable to any errors, omissions, or other inaccuracies in the information or material covered by this license. In no event shall CMS be liable for damages (including but not limited to direct, indirect, special, incidental, or consequential damages) arising out of the use of such information or material.
+
+The license granted herein is expressly conditioned upon your acceptance of all terms and conditions contained in this Agreement. If the foregoing terms and conditions are acceptable to you, please indicate your Agreement by clicking below on the button labeled “I ACCEPT”. If you do not agree to the terms and conditions, you may not access this content, you must click below on the button labeled “I DO NOT ACCEPT” and exit from this screen.
+
+License For Use of National Uniform Billing Committee (NUBC) UB-04
+
+License For Use of National Uniform Billing Committee (NUBC) UB-04
+
+These materials contain NUBC Official UB-04 Specifications (UB-04 Data), which is copyrighted by the American Hospital Association (AHA).
+
+THE LICENSE GRANTED HEREIN IS EXPRESSLY CONDITIONED UPON YOUR ACCEPTANCE OF ALL TERMS AND CONDITIONS CONTAINED IN THIS AGREEMENT. BY CLICKING BELOW ON THE BUTTON LABELED "I ACCEPT", YOU HEREBY ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD AND AGREED TO ALL TERMS AND CONDITIONS SET FORTH IN THIS AGREEMENT.
+
+IF YOU DO NOT AGREE WITH ALL TERMS AND CONDITIONS SET FORTH HEREIN, CLICK BELOW ON THE BUTTON LABELED "I DO NOT ACCEPT" AND EXIT FROM THIS COMPUTER SCREEN. IF YOU ARE ACTING ON BEHALF OF AN ORGANIZATION, YOU REPRESENT THAT YOU ARE AUTHORIZED TO ACT ON BEHALF OF SUCH ORGANIZATION AND THAT YOUR ACCEPTANCE OF THE TERMS OF THIS AGREEMENT CREATES A LEGALLY ENFORCEABLE OBLIGATION OF THE ORGANIZATION. AS USED HEREIN, "YOU" AND "YOUR" REFER TO YOU AND ANY ORGANIZATION ON BEHALF OF WHICH YOU ARE ACTING.
+
+Subject to the terms and conditions contained in this Agreement, you, your employees, and agents are authorized to use UB-04 Data only as contained in the following authorized materials and solely for internal use by yourself, employees and agents within your organization within the United States and its territories. Use of UB-04 Data is limited to use in programs administered by Centers for Medicare & Medicaid Services (CMS). You agree to take all necessary steps to ensure that your employees and agents abide by the terms of this Agreement. You acknowledge that the AHA holds all copyright, trademark, and other rights in UB-04 Data. You shall not remove, alter, or obscure any AHA copyright notices or other proprietary rights notices included in the materials.
+
+Any use not authorized herein is prohibited, including, by way of illustration and not by way of limitation, making copies of UB-04 Data for resale and/or license, transferring copies of UB-04 Data to any party not bound by this agreement, creating any modified or derivative work of UB-04 Data, or making any commercial use of UB-04 Data. License to use UB-04 Data for any use not authorized herein must be obtained through the American Hospital Association, 155 N. Wacker Drive, Suite 400, Chicago, Illinois, 60606. Applications are available at the NUBC website,
+https://www.nubc.org/
+https://www.nubc.org/.
+
+The UB-04 Data included in this product is commercial technical data and/or computer databases and/or commercial computer software and/or commercial computer software documentation, as applicable, which was developed exclusively at private expense by the American Hospital Association, 155 N. Wacker Drive, Suite 400, Chicago, Illinois 60606. U.S. Government rights to use, modify, reproduce, release, perform, display, or disclose these technical data and/or computer data bases and/or computer software and/or computer software documentation are subject to the limited rights restrictions of DFARS 252.227-7015(b)(2) (November 1995) and/or subject to the restrictions of DFARS 227.7202-1(a) (June 1995) and DFARS 227.7202-3(a) (June 1995), as applicable for U.S. Department of Defense procurements and the limited rights restrictions of FAR 52.227-14 (December 2007) and FAR 52.227-19 (December 2007), as applicable, and any applicable agency FAR Supplements, for non-Department of Defense Federal procurements.
+
+AHA DISCLAIMER OF WARRANTIES AND LIABILITIES. UB-04 Data is provided "as is" without warranty of any kind, either expressed or implied, including but not limited to, the implied warranties of merchantability and fitness for a particular purpose. The sole responsibility for the software, including any UB-04 Data and other content contained therein, is with the Medicare/Medicaid Contractor or the CMS; and no endorsement by the AHA is intended or implied. The AHA expressly disclaims responsibility for any consequences or liability attributable to or related to any use, non-use, or interpretation of information contained or not contained in this file/product. This Agreement will terminate upon notice to you if you violate the terms of this Agreement. The AHA is a third-party beneficiary to this Agreement.
+
+CMS DISCLAIMER. The scope of this license is determined by the AHA, the copyright holder. Any questions pertaining to the license or use of the UB-04 Data should be addressed to the AHA. End users do not act for or on behalf of the CMS. CMS DISCLAIMS RESPONSIBILITY FOR ANY LIABILITY ATTRIBUTABLE TO END USER USE OF THE UB-04 DATA. CMS WILL NOT BE LIABLE FOR ANY CLAIMS ATTRIBUTABLE TO ANY ERRORS, OMISSIONS, OR OTHER INACCURACIES IN THE INFORMATION OR MATERIAL COVERED BY THIS LICENSE. In no event shall CMS be liable for direct, indirect, special, incidental, or consequential damages arising out of the use of such information or material.
+
+I Accept
+I Do Not Accept
+
+Page Help for Article - Billing and Coding: Bariatric Surgery Coverage (A53028)
+
+Close
+
+Introduction
+
+This page displays your requested Article. The document is broken into multiple sections. You can use the Contents side panel to help navigate the various sections. You can Hide or Show the Contents panel by clicking on the "Contents" label at the top.
+
+Articles are a type of document published by the Medicare Administrative Contractors (MACs). Articles often contain coding or other guidelines and may or may not be in support of a Local Coverage Determination (LCD).
+
+Finding a specific code
+
+Some articles contain a large number of codes. If you are looking for a specific code, use your browser's Find function (Ctrl-F) to quickly locate the code in the article. Sometimes, a large group can make scrolling thru a document unwieldy. You can collapse such groups by clicking on the group header to make navigation easier. However, please note that once a group is collapsed, the browser Find function will not find codes in that group.
+
+More information
+
+Articles which directly support an LCD are known as “LCD Reference Articles". The referenced LCD may be cited in the Article Text field and may also be linked to in the Related Documents field. Examples may include but are not limited to Response to Comments and some Billing and Coding Articles. If you have a question about this kind of article, please contact the MAC listed within the Contractor Information section of the article.
+
+Articles identified as “Not an LCD Reference Article" are articles that do not directly support a Local Coverage Determination (LCD). They do not include a citation of an LCD. An example would include, but is not limited to, the Self-Administered Drug (SAD) Exclusion List Articles. If you have a question about this kind of article, please contact the MAC listed within the Contractor Information section of the article.
+
+There are different article types:
+
+Billing and Coding articles provide guidance for the related Local Coverage Determination (LCD) and assist providers in submitting correct claims for payment. Billing and Coding articles typically include CPT/HCPCS procedure codes, ICD-10-CM diagnosis codes, as well as Bill Type, Revenue, and CPT/HCPCS Modifier codes. The code lists in the article help explain which services (procedures) the related LCD applies to, the diagnosis codes for which the service is covered, or for which the service is not considered reasonable and necessary and therefore not covered.
+
+Response to Comment (RTC) articles list issues raised by external stakeholders during the Proposed LCD comment period.
+
+Self-Administered Drug (SAD) Exclusion List articles list the CPT/HCPCS codes that are excluded from coverage under this category. The Medicare program provides limited benefits for outpatient prescription drugs. The program covers drugs that are furnished "incident-to" a physician's service provided that the drugs are not "usually self-administered" by the patient. CMS has defined "not usually self-administered" according to how the Medicare population as a whole uses the drug, not how an individual patient or physician may choose to use a particular drug. For purpose of this exclusion, "the term 'usually' means more than 50 percent of the time for all Medicare beneficiaries who use the drug. Therefore, if a drug is self-administered by more than 50 percent of Medicare beneficiaries, the drug is excluded from coverage" and the MAC will make no payment for the drug.
+
+Draft articles are articles written in support of a Proposed LCD. A Draft article will eventually be replaced by a Billing and Coding article once the Proposed LCD is released to a final LCD.
+
+Articles are often related to an LCD, and the relationship can be seen in the “Associated Documents" section of the Article or the LCD.
+
+Article document IDs begin with the letter “A" (e.g., A12345). Draft articles have document IDs that begin with “DA" (e.g., DA12345).
+
+Creating a document PDF
+
+Click on the Download button in the top right corner of the document (i.e., to the right of the document title).
+
+In the resulting Print Dialog, set Printer/Destination to “Save as PDF" or “Save to PDF" (for Safari users, Click the PDF button).
+
+Click on the Save button and select a location for the new PDF file.
+
+Note: Some coloring on the document may not appear on the PDF, initially. To enable coloring for banners and buttons in the PDF:
+
+Click on More Settings in the Print Dialog to display additional options.
+
+Select the checkbox next to Background Graphics or Print Backgrounds.
+
+Pro Tip: If you Search using a keyword (e.g., cardiac), the resulting documents will display with the keyword highlighted (e.g., cardiac). If you then click the Download button to create a PDF, the keywords will remain highlighted. To remove the highlighting, search again for the document using the Document ID (e.g., A59657) and then create the PDF (without the highlighted keywords).
+
+Subscriptions
+
+Subscribe to any NCD, NCA, CAL, LCD, or Article by clicking the Subscribe button at the top of the document. View your current subscriptions by clicking the Bell icon in the navbar. An exclamation mark next to the Bell icon indicates that at least one of your subscriptions has a newer document version available. A View button in the Newer Version column indicates that a newer version of an NCD, NCA, CAL, LCD, or Article has been published on the MCD. Clicking View opens the most recent version of the document.
+
+Submit Feedback/Ask a Question
+
+Get email updates
+
+Sign up to get the latest information about your choice of CMS topics. You can decide how often to receive updates.
+
+Email
+
+Sign up - opens in a new window
+Sign up
+
+CMS & HHS Websites
+CMS & HHS Websites
+
+Medicare.gov
+
+Medicaid.gov
+
+InsureKidsNow.gov
+
+HealthCare.gov
+
+HHS.gov
+
+HHS.gov/Open
+
+About CMS
+About CMS
+
+About Us
+
+Careers
+
+Newsroom
+
+Tools
+Tools
+
+Acronyms
+
+Archive
+
+Contacts
+
+Glossary
+
+Helpful Links
+Helpful Links
+
+Privacy Policy
+
+Plain Language
+
+Nondiscrimination & Accessibility
+
+Developer Information
+
+Vulnerability Disclosure Policy
+
+USA Government Sites
+USA Government Sites
+
+Freedom of Information Act
+
+No Fear Act
+
+Inspector General
+
+USA.gov
+
+Connect with CMS
+
+Linkedin link
+
+Youtube link
+
+Facebook link
+
+Twitter link
+
+RSS Feed link
+
+A federal government website managed and paid for by the U.S. Centers for Medicare & Medicaid Services.
+
+7500 Security Boulevard, Baltimore, MD 21244
+
+Frequently Asked Questions (FAQs)
+
+Many questions can be answered on the Help & Resources page in the How To Library or by viewing the FAQs below. Please take a look and if you still have questions or would like to leave feedback, contact us!
+
+Are you a provider and have a question about billing or coding?
+
+Please contact your Medicare Administrative Contractor (MAC). MACs can be found in the MAC Contacts Report.
+
+Do you have questions related to the content of a specific Local Coverage Determination (LCD) or an Article?
+
+Please contact the Medicare Administrative Contractor (MAC) who owns the document. The contractor information can be found at the top of the document in the Contractor Information section (expand the section to see the details). MACs can also be can be found in the MAC Contacts Report.
+
+Are you a beneficiary and have questions about your coverage?
+
+Please call 1-800-Medicare or visit Medicare.gov
+
+Are you looking for codes? (e.g., CPT/HCPCS, ICD-10)
+
+Local Coverage
+
+For the most part, codes are no longer included in the LCD (policy). You will find them in the Billing & Coding Articles. Try using the MCD Search to find what you're looking for. Enter the code you're looking for in the "Enter keyword, code, or document ID" box. The list of results will include documents which contain the code you entered.
+
+Please Note: For Durable Medical Equipment (DME) MACs only, CPT/HCPCS codes remain located in LCDs. All other Codes (ICD-10, Bill Type, and Revenue) have moved to Articles for DME MACs, as they have for the other Local Coverage MAC types.
+
+National Coverage
+
+NCDs do not contain claims processing information like diagnosis or procedure codes nor do they give instructions to the provider on how to bill Medicare for the service or item. For this supplementary claims processing information we rely on other CMS publications, namely Change Requests (CR) Transmittals and inclusions in the Medicare Fee-For-Service Claims Processing Manual (CPM).
+
+In order for CMS to change billing and claims processing systems to accommodate the coverage conditions within the NCD, we instruct contractors and system maintainers to modify the claims processing systems at the national or local level through CR Transmittals. CRs are not policy, rather CRs are used to relay instructions regarding the edits of the various claims processing systems in very descriptive, technical language usually employing the codes or code combinations likely to be encountered with claims subject to the policy in question. As clinical or administrative codes change or system or policy requirements dictate, CR instructions are updated to ensure the systems are applying the most appropriate claims processing instructions applicable to the policy.
+
+How do I find out if a specific CPT code is covered in my state?
+
+Enter the CPT/HCPCS code in the MCD Search and select your state from the drop down. (You may have to accept the AMA License Agreement.) Look for a Billing and Coding Article in the results and open it. (Or, for DME MACs only, look for an LCD.) Review the article, in particular the Coding Information section.
+
+If you need more information on coverage, contact the Medicare Administrative Contractor (MAC) who published the document. The contractor information can be found at the top of the document in the Contractor Information section (expand the section to see the details).
+
+If you don’t find the Article you are looking for, contact your MAC.
+
+Did you receive a Medicare coverage denial?
+
+Was your Medicare claim denied? Here are some hints to help you find more information:
+
+1) Check out the Beneficiary card on the MCD Search page.
+
+2) Try using the MCD Search and enter your information in the "Enter keyword, code, or document ID" box. Your information could include a keyword or topic you're interested in; a Local Coverage Determination (LCD) policy or Article ID; or a CPT/HCPCS procedure/billing code or an ICD-10-CM diagnosis code. Try entering any of this type of information provided in your denial letter.
+
+3) Contact your MAC.
+
+4) Visit Medicare.gov or call 1-800-Medicare.
+
+It is Thursday and the weekly MCD data isn’t refreshed?
+
+Please use the Reset Search Data function, found in the top menu under the Settings (gear) icon. If that doesn’t work please contact technical support.
+
+Are you having technical issues with the Medicare Coverage Database (MCD)?
+
+Technical issues include things such as a link is broken, a report fails to run, a page is not displaying correctly, a search is taking an unexpectedly long time to complete. If you are having an issue like this please contact technical support.
+
+Submit Feedback/Ask a Question
+Cancel
+
+MCD Session Expiration Warning
+
+Your MCD session is currently set to expire in 5 minutes due to inactivity. If your session expires, you will lose all items in your basket and any active searches. If you would like to extend your session, you may select the Continue Button.
+
+Continue
+Cancel
+
+Reset MCD Search Data
+
+If you are experiencing any technical issues related to the search, selecting the 'OK' button to reset the search data should resolve your issues.
+
+OK
+Cancel
+
+Notice
+
+You are leaving the CMS MCD and are being redirected to the CMS MCD Archive that contains outdated (No Longer In Effect) Local Coverage Determinations and Articles
+
+Continue
+Cancel
+
+Notice
+
+You are leaving the CMS MCD and are being redirected to
+
+Continue
+Cancel
+
+MCD Alert
+
+Close
+
+Yes
+No
+Close
+
+Subscriptions
+
+Subscribe to any NCD, NCA, CAL, LCD, or Article by clicking Subscribe at the top of the page. Clicking a document ID link will take you to the subscribed version. Clicking View will take you to the latest document version available, which may not yet be in effect. Click the Trash icon to cancel your subscription(s).
+
+ID
+Title
+Newer Version
+Type
+Contractor
+
+Close

@@ -1,0 +1,543 @@
+Tracking Information
+
+Publication Number
+
+100-3
+
+Manual Section Number
+
+100.1
+
+Manual Section Title
+
+Bariatric Surgery for Treatment of Co-Morbid Conditions Related to Morbid Obesity
+
+Version Number
+
+Effective Date of this Version
+
+09/24/2013
+
+Ending Effective Date of this Version
+
+Implementation Date
+
+12/17/2013
+
+Implementation QR Modifier Date
+
+Description Information
+
+Benefit Category
+
+Incident to a physician's professional Service
+Inpatient Hospital Services
+Physicians' Services
+
+Please Note: This may not be an exhaustive list of all applicable Medicare benefit categories for this item or service.
+
+Item/Service Description
+
+Please note, sections 40.5, 100.8, 100.11, and 100.14 have been removed from the National Coverage Determination (NCD) Manual and incorporated into NCD 100.1
+
+A. General
+
+Obesity may be caused by medical conditions such as hypothyroidism, Cushing's disease, and hypothalamic lesions, or can aggravate a number of cardiac and respiratory diseases as well as diabetes and hypertension. Non-surgical services in connection with the treatment of obesity are covered when such services are an integral and necessary part of a course of treatment for one of these medical conditions.
+
+In addition, supplemented fasting is a type of very low calorie weight reduction regimen used to achieve rapid weight loss. The reduced calorie intake is supplemented by a mixture of protein, carbohydrates, vitamins, and minerals. Serious questions exist about the safety of prolonged adherence for 2 months or more to a very low calorie weight reduction regimen as a general treatment for obesity, because of instances of cardiopathology and sudden death, as well as possible loss of body protein.
+
+Bariatric surgery procedures are performed to treat comorbid conditions associated with morbid obesity. Two types of surgical procedures are employed. Malabsorptive procedures divert food from the stomach to a lower part of the digestive tract where the normal mixing of digestive fluids and absorption of nutrients cannot occur. Restrictive procedures restrict the size of the stomach and decrease intake. Surgery can combine both types of procedures.
+
+The following are descriptions of bariatric surgery procedures:
+
+1. Roux-en-Y Gastric Bypass (RYGBP)
+
+The RYGBP achieves weight loss by gastric restriction and malabsorption. Reduction of the stomach to a small gastric pouch (30 cc) results in feelings of satiety following even small meals. This small pouch is connected to a segment of the jejunum, bypassing the duodenum and very proximal small intestine, thereby reducing absorption. RYGBP procedures can be open or laparoscopic.
+
+2. Biliopancreatic Diversion with Duodenal Switch (BPD/DS) or Gastric Reduction Duodenal Switch (BPD/GRDS)
+
+The BPD achieves weight loss by gastric restriction and malabsorption. The stomach is partially resected, but the remaining capacity is generous compared to that achieved with RYGBP. As such, patients eat relatively normal-sized meals and do not need to restrict intake radically, since the most proximal areas of the small intestine (i.e., the duodenum and jejunum) are bypassed, and substantial malabsorption occurs. The partial BPD/DS or BPD/GRDS is a variant of the BPD procedure. It involves resection of the greater curvature of the stomach, preservation of the pyloric sphincter, and transection of the duodenum above the ampulla of Vater with a duodeno-ileal anastomosis and a lower ileo-ileal anastomosis. BPD/DS or BPD/GRDS procedures can be open or laparoscopic.
+
+3. Adjustable Gastric Banding (AGB)
+
+The AGB achieves weight loss by gastric restriction only. A band creating a gastric pouch with a capacity of approximately 15 to 30 cc's encircles the uppermost portion of the stomach. The band is an inflatable doughnut-shaped balloon, the diameter of which can be adjusted in the clinic by adding or removing saline via a port that is positioned beneath the skin. The bands are adjustable, allowing the size of the gastric outlet to be modified as needed, depending on the rate of a patient's weight loss. AGB procedures are laparoscopic only.
+
+4. Sleeve Gastrectomy
+
+Sleeve gastrectomy is a 70%-80% greater curvature gastrectomy (sleeve resection of the stomach) with continuity of the gastric lesser curve being maintained while simultaneously reducing stomach volume. In the past, sleeve gastrectomy was the first step in a two-stage procedure when performing RYGBP, but more recently has been offered as a stand-alone surgery. Sleeve gastrectomy procedures can be open or laparoscopic.
+
+5. Vertical Gastric Banding (VGB)
+
+The VGB achieves weight loss by gastric restriction only. The upper part of the stomach is stapled, creating a narrow gastric inlet or pouch that remains connected with the remainder of the stomach. In addition, a non-adjustable band is placed around this new inlet in an attempt to prevent future enlargement of the stoma (opening). As a result, patients experience a sense of fullness after eating small meals. Weight loss from this procedure results entirely from eating less. VGB procedures are essentially no longer performed.
+
+Indications and Limitations of Coverage
+
+B. Nationally Covered Indications
+
+Effective for services performed on and after February 21, 2006, Open and laparoscopic Roux-en-Y gastric bypass (RYGBP), open and laparoscopic Biliopancreatic Diversion with Duodenal Switch (BPD/DS) or Gastric Reduction Duodenal Switch (BPD/GRDS), and laparoscopic adjustable gastric banding (LAGB) are covered for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity.
+
+Effective for dates of service on and after February 21, 2006, these procedures are only covered when performed at facilities that are: (1) certified by the American College of Surgeons as a Level 1 Bariatric Surgery Center (program standards and requirements in effect on February 15, 2006); or (2) certified by the American Society for Bariatric Surgery as a Bariatric Surgery Center of Excellence (program standards and requirements in effect on February 15, 2006). Effective for dates of service on and after September 24, 2013, facilities are no longer required to be certified.
+
+Effective for services performed on and after February 12, 2009, the Centers for Medicare & Medicaid Services (CMS) determines that Type 2 diabetes mellitus is a co-morbidity for purposes of this NCD.
+
+A list of approved facilities and their approval dates are listed and maintained on the CMS Coverage Web site at http://www.cms.gov/Medicare/Medicare-General-Information/MedicareApprovedFacilitie/Bariatric-Surgery.html, and published in the Federal Register for services provided up to and including date of service September 23, 2013.
+
+C. Nationally Non-Covered Indications
+
+Treatments for obesity alone remain non-covered.
+
+Supplemented fasting is not covered under the Medicare program as a general treatment for obesity (see section D. below for discretionary local coverage).
+
+The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:
+
+Open adjustable gastric banding;
+
+Open sleeve gastrectomy;
+
+Laparoscopic sleeve gastrectomy (prior to June 27, 2012);
+
+Open and laparoscopic vertical banded gastroplasty;
+
+Intestinal bypass surgery; and,
+
+Gastric balloon for treatment of obesity.
+
+D. Other
+
+Effective for services performed on and after June 27, 2012, Medicare Administrative Contractors (MACs) acting within their respective jurisdictions may determine coverage of stand-alone laparoscopic sleeve gastrectomy (LSG) for the treatment of co-morbid conditions related to obesity in Medicare beneficiaries only when all of the following conditions a.-c. are satisfied.
+
+The beneficiary has a body-mass index (BMI) ≥ 35 kg/m2,
+
+The beneficiary has at least one co-morbidity related to obesity, and,
+
+The beneficiary has been previously unsuccessful with medical treatment for obesity.
+
+The determination of coverage for any bariatric surgery procedures that are not specifically identified in an NCD as covered or non-covered, for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity, is left to the local MACs.
+
+Where weight loss is necessary before surgery in order to ameliorate the complications posed by obesity when it coexists with pathological conditions such as cardiac and respiratory diseases, diabetes, or hypertension (and other more conservative techniques to achieve this end are not regarded as appropriate), supplemented fasting with adequate monitoring of the patient is eligible for coverage on a case-by-case basis or pursuant to a local coverage determination. The risks associated with the achievement of rapid weight loss must be carefully balanced against the risk posed by the condition requiring surgical treatment.
+
+Cross Reference
+
+Claims Processing Instructions
+
+TN 2816 (Medicare Claims Processing)
+
+TN 2841 (Medicare Claims Processing)
+
+Transmittal Information
+
+Transmittal Number
+
+158
+
+Coverage Transmittal Link
+
+http://www.cms.gov/Regulations-and-Guidance/Guidance/Transmittals/downloads/R158NCD.pdf
+
+Revision History
+
+03/2025 - The purpose of this Change Request (CR) is to provide a quarterly maintenance update of ICD-10 coding conversions and other coding updates specific to National Coverage Determinations (NCDs). No policy is being changed as a result of these updates. (TN 13097) (CR13939)
+
+05/2024 - The purpose of this Change Request (CR) is to provide a quarterly maintenance update of ICD-10 coding conversions and other coding updates specific to National Coverage Determinations (NCDs). No policy is being changed as a result of these updates. (TN 12626) (CR13596)
+
+05/2017 - This change request (CR) constitutes a maintenance update of ICD-10 conversions and other coding updates specific to national coverage determinations (NCDs). These NCD coding changes are the result of newly available codes, coding revisions to NCDs released separately, or coding feedback received.
+
+Previous NCD coding changes appear in ICD-10 quarterly updates that can be found at: https://www.cms.gov/Medicare/Coverage/CoverageGenInfo/ICD10.html, along with other CRs implementing new policy NCDs. Edits to ICD-10 and other coding updates specific to NCDs will be included in subsequent, quarterly releases and individual CRs as appropriate. No policy-related changes are included with the ICD-10 quarterly updates. Any policy-related changes to NCDs continue to be implemented via the current, long-standing NCD process. (TN 1854) (CR10086)
+
+02/2017 - This change request (CR) is the 10th maintenance update of ICD-10 conversions and other coding updates specific to national coverage determinations (NCDs). These NCD coding changes are the result of newly available codes, coding revisions to NCDs released separately, or coding feedback received.
+
+Previous NCD coding changes appear in ICD-10 quarterly updates as follows: CR7818, CR8109, CR8197, CR8691, CR9087, CR9252, CR9540, CR9631, and CR9751, as well as in CRs implementing new policy NCDs. Edits to ICD-10 and other coding updates specific to NCDs will be included in subsequent, quarterly releases and individual CRs as appropriate. No policy-related changes are included with the ICD-10 quarterly updates. Any policy-related changes to NCDs continue to be implemented via the current, long-standing NCD process. (TN 1792) (CR9861)
+
+12/2015 - This change request (CR) is the 3rd maintenance update of ICD-10 conversions/updates specific to national coverage determinations (NCDs). The majority of the NCDs included are a result of feedback received from previous ICD-10 NCD CR7818, CR8109, CR8197, CR8691, & CR9087. Some are the result of revisions required to other NCD-related CRs released separately that included ICD-10 coding. Implementation date: 01/04/2016 Effective date: 10/1/2015. (TN 1580 ) (CR9252)
+
+08/2015 - This change request (CR) is the 3rd maintenance update of ICD-10 conversions/updates specific to national coverage determinations (NCDs). The majority of the NCDs included are a result of feedback received from previous ICD-10 NCD CR7818, CR8109, CR8197, CR8691, & CR9087. Some are the result of revisions required to other NCD-related CRs released separately that included ICD-10 coding.
+
+These updates do not expand, restrict, or alter existing coverage policy. Implementation date: 01/04/2016 Effective date: 10/1/2015. (TN 1537) (CR 9252)
+
+05/2014 - CMS translated the information for this policy from ICD-9-CM/PCS to ICD-10-CM/PCS according to HIPAA standard medical data code set requirements and updated any necessary and related coding infrastructure. These updates do not expand, restrict, or alter existing coverage policy. Implementation date: 10/06/2014 Effective date: 10/1/2015. (TN 1388) (TN 1388) (CR 8691)
+
+12/2013 - Transmittal 157, dated November 15, 2013, is being rescinded and replaced by Transmittal 158, dated December 23, 2013 to add omitted ICD codes in section 150.5.1, Pub. 100-04 Claims Processing Manual, and to make technical corrections in sections 40.5, 100.8, 100.11 & 100.14, Pub. 100-03 NCD Manual. All other information remains the same. (TN 158) (CR8484)
+
+11/2013 - Effective for dates of service on and after September 24, 2013, facility certification shall no longer be required for coverage of covered bariatric surgery procedures. (TN 157) (CR8484).
+
+01/2013 - Transmittal 148, dated November 9, 2012 is rescinded and replaced by Transmittal 150, dated January 29, 2013. The Business Requirement 8028.1 has been updated to include the correct responsibility FI that was previously omitted. All other information remains the same. (TN 150) (CR8028).
+
+11/2012 - Effective for claims with dates of service on or after June 27, 2012, Medicare Administrative Contractors acting within their respective jurisdictions may determine coverage of stand-alone laparoscopic sleeve gastrectomy (LSG) for the treatment of co-morbid conditions related to obesity in Medicare beneficiaries only when all of the following conditions a-c are satisfied.
+
+The beneficiary has a body-mass index (BMI) ≥ 35 kg/m2,
+
+The beneficiary has at least one co-morbidity related to obesity, and,
+
+The beneficiary has been previously unsuccessful with medical treatment for obesity. Effective date: 06/27/2012 Implementation date: 12/10/2012. (TN 148) (CR8028).
+
+04/2009 - Effective for services performed on and after February 12, 2009, CMS determines that open and laparoscopic Roux-en-Y gastric bypass (RYGBP), laparoscopic adjustable gastric banding (LAGB), and open and laparoscopic biliopancreatic diversion with duodenal switch (BPD/DS) in Medicare beneficiaries who have type 2 diabetes mellitus (T2DM) and a BMI less than 35 are not reasonable and necessary under section 1862(a)(1)(A) of the Social Security Act, and therefore are not covered. Effective date: 02/12/2009 Implementation date: 05/18/2009 (TN 100) (CR6419).
+
+04/2006 - Medicare will cover open and laparoscopic Roux-en Y gastric bypass (RYGBP), laparoscopic adjustable gastric banding (LAGB) and open and laparoscopic biliopancreatic diversion with duodenal switch (BPD/DS) if certain criteria are met and the procedure is performed in an approved facility. Effective date: 02/21/2006 (TN 54) (CR5013).
+
+Implementation Dates:
+
+05/30/2006 for physician claims billed to the carrier
+
+10/02/2006 for hospital claims billed to the FI
+
+Other
+
+National Coverage Analyses (NCAs)
+
+This NCD has been or is currently being reviewed under the National Coverage
+Determination process. The following are existing associations with NCAs, from the National
+Coverage Analyses database.
+
+First reconsideration for Bariatric Surgery for the Treatment of Morbid Obesity (CAG-00250R)
+
+Second reconsideration for Bariatric Surgery for the Treatment of Morbid Obesity (CAG-00250R2)
+
+Third reconsideration for Bariatric Surgery for the Treatment of Morbid Obesity - Facility Certification Requirement (CAG-00250R3)
+
+Coding Analyses for Labs (CALs)
+
+This NCD has been or is currently being reviewed under the National Coverage
+Determination process. The following are existing associations with CALs, from the Coding Analyses for Labs
+database.
+
+Additional Information
+
+Other Versions
+
+Title
+Version
+Effective Between
+
+Bariatric Surgery for Treatment of Co-Morbid Conditions Related to Morbid Obesity
+5
+09/24/2013 - N/A
+
+You are here
+
+Bariatric Surgery for Treatment of Morbid Obesity
+4
+06/27/2012 - 09/24/2013
+
+View
+
+Bariatric Surgery for Treatment of Morbid Obesity
+3
+02/12/2009 - 06/27/2012
+
+View
+
+Bariatric Surgery for Treatment of Morbid Obesity
+2
+02/21/2006 - 02/12/2009
+
+View
+
+Gastric Bypass Surgery for Obesity
+1
+10/01/1979 - 02/21/2006
+
+View
+
+CPT Copyright Statement
+
+CPT only copyright 2002-2011 American Medical Association. All rights reserved.
+CPT is a registered trademark of the American Medical Association. Applicable FARS/DFARS Apply to Government Use.
+Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use.
+The AMA does not directly or indirectly practice medicine or dispense medical services.
+The AMA assumes no liability for data contained or not contained herein.
+
+Reasons for Denial
+
+Note: This section has not been negotiated by the Negotiated RuleMaking Committee.
+It includes CMS’s interpretation of it’s longstanding policies and is included for informational purposes.
+Tests for screening purposes that are performed in the absense of signs, symptoms, complaints, or personal history of disease or
+injury are not covered except as explicity authorized by statue.
+These include exams required by insurance companies, business establishments, government agencies, or other third parties.
+Tests that are not reasonable and necessary for the diagnosis or treatment of an illness or injury are not covered according to the statue.
+Failure to provide documentation of the medical necessity of tests may result in denial of claims.
+The documentation may include notes documenting relevant signs, symptoms, or abnormal findings that substantiate the medical necessity for ordering the tests.
+In addition, failure to provide independent verification that the test was ordered by the treating physician (or qualified nonphysician practitioner)
+through documentation in the physician’s office may result in denial.
+A claim for a test for which there is a national coverage or local medical review policy will be denied as not reasonable and necessary
+if it is submitted without an ICD-9-CM code or narrative diagnosis listed as covered in the policy unless other medical documentation
+justifying the necessity is submitted with the claim.
+If a national or local policy identifies a frequency expectation, a claim for a test that exceeds that expectation may be denied as
+not reasonable and necessary, unless it is submitted with documentation justifying increased frequency.
+Tests that are not ordered by a treating physician or other qualified treating nonphysician practitioner acting within the scope of
+their license and in compliance with Medicare requirements will be denied as not reasonable and necessary.
+Failure of the laboratory performing the test to have the appropriate Clinical Laboratory Improvement Act of 1988 (CLIA) certificate
+for the testing performed will result in denial of claims.
+
+Email this document to yourself or someone else
+
+An asterisk (*) indicates a required field.
+This email will be sent to the
+recipient email address(es) you enter and will include the text entered into
+the Your Name and Your Email fields. You can specify multiple email
+addresses by separating the email addresses with a comma or semi-colon.
+Please do not use this feature to contact CMS. To submit a comment or
+question to CMS, please use the Feedback/Ask a Question link available at
+the bottom of every MCD page. By submitting information here, you
+acknowledge that this data will be logged. For more information see the CMS Privacy Policy.
+
+*
+Your Name:
+
+*
+Your Name:
+
+Your Email:
+
+Your Email:
+
+*
+Recipient's Email(s):
+
+*
+Recipient's Email(s):
+
+Message:
+Message:
+
+Send Email
+Cancel
+
+You are viewing an older NCD version
+
+This is not the latest version of the document. Would you like to see the latest version?
+
+View latest version
+Cancel
+
+Page Help for NCD - Bariatric Surgery for Treatment of Co-Morbid Conditions Related to Morbid Obesity (100.1)
+
+Close
+
+Introduction
+
+This page displays your requested National Coverage Determination (NCD). The document is broken into multiple sections. You can use the Contents side panel to help navigate the various sections. You can Hide or Show the Contents panel by clicking on the "Contents" label at the top.
+
+National Coverage Determinations (NCDs) are national policy granting, limiting or excluding Medicare coverage for a specific medical item or service.
+
+More information
+
+NCDs are developed and published by CMS and apply to all states. NCDs are made through an evidence-based process, with opportunities for public participation. Medicare coverage is limited to items and services that are considered "reasonable and necessary" for the diagnosis or treatment of an illness or injury (and within the scope of a Medicare benefit category). An NCD sets forth the extent to which Medicare will cover specific services, procedures, or technologies on a national basis. Medicare Administrative Contractors (MACs) are required to follow NCDs.
+
+If an NCD does not specifically exclude/limit an indication or circumstance, or if the item or service is not mentioned at all in an NCD or in a Medicare manual, an item or service may be covered at the discretion of the MAC based on a Local Coverage Determination (LCD). LCDs cannot contradict NCDs, but exist to clarify an NCD or address common coverage issues.
+
+Prior to implementation of an NCD, CMS must first issue a Manual Transmittal, CMS ruling, or Federal Register Notice giving specific directions to claims-processing contractors. That issuance, which includes an effective date and implementation date, is the NCD. If appropriate, the Agency must also change billing and claims processing systems and issue related instructions to allow for payment. The NCD will be published in the Medicare National Coverage Determinations Manual. An NCD becomes effective as of the date of the decision memorandum.
+
+Creating a document PDF
+
+Click on the Download button in the top right corner of the document (i.e., to the right of the document title).
+
+In the resulting Print Dialog, set Printer/Destination to “Save as PDF" or “Save to PDF" (for Safari users, Click the PDF button).
+
+Click on the Save button and select a location for the new PDF file.
+
+Note: Some coloring on the document may not appear on the PDF, initially. To enable coloring for banners and buttons in the PDF:
+
+Click on More Settings in the Print Dialog to display additional options.
+
+Select the checkbox next to Background Graphics or Print Backgrounds.
+
+Pro Tip: If you Search using a keyword (e.g., cardiac), the resulting documents will display with the keyword highlighted (e.g., cardiac). If you then click the Download button to create a PDF, the keywords will remain highlighted. To remove the highlighting, search again for the document using the Document ID (e.g., A59657) and then create the PDF (without the highlighted keywords).
+
+Subscriptions
+
+Subscribe to any NCD, NCA, CAL, LCD, or Article by clicking the Subscribe button at the top of the document. View your current subscriptions by clicking the Bell icon in the navbar. An exclamation mark next to the Bell icon indicates that at least one of your subscriptions has a newer document version available. A View button in the Newer Version column indicates that a newer version of an NCD, NCA, CAL, LCD, or Article has been published on the MCD. Clicking View opens the most recent version of the document.
+
+Submit Feedback/Ask a Question
+
+Get email updates
+
+Sign up to get the latest information about your choice of CMS topics. You can decide how often to receive updates.
+
+Email
+
+Sign up - opens in a new window
+Sign up
+
+CMS & HHS Websites
+CMS & HHS Websites
+
+Medicare.gov
+
+Medicaid.gov
+
+InsureKidsNow.gov
+
+HealthCare.gov
+
+HHS.gov
+
+HHS.gov/Open
+
+About CMS
+About CMS
+
+About Us
+
+Careers
+
+Newsroom
+
+Tools
+Tools
+
+Acronyms
+
+Archive
+
+Contacts
+
+Glossary
+
+Helpful Links
+Helpful Links
+
+Privacy Policy
+
+Plain Language
+
+Nondiscrimination & Accessibility
+
+Developer Information
+
+Vulnerability Disclosure Policy
+
+USA Government Sites
+USA Government Sites
+
+Freedom of Information Act
+
+No Fear Act
+
+Inspector General
+
+USA.gov
+
+Connect with CMS
+
+Linkedin link
+
+Youtube link
+
+Facebook link
+
+Twitter link
+
+RSS Feed link
+
+A federal government website managed and paid for by the U.S. Centers for Medicare & Medicaid Services.
+
+7500 Security Boulevard, Baltimore, MD 21244
+
+Frequently Asked Questions (FAQs)
+
+Many questions can be answered on the Help & Resources page in the How To Library or by viewing the FAQs below. Please take a look and if you still have questions or would like to leave feedback, contact us!
+
+Are you a provider and have a question about billing or coding?
+
+Please contact your Medicare Administrative Contractor (MAC). MACs can be found in the MAC Contacts Report.
+
+Do you have questions related to the content of a specific Local Coverage Determination (LCD) or an Article?
+
+Please contact the Medicare Administrative Contractor (MAC) who owns the document. The contractor information can be found at the top of the document in the Contractor Information section (expand the section to see the details). MACs can also be can be found in the MAC Contacts Report.
+
+Are you a beneficiary and have questions about your coverage?
+
+Please call 1-800-Medicare or visit Medicare.gov
+
+Are you looking for codes? (e.g., CPT/HCPCS, ICD-10)
+
+Local Coverage
+
+For the most part, codes are no longer included in the LCD (policy). You will find them in the Billing & Coding Articles. Try using the MCD Search to find what you're looking for. Enter the code you're looking for in the "Enter keyword, code, or document ID" box. The list of results will include documents which contain the code you entered.
+
+Please Note: For Durable Medical Equipment (DME) MACs only, CPT/HCPCS codes remain located in LCDs. All other Codes (ICD-10, Bill Type, and Revenue) have moved to Articles for DME MACs, as they have for the other Local Coverage MAC types.
+
+National Coverage
+
+NCDs do not contain claims processing information like diagnosis or procedure codes nor do they give instructions to the provider on how to bill Medicare for the service or item. For this supplementary claims processing information we rely on other CMS publications, namely Change Requests (CR) Transmittals and inclusions in the Medicare Fee-For-Service Claims Processing Manual (CPM).
+
+In order for CMS to change billing and claims processing systems to accommodate the coverage conditions within the NCD, we instruct contractors and system maintainers to modify the claims processing systems at the national or local level through CR Transmittals. CRs are not policy, rather CRs are used to relay instructions regarding the edits of the various claims processing systems in very descriptive, technical language usually employing the codes or code combinations likely to be encountered with claims subject to the policy in question. As clinical or administrative codes change or system or policy requirements dictate, CR instructions are updated to ensure the systems are applying the most appropriate claims processing instructions applicable to the policy.
+
+How do I find out if a specific CPT code is covered in my state?
+
+Enter the CPT/HCPCS code in the MCD Search and select your state from the drop down. (You may have to accept the AMA License Agreement.) Look for a Billing and Coding Article in the results and open it. (Or, for DME MACs only, look for an LCD.) Review the article, in particular the Coding Information section.
+
+If you need more information on coverage, contact the Medicare Administrative Contractor (MAC) who published the document. The contractor information can be found at the top of the document in the Contractor Information section (expand the section to see the details).
+
+If you don’t find the Article you are looking for, contact your MAC.
+
+Did you receive a Medicare coverage denial?
+
+Was your Medicare claim denied? Here are some hints to help you find more information:
+
+1) Check out the Beneficiary card on the MCD Search page.
+
+2) Try using the MCD Search and enter your information in the "Enter keyword, code, or document ID" box. Your information could include a keyword or topic you're interested in; a Local Coverage Determination (LCD) policy or Article ID; or a CPT/HCPCS procedure/billing code or an ICD-10-CM diagnosis code. Try entering any of this type of information provided in your denial letter.
+
+3) Contact your MAC.
+
+4) Visit Medicare.gov or call 1-800-Medicare.
+
+It is Thursday and the weekly MCD data isn’t refreshed?
+
+Please use the Reset Search Data function, found in the top menu under the Settings (gear) icon. If that doesn’t work please contact technical support.
+
+Are you having technical issues with the Medicare Coverage Database (MCD)?
+
+Technical issues include things such as a link is broken, a report fails to run, a page is not displaying correctly, a search is taking an unexpectedly long time to complete. If you are having an issue like this please contact technical support.
+
+Submit Feedback/Ask a Question
+Cancel
+
+MCD Session Expiration Warning
+
+Your MCD session is currently set to expire in 5 minutes due to inactivity. If your session expires, you will lose all items in your basket and any active searches. If you would like to extend your session, you may select the Continue Button.
+
+Continue
+Cancel
+
+Reset MCD Search Data
+
+If you are experiencing any technical issues related to the search, selecting the 'OK' button to reset the search data should resolve your issues.
+
+OK
+Cancel
+
+Notice
+
+You are leaving the CMS MCD and are being redirected to the CMS MCD Archive that contains outdated (No Longer In Effect) Local Coverage Determinations and Articles
+
+Continue
+Cancel
+
+Notice
+
+You are leaving the CMS MCD and are being redirected to
+
+Continue
+Cancel
+
+MCD Alert
+
+Close
+
+Yes
+No
+Close
+
+Subscriptions
+
+Subscribe to any NCD, NCA, CAL, LCD, or Article by clicking Subscribe at the top of the page. Clicking a document ID link will take you to the subscribed version. Clicking View will take you to the latest document version available, which may not yet be in effect. Click the Trash icon to cancel your subscription(s).
+
+ID
+Title
+Newer Version
+Type
+Contractor
+
+Close

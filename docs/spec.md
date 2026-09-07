@@ -320,17 +320,35 @@ useless is the deliverable.
 
 ## 9. Open questions
 
-Two remain, both source-text questions rather than design questions. T-02 owns
-both and closes only on a quote and a span into a hashed document, so a
-criteria-tree constant traces to its source the way a determination's claims do.
+Both source-text questions are now closed by T-02, each on a quote and a span
+into a hashed document, recorded in `data/policies/source/answers.json`.
 
-1. Does A53028 require diet and activity documentation monthly or once? Feeds
-   `c5_min_documented_events`. T-01 lands a provisional value and flags it. Must
-   resolve before the eval set is labeled — the label depends on it even though
-   the code does not.
-2. Is c2's recency window 12 months? E5 is labeled against 12; the label and the
-   tree have to agree.
+1. ~~Does A53028 require diet and activity documentation monthly or once?~~
+   **Monthly.** `a53028[6339:6503]`. The same sentence is also the source for c4
+   (BMI documented) and shows c5 covers diet and activity together, not
+   separately. Feeds `c5_min_documented_events`.
+2. ~~Is c2's recency window 12 months?~~ **Yes, 12 months.** `a53028[6123:6337]`.
+   The same sentence fixes c3's qualifying run at four consecutive months, which
+   is what E4 is labeled against.
 
-Resolved: structured-versus-note BMI disagreement *(D11)*, weight-only
+One opened in their place, and it is a design question rather than a source one:
+
+3. **E3's procedure code is wrong, and sc1 may be missing an outcome.** T-02
+   found that NCD 100.1 neither covers nor non-covers 43775 — CMS delegated
+   stand-alone laparoscopic sleeve gastrectomy to the MACs effective 2012-06-27,
+   and A53028 records this MAC covering it. So §6's E3 row and T-25 both assume a
+   `NOT_COVERED` that the source contradicts. **T-35** re-points E3 at a code the
+   NCD names non-covered for all beneficiaries; **T-36** decides whether "left to
+   the contractor" is a third outcome beside `NOT_COVERED` and `NO_POLICY_FOUND`.
+   See D22. Until T-35 lands, the E3 row below is known-wrong in its code and
+   right in its expected verdict.
+
+Also settled by T-02 and worth stating once: every quantified constant in the
+criteria tree comes from A53028, a **Noridian Jurisdiction F** article, not from
+CMS. NCD 100.1 quantifies nothing. The system therefore determines coverage as
+one MAC would, and a different jurisdiction is a different tree over the same
+NCD *(D21)*.
+
+Resolved earlier: structured-versus-note BMI disagreement *(D11)*, weight-only
 documentation for c4 *(D15)*, gap-list ranking *(out of scope for v1 — ranking
 needs a cost model for closing each gap type, and nothing in v1 measures that)*.
