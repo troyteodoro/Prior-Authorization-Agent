@@ -343,6 +343,30 @@ One opened in their place, and it is a design question rather than a source one:
    See D22. Until T-35 lands, the E3 row below is known-wrong in its code and
    right in its expected verdict.
 
+Three more opened in T-01, each one a constant the criteria tree carries as
+`provisional: true` rather than as a bare number *(D23)*. Each names the task
+that must resolve it before that task can be trusted.
+
+4. **What lookback window applies to criterion (a)'s BMI?** REQ-11 evaluates (a)
+   against the most recent BMI observation "within its lookback window" and
+   neither source document defines one. A53028's only windows are 12 months for
+   program participation and six months for the multidisciplinary evaluation, and
+   neither governs the measurement. **T-13 must not invent a default.** A stale
+   BMI is the difference between a real 36 and a 36 from four years and forty
+   pounds ago.
+5. **What is `discrepancy_tolerance` for BMI?** D14 requires a materiality
+   threshold so a structured 38.1 against a note 38.0 is not listed beside 38.1
+   against 45. No source text bounds it — it is a judgment about what wastes
+   Sam's attention, not a coverage rule. **T-33 must not supply its own default.**
+6. **Is c5 a count or a rate?** A53028 governs c4 and c5 in one sentence —
+   "monthly documentation of patient's weight and BMI, current dietary regimen and
+   physical activity". REQ-40 renders the first half as *every month of the
+   qualifying run*; REQ-37 renders the second as *at least
+   `c5_min_documented_events` events*. One sentence, two shapes, and the count
+   shape is permissive in the false-`MET` direction: a seven-month run with diet
+   and activity in four months passes. **T-37** owns the reconciliation. Until it
+   lands, the constant is 4 and flagged.
+
 Also settled by T-02 and worth stating once: every quantified constant in the
 criteria tree comes from A53028, a **Noridian Jurisdiction F** article, not from
 CMS. NCD 100.1 quantifies nothing. The system therefore determines coverage as

@@ -1,0 +1,211 @@
+{
+  "policy_version_id": "ncd-100.1-jf-v1",
+  "title": "Bariatric surgery coverage, NCD 100.1 as operationalized by Noridian Jurisdiction F",
+  "compiled_by": "T-01, hand-compiled from the T-02 corpus",
+  "jurisdiction": {
+    "authority": "mac_jurisdiction_f",
+    "contractor": "Noridian Healthcare Solutions, LLC",
+    "states": ["AK", "AZ", "ID", "MT", "ND", "OR", "SD", "UT", "WA", "WY"],
+    "note": "Every quantified constant below comes from A53028, not from CMS. NCD 100.1 quantifies nothing. A different MAC is a different tree over the same NCD (D21)."
+  },
+  "sources": [
+    {
+      "document_id": "ncd_100_1",
+      "sha256": "90d811fe52412f8128df8997428f14215d6a99aa839e6f1bab057e359a399908"
+    },
+    {
+      "document_id": "a53028",
+      "sha256": "7c1ae27731a1da5ca2631d70f2712a0360673adcf9258f43d933f43157e338ec"
+    }
+  ],
+  "decision_expression": "a AND b AND c1 AND c2 AND c3 AND c4 AND c5",
+  "criteria": [
+    {
+      "id": "a",
+      "label": "BMI at or above the coverage threshold",
+      "evaluation": "deterministic",
+      "constants": {
+        "bmi_threshold": {
+          "value": 35.0,
+          "type": "number",
+          "comparison": "gte",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 5426,
+            "char_end": 5476,
+            "quote": "the patient must have a body-mass index (BMI) ≥ 35"
+          },
+          "note": "Inclusive. E12 pins the 35.0 boundary as MET."
+        },
+        "lookback_months": {
+          "value": null,
+          "type": "integer_months",
+          "provisional": true,
+          "open_question": 4,
+          "note": "REQ-11 evaluates (a) against the most recent BMI observation within a lookback window. Neither source document defines one. A53028's only windows are the 12 months for program participation and six months for the multidisciplinary evaluation, and neither governs the BMI measurement. T-13 must not invent a default."
+        }
+      },
+      "national_floor": {
+        "document_id": "ncd_100_1",
+        "char_start": 5509,
+        "char_end": 5705,
+        "quote": "are covered for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity."
+      }
+    },
+    {
+      "id": "b",
+      "label": "At least one co-morbidity related to obesity",
+      "evaluation": "deterministic",
+      "constants": {
+        "min_comorbidity_count": {
+          "value": 1,
+          "type": "integer",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 5482,
+            "char_end": 5535,
+            "quote": "at least one co-morbidity related to obesity. Further"
+          }
+        },
+        "value_set_id": {
+          "value": "obesity_comorbidities",
+          "type": "string",
+          "note": "Referenced, not inlined. A53028's Group 1 holds 543 ICD-10-CM codes; T-05 builds and verifies the set against real codes. Inlining it would make every diff of this file unreviewable (D3, D23)."
+        }
+      }
+    },
+    {
+      "id": "c1",
+      "label": "A physician-supervised weight management program is documented",
+      "evaluation": "deterministic",
+      "constants": {
+        "min_events": {
+          "value": 1,
+          "type": "integer",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 6197,
+            "char_end": 6296,
+            "quote": "in a weight-management program that is supervised by a physician or other health care professionals"
+          },
+          "note": "Existence check. REQ-9 already excludes unsupervised attempts at extraction, so membership in wm_events is the supervision claim (REQ-36, D13). Zero events is INSUFFICIENT_EVIDENCE, never NOT_MET."
+        }
+      }
+    },
+    {
+      "id": "c2",
+      "label": "The qualifying run is recent enough",
+      "evaluation": "deterministic",
+      "scoped_to": "c3",
+      "constants": {
+        "recency_window_months": {
+          "value": 12,
+          "type": "integer_months",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 6144,
+            "char_end": 6196,
+            "quote": "within the last 12 months prior to bariatric surgery"
+          },
+          "note": "Answers spec open question 2. REQ-32 forbids hardcoding it; this entry is where it lives."
+        }
+      }
+    },
+    {
+      "id": "c3",
+      "label": "The program ran for a minimum number of consecutive months",
+      "evaluation": "deterministic",
+      "constants": {
+        "min_consecutive_months": {
+          "value": 4,
+          "type": "integer_months",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 6297,
+            "char_end": 6337,
+            "quote": "for a minimum of four consecutive months"
+          },
+          "note": "REQ-14 buckets event dates by calendar month and takes the longest run of consecutive populated months. A run of one to three months is NOT_MET; zero events is INSUFFICIENT_EVIDENCE."
+        }
+      }
+    },
+    {
+      "id": "c4",
+      "label": "BMI documented in every month of the qualifying run",
+      "evaluation": "deterministic",
+      "scoped_to": "c3",
+      "constants": {
+        "documentation_rate": {
+          "value": "every_month_of_run",
+          "type": "rate",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 6339,
+            "char_end": 6503,
+            "quote": "The weight-management program must include monthly documentation of patient’s weight and BMI, current dietary regimen and physical activity (e.g. exercise program)."
+          },
+          "note": "REQ-40. A documented BMI, not one derived from a weight plus an on-file height — a derived value has no single span to cite (D15)."
+        }
+      }
+    },
+    {
+      "id": "c5",
+      "label": "Diet and activity documented across the qualifying run",
+      "evaluation": "deterministic",
+      "scoped_to": "c3",
+      "constants": {
+        "c5_min_documented_events": {
+          "value": 4,
+          "type": "integer",
+          "provisional": true,
+          "open_question": 6,
+          "source": {
+            "document_id": "a53028",
+            "char_start": 6339,
+            "char_end": 6503,
+            "quote": "The weight-management program must include monthly documentation of patient’s weight and BMI, current dietary regimen and physical activity (e.g. exercise program)."
+          },
+          "note": "The value is monthly documentation across c3's four-month minimum run, so at the minimum run length it is exact. Above it the constant is a floor where the source states a rate, which is permissive in the false-MET direction. The same sentence is rendered per-month for c4 (REQ-40) and as a count here (REQ-37); one sentence, two shapes. T-37 reconciles them (D23)."
+        },
+        "requires_both_diet_and_activity": {
+          "value": true,
+          "type": "boolean",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 6339,
+            "char_end": 6503,
+            "quote": "The weight-management program must include monthly documentation of patient’s weight and BMI, current dietary regimen and physical activity (e.g. exercise program)."
+          },
+          "note": "One sentence requires both, so c5 counts an event only when diet_documented and activity_documented are both true (REQ-38)."
+        },
+        "pharmacological_management_alone_insufficient": {
+          "value": true,
+          "type": "boolean",
+          "source": {
+            "document_id": "a53028",
+            "char_start": 6507,
+            "char_end": 6634,
+            "quote": "Physician-supervised programs consisting exclusively of pharmacological management are not sufficient to meet this requirement."
+          },
+          "note": "Recorded because it is policy, and dropped constants are how a tree drifts from its source. No predicate consumes it at v1; a program that is exclusively pharmacological is not distinguishable from wm_events alone."
+        }
+      }
+    }
+  ],
+  "reconciled_facts": [
+    {
+      "fact": "bmi",
+      "structured_source": "fhir_observation",
+      "note_source": "wm_event.bmi",
+      "authoritative": "structured",
+      "discrepancy_tolerance": {
+        "value": null,
+        "type": "number_absolute",
+        "provisional": true,
+        "open_question": 5,
+        "note": "REQ-39 records a disagreement only at or beyond this tolerance, and D14 is explicit that a structured 38.1 against a note 38.0 is a rounding artifact while 38.1 against 45 is the case the list exists for. No source text bounds it — it is a judgment about what wastes a reviewer's attention, not a coverage rule. T-33 must not supply its own default."
+      },
+      "note": "REQ-34: the structured value is authoritative and the disagreement is advisory, unless the two fall on opposite sides of bmi_threshold, in which case the criterion resolves INSUFFICIENT_EVIDENCE with gap_reason SOURCE_CONFLICT (D11)."
+    }
+  ]
+}
