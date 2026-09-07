@@ -27,12 +27,26 @@ The gate asserts a number was measured, not that it cleared a bar. A spike
 answering "unreliable" is a successful spike; the bar is the second kill
 criterion. *(D10)*
 
-### `[ ] T-01` Hand-compile NCD 100.1 criteria tree
-**REQ:** 32, 37, 39
+### `[x] T-01` Hand-compile NCD 100.1 criteria tree
+**REQ:** 32, 37, 39 · **Depends:** T-02, for the constants and their spans
 **Exit:** `pytest tests/test_criteria_tree.py` — the file parses and every
 policy-supplied constant is present and typed: c2's recency window,
 `c5_min_documented_events`, and `discrepancy_tolerance` per reconciled fact. Any
 provisional value carries `provisional: true` naming the open question it awaits.
+
+**Closed by D23.** `data/policies/ncd_100_1_jf.json`, `policy_version_id`
+`ncd-100.1-jf-v1`. Sourced: BMI ≥ 35 inclusive, one comorbidity, c2 at 12 months,
+c3 at four consecutive months, c4 per-month BMI, c5 requiring both diet and
+activity. Provisional and flagged: criterion (a)'s lookback (question 4),
+`discrepancy_tolerance` (question 5), `c5_min_documented_events` (question 6).
+
+Beyond the stated exit, every sourced constant carries a
+`(document_id, char_start, char_end)` the test slices out of the hashed corpus,
+and the tree records the corpus hashes so a moved document fails the gate rather
+than mis-citing quietly. Mutation-tested eight ways — a missing constant, a wrong
+type, a ghost open question, a null without its flag, a shifted offset, a stale
+corpus hash, a criterion dropped from the decision expression, and a numeric
+constant sourced to the NCD — each caught by the test that should catch it.
 
 ### `[x] T-02` Download and hash policy source documents
 **Serves:** US-2, since spans anchor here · **Answers:** open questions 1, 2
@@ -397,6 +411,29 @@ single-jurisdiction corpus (D21) the MAC's article settles it and the question
 looks academic; it stops being academic the moment a second jurisdiction exists,
 and Article IV's whole argument is that states which read alike must not merge
 before anyone notices.
+
+### `[ ] T-37` Reconcile REQ-37 with the source: is c5 a count or a rate?
+**REQ:** 37, 40 · **Blocks:** T-16 · **Discovered in:** T-01 *(D23)* ·
+**Answers:** open question 6
+**Exit:** a decision entry resolving it, then `pytest tests/test_criteria_tree.py`
+— `c5_min_documented_events` is either sourced and no longer `provisional`, or
+replaced by a rate constant shaped like c4's `documentation_rate`. A seven-month
+qualifying run documenting diet and activity in four of its months must resolve
+the way the entry says it should, and the case must exist in the test.
+
+A53028 governs c4 and c5 in one sentence — "monthly documentation of patient's
+weight and BMI, current dietary regimen and physical activity". REQ-40 renders
+the first half as *every month of the qualifying run*; REQ-37 renders the second
+as *at least `c5_min_documented_events` events*. One sentence, two shapes.
+
+The count shape is permissive in the false-`MET` direction, which is the wrong
+direction for a system whose entire argument is that it abstains rather than
+guesses. T-01 landed the constant at 4 and flagged it rather than rewriting
+REQ-37 while implementing it — a requirement changed by the task that implements
+it is a requirement nobody agreed to.
+
+Do this before T-16 builds the predicate. Afterwards it is a behavior change with
+eval cases already labeled against it.
 
 ---
 

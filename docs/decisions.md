@@ -808,6 +808,86 @@ implementation detail.
 
 ---
 
+## D23 — Every constant in the criteria tree carries a span, or carries `provisional`
+
+**Chosen:** `data/policies/ncd_100_1_jf.json` is the criteria tree. Each
+criterion declares its constants and a `source` citation —
+`(document_id, quote, char_start, char_end)` into the T-02 corpus — and the tree
+binds to that corpus by recording each document's `sha256`. A constant with no
+source text is not written as a bare number: it carries `provisional: true` and
+the `open_question` it awaits.
+
+**Why a span per constant.** T-02 established that an answer without a span does
+not count. A criteria-tree constant is the same kind of claim: "the recency
+window is 12 months" is either in the source or it is someone's memory. Article
+III's argument does not stop at patient facts — the reason it exists is that an
+unverifiable citation is worse than none, and a threshold nobody can trace is
+exactly that. The gate slices every quote back out of the hashed document, so a
+paraphrased policy constant fails.
+
+**Why bind to the source hashes.** A tree citing offsets into a document that has
+since changed is citing nothing. The binding makes that a test failure rather
+than a silent mis-citation, and it is the same guard T-34 put on the model pin.
+
+**Rejected — inline the comorbidity value set.** A53028's Group 1 holds 543
+ICD-10-CM codes. The tree names the value set `obesity_comorbidities`; T-05 owns
+building and verifying it against real codes. A 543-entry literal in the tree
+would make every diff unreviewable, which defeats D3's whole reason for the tree
+being a file.
+
+**Rejected — omit the provisional constants until they are answered.** A tree
+missing `discrepancy_tolerance` would let T-33 supply its own default, which is
+how an unreviewed number ends up in a determination. Present-and-flagged beats
+absent: the flag is visible in the diff and in the test output, an absence is not.
+
+### Three constants are provisional, and none of them is in the source
+
+- **Criterion (a)'s lookback window.** REQ-11 evaluates (a) against "the most
+  recent BMI observation within its lookback window". Neither document defines
+  one. A53028's only windows are the 12 months for program participation and six
+  months for the multidisciplinary evaluation, and neither governs the BMI
+  measurement. Open question 4.
+- **`discrepancy_tolerance`.** D14 requires a materiality threshold so that a
+  structured 38.1 against a note 38.0 is not reported beside 38.1 against 45.
+  That is a judgment about what wastes Sam's attention, not a coverage rule, and
+  no source text bounds it. Open question 5.
+- **`c5_min_documented_events`.** See below — the value is derivable, the shape
+  is not.
+
+### The c5 shape does not match the source, and the value hides it
+
+A53028 governs c4 and c5 in **one sentence**: "The weight-management program must
+include monthly documentation of patient's weight and BMI, current dietary
+regimen and physical activity". REQ-40 renders the weight/BMI half as *every
+month of the qualifying run*. REQ-37 renders the diet/activity half as *at least
+`c5_min_documented_events` events in the run*. One sentence, two shapes.
+
+The count shape is wrong in the permissive direction. With
+`c5_min_documented_events` fixed at 4, a seven-month qualifying run documenting
+diet and activity in only four of its months passes c5, while the source requires
+it monthly. That is a false `MET` — the direction that matters, and the one an
+abstention-first design is supposed to be built against.
+
+**Chosen:** land `c5_min_documented_events: 4` — monthly documentation across
+c3's four-month minimum run — and mark it `provisional: true` against open
+question 6. At the minimum run length the constant is exactly right; above it the
+constant is a floor where the source states a rate.
+
+**Rejected — set it to a large number.** Trades a false `MET` for a false
+`NOT_MET` and misreports the policy in the other direction.
+
+**Rejected — quietly change c5 to c4's per-month shape.** REQ-37 is spec and
+outranks a prompt or a preference. Rewriting it while implementing it is the
+move working rule 5 exists to prevent, and the resulting tree would satisfy a
+requirement nobody had agreed to. **T-37** carries the reconciliation as its own
+task with its own decision.
+
+**Reverses if:** T-37 resolves open question 6 toward the per-month shape. Then
+`c5_min_documented_events` stops being a count and becomes a rate, and this entry
+is superseded rather than edited.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
