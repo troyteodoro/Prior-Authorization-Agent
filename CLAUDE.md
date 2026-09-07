@@ -117,19 +117,36 @@ docs/
 
 ## Current state
 
-**T-03 is closed.** `python scripts/check_skeleton.py` returns zero: target
-layout present, `google-adk` at 2.8.0, `pa_agent.agent` imports with a reachable
-`root_agent`, and a spawned `adk web` answers 200 on `/list-apps` naming the
-agent before the script terminates it.
+**T-03 and T-00 are closed.** `python scripts/check_skeleton.py` returns zero:
+target layout present, `google-adk` at 2.8.0, `pa_agent.agent` imports with a
+reachable `root_agent`, and a spawned `adk web` answers 200 on `/list-apps`
+naming the agent before the script terminates it.
+`python spike/spike_001/run.py --verify` returns zero and spends no model call.
 
-The skeleton is empty scaffolding. `pa_agent/agent/agent.py` is still the
-unmodified `adk create` template — a generic assistant on the default model, not
-any part of the design. Directories carry `.gitkeep` and nothing else. No
-criteria tree, no schemas, no data, no tests.
+**D2 survives first contact (D19).** Three complete runs of five hand-labeled
+notes on `gemini-3.5-flash-lite` at temperature 0: event precision 1.000, recall
+1.000, REQ-9 exclusion 51/51, identical event dates on every note across runs.
+Read D19's caveats before quoting any of that — 30 of the 51 traps are merely
+unrelated sections, so **21/21 is the honest number** against the kill criterion,
+and the corpus is five notes Troy wrote scored against labels Troy wrote.
 
-Spike 001 (T-00) has not run, so D2 — the assumption the whole design rests on —
-is still untested.
+**The model cannot produce character offsets.** 0 of 80 emitted
+`char_start`/`char_end` pairs were usable, even compared modulo whitespace.
+Spans are located by searching for the model's verbatim quote — exact first,
+then whitespace-normalized, always recording raw offsets (D18). T-15 has to
+build this; it is not optional machinery, and D17's plan to take the model's
+offsets directly is dead.
 
-Active task: **none. Pick the next one before writing code.** T-00 is the
-candidate with the most leverage, since it is the only task that can invalidate
-D2, and T-09, T-15 and all of US-4 sit behind it.
+Outside the spike the skeleton is still empty scaffolding.
+`pa_agent/agent/agent.py` remains the `adk create` template — a generic
+assistant, not any part of the design. No criteria tree, no schemas, no policy
+data, no tests.
+
+Two loose ends, both needing a decision before anything depends on them:
+`DEFAULT_MODEL` in `spike/spike_001/run.py` is `gemini-2.5-flash-lite` while D19
+was measured on `gemini-3.5-flash-lite`, so a bare `run.py` re-measures on a
+different model and overwrites the finding; and the working tree carries an
+undocumented model change to `pa_agent/agent/agent.py`.
+
+Active task: **none. Pick the next one before writing code.** T-15 is now
+unblocked, and T-09's schemas are what most other work sits behind.

@@ -1,0 +1,36 @@
+RIVERBEND INTERNAL MEDICINE
+Patient: Okonkwo, Adaeze              MRN: 883014
+DOB: 1985-11-30                       Sex: F
+
+WEIGHT MANAGEMENT PROGRAM - CONSOLIDATED VISIT RECORD
+Supervising physician: M. Halloran, DO.
+
+02/11/2025 - Program visit. Weight 118.9 kg, BMI 43.7 recorded. Reviewed
+calorie-controlled meal plan, 1600 kcal. Activity goal set at 15 minutes of
+walking daily.
+
+03/13/2025 - Program visit. Weight 117.2 kg, BMI 43.1. Dietary counseling on
+carbohydrate distribution across meals. Walking increased to 25 minutes daily.
+
+04/10/2025 - Program visit. Weight 116.4 kg, BMI 42.8. Reviewed food diary in
+detail. Reports walking 25 minutes, five days per week.
+
+05/08/2025 - Patient did not attend scheduled program visit. Marked as no-show
+by front desk. No clinical encounter took place.
+
+05/22/2025 - Rescheduled program visit cancelled by patient the morning of the
+appointment. Not seen.
+
+05/29/2025 - Outreach call placed to patient regarding missed appointments.
+No answer; voicemail left. No clinical contact established.
+
+06/12/2025 - Program visit. Weight 117.8 kg, BMI 43.3. Discussed the lapse in
+attendance. Meal plan reviewed and restarted at 1600 kcal. Activity goal reset
+to 20 minutes daily.
+
+07/10/2025 - Program visit. Weight 116.9 kg, BMI 43.0. Dietary adherence
+improving. Walking 20 minutes, four days per week.
+
+NOTE
+Attendance gap during May 2025. Program participation otherwise ongoing since
+February 2025.

@@ -405,6 +405,247 @@ constant in the script rather than a default.
 
 ---
 
+## D17 — Spike 001 scores on the event date, anchors spans by quote, and `--verify` re-reads rather than re-runs
+
+*D10 decided what spike 001 measures. This decides how it counts, which is the
+half that can quietly produce a flattering number.*
+
+**Chosen, four parts.**
+
+*The match key is the event date.* An extracted `wm_event` matches a labeled one
+when the ISO dates are equal. Precision is matched over extracted, recall is
+matched over labeled, per note.
+
+**Rejected: match on span overlap.** It credits the model for citing the right
+passage while reading the wrong date out of it. c3 buckets by calendar month
+under REQ-14, so a correct span carrying a wrong date is a wrong event with a
+citation that makes it look right — the worst failure this system has, scored as
+a success.
+
+**Rejected: require date *and* span overlap.** Stricter, and it collapses two
+independent failures into one number. Date accuracy and span accuracy get
+reported separately so a bad number says which half broke.
+
+*Spans are anchored by quote, not by model-emitted offsets.* The model returns a
+verbatim `quote` plus its own `char_start`/`char_end`. Python locates the quote
+with `str.find` and the **located** offsets are what get scored, gated, and
+carried forward. The model's own integers are recorded and their agreement rate
+reported as a finding.
+
+**Why:** Article III requires the span be verified by slicing, not that the model
+produce the integers. A quote that does not occur in the document fails on
+`find` returning -1 — the same string comparison, at the same place in the
+pipeline. Character counting is the one part of this the model is known to be
+bad at, and gating the spike on it would fail extraction for a reason with a
+trivial fix, teaching us nothing about REQ-8.
+
+**Rejected: gate on model-emitted offsets.** Closer to the literal REQ-10
+reading, and it is the number T-11 will have to reject against. But if it is
+near-zero the spike reports "extraction is unreliable" when extraction was fine
+and arithmetic was not. Measuring both costs one field and tells T-15 which
+mechanism to build.
+
+*Three runs at temperature 0, per-run and aggregate both recorded.* Fifteen
+calls total.
+
+**Rejected: a single run.** D10 already concedes five notes catch "this does not
+work at all," not a rate. A single run cannot distinguish a model that is wrong
+from a model that is unstable, and T-15 plans to reuse these notes as regression
+cases — which is only sound if the same note yields the same events twice.
+
+*`run.py` measures; `run.py --verify` checks the recorded artifacts and spends
+no model call.* `--verify` re-hashes every note file, re-slices every recorded
+span against the note on disk, and asserts the decisions entry quotes the
+precision that `results.json` holds.
+
+**Rejected: `--verify` re-runs extraction.** Then the gate's answer varies
+between invocations, and the number in `docs/decisions.md` can silently diverge
+from the number the gate just measured. It also spends free-tier quota — D5
+throttles this to eight to eleven runs a day — every time anyone checks whether
+the task is closed.
+
+**Rejected: `--verify` checks only that the files exist.** A stale
+`results.json` would then pass forever against notes that had changed
+underneath it. The note hashes recorded at measurement time are what make the
+re-read honest; a hash mismatch fails the gate and demands a re-measure.
+
+*Each note gets a fresh ADK session.* `Runner.run_async` with a new session per
+note, not `Runner.run_debug`, whose shared default `session_id` would carry note
+N−1 into note N's context and contaminate every number after the first.
+
+**Cost:** The quote-anchoring choice pushes a real risk into T-15 rather than
+retiring it — a quote appearing twice in a note anchors to the first occurrence,
+which is the wrong span whenever the second was meant. The spike records
+multi-occurrence quotes as a separate count so T-15 knows how often that is
+live. Scoring on the date means an event carrying the right date and a span
+pointing somewhere unrelated scores as a hit; the separately reported span
+numbers are what catch that.
+
+**Reverses if:** Model-emitted offsets turn out to agree with the located ones
+at a high rate, in which case quote anchoring is unnecessary machinery and T-15
+takes the offsets directly. Or multi-occurrence quotes are common, in which case
+anchoring needs a disambiguating window and the schema gains a context field.
+
+---
+
+## D18 — A quote anchors modulo whitespace, and the offsets recorded are still raw
+
+*Reverses the anchoring half of D17 in one respect. D17 held that `str.find`
+returning -1 means the quote was fabricated. It also means the document was
+line-wrapped, which is a different fact with a different remedy.*
+
+**Chosen.** Anchoring collapses every run of whitespace to a single space in
+both the document and the quote, locates the quote in that normalized text, and
+maps the hit back through an index table to offsets **into the unmodified
+document**. What gets recorded, gated and carried forward is still a raw
+`(document_id, char_start, char_end)` whose slice of the real file is the cited
+passage — newlines and all. The acceptance test becomes
+`normalize(text[start:end]) == normalize(quote)`.
+
+**Why:** Article III requires the span be verified by slicing the source before
+acceptance. It does not require the model to reproduce the source's line
+breaks. The spike's own notes hard-wrap at about 76 columns, as EHR-exported
+text does, so a quote long enough to cross a wrap point fails exact `find` for a
+property of the document rather than any property of the claim. The failure rate
+therefore rises with quote length — the mechanism penalizes exactly the quotes
+that carry the most context. Worse, it makes one signal mean two things: `-1`
+currently reads as "the model invented this," and a fabricated citation is the
+single worst failure available to this system. Conflating it with a formatting
+artifact destroys the signal that matters.
+
+The verification predicate stays exact string equality. Only the equivalence
+class changes, and whitespace-insensitivity has no tuning surface: two runs of
+whitespace either collapse to the same string or they do not. Nothing here is a
+judgment, and no model participates.
+
+**Rejected: keep exact `find`, and treat this as the model's problem.** The
+literal reading of D17, and it is the stricter gate. But measured over the 80
+spans already recorded, 77 anchor exactly and 3 need normalization — all three
+being the same long assertion in `n03_assertion_only`, the note whose entire
+purpose is to carry an unsubstantiated claim. Under exact matching that note's
+only citable passage is unciteable, so REQ-9's assertion path goes untested by
+the spike that exists to test it. Failing a real citation for the source
+document's word-wrap is a false negative in the one direction this project
+cannot afford to be sloppy about, because it makes an honest model look
+fabricating.
+
+**Rejected: fuzzy matching on edit distance or a similarity ratio.** This is the
+alternative that looks equivalent and is not. Normalization admits quotes
+differing only in whitespace; a similarity threshold admits quotes differing in
+*words*. It introduces a knob, and once a knob exists the gate's answer depends
+on where it is set rather than on what the document says — which is precisely
+the property Article III buys. A threshold generous enough to absorb a line wrap
+is generous enough to absorb a changed date.
+
+**Rejected: unwrap the notes on disk so exact `find` works.** Repairs the corpus
+instead of the mechanism, and lies about the production case, where the span has
+to point into whatever the source document actually is. It would also break
+every recorded note hash and force a re-measurement — 15 calls against D5's
+free-tier budget — to fix a defect in scoring rather than in extraction.
+
+**Rejected: re-prompt the model for a shorter or unique quote on a miss.** Spends
+model calls to fix something Python fixes for free, and makes the failure path
+model-dependent. D17 already put on record that character arithmetic is the part
+the model is bad at; asking it to retry is asking it to do the thing it cannot.
+
+**Changing the anchor rule does not cost a re-measurement.** `--rescore` gains
+the ability to re-anchor from the quotes already recorded in `results.json`,
+which is sound only because `--verify` re-hashes every note first: re-anchoring
+against a note that changed underneath the recording would be scoring a quote
+against a document it never came from. Each span records which mode anchored it,
+so the rate of normalization-only hits is a reported finding rather than a
+detail buried in the mechanism.
+
+**Cost:** Whitespace-insensitivity admits more than line wrapping. A vitals
+table whose column gaps the model collapses into single spaces will now anchor,
+and the raw slice returned covers a layout the model may have misread — the
+citation is honest about *where* it looked while the reading of that region goes
+unchecked. Collapsing whitespace also enlarges the collision surface for D17's
+known multi-occurrence risk, since two passages differing only in spacing become
+one string. Neither has appeared yet: across 80 spans, normalization moved no
+already-anchored span, produced no new multi-occurrence hit, and every
+normalized span round-tripped. That is three observations of one phenomenon in
+one note, which is enough to justify the mechanism and not enough to call it
+characterized.
+
+**Reverses if:** A normalized hit anchors a span whose raw slice a human reads as
+a different claim than the quote — the tabular case above — in which case
+anchoring has to preserve intra-line spacing and relax only across line breaks.
+Or normalization-only hits stay this rare in a larger corpus and correlate with
+quote length, in which case a maximum quote length in the prompt retires the
+mechanism and exact `find` returns.
+
+---
+
+## D19 — Spike 001 result: the extraction holds, the model's own offsets do not
+
+*A finding, not a choice, so it carries no rejected alternative. It is logged
+here because D10 made a measured number T-00's exit condition and because D2 —
+the assumption the entire design rests on — was until now untested.*
+
+**Measured** 2026-09-07, `gemini-3.5-flash-lite` at temperature 0, three
+complete runs over five hand-labeled notes. Fifteen calls, 24,645 tokens,
+108.66 s wall.
+
+| | |
+|---|---|
+| event precision | **1.000**, every run |
+| event recall | **1.000**, every run |
+| REQ-9 exclusion recall | **1.000** — 51/51 traps held out |
+| identical event dates across runs | all five notes |
+| field agreement on matched events | 23/23 for `bmi_documented`, `diet_documented`, `activity_documented` |
+| spans anchored | 80/80 emitted |
+| spans needing D18 normalization | 3 (3.75%) |
+| **model-emitted offsets usable** | **0/80** |
+| multi-occurrence quotes | 0 |
+
+**D2 survives first contact.** One call per note returned correct weight
+management encounters with citable spans, excluded what REQ-9 excludes, and
+returned the same dates on every run. Zero false positives across 69 scored
+events. The stability result is the one T-15 most needed: these notes are usable
+as regression cases, which was only sound if a note yields the same events twice.
+D12's distinction also held — n03's unsubstantiated claim was captured as a
+`program_assertion` and never as an event, in all three runs.
+
+**The offsets are the real finding.** Not one of the 80 model-emitted
+`char_start`/`char_end` pairs was correct, and not one sliced back to its own
+quote *even under D18's whitespace-insensitive comparison*. This is not
+off-by-one arithmetic; it is arithmetic that does not work at all. D17's
+reversal condition — offsets agreeing at a high rate, so T-15 takes them
+directly — is dead. Quote anchoring is not optional machinery, it is the only
+reason this spike produced a number, and T-15 must build it. The model's own
+offsets are not worth carrying past this spike.
+
+**What this does not establish.** The corpus is five notes Troy wrote, scored
+against labels Troy wrote. A perfect score on it means the approach does not
+obviously fail; it is not evidence that it works, and D10 conceded this before
+the measurement rather than after.
+
+Three specific limits, so the 1.000 is not quoted later as more than it is:
+
+- **The traps are easier than the headline suggests.** Of the 51 trap instances,
+  30 are `unrelated_section` — a colonoscopy date under HEALTH MAINTENANCE, an
+  immunization, a date in family or past surgical history. Excluding those is
+  not the hard part of REQ-9. The REQ-9-shaped traps are the other 21:
+  `unsupervised_attempt` (9), `missed_visit` (6), `unsuccessful_contact` (6).
+  **21/21 is the number to quote against the kill criterion**, and 21 is a small
+  n. The missed-visit-inside-a-gap-month case that E10b turns on is 6 of them.
+- **Precision is micro-averaged over four notes.** n03 labels zero events, so its
+  per-note precision is undefined and it contributes only if the model invents
+  an encounter. It did not.
+- **One model, one temperature, one prompt.** Nothing here says the prompt
+  survives real EHR text, whose section headers and wrapping differ from notes
+  written to be read.
+
+**Kill criterion cleared.** REQ-9 exclusion recall floor is 0.9; measured 1.000.
+Retrieval work proceeds. No prompt tuning was spent — this is the first
+formulation, which is itself a reason to distrust the number.
+
+**What would change this:** a sixth note drawn from real chart text rather than
+written for the spike. That is T-15's first job, not a reason to hold T-00 open.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

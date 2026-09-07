@@ -1,0 +1,95 @@
+{
+  "_about": "Hand-written ground truth for spike 001. Scored per D17: an event matches on ISO date. 'traps' are dates present in the note that REQ-9 forbids becoming events; excluding all of them is the REQ-9 exclusion count. 'hint' is a literal substring of the note, asserted to occur by run.py --verify so a typo here fails loudly instead of depressing the model's score.",
+  "_assertion_scoring": "program_assertions are not scored for precision. REQ-35's only consumer is REQ-31, which fires on zero events, so the assertion label is required only where a claim stands with no encounter behind it. Counts are recorded for every note as an observation.",
+  "notes": [
+    {
+      "note_id": "n01_clean_run",
+      "file": "notes/n01_clean_run.txt",
+      "shape": "Six consecutive supervised monthly visits, fully documented. The baseline: if this one is wrong, nothing downstream is worth measuring.",
+      "program_assertion_required": false,
+      "events": [
+        {"date": "2025-01-09", "hint": "01/09/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-02-06", "hint": "02/06/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-03-06", "hint": "03/06/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-04-03", "hint": "04/03/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-05-08", "hint": "05/08/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-06-05", "hint": "06/05/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true}
+      ],
+      "traps": [
+        {"date": "2016-08-14", "hint": "08/14/2016", "reason": "unrelated_section", "detail": "past surgical history"},
+        {"date": "2011-03-02", "hint": "03/02/2011", "reason": "unrelated_section", "detail": "past surgical history"}
+      ]
+    },
+    {
+      "note_id": "n02_gap_month_missed_visits",
+      "file": "notes/n02_gap_month_missed_visits.txt",
+      "shape": "E9. Three visits, a May 2025 gap month holding two missed visits and one failed outreach call, then two more visits. Counting any May date as an event turns a longest run of 3 into a run of 6 and flips c3 from NOT_MET to MET.",
+      "program_assertion_required": false,
+      "events": [
+        {"date": "2025-02-11", "hint": "02/11/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-03-13", "hint": "03/13/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-04-10", "hint": "04/10/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-06-12", "hint": "06/12/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-07-10", "hint": "07/10/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true}
+      ],
+      "traps": [
+        {"date": "2025-05-08", "hint": "05/08/2025", "reason": "missed_visit", "detail": "no-show, in the gap month"},
+        {"date": "2025-05-22", "hint": "05/22/2025", "reason": "missed_visit", "detail": "cancelled by patient, in the gap month"},
+        {"date": "2025-05-29", "hint": "05/29/2025", "reason": "unsuccessful_contact", "detail": "outreach call, no answer, in the gap month"}
+      ]
+    },
+    {
+      "note_id": "n03_assertion_only",
+      "file": "notes/n03_assertion_only.txt",
+      "shape": "E8, the refusal test. A completion claim with no encounter behind it. Correct extraction yields zero events and at least one program assertion.",
+      "program_assertion_required": true,
+      "events": [],
+      "traps": [
+        {"date": "2021-06-30", "hint": "06/30/2021", "reason": "unrelated_section", "detail": "health maintenance, colonoscopy"},
+        {"date": "2024-10-12", "hint": "10/12/2024", "reason": "unrelated_section", "detail": "immunization"},
+        {"date": "2025-08-04", "hint": "08/04/2025", "reason": "unrelated_section", "detail": "administrative, referral placed"},
+        {"date": "2025-08-19", "hint": "08/19/2025", "reason": "unrelated_section", "detail": "administrative, pre-authorization initiated"}
+      ]
+    },
+    {
+      "note_id": "n04_unsupervised_prior_attempts",
+      "file": "notes/n04_unsupervised_prior_attempts.txt",
+      "shape": "Prior non-supervised attempts carrying real dates, plus one failed outreach call, alongside four genuine supervised visits.",
+      "program_assertion_required": false,
+      "events": [
+        {"date": "2025-08-05", "hint": "08/05/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-09-02", "hint": "09/02/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-10-07", "hint": "10/07/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-11-04", "hint": "11/04/2025", "bmi_documented": true, "diet_documented": true, "activity_documented": true}
+      ],
+      "traps": [
+        {"date": "2022-03-07", "hint": "03/07/2022", "reason": "unsupervised_attempt", "detail": "commercial program enrollment, no physician supervision"},
+        {"date": "2022-09-19", "hint": "09/19/2022", "reason": "unsupervised_attempt", "detail": "commercial program discontinued"},
+        {"date": "2023-01-15", "hint": "01/15/2023", "reason": "unsupervised_attempt", "detail": "self-directed ketogenic diet trial"},
+        {"date": "2025-09-16", "hint": "09/16/2025", "reason": "unsuccessful_contact", "detail": "outreach call, no answer"}
+      ]
+    },
+    {
+      "note_id": "n05_two_programs_sparse_bmi",
+      "file": "notes/n05_two_programs_sparse_bmi.txt",
+      "shape": "E11 and E6 together. Two distinct supervised courses a year apart, both genuine encounters, with BMI documented in only some months. Extraction must emit all eight; deciding which run qualifies is c2 and c3, in Python.",
+      "program_assertion_required": false,
+      "events": [
+        {"date": "2024-03-12", "hint": "03/12/2024", "bmi_documented": true,  "diet_documented": true, "activity_documented": true},
+        {"date": "2024-04-09", "hint": "04/09/2024", "bmi_documented": false, "diet_documented": true, "activity_documented": true},
+        {"date": "2024-05-14", "hint": "05/14/2024", "bmi_documented": false, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-02-04", "hint": "02/04/2025", "bmi_documented": true,  "diet_documented": true, "activity_documented": true},
+        {"date": "2025-03-04", "hint": "03/04/2025", "bmi_documented": false, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-04-01", "hint": "04/01/2025", "bmi_documented": true,  "diet_documented": true, "activity_documented": true},
+        {"date": "2025-05-06", "hint": "05/06/2025", "bmi_documented": false, "diet_documented": true, "activity_documented": true},
+        {"date": "2025-06-03", "hint": "06/03/2025", "bmi_documented": true,  "diet_documented": true, "activity_documented": true}
+      ],
+      "traps": [
+        {"date": "1998-11-22", "hint": "11/22/1998", "reason": "unrelated_section", "detail": "family history"},
+        {"date": "2004-04-16", "hint": "04/16/2004", "reason": "unrelated_section", "detail": "family history"},
+        {"date": "2019-05-19", "hint": "05/19/2019", "reason": "unrelated_section", "detail": "immunization"},
+        {"date": "2023-09-28", "hint": "09/28/2023", "reason": "unrelated_section", "detail": "immunization"}
+      ]
+    }
+  ]
+}

@@ -12,7 +12,7 @@ breaks every reference to them.
 
 ## Enablers — before any story
 
-### `[ ] T-00` Spike 001: extraction fidelity on hand-written notes
+### `[x] T-00` Spike 001: extraction fidelity on hand-written notes
 **Type:** spike · **REQ:** 8, 9, 10 · **Informs:** US-4 · **Blocks:** T-15
 **Timebox:** four hours
 **Exit:** `python spike/spike_001/run.py --verify` —
