@@ -1,0 +1,25 @@
+{
+  "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+  "bundle": "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "E8",
+    "E10b"
+  ],
+  "wm_programs": [],
+  "program_assertions": [
+    {
+      "date": "2026-07-02",
+      "claim": "patient reports completing a six-month medically supervised weight-loss program last year; no visit records available",
+      "note_bmi": 36.2
+    }
+  ],
+  "traps": [
+    {
+      "type": "unsupervised_attempt",
+      "date": "2026-01-20",
+      "description": "patient mentions calorie-tracking app used on her own"
+    }
+  ],
+  "rationale": "E8: the refusal test — a completion claim with no encounters behind it yields zero wm_events and one program_assertions[] span; c3 abstains with UNSUBSTANTIATED_ASSERTION. E10b: the same note records BMI 36.2 against a structured 34.6 — the disagreement crosses 35.0, so criterion (a) resolves INSUFFICIENT_EVIDENCE with SOURCE_CONFLICT."
+}

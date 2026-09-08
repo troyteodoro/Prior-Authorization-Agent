@@ -1,0 +1,71 @@
+{
+  "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+  "bundle": "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "E4",
+    "E9"
+  ],
+  "wm_programs": [
+    {
+      "program_id": "georgette-2026-supervised",
+      "supervised": true,
+      "encounters": [
+        {
+          "date": "2026-01-13",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 35.9
+        },
+        {
+          "date": "2026-02-10",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 35.8
+        },
+        {
+          "date": "2026-03-12",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 35.7
+        },
+        {
+          "date": "2026-05-14",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 35.6
+        },
+        {
+          "date": "2026-06-11",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 35.6
+        }
+      ]
+    }
+  ],
+  "program_assertions": [],
+  "traps": [
+    {
+      "type": "missed_visit",
+      "date": "2026-04-09",
+      "description": "no-show for scheduled weight-management visit"
+    },
+    {
+      "type": "unsuccessful_contact",
+      "date": "2026-04-23",
+      "description": "two phone attempts to reschedule, no answer"
+    }
+  ],
+  "rationale": "E4: the longest consecutive run is three (Jan-Mar); the gap is April. E9: the missed-visit and contact dates sit inside the gap month, and counting either as an encounter would wrongly bridge the run to five."
+}

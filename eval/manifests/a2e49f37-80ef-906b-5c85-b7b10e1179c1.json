@@ -1,0 +1,50 @@
+{
+  "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
+  "bundle": "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "E6",
+    "E10"
+  ],
+  "wm_programs": [
+    {
+      "program_id": "linn-2026-supervised",
+      "supervised": true,
+      "encounters": [
+        {
+          "date": "2026-03-09",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 45.0
+        },
+        {
+          "date": "2026-04-13",
+          "weight_documented": true,
+          "bmi_documented": false,
+          "diet_documented": true,
+          "activity_documented": true
+        },
+        {
+          "date": "2026-05-11",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 45.0
+        },
+        {
+          "date": "2026-06-08",
+          "weight_documented": true,
+          "bmi_documented": false,
+          "diet_documented": true,
+          "activity_documented": true
+        }
+      ]
+    }
+  ],
+  "program_assertions": [],
+  "traps": [],
+  "rationale": "E6: weight recorded every month of the four-month run, BMI documented in only two — c4 NOT_MET while c3 and c5 hold. E10: the note BMI of 45.0 against the structured 39.23 is beyond tolerance on the same side of 35.0 — criterion (a) stands on the structured value and the disagreement is one discrepancies[] entry, not a gap."
+}

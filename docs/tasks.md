@@ -418,11 +418,41 @@ row arrives with T-21.
 
 The big one. Everything before it was lookup.
 
-### `[ ] T-06` Author fact manifests
+### `[x] T-06` Author fact manifests
 **REQ:** 8, and every case in spec §6 · **Depends:** T-04
 **Exit:** `pytest tests/test_manifests.py` — one per patient, every edge case
 covered
 Ground truth. Written before the notes exist.
+
+**Closed by D42.** Six manifests in `eval/manifests/`, one per committed
+patient, `as_of` pinned to D35's 2026-09-01 so "recent" and "stale" are
+arithmetic rather than wall-clock. They record **facts only** — programs,
+dated encounters with per-encounter documentation flags, program assertions,
+and spike-001-typed traps — and **no expected verdicts**: labels are
+`eval/cases.json`'s (T-21), and a manifest stating its own outcome would be a
+second label source that can disagree with the first. They live in `eval/`
+because they are the grader's ground truth (D27's line): the system under
+test never reads them, and T-07's notes are the only path a fact takes to the
+model.
+
+Case assignment follows the structured data rather than fighting it — Felipe
+is the **only** possible E1 (the one patient with an in-window BMI ≥ 35 *and*
+an active value-set comorbidity), and E9 overlays E4, E10 overlays E6, E10b
+overlays E8 as criterion-scoped expectations that do not collide. Eleven of
+spec §6's cases are covered; E3 has no patient by design (sc1 is a fact about
+the procedure) and **E12 has no possible patient**, which is **T-41**.
+
+Every manifest fact that touches the bundles is cross-checked against the
+structured record through the port, so the ground truth cannot drift from the
+population. Mutation-tested eight ways, each caught by the test built for it:
+E4's gap filled, E9's trap moved into a visit month, E10b's note BMI stopping
+short of the threshold, E8 gaining an encounter, E5's program moved inside
+the recency window, E6 documenting BMI in three months, E11 dropped from the
+board, E1's run leaving a month undocumented.
+
+The authorship caveat D19 raised propagates and is recorded in D42: this
+ground truth was written by the agent building the system it grades. A
+perfect score on it means the approach does not obviously fail, nothing more.
 
 ### `[ ] T-07` Manifest-driven note synthesizer
 **REQ:** 8, 9 · **Depends:** T-06
@@ -815,6 +845,29 @@ spec. `LocalPolicyStore.resolve` now cites T-24, and E3 stays
 each caught by the gate built for it — the sharpest being the VBG claim
 re-pointed at §D's delegation paragraph, which slices back perfectly and means
 the opposite, and only the containment gate catches it.
+
+### `[ ] T-41` E12 has no patient, and the boundary case needs one
+**REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row ·
+**Discovered in:** T-06 *(D42)* · **Timebox:** two hours
+**Exit:** `python scripts/select_patients.py --verify` and
+`pytest tests/test_manifests.py` — a committed patient whose **structured**
+most-recent BMI is exactly 35.0 within the lookback window, recorded in the
+population manifest, and an `eval/manifests/` entry claiming E12; the
+manifest gate's `EXPECTED_CASES` gains E12 and `DELIBERATELY_ABSENT` loses it.
+
+Criterion (a) reads structured data, so E12 — "BMI exactly 35.0, boundary
+inclusive" — needs a patient whose *observation* holds 35.0. No committed
+patient does, and Synthea cannot be seeded to produce one to order. The
+boundary is pinned today at the criterion level in `tests/test_criteria_ab.py`
+(T-13), which is why this does not block US-2; what it blocks is A1, since
+spec §6 requires every case present and labeled in the harness.
+
+Papering over it with a note BMI of 35.0 is the move to refuse: that tests
+reconciliation (REQ-34), not the boundary, and it would certify the wrong
+mechanism under E12's name. The likely shapes are a seventh committed bundle
+found by seed search, or a documented synthetic observation appended under
+its own provenance record — which is a **decision** about whether the
+population stays purely generated, not a data edit.
 
 ### `[x] T-39` A provisional constant must name an *open* question, not any question
 **REQ:** 39 · **Discovered in:** T-37 · **Timebox:** one hour

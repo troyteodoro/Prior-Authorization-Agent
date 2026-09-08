@@ -1,0 +1,81 @@
+{
+  "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+  "bundle": "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "E1",
+    "E11",
+    "E10c"
+  ],
+  "wm_programs": [
+    {
+      "program_id": "felipe-2026-supervised",
+      "supervised": true,
+      "encounters": [
+        {
+          "date": "2026-03-10",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6
+        },
+        {
+          "date": "2026-04-14",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6
+        },
+        {
+          "date": "2026-05-12",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6
+        },
+        {
+          "date": "2026-06-09",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6
+        }
+      ]
+    },
+    {
+      "program_id": "felipe-2024-lapsed",
+      "supervised": true,
+      "encounters": [
+        {
+          "date": "2024-08-05",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 39.1
+        },
+        {
+          "date": "2024-09-02",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 38.8
+        }
+      ]
+    }
+  ],
+  "program_assertions": [],
+  "traps": [
+    {
+      "type": "unsupervised_attempt",
+      "date": "2025-01-15",
+      "description": "patient reports trying a self-directed diet last winter"
+    }
+  ],
+  "rationale": "E1: the only patient whose structured record can approve — in-window BMI >= 35 and an active value-set comorbidity (D42). E11: the 2024 two-month program must not be mistaken for the qualifying run. E10c: note BMI 37.6 vs structured 37.65, below any sane tolerance, discrepancies stay empty."
+}

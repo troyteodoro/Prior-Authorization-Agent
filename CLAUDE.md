@@ -291,10 +291,10 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-06, T-26 and T-31**.
-**US-2 and US-3 are delivered** (T-13 and T-14 closed them), so US-4's chain
-(T-06 → T-07 → T-15, then T-16/T-18) is the next story spine — the model
-finally enters at T-15. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-07, T-26, T-31 and
+T-41**. **US-2 and US-3 are delivered**, and T-06 is closed, so US-4's chain
+continues at **T-07** (the note synthesizer), then T-15 — where the model
+finally enters the system. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -397,6 +397,23 @@ citable: `coverage_claim` carries the rule, the new
 `Determination.exclusion_evidence` spans the patient's BMI and T2DM in the
 bundle document. Spanless facts deny nobody. CLI exit 1 is now a bad request
 (unknown patient), distinct from 0 (answer) and 2 (unbuilt path).
+
+**T-06 is closed (D42): the ground truth exists, and it is self-authored.**
+`eval/manifests/` holds six manifests, `as_of` pinned to 2026-09-01, recording
+facts and **never expected verdicts** — labels are T-21's. They live in
+`eval/` because the system under test must never read them (D27's line).
+Case-to-patient assignment follows the committed structured data: Felipe is
+the only possible E1. Eleven §6 cases covered; E3 needs no patient, and
+**E12 has none possible — that is T-41**, which blocks A1 but not US-2, since
+the boundary is pinned at the criterion level today. Do **not** close T-41 by
+giving a patient a note BMI of 35.0: criterion (a) reads structured data, so
+that tests reconciliation under E12's name.
+
+**The ground truth was authored by the agent building the system it grades.**
+D19's caveat about the spike corpus applies here with a different author —
+structural mitigations (cross-checks against the bundles, T-07's honoring
+assertions, review of the diff) are in place, and a perfect score still means
+only that the approach does not obviously fail.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

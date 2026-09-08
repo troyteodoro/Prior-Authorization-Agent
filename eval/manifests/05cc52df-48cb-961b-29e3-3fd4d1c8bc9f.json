@@ -1,0 +1,51 @@
+{
+  "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
+  "bundle": "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "E5"
+  ],
+  "wm_programs": [
+    {
+      "program_id": "christeen-2025-supervised",
+      "supervised": true,
+      "encounters": [
+        {
+          "date": "2025-03-11",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 43.0
+        },
+        {
+          "date": "2025-04-08",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 42.8
+        },
+        {
+          "date": "2025-05-13",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 42.7
+        },
+        {
+          "date": "2025-06-10",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 42.6
+        }
+      ]
+    }
+  ],
+  "program_assertions": [],
+  "traps": [],
+  "rationale": "E5: a fully qualifying four-month run that ended 2025-06-10 — about fourteen and a half months before as_of, outside c2's 12-month window. c3 MET, c2 NOT_MET, and the distinction is the case."
+}

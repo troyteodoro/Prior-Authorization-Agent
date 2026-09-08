@@ -1,0 +1,24 @@
+{
+  "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+  "bundle": "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "E2",
+    "E7"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [
+    {
+      "type": "unrelated_section_date",
+      "date": "2026-02-11",
+      "description": "screening colonoscopy under HEALTH MAINTENANCE"
+    },
+    {
+      "type": "unrelated_section_date",
+      "date": "2025-10-03",
+      "description": "influenza immunization"
+    }
+  ],
+  "rationale": "E2 is structured-only: active T2DM with sub-35 BMI fires sc2 at an in-window as_of. E7: no weight-management documentation of any kind — c1 abstains with NO_EVIDENCE_RETRIEVED; the unrelated dates are there so extraction earns the zero."
+}

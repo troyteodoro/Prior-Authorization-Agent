@@ -2291,6 +2291,91 @@ to adjudicate instead of a note.
 
 ---
 
+## D42 — Manifests are facts about notes that do not exist yet, assigned to the patients whose structured data can carry each case
+
+T-06's design. The manifests are US-4's ground truth: written before the
+notes, consumed by T-07 (which must synthesize notes honoring them), T-15's
+extraction scoring, T-21's labels and T-27's recall measurement. Three
+decisions and one discovered task.
+
+### Chosen — one manifest per committed patient, in `eval/manifests/`, facts only
+
+A manifest records what the patient's notes will contain: supervised
+weight-management programs with dated encounters (each flagged for weight,
+BMI, diet and activity documentation, with the note's BMI value where one is
+documented), program assertions (claims without visits behind them), and
+traps typed the way spike 001 typed them (`missed_visit`,
+`unsuccessful_contact`, `unsupervised_attempt`, `unrelated_section_date`).
+It records **no expected verdicts**: labels live in `eval/cases.json`
+(T-21), and a manifest that stated its own expected outcome would be a
+second label source that can disagree with the first. `as_of` is pinned to
+**2026-09-01** — D35's population reference date — so "recent" and "stale"
+are properties of arithmetic, not of when the suite runs.
+
+Manifests live in `eval/`, not `data/patients/`: they are the grader's
+ground truth in D27's sense — the system under test must never read them,
+and the notes T-07 writes into the patient store are the only path a fact
+takes from manifest to model.
+
+### Chosen — the case-to-patient assignment follows the structured data
+
+The committed bundles constrain who can carry what, and the assignment
+records the constraint rather than fighting it:
+
+| Patient | BMI (date) | Active VS comorbidity | Cases |
+|---|---|---|---|
+| Felipe | 37.65 (2025-10) | HTN | **E1** clean approval, **E11** two programs, **E10c** below-tolerance note BMI |
+| Rayford | 34.26 (2024-03, stale) | T2DM, HTN | **E2** exclusion, **E7** no WM documentation |
+| Georgette | 35.89 (2025-09) | — | **E4** three-month run, **E9** missed visits in the gap month |
+| Christeen | 42.5 (2026-03) | — | **E5** program ended fourteen months ago |
+| Linn | 39.23 (2026-04) | — | **E6** weight monthly BMI sporadic, **E10** same-side discrepancy |
+| Tressie | 34.6 (2026-04) | HTN | **E8** assertion only, **E10b** threshold-crossing conflict |
+
+Felipe is the **only** possible E1: the clean approval needs criterion (a)
+and (b) both `MET`, and he is the one patient with an in-window BMI ≥ 35
+*and* an active value-set comorbidity. E11 and E10c overlay him because
+their expectations are compatible with approval (a second, non-qualifying
+program; a note BMI within tolerance). E9 overlays E4 by construction — it
+is E4's chart with the traps in the gap month. E10 overlays E6 and E10b
+overlays E8 the same way: criterion-scoped expectations that do not collide.
+
+**Rejected — synthetic patients shaped to order.** The bundles are the
+population D35 committed; manifests that contradict a patient's structured
+facts would make T-33's reconciliation cases meaningless, because the two
+sources would disagree by authoring accident rather than by design.
+
+**Rejected — expected verdicts in the manifest.** Stated above; it is D27's
+"the baseline is the record" argument applied to labels.
+
+### Discovered — E12 has no patient, and that is T-41
+
+No committed patient carries a most-recent BMI of exactly 35.0, and Synthea
+cannot be seeded to produce one to order. E12 is pinned today at the
+criterion level (`tests/test_criteria_ab.py`); its harness row needs a
+patient whose *structured* record holds the boundary value. That is
+discovered work — **T-41**, before T-21 labels E12 — not a manifest's
+problem to paper over with a note BMI, because criterion (a) reads
+structured data and a note-only 35.0 tests reconciliation instead of the
+boundary.
+
+### Recorded — the authorship caveat propagates
+
+D19 flagged that the spike corpus was five notes Troy wrote scored against
+labels Troy wrote. These manifests are authored by the agent that is
+building the system they will grade, which is the same epistemic position
+with a different author. The mitigations are structural — every manifest
+fact is mechanically cross-checked against the committed bundles where the
+two overlap, T-07's exit forces the notes to honor the manifest by
+assertion, and the diff lands under review — but the caveat belongs in the
+record, not in a comment: **a perfect score on self-authored ground truth
+means the approach does not obviously fail, nothing more.**
+
+**Reverses if:** T-07 cannot synthesize a note honoring a manifest without
+contradicting the bundle's structured story (the manifest moves, never the
+bundle), or a real-chart corpus lands and replaces synthesis wholesale.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
