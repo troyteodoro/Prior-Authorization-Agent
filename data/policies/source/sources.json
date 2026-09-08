@@ -8,10 +8,10 @@
       "authority": "national",
       "publisher": "Centers for Medicare & Medicaid Services",
       "filename": "ncd_100_1.txt",
+      "retrieved_at": "2026-09-08T19:39:05.974947+00:00",
+      "extractor_version": 1,
       "sha256": "90d811fe52412f8128df8997428f14215d6a99aa839e6f1bab057e359a399908",
-      "char_count": 30926,
-      "retrieved_at": "2026-09-07T05:44:48.075795+00:00",
-      "extractor_version": 1
+      "char_count": 30926
     },
     {
       "document_id": "a53028",
@@ -20,10 +20,26 @@
       "authority": "mac_jurisdiction_f",
       "publisher": "Noridian Healthcare Solutions, LLC (A/B MAC, Jurisdiction F)",
       "filename": "a53028.txt",
+      "retrieved_at": "2026-09-08T19:39:06.817072+00:00",
+      "extractor_version": 1,
       "sha256": "7c1ae27731a1da5ca2631d70f2712a0360673adcf9258f43d933f43157e338ec",
-      "char_count": 103795,
-      "retrieved_at": "2026-09-07T05:44:48.510173+00:00",
-      "extractor_version": 1
+      "char_count": 103795
+    },
+    {
+      "document_id": "r931cp",
+      "title": "CMS Pub. 100-04 Transmittal 931 (CR 5013) - Billing Requirements for Bariatric Surgery for Treatment of Morbid Obesity",
+      "url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Transmittals/downloads/R931CP.pdf",
+      "authority": "national",
+      "publisher": "Centers for Medicare & Medicaid Services",
+      "filename": "r931cp.txt",
+      "format": "pdf",
+      "scope": "code_bindings_only",
+      "retrieved_at": "2026-09-08T19:39:07.036750+00:00",
+      "extractor_version": 1,
+      "extractor": "pypdf 6.18.0",
+      "pdf_sha256": "4d2814b625f66a22ea08eacf4c4619800fdb68500dcb6da3b408db9c66e24cee",
+      "sha256": "13a7afb909f4d4e91023564ec38049e36f772b06827c05958862ba5143e1de10",
+      "char_count": 29090
     }
   ]
 }

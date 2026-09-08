@@ -1392,6 +1392,79 @@ the field says so.
 
 ---
 
+## D29 — A third document enters the corpus for code bindings only, and it is a 2006 transmittal on purpose
+
+Closes open question 7 by T-40's first branch: the code-to-procedure binding
+gets a source, a hash, and spans, instead of an entry stating it rests on
+recall forever.
+
+### Chosen — CMS Pub. 100-04 Transmittal 931 (CR 5013, April 28, 2006), scoped to code bindings only
+
+`https://www.cms.gov/Regulations-and-Guidance/Guidance/Transmittals/downloads/R931CP.pdf`,
+document id `r931cp`. It is the claims-processing transmittal that implemented
+NCD 100.1's February 21, 2006 reconsideration, and it does the one thing neither
+corpus document does: bind procedure names to HCPCS codes, in CMS's own words.
+It carries full descriptors for 43770, 43644, 43645, 43845, 43846 and 43847, and
+for E3 it carries the binding in a single phrase — "Open vertical banded
+gastroplasty ( HCPCS code 43842)". Measured before this entry was written:
+
+- The PDF downloaded twice minutes apart is byte-identical
+  (`4d2814b6…e24cee`), so D21's CSP-nonce problem does not apply — transmittals
+  are static archival files, not MCD page renders.
+- `pypdf` 6.18.0 extracts it to identical text across runs and across separate
+  downloads. The corpus stores that extracted text, hashed, exactly like the
+  other two documents; the manifest also records the raw PDF hash so a
+  byte-level change upstream is distinguishable from an extractor change.
+- Page 1 carries no rescission notice. Later bariatric transmittals (R2641CP's
+  2013 LSG update among them) supersede its *coverage* content, which is
+  exactly why the scope rule below exists.
+
+**The scope rule: `r931cp` is citable for code bindings and for nothing else.**
+It predates the June 27, 2012 LSG delegation, so its non-covered list names
+laparoscopic sleeve gastrectomy unconditionally — stale coverage that A53028
+and the current NCD text both contradict. A coverage claim spanned into this
+document would be D22 rebuilt with a citation attached. Coverage claims span
+`ncd_100_1` and `a53028` only; `r931cp` answers "which code denotes this
+procedure named in prose," never "is this procedure covered." The gate for
+T-38's sets must enforce the split, not just this entry.
+
+What changes downstream: E3's `code_binding` gains a
+`(document_id, char_start, char_end)` into the hashed corpus and `in_corpus`
+becomes `true`; `tests/test_e3_code.py` flips its binding assertions from "the
+artifact admits it is unsourced" to "the span slices back to a quote naming both
+the code and the procedure" — the assertion D28 refused to write while it would
+have been certifying recall. T-38 can now write every binding it needs as an
+in-corpus span instead of several unsourced ones, which is the ordering clause
+in T-40's own text and the reason this ran first.
+
+**Rejected — the stay-unsourced branch.** T-40's second option, and the cheaper
+one today. It leaves every covered code T-38 writes resting on recall — the
+43775 mechanism, six more times — and T-38 was deliberately re-ordered behind
+this task to avoid exactly that.
+
+**Rejected — the current Claims Processing Manual, chapter 32.** The living
+document carrying the same descriptors. It is mutable by design: the next
+revision changes the hash, and D21's re-download check would read a routine
+manual update as corpus corruption. The archival transmittal is frozen.
+
+**Rejected — MLN Matters MM5013.** A provider-education rendering of the same
+change request; citing the derivative when the instrument itself is stable
+adds a hop for no provenance.
+
+**Cost.** `pypdf==6.18.0` enters `requirements.txt` — the first dependency the
+corpus machinery has beyond the stdlib. The extracted-text hash is hostage to
+that exact version, so the manifest records the extractor per document and the
+verifier refuses to check a PDF document under a different pypdf than the one
+recorded, failing with "wrong extractor" instead of the misleading "document
+changed."
+
+**Reverses if:** the PDF stops re-downloading to the same bytes, or any binding
+it carries is shown not to denote the named procedure. Either way the affected
+bindings fall back to `in_corpus: false` against a reopened question 7 — the
+D28 posture, which remains the honest one when there is nothing to span.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

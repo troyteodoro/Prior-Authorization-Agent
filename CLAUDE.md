@@ -126,11 +126,16 @@ naming the agent before the script terminates it.
 zero. The latter hits the network; `--offline` skips the re-download and does not
 close T-02.
 
-**The policy corpus is two documents and one jurisdiction (D21).**
+**The policy corpus is three documents and one jurisdiction (D21, D29).**
 `data/policies/source/` holds `ncd_100_1` (national) and `a53028` (Noridian
 Healthcare Solutions, A/B MAC, **Jurisdiction F**), stored as extracted text —
 the MCD emits a fresh CSP nonce per response, so raw HTML has no reproducible
-hash. NCD 100.1 quantifies **nothing**: no months, no visit counts, no recency.
+hash. T-40 added `r931cp` (CMS Pub. 100-04 Transmittal 931, CR 5013, 2006), the
+claims-processing transmittal that binds procedure names to HCPCS codes — a
+static PDF, byte-stable, extracted with pinned `pypdf==6.18.0`. **`r931cp` is
+citable for code bindings only, never coverage claims**: its coverage content
+predates the 2012 LSG delegation (D29). NCD 100.1 quantifies **nothing**: no
+months, no visit counts, no recency.
 Every constant in the criteria tree comes from A53028, so this system determines
 coverage *as Noridian would*, and a different MAC is a different tree over the
 same NCD. Say that plainly in a review rather than calling the thresholds CMS's.
@@ -166,16 +171,15 @@ no delegation clause. 43775 belongs in a covered case; T-38 lands it in the
 contractor-determined set. **T-36** still asks whether "left to the contractor" is
 a third sc1 outcome.
 
-**A procedure code carries two citations, and one of them is not sourced (D28).**
-Neither corpus document binds a non-covered procedure to a code: `ncd_100_1`
-holds no procedure codes at all and says so outright, and A53028 names exactly one
-bariatric code — 43775, the one D22 disproved. So E3's `coverage_claim` is spanned
-into the hashed corpus and checked by slicing, while its `code_binding` is marked
-`source_class: "external_code_system"`, `in_corpus: false`, against **open question
-7** and **T-40**. Nothing in this repo asserts that 43842 denotes open vertical
-banded gastroplasty, and no gate should pretend to — a test claiming to verify it
-would be asserting recall, which is how 43775 reached the spec. Do not "strengthen"
-that test by hardcoding the descriptor.
+**A procedure code carries two citations, and since T-40 both are sourced (D28,
+D29).** "This procedure is non-covered" and "this code denotes that procedure"
+remain different claims with different sources: E3's `coverage_claim` spans
+`ncd_100_1`, and its `code_binding` now spans `r931cp[15038:15092]` — "Open
+vertical banded gastroplasty ( HCPCS code 43842)" — with `in_corpus: true`.
+Open question 7 is closed. The two classes stay separate in every artifact;
+merging them into one `source` field is still the move D28 refused. If D29
+reverses (the PDF stops re-downloading to its hash, or a binding is disproved),
+the affected bindings fall back to `in_corpus: false` and the D28 posture.
 
 **One module names the model (D20).** `pa_agent/model_pin.py` pins
 `gemini-3.5-flash-lite` — the model D19 was measured on — and it is the only
@@ -280,11 +284,15 @@ Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
 closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-24, T-26,
-T-31, T-38, T-39 and T-40**. **T-38 is next on US-1's critical path** — T-24's
+T-31, T-38 and T-39** — T-40 closed first, by its own reordering clause: T-38
+needs seven code bindings, and writing them unsourced was the mechanism that
+produced the 43775 defect. **T-38 is next on US-1's critical path** — T-24's
 dependency (T-09) is met, but it cannot *close* until T-38 lands the procedure
 sets for it to read. US-1's remaining chain is
 T-38 → T-24 → T-25, and each moves E3 one step; only the last flips it to `PASS`.
-T-40 is not on that path: T-24 and T-25 resolve a code they are handed.
+**T-40 is closed** — `r931cp` is in the corpus and every binding T-38 writes
+can carry an in-corpus span; `python scripts/verify_sources.py` covers all three
+documents.
 
 **One gate is weak and will start lying on a schedule (T-39).**
 `_open_questions()` in `tests/test_criteria_tree.py` matches resolved questions

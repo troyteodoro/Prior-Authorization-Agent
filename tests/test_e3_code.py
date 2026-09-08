@@ -12,14 +12,14 @@ inside the list scoped "non-covered for all Medicare beneficiaries" rather than
 somewhere else in a document that also contains a delegation paragraph reading
 almost identically at a glance.
 
-What this file deliberately does **not** assert is that CPT 43842 denotes open
-vertical banded gastroplasty. Neither corpus document binds any non-covered
-procedure to a code — `ncd_100_1` carries no procedure codes at all and says so —
-so a test claiming to verify that would be asserting someone's recall with a
-green check next to it, which is the mechanism that produced the 43775 defect in
-the first place. It asserts instead that the artifact says so itself: the
-`code_binding` is marked `in_corpus: false` against an open question. See D28,
-and T-40 for the gap.
+The code binding is asserted the same way, since T-40 (D29): `r931cp`, the
+claims-processing transmittal implementing this NCD's 2006 reconsideration,
+binds the procedure name to the code in one phrase, and the span slices back
+out of the hashed corpus. Under D28 this file instead asserted that the binding
+admitted it was unsourced — the honest posture while there was nothing to span
+it to, and the posture this file reverts to if D29 reverses. One scope rule is
+enforced here: `r931cp` is citable for code bindings only, never for coverage
+claims, because its coverage content predates the 2012 LSG delegation (D29).
 
 No model is involved anywhere here (Article II).
 """
@@ -37,7 +37,6 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 CASES_PATH = REPO_ROOT / "eval" / "cases.json"
 SOURCE_DIR = REPO_ROOT / "data" / "policies" / "source"
 MANIFEST_PATH = SOURCE_DIR / "sources.json"
-SPEC_PATH = REPO_ROOT / "docs" / "spec.md"
 PACKAGE_DIR = REPO_ROOT / "pa_agent"
 
 # The code D22 disproved. Named explicitly so that re-introducing it fails loudly
@@ -196,45 +195,66 @@ def test_the_cited_procedure_carries_no_date_qualifier(e3, source_texts):
 
 
 # --------------------------------------------------------------------------
-# The code binding says it is not sourced, because it is not
+# The code binding is sourced, and to the one document allowed to source it
 # --------------------------------------------------------------------------
 
 
-def test_the_code_binding_admits_it_is_not_in_the_corpus(e3):
+def test_the_code_binding_is_in_the_corpus(e3):
     binding = e3["code_binding"]
-    assert binding["in_corpus"] is False, (
-        "in_corpus is true, so some document must bind this code to this "
-        "procedure — name it and give it a span. Neither corpus document does: "
-        "ncd_100_1 carries no procedure codes at all, and A53028 names one "
-        "bariatric code, 43775 (D28). If T-40 has landed a third document, this "
-        "test moves with it."
+    assert binding["in_corpus"] is True, (
+        "in_corpus is false. T-40 landed r931cp precisely so this binding could "
+        "carry a span (D29); false now either reverts that without reversing the "
+        "decision, or D29 reversed and this test should revert with it."
     )
-    assert binding["source_class"] == "external_code_system"
+    assert binding["source_class"] == "corpus"
     assert binding["system"] == "CPT"
-
-
-def test_the_code_binding_claims_no_span(e3):
-    binding = e3["code_binding"]
-    for field in ("char_start", "char_end", "document_id", "quote"):
-        assert field not in binding, (
-            f"code_binding carries {field}. A span here would put an unverifiable "
-            "claim in the same shape as a verified one, which is the whole thing "
-            "the two classes exist to keep apart (D28)."
-        )
-
-
-def test_the_code_binding_names_a_question_the_spec_states(e3):
-    """The flag has to name the thing that would clear it (D23's argument)."""
-    question = e3["code_binding"]["open_question"]
-    spec = SPEC_PATH.read_text(encoding="utf-8")
-    section = spec.split("## 9. Open questions", 1)
-    assert len(section) == 2, "spec §9 not found"
-
-    pattern = rf"^{question}\.\s"
-    assert re.search(pattern, section[1], re.MULTILINE), (
-        f"code_binding names open question {question}, which spec §9 does not "
-        "state. A flag citing a question nobody wrote is a flag nothing clears."
+    assert binding["document_id"] == "r931cp", (
+        "the binding must cite the transmittal. ncd_100_1 carries no procedure "
+        "codes at all, and A53028 names one bariatric code, 43775 (D28)."
     )
+
+
+def test_the_code_binding_slices_back_naming_code_and_procedure(e3, source_texts):
+    """T-40's exit wording: a quote naming both the code and the procedure.
+
+    Slicing proves the quote is in the hashed document; the two containment
+    checks prove the quote binds rather than merely mentions. A span onto a
+    requirement-table row that lists 43842 among other codes would slice back
+    fine and bind nothing.
+    """
+    binding = e3["code_binding"]
+    text = source_texts[binding["document_id"]]
+    sliced = text[binding["char_start"] : binding["char_end"]]
+    assert sliced == binding["quote"], (
+        f"{binding['document_id']}[{binding['char_start']}:{binding['char_end']}] "
+        f"slices to {sliced!r}, not to the recorded quote"
+    )
+    assert text.count(binding["quote"]) == 1, (
+        "the binding quote is not unique in its document, so the offsets are "
+        "not pinned by the text (D17)"
+    )
+    normalized = " ".join(binding["quote"].split()).lower()
+    assert e3["procedure_code"] in normalized, "the quote does not name the code"
+    assert e3["procedure"].lower() in normalized, (
+        "the quote does not name the procedure the case requests"
+    )
+
+
+def test_the_code_binding_names_no_open_question(e3):
+    assert "open_question" not in e3["code_binding"], (
+        "code_binding still cites open question 7, which D29 closed. A pointer "
+        "to a resolved question is the T-39 defect with different spelling."
+    )
+
+
+def test_no_coverage_claim_cites_the_transmittal(e3):
+    """D29's scope rule. r931cp predates the 2012 LSG delegation, so its
+    coverage statements are stale; it binds names to codes and nothing else.
+    A coverage claim spanned into it would be D22 rebuilt with a citation."""
+    for label, span in _spans(e3["coverage_claim"]):
+        assert span["document_id"] != "r931cp", (
+            f"{label} cites r931cp, which is citable for code bindings only (D29)"
+        )
 
 
 # --------------------------------------------------------------------------

@@ -33,10 +33,13 @@
       },
       "code_binding": {
         "system": "CPT",
-        "source_class": "external_code_system",
-        "in_corpus": false,
-        "open_question": 7,
-        "note": "That CPT 43842 denotes open vertical banded gastroplasty is NOT established by this corpus and is not spanned, because there is nothing here to span it to: ncd_100_1 carries no procedure codes at all and says so, and A53028 names one bariatric code (43775, the code D22 disproved). The coverage claim above is an Article III claim and is verified by slicing; this is a code-system fact of a different class, and merging the two would let it inherit the first's credibility. T-40 decides whether a third document enters the corpus to close it (D28)."
+        "source_class": "corpus",
+        "in_corpus": true,
+        "document_id": "r931cp",
+        "quote": "Open vertical banded gastroplasty ( HCPCS \ncode 43842)",
+        "char_start": 15038,
+        "char_end": 15092,
+        "note": "One phrase naming both the NCD's procedure name and the code, from the claims-processing transmittal that implemented NCD 100.1's 2006 reconsideration. r931cp is citable for code bindings only - its coverage content predates the 2012 LSG delegation and is stale, so the coverage claim above spans ncd_100_1, never this document (D29). Closed open question 7; was in_corpus: false against that question under D28."
       },
       "expect": {
         "outcome": "NOT_COVERED",

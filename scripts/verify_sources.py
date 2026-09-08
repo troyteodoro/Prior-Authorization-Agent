@@ -5,11 +5,15 @@
     python scripts/verify_sources.py --offline  verify everything except the
                                                 re-download. Does NOT close T-02.
 
-Two documents, per D21. NCD 100.1 says what Medicare covers nationally and
-quantifies nothing; Article A53028 supplies every constant the criteria tree
-needs and is published by one MAC, not by CMS. Both are stored as extracted
-text because the MCD emits a fresh CSP nonce per response and raw HTML therefore
-has no reproducible hash.
+Three documents: two per D21, one per D29. NCD 100.1 says what Medicare covers
+nationally and quantifies nothing; Article A53028 supplies every constant the
+criteria tree needs and is published by one MAC, not by CMS. Both are stored as
+extracted text because the MCD emits a fresh CSP nonce per response and raw HTML
+therefore has no reproducible hash. R931CP is the 2006 claims-processing
+transmittal that binds procedure names to HCPCS codes -- citable for code
+bindings and for nothing else, because its coverage content predates the 2012
+LSG delegation (D29). It is a static PDF, stored as pypdf-extracted text with
+the raw PDF hash recorded alongside.
 
 Nothing here calls a model. The answers were read by a human from the source and
 are checked mechanically by slicing the document (Article III).
@@ -39,6 +43,12 @@ ANSWERS_PATH = SOURCE_DIR / "answers.json"
 # every citation in the project (D21).
 EXTRACTOR_VERSION = 1
 
+# The PDF path is hostage to the exact pypdf version: a different release may
+# extract different text, which the re-download check would misreport as the
+# published document changing. The manifest records this string per PDF
+# document, and verification refuses to run under any other version (D29).
+PDF_EXTRACTOR = "pypdf 6.18.0"
+
 USER_AGENT = "Prior-Authorization-Agent/0.1 (T-02 policy source verification)"
 TIMEOUT_SECONDS = 60
 
@@ -66,6 +76,21 @@ DOCUMENTS: list[dict[str, str]] = [
         "authority": "mac_jurisdiction_f",
         "publisher": "Noridian Healthcare Solutions, LLC (A/B MAC, Jurisdiction F)",
         "filename": "a53028.txt",
+    },
+    {
+        "document_id": "r931cp",
+        "title": "CMS Pub. 100-04 Transmittal 931 (CR 5013) - Billing Requirements "
+                 "for Bariatric Surgery for Treatment of Morbid Obesity",
+        "url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Transmittals/"
+               "downloads/R931CP.pdf",
+        "authority": "national",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "filename": "r931cp.txt",
+        "format": "pdf",
+        # D29's scope rule. This document binds procedure names to codes and is
+        # citable for that alone; its coverage statements predate the 2012 LSG
+        # delegation and are stale. A coverage claim spanned here is a defect.
+        "scope": "code_bindings_only",
     },
 ]
 
@@ -197,10 +222,43 @@ def sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def download(url: str) -> str:
+def download_bytes(url: str) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
-        return response.read().decode("utf-8", errors="strict")
+        return response.read()
+
+
+def download(url: str) -> str:
+    return download_bytes(url).decode("utf-8", errors="strict")
+
+
+def _require_pinned_pypdf() -> "object":
+    """Import pypdf, refusing any version but the one the manifest records.
+
+    A different pypdf may extract different text from the same bytes. Failing
+    here names the actual problem; letting it through would surface later as
+    "the published document changed," which trains someone to re-fetch and
+    silently re-anchor every span into the PDF (D29).
+    """
+    import pypdf
+
+    installed = f"pypdf {pypdf.__version__}"
+    if installed != PDF_EXTRACTOR:
+        raise SystemExit(
+            f"FAIL  {installed} is installed but the PDF corpus was extracted by "
+            f"{PDF_EXTRACTOR}. Install the pinned version (requirements.txt) "
+            "rather than re-fetching under a new one."
+        )
+    return pypdf
+
+
+def extract_pdf_text(data: bytes) -> str:
+    """PDF bytes to plain text, one page per line-joined block, pypdf pinned."""
+    import io
+
+    pypdf = _require_pinned_pypdf()
+    reader = pypdf.PdfReader(io.BytesIO(data))
+    return "\n".join(page.extract_text() for page in reader.pages)
 
 
 # --------------------------------------------------------------------------
@@ -235,23 +293,27 @@ def fetch() -> int:
     for doc in DOCUMENTS:
         print(f"  fetching {doc['document_id']} ... ", end="", flush=True)
         try:
-            html = download(doc["url"])
+            raw = download_bytes(doc["url"])
         except (urllib.error.URLError, TimeoutError) as exc:
             print("FAILED")
             print(f"FAIL  {doc['document_id']}: {exc}", file=sys.stderr)
             return 1
-        text = extract_text(html)
+        record: dict[str, Any] = {
+            **doc,
+            "retrieved_at": datetime.now(timezone.utc).isoformat(),
+            "extractor_version": EXTRACTOR_VERSION,
+        }
+        if doc.get("format") == "pdf":
+            text = extract_pdf_text(raw)
+            record["extractor"] = PDF_EXTRACTOR
+            record["pdf_sha256"] = hashlib.sha256(raw).hexdigest()
+        else:
+            text = extract_text(raw.decode("utf-8", errors="strict"))
+        record["sha256"] = sha256(text)
+        record["char_count"] = len(text)
         (SOURCE_DIR / doc["filename"]).write_text(text, encoding="utf-8")
         texts[doc["document_id"]] = text
-        records.append(
-            {
-                **doc,
-                "sha256": sha256(text),
-                "char_count": len(text),
-                "retrieved_at": datetime.now(timezone.utc).isoformat(),
-                "extractor_version": EXTRACTOR_VERSION,
-            }
-        )
+        records.append(record)
         print(f"{len(text)} chars, sha256 {sha256(text)[:12]}")
 
     MANIFEST_PATH.write_text(
@@ -357,10 +419,20 @@ def verify(offline: bool) -> int:
     else:
         for doc_id, record in sorted(records.items()):
             try:
-                fresh = extract_text(download(record["url"]))
+                raw = download_bytes(record["url"])
             except (urllib.error.URLError, TimeoutError) as exc:
                 bad(f"{doc_id}: re-download failed: {exc}")
                 continue
+            if record.get("format") == "pdf":
+                if hashlib.sha256(raw).hexdigest() != record["pdf_sha256"]:
+                    bad(
+                        f"{doc_id}: the published PDF's bytes changed upstream; "
+                        "the extracted text and every span into it are suspect."
+                    )
+                    continue
+                fresh = extract_pdf_text(raw)
+            else:
+                fresh = extract_text(raw.decode("utf-8", errors="strict"))
             if sha256(fresh) != record["sha256"]:
                 bad(
                     f"{doc_id}: re-download extracts to a different hash. Either the "

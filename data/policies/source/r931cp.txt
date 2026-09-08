@@ -1,0 +1,1078 @@
+CMS Manual System Department of Health & 
+Human Services (DHHS) 
+Pub. 100-04 Medicare Claims Processing Centers for Medicare & 
+Medicaid Services (CMS) 
+Transmittal 931  Date: APRIL 28, 2006 
+ CHANGE REQUEST 5013 
+ 
+SUBJECT:  Billing Requirements for Bariatric Surgery for Treatment of Morbid 
+Obesity 
+ 
+I.  SUMMARY OF CHANGES:  Effective for services on or after February 21, 2006, 
+Medicare will cover open and laparoscopic Roux-en Y gastric bypass (RYGBP), 
+laparoscopic adjustable gastric banding (LAGB) and open and laparoscopic 
+biliopancreatic diversion with duodenal switch (BPD/DS) if certain criteria are met and 
+the procedure is performed in an approved facility.  In addition, effective for services 
+performed on or after February 21, 2006, Medicare has decided that open vertical banded 
+gastroplasty, laparoscopic vertical banded gastroplasty, open sleeve gastrectomy, 
+laparoscopic sleeve gastrectomy and open adjustable gastric banding are nationally non-
+covered for Medicare.  The Medicare claims processing manual (Publication 100-04, 
+chapter 32, section 150) has been updated to reflect the new coverage.  
+ 
+NEW/REVISED MATERIAL - EFFECTIVE DATE*:  February 21, 2006 
+           IMPLEMENTATION DATE: May 30, 2006  for 
+physician claims billed to the carrier, and October 2, 2006 for hospital claims billed 
+to the FI. 
+ 
+Disclaimer for manual changes only:  The revision date and transmittal number apply 
+to the red italicized material only.  Any other material was previously published and 
+remains unchanged.  However, if this revision contains a table of contents, you will 
+receive the new/revised information only, and not the entire table of contents. 
+ 
+II.  CHANGES IN MANUAL INSTRUCTIONS:  
+     (R = REVISED, N = NEW, D = DELETED)  
+ 
+R/N/D CHAPTER/SECTION/SUBSECTION/TITLE 
+R 32/150/Table of Contents 
+N 32/150/Billing Requirements for Bariatric Surgery for Morbid Obesity 
+N 32/150.1/General 
+N 32/150.2/HCPCS Coding for Bariatric Procedures 
+N 32/150.3  ICD - 9/Diagnosis Codes for Bariatric Surgery 
+N 32/150.4/Reasons for Denial and Medicare Summary Notice (MSN), 
+Remittance Advice Codes and Claims Adjustment Reason Code Messages 
+N 32/150.5/Fiscal Intermediary Billing Requirements 
+N 32/150.6/ICD - 9 Procedure Codes for Bariatric Procedures 
+N 32/150.7/Non-Covered ICD - 9 Procedure Code for Bariatric Surgery 
+N 32/150.8/Advance Beneficiary Notice and HINN Information 
+ 
+III.  FUNDING:  No additional funding will be provided by CMS; contractor 
+activities are to be carried out within their FY 2006 operating budgets.  
+ 
+IV.  ATTACHMENTS: 
+ 
+X Business Requirements 
+X Manual Instruction 
+ Confidential Requirements 
+ One-Time Notification 
+ Recurring Update Notification 
+ 
+*Unless otherwise specified, the effective date is the date of service. 
+ 
+Attachment - Business Requirements 
+ 
+Pub. 100-04 Transmittal: 931 Date: April 28, 2006 Change Request 5013 
+ 
+SUBJECT:  Billing Requirements for Bariatric Surgery for Treatment of Morbid Obesity 
+ 
+I. GENERAL INFORMATION   
+A. Background:  National Coverage Determinations Manual (NCD), sections 40.5 and 100.1, are 
+being modified to be consistent with the new policy for bariatric surgery. Bariatric surgery is often an 
+effective treatment for co-morbid conditions in obese individuals who have been unsuccessful with 
+exercise and diet as a means of reducing their co-morbid conditions. There are two main types of gastric 
+surgery for treatment of co-morbid conditions related to morbid obesity: restrictive operations and 
+malabsorptive operations.  Other surgeries combine both types of procedures. This specialized surgery is 
+only recommended for individuals with health concerns related to their obesity such as coronary artery 
+disease, diabetes and sleep apnea. 
+B. Policy:  The Centers for Medicare & Medicaid Services (CMS) has determined that the evidence 
+is adequate to conclude that open and laparoscopic Roux-en-Y gastric bypass, laparoscopic adjustable 
+gastric banding, and open and laparoscopic biliopancreatic diversion with duodenal switch, are reasonable 
+and necessary for Medicare beneficiaries who have a body-mass index (BMI) > 35, have at least one co-
+morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity.  
+This information must be documented in the patient's medical record. 
+ 
+The CMS has determined that covered bariatric surgery procedures are reasonable and necessary only 
+when performed at facilities that are:: (1) certified by the American College of Surgeons as a Level 1 
+Bariatric Surgery Center (program standards and requirements in effect on February 15, 2006); or (2) 
+certified by the American Society for Bariatric Surgery as a Bariatric Surgery Center of Excellence 
+(program standards and requirements in effect on February 15, 2006).
+A list of approved facilities and their approval dates will be listed and maintained on the CMS coverage 
+website at http://www.cms.hhs.gov/coverage, and will be published in the Federal Register.  
+The evidence is not adequate to conclude that the following bariatric surgery procedures are reasonable 
+and necessary; therefore, the following are non-covered for all Medicare beneficiaries: 
+ 
+1. open vertical banded gastroplasty; 
+2. laparoscopic vertical banded gastroplasty; 
+3. open sleeve gastrectomy; 
+4. laparoscopic sleeve gastrectomy; and  
+5. open adjustable gastric banding. 
+The two non-coverage determinations remain unchanged - Gastric Balloon (NCD Manual, section 100.11) 
+and Intestinal Bypass (NCD Manual, section 100.8).   
+ 
+Modification of the current policy on obesity, found in section 40.5, of the NCD Manual, will include a 
+reference to the covered surgical procedures and will merge the obesity policy with the final bariatric 
+surgery policy.  The modified obesity policy will read as follows (emphasis added to the new language 
+within the policy): 
+ 
+Obesity may be caused by medical conditions such as hypothyroidism, Cushing's disease, and 
+hypothalamic lesions or can aggravate a number of cardiac and respiratory diseases as well as 
+diabetes and hypertension.  Certain designated surgical services for the treatment of obesity are 
+covered for Medicare beneficiaries who have a  BMI ≥ 35, have at least one co-morbidity 
+related to obesity and have been previously unsuccessful with the medical treatment of obesity.
+ 
+Treatments for obesity alone remain non-covered. 
+ 
+II. BUSINESS REQUIREMENTS  
+ 
+“Shall" denotes a mandatory requirement 
+"Should" denotes an optional requirement 
+ 
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+5013.1 Contractors shall be advised that procedures 
+performed on or after February 21, 2006 for 
+open and laparoscopic Roux-en-Y gastric 
+bypass (RYGBP), laparoscopic adjustable 
+gastric banding (LAGB) and open and 
+laparoscopic biliopancreatic diversion (BPD) 
+with duodenal switch (DS) are covered when 
+performed in facilities that are: 
+ 
+(1) Certified by the American College of 
+Surgeons as a Level 1 Bariatric Surgery Center 
+(program standards and requirements in effect 
+on February 15, 2006); or 
+ 
+(2) Certified by the American Society for 
+Bariatric Surgery as a Bariatric Surgery Center 
+of Excellence (program standards and 
+requirements in effect on February 15, 2006). 
+X  X       
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+5013.1.1  Contractors shall allow the following HCPCS 
+as of February 21, 2006:  
+ 
+43770- Laparoscopy, surgical, gastric restrictive 
+procedure; placement of adjustable gastric band 
+(gastric band and subcutaneous port  
+components). 
+ 
+43644- Laparoscopy, surgical, gastric restrictive 
+procedure; with gastric bypass and  Roux-en-Y 
+gastroenterostomy (roux limb 150 cm or less). 
+ 
+43645-Laparoscopy with gastric bypass and 
+small intestine reconstruction to limit 
+absorption. (Do not report 43645 in conjunction 
+with 49320, 43847.)  
+ 
+43845-Gastric restrictive procedure with partial 
+gastrectomy, pylorus-preserving 
+duodenoileostomy and ileoieostomy (50 to 100 
+cm common channel.) to limit absorption 
+(biliopancreatic diversion with duodenal 
+switch). 
+ 
+43846-Gastric restrictive procedure, with 
+gastric bypass for morbid obesity; with short 
+limb (150 cm or less Roux-en-Y 
+gastroenterostomy. ( For greater than 150 cm, 
+use 43847)( For laparoscopic procedure, use 
+43644). 
+ 
+43847-With small intestine reconstruction to 
+limit absorption.  
+  X       
+5013.1.2 Contractors shall accept the following ICD-9-
+CM Procedure Codes as of February 21, 2006: 
+ 
+44.38-Laproscopic gastroenterostomy 
+(laparoscopic Roux-en-Y).  
+X    X      
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+ 
+44.39- Other Gastroenterostomy (open Roux-
+en-Y). 
+ 
+44.95-Laparoscopic gastric restrictive procedure 
+(laparoscipic adjustable gastric band and port 
+insertion). 
+ 
+NOTE:  There is not a distinction between 
+laparoscopic and open BPD with DS for 
+the inpatient setting. All of these codes would 
+apply to the open approach and must be on the 
+claim for the open approach. 
+  
+     43.89 Other partial gastrectomy. 
+     45.51 Isolation of segment of small intestine. 
+     45.91 Small to small intestinal anastomosis.  
+5013.2 Contractors shall note that beneficiaries 
+receiving open and laparoscopic RYGBP 
+LAGB and open and laparoscopic BPD/DS 
+must have: 
+  
+(1) A body mass index (BMI) ≥ 35; 
+(2) At least one co-morbidity related to 
+obesity; and  
+(3) Been previously unsuccessful with 
+medical treatment for obesity.  
+ 
+NOTE: None of the V code diagnoses (which 
+describe BMI ≥ 35) or 278.01 for morbid 
+obesity can be the principle diagnosis on an 
+inpatient Medicare claim.  
+X  X       
+5013.3 Contractors shall accept HCPCS codes 43770, 
+43644, 43645, 43845, 43846 and 43847 
+submitted with at least one of the following 
+diagnosis codes: V85.35; V85.36; V85.37; 
+V85.38; V85.39; V85.4; or 278.01.    
+  X       
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+5013.3.1 In addition to the diagnosis codes listed in BR 
+5013.3, contractors shall ensure that an obesity 
+related co-morbidity such as a diabetes or 
+hypertension diagnosis must also be present on 
+the claim. 
+  X       
+5013.3.2 Contractors shall deny claims for the following 
+HCPCS codes (43770, 43644, 43645, 43845, 
+43846, and 43847) when submitted without the 
+appropriate diagnosis codes. 
+  X       
+5013.3.3 Contractors shall use MSN # 15.4 "The 
+information provided does not support the need 
+for this service or item." 
+X  X       
+5013.3.4 Contractors shall Use Claim Adjustment 
+Reason Code #167 "This (these) diagnosis(es) 
+is (are) not covered” 
+X  X       
+5013.4 Contractors shall accept claims with ICD-9-CM 
+procedure codes 44.38, 44.39, 44.95, 43.89, 
+45.51, and 45.91, when the following diagnosis 
+codes are reported: V85.35; V85.36; V85.37; 
+V85.38; V85.39; V85.4; and 278.01.  
+X    X     M C E  
+5013.4.1 In addition to the diagnosis codes listed in BR 
+5013.4, contractors shall ensure that an obesity 
+related co-morbidity such as a diabetes or 
+hypertension diagnosis must also be present on 
+the claim. 
+ 
+NOTE: These ICD-9-CM procedure codes will 
+be paid by FIs, but are subject to post pay 
+review. Any procedure paid in the absence of an 
+obesity related co-morbidity will be denied 
+following post pay review.  
+X    X     M C E  
+5013.4.2 Contractors shall deny claims for the following 
+ICD-9-CM procedure codes (44.38, 44.39, 
+44.95, 43.89, 45.51, and 45.91) when submitted 
+without the appropriate diagnosis codes.  
+X    X      
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+5013.5 The Medicare Code Editor shall be revised to 
+permit payment for the following procedures in 
+an inpatient setting:  
+ 
+44.38-Laproscopic gastroenterostomy 
+(laparoscopic Roux-en-Y).  
+ 
+44.39- Other Gastroenterostomy (open Roux-
+en-Y). 
+ 
+44.95-Laparoscopic gastric restrictive procedure 
+(laparoscipic adjustable gastric band and port 
+insertion). 
+ 
+NOTE:  There is not a distinction between 
+laparoscopic and open BPD with DS for 
+the inpatient setting. All of these codes would 
+apply to the open approach and must be on the 
+claim for the open approach: 
+  
+     43.89 Other partial gastrectomy. 
+     45.51 Isolation of segment of small intestine. 
+     45.91 Small to small intestinal anastomosis. 
+X    X     M C E  
+5013.6 Contractors shall note that open and 
+laparoscopic RYGBP, LAGB and open and 
+laparoscopic BPD/DS shall be paid for 
+beneficiaries with the covered diagnoses (see 
+BR’s 5013.3 and 5013.4) if the facility is 
+certified as specified at: 
+http://www.cms.hhs.gov/coverage. 
+X  X  X      
+5013.6.1 Contractors shall deny claims if the service was 
+performed in an unapproved facility. 
+X  X       
+5013.6.2 Contractors shall use MSN # 16.2 "The service 
+cannot be paid when provided in this 
+location/facility." 
+X  X       
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+5013.6.3 Contractors shall use Claim Adjustment Reason 
+Code 58:  "Payment adjusted because treatment 
+was deemed by the payer to have been rendered 
+in an inappropriate or invalid place of service." 
+X  X       
+5013.6.4 Contractors shall advise physicians that the 
+beneficiary is liable for charges if surgery is 
+performed in an unapproved facility.  The 
+physician must have the beneficiary sign an 
+Advance Beneficiary Notice (ABN) to avoid 
+this liability.  
+  X       
+5013.6.5 Contractors shall advise hospitals, including 
+critical access hospitals (CAHs), that a hospital-
+issued notice of noncoverage (HINN) must be 
+signed by a beneficiary who wishes to have 
+these services performed on an inpatient basis 
+in an unapproved facility. If the beneficiary 
+does not sign a HINN, the facility is liable for 
+the admission.  
+ 
+NOTE: HINN model language should be 
+adapted to this situation in the section 
+addressing the description of the care at issue. 
+Other content requirements of a HINN would 
+still apply. Use the HINN letter most 
+appropriate to the overall situation.  
+X    X      
+5013.7 Contractors shall be advised that effective for 
+services on or after February 21, 2006, the 
+following are non-covered for all Medicare 
+beneficiaries:  
+ 
+Open vertical banded gastroplasty ( HCPCS 
+code 43842); 
+ 
+Laparoscopic vertical banded gastroplasty;* 
+ 
+Open sleeve gastrectomy;* 
+ 
+Laparoscopic sleeve gastrectomy;* and 
+X  X       
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+ 
+Open adjustable gastric banding.* 
+ 
+(* Billed with a Not Otherwise Classified 
+{NOC} code) 
+5013.7.1 Contractors shall note that the following 
+HCPCS code is non-covered for Medicare 
+effective for services performed on or after 
+February 21, 2006: 
+ 
+43842 - Gastric restrictive procedure, without 
+gastric bypass, for morbid obesity; vertical 
+banded gastroplasty.  
+ 
+NOTE:  This code is included in the April 2006 
+update of the Medicare Physician Fee Schedule 
+Database and the Medicare Outpatient Code 
+Editor July 1, 2006. 
+X  X  X  X  OCE 
+5013.7.2 Contractors shall note that the following ICD-9-
+CM procedure code is non-covered for 
+Medicare effective for services performed on or 
+after February 21, 2006:  
+ 
+44.68 Laparoscopic gastroplasty (vertical 
+banded gastroplasty). 
+X    X     M C E  
+5013.7.3 Contractors shall deny claims for services billed 
+with HCPCS 43842, or ICD-9-CM code 44.68 
+for any of the procedures listed in BR # 5013.7 
+and 5013.7.2 billed with an NOC code. 
+X  X  X      
+5013.7.4 Contractors shall use MSN # 16.10 “Medicare 
+does not pay for this item or service.” 
+ 
+NOTE: If billed with an NOC code, contractors 
+shall use MSN#21.21 “This service was denied 
+because Medicare only covers this service under 
+certain circumstances.”  
+X  X       
+5013.7.5 Contractors shall use Claim Adjustment Reason 
+Code 96 "Non-covered charge(s)." 
+X  X       
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+5013.8 The contractor shall pay for Bariatric Surgery 
+only when the services are submitted on the 
+following type of bill (TOB): 11X. by hospitals 
+including CAHs.  
+X    X      
+5013.8.1 Contractors shall pay for Bariatric Surgery in 
+Maryland hospitals, on an inpatient basis 
+according to the Maryland State Cost 
+Containment Plan. 
+X    X      
+5013.8.2 Contractors shall pay Indian Health Service 
+(IHS) inpatient hospitals, TOB 11X, under 
+inpatient prospective payment system (IPPS) 
+based on the diagnosis related group (DRG). 
+X    X      
+5013.8.3 Contractors shall pay IHS critical access 
+hospitals, TOB 11X, based on 101% of the 
+facility specific per diem rate.  
+X    X      
+5013.8.4 Contractors shall pay CAHs for inpatient 
+services, TOB 11X, based on 101% of 
+reasonable cost. 
+X    X      
+5013.8.5 Contractors shall pay inpatient hospitals, TOB 
+11X, under IPPS based on the DRG. 
+X    X      
+5013.9 Contractors need not search their files to either 
+retract payment for claims already paid or to 
+retroactively pay claims.  However, contractors 
+shall adjust claims brought to their attention. 
+X  X       
+III. PROVIDER EDUCATION 
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+Requirement 
+Number 
+Requirements Responsibility (“X” indicates the 
+columns that apply) 
+Shared System 
+Maintainers 
+  F
+I 
+R
+H
+H
+I 
+C
+a
+r 
+r 
+i
+e
+r 
+D
+M
+E
+R
+C 
+F 
+I 
+S
+S 
+M
+C
+S 
+V
+M
+S 
+C
+W
+F 
+Other 
+5013.10 A provider education article related to this 
+instruction will be available at 
+www.cms.hhs.gov/MLNMattersArticles shortly 
+after the CR is released.  You will receive 
+notification of the article release via the 
+established "MLN Matters" listserv.  
+Contractors shall post this article, or a direct 
+link to this article, on their Web site and include 
+information about it in a listserv message within 
+1 week of the availability of the provider 
+education article.  In addition, the provider 
+education article shall be included in your next 
+regularly scheduled bulletin and incorporated 
+into any educational events on this topic.  
+Contractors are free to supplement MLN 
+Matters articles with localized information that 
+would benefit their provider community in 
+billing and administering the Medicare program 
+correctly. 
+ 
+X  X       
+IV. SUPPORTING INFORMATION AND PO SSIBLE DESIGN CONSIDERATIONS 
+A. Other Instructions:  N/A  
+ 
+X-Ref Requirement # Instructions 
+  
+ 
+B. Design Considerations:  N/A  
+ 
+X-Ref Requirement # Recommendation for Medicare System Requirements 
+  
+ 
+C. Interfaces:  N/A 
+  
+D. Contractor Financial Reporting /Workload Impact:  N/A  
+ 
+E. Dependencies:  N/A 
+ 
+F. Testing Considerations:   N/A 
+ 
+V. SCHEDULE, CONTACTS, AND FUNDING 
+ 
+Effective Date*:  February 21, 2006 
+ 
+Implementation Date: May 30, 2006 for physician 
+claims billed to the carrier, and October 2, 2006 for 
+hospital claims billed to the FI. 
+ 
+Pre-Implementation Contact(s):  Kate Tillman 
+410-786-9252 katherine.tillman@cms.hhs.gov or 
+Eileen Davidson 410-786-6874 
+eileen.davidson@cms.hhs.gov (coverage); 
+Yvette Cousar (410) 786-2160 
+yvette.cousar@cms.hhs.gov (carrier claims); 
+Taneka Rivera (410) 786-9502  
+taneka.rivera@cms.hhs.gov (institutional claims) 
+ 
+Post-Implementation Contact(s):  ROs 
+No additional funding will be 
+provided by CMS; contractor 
+activities are to be carried out 
+within their FY 2006 operating 
+budgets. 
+ 
+ 
+*Unless otherwise specified, the effective date is the date of service. 
+Medicare Claims Processing Manual 
+Chapter 32 – Billing Requirements for Special Services 
+ 
+ 
+Table of Contents 
+(Rev.931, 04-28-06) 
+ 
+150 - Billing Requirements for Treatment of Bariatric Surgery for Morbid Obesity  
+ 150.1 - General 
+ 150.2 - HCPCS Coding for Bariatric Procedures 
+ 150.3 - ICD-9 Diagnosis Codes for Bariatric Surgery   
+ 150.4 - Reasons for Denial and Medicare Summery Notice (MSN), Remittance 
+Advice  Codes and Claims Adjustment Reason Code Messages 
+ 150.5 - Fiscal Intermediary Billing Requirements 
+ 150.6 - ICD-9 Procedure Codes for Bariatric Procedures 
+ 150.7 - Non-Covered ICD-9 Procedure Code for Bariatric Surgery 
+ 150.8 - Advance Beneficiary Notice and HINN Information 
+  
+ 
+150 - Billing Requirements for Bariatric Surgery for Treatment of Morbid 
+Obesity 
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+ 
+150.1 - General 
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+Effective for services on or after February 21, 2006, Medicare will cover open and 
+laparoscopic Roux-en-Y gastric bypass (RYGBP), laparoscopic adjustable gastric banding 
+(LAGB) and open and laparoscopic biliopancreatic diversion with duodenal switch 
+(BPD/DS) for beneficiaries who meet the following criteria: 
+ 
+• have a body-mass index (BMI) ≥ 35, 
+ 
+• have at least one co-morbi dity related to obesity,  
+ 
+• have been previously unsuccessful with medical treatment for obesity, and; 
+ 
+• this medical information must be docum ented in the patient's medical record. 
+ 
+In addition, CMS has determined that covered bariatric surgery procedures are reasonable 
+and necessary only when performed at an approved facility. A list of approved facilities 
+may be found at http://www.cms.hhs.gov/coverage. Further coverage guidelines can be 
+found in the National Coverage Determination Manual (Publication 100-03),  Sections 
+40.5 and 100.1. 
+ 
+150.2  - HCPCS Coding for Bariatric Procedures  
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+For services on or after February 21, 2006, the following HCPCS codes apply for bariatric 
+services: 
+ 
+• 43770   Laparoscopy, surgical, gastric re strictive procedure; placement of  
+   adjustable gastric band (gastric band and subcutaneous port  
+   components). 
+ 
+• 43644   Laparoscopy, surgical, gastric re strictive procedure; with gastric  
+   bypass  and  Roux-en-Y gastroent erostomy (roux limb 150 cm or  
+   l e s s ) .  
+ 
+• 43645  Laparoscopy with gastric bypass and small intestine reconstruction 
+   to limit absorption. (Do not report 43645 in conjunction with 49320, 
+   43847.)  
+ 
+• 43845    Gastric restrictive procedure with partial gastrectomy, pylorus- 
+   preserving duodenoileostomy and ileoieostomy (50 to 100 cm  
+   common channel) to limit absorption (biliopancreatic diversion  
+   with duodenal switch). 
+ 
+• 43846   Gastric restrictive procedure,  with gastric bypass for morbid  
+   obesity; with short limb (150 cm or less Roux-en-Y    
+   gastroenterostomy.( For greater than 150 cm, use 43847.) 
+   (For laparoscopic procedure, use 43644.) 
+ 
+• 43847   With small intestine reconstruction to limit absorption.  
+ 
+NOTE:  Effective for services performed on or after February 21, 2006, HCPCS code 
+43842 is non-covered for Medicare. 
+ 
+150.3 - ICD-9 Diagnosis Codes for Bariatric Surgery 
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+ 
+Contractors shall accept claims submitted for bariatric surgery that have the following 
+diagnosis codes with the appropriate HCPCS or ICD-9 procedure code reported.  
+ 
+NOTE:  The claim must contain one of the following diagnoses along with an obesity 
+related co-morbidity.  
+ 
+• Body Mass Index (BMI) > 35:  
+ V85.35; V85.36; V85.37; V85.38; V85.39; V85.4 
+ 
+• Morbid Obesity:  
+ 278.01 
+ 
+NOTE: None of the V diagnosis codes for BMI >35 or 278.01 for morbid obesity can be 
+the principle diagnosis on an inpatient Medicare claim.  
+ 
+ 
+ 
+ 
+ 
+ 
+150.4 - Reasons for Denial and Medicare Summary Notice (MSN), 
+Remittance Advice Codes and Claim Adjustment Reason Code Messages 
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+• Contractors shall deny claims for serv ices performed in an unapproved facility.  
+ Use the following MSN:   
+ 
+  16.2   "This service cannot be paid wh en provided in this location/facility." 
+ 
+  Use the following Claim Adjustment Reason Code: 
+ 
+  58 "Payment adjusted because treatment was deemed by the payer to have 
+  been rendered in an inappropriate or invalid place of service." 
+ 
+• Contractors shall deny claims submitted  with HCPCS code 43842 or with an NOC  
+ code indicating that any one of the following procedures was performed:   
+ 
+• Laparoscopic vertical banded gastroplasty; 
+• Open sleeve gastrectomy; 
+• Laparoscopic sleeve gastrectomy; and 
+• Open adjustable gastric banding. 
+                                                         
+Use the following MSN: 
+ 
+  16.10 Medicare does not pay for this item or service. 
+ 
+  Use the following Claim Adjustment Code: 
+ 
+  96  "Non-covered charge(s)." 
+ 
+• Contractors shall deny claims submitted fo r bariartic surgery that do not contain the 
+appropriate diagnosis codes: 
+ 
+Use the following MSN:   
+ 
+  15.4 “The information provided does not  support the need for this  service 
+or item.” 
+ 
+ Use the following Claim Adjustment Reason Code: 
+ 
+  167  "This (these) diagnosis(es) is (are) not covered” 
+ 
+ 
+150.5 - Fiscal Intermediary Billing Requirements 
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+The FI will pay for Bariatric surgery only when the services are submitted on the following 
+type of bill (TOB): 11X.
+ 
+Type of facility and setting determines the basis of payment: 
+ 
+• For services performed in IHS inpatient hospitals TOB 11X under IPPS payment is 
+based on the DRG. 
+• For services performed in inpatient hospitals, TOB 11X under IPPS payment is 
+based on the DRG.   
+• For services performed in IHS critical access hospitals, TOB 11X, payment is based 
+on 101% facility specific per diem rate. 
+• For services performed in CAH inpatient hospitals, TOB 11X, payment is based on 
+101% of reasonable cost. 
+ 
+150.6 - ICD-9 Procedure Codes for Bariatric Procedures 
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+For services on or after February 21, 2006, the following ICD-9 procedures apply:  
+ 
+44.38-Laparoscopic gastroenterostomy (laparoscopic Roux-en-Y)  
+ 
+44.39- Other Gastroenterostomy (open Roux-en-Y) 
+ 
+44.95-Laparoscopic gastric restrictive procedure (laparoscopic adjustable gastric band 
+and port insertion) 
+ 
+NOTE: There is not a distinction between laparoscopic and open BPD with DS for 
+the inpatient setting. The following codes would apply to the open approach.
+  
+      43.89 Other partial gastrectomy 
+      45.51 Isolation of segment of small intestine 
+      45.91 Small to small intestinal anastomosis  
+ 
+ 
+ 
+ 
+ 
+ 
+150.7 - Non-Covered ICD-9 Procedure Code for Bariatric Surgery  
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+Effective February 21, 2006, the following ICD-9 procedure code is non-covered for 
+Medicare.  
+ 
+44.68 Laparoscopic gastroplasty (vertical banded gastroplasty) 
+ 
+150.8 - Advance Beneficiary Notice and HINN Information  
+(Rev.931, Issued: 04-28-06, Effective: 02-21-06, Implementation: 05-30-06 Carrier/10-
+02-06 FI)  
+ 
+Physicians must be advised that the physician is liable for charges if the surgery is 
+performed in an unapproved facility, unless the beneficiary was informed that he or she 
+would be financially responsible prior to performance for the procedure. The provider 
+must have the beneficiary sign an advance beneficiary notice (ABN) if the bariatric surgery 
+is performed in an unapproved facility.  Note that the ABN is the appropriate notice for 
+Part B services. 
+ 
+The HINN model language should be adapted to this situation in the sections addressing: 
+description of the care at issue if the surgery is performed on an inpatient basis, in an 
+unapproved facility, to avoid being liable, the provider must issue a HINN. Other content 
+requirements of HINN still apply. Use the HINN letter most appropriate to the overall 
+situation. 

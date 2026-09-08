@@ -633,7 +633,7 @@ Not folded into T-13 or T-33: whichever of them lands first would be the task
 that repairs the check it is about to defeat, and it would be graded by that
 check. The repair belongs before either of them.
 
-### `[ ] T-40` Source the code-to-procedure binding, or state that it stays unsourced
+### `[x] T-40` Source the code-to-procedure binding, or state that it stays unsourced
 **REQ:** 2 · **Depends:** T-35 · **Discovered in:** T-35 *(D28)* ·
 **Answers:** open question 7
 **Exit:** a decision entry resolving it, then either
@@ -661,6 +661,20 @@ several unsourced bindings rather than one, this moves ahead of it.
 Reversing D21's two-document corpus is the substance of the first option, which is
 why this is a decision and not a download. The MCD's per-response CSP nonce
 problem applies to any third document too *(D21)*.
+
+**Closed by the first option, and it ran before T-38 by its own reordering
+clause.** T-38's sets need seven bindings, which is "several unsourced ones"
+unless a source lands first. The source is `r931cp` — CMS Pub. 100-04
+Transmittal 931 (CR 5013, 2006), the claims-processing transmittal implementing
+this NCD's reconsideration. Measured before the entry was written: the PDF
+re-downloads byte-identical and pypdf 6.18.0 extracts it deterministically, so
+the CSP-nonce concern above did not materialize for a static archival file.
+Scoped to code bindings only — its coverage content predates the 2012 LSG
+delegation (D29). `python scripts/verify_sources.py` verifies all three
+documents; E3's `code_binding` is now `in_corpus: true` with a span naming both
+code and procedure, `pytest tests/test_e3_code.py` slices it back, and
+`python eval/run_eval.py` shows no drift — E3 stays `BLOCKED/NOT_IMPLEMENTED`
+until T-38 and T-24. Open question 7 closed.
 
 ---
 

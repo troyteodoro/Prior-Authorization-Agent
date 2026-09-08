@@ -390,16 +390,17 @@ closed, leaving two constants still flagged.
 
 One opened in T-35, and it is a corpus question rather than a clinical one:
 
-7. **What source binds a procedure code to a procedure NCD 100.1 names only in
-   prose?** Neither corpus document does. `ncd_100_1` carries no procedure codes
-   at all and says so — "NCDs do not contain claims processing information like
-   diagnosis or procedure codes" — and A53028 names a code for exactly one
-   bariatric procedure, 43775, which is the code D22 disproved. So E3's coverage
-   claim is spanned to the hashed NCD while its `code_binding` for 43842 is
-   recorded as `source_class: "external_code_system"`, `in_corpus: false`, and is
-   verifiable against nothing in this repository. **T-40** decides whether a third
-   document enters the corpus to close it. Until then, no gate asserts that 43842
-   denotes open vertical banded gastroplasty, and none should pretend to. See D28.
+7. ~~What source binds a procedure code to a procedure NCD 100.1 names only in
+   prose?~~ **CMS Pub. 100-04 Transmittal 931 (CR 5013)**, the claims-processing
+   transmittal that implemented this NCD's 2006 reconsideration — in the corpus
+   as `r931cp` since T-40, a static PDF that re-downloads byte-identical and
+   extracts deterministically under pinned pypdf, so D21's CSP-nonce problem
+   does not apply. It binds every needed code in CMS's own words; E3's binding
+   is the single phrase "Open vertical banded gastroplasty ( HCPCS code 43842)",
+   `r931cp[15038:15092]`, and `in_corpus` is now `true`. Scope rule: `r931cp`
+   is citable for code bindings **only** — its coverage content predates the
+   June 27, 2012 LSG delegation and is stale, so a coverage claim spanned into
+   it would be D22 rebuilt with a citation. Closed by T-40, see D29.
 
 Also settled by T-02 and worth stating once: every quantified constant in the
 criteria tree comes from A53028, a **Noridian Jurisdiction F** article, not from
