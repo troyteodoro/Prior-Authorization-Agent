@@ -2763,6 +2763,80 @@ change and its own measurement.
 
 ---
 
+## D48 — The qualifying run is c3's and everyone scopes to it, a zero-event abstention reads the assertions, and REQ-14's run selection has a defect that becomes T-42
+
+T-16's design: c1 through c5 as deterministic predicates over `wm_events`.
+No model call after extraction (REQ-13), and the same list yields the same
+verdicts on every run (Art. II).
+
+### Chosen — one `qualifying_run` helper, computed by c3 and passed to c2, c4 and c5
+
+The tree already says so: c2, c4 and c5 declare `scoped_to: "c3"`. So c3
+identifies the run once — a contiguous block of calendar months, each holding
+at least one event — and the other three take it as an argument rather than
+recomputing it. Three independent implementations of "the qualifying run"
+would be three chances to disagree about which months are in it, and REQ-15's
+whole point is that c4 and c5 answer about *that* period.
+
+### Chosen — a zero-event abstention reads `program_assertions` for its reason
+
+With no events, c1 and c3 both abstain, and D12 settled which reason: zero
+events **plus at least one assertion** is `UNSUBSTANTIATED_ASSERTION` (E8 —
+find the visit notes behind the claim); zero events and no assertion is
+`NO_EVIDENCE_RETRIEVED` (E7 — find documentation of a program). One rule,
+applied identically at both criteria, because the next action is a property of
+the chart and not of which criterion asked.
+
+This is why the predicates take the assertions alongside the events. They are
+never counted (REQ-35) and never produce a verdict — their only consumer is
+the gap reason, exactly as D12 scoped them.
+
+### Chosen — what each `NOT_MET` cites
+
+REQ-5 wants a span on every substantiated verdict, and for a failure the
+honest citation is the evidence that falls short, not the absence:
+
+- **c3 `NOT_MET`** (a run of one to three months): the events of the longest
+  run — "this is the program, and it is this long."
+- **c2 `NOT_MET`** (run outside the window): the run's last event — "this is
+  when it ended."
+- **c4 `NOT_MET`**: the encounters in the run's months that documented no BMI.
+- **c5 `NOT_MET`**: the encounters in the months missing diet or activity.
+
+A month with *no* encounter cannot be cited, but such a month cannot occur
+inside a run — a run is made of populated months — so every c4 and c5 failure
+has an encounter to point at.
+
+### The defect: REQ-14 picks the longest run, and the longest run is not always the qualifying one
+
+REQ-14 says c3 "returns the longest run of consecutive populated months", and
+REQ-32 then asks whether *that* run ended inside c2's window. Consider a chart
+with a six-month run three years ago and a four-month run last month. The
+longest is the old one, so c2 reports `NOT_MET` — for a patient who completed
+four consecutive supervised months within the window and plainly qualifies.
+
+That is a **false `NOT_MET`**: the cheaper direction (an unnecessary chart
+review rather than a wrong denial), but wrong, and produced by the mechanics
+rather than by the evidence.
+
+**Chosen: implement REQ-14 as written, and put the defect on the board as
+T-42.** Silently selecting "the run that best satisfies c2 and c3 together"
+would be this task rewriting the requirement it implements — the move working
+rule 5 exists to prevent and that D24, D26 and D28 each spent an entry
+refusing. No case in the eval set distinguishes the two readings (E5 has one
+run; E11's longest run is also its most recent), so nothing is being papered
+over to make a labeled case pass.
+
+Ties are broken toward the **most recent** run, which is inside REQ-14's
+wording (it does not say which longest run) and is the reading that can only
+help a patient.
+
+**Reverses if:** T-42 rewrites REQ-14 and REQ-32 to select jointly. The
+predicate then takes the window into account and this entry is superseded
+rather than edited.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

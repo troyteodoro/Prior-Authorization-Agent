@@ -564,7 +564,7 @@ allowed to carry a reason, the gap list dropping it, a fifth undocumented
 member, and two reasons collapsing to one value — which three separate tests
 object to, since that collapse is Article IV's.
 
-### `[ ] T-16` Deterministic predicates c1 through c5
+### `[x] T-16` Deterministic predicates c1 through c5
 **REQ:** 13, 14, 15, 16, 32, 36, 37, 40 · **Depends:** T-15, T-31
 **Exit:** `pytest tests/test_criteria_c.py` —
 - E4, E5, E6, E7, E8, E9, E11 all correct
@@ -581,6 +581,39 @@ object to, since that collapse is Article IV's.
 - identical verdicts across three runs
 
 Test the empty list, a single event, and events out of chronological order.
+
+**Closed by D48.** `pa_agent/criteria.py` gains c1–c5 as pure predicates over
+`wm_events`. c3 computes the qualifying run **once** and c2, c4 and c5 scope
+to it — the tree already says `scoped_to: "c3"`, and three independent
+implementations of "the run" would be three chances to disagree about which
+months are in it. A zero-event abstention reads `program_assertions` for its
+reason: with a claim it is `UNSUBSTANTIATED_ASSERTION` (E8, find the visit
+notes), without one `NO_EVIDENCE_RETRIEVED` (E7, find a program) — D12's rule,
+applied identically at c1 and c3.
+
+**The seven edge cases run against T-15's real recorded extraction**, so the
+verdicts come from events a model actually produced rather than events written
+to make a predicate pass. E4's longest run is 3; E9 is not fooled by the
+April no-show or the failed outreach call; E5 is c3 `MET` and c2 `NOT_MET`;
+E6 is c4 `NOT_MET` with c5 `MET`, isolating the criterion; E7 and E8 abstain
+with different reasons; E11 picks the 2026 run out of two programs; E1 is
+`MET` on all five with a span each.
+
+Each `NOT_MET` cites the evidence that falls short (REQ-5): c3 the short run,
+c2 the run's last event, c4 and c5 the encounters in the deficient months.
+Mutation-tested seven ways under cleared bytecode, each caught: zero events
+treated as a short run, E7's and E8's reasons collapsed, c5 back to a count of
+four, c4 deriving a BMI, REQ-15's cascade removed, c2's window hardcoded, and
+the run bridging a gap month.
+
+**A defect is recorded rather than fixed here: T-42.** REQ-14 selects the
+*longest* run and REQ-32 then asks whether that run is recent, so a six-month
+run three years ago beats a four-month run last month and the patient reads as
+stale — a false `NOT_MET` produced by the mechanics. Implementing the
+requirement as written and putting the defect on the board is the move D24,
+D26 and D28 each argued for; no eval case distinguishes the two readings, so
+nothing is being papered over.
+
 
 ### `[ ] T-33` Source reconciliation for criterion (a)
 **REQ:** 31, 34, 39 · **Depends:** T-13, T-15, T-31, T-39
@@ -930,6 +963,35 @@ spec. `LocalPolicyStore.resolve` now cites T-24, and E3 stays
 each caught by the gate built for it — the sharpest being the VBG claim
 re-pointed at §D's delegation paragraph, which slices back perfectly and means
 the opposite, and only the containment gate catches it.
+
+### `[ ] T-42` The longest run is not always the qualifying run
+**REQ:** 14, 32 · **Depends:** T-16 · **Discovered in:** T-16 *(D48)* ·
+**Timebox:** two hours
+**Exit:** a decision entry resolving it, then `pytest tests/test_criteria_c.py`
+— a chart carrying a long stale run *and* a shorter run inside c2's window
+resolves c2 and c3 the way the entry says it should, and the case exists in
+the test. `docs/spec.md`'s REQ-14 and REQ-32 read whatever was chosen.
+
+REQ-14 returns the longest run of consecutive populated months; REQ-32 then
+asks whether **that** run ended inside the recency window. A six-month run
+three years ago therefore beats a four-month run last month, and a patient who
+completed four consecutive supervised months within the window is reported
+stale. It is a false `NOT_MET` — the cheaper direction, an unnecessary chart
+review rather than a wrong denial — but it comes from the selection rule
+rather than from the evidence.
+
+T-16 implemented the requirement as written and pinned the behavior in
+`test_the_longest_run_wins_even_when_an_older_one_is_stale`, so changing it is
+a deliberate act. Two candidate readings: select jointly (prefer a run that
+satisfies c3 *and* c2, falling back to longest), or keep longest and let c2
+consider every qualifying run. They differ on which run c4 and c5 then scope
+to, which is why this needs a decision and not a patch.
+
+Not folded into T-16: a requirement changed by the task that implements it is
+a requirement nobody agreed to *(working rule 5)*. No case in spec §6
+distinguishes the readings today — E5 has one run and E11's longest is also
+its most recent — so this blocks nothing until a chart with two real programs
+lands.
 
 ### `[ ] T-41` E12 has no patient, and the boundary case needs one
 **REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row ·

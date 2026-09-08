@@ -248,7 +248,11 @@ def test_a_condition_outside_the_value_set_does_not_count(criterion_b, value_set
 
 def test_the_criteria_module_makes_no_model_call():
     """Asserted on the imports: nothing model-shaped, no pin, no store, no
-    file API is reachable from the module that adjudicates (Art. II)."""
+    file API is reachable from the module that adjudicates (Art. II).
+
+    `dataclasses` joined the list when T-16 added `QualifyingRun`; the set is
+    asserted exactly so a new import is a decision someone makes rather than
+    one that arrives unnoticed."""
     tree = ast.parse(CRITERIA_MODULE.read_text(encoding="utf-8"))
     imported: set[str] = set()
     for node in ast.walk(tree):
@@ -256,7 +260,9 @@ def test_the_criteria_module_makes_no_model_call():
             imported.update(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
             imported.add(node.module or "")
-    assert imported == {"__future__", "datetime", "pa_agent.contracts"}, (
+    assert imported == {
+        "__future__", "dataclasses", "datetime", "pa_agent.contracts",
+    }, (
         f"pa_agent/criteria.py imports {sorted(imported)}; criteria are "
         "arithmetic over contracts and nothing else (Art. II, D40)"
     )

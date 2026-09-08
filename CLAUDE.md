@@ -291,11 +291,11 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-16, T-26 and T-41**.
-**US-2 and US-3 are delivered**, and T-15 has closed, so **T-16 (the c1–c5
-predicates) is the next task** — both its dependencies, T-15 and T-31, are
-done. T-33, T-17 and T-18 open up behind it; US-4 closes when E4, E5, E6, E7,
-E9, E10, E10b, E10c and E11 all pass. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-17, T-18, T-20,
+T-26, T-33, T-41 and T-42**. **US-2 and US-3 are delivered**, and c1–c5 now
+evaluate correctly on every edge case. US-4 still needs **T-33**
+(reconciliation, E10/E10b/E10c) and **T-18** (the workflow graph) before it
+closes; T-19 then closes US-5 and T-17 US-6. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -460,6 +460,25 @@ every span through T-11, and checks the recorded model is the pin. Do not make
 the gate call a model. Both anchoring repairs also carry direct synthetic
 tests, because their triggers are intermittent and a recording may not
 exercise them.
+
+**T-16 is closed (D48): c1–c5 evaluate, and seven edge cases pass on real
+extracted events.** c3 computes the qualifying run once; c2, c4 and c5 scope
+to it (the tree's `scoped_to: "c3"`). A zero-event abstention reads
+`program_assertions` for its reason — with a claim it is
+`UNSUBSTANTIATED_ASSERTION` (E8), without one `NO_EVIDENCE_RETRIEVED` (E7),
+D12's rule at both c1 and c3. Every `NOT_MET` cites the evidence that fell
+short, never the absence.
+
+**T-42 is registered, not fixed:** REQ-14 picks the *longest* run and c2 then
+tests that run's recency, so a long stale run beats a short recent one and the
+patient reads stale. Implemented as written and pinned by
+`test_the_longest_run_wins_even_when_an_older_one_is_stale` — if that test
+starts passing differently, REQ-14's selection changed and it needs T-42's
+decision entry, not a quiet fix.
+
+*Method note:* when mutation-testing, **clear `__pycache__` after restoring** —
+a same-length mutation restored within the same second leaves Python's
+bytecode cache looking valid, and a "passing" suite can be running the mutant.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in
