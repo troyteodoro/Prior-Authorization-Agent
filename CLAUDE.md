@@ -291,11 +291,11 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-15, T-26, T-31 and
-T-41**. **US-2 and US-3 are delivered**; T-06 and T-07 are closed, so the note
-corpus exists and **T-15 is unblocked — the one place a model enters the
-system**. T-31 (`gap_reason`) blocks T-16, T-17, T-19 and T-33, so it is the
-cheapest thing standing between US-4 and its predicates. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-15, T-26 and T-41**.
+**US-2 and US-3 are delivered**; T-06, T-07 and T-31 are closed, so the note
+corpus and the gap vocabulary both exist and **T-15 is the next task — the
+one place a model enters the system**. After it, T-16 is immediately
+buildable (its two dependencies were T-15 and T-31). **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -427,6 +427,15 @@ declare** — that assertion is what makes the corpus ground truth, since an
 invented date would be scored as a model failure that was really a corpus
 defect. Traps never name their own type. `get_notes` serves the notes
 hash-verified and the T-07 raise is retired.
+
+**T-31 is closed (D44): an abstention must say what to go collect.**
+`GapReason` is a closed four-member enum, and a `CriterionResult` validator
+requires it on `INSUFFICIENT_EVIDENCE` and refuses it everywhere else — the
+mirror of REQ-5's span rule, so a result is either evidence or an explanation
+of its absence. It propagates onto `GapEntry` and survives serialization.
+Criteria (a) and (b) carry `NO_EVIDENCE_RETRIEVED`. **T-16, T-17, T-19 and
+T-33 must supply a reason at every abstention branch** — the validator makes
+that mechanical rather than remembered.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

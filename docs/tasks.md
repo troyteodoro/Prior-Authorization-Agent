@@ -499,7 +499,7 @@ span
 The only place in the system where a model exercises judgment. The spike's notes
 double as regression cases.
 
-### `[ ] T-31` `gap_reason` on `INSUFFICIENT_EVIDENCE`
+### `[x] T-31` `gap_reason` on `INSUFFICIENT_EVIDENCE`
 **REQ:** 31 · **Depends:** T-09 · **Blocks:** T-16, T-17, T-19, T-33
 **Exit:** `pytest tests/test_gap_reason.py` — a `GapReason` enum with
 `NO_EVIDENCE_RETRIEVED`, `UNSUBSTANTIATED_ASSERTION`, `VERIFIER_REJECTED` and
@@ -508,6 +508,27 @@ double as regression cases.
 carrying three different values
 Separate from T-26: `gap_reason` describes an honest abstention, `error_code`
 describes a fault, and one field for both is the collapse Article IV forbids.
+
+**Closed by D44.** `GapReason` is a closed four-member enum, and a validator
+on `CriterionResult` makes it **required on `INSUFFICIENT_EVIDENCE` and
+refused on every other verdict** — the mirror of REQ-5's span rule, so a
+result is either evidence or an explanation of its absence, never a mix. It
+propagates onto `GapEntry`, because US-5's argument is that two gaps with
+different reasons must *read* differently and the gap list is where Sam
+reads them. Criterion (a)'s and (b)'s live abstentions now carry
+`NO_EVIDENCE_RETRIEVED`.
+
+T-31 gates the **vocabulary**, not the predicates: E8's
+`UNSUBSTANTIATED_ASSERTION` needs T-15 plus T-16 and E10b's
+`SOURCE_CONFLICT` needs T-33, so the gate asserts the three values are
+distinct and reachable and that each case's *manifest* carries the shape its
+reason describes — E7 nothing to retrieve, E8 a claim with no encounter
+behind it, E10b two sources straddling 35.0. Putting expected reasons in the
+manifests was refused: D42 made them carry facts, never verdicts.
+Mutation-tested five ways, each caught: the requirement dropped, a `MET`
+allowed to carry a reason, the gap list dropping it, a fifth undocumented
+member, and two reasons collapsing to one value — which three separate tests
+object to, since that collapse is Article IV's.
 
 ### `[ ] T-16` Deterministic predicates c1 through c5
 **REQ:** 13, 14, 15, 16, 32, 36, 37, 40 · **Depends:** T-15, T-31

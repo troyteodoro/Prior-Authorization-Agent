@@ -31,6 +31,7 @@ from pa_agent.contracts import (
     DeterminationOutcome,
     Document,
     EvidenceSpan,
+    GapReason,
     Observation,
     PolicyConstant,
     ProcedureEntry,
@@ -225,7 +226,9 @@ def test_a_program_assertion_is_not_an_event() -> None:
 
 def test_met_over_an_unsupported_criterion_cannot_be_constructed() -> None:
     result = CriterionResult(
-        criterion_id="c3", verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE
+        criterion_id="c3",
+        verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+        gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
     )
     with pytest.raises(ValidationError, match="Unsupported never becomes met"):
         Determination(
@@ -243,7 +246,9 @@ def test_the_gap_list_names_every_criterion_not_met() -> None:
         CriterionResult(criterion_id="a", verdict=CriterionVerdict.MET, spans=[span]),
         CriterionResult(criterion_id="c2", verdict=CriterionVerdict.NOT_MET, spans=[span]),
         CriterionResult(
-            criterion_id="c3", verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE
+            criterion_id="c3",
+            verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+            gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
         ),
     ]
     determination = Determination(

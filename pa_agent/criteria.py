@@ -17,6 +17,9 @@ Verdict shapes, per D40:
   never `NOT_MET` — a chart cannot prove the absence of a comorbidity, only
   fail to document one (Art. IV).
 
+Both abstentions carry `NO_EVIDENCE_RETRIEVED` (REQ-31, D44): nothing was
+found for the criterion, and the next action is to go find documentation.
+
 No model is imported here and never will be (Art. II, REQ-11, REQ-12).
 """
 
@@ -31,6 +34,7 @@ from pa_agent.contracts import (
     CriterionResult,
     CriterionVerdict,
     ExclusionMatch,
+    GapReason,
     Observation,
 )
 
@@ -67,6 +71,7 @@ def evaluate_criterion_a(
         return CriterionResult(
             criterion_id=criterion.id,
             verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+            gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
             detail="no BMI observation anywhere in the record",
         )
 
@@ -123,6 +128,7 @@ def evaluate_criterion_b(
     return CriterionResult(
         criterion_id=criterion.id,
         verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+        gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
         detail=(
             f"{len(qualifying)} active condition(s) intersect the value set; "
             f"{minimum} required. Absence of a documented comorbidity is not "

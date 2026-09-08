@@ -24,7 +24,6 @@ run, and building it here would be building ahead:
 - `CriterionVerdict.ERROR`, `error_code`, `error_detail` — **T-26**. Article IV
   requires three states that never collapse; this enum currently has two of them
   and the third arrives with the machinery that classifies it.
-- `gap_reason` on `CriterionResult` — **T-31**.
 - `CriterionResult.discrepancies[]` — **T-33** (REQ-39).
 """
 
@@ -536,6 +535,27 @@ class ProgramAssertion(BaseModel):
 # --------------------------------------------------------------------------
 
 
+class GapReason(str, Enum):
+    """Why a criterion abstained — REQ-31's closed enum (D44).
+
+    The enum exists to say **what to go collect**, so two values producing the
+    same next action are one value. Adding a member means naming an action
+    none of these four already names.
+
+    | Value | Meaning | Next action |
+    |---|---|---|
+    | `NO_EVIDENCE_RETRIEVED` | Nothing found for this criterion | Find documentation of a program |
+    | `UNSUBSTANTIATED_ASSERTION` | A claim was found, no encounter behind it | Find the visit notes behind the claim |
+    | `VERIFIER_REJECTED` | A span was found and did not support the verdict | Re-read the cited passage |
+    | `SOURCE_CONFLICT` | Two sources disagreed across a threshold | Reconcile the two values |
+    """
+
+    NO_EVIDENCE_RETRIEVED = "NO_EVIDENCE_RETRIEVED"
+    UNSUBSTANTIATED_ASSERTION = "UNSUBSTANTIATED_ASSERTION"
+    VERIFIER_REJECTED = "VERIFIER_REJECTED"
+    SOURCE_CONFLICT = "SOURCE_CONFLICT"
+
+
 class CriterionVerdict(str, Enum):
     """Two of Article IV's three states. `ERROR` arrives with T-26.
 
@@ -593,6 +613,9 @@ class CriterionResult(BaseModel):
     criterion_id: str = Field(min_length=1)
     verdict: CriterionVerdict
     spans: list[EvidenceSpan] = Field(default_factory=list)
+    # REQ-31: what to go collect. Required on an abstention, refused on
+    # anything else — the mirror of the span rule above (D44).
+    gap_reason: GapReason | None = None
     detail: str | None = None
 
     @model_validator(mode="after")
@@ -613,6 +636,27 @@ class CriterionResult(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def _an_abstention_says_what_to_go_collect(self) -> CriterionResult:
+        """REQ-31 (D44), the mirror of the rule above: an abstention carries a
+        reason and no spans, a substantiated verdict carries spans and no
+        reason. A gap that does not name its next action is a gap Sam cannot
+        act on, and a `MET` carrying one is a sentence that means nothing."""
+        abstained = self.verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
+        if abstained and self.gap_reason is None:
+            raise ValueError(
+                f"{self.criterion_id}: INSUFFICIENT_EVIDENCE without a "
+                "gap_reason (REQ-31). The gap list exists to say what to go "
+                "collect; an abstention that names no action says nothing."
+            )
+        if not abstained and self.gap_reason is not None:
+            raise ValueError(
+                f"{self.criterion_id}: {self.verdict.value} carries "
+                f"gap_reason {self.gap_reason.value} (REQ-31). Only an "
+                "abstention has a gap to explain."
+            )
+        return self
+
 
 class GapEntry(BaseModel):
     """One criterion the chart did not carry, and why (REQ-21).
@@ -624,6 +668,9 @@ class GapEntry(BaseModel):
 
     criterion_id: str
     verdict: CriterionVerdict
+    # US-5's argument: two gaps with different reasons must *read* differently,
+    # and the gap list is where Sam reads them (D44).
+    gap_reason: GapReason | None = None
     detail: str | None = None
 
 
@@ -710,7 +757,10 @@ class Determination(BaseModel):
     def gap_list(self) -> list[GapEntry]:
         return [
             GapEntry(
-                criterion_id=r.criterion_id, verdict=r.verdict, detail=r.detail
+                criterion_id=r.criterion_id,
+                verdict=r.verdict,
+                gap_reason=r.gap_reason,
+                detail=r.detail,
             )
             for r in self.criterion_results
             if r.verdict is not CriterionVerdict.MET

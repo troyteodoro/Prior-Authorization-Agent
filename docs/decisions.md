@@ -2444,6 +2444,71 @@ phrase bank.
 
 ---
 
+## D44 — `gap_reason` is required by a validator, propagates onto the gap list, and T-31 gates the vocabulary rather than the predicates
+
+T-31's design. REQ-31's enum is the field that tells Sam what to go collect,
+and it blocks T-16, T-17, T-19 and T-33 — so what it costs those tasks is
+settled here rather than four times.
+
+### Chosen — required on `INSUFFICIENT_EVIDENCE`, refused on every other verdict
+
+A `model_validator` on `CriterionResult`, the same shape REQ-5's span rule
+already has and for the same reason: "enforced by a validator, not by
+convention" is what makes an invariant survive four consumers. An abstention
+without a reason is a gap Sam cannot act on, and a `MET` carrying one is a
+sentence that parses and means nothing.
+
+The symmetry with REQ-5 is exact and worth stating: an abstention carries a
+`gap_reason` and **no spans**; a substantiated verdict carries spans and
+**no gap_reason**. The two validators together mean a `CriterionResult` is
+either evidence or an explanation of its absence, never a mix.
+
+**Rejected — an optional field the predicates fill in when they remember.**
+T-16 writes eight abstention branches, T-17 one, T-33 three; an optional
+field is eight chances to ship a gap that says nothing, and the eval harness
+would score them as correct abstentions.
+
+**Rejected — deriving the reason from the detail string.** Free text is what
+REQ-30 already refuses for `error_code`, for the identical reason.
+
+### Chosen — it propagates onto `GapEntry`, because that is where Sam reads it
+
+`Determination.gap_list` is REQ-21's deliverable and US-5's whole argument is
+that two gaps with different reasons must *read* differently. Carrying the
+verdict but dropping the reason would put the distinction one dereference
+away from the artifact that exists to show it.
+
+### Chosen — T-31 gates the vocabulary; the predicates that emit it stay T-16's and T-33's
+
+The exit asks for E7, E8 and E10b carrying three different values. Their
+predicates do not exist yet — E8's `UNSUBSTANTIATED_ASSERTION` comes from
+extraction (T-15) plus c3 (T-16), E10b's `SOURCE_CONFLICT` from
+reconciliation (T-33). So this task asserts two things it can honestly
+assert: that the three values are **distinct and reachable** through the
+contract, and that each case's **manifest carries the shape** that justifies
+its reason — E7 zero programs and zero assertions, E8 zero encounters with
+an assertion, E10b a BMI pair straddling 35.0. When T-16 and T-33 land, they
+assert the predicates emit them.
+
+Putting the expected values in the manifests instead was rejected: D42 made
+manifests carry facts and never expected verdicts, and a `gap_reason` is a
+verdict about the evidence.
+
+### What this costs the two live abstentions
+
+Criterion (a) with no BMI anywhere and criterion (b) below its minimum both
+become `NO_EVIDENCE_RETRIEVED` — the value REQ-31's table assigns to "nothing
+found for this criterion", and the correct one for both: the next action is
+to go find documentation. Criterion (b)'s abstention keeps D40's meaning
+exactly (a chart cannot prove a comorbidity absent), now with the reason
+attached.
+
+**Reverses if:** a fifth reason turns out to name a genuinely different next
+action. REQ-31's rule is that two values producing the same action are one
+value, and the enum grows only against that test.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
