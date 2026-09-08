@@ -157,12 +157,25 @@ was `MET` under the count and is `NOT_MET` under the rate. c4 and c5 share the
 rate and differ in their predicate, so they stay separate criteria. **T-16 builds
 against the rate.**
 
-**43775 is not the non-covered case (D22).** NCD 100.1 non-covers laparoscopic
-sleeve gastrectomy only *"prior to June 27, 2012"*; after that it is delegated to
-the MACs, and A53028 records this MAC covering it. E3 and T-25 assume the
-opposite. **T-35** re-points them at a genuinely non-covered code; **T-36** asks
-whether "left to the contractor" is a third sc1 outcome. Do not close US-1 on the
-current E3 code.
+**43775 is not the non-covered case (D22), and T-35 has re-pointed E3 (D28).**
+NCD 100.1 non-covers laparoscopic sleeve gastrectomy only *"prior to June 27,
+2012"*; after that it is delegated to the MACs, and A53028 records this MAC
+covering it. **E3 and T-25 are now 43842, open vertical banded gastroplasty**,
+which the NCD names non-covered for all beneficiaries with no date qualifier and
+no delegation clause. 43775 belongs in a covered case; T-38 lands it in the
+contractor-determined set. **T-36** still asks whether "left to the contractor" is
+a third sc1 outcome.
+
+**A procedure code carries two citations, and one of them is not sourced (D28).**
+Neither corpus document binds a non-covered procedure to a code: `ncd_100_1`
+holds no procedure codes at all and says so outright, and A53028 names exactly one
+bariatric code — 43775, the one D22 disproved. So E3's `coverage_claim` is spanned
+into the hashed corpus and checked by slicing, while its `code_binding` is marked
+`source_class: "external_code_system"`, `in_corpus: false`, against **open question
+7** and **T-40**. Nothing in this repo asserts that 43842 denotes open vertical
+banded gastroplasty, and no gate should pretend to — a test claiming to verify it
+would be asserting recall, which is how 43775 reached the spec. Do not "strengthen"
+that test by hardcoding the descriptor.
 
 **One module names the model (D20).** `pa_agent/model_pin.py` pins
 `gemini-3.5-flash-lite` — the model D19 was measured on — and it is the only
@@ -248,21 +261,30 @@ scoring anything, because every scoring branch is unreachable by a real case
 until T-25 produces a `Determination`; a self-check failure exits 2 and
 suppresses the report.
 
-**E3 carries no procedure code.** It is labeled `NOT_COVERED` with a zero-call
-budget and reports `BLOCKED/CASE_UNSPECIFIED` until **T-35** picks a code the NCD
-names non-covered. Do not fill it in from D22's candidate list to make the case
-run — that is T-35's decision, and 43775 is the code D22 disproved. The eval set
-holds E3 alone; the rest of spec §6 is **T-21**.
+**E3 now carries 43842 and reports `BLOCKED/NOT_IMPLEMENTED`** — it reaches
+`LocalPolicyStore.resolve` and gets the `NotImplementedError` citing T-38. That
+move was the first real exercise of D27's gate: the drift failed the run, and
+`--update-baseline` plus a commit is what recorded it. The eval set holds E3
+alone; the rest of spec §6 is **T-21**.
+
+**T-35 is closed.** `pytest tests/test_e3_code.py` and `python eval/run_eval.py`
+both return zero. Its exit condition was rewritten by D28 for two defects in its
+own text: it asked for a *code* spanned to `ncd_100_1`, which no document can
+supply, and it closed on `tests/test_resolver.py`, a file **T-24** creates — so
+T-35 could not close until the thing it blocks was built, which is the defect D26
+named in T-36. Ten mutations, each caught by the check that should catch it; the
+sharpest is citing 43775's own bullet, which slices back, is unique, and sits
+inside the non-covered list — only the date-qualifier assertion catches it.
 
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
 closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-24, T-26,
-T-31, T-35 and T-39**. T-35 blocks US-1's close and edits `docs/spec.md`, so it
-comes before any US-1 work is trusted, and **T-38 unblocks behind it** — T-24
-cannot close until one of them lands the procedure sets. US-1's remaining chain
-is T-35 → T-38 → T-24 → T-25, and each of the four moves E3 one step; only the
-last flips it to `PASS`.
+T-31, T-38, T-39 and T-40**. **T-38 is next on US-1's critical path** — T-24's
+dependency (T-09) is met, but it cannot *close* until T-38 lands the procedure
+sets for it to read. US-1's remaining chain is
+T-38 → T-24 → T-25, and each moves E3 one step; only the last flips it to `PASS`.
+T-40 is not on that path: T-24 and T-25 resolve a code they are handed.
 
 **One gate is weak and will start lying on a schedule (T-39).**
 `_open_questions()` in `tests/test_criteria_tree.py` matches resolved questions

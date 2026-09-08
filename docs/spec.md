@@ -268,7 +268,7 @@ Each becomes a labeled eval case. This list is the eval set's outline.
 |---|---|---|
 | E1 | Clean approval, all criteria met | `MET` |
 | E2 | BMI 33 with T2DM | `NOT_COVERED` via REQ-3, zero model calls |
-| E3 | Non-covered procedure requested | `NOT_COVERED` via REQ-2, zero model calls |
+| E3 | Non-covered procedure requested — 43842, open vertical banded gastroplasty | `NOT_COVERED` via REQ-2, zero model calls |
 | E4 | Program run of 3 consecutive months, gap in month 4 | c3 `NOT_MET` |
 | E5 | Program complete but ended 14 months ago | c2 `NOT_MET` |
 | E6 | Weight recorded monthly, BMI recorded in 2 of 4 months | c4 `NOT_MET` |
@@ -346,15 +346,21 @@ into a hashed document, recorded in `data/policies/source/answers.json`.
 
 One opened in their place, and it is a design question rather than a source one:
 
-3. **E3's procedure code is wrong, and sc1 may be missing an outcome.** T-02
+3. ~~E3's procedure code is wrong~~, **and sc1 may be missing an outcome.** T-02
    found that NCD 100.1 neither covers nor non-covers 43775 — CMS delegated
    stand-alone laparoscopic sleeve gastrectomy to the MACs effective 2012-06-27,
-   and A53028 records this MAC covering it. So §6's E3 row and T-25 both assume a
-   `NOT_COVERED` that the source contradicts. **T-35** re-points E3 at a code the
-   NCD names non-covered for all beneficiaries; **T-36** decides whether "left to
-   the contractor" is a third outcome beside `NOT_COVERED` and `NO_POLICY_FOUND`.
-   See D22. Until T-35 lands, the E3 row below is known-wrong in its code and
-   right in its expected verdict.
+   and A53028 records this MAC covering it, so §6's E3 row and T-25 both assumed a
+   `NOT_COVERED` the source contradicts. See D22.
+
+   **The code half is closed by T-35.** E3 is now 43842, open vertical banded
+   gastroplasty, which NCD 100.1 names in a list scoped "non-covered for all
+   Medicare beneficiaries" with no date qualifier and no delegation clause —
+   `ncd_100_1[7076:7166]` for the scope and `[7287:7338]` for the procedure. The
+   expected verdict never changed; only the code was wrong. See D28.
+
+   **The sc1 half stays open and is T-36's.** REQ-1 returns `NO_POLICY_FOUND` and
+   REQ-2 returns `NOT_COVERED`, and neither describes "no national determination,
+   delegated to the contractor." T-36 decides whether that is a third outcome.
 
 Three more opened in T-01, each one a constant the criteria tree carries as
 `provisional: true` rather than as a bare number *(D23)*. Each names the task
@@ -381,6 +387,19 @@ closed, leaving two constants still flagged.
    per-month shape, `c5_min_documented_events` is gone, and a seven-month run
    documenting diet and activity in four months is now `NOT_MET`. Closed by T-37,
    see D24.
+
+One opened in T-35, and it is a corpus question rather than a clinical one:
+
+7. **What source binds a procedure code to a procedure NCD 100.1 names only in
+   prose?** Neither corpus document does. `ncd_100_1` carries no procedure codes
+   at all and says so — "NCDs do not contain claims processing information like
+   diagnosis or procedure codes" — and A53028 names a code for exactly one
+   bariatric procedure, 43775, which is the code D22 disproved. So E3's coverage
+   claim is spanned to the hashed NCD while its `code_binding` for 43842 is
+   recorded as `source_class: "external_code_system"`, `in_corpus: false`, and is
+   verifiable against nothing in this repository. **T-40** decides whether a third
+   document enters the corpus to close it. Until then, no gate asserts that 43842
+   denotes open vertical banded gastroplasty, and none should pretend to. See D28.
 
 Also settled by T-02 and worth stating once: every quantified constant in the
 criteria tree comes from A53028, a **Noridian Jurisdiction F** article, not from

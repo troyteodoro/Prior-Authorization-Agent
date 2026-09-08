@@ -177,10 +177,16 @@ returns `NO_POLICY_FOUND`, model-call counter reads zero
 
 ### `[ ] T-25` Determination assembly, minimal
 **REQ:** 4, 21 · **Depends:** T-24
-**Exit:** `python -m pa_agent.cli --patient X --procedure 43775` prints a
+**Exit:** `python -m pa_agent.cli --patient X --procedure 43842` prints a
 `NOT_COVERED` determination carrying `policy_version_id`, model-call counter zero
-43775 is sleeve gastrectomy, assumed not nationally covered so the case exits
-through sc1. Chosen from memory — T-02 confirms it against source.
+43842 is open vertical banded gastroplasty, which NCD 100.1 names non-covered for
+all Medicare beneficiaries unconditionally, so the case exits through sc1.
+
+*Was 43775, chosen from memory.* T-02 confirmed the opposite — CMS delegated
+stand-alone laparoscopic sleeve gastrectomy to the MACs in 2012 and A53028 records
+this MAC covering it *(D22)* — and T-35 re-pointed it *(D28)*. **43775 belongs in
+a covered case**, and T-38 is where it lands: the contractor-determined set, in
+neither of the other two. Do not build that case here.
 
 **US-1 closes when:** `python eval/run_eval.py` reports E3 passing — which is
 the commit moving E3 to `PASS` in `eval/baseline.json`, after T-35 supplies the
@@ -474,12 +480,19 @@ against AI Studio. `run.py` and `agent/agent.py` import it; all three former
 literals are gone. Each check was mutation-tested: moving the pin, restoring a
 literal default, and re-adding a third identifier each fail the suite.
 
-### `[ ] T-35` Re-point E3 and T-25 at a genuinely non-covered procedure
+### `[x] T-35` Re-point E3 and T-25 at a genuinely non-covered procedure
 **REQ:** 2 · **Blocks:** T-25, and US-1's close · **Discovered in:** T-02 *(D22)*
-**Exit:** `pytest tests/test_resolver.py` — E3's procedure code is one NCD 100.1
-names as non-covered for all Medicare beneficiaries, and the choice cites
-`ncd_100_1` with a span the way T-02's answers do. 43775 appears in a covered
-case instead.
+**Exit:** `pytest tests/test_e3_code.py` and `python eval/run_eval.py` — E3's
+procedure code is one NCD 100.1 names as non-covered for all Medicare
+beneficiaries, the choice cites `ncd_100_1` with a span the way T-02's answers do,
+and the span is asserted to fall inside the non-covered list rather than anywhere
+else in the document. 43775 appears in a covered case instead.
+
+*Exit condition rewritten by D28, twice over.* It read `pytest
+tests/test_resolver.py`, a file **T-24** creates — and T-24 depends on T-38, which
+depends on this task, so T-35 could not close until the thing it blocks was built.
+That is the defect D26 named in T-36, sitting in T-35's own text. It also asked
+for a *code* spanned to `ncd_100_1`, which is impossible: see the closing note.
 
 The NCD's national non-covered list is the candidate pool: open adjustable
 gastric banding, open sleeve gastrectomy, open and laparoscopic vertical banded
@@ -488,6 +501,34 @@ carry the code through spec §6's E3 row and T-25's CLI example.
 
 Not folded into T-25: the code is wrong in `docs/spec.md` too, and a task that
 edits a higher-precedence document is its own decision.
+
+**Closed by D28. E3 is 43842, open vertical banded gastroplasty.** NCD 100.1 names
+it in a list scoped "non-covered for all Medicare beneficiaries" with no date
+qualifier and no delegation clause — the two failure modes D22 caught in 43775.
+Both spans are unique in the hashed document: `ncd_100_1[7076:7166]` scopes the
+list, `[7287:7338]` names the procedure, and A53028 corroborates at `[9483:9629]`
+and `[9848:9898]` without exercising discretion over it.
+
+**Neither document binds any non-covered procedure to a code**, which is the
+finding that reshaped the task. `ncd_100_1` holds no procedure codes at all and
+states the reason itself; A53028 names one bariatric code, 43775, the code D22
+disproved. So the code carries **two citations of different classes**: a
+`coverage_claim` spanned into the hashed corpus and checked by slicing, and a
+`code_binding` marked `source_class: "external_code_system"`, `in_corpus: false`,
+against new open question 7. The gate asserts the artifact is honest about not
+knowing; it does **not** assert 43842 is the right CPT code, because nothing here
+can verify that and a test that pretended to would be asserting someone's recall
+— which is how 43775 reached the spec. **T-40** carries the gap.
+
+Rejected candidates, with the reason each was rejected: gastric balloon bills to
+an unlisted code, and an unlisted code is not a procedure identity; intestinal
+bypass's near neighbour 43847 is *covered*, so a mis-binding is D22 in reverse;
+open adjustable gastric banding is disqualified in writing by A53028 — billed with
+a Not Otherwise Classified code, so it has no code to be E3's `procedure_code`.
+
+E3 moves from `BLOCKED/CASE_UNSPECIFIED` to `BLOCKED/NOT_IMPLEMENTED`: it now
+reaches `LocalPolicyStore.resolve` and gets the `NotImplementedError` citing T-38.
+The baseline update recording that is the first real exercise of D27's gate.
 
 ### `[ ] T-36` Decide whether sc1 needs a third outcome
 **REQ:** 1, 2 · **Depends:** T-35 · **Discovered in:** T-02 *(D22)*
@@ -591,6 +632,35 @@ is that a flagged constant names the thing that would unflag it.
 Not folded into T-13 or T-33: whichever of them lands first would be the task
 that repairs the check it is about to defeat, and it would be graded by that
 check. The repair belongs before either of them.
+
+### `[ ] T-40` Source the code-to-procedure binding, or state that it stays unsourced
+**REQ:** 2 · **Depends:** T-35 · **Discovered in:** T-35 *(D28)* ·
+**Answers:** open question 7
+**Exit:** a decision entry resolving it, then either
+- a third document in `data/policies/source/`, hashed and re-downloadable to the
+  same hash the way T-02's two are, with `python scripts/verify_sources.py`
+  returning zero and every `code_binding` in the repo carrying a
+  `(document_id, char_start, char_end)` that slices back to a quote naming both
+  the code and the procedure — `in_corpus` becomes `true`; **or**
+- an entry stating in writing that the binding stays outside the corpus, and
+  `pytest tests/test_e3_code.py` asserting no artifact anywhere claims a span for
+  one.
+
+Neither corpus document binds a non-covered procedure to a code. `ncd_100_1`
+carries no procedure codes at all and says why; A53028 names exactly one bariatric
+code, 43775, and that is the code D22 disproved. D28 therefore split E3's citation
+in two — a spanned `coverage_claim` and an unspanned `code_binding` marked
+`in_corpus: false` — which makes the gap visible rather than closing it.
+
+**Not on US-1's critical path.** T-24 and T-25 resolve a code they are handed;
+nothing in the chain to E3 `PASS` depends on knowing which document says 43842 is
+open vertical banded gastroplasty. It becomes load-bearing the moment a second
+procedure code enters the tree, which is T-38 — so if T-38 finds itself writing
+several unsourced bindings rather than one, this moves ahead of it.
+
+Reversing D21's two-document corpus is the substance of the first option, which is
+why this is a decision and not a download. The MCD's per-response CSP nonce
+problem applies to any third document too *(D21)*.
 
 ---
 

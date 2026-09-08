@@ -1245,6 +1245,153 @@ today that is E3 — and the rest report without gating.
 
 ---
 
+## D28 — E3 is open vertical banded gastroplasty, and a procedure code carries two citations because the corpus binds none
+
+Closes the first half of spec open question 3 — E3's code. The second half, whether
+sc1 needs a third outcome, stays open and stays T-36's.
+
+### The finding that shaped this: neither document binds a non-covered procedure to a code
+
+T-35's exit condition asked that E3's *procedure code* "cite `ncd_100_1` with a
+span the way T-02's answers do." That cannot be done. `ncd_100_1` contains no
+procedure codes at all — three five-digit numbers in 30,926 characters, all years
+or identifiers — and the document says why outright:
+
+> NCDs do not contain claims processing information like diagnosis or procedure
+> codes nor do they give instructions to the provider on how to bill Medicare for
+> the service or item.
+
+A53028 is a billing and coding article and does no better for this purpose. It
+reproduces the same six non-covered procedure **names** and adds exactly one fact
+about their coding — that open adjustable gastric banding is "Billed with a Not
+Otherwise Classified (NOC) code." The only CPT code anywhere in the corpus is
+43775, which is the code D22 disproved.
+
+So the coverage claim is spannable and the code binding is not, and the exit
+condition as written demanded both from one span. This entry decides what to do
+about that rather than quietly writing a code and calling it sourced — which is
+exactly how 43775 reached the spec in the first place.
+
+### Chosen — E3 is open vertical banded gastroplasty, CPT 43842
+
+NCD 100.1 §C names it in a list scoped unconditionally: no date qualifier, no
+delegation clause, no "may determine coverage." Both spans verified unique in the
+hashed document:
+
+| span | text |
+|---|---|
+| `ncd_100_1[7076:7166]` | "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:" |
+| `ncd_100_1[7287:7338]` | "Open and laparoscopic vertical banded gastroplasty;" |
+
+The bullet alone does not say *non-covered* — it is six words naming a procedure.
+The header is what makes it a denial, so both are cited and the gate asserts the
+bullet falls inside the header's list rather than somewhere else in the document.
+A span pointing at §D's "may determine coverage" paragraph would slice back
+perfectly well and mean the opposite; that is the D22 failure, and one span cannot
+exclude it.
+
+A53028 mirrors the same list at `a53028[9483:9629]` and `a53028[9848:9898]`, cited
+as corroboration. It matters that the MAC reproduced the national non-coverage
+without exercising discretion over it — that reproduction is precisely what
+A53028 *did* do for 43775, and D22 is the entry about missing it.
+
+**Rejected — gastric balloon.** The NCD names it and it is clinically the cleanest
+denial available. Its billing is `43999` or an era-dependent C-code, and an
+unlisted-procedure code is not a procedure identity: a resolver keyed on 43999
+denies an unbounded set of unrelated stomach procedures that share only the
+absence of a specific code. That is D26's bucket collapse in a new place, and it
+would be certified by an acceptance case.
+
+**Rejected — intestinal bypass surgery.** Named by the NCD, historic, and its code
+binding is the least stable of the six. Its near neighbour 43847 — gastric bypass
+with small-intestine reconstruction — is **covered**. A mis-binding here is D22's
+failure running in reverse: a wrong approval rather than a wrong denial, and the
+one this system has no verifier for.
+
+**Rejected — open adjustable gastric banding.** First on the NCD's list, and
+A53028 disqualifies it in writing: billed with a Not Otherwise Classified code, so
+it has no code of its own to serve as a `procedure_code`. Recording why it was
+rejected is worth more than the rejection, because the disqualifying fact is
+itself spanned and someone will otherwise re-propose it.
+
+### Chosen — two citation classes, and the second one admits it is not sourced
+
+E3's code carries two records that must not be conflated:
+
+- **`coverage_claim`** — the Article III claim, that this procedure is non-covered
+  for all Medicare beneficiaries. A `(document_id, char_start, char_end)` into the
+  hashed corpus, sliced back and compared by the gate exactly as every T-02 answer
+  and every D23 tree constant is.
+- **`code_binding`** — the claim that CPT 43842 *is* that procedure.
+  `source_class: "external_code_system"`, `system: "CPT"`, `in_corpus: false`,
+  `open_question: 7`. Not spanned, because there is nothing in this corpus to span
+  it to.
+
+The distinction is not bookkeeping. "This procedure is non-covered" and "this code
+denotes that procedure" are different claims with different sources and different
+failure modes, and this repository has a verification mechanism for the first and
+none for the second. Merging them into one `source` field would let the second
+inherit the first's credibility, and the artifact would read as fully sourced
+while half of it rested on recall.
+
+The NCD names both the open and laparoscopic approaches; 43842 is the open one, so
+the binding claims a subset of the named non-covered procedure. If the binding is
+wrong it is wrong in the conservative direction — a code that is not this
+procedure, rather than a procedure that is not non-covered.
+
+**Rejected — add a third source document.** A CMS transmittal or coding article
+carrying the name-to-code mapping would give the binding a real span and close the
+gap completely. It also reverses D21's two-document corpus, re-runs
+`verify_sources.py` against a live fetch, re-hashes, and grows `answers.json` —
+which is a task, not a code choice, and folding it in here would blow T-35's box.
+It becomes **open question 7** and **T-40**, so the gap sits on the board rather
+than in a comment nobody greps for.
+
+**Rejected — mark the code `provisional: true`** against question 7, reusing D23's
+vocabulary. It looks consistent and it is fatal: `Criterion.require()` raises on a
+provisional constant by design (T-09), so E3 could never reach `PASS` and US-1
+could never close. The flag exists to stop an unreviewed number reaching a
+predicate; used here it would stop a reviewed code reaching a determination
+forever. A blocker traded for a permanent one.
+
+**Rejected — write `43842` as a bare string and move on.** It clears the failing
+case in one line and silently promotes recall to sourced fact. That is the move
+that put 43775 in the spec, and D22 is the entry that had to undo it. The cost of
+being wrong is asymmetric and known: a confidently wrong denial, certified by an
+acceptance case, which is the exact failure this project exists to argue against.
+
+### Chosen — T-35's exit condition moves to two commands that run today
+
+As written it was `pytest tests/test_resolver.py`, a file **T-24 creates**. T-24
+depends on T-38, which depends on T-35. So T-35 could not close until the thing it
+blocks was built — the defect D26 named when it refused to merge T-38 into T-36,
+here in T-35's own text. The new exit:
+
+```
+pytest tests/test_e3_code.py
+python eval/run_eval.py
+```
+
+The first proves the choice is cited and the citation slices back out of the
+hashed document. The second proves E3 actually moved: adding the code advances it
+from `BLOCKED/CASE_UNSPECIFIED` to `BLOCKED/NOT_IMPLEMENTED`, because `run_case`
+now reaches `LocalPolicyStore.resolve` and gets the `NotImplementedError` that
+cites T-38. That is baseline drift, the gate fails, and the acknowledgement is a
+tracked diff — D27's mechanism doing the job it was built for, on the first
+occasion there has been one.
+
+Rewriting an exit condition is a design decision and gets logged before the code
+(working rule 5, D10's precedent). Both defects were in T-35's text, not in the
+work, which is why the rewrite is recorded here rather than in a new task.
+
+**Reverses if:** T-40 lands a source that binds these codes, in which case
+`code_binding` gains a span like everything else and `in_corpus` becomes true. Or
+CPT 43842 turns out not to denote open vertical banded gastroplasty — which
+nothing in this repository can currently detect, and which is the entire reason
+the field says so.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

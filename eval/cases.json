@@ -8,8 +8,36 @@
       "spec_ref": "docs/spec.md §6, E3",
       "description": "Non-covered procedure requested",
       "patient_id": null,
-      "procedure_code": null,
-      "unspecified_reason": "T-35 has not re-pointed E3 at a code NCD 100.1 names non-covered for all beneficiaries. 43775 is not that code: CMS delegated stand-alone laparoscopic sleeve gastrectomy to the MACs in 2012 and A53028 records this MAC covering it (D22). A label asserting the opposite is worse than an absent one (D27).",
+      "procedure_code": "43842",
+      "procedure": "Open vertical banded gastroplasty",
+      "coverage_claim": {
+        "document_id": "ncd_100_1",
+        "quote": "Open and laparoscopic vertical banded gastroplasty;",
+        "char_start": 7287,
+        "char_end": 7338,
+        "scoping_quote": {
+          "document_id": "ncd_100_1",
+          "quote": "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:",
+          "char_start": 7076,
+          "char_end": 7166,
+          "note": "The bullet alone names a procedure; this sentence is what makes it a denial. Both are cited, and the gate asserts the bullet falls inside the list this sentence opens. A span pointing at section D's 'may determine coverage' paragraph would slice back perfectly well and mean the opposite - that is the D22 failure, and one span cannot exclude it."
+        },
+        "corroborating_quote": {
+          "document_id": "a53028",
+          "quote": "Open and laparoscopic vertical banded gastroplasty",
+          "char_start": 9848,
+          "char_end": 9898,
+          "note": "The governing MAC reproduces the national non-covered list without exercising discretion over this procedure. That reproduction is exactly what A53028 did NOT do for 43775, which it covers by contractor determination (D22)."
+        },
+        "note": "Unconditional: no date qualifier and no delegation clause, the two things that disqualified 43775. Both spans occur exactly once in the hashed document."
+      },
+      "code_binding": {
+        "system": "CPT",
+        "source_class": "external_code_system",
+        "in_corpus": false,
+        "open_question": 7,
+        "note": "That CPT 43842 denotes open vertical banded gastroplasty is NOT established by this corpus and is not spanned, because there is nothing here to span it to: ncd_100_1 carries no procedure codes at all and says so, and A53028 names one bariatric code (43775, the code D22 disproved). The coverage claim above is an Article III claim and is verified by slicing; this is a code-system fact of a different class, and merging the two would let it inherit the first's credibility. T-40 decides whether a third document enters the corpus to close it (D28)."
+      },
       "expect": {
         "outcome": "NOT_COVERED",
         "max_model_calls": 0
