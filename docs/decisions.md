@@ -2036,6 +2036,57 @@ comparison against the recorded hash rather than a held instance.
 
 ---
 
+## D38 — The span validator raises a classified error, and its quote check is D18's predicate verbatim
+
+T-11's design. The validator is Article III's gate: nothing downstream accepts
+a claim whose span it has not passed. Three choices settle here.
+
+### Chosen — one function, `validate(span, index) -> str`, raising `SpanValidationError` with a closed reason
+
+`pa_agent/spans.py` exposes `validate`, which returns the verified raw slice
+or raises `SpanValidationError` carrying a `SpanRejection` reason:
+`UNKNOWN_DOCUMENT`, `OUT_OF_RANGE`, or `QUOTE_MISMATCH`. A closed enum, not
+free text, because REQ-30 will fold these into `SPAN_VALIDATION_FAILED`
+errors and T-29's fault injection has to assert which rejection fired —
+prose reasons would give it nothing to match.
+
+**Rejected — returning `None` or a bool.** The D37 argument, one layer up: a
+falsy return is exactly the silent pass-through REQ-6 exists to prevent, and
+every caller becomes a place the check can be forgotten.
+
+**Rejected — a rejected span resolving anything here.** Mapping a rejection
+to `INSUFFICIENT_EVIDENCE` or to `ERROR` is criterion-level judgment
+(REQ-18's and REQ-23's, T-17's and T-26's); the validator reports what the
+string comparison found and nothing else.
+
+### Chosen — the quote check is `normalize(slice) == normalize(quote)`, exactly D18
+
+Runs of whitespace collapse to one space on both sides, then exact equality.
+D18 chose that equivalence class for anchoring and this validator inherits it
+unchanged: the spike's notes hard-wrap at ~76 columns, and a validator
+stricter than the anchorer would reject at acceptance the very spans the
+anchorer legitimately produced. No similarity ratio, no edit distance — a
+knob generous enough to absorb a line wrap absorbs a changed date (D18's
+words), and this is the gate where that would be fatal.
+
+A span with no quote is validated for mechanical existence only (non-empty
+slice inside a known document) — REQ-6's floor. `EvidenceSpan` already
+refuses reversed and empty offsets at construction, so the validator never
+sees them; the test asserts that refusal rather than re-implementing it.
+
+### Chosen — the validator takes a `DocumentIndex` and imports no store, no file API, no model
+
+Same AST assertion as D37's, same reason. The exit condition's own grep —
+"no model imported in the module" — is subsumed by asserting the import list
+is exactly `__future__`, `enum`, and the two `pa_agent` modules it needs.
+
+**Reverses if:** D18's reversal fires — a normalized hit whose raw slice
+reads as a different claim — in which case the normalization tightens to
+preserve intra-line spacing in both places at once, anchorer and validator
+together, never one without the other.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

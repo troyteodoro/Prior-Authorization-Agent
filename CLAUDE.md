@@ -290,9 +290,10 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-06, T-11, T-12, T-26
-and T-31**. With US-1 delivered, US-2's chain (T-11, T-12, then T-13) is the
-next story spine. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-06, T-12, T-26 and
+T-31**. With US-1 delivered, US-2's chain (T-12, then T-13) is the next story
+spine — and T-13 sits behind open question 4, which no task may answer by
+default. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -352,6 +353,15 @@ content raises), and the module imports only the contracts — no store, no
 file, no model, asserted on its AST. It never judges a slice: fabricated and
 off-by-one rejection is T-11's. Both planes instantiate the same class and no
 instance holds both planes' documents.
+
+**T-11 is closed (D38), and rejection is a classified exception.**
+`pa_agent/spans.py` validates spans against a `DocumentIndex`: the verified
+raw slice, or `SpanValidationError` carrying `UNKNOWN_DOCUMENT`,
+`OUT_OF_RANGE` or `QUOTE_MISMATCH` — the closed reasons REQ-30's
+`SPAN_VALIDATION_FAILED` and T-29's fault injection will assert against. The
+quote predicate is D18's whitespace-collapsed exact equality; a similarity
+knob is refused in writing and by test. Mapping a rejection to a verdict is
+deliberately not this module's job.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

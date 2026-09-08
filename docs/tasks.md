@@ -296,10 +296,26 @@ round trip runs seeded over the real three-document corpus served through
 for it: a conflict that silently rebinds, an out-of-range slice returning
 `""`, a slice that normalizes whitespace, a store import, an off-by-one.
 
-### `[ ] T-11` Span validator
+### `[x] T-11` Span validator
 **REQ:** 6 · **Depends:** T-08, T-09
 **Exit:** `pytest tests/test_spans.py` — fabricated, off-by-one, and reversed
 spans all rejected; no model imported in the module
+
+**Closed by D38.** `pa_agent/spans.py`: `validate(span, index)` returns the
+verified **raw** slice or raises `SpanValidationError` with a closed
+`SpanRejection` reason — `UNKNOWN_DOCUMENT`, `OUT_OF_RANGE`,
+`QUOTE_MISMATCH` — never `None`, never a bool, and never a criterion outcome
+(what a rejection *means* is REQ-18's and REQ-23's question, not this
+module's). The quote check is D18's predicate verbatim: whitespace-collapsed
+exact equality, no similarity knob. Reversed spans are refused at
+construction by `EvidenceSpan` and the test asserts that refusal. Genuine
+spans in the test are T-02's recorded answers, perturbed — not synthetic
+strawmen. The import list is exactly `__future__`, `enum`, and the two
+`pa_agent` modules, asserted on the AST. Mutation-tested five ways, each
+caught: the quote check deleted, equality replaced by a difflib 0.8 knob
+(caught twice — the changed-word test and the import scan), success
+returning the quote instead of the slice, the range check deleted, a stray
+import.
 
 ### `[ ] T-12` FHIR fact extractor
 **REQ:** 11, 12 · **Depends:** T-04, T-09
