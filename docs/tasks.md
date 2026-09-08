@@ -138,11 +138,37 @@ Protocols, a package-level re-export in `stores/__init__.py`, and
 `get_document` hashing the file it just read instead of checking it against
 `sources.json`.
 
-### `[ ] T-10` Eval harness with US-1 acceptance cases, failing
+### `[x] T-10` Eval harness with US-1 acceptance cases, failing
 **Depends:** T-09
 **Exit:** `python eval/run_eval.py` runs and reports E3 failing
 US-1 cannot close without acceptance tests, so the harness arrives with the first
 story. A failing harness is the correct state.
+
+**Closed by D27.** `eval/run_eval.py` over `eval/cases.json`, gated against
+`eval/baseline.json`. The exit code means *observed matches the baseline*, not
+*every case passed* — Article VIII wants zero on a day when nothing the harness
+grades exists, and drift in **either** direction fails, so a case that starts
+passing is acknowledged in a diff rather than noticed by someone reading a table.
+
+Three statuses, and `BLOCKED` never folds into `FAIL`: "the system answered
+wrongly" and "the component that would answer does not exist" have different next
+actions and only one of them names a task. Blocking is *discovered* from the
+`NotImplementedError` the system raises, never declared on the case — a
+`blocked_by` list would keep naming T-35 after T-35 landed, which is T-39's defect
+with different spelling.
+
+**E3 lands labeled and without a procedure code.** D22 disproved 43775 and T-35
+has not picked its replacement, so the case reports `BLOCKED/CASE_UNSPECIFIED`.
+Landing the disproved code with a `known_wrong` marker would put an acceptance
+case in the eval set that asserts the opposite of the source.
+
+The scorer checks itself on every run — seven synthetic scorings, covering every
+branch no real case can reach until T-25 produces a `Determination`. Mutation-tested
+seven ways, each caught by the check that should catch it: a baseline claiming
+`PASS`, a case absent from the baseline, a baseline case absent from the set, and
+— with the T-25 seam stubbed — a correct determination, a wrong outcome, a spent
+model call against A4's zero budget, and a scorer edited to score a wrong outcome
+`PASS` (self-check fails, exit 2, and the report below it is suppressed).
 
 ### `[ ] T-24` Policy resolver and short-circuit sc1
 **REQ:** 1, 2, 4 · **Depends:** T-09
@@ -156,7 +182,11 @@ returns `NO_POLICY_FOUND`, model-call counter reads zero
 43775 is sleeve gastrectomy, assumed not nationally covered so the case exits
 through sc1. Chosen from memory — T-02 confirms it against source.
 
-**US-1 closes when:** `python eval/run_eval.py` reports E3 passing.
+**US-1 closes when:** `python eval/run_eval.py` reports E3 passing — which is
+the commit moving E3 to `PASS` in `eval/baseline.json`, after T-35 supplies the
+code, T-38 the procedure sets, T-24 the resolver and T-25 determination assembly.
+Until then the gate returns zero on a `BLOCKED` E3 and fails the moment that
+changes without being recorded *(D27)*.
 
 ---
 
@@ -406,7 +436,10 @@ and asserts `Criterion` is the only type crossing
 
 Second assertion, added by D25: no module outside `pa_agent/stores/` opens a file
 path, holds a connection, or names a storage location, and no class satisfies
-both Protocols. Under the production target the planes are two connections rather
+both Protocols. **Scope that scan to `pa_agent/`** *(D27)*: `tests/` opens
+fixtures and `eval/run_eval.py` opens its own case labels and baseline, and
+neither is the system under test — a scan over the whole tree would fail on the
+grader and get relaxed until it stopped asserting anything. Under the production target the planes are two connections rather
 than two package trees, and an assertion that only reads imports would pass a
 module that reaches the wrong database at runtime.
 

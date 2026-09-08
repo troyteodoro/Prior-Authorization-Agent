@@ -1137,6 +1137,114 @@ either way, because it is what the source says, but it stops being load-bearing.
 
 ---
 
+## D27 — The eval harness gates on baseline drift, and a case that cannot run is `BLOCKED`, not `FAIL`
+
+**The exit condition forces the first half.** T-10 closes on
+`python eval/run_eval.py` "runs and reports E3 failing", and Article VIII
+requires that command return zero. So the exit code cannot mean "every case
+passed" — on the day the harness is written, nothing it grades exists. Spec §8
+already says as much: the harness is written before the components it grades and
+a failing harness is the correct state on day two.
+
+**Chosen.** Three case statuses — `PASS`, `FAIL`, `BLOCKED` — and a gate that
+compares the observed status of every case against `eval/baseline.json` and
+returns non-zero on any difference, in either direction. A case that starts
+passing fails the gate exactly as loudly as a case that stops passing; the
+baseline is then updated as a tracked diff. E3 lands labeled and **without a
+procedure code**, pending T-35.
+
+This makes US-1's stated close — "`python eval/run_eval.py` reports E3 passing"
+— a bare command rather than a table someone reads. When T-35, T-38, T-24 and
+T-25 land, E3 flips to `PASS`, the gate fails on drift, and the baseline update
+is the commit that records US-1 closing.
+
+**Rejected — exit non-zero on any failing case.** The literal reading of "a test
+harness," and it contradicts T-10's own exit condition. A gate that cannot
+return zero until the system is finished is a gate nobody runs while building
+the system, which is the entire window in which it has value.
+
+**Rejected — the exit code means only "the harness ran".** Simplest, and about
+forty lines shorter; US-1 would close on `--require E3` instead. It was rejected
+for the reason T-34 and T-39 both exist: a check that cannot detect its own
+subject changing is not a check. Under it, E3 could begin passing — or a case
+could silently stop passing — and the command returns zero throughout.
+
+**Rejected — folding `BLOCKED` into `FAIL`.** Both read as "not passing," which
+is precisely why they must not merge. "The system answered and answered wrongly"
+and "the component that would answer does not exist yet" have different next
+actions, and only the second names a task. This is Article IV's argument one
+level above where the article states it, and REQ-28 already forces the same
+distinction on this harness at T-30, where an `ERROR` must not be counted as an
+abstention. The vocabulary is cheaper to get right now than to retrofit under a
+labeled eval set.
+
+**Blocking is discovered, never declared.** A `blocked_by: ["T-35", "T-38"]`
+field on the case would be the T-39 defect with different spelling: it keeps
+naming a task after that task lands, and nothing notices. The harness instead
+catches `NotImplementedError` and records the message verbatim, and those
+messages already name their own task — `LocalPolicyStore.resolve` cites T-38,
+`LocalPatientStore` cites T-04. The only declared block is the absent
+`procedure_code`, which is an absence rather than an assertion and so cannot go
+stale.
+
+**The baseline compares a status and a reason class, not a message.** Six pairs:
+`PASS`; `FAIL` with `WRONG_OUTCOME`, `MODEL_CALLS_EXCEEDED` or
+`UNEXPECTED_EXCEPTION`; `BLOCKED` with `CASE_UNSPECIFIED` or `NOT_IMPLEMENTED`.
+Diffing the free-text reason would fail the gate when someone rewords an
+exception, which trains a reader to update the baseline without looking at it —
+the one habit that makes the whole mechanism worthless.
+
+### E3 lands without a procedure code
+
+**Rejected — land 43775 with a `known_wrong: T-35` marker.** Keeps the case
+runnable end to end today. It also puts an acceptance case in the eval set that
+asserts the opposite of what the source says: D22 established that NCD 100.1
+non-covers stand-alone laparoscopic sleeve gastrectomy *only* "prior to June 27,
+2012", and that A53028 records this MAC covering it. The failure D22 names is a
+confidently wrong denial for a procedure the governing MAC covers; certifying
+one in the labeled set is worse than having no code yet, because from that point
+on the eval set agrees with the defect.
+
+**Rejected — pick the non-covered code here.** Ten minutes of work and T-35
+closes as a side effect. It is also the task choosing the answer it will be
+graded against, which is the move working rules 5 and 6 exist to prevent and
+which D24 and D26 each spent an entry arguing against.
+
+So the case exists, carries its label (`NOT_COVERED`, zero model calls) and its
+spec reference, and reports `BLOCKED/CASE_UNSPECIFIED` until T-35 supplies the
+code. A1 asks that every case in §6 be present and labeled; this one is, and the
+one field it lacks is the one field no task has yet earned the right to fill.
+
+### Two smaller choices
+
+**The scorer checks itself on every run.** Before scoring a real case the
+harness scores four synthetic ones — a matching determination, a mismatched
+outcome, a determination carrying a `CallMetrics` against a zero-call budget,
+and a raised `NotImplementedError` — and asserts the classification of each. It
+is the scoring branch that no real case can exercise until T-25 produces a
+determination, so without it the code that decides whether US-1 passed would sit
+unrun until the moment it decides whether US-1 passed. D19's caveats are the
+precedent: an instrument that produces a number nobody can check produces a
+number nobody should quote.
+
+**The harness opens two files, and that is not a REQ-41 violation.**
+`eval/cases.json` and `eval/baseline.json` are the grader's own ground truth,
+not data the system under test reads; every system read goes through
+`LocalPolicyStore`. T-32's second assertion is worded "no module outside
+`pa_agent/stores/`," and its scan must therefore be scoped to `pa_agent/` — a
+note for T-32, not a change here.
+
+**Cost.** Every deliberate behavior change now needs a baseline update, and
+`--update-baseline` is one command away from papering over a regression. The
+baseline is a tracked file, so the update arrives as a diff with a reviewer,
+which is D3's argument unchanged — but a diff nobody reads is not a reviewer.
+
+**Reverses if:** baseline updates become frequent enough that they stop being
+read. Then the baseline shrinks to the cases whose status is load-bearing —
+today that is E3 — and the rest report without gating.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
