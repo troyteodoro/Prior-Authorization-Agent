@@ -506,18 +506,22 @@ def test_resolve_reports_membership_facts(policy_store: LocalPolicyStore) -> Non
     )
 
 
-@pytest.mark.parametrize(
-    "method", ["get_observations", "get_conditions", "get_notes"]
-)
-def test_the_patient_store_refuses_to_answer_until_t12(method: str) -> None:
-    """An empty list would manufacture E7 for every patient while looking correct.
+def test_the_patient_store_refuses_unknown_patients(method: str = "") -> None:
+    """An empty list would manufacture E7 for every patient while looking
+    correct, so a patient the manifest does not list raises (T-09's argument,
+    kept through T-12's close)."""
+    store = LocalPatientStore()
+    for method in ("get_observations", "get_conditions"):
+        with pytest.raises(KeyError, match="patient-1"):
+            getattr(store, method)("patient-1")
 
-    The raise cited T-04 until T-04 landed the bundles (D35); the message now
-    names T-12, the FHIR reads, and deliberately does not contain "T-04" so a
-    stale match here fails loudly instead of passing by substring (D31).
-    """
-    with pytest.raises(NotImplementedError, match="T-12"):
-        getattr(LocalPatientStore(), method)("patient-1")
+
+def test_the_patient_store_refuses_notes_until_t07() -> None:
+    """The FHIR reads are built (T-12, D39); the note corpus is not. The raise
+    names T-07 and deliberately does not contain "T-12", so a stale match
+    fails loudly instead of passing by substring (D31)."""
+    with pytest.raises(NotImplementedError, match="T-07"):
+        LocalPatientStore().get_notes("patient-1")
 
 
 def test_the_patient_contracts_exist_for_t12_to_fill() -> None:

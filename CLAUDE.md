@@ -290,10 +290,11 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-06, T-12, T-26 and
-T-31**. With US-1 delivered, US-2's chain (T-12, then T-13) is the next story
-spine — and T-13 sits behind open question 4, which no task may answer by
-default. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-06, T-13, T-26 and
+T-31**. US-2 now needs only T-13 — whose dependencies are all closed but
+which sits behind **open question 4, criterion (a)'s lookback window, which
+no task may answer by default**: it is Troy's judgment or a new source, never
+a hardcoded number. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -362,6 +363,15 @@ raw slice, or `SpanValidationError` carrying `UNKNOWN_DOCUMENT`,
 quote predicate is D18's whitespace-collapsed exact equality; a similarity
 knob is refused in writing and by test. Mapping a rejection to a verdict is
 deliberately not this module's job.
+
+**T-12 is closed (D39), and the patient plane serves verified facts.**
+`LocalPatientStore` resolves patients through T-04's manifest, hash-verifies
+each bundle before parsing (REQ-7), and reports everything: all quantitative
+observations, all coded conditions with `clinical_status` carried on the
+widened `Condition` contract. Filtering is the predicates' judgment — an
+active-only or BMI-only read inside the adapter is refused by test.
+`get_notes` raises citing **T-07**; Synthea's auto-generated notes are not
+ground truth and must never be served as the note corpus.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

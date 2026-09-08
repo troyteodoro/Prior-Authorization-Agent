@@ -422,13 +422,20 @@ class Observation(BaseModel):
 
 
 class Condition(BaseModel):
-    """A coded diagnosis, for the criterion (b) set intersection (REQ-12)."""
+    """A coded diagnosis, for the criterion (b) set intersection (REQ-12).
+
+    `clinical_status` is carried, not filtered on: the adapter reports what
+    the record says and the predicate decides what counts (D31's split, D39).
+    A contract that could not say whether a condition is active would let
+    criterion (b) count a resolved diagnosis — a false `MET`.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     code: str
     system: str | None = None
     onset_date: date | None = None
+    clinical_status: str | None = None
 
 
 class WmEvent(BaseModel):

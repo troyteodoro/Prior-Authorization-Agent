@@ -2087,6 +2087,64 @@ together, never one without the other.
 
 ---
 
+## D39 — The patient adapter reports what the bundle says, and clinical status is a fact the contract must carry
+
+T-12's design. The FHIR fact extractor *is* `LocalPatientStore`'s read side:
+D25 put `get_observations` and `get_conditions` on the port, D35 re-cited the
+raise to T-12, and building the parsing anywhere else would be a second module
+that opens patient files (REQ-41).
+
+### Chosen — the adapter resolves patients through T-04's manifest and verifies hashes on read
+
+`LocalPatientStore` reads `data/patients/manifest.json`, maps `patient_id` to
+its bundle file, and **verifies the bundle's sha256 against the manifest
+before parsing** — the `get_document`/`sources.json` pattern (REQ-7): a
+bundle edited on disk raises instead of silently feeding a different patient
+to every criterion. Parsed bundles are cached per instance; an unknown
+patient raises `KeyError`, because an empty chart for a patient who does not
+exist would manufacture E7 (T-09's argument, kept).
+
+### Chosen — observations and conditions are served whole; filtering is judgment and lives upstream
+
+`get_observations` returns every observation carrying a top-level
+`valueQuantity` and an `effectiveDateTime` — not just BMI. `get_conditions`
+returns every coded condition. D31 drew this line for the policy store: a
+port that refuses to report data it holds is a port whose adapter is making
+policy judgments. Criterion (a) selects LOINC 39156-5, criterion (b)
+intersects active conditions with the value set; both selections are the
+predicates' judgment (T-13), not the adapter's.
+
+**`Condition` gains `clinical_status: str | None`.** The contract could not
+say whether a condition is active, and criterion (b) counting a *resolved*
+condition is a false `MET` — the direction this design forbids. The adapter
+reporting only active conditions was rejected for the same reason as
+BMI-only filtering: it hides the fact instead of carrying it, and the
+predicate that needs the distinction could never see it. An optional field
+on a frozen model breaks no existing constructor.
+
+**Scope, stated:** observations whose values live in `component[]` (blood
+pressure) have no top-level `valueQuantity` and are not served. Nothing in
+v1 reads them; the day something does, the contract grows a component shape
+deliberately.
+
+### Chosen — `get_notes` keeps raising, now citing T-07
+
+Synthea bundles carry `DocumentReference` notes, and serving them is one
+`base64.b64decode` away — rejected. The note corpus this system adjudicates
+is T-07's: manifest-driven, gap months and traps placed on purpose, labeled
+before extraction ever runs (T-06). Synthea's auto-generated notes assert
+none of that, and a store serving them would hand T-15 a corpus with no
+ground truth — eval cases graded against labels that do not exist. The raise
+message names T-07 and deliberately does not contain "T-12" (D31's
+stale-substring lesson, applied the same way D35 applied it).
+
+**Reverses if:** a consumer needs an observation class the top-level-value
+rule excludes (the component shape lands then), or T-07 chooses to embed its
+synthesized notes as bundle `DocumentReference`s rather than sidecar files —
+`get_notes` then reads bundles and the T-07 citation retires.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

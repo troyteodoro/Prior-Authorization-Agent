@@ -317,10 +317,29 @@ caught: the quote check deleted, equality replaced by a difflib 0.8 knob
 returning the quote instead of the slice, the range check deleted, a stray
 import.
 
-### `[ ] T-12` FHIR fact extractor
+### `[x] T-12` FHIR fact extractor
 **REQ:** 11, 12 · **Depends:** T-04, T-09
 **Exit:** `pytest tests/test_fhir.py` — BMI observations and Conditions with
 dates, from all six bundles
+
+**Closed by D39.** The extractor *is* `LocalPatientStore`'s read side —
+building it anywhere else would be a second module opening patient files
+(REQ-41). Patients resolve through T-04's manifest and every bundle is
+hash-verified before parsing, the `get_document`/`sources.json` pattern on
+the patient plane. The adapter reports facts and filters nothing: all
+quantitative observations (not BMI-only — REQ-34's reconciliation needs the
+rest), all coded conditions with `clinical_status` carried on a widened
+`Condition` contract, because an adapter serving only active conditions
+would decide criterion (b)'s question for it, and a contract that cannot say
+"resolved" lets a resolved diagnosis become a false `MET`. The gate checks
+the adapter against T-04's independently-recorded most-recent BMIs — two
+implementations agreeing, not one agreeing with itself. `get_notes` keeps
+raising, re-cited to **T-07**: Synthea's auto-notes carry no ground truth,
+and serving them would hand T-15 a corpus whose eval cases grade against
+labels that do not exist. Mutation-tested six ways, each caught: an
+active-only filter, a BMI-only filter, the hash check deleted, an unknown
+patient served an empty chart, dates collapsed to January 1, a policy
+import appearing.
 
 ### `[ ] T-13` Deterministic criteria (a) and (b)
 **REQ:** 11, 12 · **Depends:** T-05, T-12, T-39
