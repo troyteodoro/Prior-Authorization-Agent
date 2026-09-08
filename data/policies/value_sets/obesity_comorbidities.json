@@ -1,0 +1,51 @@
+{
+  "value_set_id": "obesity_comorbidities",
+  "task": "T-05",
+  "decision": "D36",
+  "status": "VERIFIED",
+  "population_manifest": "data/patients/manifest.json",
+  "sources": [
+    {
+      "document_id": "a53028",
+      "sha256": "7c1ae27731a1da5ca2631d70f2712a0360673adcf9258f43d933f43157e338ec"
+    }
+  ],
+  "entries": [
+    {
+      "system": "http://snomed.info/sct",
+      "code": "44054006",
+      "display": "Diabetes mellitus type 2 (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "E11.9",
+        "document_id": "a53028",
+        "char_start": 40018,
+        "char_end": 40071,
+        "quote": "E11.9\n\nType 2 diabetes mellitus without complications"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 44054006 and ICD-10-CM E11.9 both denote type 2 diabetes mellitus; no corpus document and no credential-free re-downloadable source binds the two systems (D36)."
+      }
+    },
+    {
+      "system": "http://snomed.info/sct",
+      "code": "59621000",
+      "display": "Essential hypertension (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "I10",
+        "document_id": "a53028",
+        "char_start": 48024,
+        "char_end": 48061,
+        "quote": "I10\n\nEssential (primary) hypertension"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 59621000 and ICD-10-CM I10 both denote essential (primary) hypertension; same posture as above (D36)."
+      }
+    }
+  ]
+}

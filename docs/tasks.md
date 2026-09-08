@@ -252,12 +252,31 @@ loudly rather than passing by substring (D31). Mutation-tested four ways,
 each caught by the check built for it: a tampered bundle byte, an edited
 manifest BMI, the seed removed, a stray seventh bundle on disk.
 
-### `[ ] T-05` Rebuild the comorbidity value set from real codes
+### `[x] T-05` Rebuild the comorbidity value set from real codes
 **REQ:** 12 · **Depends:** T-04 · **Blocks:** T-13
 **Exit:** `pytest tests/test_valueset.py` — every code appears in the population,
 `status` is `VERIFIED`
 Currently written from memory. A wrong code fails criterion b silently for every
 patient, with no error anywhere.
+
+**Closed by D36.** `data/policies/value_sets/obesity_comorbidities.json`,
+keyed on **SNOMED** because that is the only system the population's
+Conditions carry, anchored to **ICD-10-CM in-corpus**: each entry's
+`icd10_anchor` spans A53028's Group 1 naming code and condition together, and
+the gate asserts the span falls inside Group 1's list, not merely inside the
+document — Group 2's BMI codes slice back just as cleanly and mean something
+else. The SNOMED-to-ICD-10 mapping hop is marked `in_corpus: false` (D28's
+posture): the one authoritative source sits behind UMLS licensing and cannot
+be re-downloaded credential-free. Two entries, both face-unambiguous — T2DM
+(44054006 → E11.9) and essential hypertension (59621000 → I10) — with the
+diabetic-complication mappings deliberately excluded for leaf-level ambiguity
+and hypertriglyceridemia/metabolic syndrome/CKD/emphysema excluded because
+their codes are absent from Group 1: the source decides membership.
+Mutation-tested seven ways, each caught by the test built for it; the
+sharpest is the Z68.35 anchor, which slices back perfectly and only the
+containment gate refuses. The file lives under `value_sets/` because
+`LocalPolicyStore._load_trees` globs `data/policies/*.json` as trees —
+measured when the first draft errored eight store tests.
 
 ### `[ ] T-08` Document index with character offsets
 **REQ:** 6, 7 · **Depends:** T-02 · **Blocks:** T-11

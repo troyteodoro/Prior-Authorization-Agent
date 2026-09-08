@@ -1902,6 +1902,86 @@ is superseded).
 
 ---
 
+## D36 — The value set speaks SNOMED because the patients do, and every entry anchors to Group 1 in-corpus
+
+T-05's design. Two facts force the shape, both measured before this entry was
+written: A53028's Group 1 — the 543 "ICD-10-CM Codes that Support Medical
+Necessity" — survives in the extracted corpus as `Code`/`Description` pairs,
+so an ICD-10 code and its condition name can be spanned together; and every
+Condition in the six committed bundles carries **SNOMED CT only**, no ICD-10-CM
+coding at all.
+
+### Chosen — `data/policies/value_sets/obesity_comorbidities.json`, keyed on SNOMED, anchored to ICD-10-CM
+
+Criterion (b) is a set intersection over the codes the patient plane actually
+supplies (REQ-12), so the lookup keys are SNOMED. Each entry carries three
+things:
+
+- the **SNOMED code and display**, verified to appear verbatim as an *active*
+  Condition in at least one committed bundle — T-05's "every code appears in
+  the population";
+- an **`icd10_anchor`**: a `(document_id, char_start, char_end)` into A53028
+  whose quote names the ICD-10-CM code *and* its description together
+  (`"E11.9\n\nType 2 diabetes mellitus without complications"`), gated to fall
+  inside Group 1's list rather than merely inside the document — the r931cp
+  binding pattern and T-38's containment gate, reused;
+- a **mapping claim marked `in_corpus: false`,
+  `source_class: "external_code_system"`** — the D28 posture — because the
+  claim "this SNOMED concept and this ICD-10-CM code denote the same
+  condition" has no source in this corpus, and the one authoritative external
+  source (NLM's SNOMED-to-ICD-10-CM map) sits behind UMLS licensing, which
+  fails the credential-free re-download requirement D21 and T-40 established
+  for corpus documents.
+
+The file lives in a `value_sets/` subdirectory, not beside the tree:
+`LocalPolicyStore._load_trees` treats every top-level `data/policies/*.json`
+as a `CriteriaTree`, and a value set in that glob fails tree validation at
+load — measured, not guessed, when the first draft landed beside the tree and
+eight store tests errored. `source/` already models the pattern. How criterion
+(b) reads the set at runtime is a port-shape question for T-13, deliberately
+not answered here.
+
+The file records A53028's sha256 the way the criteria tree does (D23), and
+`status: "VERIFIED"` is a recorded claim the test re-derives on every run —
+population presence, slice-back, containment — never a declaration.
+
+**Two entries**, both face-unambiguous: SNOMED 44054006 (diabetes mellitus
+type 2) anchored to E11.9, and SNOMED 59621000 (essential hypertension)
+anchored to I10, whose Group 1 description — "Essential (primary)
+hypertension" — is the same condition name.
+
+### Rejected
+
+**All 543 ICD-10-CM codes, inlined.** The literal reading of "rebuild the
+value set," and it intersects with nothing: no patient carries an ICD-10 code,
+so criterion (b) would fail silently for every patient — the exact defect
+T-05's own description warns about. D23 already rejected the inlining for
+diff-reviewability; this adds that it would not even work.
+
+**Mapping the diabetic-complication conditions.** The population carries
+nonproliferative diabetic retinopathy due to T2DM (1551000119108) and
+microalbuminuria due to T2DM (90781000119102), and Group 1 carries E11.3x and
+E11.29 — but the leaf-level mappings turn on severity and macular-edema
+qualifiers the SNOMED displays do not state. A wrong entry produces a false
+`MET` on criterion (b), the direction this design forbids; they enter later as
+a reviewed diff if a manifest needs them (Art. VII).
+
+**Hypertriglyceridemia, metabolic syndrome, CKD, emphysema.** Present in the
+population and absent from Group 1 under their codes (E78.1, E88.81, N18.x,
+J43.9 — all grepped, all missing). The source decides membership, not clinical
+intuition; recording the exclusion is the point of this paragraph.
+
+**A wider population scan to grow the set.** The set serves the eval cases
+T-06 will author over these six patients; entries without a consumer are
+surface area for the false-`MET` direction with no test that would catch them.
+
+**Reverses if:** a redistributable SNOMED-to-ICD-10-CM mapping source lands —
+the mapping claims gain spans and `in_corpus` flips, T-40's pattern exactly —
+or T-06's manifests need a comorbidity the set lacks, which arrives as a
+reviewed diff adding an entry, never as a predicate special-case.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
