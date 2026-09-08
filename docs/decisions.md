@@ -591,7 +591,9 @@ complete runs over five hand-labeled notes. Fifteen calls, 24,645 tokens,
 |---|---|
 | event precision | **1.000**, every run |
 | event recall | **1.000**, every run |
-| REQ-9 exclusion recall | **1.000** — 51/51 traps held out |
+| **REQ-9-shaped traps excluded** | **21/21** — `unsupervised_attempt` 9, `missed_visit` 6, `unsuccessful_contact` 6. **Quote this against the kill criterion**, and 21 is a small n |
+| unrelated-section traps excluded | 30/30 — a colonoscopy date, an immunization, a surgical-history date. Not the hard part of REQ-9 |
+| REQ-9 exclusion recall | 1.000 across all 51 traps, of which only the 21 above are REQ-9-shaped |
 | identical event dates across runs | all five notes |
 | field agreement on matched events | 23/23 for `bmi_documented`, `diet_documented`, `activity_documented` |
 | spans anchored | 80/80 emitted |
