@@ -290,10 +290,9 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-26, T-31
-and T-39**. With US-1 delivered,
-US-2's chain (T-04 → T-05, T-08 → T-11, T-12) is the next story spine, and
-T-39 should land before T-13 or T-33 unflags anything. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-26 and
+T-31**. With US-1 delivered, US-2's chain (T-04 → T-05, T-08 → T-11, T-12) is
+the next story spine. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -324,9 +323,10 @@ never a coerced denial.
 can carry an in-corpus span; `python scripts/verify_sources.py` covers all three
 documents.
 
-**One gate is weak and will start lying on a schedule (T-39).**
-`_open_questions()` in `tests/test_criteria_tree.py` matches resolved questions
-as readily as open ones, so a `provisional` constant may cite a question that is
-already answered. It passes today only because questions 4 and 5 are genuinely
-open. **T-39 comes before T-13 and T-33**, which close those two questions and
-would otherwise each be graded by the check they defeat.
+**T-39 is closed (D34).** Spec §9 states each question's status by subsection
+— `### Still open` versus `### Resolved` — and `_question_statuses()` in
+`tests/test_criteria_tree.py` reads only that stated split, refusing a missing
+heading, a doubled number, or one floating under neither. A provisional
+constant citing a resolved question now fails the gate, so T-13 and T-33 can
+close questions 4 and 5 and be graded honestly. `~~` markup in the spec is
+styling, not status.

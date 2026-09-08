@@ -682,7 +682,7 @@ each caught by the gate built for it — the sharpest being the VBG claim
 re-pointed at §D's delegation paragraph, which slices back perfectly and means
 the opposite, and only the containment gate catches it.
 
-### `[ ] T-39` A provisional constant must name an *open* question, not any question
+### `[x] T-39` A provisional constant must name an *open* question, not any question
 **REQ:** 39 · **Discovered in:** T-37 · **Timebox:** one hour
 **Exit:** a decision entry choosing how a question's status is recorded, then
 `pytest tests/test_criteria_tree.py` —
@@ -710,6 +710,19 @@ is that a flagged constant names the thing that would unflag it.
 Not folded into T-13 or T-33: whichever of them lands first would be the task
 that repairs the check it is about to defeat, and it would be graded by that
 check. The repair belongs before either of them.
+
+**Closed by D34.** Spec §9 splits into `### Still open` and `### Resolved`;
+a question's status is the subsection it sits under, and
+`_question_statuses()` in `tests/test_criteria_tree.py` reads only that stated
+split — refusing a missing or extra heading, a number under both, or a number
+floating under neither, because an unreadable section must fail loudly rather
+than return a set that passes the wrong test. `~~` markup carries no semantic
+load anymore. The parser is exercised by permanent synthetic tests (D27's
+self-check pattern), since the resolved-question branch has no live exemplar
+while the spec is healthy. Mutation-tested three ways, each caught by the test
+built for it: question 4 moved under Resolved, `a.lookback_months` pointed at
+resolved question 6 — the exact citation the old parser accepted — and the
+`Still open` heading deleted. Questions 4 and 5 still pass, still flagged.
 
 ### `[x] T-40` Source the code-to-procedure binding, or state that it stays unsourced
 **REQ:** 2 · **Depends:** T-35 · **Discovered in:** T-35 *(D28)* ·

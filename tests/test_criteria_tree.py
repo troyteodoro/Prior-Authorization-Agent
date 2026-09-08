@@ -170,8 +170,43 @@ def test_every_constant_declares_a_type_and_honors_it(tree):
 # --------------------------------------------------------------------------
 
 
+def _question_numbers(block: str) -> set[int]:
+    return {int(n) for n in re.findall(r"^(\d+)\.\s", block, re.MULTILINE)}
+
+
+def _question_statuses(section: str) -> tuple[set[int], set[int]]:
+    """(open, resolved) question numbers, read from the subsection each sits
+    under — the stated status D34 chose. Nothing here reads `~~` markup or
+    closure prose, which is what T-39 removed: the old parser returned every
+    numbered question regardless of status, so a provisional constant citing a
+    resolved question passed.
+
+    Raises on a section whose structure cannot be read honestly: a missing or
+    unexpected subsection, a number under both headings, or a number floating
+    outside either — because an unreadable section returning an empty or
+    too-full set would fail some other test for the wrong reason, or pass all
+    of them for no reason.
+    """
+    headings = list(re.finditer(r"^### (.+?)\s*$", section, re.MULTILINE))
+    names = [h.group(1) for h in headings]
+    assert names == ["Still open", "Resolved"], (
+        f"§9's subsections are {names}; D34 requires exactly "
+        "['Still open', 'Resolved']"
+    )
+    preamble = section[: headings[0].start()]
+    assert not _question_numbers(preamble), (
+        f"questions {sorted(_question_numbers(preamble))} sit above the first "
+        "subsection and so state no status"
+    )
+    open_qs = _question_numbers(section[headings[0].end() : headings[1].start()])
+    resolved_qs = _question_numbers(section[headings[1].end() :])
+    both = open_qs & resolved_qs
+    assert not both, f"questions {sorted(both)} are listed as both open and resolved"
+    return open_qs, resolved_qs
+
+
 def _open_questions() -> set[int]:
-    """Numbers listed under the spec's Open questions heading, and only there.
+    """Numbers under §9's `Still open` subsection, and only there.
 
     Scoped to the section rather than grepped from the whole file: the spec holds
     other numbered lists, and matching one of those would let a provisional
@@ -184,7 +219,8 @@ def _open_questions() -> set[int]:
     nxt = re.search(r"^## ", section, re.MULTILINE)
     if nxt:
         section = section[: nxt.start()]
-    return {int(n) for n in re.findall(r"^(\d+)\.\s", section, re.MULTILINE)}
+    open_qs, _ = _question_statuses(section)
+    return open_qs
 
 
 def test_provisional_constants_name_an_open_question_that_exists(tree):
@@ -210,6 +246,82 @@ def test_a_non_provisional_constant_is_never_null(tree):
     for name, body in _all_constants(tree):
         if not body.get("provisional"):
             assert body["value"] is not None, f"{name}: null but not marked provisional"
+
+
+# --------------------------------------------------------------------------
+# The status parser itself, on synthetic sections (T-39, D34)
+#
+# The branch that matters — a resolved question being cited — has no live
+# exemplar while the spec is healthy, so like D27's scorer self-checks these
+# exercise it synthetically. Without them the code deciding whether a stale
+# provisional flag passes would sit unrun until the moment it decides.
+# --------------------------------------------------------------------------
+
+SYNTHETIC_SECTION = """
+Preamble prose, unnumbered.
+
+### Still open
+
+4. **An open question.** Awaits T-13.
+5. **Another open question.** Awaits T-33.
+
+### Resolved
+
+1. ~~A resolved question?~~ **Answered.** Closed by T-02.
+6. ~~Another?~~ **Answered.** Closed by T-37, see D24.
+"""
+
+
+def test_a_resolved_question_is_not_in_the_open_set():
+    """The T-39 defect, pinned: the old parser returned {1, 4, 5, 6} here."""
+    open_qs, resolved_qs = _question_statuses(SYNTHETIC_SECTION)
+    assert open_qs == {4, 5}
+    assert resolved_qs == {1, 6}
+
+
+def test_a_section_missing_a_subsection_fails_loudly():
+    """No heading, no answer. An empty set would vacuously fail the wrong test;
+    a too-full set would pass everything for no reason."""
+    with pytest.raises(AssertionError, match="subsections"):
+        _question_statuses("### Still open\n\n4. **Only open listed.**\n")
+    with pytest.raises(AssertionError, match="subsections"):
+        _question_statuses("### Resolved\n\n1. ~~Only resolved listed.~~\n")
+    with pytest.raises(AssertionError, match="subsections"):
+        _question_statuses("4. **No subsections at all.**\n")
+
+
+def test_a_question_under_both_headings_fails():
+    with pytest.raises(AssertionError, match="both open and resolved"):
+        _question_statuses(
+            "### Still open\n\n4. **A question.**\n\n"
+            "### Resolved\n\n4. **The same question.**\n"
+        )
+
+
+def test_a_question_outside_both_subsections_fails():
+    """A numbered question above the first heading states no status, and a
+    parser that silently dropped it would re-create the ghost-question gap."""
+    with pytest.raises(AssertionError, match="state no status"):
+        _question_statuses(
+            "3. **A floating question.**\n\n"
+            "### Still open\n\n4. **A question.**\n\n"
+            "### Resolved\n\n1. ~~Done.~~\n"
+        )
+
+
+def test_the_specs_own_section_parses_and_both_subsections_are_populated():
+    """On the real spec: structure holds, and neither list is empty today.
+    When the last question closes, retire this deliberately alongside the
+    provisional-constants test, not by accident."""
+    spec = SPEC_PATH.read_text(encoding="utf-8")
+    match = re.search(r"^##\s+\d+\.\s+Open questions\s*$", spec, re.MULTILINE)
+    section = spec[match.end() :]
+    nxt = re.search(r"^## ", section, re.MULTILINE)
+    if nxt:
+        section = section[: nxt.start()]
+    open_qs, resolved_qs = _question_statuses(section)
+    assert open_qs, "the Still open subsection lists nothing"
+    assert resolved_qs, "the Resolved subsection lists nothing"
 
 
 # --------------------------------------------------------------------------

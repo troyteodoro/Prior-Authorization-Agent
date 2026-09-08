@@ -1748,6 +1748,73 @@ ever lands — then D31's fold-back clause applies and the type collapses into
 
 ---
 
+## D34 — A question's status is the subsection it sits under, and the gate reads only "Still open"
+
+T-39's decision. `_open_questions()` in `tests/test_criteria_tree.py` collected
+every `^(\d+)\.\s` under spec §9, so a provisional constant citing a resolved
+question passed as readily as one citing an open question. The gate held today
+only because questions 4 and 5 are genuinely open — it would have started lying
+the moment T-13 or T-33 closed one.
+
+### Chosen — spec §9 splits into `### Still open` and `### Resolved`, and status is membership
+
+A question's status is which subsection it sits under, stated once, in the
+document that owns the questions. The test parses the `Still open` subsection
+only, and it refuses to parse a section it cannot read honestly: both headings
+must exist, no question number may appear under both, and none may float
+outside either. `~~strike-through~~` becomes styling with no semantic load —
+the markup the exit condition forbids inferring from.
+
+Question numbers never change when a question moves between subsections; IDs
+are load-bearing and the tree's `open_question` fields keep resolving.
+
+**Rejected — a per-question status line** (`*Status: open — awaits T-13.*` on
+every entry). Keeps §9's narrative order intact, which is its real advantage.
+But per-item markers go stale individually: a question whose answer lands in
+its body while its marker still reads `open` makes two statements, and the gate
+believes the marker. Subsection membership cannot disagree with itself — a
+question is where it is. This was put to Troy alongside the chosen shape and
+the subsections were chosen.
+
+**Rejected — a structured sidecar file** (`docs/open_questions.json`). Easiest
+to parse and it rebuilds T-39's defect class as a second file: the moment the
+spec's prose and the sidecar disagree, something must decide which one lies,
+and the gate would be reading the copy rather than the document that outranks
+it. The spec states; nothing shadows it.
+
+**Rejected — parsing the existing prose** (`~~` markup, or the "Closed by"
+phrasing). Zero spec edits, and it is inference from formatting, which is the
+defect with better regexes: the resolved entries close with different wording
+each time ("Closed by D24", "**Monthly.**", "closed by T-36"), so the parser
+either grows a phrase list that goes stale or matches loosely enough to
+misread. The exit condition names `~~` inference as the thing to remove.
+
+### The mutations that close it
+
+Per the exit condition, asserted the way T-01's eight cases were — apply,
+watch the named test fail, revert:
+
+1. question 4 moved under `### Resolved` →
+   `test_provisional_constants_name_an_open_question_that_exists` fails, the
+   exact staleness the old gate accepted;
+2. `a.lookback_months.open_question` pointed at 6, a resolved question → same
+   test fails — under the old parser this passed;
+3. the `### Still open` heading deleted → the gate fails loudly on structure,
+   never returns an empty set that would vacuously pass an unrelated
+   assertion.
+
+The parser is also exercised by permanent synthetic tests (D27's
+scorer-self-check pattern), because the branch that matters — a resolved
+question being cited — has no live exemplar while the spec is healthy.
+
+**Reverses if:** §9's narrative order proves load-bearing — prose that
+cross-references between adjacent questions of different statuses and stops
+making sense regrouped. Then the per-question status line returns, with a test
+requiring exactly one status statement per numbered entry so a marker cannot
+be absent or doubled.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

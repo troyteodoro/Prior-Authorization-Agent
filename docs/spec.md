@@ -350,7 +350,32 @@ useless is the deliverable.
 
 ## 9. Open questions
 
-Both source-text questions are now closed by T-02, each on a quote and a span
+Numbers are stable and never reused; the tree's `open_question` fields keep
+resolving when a question moves. A question's status is the subsection it sits
+under — the criteria-tree gate reads the `Still open` list and nothing parses
+`~~strike-through~~`, which is styling *(T-39, D34)*.
+
+### Still open
+
+Both opened in T-01, each a constant the criteria tree carries as
+`provisional: true` rather than as a bare number *(D23)*. Each names the task
+that must resolve it before that task can be trusted.
+
+4. **What lookback window applies to criterion (a)'s BMI?** REQ-11 evaluates (a)
+   against the most recent BMI observation "within its lookback window" and
+   neither source document defines one. A53028's only windows are 12 months for
+   program participation and six months for the multidisciplinary evaluation, and
+   neither governs the measurement. **T-13 must not invent a default.** A stale
+   BMI is the difference between a real 36 and a 36 from four years and forty
+   pounds ago.
+5. **What is `discrepancy_tolerance` for BMI?** D14 requires a materiality
+   threshold so a structured 38.1 against a note 38.0 is not listed beside 38.1
+   against 45. No source text bounds it — it is a judgment about what wastes
+   Sam's attention, not a coverage rule. **T-33 must not supply its own default.**
+
+### Resolved
+
+Both source-text questions were closed by T-02, each on a quote and a span
 into a hashed document, recorded in `data/policies/source/answers.json`.
 
 1. ~~Does A53028 require diet and activity documentation monthly or once?~~
@@ -362,7 +387,8 @@ into a hashed document, recorded in `data/policies/source/answers.json`.
    The same sentence fixes c3's qualifying run at four consecutive months, which
    is what E4 is labeled against.
 
-One opened in their place, and it is a design question rather than a source one:
+Question 3 opened in their place — a design question rather than a source one —
+and both of its halves have since closed:
 
 3. ~~E3's procedure code is wrong~~, ~~and sc1 may be missing an outcome~~. T-02
    found that NCD 100.1 neither covers nor non-covers 43775 — CMS delegated
@@ -383,22 +409,9 @@ One opened in their place, and it is a design question rather than a source one:
    because under this corpus the MAC exercised the delegation and covers the
    procedure. See D33.
 
-Three more opened in T-01, each one a constant the criteria tree carries as
-`provisional: true` rather than as a bare number *(D23)*. Each names the task
-that must resolve it before that task can be trusted. Question 6 has since
-closed, leaving two constants still flagged.
+Question 6 opened in T-01 alongside questions 4 and 5, the third of D23's
+provisional constants:
 
-4. **What lookback window applies to criterion (a)'s BMI?** REQ-11 evaluates (a)
-   against the most recent BMI observation "within its lookback window" and
-   neither source document defines one. A53028's only windows are 12 months for
-   program participation and six months for the multidisciplinary evaluation, and
-   neither governs the measurement. **T-13 must not invent a default.** A stale
-   BMI is the difference between a real 36 and a 36 from four years and forty
-   pounds ago.
-5. **What is `discrepancy_tolerance` for BMI?** D14 requires a materiality
-   threshold so a structured 38.1 against a note 38.0 is not listed beside 38.1
-   against 45. No source text bounds it — it is a judgment about what wastes
-   Sam's attention, not a coverage rule. **T-33 must not supply its own default.**
 6. ~~Is c5 a count or a rate?~~ **A rate**, and the same rate c4 carries.
    `a53028[6339:6503]` is one sentence in which `monthly` governs a three-item
    list — weight and BMI, dietary regimen, physical activity — so there is no
@@ -409,7 +422,7 @@ closed, leaving two constants still flagged.
    documenting diet and activity in four months is now `NOT_MET`. Closed by T-37,
    see D24.
 
-One opened in T-35, and it is a corpus question rather than a clinical one:
+Question 7 opened in T-35, a corpus question rather than a clinical one:
 
 7. ~~What source binds a procedure code to a procedure NCD 100.1 names only in
    prose?~~ **CMS Pub. 100-04 Transmittal 931 (CR 5013)**, the claims-processing
