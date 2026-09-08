@@ -527,11 +527,11 @@ def test_the_patient_store_refuses_unknown_patients(method: str = "") -> None:
             getattr(store, method)("patient-1")
 
 
-def test_the_patient_store_refuses_notes_until_t07() -> None:
-    """The FHIR reads are built (T-12, D39); the note corpus is not. The raise
-    names T-07 and deliberately does not contain "T-12", so a stale match
-    fails loudly instead of passing by substring (D31)."""
-    with pytest.raises(NotImplementedError, match="T-07"):
+def test_the_patient_store_refuses_notes_for_an_unknown_patient() -> None:
+    """The corpus exists since T-07 (D43), so `get_notes` no longer raises for
+    a real patient — but an unknown one still raises rather than returning an
+    empty chart, which would manufacture E7 for a patient who does not exist."""
+    with pytest.raises(KeyError, match="patient-1"):
         LocalPatientStore().get_notes("patient-1")
 
 

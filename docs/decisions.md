@@ -2376,6 +2376,74 @@ bundle), or a real-chart corpus lands and replaces synthesis wholesale.
 
 ---
 
+## D43 — No model writes the notes, every date in the corpus is accounted for, and the wrap is deliberate
+
+T-07's design. The synthesizer turns T-06's manifests into the chart text
+T-15's extraction reads.
+
+### Chosen — deterministic Python templating from a seeded phrase bank, no model call
+
+The notes are the **input to the model being measured**. A model-written
+corpus would be phrased the way models phrase things, and extraction scored
+on it measures model-to-model agreement rather than extraction fidelity — the
+number would come out high and mean nothing. D19 already flagged the adjacent
+limit ("nothing here says the prompt survives real EHR text"); generating the
+text with the same family of model that reads it would make that gap
+invisible instead of merely unmeasured. Spike 001's notes were hand-written
+for this reason, and this is the mechanical version of the same choice.
+
+It also buys reproducibility Article II would otherwise have to argue for: a
+seeded generator emits byte-identical notes on every run, so `--verify` can
+re-check hashes and T-15's regression cases cannot drift under a re-run.
+
+**Rejected — a model synthesizes the notes from the manifest.** Faster, more
+varied prose, and it forecloses the only measurement T-15 exists to make.
+**Rejected — hand-writing six more notes.** What Troy did for the spike; it
+does not scale to T-21's labeled set and puts the manifests and the prose in
+two places that drift.
+
+### Chosen — the corpus mimics EHR export, wrapped hard at 78 columns
+
+Section headers in caps, `MM/DD/YYYY - ` encounter entries, metric units,
+dates spelled the way the spike's notes spell them — so T-15's single prompt
+covers both corpora, which its exit condition requires. The **hard wrap is
+load-bearing, not cosmetic**: D18 exists because a quote crossing a wrap point
+fails exact `find`, and it chose whitespace-insensitive anchoring on the
+strength of three observations in one spike note. A corpus of clean single
+lines would leave that path untested here and let it fail first in production.
+
+Weight is derived from the note's BMI and the patient's **structured height**
+(LOINC 8302-2, read through the port), so a note is internally consistent and
+grounded in the bundle it belongs to. E10 and E10b disagree with the
+structured BMI on purpose — that is the manifest's instruction — and the
+derived weight follows the note, keeping the disagreement to the one fact the
+case is about.
+
+### Chosen — every date in the corpus is a manifest date, asserted
+
+The synthesizer emits no date the manifest does not declare, and the gate
+scans each note for date-shaped strings and refuses any it cannot account
+for. This is what makes REQ-9 scoring sound: an invented date would be
+extracted, scored against ground truth that never mentioned it, and counted
+as a model failure that was really a corpus defect. The same scan refuses
+trap **type names** in the prose — a chart that says "missed visit" where a
+real one says "did not attend" is a test of keyword matching, not of REQ-9.
+
+### Chosen — notes land in the patient store and the T-07 raise retires
+
+`data/patients/notes/<patient_id>/`, committed and hashed in their own
+manifest, served by `LocalPatientStore.get_notes` as `Document`s so spans
+into them are checkable (Art. III). The raise citing T-07 goes away the
+moment the notes exist, per the D35/D39 pattern; nothing downstream should
+keep naming a task that has landed (D31's lesson).
+
+**Reverses if:** T-15 scores near-perfectly on these notes and poorly on real
+chart text, which would mean the templating encodes an easier problem than
+the one that matters — the fix is real de-identified text, not a richer
+phrase bank.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

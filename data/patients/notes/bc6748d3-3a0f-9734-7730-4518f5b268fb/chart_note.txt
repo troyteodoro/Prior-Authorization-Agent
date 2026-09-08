@@ -1,0 +1,22 @@
+EVERGREEN BASIN MEDICAL CLINIC
+Patient: Ratke343, Tressie547                    MRN: 823661
+DOB: 1993-08-06                       Sex: F
+
+BARIATRIC SURGERY CONSULTATION
+
+HISTORY OF PRESENT ILLNESS
+Seen 07/02/2026 for evaluation. Patient reports completing a six-month
+medically supervised weight-loss program last year; no visit records
+available. Records from the outside facility have been requested and are not
+available at the time of this consultation.
+
+Measured in clinic today: weight 105.4 kg, BMI 36.2.
+
+PRIOR WEIGHT LOSS HISTORY
+Patient reports a self-directed attempt beginning 01/20/2026, undertaken
+without clinical supervision and with no visits or monitoring by this or any
+other practice.
+
+ASSESSMENT
+Obesity. Candidate pending documentation of the weight management program
+described above.

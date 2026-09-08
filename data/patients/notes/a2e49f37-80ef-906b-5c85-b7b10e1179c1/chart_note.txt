@@ -1,0 +1,26 @@
+PUGET RIDGE INTERNAL MEDICINE
+Patient: Bode78, Linn541                         MRN: 339424
+DOB: 1986-05-25                       Sex: F
+
+MEDICAL WEIGHT MANAGEMENT PROGRAM - CONSOLIDATED VISIT RECORD
+Physician-supervised program directed by T. Nakashima, DO.
+
+03/09/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,
+BMI 45.0. Nutrition counseling provided; meal plan held at 1500 kcal.
+Continues supervised exercise, 40 minutes, three days per week.
+
+04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI
+not calculated at this visit. Nutrition counseling provided; meal plan held at
+1800 kcal. Reports 30 minutes of pool exercise five days per week.
+
+05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,
+BMI 45.0. Nutrition counseling provided; meal plan held at 1600 kcal. Activity
+goal of 30 minutes daily met on three days this month.
+
+06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not
+calculated at this visit. Discussed portion control and protein intake on the
+1800 kcal plan. Reports 30 minutes of pool exercise five days per week.
+
+ASSESSMENT
+Obesity with continued participation in the supervised weight management
+program documented above.

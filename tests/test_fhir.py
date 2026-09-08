@@ -133,11 +133,20 @@ def test_a_tampered_bundle_fails_on_read(tmp_path, manifest_records):
         store.get_observations(victim["patient_id"])
 
 
-def test_notes_still_raise_citing_t07(store, manifest_records):
-    """The note corpus is T-07's; Synthea's auto-notes carry no ground truth
-    (D39). Cited without 'T-12' in the message so a stale match dies loudly."""
-    with pytest.raises(NotImplementedError, match="T-07"):
-        store.get_notes(manifest_records[0]["patient_id"])
+def test_notes_are_served_hash_verified_and_never_synthea_generated(
+    store, manifest_records
+):
+    """T-07 landed the corpus and the raise retired (D43). What must stay true
+    is *which* notes are served: the manifest-driven ones, whose facts someone
+    declared, never Synthea's auto-generated prose (D39)."""
+    for record in manifest_records:
+        documents = store.get_notes(record["patient_id"])
+        assert documents, f"{record['filename']}: no note served"
+        for document in documents:
+            # Document's validator re-hashes on construction, so reaching here
+            # means the served text matches the notes manifest (REQ-7).
+            assert document.text.strip()
+            assert record["patient_id"] in document.document_id
 
 
 # --------------------------------------------------------------------------

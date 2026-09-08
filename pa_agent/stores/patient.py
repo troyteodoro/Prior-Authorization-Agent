@@ -47,7 +47,8 @@ class PatientStore(Protocol):
         ...
 
     def get_notes(self, patient_id: str) -> list[Document]:
-        """The unstructured chart. Every span a model produces points in here."""
+        """The unstructured chart. Every span a model produces points in here,
+        which is why these arrive as hash-verified `Document`s (Art. III)."""
         ...
 
     def get_document(self, document_id: str) -> Document:
@@ -84,6 +85,8 @@ class LocalPatientStore:
         self._parsed: dict[str, dict] = {}
         self._raw_text: dict[str, str] = {}
         self._extent_cache: dict[str, list[tuple[int, int] | None]] = {}
+        self._notes_dir = self._root / "notes"
+        self._notes_manifest: dict[str, list[dict]] | None = None
 
     # -- resolution and verification ---------------------------------------
 
@@ -92,6 +95,16 @@ class LocalPatientStore:
             records = json.loads(self._manifest_path.read_text(encoding="utf-8"))
             self._manifest = {r["patient_id"]: r for r in records["bundles"]}
         return self._manifest
+
+    def _load_notes_manifest(self) -> dict[str, list[dict]]:
+        if self._notes_manifest is None:
+            path = self._notes_dir / "manifest.json"
+            by_patient: dict[str, list[dict]] = {}
+            if path.exists():
+                for record in json.loads(path.read_text(encoding="utf-8"))["notes"]:
+                    by_patient.setdefault(record["patient_id"], []).append(record)
+            self._notes_manifest = by_patient
+        return self._notes_manifest
 
     def _bundle(self, patient_id: str) -> dict:
         if patient_id in self._parsed:
@@ -232,15 +245,29 @@ class LocalPatientStore:
         return conditions
 
     def get_notes(self, patient_id: str) -> list[Document]:
-        """The note corpus is T-07's: manifest-driven, traps placed on purpose,
-        labeled before extraction runs. Synthea's auto-generated notes carry no
-        ground truth, so serving them would hand T-15 a corpus whose eval cases
-        grade against labels that do not exist (D39)."""
-        raise NotImplementedError(
-            f"T-07 has not synthesized the note corpus, so there are no notes "
-            f"to read from {self._root}. Empty results would be "
-            "indistinguishable from a patient with no documentation."
-        )
+        """The manifest-driven note corpus T-07 synthesized (D43).
+
+        Synthea's own auto-generated notes are deliberately not served: they
+        carry no ground truth, and a corpus whose facts nobody declared would
+        let T-15's eval cases grade against labels that do not exist (D39).
+        Each note is hash-verified against the notes manifest before it is
+        returned, so a span into one points at the text that was measured
+        (REQ-7).
+        """
+        self._bundle(patient_id)  # a patient the population does not list raises
+        records = self._load_notes_manifest().get(patient_id, [])
+        documents = []
+        for record in records:
+            path = self._notes_dir / record["document_id"]
+            text = path.read_text(encoding="utf-8")
+            documents.append(
+                Document(
+                    document_id=record["document_id"],
+                    text=text,
+                    sha256=record["sha256"],
+                )
+            )
+        return documents
 
     def get_document(self, document_id: str) -> Document:
         """A bundle file as a `Document`, so patient-plane spans are checkable

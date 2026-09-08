@@ -454,11 +454,41 @@ The authorship caveat D19 raised propagates and is recorded in D42: this
 ground truth was written by the agent building the system it grades. A
 perfect score on it means the approach does not obviously fail, nothing more.
 
-### `[ ] T-07` Manifest-driven note synthesizer
+### `[x] T-07` Manifest-driven note synthesizer
 **REQ:** 8, 9 · **Depends:** T-06
 **Exit:** `pytest tests/test_notes.py` — every note honors its manifest, by
 assertion rather than by reading
 E9 requires missed-visit dates sitting in the gap month.
+
+**Closed by D43.** `scripts/synthesize_notes.py` renders six chart notes from
+T-06's manifests by deterministic seeded templating — **no model writes
+them**, because the notes are the input to the model T-15 measures and a
+model-written corpus would score model-to-model agreement, high and
+meaningless. The corpus mimics EHR export (caps headers, `MM/DD/YYYY` entries,
+metric units, matching spike 001 so T-15's one prompt covers both) and
+**wraps hard at 78 columns on purpose**: D18 chose whitespace-insensitive
+anchoring because quotes cross wrap points, and a corpus of clean single lines
+would leave that path untested until production. It does cross them — the
+gate itself had to normalize, because `BMI 42.7` genuinely lands split across
+a line break.
+
+The assertion that makes the corpus ground truth: **no note contains a date
+the manifest does not declare** (the patient's structured DOB aside). An
+invented date would be extracted, scored against ground truth that never
+mentioned it, and counted as a model failure that was really a corpus defect.
+Traps read like the chart events they are and never name their own type, and
+every non-encounter entry states its non-encounter status in prose — E9's
+substance. Weight is derived from the note's BMI and the patient's structured
+height, so a note is internally consistent; E10/E10b disagree with the
+structured BMI only in the one fact their case is about.
+
+`LocalPatientStore.get_notes` now serves them as hash-verified `Document`s
+and the T-07 raise is retired (D31's rule about stale citations). Mutation-
+tested seven ways, each caught: an invented follow-up date, a trap labeling
+itself, the wrap turned off, a weight-only month quietly gaining a BMI (D15's
+case erased), a missed visit reading like a visit, a documented BMI written
+off by one, and a note tampered on disk — which fails at `Document`'s hash
+validator before any test sees it.
 
 ### `[ ] T-15` `wm_events` extraction agent
 **REQ:** 8, 9, 10, 35, 38 · **Depends:** T-00, T-07, T-11

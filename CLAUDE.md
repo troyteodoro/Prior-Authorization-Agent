@@ -291,10 +291,11 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-07, T-26, T-31 and
-T-41**. **US-2 and US-3 are delivered**, and T-06 is closed, so US-4's chain
-continues at **T-07** (the note synthesizer), then T-15 — where the model
-finally enters the system. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-15, T-26, T-31 and
+T-41**. **US-2 and US-3 are delivered**; T-06 and T-07 are closed, so the note
+corpus exists and **T-15 is unblocked — the one place a model enters the
+system**. T-31 (`gap_reason`) blocks T-16, T-17, T-19 and T-33, so it is the
+cheapest thing standing between US-4 and its predicates. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -414,6 +415,18 @@ D19's caveat about the spike corpus applies here with a different author —
 structural mitigations (cross-checks against the bundles, T-07's honoring
 assertions, review of the diff) are in place, and a perfect score still means
 only that the approach does not obviously fail.
+
+**T-07 is closed (D43): the note corpus exists and no model wrote it.**
+`scripts/synthesize_notes.py` renders six charts from T-06's manifests by
+seeded templating — a model-written corpus would make T-15 measure
+model-to-model agreement. The **78-column wrap is load-bearing**, not
+cosmetic: D18's anchoring exists because quotes cross wrap points, and this
+corpus genuinely splits `BMI 42.7` across a line break (the gate had to
+normalize to see it). **No note contains a date the manifest does not
+declare** — that assertion is what makes the corpus ground truth, since an
+invented date would be scored as a model failure that was really a corpus
+defect. Traps never name their own type. `get_notes` serves the notes
+hash-verified and the T-07 raise is retired.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in
