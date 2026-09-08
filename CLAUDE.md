@@ -289,13 +289,17 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-24, T-26,
-T-31, T-36 and T-39** — T-40 and T-38 closed in that order, T-40 first by T-40's
-own reordering clause. T-36 is unblocked in the sense that its decision can be
-drafted, but its exit runs against `tests/test_resolver.py`, which T-24 creates. **T-24 is next on US-1's critical path** — the tree now
-carries the procedure sets it reads, and `LocalPolicyStore.resolve`'s
-`NotImplementedError` cites it by name. US-1's remaining chain is
-T-24 → T-25; only the last flips E3 to `PASS`.
+closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-25, T-26,
+T-31, T-36 and T-39**. T-36 is fully closeable at last: `tests/test_resolver.py`
+exists, and the resolver's contractor-determined branch raises naming it. **T-24 is closed (D31): facts in the store, judgment in
+`pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
+membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
+`NotCovered`, absence to `NoPolicyFound`, and **raises citing T-36 for a
+contractor-determined code** — do not "fix" that raise by picking a mapping.
+The contracts carry typed procedure sets whose validators refuse an unsourced
+identity binding and a code bound in two sets. **T-25 is the last step on
+US-1's critical path**: determination assembly flips E3 to `PASS`, and that
+baseline update is the commit that closes the story.
 **T-40 is closed** — `r931cp` is in the corpus and every binding T-38 writes
 can carry an in-corpus span; `python scripts/verify_sources.py` covers all three
 documents.

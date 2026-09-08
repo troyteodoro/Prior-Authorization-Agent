@@ -1544,6 +1544,81 @@ consumer. A disproved binding falls back to `in_corpus: false` per D29.
 
 ---
 
+## D31 — The store reports membership, the resolver judges it, and the undecided branch raises
+
+T-24's design. Two layers where the task's name suggests one, because the two
+things a resolver does have different owners.
+
+### Chosen — facts in the port, judgment in `pa_agent/resolver.py`
+
+`LocalPolicyStore.resolve` answers only "which policy governs this code, and in
+which of its three sets is it bound" — a `PolicyRef` extended with the
+membership (`CoverageStatus`) and the entry's spanned `coverage_claim`, or
+`None`. It returns the fact for **all three sets, contractor-determined
+included**, because membership is a corpus fact T-38 landed and spanned, and a
+port that refuses to report data it holds is a port whose adapter is making
+policy judgments.
+
+`pa_agent/resolver.py` owns REQ-1 and REQ-2: nationally non-covered membership
+maps to `NotCovered` carrying the `policy_version_id` (REQ-4) and the claim to
+cite; a covered code maps to `Resolved` and the caller proceeds to the tree; a
+code the store returns `None` for maps to `NoPolicyFound`. The three results
+are three types, not one type with a status string, so D26's "two different
+lookups, not one absence" holds in the type system where a match statement has
+to acknowledge it.
+
+**The contractor-determined branch raises `NotImplementedError` citing T-36.**
+Whether "left to the contractor" is a third sc1 outcome or resolves like a
+covered code is T-36's question, and this repo's convention is that an
+undecided half raises and names its task (T-09's stores, D27's discovered
+blocking). No caller can observe a behavior T-36 has not chosen; T-24's exit
+needs only E3 and the unknown code, so nothing blocks on the raise.
+
+**Rejected — everything in `resolve()`.** One less module, and the production
+database adapter would then have to reimplement coverage judgment instead of
+just data access — every adapter a re-statement of REQ-2, each drifting
+separately. T-36 would also land its decision inside an adapter, which is the
+one place a clinical-behavior change should never live (Art. VII's spirit).
+
+**Rejected — the store raises for contractor codes.** Simplest guard, but it
+hides a spanned corpus fact behind an exception, and T-36 would then edit the
+adapter rather than the judgment layer it is actually deciding about.
+
+**Rejected — treat 43775 as covered now.** Source-faithful for Jurisdiction F
+today — A53028 covers it — and it silently decides T-36's question in the task
+that builds the thing T-36's exit tests. D24, D26 and D28 each spent an entry
+rejecting that move under a different name.
+
+### The contracts learn the sets, and the invariants move into validators
+
+`CoverageStatus`, `CoverageClaim`, `CodeBinding`, `ProcedureEntry` and
+`ProcedureSets` enter `pa_agent/contracts.py`; `CriteriaTree` gains
+`procedure_sets`. Two D30 invariants become load-time validators the way
+`Document` verifies its hash: an identity binding must be in-corpus with a
+quote naming its code, and the three sets must be pairwise disjoint over
+identity codes. `tests/test_criteria_tree.py` already gates the artifact; the
+validators gate every *adapter*, so a production projection that collides
+cannot construct a `CriteriaTree` at all.
+
+### Recorded while building: a gate was passing by accident
+
+`test_resolve_refuses_to_answer_until_t38` asserts
+`pytest.raises(NotImplementedError, match="T-38")`. T-38's close re-cited the
+message to T-24 — and the test kept passing, because the new message contains
+"T-38" in a parenthetical. An accidental substring match in the gate guarding
+the resolver, which is T-39's defect class in a fourth spelling. T-24 replaces
+it with tests of actual resolution; the schema suite also stops pairing 43775
+with `NOT_COVERED` in a synthetic (the combination D22 disproved — any code
+string works there, so it costs nothing to use one that is true).
+
+**Reverses if:** T-36 decides contractor-determined is not distinct and no
+second jurisdiction lands — the raising branch then maps like covered and the
+`CoverageStatus` value stays as a recorded fact. Or the production adapter
+proves unable to supply claims and membership efficiently, in which case the
+`PolicyRef` shape is renegotiated at the port, not bypassed around it.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

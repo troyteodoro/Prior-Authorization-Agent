@@ -170,10 +170,25 @@ seven ways, each caught by the check that should catch it: a baseline claiming
 model call against A4's zero budget, and a scorer edited to score a wrong outcome
 `PASS` (self-check fails, exit 2, and the report below it is suppressed).
 
-### `[ ] T-24` Policy resolver and short-circuit sc1
+### `[x] T-24` Policy resolver and short-circuit sc1
 **REQ:** 1, 2, 4 · **Depends:** T-09
 **Exit:** `pytest tests/test_resolver.py` — E3 returns `NOT_COVERED`, unknown code
 returns `NO_POLICY_FOUND`, model-call counter reads zero
+
+**Closed by D31, two layers.** `LocalPolicyStore.resolve` reports facts — the
+set membership and spanned coverage claim on an extended `PolicyRef`, or `None`
+— and `pa_agent/resolver.py` owns the judgment: non-covered membership maps to
+`NotCovered` carrying the `policy_version_id` and the claim that slices back
+through the store; absence maps to `NoPolicyFound`; the three results are three
+types so D26's two lookups cannot merge by ignoring a field. The
+contractor-determined branch **raises citing T-36** — the store reports 43775's
+membership, the resolver refuses to map it until that decision is written. Zero
+model calls proven by a fresh-interpreter import probe. The contracts gained the
+typed procedure sets with D30's invariants as validators (unsourced identity and
+two-set codes fail at construction). E3 now blocks on T-25's seam with no
+baseline drift. Seven mutations, each caught — including the contractor branch
+quietly mapping like covered, and a schema gate D31 records as having passed by
+accidental substring match.
 
 ### `[ ] T-25` Determination assembly, minimal
 **REQ:** 4, 21 · **Depends:** T-24

@@ -20,7 +20,9 @@ from pydantic import ValidationError
 
 from pa_agent.contracts import (
     CallMetrics,
+    CodeBinding,
     Condition,
+    CoverageClaim,
     CriteriaTree,
     Criterion,
     CriterionResult,
@@ -31,6 +33,8 @@ from pa_agent.contracts import (
     EvidenceSpan,
     Observation,
     PolicyConstant,
+    ProcedureEntry,
+    ProcedureSets,
     ProgramAssertion,
     WmEvent,
 )
@@ -261,12 +265,54 @@ def test_a_short_circuit_determination_carries_no_criteria(
     """E2 and E3 exit before any criterion is evaluated, and still record REQ-4."""
     determination = Determination(
         patient_id="p",
-        procedure_code="43775",
+        # 43842, because pairing 43775 with NOT_COVERED — even in a synthetic
+        # where any string would do — restates the claim D22 disproved.
+        procedure_code="43842",
         policy_version_id=TREE_VERSION,
         outcome=DeterminationOutcome.NOT_COVERED,
     )
+
     assert determination.gap_list == []
     assert determination.model_calls == 0
+
+
+# --------------------------------------------------------------------------
+# D30 — an identity binding is sourced, and no code has two answers
+# --------------------------------------------------------------------------
+
+
+def _binding(**overrides):
+    fields = dict(
+        code="43842", system="CPT", identity=True, in_corpus=True,
+        document_id="r931cp", char_start=15038, char_end=15092,
+        quote="Open vertical banded gastroplasty ( HCPCS \ncode 43842)",
+    )
+    fields.update(overrides)
+    return CodeBinding(**fields)
+
+
+def test_an_unsourced_identity_binding_cannot_be_constructed() -> None:
+    """The mechanism that put 43775 in the spec, refused at load (D29, D30)."""
+    with pytest.raises(ValidationError, match="not in_corpus"):
+        _binding(in_corpus=False)
+
+
+def test_an_identity_quote_that_does_not_name_its_code_is_refused() -> None:
+    with pytest.raises(ValidationError, match="does not name the code"):
+        _binding(quote="Open vertical banded gastroplasty")
+
+
+def test_a_code_bound_in_two_sets_cannot_be_constructed() -> None:
+    """D26's collapse, refused by the contract itself so a production adapter
+    cannot serve a colliding projection (D31)."""
+    claim = CoverageClaim(document_id="d", char_start=0, char_end=4, quote="text")
+    entry = ProcedureEntry(
+        procedure="p", coverage_claim=claim, codes=[_binding()]
+    )
+    with pytest.raises(ValidationError, match="no code has two answers"):
+        ProcedureSets(
+            nationally_covered=[entry], nationally_non_covered=[entry]
+        )
 
 
 # --------------------------------------------------------------------------
@@ -443,14 +489,21 @@ def test_an_offset_shifted_by_one_no_longer_slices_to_its_quote(
 # --------------------------------------------------------------------------
 
 
-def test_resolve_refuses_to_answer_until_t38(policy_store: LocalPolicyStore) -> None:
-    """D26: the tree carries no procedure sets, so resolution has nothing to read.
+def test_resolve_reports_membership_facts(policy_store: LocalPolicyStore) -> None:
+    """T-24: the port reports which set binds a code, and judges nothing (D31).
 
-    Returning `None` here would report `NO_POLICY_FOUND` for every code in
-    Medicare and every test downstream would agree with it.
+    Until T-38 this asserted a raise with `match="T-38"` — and kept passing
+    after the message was re-cited to T-24, because "T-38" survived in a
+    parenthetical. D31 records the miss; the replacement asserts behavior, not
+    message substrings. The sc1 judgment tests live in `tests/test_resolver.py`.
     """
-    with pytest.raises(NotImplementedError, match="T-38"):
-        policy_store.resolve("43775")
+    ref = policy_store.resolve("43842")
+    assert ref is not None and ref.coverage.value == "nationally_non_covered"
+    assert ref.policy_version_id == TREE_VERSION
+    assert policy_store.resolve("99213") is None, (
+        "a code no tree binds resolves to None — NO_POLICY_FOUND, which is not "
+        "a denial (D26)"
+    )
 
 
 @pytest.mark.parametrize(

@@ -20,23 +20,38 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pa_agent.contracts import CriteriaTree, Document
+from pa_agent.contracts import (
+    CoverageClaim,
+    CoverageStatus,
+    CriteriaTree,
+    Document,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_POLICY_ROOT = REPO_ROOT / "data" / "policies"
 
 
 class PolicyRef(BaseModel):
-    """What a procedure code resolves to: a policy, at a version (REQ-1, REQ-4)."""
+    """What a procedure code resolves to: a policy, at a version (REQ-1, REQ-4).
+
+    Since T-24 it also carries the *fact* of where the code is bound — which of
+    the tree's three sets — and the spanned coverage claim for that entry, so a
+    short-circuit determination can cite its denial (Art. III) without a second
+    trip through the port. The fact is not a judgment: mapping membership to an
+    outcome is `pa_agent.resolver`'s, and the contractor-determined mapping is
+    T-36's open question (D31)."""
 
     model_config = ConfigDict(frozen=True)
 
     procedure_code: str = Field(min_length=1)
     policy_version_id: str = Field(min_length=1)
+    coverage: CoverageStatus
+    procedure: str = Field(min_length=1)
+    coverage_claim: CoverageClaim
 
 
 @runtime_checkable
@@ -70,33 +85,74 @@ class LocalPolicyStore:
         self._source_dir = self._root / "source"
         self._manifest_path = self._source_dir / "sources.json"
         self._trees: dict[str, CriteriaTree] = {}
+        self._binding_cache: dict[str, tuple[CriteriaTree, CoverageStatus, Any]] | None = None
         self._documents: dict[str, Document] = {}
         self._manifest: dict[str, dict] | None = None
 
     # -- policy resolution -------------------------------------------------
 
     def resolve(self, procedure_code: str) -> PolicyRef | None:
-        """Unimplemented until T-24 builds the resolution logic.
+        """The membership fact for a code, or `None` for no governing policy.
 
-        Not a stub for convenience. T-38 landed the three procedure sets in the
-        tree (D30), so the data exists — but the lookup that reads identity
-        bindings and maps membership to a `PolicyRef` is T-24's, and returning
-        `None` meanwhile would quietly report `NO_POLICY_FOUND` for every code
-        in Medicare, including the ones the tree now answers.
+        `None` means no policy in this store binds the code as an identity. It
+        does **not** mean not covered — REQ-2's `NOT_COVERED` is a policy
+        saying no, a different answer from no policy saying anything (D26).
+        The mapping from membership to an outcome lives in
+        `pa_agent.resolver`, not here: an adapter reports what the tree
+        records, contractor-determined included, and makes no judgment (D31).
+
+        Facility code lists are not consulted. They overlap across procedures
+        in the source itself, which is why they are not identities (D30).
         """
-        raise NotImplementedError(
-            "T-24 has not built the resolver. The criteria tree carries the three "
-            "procedure sets (T-38, D30), but nothing reads their identity bindings "
-            "into a resolution yet."
+        index = self._binding_index()
+        hit = index.get(procedure_code)
+        if hit is None:
+            return None
+        tree, status, entry = hit
+        return PolicyRef(
+            procedure_code=procedure_code,
+            policy_version_id=tree.policy_version_id,
+            coverage=status,
+            procedure=entry.procedure,
+            coverage_claim=entry.coverage_claim,
         )
+
+    def _binding_index(self) -> dict[str, tuple[CriteriaTree, CoverageStatus, Any]]:
+        """`{code -> (tree, set, entry)}` over identity bindings, built once.
+
+        `ProcedureSets`' validator already refuses a code bound twice within
+        one tree; this refuses a code bound by two trees, which no validator
+        can see because no object holds both trees.
+        """
+        if self._binding_cache is None:
+            index: dict[str, tuple[CriteriaTree, CoverageStatus, Any]] = {}
+            for tree in self._load_trees().values():
+                if tree.procedure_sets is None:
+                    continue
+                for status, entry in tree.procedure_sets.entries():
+                    for binding in entry.codes:
+                        if binding.code in index:
+                            other = index[binding.code][0].policy_version_id
+                            raise ValueError(
+                                f"{binding.code} is bound by {other} and "
+                                f"{tree.policy_version_id}; resolution would "
+                                "depend on load order"
+                            )
+                        index[binding.code] = (tree, status, entry)
+            self._binding_cache = index
+        return self._binding_cache
 
     # -- trees -------------------------------------------------------------
 
-    def get_tree(self, policy_version_id: str) -> CriteriaTree:
-        if policy_version_id not in self._trees:
+    def _load_trees(self) -> dict[str, CriteriaTree]:
+        if not self._trees:
             for path in sorted(self._root.glob("*.json")):
                 tree = CriteriaTree.model_validate_json(path.read_text(encoding="utf-8"))
                 self._trees[tree.policy_version_id] = tree
+        return self._trees
+
+    def get_tree(self, policy_version_id: str) -> CriteriaTree:
+        self._load_trees()
         try:
             return self._trees[policy_version_id]
         except KeyError:

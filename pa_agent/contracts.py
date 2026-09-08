@@ -241,6 +241,122 @@ class Jurisdiction(BaseModel):
     note: str | None = None
 
 
+class CoverageStatus(str, Enum):
+    """Which of the tree's three procedure sets binds a code (T-38, D30).
+
+    Set membership — a fact about the corpus, not a determination outcome.
+    Mapping membership to an outcome is `pa_agent.resolver`'s job (D31), and
+    the contractor-determined mapping is T-36's open question. Do not add a
+    value here without a set in the tree that carries it.
+    """
+
+    NATIONALLY_COVERED = "nationally_covered"
+    NATIONALLY_NON_COVERED = "nationally_non_covered"
+    CONTRACTOR_DETERMINED = "contractor_determined"
+
+
+class CoverageClaim(EvidenceSpan):
+    """A procedure's coverage statement, spanned, with its qualifying context.
+
+    The nested quotes are not decoration: a §C bullet alone names a procedure
+    and says nothing about coverage — the scoping sentence is what makes it a
+    denial, and a span into §D's delegation paragraph slices back perfectly
+    well while meaning the opposite (D22, D28)."""
+
+    scoping_quote: EvidenceSpan | None = None
+    corroborating_quote: EvidenceSpan | None = None
+
+
+class CodeBinding(EvidenceSpan):
+    """The claim that a code denotes a procedure, spanned to what asserts it.
+
+    A different claim class from coverage (D28): "this procedure is
+    non-covered" and "this code denotes that procedure" have different sources
+    and different failure modes. Since D29 the binding document is `r931cp`,
+    citable for bindings and nothing else."""
+
+    code: str = Field(min_length=1)
+    system: str = Field(min_length=1)
+    identity: bool
+    in_corpus: bool
+
+    @model_validator(mode="after")
+    def _an_identity_is_sourced_and_names_its_code(self) -> CodeBinding:
+        """D30's invariant at load, the way `Document` verifies its hash.
+
+        An unsourced identity is the mechanism that put 43775 in the spec, and
+        a quote that does not contain the code is a span onto something else."""
+        if self.identity:
+            if not self.in_corpus:
+                raise ValueError(
+                    f"identity binding for {self.code} is not in_corpus. D29 "
+                    "landed r931cp so no binding would rest on recall; span it "
+                    "or it is not an identity."
+                )
+            if not self.quote or self.code not in self.quote:
+                raise ValueError(
+                    f"identity binding for {self.code} carries a quote that does "
+                    "not name the code; the span is anchored to something else"
+                )
+        return self
+
+
+class ProcedureEntry(BaseModel):
+    """One procedure in one of the three sets (D30's shape).
+
+    `codes` holds identity bindings — the lookup keys. A53028's facility
+    ICD-10-PCS lists stay in the tree artifact as `identity: false`
+    transcriptions and are deliberately not modeled here: they overlap across
+    procedures in the source itself, so nothing above the artifact may key on
+    them (D30)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    procedure: str = Field(min_length=1)
+    coverage_claim: CoverageClaim
+    codes: list[CodeBinding] = Field(default_factory=list)
+
+
+class ProcedureSets(BaseModel):
+    """The three pairwise-disjoint answers to "what does policy say about this
+    code" (D26): nationally denied, delegated to the contractor, and covered —
+    with absence from all three meaning REQ-1's `NO_POLICY_FOUND`.
+
+    Disjointness is a validator, not a convention, so a production adapter
+    cannot serve a colliding projection: a code with two answers fails at
+    construction, not at whichever lookup happens to run first."""
+
+    model_config = ConfigDict(frozen=True)
+
+    nationally_covered: list[ProcedureEntry] = Field(default_factory=list)
+    nationally_non_covered: list[ProcedureEntry] = Field(default_factory=list)
+    contractor_determined: list[ProcedureEntry] = Field(default_factory=list)
+
+    def entries(self) -> list[tuple[CoverageStatus, ProcedureEntry]]:
+        return [
+            (status, entry)
+            for status, members in (
+                (CoverageStatus.NATIONALLY_COVERED, self.nationally_covered),
+                (CoverageStatus.NATIONALLY_NON_COVERED, self.nationally_non_covered),
+                (CoverageStatus.CONTRACTOR_DETERMINED, self.contractor_determined),
+            )
+            for entry in members
+        ]
+
+    @model_validator(mode="after")
+    def _no_code_has_two_answers(self) -> ProcedureSets:
+        seen: dict[str, CoverageStatus] = {}
+        for status, entry in self.entries():
+            for binding in entry.codes:
+                if binding.code in seen:
+                    raise ValueError(
+                        f"{binding.code} is bound in {seen[binding.code].value} "
+                        f"and {status.value}; no code has two answers (D30)"
+                    )
+                seen[binding.code] = status
+        return self
+
+
 class CriteriaTree(BaseModel):
     """A policy compiled into criteria, constants and a decision expression.
 
@@ -260,6 +376,7 @@ class CriteriaTree(BaseModel):
     decision_expression: str
     criteria: list[Criterion]
     reconciled_facts: list[dict[str, Any]] = Field(default_factory=list)
+    procedure_sets: ProcedureSets | None = None
 
     @model_validator(mode="after")
     def _criteria_ids_unique_and_expression_closed(self) -> CriteriaTree:
