@@ -18,3 +18,6 @@ __pycache__/
 
 # MacOs
 .DS_Store
+
+# Claude Code session worktrees (local tooling, never part of the repo)
+.claude/worktrees/
