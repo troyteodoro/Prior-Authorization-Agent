@@ -1982,6 +1982,60 @@ reviewed diff adding an entry, never as a predicate special-case.
 
 ---
 
+## D37 — The document index is a plane-agnostic registry over verified Documents, and it opens no files
+
+T-08's design. What sits between `Document` (hash-verified on construction,
+T-09) and the span validator (T-11) is small on purpose: one place that
+resolves `document_id` to text, slices spans mechanically, and makes REQ-7's
+immutability a raised exception instead of a convention.
+
+### Chosen — `pa_agent/index.py`, `DocumentIndex`, in-memory, fed by whoever holds a store
+
+- `add(document)` registers a `Document`. Re-adding the identical document is
+  idempotent; **rebinding an id to different content raises** — REQ-7 says a
+  changed document invalidates every span into it, and the index is where that
+  stops being prose. The conflict names both hashes.
+- `get(document_id)` returns the document or raises naming the ids it holds —
+  the `LocalPolicyStore.get_document` error shape, kept consistent.
+- `slice(span)` takes an `EvidenceSpan` — the system's vocabulary, not a bare
+  offset pair — and returns `text[char_start:char_end]`. Unknown document and
+  out-of-range offsets raise. It does **not** judge the result: deciding that
+  a span is fabricated or off-by-one is T-11's job (REQ-6); the index supplies
+  the primitive T-11 rejects against. Reversed and empty spans cannot reach it
+  because `EvidenceSpan`'s validator refuses to construct them.
+- The module **opens no files and imports no store** (REQ-41). The caller
+  reads documents through a port and hands them over; both planes get their
+  own instance of the same class, and no instance ever holds both planes'
+  documents — Article VI restricts what data an instance holds, not what
+  vocabulary the two sides share (the `Document` docstring's argument).
+
+**Rejected — the index reads `data/policies/` itself.** The obvious
+convenience constructor, and REQ-41 names it: a module outside `pa_agent/
+stores/` opening a file path. T-32's scan would catch it; better not to write
+it.
+
+**Rejected — an index per plane (`PolicyIndex`, `PatientIndex`).** Twice the
+machinery for the same four methods, and the plane separation it advertises is
+fake: the classes would differ in name only, and Article VI is enforced at the
+store boundary and by REQ-33's import graph, not by duplicating a dict.
+
+**Rejected — indexing normalized text.** D18 settled this for anchoring:
+normalization is the *anchorer's* concern, raw offsets are what get recorded,
+and an index that stored collapsed whitespace would return slices from a
+document that does not exist. The index serves the unmodified text or nothing.
+
+**Rejected — `slice` returning `None` on a bad span.** A `None` is exactly the
+silent failure REQ-6 exists to prevent: the caller that forgets to check
+propagates an absent citation as an acceptable one. Raising forces T-11 to
+convert the failure into an explicit rejection.
+
+**Reverses if:** documents stop fitting in memory — production notes at real
+chart volume — in which case the index becomes a façade over the store's
+`get_document` with the same interface and the immutability check moves to
+comparison against the recorded hash rather than a held instance.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

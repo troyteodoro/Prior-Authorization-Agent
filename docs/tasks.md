@@ -278,10 +278,23 @@ containment gate refuses. The file lives under `value_sets/` because
 `LocalPolicyStore._load_trees` globs `data/policies/*.json` as trees —
 measured when the first draft errored eight store tests.
 
-### `[ ] T-08` Document index with character offsets
+### `[x] T-08` Document index with character offsets
 **REQ:** 6, 7 · **Depends:** T-02 · **Blocks:** T-11
 **Exit:** `pytest tests/test_index.py` — content hash per document, round-trip
 slice returns the original for 1000 random spans
+
+**Closed by D37.** `pa_agent/index.py`, `DocumentIndex`: plane-agnostic,
+in-memory, fed `Document` objects by whoever holds a store — the module opens
+no file and imports nothing but the contracts, asserted on its AST (REQ-41).
+`add` makes REQ-7 an exception: rebinding an id to different content raises
+naming both hashes; identical re-adds are idempotent. `slice` takes an
+`EvidenceSpan` and returns the unmodified text or raises — never `None`,
+never normalized (D18: normalization is the anchorer's concern). Judging a
+slice is T-11's job; this is the primitive it rejects against. The 1000-span
+round trip runs seeded over the real three-document corpus served through
+`LocalPolicyStore`. Mutation-tested five ways, each caught by the test built
+for it: a conflict that silently rebinds, an out-of-range slice returning
+`""`, a slice that normalizes whitespace, a store import, an off-by-one.
 
 ### `[ ] T-11` Span validator
 **REQ:** 6 · **Depends:** T-08, T-09

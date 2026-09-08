@@ -290,9 +290,9 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-06, T-08, T-12, T-26
-and T-31**. With US-1 delivered, US-2's chain (T-08 → T-11, T-12, then T-13)
-is the next story spine. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-06, T-11, T-12, T-26
+and T-31**. With US-1 delivered, US-2's chain (T-11, T-12, then T-13) is the
+next story spine. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -344,6 +344,14 @@ D28's posture — the NLM map sits behind UMLS licensing). Growth happens as a
 reviewed diff when a manifest needs an entry, never as a predicate
 special-case. **Value sets live under `value_sets/`**: the policy store globs
 `data/policies/*.json` as criteria trees and errors on anything else.
+
+**T-08 is closed (D37), and the index is deliberately dumb.**
+`pa_agent/index.py` resolves `document_id` to text and slices `EvidenceSpan`s
+mechanically; REQ-7 is an exception there (rebinding an id to different
+content raises), and the module imports only the contracts — no store, no
+file, no model, asserted on its AST. It never judges a slice: fabricated and
+off-by-one rejection is T-11's. Both planes instantiate the same class and no
+instance holds both planes' documents.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in
