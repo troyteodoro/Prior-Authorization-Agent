@@ -2216,6 +2216,81 @@ through for exactly this consumer.
 
 ---
 
+## D41 — sc2 is a spanned exclusion in the tree, it cites the patient's evidence too, and it never fires on stale data
+
+T-14's design, settling the citation shape D32 deferred here.
+
+### The source finding first
+
+The NCD's *body* never states the exclusion. §B covers the three procedures
+at BMI ≥ 35; §C's non-covered list is procedures, not populations. The
+T2DM-with-BMI-under-35 determination lives in the document's transmittal
+history — the 04/2009 entry: RYGBP, LAGB and BPD/DS "in Medicare
+beneficiaries who have type 2 diabetes mellitus (T2DM) and a BMI less than 35
+are not reasonable and necessary … and therefore are not covered." It is a
+real CMS determination, it is in the hashed document, and it is
+self-scoping: the sentence names the procedures, the population, and the
+denial in one breath. That is where sc2's span points.
+
+### Chosen — the tree gains `categorical_exclusions`, in the same evidence discipline as everything else
+
+One entry, `t2dm_bmi_under_35`: a `claim` (a `CoverageClaim` — the history
+sentence, no separate scoping quote because the sentence scopes itself), a
+`bmi_upper_bound` constant of 35.0 (`lt`) **sourced to the NCD** — the one
+place a numeric constant legitimately cites `ncd_100_1`, because this
+exclusion is national and quantified by CMS itself, which is why it gets its
+own gate rather than joining `_all_constants` under the every-number-is-
+Noridian's rule — and a T2DM condition binding (SNOMED 44054006) in D28's
+posture: `in_corpus: false`, `external_code_system`, because the NCD names
+the diagnosis in prose and no corpus document binds it to a code.
+
+**`procedure_scope: "nationally_covered"`.** The sentence names exactly the
+three §B procedures. The exclusion does not touch the contractor-determined
+set — it predates the 2012 delegation and never names LSG — so
+`ResolvedByContractor` requests skip sc2 and proceed to the MAC's criteria.
+
+### Chosen — the determination cites both sides, via `exclusion_evidence`
+
+D32 left sc2's citation shape open. The policy side reuses
+`Determination.coverage_claim` (the exclusion claim is a `CoverageClaim` and
+the existing validator — only with `NOT_COVERED` — is exactly right). The
+patient side is new: `exclusion_evidence`, spans citing the BMI observation
+and the T2DM condition **in the bundle document** (T-13's machinery), valid
+only alongside `NOT_COVERED`. A categorical denial that cites the rule but
+not the facts it applied to would be half an Article III artifact — the
+reviewer could check what the policy says and not what the patient's chart
+says.
+
+### Chosen — sc2 fires only on an in-window BMI, borrowing criterion (a)'s lookback
+
+A most-recent BMI outside the 12-month window does not fire the exclusion;
+the request falls through to the criteria path (which handles staleness as
+`NOT_MET`, REQ-16). A categorical **denial** issued on evidence the criteria
+path would refuse to *approve* on is confidence asymmetry in the wrong
+direction. Borrowed rather than duplicated: one window, one constant, one
+place to change it. The live population exercises both branches — the T2DM
+patient fires at an `as_of` inside his BMI's window and correctly does not
+fire today, when the same BMI is stale.
+
+**Rejected — sc2 keyed on prose or on the value set.** The value set answers
+"is this a qualifying comorbidity" (criterion b); sc2 asks "is this T2DM
+specifically." Sharing the artifact would let a value-set edit silently
+widen a national exclusion.
+
+**Rejected — firing on any historical sub-35 BMI.** The most recent BMI is
+the patient's state; an old low reading under a newer high one is not.
+
+**Rejected — a separate `sc2_claim` field.** `coverage_claim` already means
+"the spanned statement this NOT_COVERED denies under," and a second field
+for the same meaning is D26's split-vocabulary defect inverted.
+
+**Reverses if:** CMS restates the exclusion in the NCD body (the claim
+re-anchors there), or a request arrives for a procedure outside the covered
+set carrying T2DM below 35 — the scope rule then gets a live counterexample
+to adjudicate instead of a note.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

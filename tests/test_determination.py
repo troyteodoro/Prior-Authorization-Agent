@@ -217,7 +217,26 @@ def test_the_cli_reports_no_policy_found_without_denying():
 
 
 def test_the_cli_exits_nonzero_on_an_unbuilt_path_naming_its_task():
-    proc = _run_cli("--patient", "X", "--procedure", COVERED_CODE)
+    """A real patient, so the request passes sc2 (which does not fire for this
+    chart — no active T2DM below the threshold) and lands on the unbuilt
+    criteria chain. Before T-14 wired sc2, any patient string reached the
+    raise; now the patient must exist to get that far (D41)."""
+    manifest = json.loads(
+        (Path(__file__).resolve().parent.parent / "data/patients/manifest.json")
+        .read_text(encoding="utf-8")
+    )
+    real_patient = next(
+        r for r in manifest["bundles"] if not r["has_active_t2dm"]
+    )["patient_id"]
+    proc = _run_cli("--patient", real_patient, "--procedure", COVERED_CODE)
     assert proc.returncode == 2
     assert "T-19" in proc.stderr
     assert proc.stdout == "", "an unbuilt path must not print a partial answer"
+
+
+def test_the_cli_exits_one_on_an_unknown_patient():
+    """A bad request is not an answer and not an unbuilt path (D41)."""
+    proc = _run_cli("--patient", "nobody-here", "--procedure", COVERED_CODE)
+    assert proc.returncode == 1
+    assert "bad request" in proc.stderr
+    assert proc.stdout == ""

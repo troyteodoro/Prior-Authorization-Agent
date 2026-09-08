@@ -25,10 +25,12 @@ from __future__ import annotations
 from datetime import date
 
 from pa_agent.contracts import (
+    CategoricalExclusion,
     Condition,
     Criterion,
     CriterionResult,
     CriterionVerdict,
+    ExclusionMatch,
     Observation,
 )
 
@@ -126,4 +128,54 @@ def evaluate_criterion_b(
             f"{minimum} required. Absence of a documented comorbidity is not "
             "evidence of its absence (D40)."
         ),
+    )
+
+
+def evaluate_sc2(
+    exclusion: CategoricalExclusion,
+    observations: list[Observation],
+    conditions: list[Condition],
+    as_of: date,
+    lookback_months: int,
+) -> ExclusionMatch | None:
+    """REQ-3: the categorical exclusion, deterministic, zero model calls.
+
+    Fires only when the most recent BMI is **inside** the lookback window and
+    below the bound, and the excluded condition is active — a categorical
+    denial issued on evidence the criteria path would refuse to approve on is
+    confidence asymmetry in the wrong direction (D41). The window is borrowed
+    from criterion (a) by the caller: one window, one constant.
+
+    `None` means the exclusion does not apply and the request proceeds; it
+    never means "insufficient evidence", because sc2 is not a criterion and
+    abstention is the criteria path's vocabulary.
+    """
+    bound = exclusion.constants["bmi_upper_bound"].value
+    excluded_code = exclusion.condition_binding["code"]
+
+    bmis = sorted(
+        (o for o in observations if o.code == BMI_LOINC),
+        key=lambda o: o.effective_date,
+    )
+    if not bmis:
+        return None
+    latest = bmis[-1]
+    if _months_between(latest.effective_date, as_of) >= lookback_months:
+        return None  # stale evidence cannot categorically deny (D41)
+    if latest.value >= bound:
+        return None
+
+    matching = [
+        c
+        for c in conditions
+        if c.code == excluded_code and c.clinical_status == ACTIVE_STATUS
+    ]
+    if not matching:
+        return None
+
+    evidence = [s for s in (latest.span, matching[0].span) if s is not None]
+    if not evidence:
+        return None  # nothing citable; a denial nobody can check is not issued
+    return ExclusionMatch(
+        exclusion_id=exclusion.id, claim=exclusion.claim, evidence=evidence
     )

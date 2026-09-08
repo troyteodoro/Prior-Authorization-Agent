@@ -31,7 +31,10 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from datetime import date
+
 from pa_agent.contracts import Determination, DeterminationOutcome
+from pa_agent.criteria import evaluate_sc2
 from pa_agent.resolver import (
     NoPolicyFound,
     NotCovered,
@@ -39,6 +42,7 @@ from pa_agent.resolver import (
     ResolvedByContractor,
     resolve_sc1,
 )
+from pa_agent.stores.patient import PatientStore
 from pa_agent.stores.policy import PolicyStore
 
 
@@ -55,9 +59,19 @@ class NoPolicyResult(BaseModel):
 
 
 def determine(
-    store: PolicyStore, procedure_code: str, patient_id: str | None = None
+    store: PolicyStore,
+    procedure_code: str,
+    patient_id: str | None = None,
+    patient_store: PatientStore | None = None,
+    as_of: date | None = None,
 ) -> Determination | NoPolicyResult:
-    """Assemble the determination for a request, as far as the system exists."""
+    """Assemble the determination for a request, as far as the system exists.
+
+    sc1 needs only the policy store. sc2 (REQ-3, D41) additionally needs the
+    patient's structured facts and an explicit `as_of` — both optional here
+    because sc1's answers exist without them, and a covered code without them
+    raises the same T-19 message it always did.
+    """
     resolution = resolve_sc1(store, procedure_code)
 
     if isinstance(resolution, NotCovered):
@@ -85,6 +99,31 @@ def determine(
         )
 
     assert isinstance(resolution, Resolved)
+    # sc2 runs before the criteria chain, and only for the nationally covered
+    # set — the 04/2009 exclusion names exactly those procedures and predates
+    # the LSG delegation, so contractor requests skip it (D41).
+    if patient_id is not None and patient_store is not None and as_of is not None:
+        tree = store.get_tree(resolution.policy_ref.policy_version_id)
+        lookback = tree.criterion("a").require("lookback_months")
+        observations = patient_store.get_observations(patient_id)
+        conditions = patient_store.get_conditions(patient_id)
+        for exclusion in tree.categorical_exclusions:
+            if exclusion.procedure_scope != "nationally_covered":
+                continue
+            match = evaluate_sc2(
+                exclusion, observations, conditions, as_of, lookback
+            )
+            if match is not None:
+                return Determination(
+                    patient_id=patient_id,
+                    procedure_code=procedure_code,
+                    policy_version_id=resolution.policy_ref.policy_version_id,
+                    outcome=DeterminationOutcome.NOT_COVERED,
+                    coverage_claim=match.claim,
+                    exclusion_evidence=match.evidence,
+                    criterion_results=[],
+                    metrics=[],
+                )
     raise NotImplementedError(
         "T-19 has not built the aggregator. "
         f"{resolution.policy_ref.policy_version_id} covers {procedure_code}, so "

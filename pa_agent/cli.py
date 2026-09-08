@@ -9,7 +9,8 @@ explicitly because `model_dump` only serializes fields. For a code no policy
 governs it prints a `NO_POLICY_FOUND` result and still exits zero: a
 deterministic answer is not an error (D32).
 
-Exit codes: 0 for an answer, 2 for a path the system has not built yet — the
+Exit codes: 0 for an answer, 1 for a request the stores cannot resolve (an
+unknown patient), 2 for a path the system has not built yet — the
 `NotImplementedError` message, which names its task, goes to stderr.
 
 This module is where the one `LocalPolicyStore` is constructed. Everything
@@ -22,8 +23,11 @@ import argparse
 import json
 import sys
 
+from datetime import date
+
 from pa_agent.contracts import Determination
 from pa_agent.determination import NoPolicyResult, determine
+from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
 
 
@@ -51,12 +55,24 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     store = LocalPolicyStore()
+    patient_store = LocalPatientStore()
     try:
-        result = determine(store, args.procedure, patient_id=args.patient)
+        result = determine(
+            store,
+            args.procedure,
+            patient_id=args.patient,
+            patient_store=patient_store,
+            as_of=date.today(),
+        )
     except NotImplementedError as exc:
         # The message names the task that unblocks this path (D27's pattern).
         print(str(exc), file=sys.stderr)
         return 2
+    except KeyError as exc:
+        # A request the stores cannot resolve — an unknown patient, most
+        # likely. A bad request is not an answer and not an unbuilt path.
+        print(f"bad request: {exc.args[0]}", file=sys.stderr)
+        return 1
 
     print(json.dumps(_render(result), indent=2, ensure_ascii=False))
     return 0

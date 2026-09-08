@@ -219,6 +219,42 @@
       "note": "REQ-34: the structured value is authoritative and the disagreement is advisory, unless the two fall on opposite sides of bmi_threshold, in which case the criterion resolves INSUFFICIENT_EVIDENCE with gap_reason SOURCE_CONFLICT (D11)."
     }
   ],
+  "categorical_exclusions": [
+    {
+      "id": "t2dm_bmi_under_35",
+      "label": "Bariatric surgery for T2DM with BMI below 35 is nationally non-covered",
+      "procedure_scope": "nationally_covered",
+      "claim": {
+        "document_id": "ncd_100_1",
+        "char_start": 14616,
+        "char_end": 15031,
+        "quote": "CMS determines that open and laparoscopic Roux-en-Y gastric bypass (RYGBP), laparoscopic adjustable gastric banding (LAGB), and open and laparoscopic biliopancreatic diversion with duodenal switch (BPD/DS) in Medicare beneficiaries who have type 2 diabetes mellitus (T2DM) and a BMI less than 35 are not reasonable and necessary under section 1862(a)(1)(A) of the Social Security Act, and therefore are not covered."
+      },
+      "constants": {
+        "bmi_upper_bound": {
+          "value": 35.0,
+          "type": "number",
+          "comparison": "lt",
+          "source": {
+            "document_id": "ncd_100_1",
+            "char_start": 14893,
+            "char_end": 14944,
+            "quote": "a BMI less than 35 are not reasonable and necessary"
+          },
+          "note": "Exclusive: the exclusion fires below 35, coverage begins at 35 (E12). The one numeric constant legitimately sourced to the NCD - this exclusion is national and quantified by CMS itself, unlike the criteria constants D21 traces to Noridian (D41)."
+        }
+      },
+      "condition_binding": {
+        "system": "http://snomed.info/sct",
+        "code": "44054006",
+        "display": "Diabetes mellitus type 2 (disorder)",
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "The NCD names type 2 diabetes mellitus in prose; no corpus document binds the diagnosis to a code (D28's posture, D41)."
+      },
+      "note": "Lives in the NCD's transmittal history (04/2009, TN 100, CR6419), not the Indications body - the body never states it. Scope: the sentence names RYGBP, LAGB and BPD/DS, the nationally covered set exactly; it predates the 2012 LSG delegation and never names LSG, so contractor-determined requests skip it (D41)."
+    }
+  ],
   "procedure_sets": {
     "note": "Three pairwise-disjoint answers to what a policy says about a requested code, so that nationally denied, delegated to the contractor, and outside this policy never merge (D26). Members are procedures in D28's two-citation shape; identity code bindings are the lookup keys, facility_code_lists are not (D30). REQ-2 reads the non-covered set; a code bound in no set is REQ-1's NO_POLICY_FOUND.",
     "nationally_covered": [

@@ -377,12 +377,40 @@ documents. E12's *harness* row arrives with T-21 alongside the rest of spec
 
 ## `US-3` Categorical exclusion — day 2, late
 
-### `[ ] T-14` Short-circuit sc2
+### `[x] T-14` Short-circuit sc2
 **REQ:** 3 · **Depends:** T-13
 **Exit:** `pytest tests/test_short_circuits.py` — E2 returns `NOT_COVERED` with a
 model-call counter of zero
 
+**Closed by D41.** The source finding first: the NCD *body* never states the
+exclusion — it lives in the transmittal history's 04/2009 entry, self-scoping
+(procedures, population, denial in one sentence). The tree gains
+`categorical_exclusions` with that claim spanned, a `bmi_upper_bound` of 35.0
+(`lt`) that is **the one numeric constant legitimately sourced to the NCD**
+(national, quantified by CMS itself — gated separately so D21's
+every-number-is-Noridian rule keeps its scope), a T2DM binding in D28's
+unsourced posture, and `procedure_scope: nationally_covered` — the sentence
+predates the LSG delegation, so contractor requests skip sc2.
+`evaluate_sc2` fires only on an **in-window** BMI (borrowing criterion (a)'s
+lookback): a categorical denial issued on evidence the approval path would
+refuse is confidence asymmetry in the wrong direction. The `Determination`
+cites both sides — `coverage_claim` reuses D32's field (settling the shape it
+deferred here) and the new `exclusion_evidence` spans the BMI observation and
+the T2DM condition in the bundle document, both validated through T-11 in the
+test. The E2 case runs on the real T2DM patient at an `as_of` inside his
+BMI's window; the same chart at today's date correctly falls through to the
+criteria path. Spanless facts deny nobody. Mutation-tested six ways, each
+caught: firing on stale evidence, an inclusive boundary, the contractor scope
+dropped, the denial shipped without patient evidence, the claim re-pointed at
+§B's coverage sentence (slices back, means the opposite — caught by the
+artifact test and the tree gate both), resolved T2DM counted.
+
 **US-3 closes when:** E2 passes. Half a day at most; US-2 built everything it needs.
+
+**US-3 is closed** — the third delivered story. E2's shape passes end to end
+on a real chart with zero model calls, distinguishable from a criteria
+failure by structure (claim + evidence, no criterion verdicts). Its harness
+row arrives with T-21.
 
 ---
 

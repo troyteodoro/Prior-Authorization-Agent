@@ -356,6 +356,36 @@ class ProcedureSets(BaseModel):
         return self
 
 
+class CategoricalExclusion(BaseModel):
+    """A national exclusion that short-circuits a covered procedure (D41).
+
+    The claim is a `CoverageClaim` — the NCD's own sentence, self-scoping —
+    and the condition binding carries D28's honesty: the NCD names the
+    diagnosis in prose, so the code binding admits it is not in the corpus.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: str = Field(min_length=1)
+    label: str
+    procedure_scope: str
+    claim: CoverageClaim
+    constants: dict[str, PolicyConstant]
+    condition_binding: dict[str, Any]
+    note: str | None = None
+
+
+class ExclusionMatch(BaseModel):
+    """sc2 fired: the exclusion, its claim, and the patient facts it applied
+    to — both sides citable (Art. III, D41)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    exclusion_id: str
+    claim: CoverageClaim
+    evidence: list[EvidenceSpan] = Field(min_length=1)
+
+
 class CriteriaTree(BaseModel):
     """A policy compiled into criteria, constants and a decision expression.
 
@@ -375,6 +405,7 @@ class CriteriaTree(BaseModel):
     decision_expression: str
     criteria: list[Criterion]
     reconciled_facts: list[dict[str, Any]] = Field(default_factory=list)
+    categorical_exclusions: list[CategoricalExclusion] = Field(default_factory=list)
     procedure_sets: ProcedureSets | None = None
 
     @model_validator(mode="after")
@@ -618,6 +649,10 @@ class Determination(BaseModel):
     # with NOT_COVERED. Optional because sc2's citation shape is T-14's
     # decision, not this field's (D32).
     coverage_claim: CoverageClaim | None = None
+    # The patient-side facts a categorical exclusion applied to — spans into
+    # the bundle document (D41). A denial citing the rule but not the facts
+    # would be half an Article III artifact. Only valid with NOT_COVERED.
+    exclusion_evidence: list[EvidenceSpan] = Field(default_factory=list)
     criterion_results: list[CriterionResult] = Field(default_factory=list)
     metrics: list[CallMetrics] = Field(default_factory=list)
 
@@ -642,6 +677,14 @@ class Determination(BaseModel):
             raise ValueError(
                 f"coverage_claim on a {self.outcome.value} determination; the "
                 "denial citation belongs only to NOT_COVERED (D32)"
+            )
+        if (
+            self.exclusion_evidence
+            and self.outcome is not DeterminationOutcome.NOT_COVERED
+        ):
+            raise ValueError(
+                f"exclusion_evidence on a {self.outcome.value} determination; "
+                "categorical-exclusion facts belong only to NOT_COVERED (D41)"
             )
         return self
 

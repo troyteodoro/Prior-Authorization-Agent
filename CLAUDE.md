@@ -291,10 +291,10 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-06, T-14, T-26 and
-T-31**. **US-2 is delivered** (T-13 closed it), so US-3's single task T-14
-(short-circuit sc2, half a day) is the next story, with US-4's chain (T-06 →
-T-07 → T-15) behind it. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-06, T-26 and T-31**.
+**US-2 and US-3 are delivered** (T-13 and T-14 closed them), so US-4's chain
+(T-06 → T-07 → T-15, then T-16/T-18) is the next story spine — the model
+finally enters at T-15. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -384,6 +384,19 @@ resource's exact extent in the raw text, and every produced span validates
 through T-11. `Observation`/`Condition` carry an optional `span`; the value
 set reaches (b) as a parameter, and which port serves it at runtime is
 T-18's wiring question, deliberately open.
+
+**T-14 is closed (D41), US-3 is delivered, and sc2 is a spanned exclusion.**
+The NCD body never states the T2DM/BMI<35 exclusion — the transmittal
+history's 04/2009 sentence does, and the tree's new `categorical_exclusions`
+spans it. Its `bmi_upper_bound` is the one numeric constant legitimately
+sourced to `ncd_100_1` (a national exclusion CMS quantified itself), gated
+separately from D21's Noridian rule. sc2 fires only on an in-window BMI
+(criterion (a)'s lookback, borrowed), only for the nationally covered set
+(the sentence predates the LSG delegation), and only when both sides are
+citable: `coverage_claim` carries the rule, the new
+`Determination.exclusion_evidence` spans the patient's BMI and T2DM in the
+bundle document. Spanless facts deny nobody. CLI exit 1 is now a bad request
+(unknown patient), distinct from 0 (answer) and 2 (unbuilt path).
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

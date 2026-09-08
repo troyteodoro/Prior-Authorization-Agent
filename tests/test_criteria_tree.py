@@ -706,3 +706,62 @@ def test_req2_reads_membership_not_absence(procedure_sets):
     req2 = re.search(r"\*\*REQ-2\*\*(.+?)\n\n", spec, re.S)
     assert req2 is not None, "REQ-2 not found in docs/spec.md"
     assert "non-covered set" in " ".join(req2.group(1).split())
+
+
+# --------------------------------------------------------------------------
+# T-14 — the categorical exclusion is spanned, scoped, and honest (D41)
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def exclusions(tree) -> list[dict]:
+    assert "categorical_exclusions" in tree, "T-14's exclusion is missing"
+    return tree["categorical_exclusions"]
+
+
+def test_the_exclusion_claim_slices_back_and_states_the_denial(
+    exclusions, source_texts
+):
+    """The NCD body never states this exclusion; the transmittal-history
+    sentence does, and it is self-scoping — procedures, population and denial
+    in one breath (D41)."""
+    assert len(exclusions) == 1
+    claim = exclusions[0]["claim"]
+    text = source_texts[claim["document_id"]]
+    assert claim["document_id"] == "ncd_100_1", "the exclusion is national"
+    assert text[claim["char_start"] : claim["char_end"]] == claim["quote"]
+    assert text.count(claim["quote"]) == 1
+    assert "therefore are not covered" in claim["quote"], (
+        "the quote must state the denial itself, not merely name a population"
+    )
+    assert "type 2 diabetes mellitus" in claim["quote"]
+
+
+def test_the_exclusion_constant_cites_the_ncd_deliberately(
+    exclusions, source_texts
+):
+    """The one numeric constant legitimately sourced to the NCD: the exclusion
+    is national and quantified by CMS itself — outside `_all_constants`, so
+    the every-number-is-Noridian's gate keeps its rule (D21, D41)."""
+    bound = exclusions[0]["constants"]["bmi_upper_bound"]
+    assert bound["value"] == 35.0 and bound["comparison"] == "lt"
+    source = bound["source"]
+    assert source["document_id"] == "ncd_100_1"
+    text = source_texts["ncd_100_1"]
+    assert text[source["char_start"] : source["char_end"]] == source["quote"]
+    assert "less than 35" in source["quote"]
+
+
+def test_the_exclusion_binding_admits_it_is_unsourced(exclusions):
+    binding = exclusions[0]["condition_binding"]
+    assert binding["in_corpus"] is False
+    assert binding["source_class"] == "external_code_system"
+    assert "char_start" not in binding, (
+        "the mapping claims a span; nothing in the corpus binds T2DM to a code"
+    )
+
+
+def test_the_exclusion_is_scoped_to_the_covered_set(exclusions):
+    """The sentence names RYGBP, LAGB and BPD/DS — the covered set exactly —
+    and predates the LSG delegation, so contractor requests skip it (D41)."""
+    assert exclusions[0]["procedure_scope"] == "nationally_covered"
