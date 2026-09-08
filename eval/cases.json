@@ -1,0 +1,19 @@
+{
+  "eval_set_id": "us1-v1",
+  "note": "Labeled acceptance cases from docs/spec.md §6. T-21 appends the rest of the table to this file; it does not replace it. A case is labeled before the system that answers it exists (spec §8).",
+  "cases": [
+    {
+      "case_id": "E3",
+      "story": "US-1",
+      "spec_ref": "docs/spec.md §6, E3",
+      "description": "Non-covered procedure requested",
+      "patient_id": null,
+      "procedure_code": null,
+      "unspecified_reason": "T-35 has not re-pointed E3 at a code NCD 100.1 names non-covered for all beneficiaries. 43775 is not that code: CMS delegated stand-alone laparoscopic sleeve gastrectomy to the MACs in 2012 and A53028 records this MAC covering it (D22). A label asserting the opposite is worse than an absent one (D27).",
+      "expect": {
+        "outcome": "NOT_COVERED",
+        "max_model_calls": 0
+      }
+    }
+  ]
+}

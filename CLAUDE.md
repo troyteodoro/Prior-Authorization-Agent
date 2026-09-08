@@ -233,13 +233,36 @@ patient, and in both cases the downstream tests agree with it.
 and `tests/test_schemas.py` asserts its absence so adding it without the
 classifying enum and the determination validator fails loudly.
 
+**T-10 is closed, and the eval gate is a baseline diff (D27).**
+`python eval/run_eval.py` returns zero — it reports `BLOCKED` on E3 and matches
+`eval/baseline.json`. The exit code means *observed matches the baseline*, never
+*every case passed*: drift in **either** direction fails, so a case that starts
+passing has to be acknowledged with `--update-baseline` and a commit. That is
+what makes US-1's close a command rather than a table someone reads.
+
+Three case statuses, and **`BLOCKED` is not `FAIL`** — "answered wrongly" and
+"the component does not exist yet" have different next actions, and only one
+names a task. Blocking is *discovered* from the `NotImplementedError` the system
+raises, never declared on the case. The scorer runs seven self-checks before
+scoring anything, because every scoring branch is unreachable by a real case
+until T-25 produces a `Determination`; a self-check failure exits 2 and
+suppresses the report.
+
+**E3 carries no procedure code.** It is labeled `NOT_COVERED` with a zero-call
+budget and reports `BLOCKED/CASE_UNSPECIFIED` until **T-35** picks a code the NCD
+names non-covered. Do not fill it in from D22's candidate list to make the case
+run — that is T-35's decision, and 43775 is the code D22 disproved. The eval set
+holds E3 alone; the rest of spec §6 is **T-21**.
+
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-10, T-24,
-T-26, T-31, T-35 and T-39**. T-35 blocks US-1's close and edits `docs/spec.md`, so it
+closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-24, T-26,
+T-31, T-35 and T-39**. T-35 blocks US-1's close and edits `docs/spec.md`, so it
 comes before any US-1 work is trusted, and **T-38 unblocks behind it** — T-24
-cannot close until one of them lands the procedure sets.
+cannot close until one of them lands the procedure sets. US-1's remaining chain
+is T-35 → T-38 → T-24 → T-25, and each of the four moves E3 one step; only the
+last flips it to `PASS`.
 
 **One gate is weak and will start lying on a schedule (T-39).**
 `_open_questions()` in `tests/test_criteria_tree.py` matches resolved questions
