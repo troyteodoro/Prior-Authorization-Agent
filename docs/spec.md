@@ -357,17 +357,10 @@ under — the criteria-tree gate reads the `Still open` list and nothing parses
 
 ### Still open
 
-Both opened in T-01, each a constant the criteria tree carries as
-`provisional: true` rather than as a bare number *(D23)*. Each names the task
-that must resolve it before that task can be trusted.
+Opened in T-01, a constant the criteria tree carries as `provisional: true`
+rather than as a bare number *(D23)*, naming the task that must resolve it
+before that task can be trusted.
 
-4. **What lookback window applies to criterion (a)'s BMI?** REQ-11 evaluates (a)
-   against the most recent BMI observation "within its lookback window" and
-   neither source document defines one. A53028's only windows are 12 months for
-   program participation and six months for the multidisciplinary evaluation, and
-   neither governs the measurement. **T-13 must not invent a default.** A stale
-   BMI is the difference between a real 36 and a 36 from four years and forty
-   pounds ago.
 5. **What is `discrepancy_tolerance` for BMI?** D14 requires a materiality
    threshold so a structured 38.1 against a note 38.0 is not listed beside 38.1
    against 45. No source text bounds it — it is a judgment about what wastes
@@ -409,8 +402,21 @@ and both of its halves have since closed:
    because under this corpus the MAC exercised the delegation and covers the
    procedure. See D33.
 
-Question 6 opened in T-01 alongside questions 4 and 5, the third of D23's
-provisional constants:
+Questions 4 and 6 opened in T-01 alongside question 5, D23's three
+provisional constants; 4 and 6 have since closed:
+
+4. **What lookback window applies to criterion (a)'s BMI?** REQ-11 evaluates (a)
+   against the most recent BMI observation "within its lookback window" and
+   neither source document defines one. A53028's only windows are 12 months for
+   program participation and six months for the multidisciplinary evaluation, and
+   neither governs the measurement. **T-13 must not invent a default.** A stale
+   BMI is the difference between a real 36 and a 36 from four years and forty
+   pounds ago.
+   **Answered: 12 months, by decision (T-13, D40).** Troy chose the analogy to
+   A53028's program-participation window — the measurement must be
+   contemporaneous with the 12 months of evidence the determination examines.
+   The constant carries a note naming D40 and no span, because no source text
+   states it.
 
 6. ~~Is c5 a count or a rate?~~ **A rate**, and the same rate c4 carries.
    `a53028[6339:6503]` is one sentence in which `monthly` governs a three-item

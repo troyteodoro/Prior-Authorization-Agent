@@ -2145,6 +2145,77 @@ synthesized notes as bundle `DocumentReference`s rather than sidecar files —
 
 ---
 
+## D40 — The lookback is 12 months by decision, structured claims cite the bundle itself, and criterion (b) cannot be NOT_MET
+
+T-13's design, in four parts. The first closes spec open question 4.
+
+### Chosen — `a.lookback_months` is 12, decided by Troy (2026-09-08), not sourced
+
+Neither corpus document defines a BMI recency window; question 4 was opened so
+no task would invent one, and T-39 rebuilt the gate so resolving it here is
+checked. Troy chose **12 months by analogy to A53028's program-participation
+window**: the measurement must be contemporaneous with the 12 months of
+evidence the rest of the determination examines. The constant carries a
+`note` naming this entry and no `source` — writing a span for it would
+fabricate a citation for a judgment, the exact move D28 refused for a code.
+
+**Rejected — 6 months**, the tighter in-source analogy. The multidisciplinary
+evaluation is a pre-surgical workup requirement, not an evidence-recency
+rule, so its analogy is weaker, and doubling staleness abstention on a rule
+the policy does not state trades one unsourced number for another.
+**Rejected — unbounded**: a four-years-stale 36 adjudicates a patient who no
+longer exists. **Reverses if** a source lands that actually governs BMI
+recency (the constant gains a span, T-40's pattern), or eval shows staleness
+`NOT_MET`s dominating criterion (a) — a data-quality finding, not a predicate
+bug.
+
+### Chosen — a structured fact's span points into the bundle document
+
+REQ-5 forces the question: criterion (a)'s `MET` must carry a span, and a
+FHIR observation lives in no prose note. The span points into **the bundle
+file itself**: `PatientStore` gains `get_document(document_id)` — the
+symmetry D25's reversal note anticipated when it demanded production stores
+expose stable document identity — with `document_id` the bundle filename and
+the hash the manifest's (REQ-7, same record `_bundle` already verifies). The
+adapter computes each resource's exact extent in the raw text (the entry's
+unique `fullUrl` anchors the search; `json.JSONDecoder.raw_decode` finds the
+object's end) and serves `Observation`/`Condition` with an optional `span`,
+so slicing the source at the offsets yields the resource JSON — Article III,
+mechanical, against the file that was actually read.
+
+**Rejected — a derived "structured facts" document.** A rendering the system
+writes and then cites is the system reviewing its own homework; Article III
+says source. **Rejected — spanning only the value or id line**: a reviewer
+slicing it sees a fragment with no dates and no units; the resource object
+is the observation.
+
+### Chosen — criterion (a) has three verdicts and REQ-16 decides the stale case
+
+Most recent BMI **within** the window: `>= 35.0` is `MET` (inclusive — E12),
+below is `NOT_MET`, both citing that observation. BMI observations exist but
+**only outside** the window: `NOT_MET` citing the most recent stale one —
+REQ-16's rule, evidence present but outside a required window. No BMI
+anywhere: `INSUFFICIENT_EVIDENCE`, no span. `as_of` is an explicit parameter;
+a hidden `now()` would make the same chart answer differently on two days
+without either input changing (Art. II).
+
+### Chosen — criterion (b) is MET or INSUFFICIENT_EVIDENCE, never NOT_MET
+
+At least `min_comorbidity_count` **active** conditions intersecting the value
+set: `MET`, citing each contributing condition's resource. Otherwise
+`INSUFFICIENT_EVIDENCE`: a chart cannot prove the absence of a comorbidity,
+only fail to document one, and Article IV files undocumented under "cannot be
+found". `NOT_MET` is unreachable for (b) and this entry says so on purpose —
+the alternative reading (no qualifying diagnosis on file = proven absent)
+would deny patients for thin documentation with a confident verdict.
+
+The value-set codes arrive as a parameter; which port method serves them at
+runtime is T-18's wiring question, deliberately open. The active-status
+judgment lives here in the predicate, on the `clinical_status` D39 carried
+through for exactly this consumer.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

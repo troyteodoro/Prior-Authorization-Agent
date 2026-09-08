@@ -333,17 +333,28 @@ def test_a_provisional_constant_without_its_question_is_refused() -> None:
 def test_requiring_a_provisional_constant_raises_rather_than_defaulting(
     tree: CriteriaTree,
 ) -> None:
-    """Questions 4 and 5 are open, and T-13 and T-33 are told not to default them.
+    """The refusal mechanism, kept exercised after question 4 closed (D40).
 
-    This is that instruction made mechanical. `require()` on criterion (a)'s
-    lookback fails today and will keep failing until the question is answered,
-    which is the correct behavior for a window nobody has sourced.
+    The live tree no longer carries a provisional criterion constant —
+    question 4 resolved to 12 by decision, and T-39's gate checked the
+    unflagging — so the refusal is exercised synthetically, the way the D27
+    scorer checks branches no real case reaches.
     """
-    criterion_a = tree.criterion("a")
-    assert criterion_a.constant("lookback_months").provisional
+    flagged = Criterion(
+        id="z",
+        label="synthetic",
+        constants={
+            "window": PolicyConstant(
+                value=None, type="integer_months", provisional=True, open_question=5
+            )
+        },
+    )
     with pytest.raises(ValueError, match="Resolve the question, do not default it"):
-        criterion_a.require("lookback_months")
+        flagged.require("window")
 
+    criterion_a = tree.criterion("a")
+    assert criterion_a.require("lookback_months") == 12, "D40's decided value"
+    assert not criterion_a.constant("lookback_months").provisional
     assert criterion_a.require("bmi_threshold") == 35.0
 
 

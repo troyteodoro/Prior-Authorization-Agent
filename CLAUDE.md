@@ -149,9 +149,10 @@ consecutive months**.
 test slices out of the hashed corpus, and the tree records the corpus hashes so a
 moved document fails the gate. Sourced: BMI ≥ 35 inclusive, one comorbidity, c2
 12 months, c3 four consecutive months, c4 per-month BMI, c5 both diet and
-activity. **Two constants are provisional and must not be defaulted by the task
-that consumes them** — criterion (a)'s lookback (question 4, T-13) and
-`discrepancy_tolerance` (question 5, T-33).
+activity. **One constant is provisional and must not be defaulted by the task
+that consumes it** — `discrepancy_tolerance` (question 5, T-33). Criterion
+(a)'s lookback resolved to **12 months by Troy's decision** (D40, question 4
+closed), carried as a note and never a span.
 
 **c5 is a rate, not a count (D24).** A53028's `monthly` governs the whole
 three-item list in the sentence that quantifies c4 and c5, so c5 carries c4's
@@ -290,11 +291,10 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-06, T-13, T-26 and
-T-31**. US-2 now needs only T-13 — whose dependencies are all closed but
-which sits behind **open question 4, criterion (a)'s lookback window, which
-no task may answer by default**: it is Troy's judgment or a new source, never
-a hardcoded number. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-06, T-14, T-26 and
+T-31**. **US-2 is delivered** (T-13 closed it), so US-3's single task T-14
+(short-circuit sc2, half a day) is the next story, with US-4's chain (T-06 →
+T-07 → T-15) behind it. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -372,6 +372,18 @@ widened `Condition` contract. Filtering is the predicates' judgment — an
 active-only or BMI-only read inside the adapter is refused by test.
 `get_notes` raises citing **T-07**; Synthea's auto-generated notes are not
 ground truth and must never be served as the note corpus.
+
+**T-13 is closed (D40), US-2 is delivered, and question 4 is answered.**
+The lookback is **12 months by Troy's decision** — analogy to the
+program-participation window, a note and never a span. `pa_agent/criteria.py`
+holds (a) and (b): boundary inclusive, stale BMI `NOT_MET` per REQ-16, empty
+chart abstains; (b) is `MET` or abstention, **never `NOT_MET`** — a chart
+cannot prove a comorbidity absent. Structured claims cite the bundle document
+itself: `PatientStore` grew `get_document`, the adapter computes each
+resource's exact extent in the raw text, and every produced span validates
+through T-11. `Observation`/`Condition` carry an optional `span`; the value
+set reaches (b) as a parameter, and which port serves it at runtime is
+T-18's wiring question, deliberately open.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

@@ -23,7 +23,7 @@ from datetime import date
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
-from pa_agent.contracts import Condition, Document, Observation
+from pa_agent.contracts import Condition, Document, EvidenceSpan, Observation
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_PATIENT_ROOT = REPO_ROOT / "data" / "patients"
@@ -48,6 +48,12 @@ class PatientStore(Protocol):
 
     def get_notes(self, patient_id: str) -> list[Document]:
         """The unstructured chart. Every span a model produces points in here."""
+        ...
+
+    def get_document(self, document_id: str) -> Document:
+        """A patient-plane source document, content-verified, for spans to be
+        checked against — the symmetry D25's reversal note anticipated when it
+        demanded stores expose stable document identity (D40)."""
         ...
 
 
@@ -76,6 +82,8 @@ class LocalPatientStore:
         self._bundles_dir = self._root / "bundles"
         self._manifest: dict[str, dict] | None = None
         self._parsed: dict[str, dict] = {}
+        self._raw_text: dict[str, str] = {}
+        self._extent_cache: dict[str, list[tuple[int, int] | None]] = {}
 
     # -- resolution and verification ---------------------------------------
 
@@ -107,8 +115,62 @@ class LocalPatientStore:
                 f"says {record['sha256'][:12]}. The bundle changed on disk; every "
                 "fact read from it is suspect (REQ-7)."
             )
-        self._parsed[patient_id] = json.loads(raw.decode("utf-8"))
+        text = raw.decode("utf-8")
+        self._raw_text[patient_id] = text
+        self._parsed[patient_id] = json.loads(text)
         return self._parsed[patient_id]
+
+    def _extents(self, patient_id: str) -> list[tuple[int, int] | None]:
+        """Each entry's resource object located exactly in the raw bundle text.
+
+        The entry's unique `fullUrl` anchors the search and
+        `JSONDecoder.raw_decode` finds the object's end, so a served span
+        slices to the resource JSON that was actually parsed (D40). One
+        forward pass; an entry that cannot be located gets `None` rather than
+        a guessed offset.
+        """
+        if patient_id not in self._extent_cache:
+            bundle = self._bundle(patient_id)
+            text = self._raw_text[patient_id]
+            decoder = json.JSONDecoder()
+            extents: list[tuple[int, int] | None] = []
+            position = 0
+            for entry in bundle.get("entry", []):
+                full_url = entry.get("fullUrl")
+                anchor = text.find(json.dumps(full_url), position) if full_url else -1
+                if anchor == -1:
+                    extents.append(None)
+                    continue
+                resource_key = text.find('"resource"', anchor)
+                brace = text.find("{", resource_key)
+                if resource_key == -1 or brace == -1:
+                    extents.append(None)
+                    continue
+                _, end = decoder.raw_decode(text, brace)
+                extents.append((brace, end))
+                position = end
+            self._extent_cache[patient_id] = extents
+        return self._extent_cache[patient_id]
+
+    def _entries_with_spans(self, patient_id: str, resource_type: str):
+        bundle = self._bundle(patient_id)
+        record = self._load_manifest()[patient_id]
+        extents = self._extents(patient_id)
+        for i, entry in enumerate(bundle.get("entry", [])):
+            resource = entry.get("resource", {})
+            if resource.get("resourceType") != resource_type:
+                continue
+            extent = extents[i]
+            span = (
+                EvidenceSpan(
+                    document_id=record["filename"],
+                    char_start=extent[0],
+                    char_end=extent[1],
+                )
+                if extent
+                else None
+            )
+            yield resource, span
 
     @staticmethod
     def _resources(bundle: dict, resource_type: str):
@@ -132,7 +194,7 @@ class LocalPatientStore:
         (D39). Dates truncate to the day; criterion arithmetic is per-month.
         """
         observations = []
-        for resource in self._resources(self._bundle(patient_id), "Observation"):
+        for resource, span in self._entries_with_spans(patient_id, "Observation"):
             coding = self._first_coding(resource)
             value = resource.get("valueQuantity", {}).get("value")
             when = resource.get("effectiveDateTime")
@@ -144,6 +206,7 @@ class LocalPatientStore:
                     value=float(value),
                     unit=resource.get("valueQuantity", {}).get("unit"),
                     effective_date=date.fromisoformat(when[:10]),
+                    span=span,
                 )
             )
         return observations
@@ -151,7 +214,7 @@ class LocalPatientStore:
     def get_conditions(self, patient_id: str) -> list[Condition]:
         """Every coded condition, clinical status carried and never filtered."""
         conditions = []
-        for resource in self._resources(self._bundle(patient_id), "Condition"):
+        for resource, span in self._entries_with_spans(patient_id, "Condition"):
             coding = self._first_coding(resource)
             if not coding.get("code"):
                 continue
@@ -163,6 +226,7 @@ class LocalPatientStore:
                     system=coding.get("system"),
                     onset_date=date.fromisoformat(onset[:10]) if onset else None,
                     clinical_status=status,
+                    span=span,
                 )
             )
         return conditions
@@ -176,4 +240,26 @@ class LocalPatientStore:
             f"T-07 has not synthesized the note corpus, so there are no notes "
             f"to read from {self._root}. Empty results would be "
             "indistinguishable from a patient with no documentation."
+        )
+
+    def get_document(self, document_id: str) -> Document:
+        """A bundle file as a `Document`, so patient-plane spans are checkable
+        the way policy-plane spans are (Art. III, D40). `document_id` is the
+        bundle filename; the hash is the manifest's record, and `Document`'s
+        own validator re-verifies it against the text."""
+        by_filename = {
+            r["filename"]: r for r in self._load_manifest().values()
+        }
+        try:
+            record = by_filename[document_id]
+        except KeyError:
+            raise KeyError(
+                f"no document {document_id!r} in the population; the manifest "
+                f"lists {sorted(by_filename)}"
+            ) from None
+        self._bundle(record["patient_id"])  # reads and hash-verifies
+        return Document(
+            document_id=document_id,
+            text=self._raw_text[record["patient_id"]],
+            sha256=record["sha256"],
         )

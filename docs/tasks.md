@@ -341,14 +341,37 @@ active-only filter, a BMI-only filter, the hash check deleted, an unknown
 patient served an empty chart, dates collapsed to January 1, a policy
 import appearing.
 
-### `[ ] T-13` Deterministic criteria (a) and (b)
+### `[x] T-13` Deterministic criteria (a) and (b)
 **REQ:** 11, 12 · **Depends:** T-05, T-12, T-39
 **Exit:** `pytest tests/test_criteria_ab.py` — includes the BMI 35.0 boundary;
 asserts zero model calls
 Closes open question 4, so T-39 comes first: until it does, unflagging the
 lookback is not checked by anything.
 
+**Closed by D40.** Open question 4 is answered — **12 months, decided by
+Troy**, by analogy to the program-participation window, carried as a `note`
+and never a span, unflagged under T-39's rebuilt gate on its first real
+exercise. `pa_agent/criteria.py` evaluates (a) and (b) over contracts alone
+(imports asserted on the AST): (a) reads threshold and window through
+`require()`, boundary inclusive (E12), stale BMI `NOT_MET` citing the stale
+observation (REQ-16), empty chart `INSUFFICIENT_EVIDENCE`; (b) intersects
+**active** conditions with the value set and is `MET` or abstention, never
+`NOT_MET` — a chart cannot prove a comorbidity absent. Structured claims cite
+the bundle itself: `PatientStore` gained `get_document`, the adapter locates
+each resource's exact extent in the raw bundle text, and the real-population
+test validates every produced span through T-11 against the bundle document.
+Mutation-tested six ways, each caught: a hardcoded window, an exclusive
+boundary, stale collapsed into abstention (three tests object), resolved
+conditions counted, highest-BMI-decides, and the tree re-flagging the
+lookback — which fails both `require()` and T-39's subsection gate at once.
+
 **US-2 closes when:** E12 passes and every span produced in the run survives T-11.
+
+**US-2 is closed** — the second delivered story. E12's boundary case passes in
+`tests/test_criteria_ab.py`, and `test_the_real_population_adjudicates_as_the_manifest_says`
+validates every span the run produces through T-11 against the bundle
+documents. E12's *harness* row arrives with T-21 alongside the rest of spec
+§6, on the determination path T-18/T-19 build.
 
 ---
 

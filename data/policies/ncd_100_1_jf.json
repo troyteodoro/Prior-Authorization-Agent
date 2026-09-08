@@ -53,11 +53,9 @@
           "note": "Inclusive. E12 pins the 35.0 boundary as MET."
         },
         "lookback_months": {
-          "value": null,
+          "value": 12,
           "type": "integer_months",
-          "provisional": true,
-          "open_question": 4,
-          "note": "REQ-11 evaluates (a) against the most recent BMI observation within a lookback window. Neither source document defines one. A53028's only windows are the 12 months for program participation and six months for the multidisciplinary evaluation, and neither governs the BMI measurement. T-13 must not invent a default."
+          "note": "Decided, not sourced (D40, Troy, 2026-09-08): 12 months by analogy to A53028's program-participation window — the measurement must be contemporaneous with the 12 months of evidence the determination examines. Neither source document defines a BMI recency window; a span here would fabricate a citation for a judgment. Closes open question 4."
         }
       },
       "national_floor": {

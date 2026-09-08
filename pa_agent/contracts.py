@@ -419,6 +419,10 @@ class Observation(BaseModel):
     value: float
     unit: str | None = None
     effective_date: date
+    # Where this observation lives in its source bundle, computed by the
+    # adapter that parsed it (D40). Optional: a synthetic observation in a
+    # test has no file behind it.
+    span: EvidenceSpan | None = None
 
 
 class Condition(BaseModel):
@@ -436,6 +440,7 @@ class Condition(BaseModel):
     system: str | None = None
     onset_date: date | None = None
     clinical_status: str | None = None
+    span: EvidenceSpan | None = None
 
 
 class WmEvent(BaseModel):
