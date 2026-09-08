@@ -290,9 +290,9 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-26 and
-T-31**. With US-1 delivered, US-2's chain (T-04 → T-05, T-08 → T-11, T-12) is
-the next story spine. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-05, T-06, T-08, T-12,
+T-26 and T-31**. With US-1 delivered, US-2's chain (T-05, T-08 → T-11, T-12,
+then T-13) is the next story spine. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -322,6 +322,17 @@ never a coerced denial.
 **T-40 is closed** — `r931cp` is in the corpus and every binding T-38 writes
 can carry an in-corpus span; `python scripts/verify_sources.py` covers all three
 documents.
+
+**T-04 is closed (D35), and the patient corpus exists.** Six Synthea v4.0.0
+bundles (tagged release jar, pinned by version and measured sha256; seed 1001,
+200 patients, ages 30–60, Washington — inside Jurisdiction F) sit in
+`data/patients/bundles/` with `data/patients/manifest.json` recording
+provenance and per-bundle hashes. Most-recent BMIs span 34.26–42.5; the sub-35
+patient carries active T2DM, E2's shape. `python scripts/select_patients.py
+--verify` re-reads the disk only — regeneration needs `--generate`, Java and
+network, and is never part of the gate. `LocalPatientStore` still raises, now
+citing **T-12**: the bundles exist but the FHIR reads do not, and the message
+deliberately no longer contains "T-04" (D31's stale-substring lesson).
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

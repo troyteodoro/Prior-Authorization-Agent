@@ -232,9 +232,25 @@ T-25 the assembly.
 
 ## `US-2` Structured criteria with citations — day 2
 
-### `[ ] T-04` Generate and select the Synthea population
+### `[x] T-04` Generate and select the Synthea population
 **Exit:** `python scripts/select_patients.py --verify` — six bundles, seed
 recorded, BMI spanning 33 to 45
+
+**Closed by D35.** Synthea **v4.0.0** — the tagged release jar, pinned by
+version and measured sha256; `master-branch-latest` rejected as a moving
+nightly — seed 1001, 200 patients aged 30–60 in **Washington**, inside
+Noridian Jurisdiction F (D21). Six bundles committed under
+`data/patients/bundles/` with `data/patients/manifest.json` recording seed,
+jar hash, full command line and per-bundle content hashes. Most-recent BMIs
+(LOINC 39156-5): 34.26, 34.6, 35.89, 37.65, 39.23, 42.5 — one below 35 **with
+active T2DM**, E2's shape, recorded as a fact rather than gated (labeling E2
+is T-06's work). `--verify` re-reads the disk only: no network, no Java, no
+generation, because Synthea's cross-machine determinism is unmeasured and the
+committed hashes are the ground truth. The patient-store raise moved from
+T-04 to T-12 with no "T-04" left in the message, so a stale test match fails
+loudly rather than passing by substring (D31). Mutation-tested four ways,
+each caught by the check built for it: a tampered bundle byte, an edited
+manifest BMI, the seed removed, a stray seventh bundle on disk.
 
 ### `[ ] T-05` Rebuild the comorbidity value set from real codes
 **REQ:** 12 · **Depends:** T-04 · **Blocks:** T-13

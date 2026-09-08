@@ -49,12 +49,14 @@ class PatientStore(Protocol):
 
 
 class LocalPatientStore:
-    """`PatientStore` over Synthea bundles on disk. Awaiting T-04.
+    """`PatientStore` over Synthea bundles on disk. Awaiting T-12.
 
-    Defined now and empty on purpose. The alternative was leaving the patient
-    port undeclared until something needed it, which makes T-12 the task that
-    invents the shape of the plane it reads from — the pattern D24 and D26 both
-    argue against, one requirement at a time.
+    The six bundles exist — selected under `data/patients/bundles/` with a
+    manifest, per D35 — but parsing them into `Observation`/`Condition`
+    contracts is the FHIR work T-12's exit names, so the methods keep raising
+    until T-12 builds the reads. (The raise cited T-04 while the bundles did
+    not exist; D35 moved it here when T-04 closed, per D31's lesson about
+    stale task citations.)
 
     Every method raises rather than returning an empty list. An empty chart is a
     valid input that produces `INSUFFICIENT_EVIDENCE` with
@@ -67,9 +69,9 @@ class LocalPatientStore:
 
     def _unavailable(self, what: str) -> NotImplementedError:
         return NotImplementedError(
-            f"T-04 has not selected the Synthea population, so there are no "
-            f"{what} to read from {self._root}. Empty results would be "
-            "indistinguishable from a patient with no documentation."
+            f"T-12 has not built the FHIR reads, so the bundles under "
+            f"{self._root} cannot yet be served as {what}. Empty results would "
+            "be indistinguishable from a patient with no documentation."
         )
 
     def get_observations(self, patient_id: str) -> list[Observation]:

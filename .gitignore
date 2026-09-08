@@ -21,3 +21,6 @@ __pycache__/
 
 # Claude Code session worktrees (local tooling, never part of the repo)
 .claude/worktrees/
+
+# T-04: Synthea jar and full generated population; only the six selected bundles are committed (D35)
+data/patients/work/

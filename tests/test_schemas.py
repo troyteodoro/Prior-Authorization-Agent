@@ -509,9 +509,14 @@ def test_resolve_reports_membership_facts(policy_store: LocalPolicyStore) -> Non
 @pytest.mark.parametrize(
     "method", ["get_observations", "get_conditions", "get_notes"]
 )
-def test_the_patient_store_refuses_to_answer_until_t04(method: str) -> None:
-    """An empty list would manufacture E7 for every patient while looking correct."""
-    with pytest.raises(NotImplementedError, match="T-04"):
+def test_the_patient_store_refuses_to_answer_until_t12(method: str) -> None:
+    """An empty list would manufacture E7 for every patient while looking correct.
+
+    The raise cited T-04 until T-04 landed the bundles (D35); the message now
+    names T-12, the FHIR reads, and deliberately does not contain "T-04" so a
+    stale match here fails loudly instead of passing by substring (D31).
+    """
+    with pytest.raises(NotImplementedError, match="T-12"):
         getattr(LocalPatientStore(), method)("patient-1")
 
 

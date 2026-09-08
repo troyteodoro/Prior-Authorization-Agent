@@ -1,0 +1,99 @@
+{
+  "task": "T-04",
+  "decision": "D35",
+  "synthea": {
+    "version": "v4.0.0",
+    "jar_url": "https://github.com/synthetichealth/synthea/releases/download/v4.0.0/synthea-with-dependencies.jar",
+    "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+    "seed": 1001,
+    "clinician_seed": 1001,
+    "reference_date": "20260901",
+    "population": 200,
+    "age_range": "30-60",
+    "state": "Washington",
+    "command": [
+      "java",
+      "-jar",
+      "/Users/troyteodoro/PersonalProjects/Prior-Authorization-Agent/Prior-Authorization-Agent/data/patients/work/synthea-with-dependencies.jar",
+      "-s",
+      "1001",
+      "-cs",
+      "1001",
+      "-r",
+      "20260901",
+      "-p",
+      "200",
+      "-a",
+      "30-60",
+      "--exporter.baseDirectory",
+      "/Users/troyteodoro/PersonalProjects/Prior-Authorization-Agent/Prior-Authorization-Agent/data/patients/work/output",
+      "--exporter.fhir.export",
+      "true",
+      "--exporter.hospital.fhir.export",
+      "false",
+      "--exporter.practitioner.fhir.export",
+      "false",
+      "Washington"
+    ]
+  },
+  "selection_criteria": {
+    "bundle_count": 6,
+    "bmi_range": [
+      33.0,
+      45.0
+    ],
+    "min_below": 35.0,
+    "max_at_least": 40.0,
+    "bmi_source": "most recent Observation LOINC 39156-5"
+  },
+  "bundles": [
+    {
+      "filename": "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json",
+      "sha256": "e3d764f3c4c7d22c7bed9d3e957bcee67856425387426ee327c88f8fa9f80529",
+      "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+      "latest_bmi": 34.26,
+      "latest_bmi_date": "2024-03-15T07:15:32-07:00",
+      "has_active_t2dm": true
+    },
+    {
+      "filename": "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json",
+      "sha256": "0498ac2325a53bea01aae6d09f7f372f1fd1be3bd3fda0ff5a3de7e448957eb3",
+      "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+      "latest_bmi": 34.6,
+      "latest_bmi_date": "2026-04-24T04:38:35-07:00",
+      "has_active_t2dm": false
+    },
+    {
+      "filename": "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json",
+      "sha256": "6e57abc88f206d4bf65cbe7fb4a7292a49d4d7624ac55926a74f87d9306029a2",
+      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "latest_bmi": 35.89,
+      "latest_bmi_date": "2025-09-19T00:51:37-07:00",
+      "has_active_t2dm": false
+    },
+    {
+      "filename": "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+      "sha256": "0671280c6529302c67affd811a335d02e0a36e2a3f3311cea2d421279de29688",
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "latest_bmi": 37.65,
+      "latest_bmi_date": "2025-10-21T19:35:08-07:00",
+      "has_active_t2dm": false
+    },
+    {
+      "filename": "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+      "sha256": "257579bd5d1ddc23aed2dcfd4006902227709cdd8c1d66c7011855402b844551",
+      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
+      "latest_bmi": 39.23,
+      "latest_bmi_date": "2026-04-26T13:49:23-07:00",
+      "has_active_t2dm": false
+    },
+    {
+      "filename": "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json",
+      "sha256": "9f8a269b812d6cc70ff2ee0ccabdecc18203fa802f035252e7002b91bcc72139",
+      "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
+      "latest_bmi": 42.5,
+      "latest_bmi_date": "2026-03-13T08:52:43-07:00",
+      "has_active_t2dm": false
+    }
+  ]
+}

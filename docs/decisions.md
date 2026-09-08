@@ -1815,6 +1815,93 @@ be absent or doubled.
 
 ---
 
+## D35 — The population is a pinned Synthea release, six committed bundles, and a verify that never generates
+
+T-04's design. The exit asks for six bundles, a recorded seed, and BMI spanning
+33 to 45; this entry decides where the bundles come from, what "spanning" means
+mechanically, and what the gate re-checks.
+
+### Chosen — Synthea v4.0.0, tagged release jar, pinned by version and measured hash
+
+`synthea-with-dependencies.jar` from the **v4.0.0** tagged release
+(2026-03-05), the newest stable tag. The jar is downloaded into a gitignored
+work directory, its sha256 measured at download and recorded in
+`data/patients/manifest.json`; the jar itself is ~197 MB and is not committed.
+Generation runs `java -jar` with a recorded seed, clinician seed, reference
+date, population size and state, and the full command line is recorded in the
+manifest. The state is **Washington — inside Noridian Jurisdiction F** — so the
+population is plausible for the jurisdiction D21 pinned rather than
+contradicting it.
+
+**Rejected — `master-branch-latest`.** The newest asset on the releases page
+and a moving nightly: the same URL serves different bytes after every merge.
+That is the Claims Processing Manual problem D29 already rejected — a pin to a
+thing that moves is not a pin.
+
+**Rejected — building from source.** A gradle build resolves its own
+dependency tree at build time and is a second build system in the repo;
+working rule 9 twice over. The released fat jar is one file with one hash.
+
+### Chosen — six selected bundles and the manifest are committed; the population is not
+
+`scripts/select_patients.py` generates a population into
+`data/patients/work/` (gitignored), extracts each patient's **most recent BMI
+observation (LOINC 39156-5)**, selects six patients, copies their bundles to
+`data/patients/bundles/`, and writes `data/patients/manifest.json` recording
+seed, Synthea version, jar sha256, command line, and per-bundle: filename,
+sha256, patient id, most-recent BMI and its date. Everything downstream (T-05
+value set, T-06 manifests, T-12 extractor) reads the six committed bundles, so
+they are corpus, committed and hashed exactly as T-02's documents are.
+
+**Rejected — committing the whole generated population.** Only six bundles
+have consumers. Two hundred uncommitted-to-anything JSON files make every
+`data/` diff unreviewable, which is the argument D23 used against inlining 543
+value-set codes.
+
+**"Spanning 33 to 45", made testable:** all six most-recent BMIs lie in
+[33, 45]; the minimum is **below 35** (a sub-threshold patient — E2's shape);
+the maximum is **at least 40** (well above threshold, headroom for E10-family
+cases); six distinct patients. The manifest also records whether the sub-35
+patient carries an active type 2 diabetes condition, because E2 needs that
+combination — recorded as a fact, not gated, since labeling E2 is T-06's work.
+If the generated population cannot supply the combination, that is discovered
+work for T-06 to name, not a reason to widen this gate.
+
+### Chosen — `--verify` re-reads the disk and nothing else
+
+It re-hashes the six bundles against the manifest, re-extracts each most-recent
+BMI from the bundle on disk, re-asserts the span conditions and that a seed is
+recorded. No network, no Java, no generation, no model. Same shape as
+`verify_sources.py` and D17's `--verify`.
+
+**Rejected — `--verify` regenerates and compares.** Synthea's cross-machine
+determinism is unmeasured here, and a gate that depends on it flakes on the
+first machine that disagrees; it would also demand Java and ~200 MB on every
+check of whether the task is closed. The committed hashes are the ground
+truth; regeneration is provenance, recorded but not gated.
+
+**Rejected — hand-authored FHIR bundles.** Spec §3 names Synthea. Bundles
+written by the author of the extractor encode the author's assumptions about
+FHIR shape, and T-12 would then be tested against its own expectations.
+
+### The patient-store raise moves to T-12
+
+`LocalPatientStore` raises citing T-04 — "T-04 has not selected the Synthea
+population." After this task that sentence is false, and D31 already recorded
+what a stale task citation does to a gate. The bundles exist after T-04; the
+adapter that reads them into `Observation`/`Condition` contracts is the FHIR
+work T-12's exit names ("BMI observations and Conditions with dates, from all
+six bundles"). The raise and `tests/test_schemas.py`'s `match="T-04"` both
+move to cite T-12 in this close.
+
+**Reverses if:** the v4.0.0 jar stops re-downloading to its recorded hash
+(fall back to v3.4.0 and record the move), or a few hundred generated patients
+cannot produce the BMI span (population size and age band are manifest-recorded
+knobs; failing that, the selection criteria themselves are wrong and this entry
+is superseded).
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
