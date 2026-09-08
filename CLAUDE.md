@@ -168,8 +168,8 @@ NCD 100.1 non-covers laparoscopic sleeve gastrectomy only *"prior to June 27,
 covering it. **E3 and T-25 are now 43842, open vertical banded gastroplasty**,
 which the NCD names non-covered for all beneficiaries with no date qualifier and
 no delegation clause. 43775 belongs in a covered case; T-38 lands it in the
-contractor-determined set. **T-36** still asks whether "left to the contractor" is
-a third sc1 outcome.
+contractor-determined set. **T-36 answered: it is a third sc1 outcome** (D33,
+REQ-42).
 
 **A procedure code carries two citations, and since T-40 both are sourced (D28,
 D29).** "This procedure is non-covered" and "this code denotes that procedure"
@@ -232,7 +232,8 @@ overlap across procedures in the source itself (0D160ZB in two lists; 0DV64CZ
 and 0DB64Z3 inside the lap Roux-en-Y list while the article assigns them to
 LSG), so a facility code does not denote one procedure. Do not promote them.
 The contractor-determined set records a corpus fact; its resolver outcome is
-still T-36's question. Mutation-tested eleven ways in the T-38 close.
+`ResolvedByContractor` since T-36 closed (D33). Mutation-tested eleven ways in
+the T-38 close.
 
 **T-09 is closed.** `pytest tests/test_schemas.py` returns zero.
 `pa_agent/contracts.py` holds the models; `pa_agent/stores/policy.py` and
@@ -289,17 +290,20 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-26, T-31, T-36
-and T-39**. T-36 is fully closeable: `tests/test_resolver.py` exists, and the
-resolver's contractor-determined branch raises naming it. With US-1 delivered,
+closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-26, T-31
+and T-39**. With US-1 delivered,
 US-2's chain (T-04 → T-05, T-08 → T-11, T-12) is the next story spine, and
 T-39 should land before T-13 or T-33 unflags anything. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
-`NotCovered`, absence to `NoPolicyFound`, and **raises citing T-36 for a
-contractor-determined code** — do not "fix" that raise by picking a mapping.
-The contracts carry typed procedure sets whose validators refuse an unsourced
-identity binding and a code bound in two sets.
+`NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
+contractor-determined to **`ResolvedByContractor`** (D33, REQ-42): distinct in
+type from `Resolved`, identical in flow, because this corpus's MAC exercised
+the delegation and covers the procedure. Downstream, both proceed-to-tree
+types raise citing T-19, and T-19's exit now obliges a contractor
+determination to cite the delegation *and* the MAC's exercise, never the NCD
+alone. The contracts carry typed procedure sets whose validators refuse an
+unsourced identity binding and a code bound in two sets.
 
 **T-25 is closed (D32), and with it US-1 — the first delivered story.**
 `python -m pa_agent.cli --patient X --procedure 43842` prints a `NOT_COVERED`

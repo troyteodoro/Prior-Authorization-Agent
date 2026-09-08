@@ -9,15 +9,15 @@ the distinctions this repo exists to keep apart:
 - the denial a `NotCovered` carries slices back out of the hashed corpus
   through the store (Art. III) — a resolution that cannot cite its policy is
   someone's memory with a verdict attached.
-- the contractor-determined branch raises citing T-36, because that mapping is
-  undecided and an undecided half raises rather than picking quietly (D31).
-  The *store* still reports the membership fact for the same code, so the raise
-  is judgment refusing, not data hiding.
+- a contractor-determined code is a third outcome, `ResolvedByContractor`
+  (REQ-42, D33 — T-36's decision, landed in this suite as its exit promised).
+  Same flow as a covered code, distinct type: the delegation must be
+  acknowledged before the code is treated as covered, so that a second
+  jurisdiction whose MAC answers differently arrives as a type error instead
+  of a silent merge.
 
 No model is involved anywhere here (Art. II), and the test proves it by
 imports, not by trust.
-
-T-36 lands its decision in this file's subject and extends this suite.
 """
 
 from __future__ import annotations
@@ -25,7 +25,13 @@ from __future__ import annotations
 import pytest
 
 from pa_agent.contracts import CoverageStatus
-from pa_agent.resolver import NoPolicyFound, NotCovered, Resolved, resolve_sc1
+from pa_agent.resolver import (
+    NoPolicyFound,
+    NotCovered,
+    Resolved,
+    ResolvedByContractor,
+    resolve_sc1,
+)
 from pa_agent.stores.policy import LocalPolicyStore
 
 TREE_VERSION = "ncd-100.1-jf-v1"
@@ -113,7 +119,8 @@ def test_a_covered_code_resolves_to_the_tree(store):
 
 
 # --------------------------------------------------------------------------
-# The contractor-determined branch: fact reported, judgment refused (D31)
+# The contractor-determined branch: a third outcome, distinct in type
+# (REQ-42, D33 — T-36's exit lands here)
 # --------------------------------------------------------------------------
 
 
@@ -126,14 +133,46 @@ def test_the_store_reports_the_contractor_fact_without_raising(store):
     assert ref.coverage is CoverageStatus.CONTRACTOR_DETERMINED
 
 
-def test_the_resolver_refuses_the_contractor_mapping_until_t36(store):
-    with pytest.raises(NotImplementedError) as excinfo:
-        resolve_sc1(store, CONTRACTOR_CODE)
-    message = str(excinfo.value)
-    assert "T-36" in message
-    # The accidental-substring failure D31 records: assert the *other* task ids
-    # this chain has retired are not what the message names.
-    assert "T-38 has not" not in message and "T-24 has not" not in message
+def test_a_contractor_code_is_a_third_outcome(store):
+    """The exit condition's phrase, on types: distinct from both `NOT_COVERED`
+    and a covered code, and from no-policy silence while we are at it."""
+    result = resolve_sc1(store, CONTRACTOR_CODE)
+    assert isinstance(result, ResolvedByContractor)
+    for other in (NotCovered, Resolved, NoPolicyFound):
+        assert not isinstance(result, other)
+    assert type(result) is not type(resolve_sc1(store, COVERED_CODE)), (
+        "a delegated procedure resolved as the same type as a nationally "
+        "covered one; the merge D33 exists to forbid is back"
+    )
+
+
+def test_the_contractor_outcome_proceeds_to_the_tree(store):
+    """Same flow as covered (D33): the ref names a loadable tree and records
+    the membership fact, and REQ-4's version id rides along."""
+    result = resolve_sc1(store, CONTRACTOR_CODE)
+    assert result.policy_ref.policy_version_id == TREE_VERSION
+    assert result.policy_ref.coverage is CoverageStatus.CONTRACTOR_DETERMINED
+    tree = store.get_tree(result.policy_ref.policy_version_id)
+    assert tree.policy_version_id == TREE_VERSION
+
+
+def test_the_delegation_and_the_macs_exercise_both_slice_back(store):
+    """REQ-42's two citations (Art. III): the NCD's delegation is the claim,
+    and the MAC's exercise of it is the corroborating quote. An artifact citing
+    the NCD alone would cite a document that deliberately does not answer."""
+    claim = resolve_sc1(store, CONTRACTOR_CODE).policy_ref.coverage_claim
+    assert claim.document_id == "ncd_100_1"
+    assert "may determine coverage" in claim.quote
+    assert store.get_document(claim.document_id).slice(claim) == claim.quote
+
+    exercise = claim.corroborating_quote
+    assert exercise is not None, (
+        "the delegation arrived without the MAC's exercise; T-19 cannot cite "
+        "what the resolution does not carry (D33)"
+    )
+    assert exercise.document_id == "a53028"
+    exercise_doc = store.get_document(exercise.document_id)
+    assert exercise_doc.slice(exercise) == exercise.quote
 
 
 # --------------------------------------------------------------------------
@@ -163,7 +202,7 @@ def test_no_model_is_imported_by_the_resolver():
 
 
 def test_no_result_type_can_carry_call_metrics(store):
-    for code in (E3_CODE, FOREIGN_CODE, COVERED_CODE):
+    for code in (E3_CODE, FOREIGN_CODE, COVERED_CODE, CONTRACTOR_CODE):
         result = resolve_sc1(store, code)
         assert "metrics" not in type(result).model_fields, (
             "a resolution result grew a metrics field; sc1 is reached with "
@@ -186,5 +225,5 @@ def test_the_resolver_imports_nothing_from_the_patient_plane():
 
 
 def test_resolution_is_deterministic(store):
-    for code in (E3_CODE, FOREIGN_CODE, COVERED_CODE):
+    for code in (E3_CODE, FOREIGN_CODE, COVERED_CODE, CONTRACTOR_CODE):
         assert resolve_sc1(store, code) == resolve_sc1(store, code)

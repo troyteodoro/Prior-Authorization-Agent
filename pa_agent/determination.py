@@ -16,8 +16,11 @@ determination out. Today it assembles exactly the paths that exist —
 - `Resolved` → `NotImplementedError` citing T-19. A covered code needs the
   criteria evaluation chain, and the aggregator that turns criterion results
   into a determination is T-19's.
-- a contractor-determined code raises inside `resolve_sc1`, citing T-36; that
-  raise propagates untouched (D31).
+- `ResolvedByContractor` → the same `NotImplementedError`, because the flow is
+  the same chain (REQ-42, D33) — with one obligation named for T-19: the
+  assembled determination must cite the NCD's delegation *and* the MAC's
+  exercise of it, never the NCD alone, since the NCD deliberately does not
+  answer for this procedure.
 
 No model is imported here, and nothing in this module could record a call if
 one happened — `Determination.metrics` is the only counter and this module
@@ -29,7 +32,13 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from pa_agent.contracts import Determination, DeterminationOutcome
-from pa_agent.resolver import NoPolicyFound, NotCovered, Resolved, resolve_sc1
+from pa_agent.resolver import (
+    NoPolicyFound,
+    NotCovered,
+    Resolved,
+    ResolvedByContractor,
+    resolve_sc1,
+)
 from pa_agent.stores.policy import PolicyStore
 
 
@@ -64,6 +73,16 @@ def determine(
 
     if isinstance(resolution, NoPolicyFound):
         return NoPolicyResult(procedure_code=resolution.procedure_code)
+
+    if isinstance(resolution, ResolvedByContractor):
+        raise NotImplementedError(
+            "T-19 has not built the aggregator. "
+            f"{resolution.policy_ref.policy_version_id} covers {procedure_code} "
+            "by the MAC's exercise of the NCD's delegation (REQ-42, D33), so "
+            "this request needs the criteria evaluation chain (T-12 through "
+            "T-19) — and the determination it assembles must cite both the "
+            "delegation and the MAC's exercise, never the NCD alone."
+        )
 
     assert isinstance(resolution, Resolved)
     raise NotImplementedError(

@@ -42,8 +42,8 @@ class PolicyRef(BaseModel):
     the tree's three sets — and the spanned coverage claim for that entry, so a
     short-circuit determination can cite its denial (Art. III) without a second
     trip through the port. The fact is not a judgment: mapping membership to an
-    outcome is `pa_agent.resolver`'s, and the contractor-determined mapping is
-    T-36's open question (D31)."""
+    outcome is `pa_agent.resolver`'s — contractor-determined included, since
+    D33 made it a third outcome there (D31)."""
 
     model_config = ConfigDict(frozen=True)
 

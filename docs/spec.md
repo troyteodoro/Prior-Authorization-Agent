@@ -72,8 +72,8 @@ no. Deterministic.
 set returns `NOT_COVERED` without any model call. Membership is read from
 `procedure_sets`; it is never inferred from absence in a covered list, because
 absence carries three meanings — denied, delegated to the contractor, outside
-the policy — and collapsing them was D26's defect. What the resolver returns
-for the contractor-determined set is open question 3's second half and T-36's.
+the policy — and collapsing them was D26's defect. The contractor-determined
+set resolves per REQ-42 *(D33)*.
 *(short-circuit sc1; rewritten by T-38, D30)*
 
 **REQ-3** A patient with type 2 diabetes and BMI below 35 returns `NOT_COVERED`
@@ -81,6 +81,16 @@ without any model call. *(short-circuit sc2)*
 
 **REQ-4** Every determination records the `policy_version_id` it was evaluated
 against, sufficient to replay the determination later.
+
+**REQ-42** A requested procedure code bound in the tree's contractor-determined
+set resolves to an outcome distinct from both REQ-2's `NOT_COVERED` and a
+nationally covered code's resolution, carrying the NCD's delegation claim and
+the governing MAC's exercise of it. Under a jurisdiction whose MAC covers the
+procedure, it proceeds to that MAC's criteria tree the way a covered code does
+— the distinction is the type, not the flow. Deterministic, no model call, and
+it never collapses into REQ-1's or REQ-2's answers. A determination assembled
+from it cites both the delegation and the exercise, never the NCD alone.
+*(short-circuit sc1's third outcome; T-36, D33)*
 
 **REQ-33** The policy plane and the patient plane share no module-level
 dependency. Policy modules import nothing from patient-data modules, and
@@ -354,7 +364,7 @@ into a hashed document, recorded in `data/policies/source/answers.json`.
 
 One opened in their place, and it is a design question rather than a source one:
 
-3. ~~E3's procedure code is wrong~~, **and sc1 may be missing an outcome.** T-02
+3. ~~E3's procedure code is wrong~~, ~~and sc1 may be missing an outcome~~. T-02
    found that NCD 100.1 neither covers nor non-covers 43775 — CMS delegated
    stand-alone laparoscopic sleeve gastrectomy to the MACs effective 2012-06-27,
    and A53028 records this MAC covering it, so §6's E3 row and T-25 both assumed a
@@ -366,9 +376,12 @@ One opened in their place, and it is a design question rather than a source one:
    `ncd_100_1[7076:7166]` for the scope and `[7287:7338]` for the procedure. The
    expected verdict never changed; only the code was wrong. See D28.
 
-   **The sc1 half stays open and is T-36's.** REQ-1 returns `NO_POLICY_FOUND` and
-   REQ-2 returns `NOT_COVERED`, and neither describes "no national determination,
-   delegated to the contractor." T-36 decides whether that is a third outcome.
+   **The sc1 half is closed by T-36: it is a third outcome.** REQ-1 returns
+   `NO_POLICY_FOUND` and REQ-2 returns `NOT_COVERED`, and neither describes "no
+   national determination, delegated to the contractor" — so REQ-42 does. The
+   resolver returns a distinct type that proceeds to the MAC's criteria tree,
+   because under this corpus the MAC exercised the delegation and covers the
+   procedure. See D33.
 
 Three more opened in T-01, each one a constant the criteria tree carries as
 `provisional: true` rather than as a bare number *(D23)*. Each names the task

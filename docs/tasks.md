@@ -201,7 +201,7 @@ artifact (`Determination.coverage_claim`, valid only with that outcome),
 `patient_id` may be `None` when no patient was consulted, and
 `NO_POLICY_FOUND` is `NoPolicyResult` — not a `Determination`, because REQ-4's
 version id cannot exist for it. Covered codes raise citing T-19; the T-36
-raise propagates. The CLI prints one JSON document and exits 0 for answers, 2
+raise propagated until T-36 closed it (D33). The CLI prints one JSON document and exits 0 for answers, 2
 for unbuilt paths. Filling the harness seam flipped E3 to `PASS`; the gate
 failed on drift and the baseline diff rides in this commit — which, per this
 story's close condition, is US-1 closing. The scorer gained an eighth
@@ -361,11 +361,14 @@ Lands with the first model call, not on day five. *(Article X)*
 ## `US-5` The gap list — day 4
 
 ### `[ ] T-19` Aggregator and gap list
-**REQ:** 19, 20, 21, 31, 39 · **Depends:** T-18, T-31
+**REQ:** 19, 20, 21, 31, 39, 42 · **Depends:** T-18, T-31
 **Exit:** `pytest tests/test_determination.py` — boolean tree evaluated in
 Python; gap list populated; documentation gaps distinguishable from substantive
 failures by `gap_reason` rather than by prose; `discrepancies[]` surfaced as a
-separate list with no entry appearing on both
+separate list with no entry appearing on both; a determination for a
+contractor-determined code cites both the NCD's delegation and the MAC's
+exercise of it, never the NCD alone *(added by D33 — the NCD deliberately does
+not answer for a delegated procedure)*
 
 **US-5 closes when:** E1 and E8 pass.
 
@@ -564,8 +567,9 @@ E3 moves from `BLOCKED/CASE_UNSPECIFIED` to `BLOCKED/NOT_IMPLEMENTED`: it now
 reaches `LocalPolicyStore.resolve` and gets the `NotImplementedError` citing T-38.
 The baseline update recording that is the first real exercise of D27's gate.
 
-### `[ ] T-36` Decide whether sc1 needs a third outcome
-**REQ:** 1, 2 · **Depends:** T-35 · **Discovered in:** T-02 *(D22)*
+### `[x] T-36` Decide whether sc1 needs a third outcome
+**REQ:** 1, 2, 42 · **Depends:** T-35 · **Discovered in:** T-02 *(D22)* ·
+**Answers:** open question 3's second half
 **Exit:** a decision entry resolving it, and `pytest tests/test_resolver.py`
 asserting the chosen behavior for a procedure NCD 100.1 leaves to MAC discretion
 — distinct from both `NOT_COVERED` and a covered code, or explicitly and in
@@ -577,6 +581,21 @@ single-jurisdiction corpus (D21) the MAC's article settles it and the question
 looks academic; it stops being academic the moment a second jurisdiction exists,
 and Article IV's whole argument is that states which read alike must not merge
 before anyone notices.
+
+**Closed: it is a third outcome (D33, REQ-42).** `resolve_sc1` returns
+`ResolvedByContractor` — distinct in type from `Resolved`, `NotCovered` and
+`NoPolicyFound`, identical in flow to a covered code because this corpus's MAC
+exercised the delegation and covers the procedure. The delegation claim and
+the MAC's exercise both slice back (Art. III), asserted in
+`tests/test_resolver.py`. Rejected: mapping to `Resolved` (the distinction
+survives only as a field nobody must read — D26 one layer up), and gating on
+MAC exercise (the no-exercise branch has no exemplar under D21; D33's reversal
+clause picks it up if one lands). Assembly raises citing T-19 for the
+contractor code too, and T-19's exit gains the obligation to cite both the
+delegation and the exercise, never the NCD alone. Mutation-tested three ways,
+each caught: contractor mapped to `Resolved` (the rejected alternative), the
+raise dropping the obligation phrase, and the contractor branch folded into
+the generic covered raise.
 
 ### `[x] T-37` Reconcile REQ-37 with the source: is c5 a count or a rate?
 **REQ:** 37, 40 · **Blocks:** T-16 · **Discovered in:** T-01 *(D23)* ·

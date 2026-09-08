@@ -1,25 +1,27 @@
-"""T-24 — short-circuit sc1: membership becomes an answer, and the undecided branch raises.
+"""T-24 — short-circuit sc1: membership becomes an answer, and the answers stay four.
 
 The store reports facts — which policy binds a code, and in which of its three
-sets (D31). This module owns the judgment REQ-1 and REQ-2 describe:
+sets (D31). This module owns the judgment REQ-1, REQ-2 and REQ-42 describe:
 
 - bound in the nationally non-covered set → `NotCovered`, carrying the
   `policy_version_id` a determination must record (REQ-4) and the spanned
   coverage claim it must cite (Art. III). Reached with zero model calls.
 - bound in the nationally covered set → `Resolved`; the caller proceeds to the
   criteria tree.
+- bound in the contractor-determined set → `ResolvedByContractor` (REQ-42,
+  D33). Same flow as `Resolved` — under this corpus the MAC exercised the
+  delegation and covers the procedure, so it proceeds to the MAC's own
+  criteria — but a distinct type, because "covered because CMS says so" and
+  "covered because the MAC chose to" diverge the moment a second jurisdiction
+  exists, and a caller must acknowledge the delegation before treating the
+  code as covered.
 - bound nowhere → `NoPolicyFound`. No bariatric policy governs the code, which
   is a different answer from a policy saying no (D26).
 
-The three results are three types rather than one type with a status string, so
-"a policy says no" and "no policy says anything" stay two lookups a caller has
-to acknowledge separately — D26's collapse cannot be rebuilt by ignoring a
-field.
-
-**The contractor-determined branch raises, citing T-36.** Whether "left to the
-contractor" is a third sc1 outcome or resolves like a covered code is T-36's
-open question, and an undecided half raises and names its task rather than
-picking quietly (D31). Do not "fix" the raise by choosing either mapping here.
+The results are distinct types rather than one type with a status string, so
+"a policy says no", "no policy says anything" and "delegated, and the MAC
+answered" stay separate lookups a caller has to acknowledge — D26's collapse
+cannot be rebuilt by ignoring a field.
 
 No model is imported anywhere in this module, the control flow is fixed Python
 (Art. I), and every branch is a deterministic computation over store facts
@@ -57,6 +59,21 @@ class Resolved(BaseModel):
     policy_ref: PolicyRef
 
 
+class ResolvedByContractor(BaseModel):
+    """REQ-42: the NCD delegates this procedure, and the governing MAC covers it.
+
+    Proceeds to the criteria tree the way `Resolved` does — the criteria are
+    the MAC's own — but the type is distinct so no caller can treat the
+    delegation as a national grant without noticing (D33). The determination
+    built downstream must cite both the delegation and the MAC's exercise,
+    carried on the ref's `coverage_claim` and its corroborating quote (T-19).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    policy_ref: PolicyRef
+
+
 class NoPolicyFound(BaseModel):
     """REQ-1: no policy in the store binds this code. Not a denial (D26)."""
 
@@ -67,7 +84,7 @@ class NoPolicyFound(BaseModel):
 
 def resolve_sc1(
     store: PolicyStore, procedure_code: str
-) -> NotCovered | Resolved | NoPolicyFound:
+) -> NotCovered | Resolved | ResolvedByContractor | NoPolicyFound:
     """Resolve a code through the policy port and apply short-circuit sc1."""
     ref = store.resolve(procedure_code)
     if ref is None:
@@ -84,10 +101,5 @@ def resolve_sc1(
     if ref.coverage is CoverageStatus.NATIONALLY_COVERED:
         return Resolved(policy_ref=ref)
 
-    # CoverageStatus.CONTRACTOR_DETERMINED — deliberately unmapped.
-    raise NotImplementedError(
-        "T-36 has not decided whether a contractor-determined procedure is a "
-        "third sc1 outcome or resolves like a covered code. The store reports "
-        f"the membership fact for {procedure_code}; this module refuses to map "
-        "it until that decision is written (D31)."
-    )
+    # CoverageStatus.CONTRACTOR_DETERMINED — the third outcome (REQ-42, D33).
+    return ResolvedByContractor(policy_ref=ref)

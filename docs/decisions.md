@@ -1690,6 +1690,64 @@ envelope — in which case the argument to reopen is REQ-4's, not convenience.
 
 ---
 
+## D33 — Contractor-determined is a third resolver outcome, and it proceeds to the tree
+
+**T-36's decision**, closing open question 3's second half. The question D22
+opened: REQ-1 returns `NO_POLICY_FOUND`, REQ-2 returns `NOT_COVERED`, and
+neither describes "no national determination, delegated to the contractor."
+
+### Chosen — a distinct result type that continues to the criteria tree
+
+`resolve_sc1` returns `ResolvedByContractor` — a frozen model carrying the
+`PolicyRef` — for a code bound in the contractor-determined set. Under this
+corpus it proceeds exactly as a covered code does: A53028 records the MAC
+exercising the delegation and covering 43775, so abstaining would contradict
+the source, and the criteria the code runs against are the MAC's own. But the
+type is not `Resolved`, so every caller has to acknowledge the delegation
+before treating the code as covered. Zero model calls, deterministic, fixed
+control flow (Arts. I, II). The spec learns this as **REQ-42**.
+
+Article IV is the argument. "Covered because CMS says so" and "covered because
+Noridian chose to" read alike under a single-jurisdiction corpus and diverge
+the moment a second jurisdiction exists — a different MAC may non-cover LSG,
+and if both states already flow through one type, the divergence lands as a
+silent behavior change instead of a type error. D22 is the record of what it
+costs when states that read alike merge before anyone notices; this entry
+spends one class to make that merge impossible to rebuild by accident.
+
+**Rejected — map contractor-determined to `Resolved`.** D31's pre-written
+reversal path, and the smallest diff. But the distinction then survives only as
+`PolicyRef.coverage`, a field no caller is forced to read, which is D26's
+defect one layer up: two different answers expressed as one type, told apart
+only by whoever remembers to check.
+
+**Rejected — gate on whether the MAC exercised the delegation.** A third type
+that proceeds only when the corpus records the MAC's exercise, with a separate
+`DelegatedUndetermined` result otherwise. Most faithful to the three-state
+reality, but the second branch has no exemplar under D21's single-jurisdiction
+corpus — every contractor-determined entry in this tree records a disposition —
+so the branch would ship untested, keyed off the presence of an optional
+`corroborating_quote` field. When a jurisdiction without an exercise actually
+lands, this shape becomes testable and the reversal clause below picks it up.
+
+### The obligation this hands T-19
+
+A determination for a contractor-determined code must cite **both** the NCD's
+delegation and the MAC's exercise of it — the tree already records both halves
+(the delegation quote as the entry's `coverage_claim`, A53028's exercise as its
+`corroborating_quote`). An approval that cites only the NCD would be citing a
+document that deliberately does not answer. T-19's exit condition gains that
+line; per rule 5, this entry is the decision that edit records.
+
+**Reverses if:** a jurisdiction enters the corpus whose MAC has *not*
+exercised the delegation — the gated shape becomes testable and
+`ResolvedByContractor` grows that branch. Or T-19 proves the covered and
+contractor citation shapes identical in the artifact and no second jurisdiction
+ever lands — then D31's fold-back clause applies and the type collapses into
+`Resolved` with `coverage` as the recorded fact.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

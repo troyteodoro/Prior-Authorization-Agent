@@ -26,8 +26,6 @@ run, and building it here would be building ahead:
   and the third arrives with the machinery that classifies it.
 - `gap_reason` on `CriterionResult` — **T-31**.
 - `CriterionResult.discrepancies[]` — **T-33** (REQ-39).
-- a resolver outcome for a procedure CMS delegated to the MACs — **T-36** (D22).
-  `DeterminationOutcome` carries only the four values spec §6 already labels.
 """
 
 from __future__ import annotations
@@ -245,9 +243,10 @@ class CoverageStatus(str, Enum):
     """Which of the tree's three procedure sets binds a code (T-38, D30).
 
     Set membership — a fact about the corpus, not a determination outcome.
-    Mapping membership to an outcome is `pa_agent.resolver`'s job (D31), and
-    the contractor-determined mapping is T-36's open question. Do not add a
-    value here without a set in the tree that carries it.
+    Mapping membership to an outcome is `pa_agent.resolver`'s job (D31);
+    contractor-determined maps to its own resolver type, `ResolvedByContractor`
+    (REQ-42, D33). Do not add a value here without a set in the tree that
+    carries it.
     """
 
     NATIONALLY_COVERED = "nationally_covered"
@@ -513,9 +512,10 @@ class DeterminationOutcome(str, Enum):
     """The overall result. Only the values spec §6 already labels.
 
     `NOT_COVERED` is a short-circuit outcome (REQ-2, REQ-3) reached without a
-    model call and without criterion verdicts. Whether a procedure CMS left to
-    the contractor needs a fifth member is **T-36**, and D22 argues it is closer
-    to `NO_POLICY_FOUND` than to `NOT_COVERED`.
+    model call and without criterion verdicts. A procedure CMS left to the
+    contractor needs no fifth member (T-36, D33): it proceeds to the MAC's
+    criteria tree, so its outcomes are the criteria outcomes — the distinction
+    lives in the resolver's `ResolvedByContractor` type, not here.
     """
 
     MET = "MET"

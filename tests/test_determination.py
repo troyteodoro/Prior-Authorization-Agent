@@ -9,8 +9,9 @@ tests when the criteria chain exists. Today it gates the minimal assembly:
   reads zero on the model-call counter (REQ-2, A4).
 - a code no policy governs becomes `NoPolicyResult` — a type that is not a
   `Determination`, because REQ-4's version id cannot exist for it (D32).
-- the unbuilt paths raise naming their tasks: covered → T-19, contractor →
-  T-36.
+- the unbuilt path raises naming its task: covered and contractor-determined
+  codes both need T-19's aggregator, and the contractor raise names the
+  citation obligation D33 hands T-19 (delegation plus the MAC's exercise).
 - the two D32 validators refuse the combinations they exist to refuse.
 
 No model anywhere (Art. II). The CLI is exercised as a subprocess, because its
@@ -131,11 +132,19 @@ def test_a_covered_code_raises_citing_the_aggregator(store):
     assert "T-19" in str(excinfo.value)
 
 
-def test_a_contractor_code_still_raises_citing_t36(store):
-    """D31's raise propagates through assembly untouched."""
+def test_a_contractor_code_raises_citing_the_aggregator(store):
+    """T-36 decided: a contractor-determined code proceeds toward the tree
+    (REQ-42, D33), so its unbuilt half is T-19's — and the raise must already
+    name the obligation T-19 inherits, citing the MAC's exercise alongside the
+    delegation, never the NCD alone."""
     with pytest.raises(NotImplementedError) as excinfo:
         determine(store, CONTRACTOR_CODE)
-    assert "T-36" in str(excinfo.value)
+    message = str(excinfo.value)
+    assert "T-19" in message and "T-36" not in message
+    assert "cite both the delegation and the MAC's exercise" in message, (
+        "the raise stopped carrying the obligation D33 hands T-19; the "
+        "aggregator would be built against a message that no longer asks"
+    )
 
 
 # --------------------------------------------------------------------------
