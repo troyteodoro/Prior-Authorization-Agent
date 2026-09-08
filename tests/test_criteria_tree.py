@@ -362,3 +362,235 @@ def test_quantified_constants_come_from_the_mac_article(tree):
             "BMI threshold appears in both documents, and it is cited to A53028 "
             "because that is the text this tree operationalizes."
         )
+
+
+# --------------------------------------------------------------------------
+# T-38 — three procedure sets, spanned, disjoint, and readable from the tree
+# alone (D26, D28, D29, D30)
+# --------------------------------------------------------------------------
+
+SET_NAMES = ["nationally_covered", "nationally_non_covered", "contractor_determined"]
+
+# Cases E2/E3 want sc1 and sc2 answered in milliseconds with zero model calls,
+# and E12 pins the BMI boundary; none of that touches this file. The foreign
+# code below is an E/M office visit — real, common, and governed by no
+# bariatric policy, which is exactly REQ-1's case.
+FOREIGN_CODE = "99213"
+
+
+@pytest.fixture(scope="module")
+def procedure_sets(tree) -> dict:
+    assert "procedure_sets" in tree, "T-38's sets are missing from the tree"
+    return tree["procedure_sets"]
+
+
+def _entries(procedure_sets):
+    for set_name in SET_NAMES:
+        for entry in procedure_sets[set_name]:
+            yield set_name, entry
+
+
+def _identity_codes(procedure_sets, set_name: str) -> list[str]:
+    return [
+        binding["code"]
+        for entry in procedure_sets[set_name]
+        for binding in entry.get("codes", [])
+    ]
+
+
+def _claim_spans(entry):
+    """Every span inside an entry's coverage claim, nested quotes included."""
+    claim = entry["coverage_claim"]
+    yield "coverage_claim", claim
+    for key in ("scoping_quote", "corroborating_quote"):
+        if key in claim:
+            yield key, claim[key]
+    if "no_code_reason" in entry:
+        yield "no_code_reason", entry["no_code_reason"]
+
+
+def test_the_tree_carries_the_three_sets(procedure_sets):
+    for set_name in SET_NAMES:
+        assert set_name in procedure_sets, f"{set_name} is missing"
+        assert procedure_sets[set_name], f"{set_name} is empty"
+
+
+def test_the_non_covered_set_records_all_six_ncd_procedures(procedure_sets):
+    """NCD 100.1 §C names six. A shorter list under-records the source; a longer
+    one added a denial nobody wrote."""
+    assert len(procedure_sets["nationally_non_covered"]) == 6
+
+
+def test_every_coverage_claim_slices_back(procedure_sets, source_texts):
+    for set_name, entry in _entries(procedure_sets):
+        for label, span in _claim_spans(entry):
+            doc_id = span["document_id"]
+            assert doc_id in source_texts, (
+                f"{set_name}/{entry['procedure']}: {label} cites unknown {doc_id}"
+            )
+            sliced = source_texts[doc_id][span["char_start"] : span["char_end"]]
+            assert sliced == span["quote"], (
+                f"{set_name}/{entry['procedure']}: {label} "
+                f"{doc_id}[{span['char_start']}:{span['char_end']}] does not slice "
+                "back to its quote"
+            )
+
+
+def test_no_coverage_claim_cites_the_transmittal(procedure_sets):
+    """D29's scope rule. r931cp predates the 2012 LSG delegation; it binds names
+    to codes and says nothing current about coverage. A coverage claim spanned
+    into it would be D22 rebuilt with a citation."""
+    for set_name, entry in _entries(procedure_sets):
+        for label, span in _claim_spans(entry):
+            assert span["document_id"] != "r931cp", (
+                f"{set_name}/{entry['procedure']}: {label} cites r931cp, which is "
+                "citable for code bindings only (D29)"
+            )
+
+
+def test_every_non_covered_claim_falls_inside_the_section_c_list(
+    procedure_sets, source_texts
+):
+    """The assertion that separates a denial from a delegation (D22, D28). §D's
+    'may determine coverage' paragraph starts 78 characters after §C's list
+    ends and slices back just as cleanly."""
+    for entry in procedure_sets["nationally_non_covered"]:
+        claim = entry["coverage_claim"]
+        scope = claim["scoping_quote"]
+        assert "non-covered for all Medicare beneficiaries" in scope["quote"]
+        assert claim["document_id"] == scope["document_id"]
+
+        text = source_texts[claim["document_id"]]
+        list_start = scope["char_end"]
+        following = re.search(r"\n\n[A-Z]\.\s", text[list_start:])
+        assert following is not None
+        list_end = list_start + following.start()
+        assert list_start <= claim["char_start"] < claim["char_end"] <= list_end, (
+            f"{entry['procedure']}: bullet falls outside the non-covered list"
+        )
+
+
+def test_every_identity_binding_slices_back_naming_code_and_procedure(
+    procedure_sets, source_texts
+):
+    """T-38's exit as rewritten by D30: the binding quote names the code, and
+    the entry's procedure is what the quote is about. After T-40 there is no
+    such thing as an unsourced binding in this tree."""
+    for set_name, entry in _entries(procedure_sets):
+        for binding in entry.get("codes", []):
+            where = f"{set_name}/{entry['procedure']}/{binding['code']}"
+            assert binding["identity"] is True, f"{where}: codes[] holds identities"
+            assert binding["in_corpus"] is True, (
+                f"{where}: an unsourced binding in the tree. D29 landed r931cp so "
+                "no binding would rest on recall; either span it or it does not "
+                "belong here."
+            )
+            text = source_texts[binding["document_id"]]
+            sliced = text[binding["char_start"] : binding["char_end"]]
+            assert sliced == binding["quote"], f"{where}: span does not slice back"
+            assert text.count(binding["quote"]) == 1, (
+                f"{where}: binding quote is not unique, offsets not pinned (D17)"
+            )
+            assert binding["code"] in binding["quote"], (
+                f"{where}: the quote does not name the code"
+            )
+
+
+def test_facility_lists_are_transcriptions_not_identities(procedure_sets, source_texts):
+    """D30's finding: A53028's facility lists overlap across procedures whose
+    coverage differs (0D160ZB in two lists; 0DV64CZ and 0DB64Z3 inside the lap
+    Roux-en-Y list while the article assigns them to LSG). A lookup keyed on
+    them answers two ways, so they are recorded and excluded."""
+    seen_any = False
+    for set_name, entry in _entries(procedure_sets):
+        for flist in entry.get("facility_code_lists", []):
+            seen_any = True
+            where = f"{set_name}/{entry['procedure']}/{flist['label']}"
+            assert flist["identity"] is False, (
+                f"{where}: a facility list promoted to an identity is D26's "
+                "collapse rebuilt out of billing data (D30)"
+            )
+            block = source_texts[flist["document_id"]][
+                flist["char_start"] : flist["char_end"]
+            ]
+            for code in flist["codes"]:
+                assert code in block, (
+                    f"{where}: transcribed code {code} is not in the spanned block"
+                )
+    assert seen_any, "the covered set records A53028's facility lists (D30)"
+
+
+def test_the_sets_are_pairwise_disjoint_over_identity_codes(procedure_sets):
+    """No code has two answers. Over identities only: the facility lists overlap
+    in the source itself, which is why they are not identities (D30)."""
+    for i, first in enumerate(SET_NAMES):
+        for second in SET_NAMES[i + 1 :]:
+            overlap = set(_identity_codes(procedure_sets, first)) & set(
+                _identity_codes(procedure_sets, second)
+            )
+            assert not overlap, f"{sorted(overlap)} in both {first} and {second}"
+
+
+def test_no_identity_code_appears_twice_within_a_set(procedure_sets):
+    for set_name in SET_NAMES:
+        codes = _identity_codes(procedure_sets, set_name)
+        assert len(codes) == len(set(codes)), (
+            f"{set_name} binds a code under two entries"
+        )
+
+
+def test_43775_is_contractor_determined_and_nothing_else(procedure_sets):
+    """D22. The code that reached the spec as non-covered and is not."""
+    assert "43775" in _identity_codes(procedure_sets, "contractor_determined")
+    assert "43775" not in _identity_codes(procedure_sets, "nationally_covered")
+    assert "43775" not in _identity_codes(procedure_sets, "nationally_non_covered")
+
+
+def test_e3s_code_is_nationally_non_covered(procedure_sets):
+    """The code T-35 picked (D28), in the set REQ-2 reads."""
+    assert "43842" in _identity_codes(procedure_sets, "nationally_non_covered")
+
+
+def test_non_covered_and_absent_are_different_lookups(procedure_sets):
+    """D26's defect 2, asserted on the artifact alone with no resolver involved.
+
+    'A policy says no' and 'no policy says anything' must come from two
+    different lookups, not one absence. 43842 is a membership hit in exactly
+    one set; an E/M visit code is a membership hit in none. If the tree could
+    only express the covered set, both would read as the same absence — which
+    is the collapse REQ-2 used to encode.
+    """
+    membership = {
+        set_name: set(_identity_codes(procedure_sets, set_name))
+        for set_name in SET_NAMES
+    }
+    hits = [name for name, codes in membership.items() if "43842" in codes]
+    assert hits == ["nationally_non_covered"]
+
+    foreign_hits = [name for name, codes in membership.items() if FOREIGN_CODE in codes]
+    assert foreign_hits == []
+    # The two conditions are distinguishable: one is a positive membership
+    # answer, the other is absence from every set.
+    assert hits != foreign_hits
+
+
+def test_the_dated_lsg_entry_carries_no_code(procedure_sets):
+    """§C's LSG bullet is scoped 'prior to June 27, 2012'. The code's current
+    determination is the contractor entry; binding 43775 here too would give it
+    two answers and re-run D22."""
+    for entry in procedure_sets["nationally_non_covered"]:
+        if "sleeve" in entry["procedure"].lower() and "laparoscopic" in entry["procedure"].lower():
+            assert entry.get("date_qualifier") == "prior to June 27, 2012"
+            assert entry.get("codes", []) == []
+            return
+    raise AssertionError("§C's laparoscopic sleeve gastrectomy entry is missing")
+
+
+def test_req2_reads_membership_not_absence(procedure_sets):
+    """REQ-2 in the spec reads the non-covered set; `covered_procedures`, the
+    field that collapsed three outcomes into one absence, is gone (D26)."""
+    spec = SPEC_PATH.read_text(encoding="utf-8")
+    assert "covered_procedures" not in spec
+    req2 = re.search(r"\*\*REQ-2\*\*(.+?)\n\n", spec, re.S)
+    assert req2 is not None, "REQ-2 not found in docs/spec.md"
+    assert "non-covered set" in " ".join(req2.group(1).split())

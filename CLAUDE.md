@@ -222,11 +222,17 @@ touch the real wall: c1–c5 are hand-written Python for one policy's shape, so
 policy #2 costs a developer. A predicate DSL is the answer to that and is
 deliberately not open.
 
-**REQ-2 names a field no artifact carries (D26).** `covered_procedures` exists
-only in the spec, and absence from it would mean *denied*, *delegated to the MAC*
-and *no bariatric policy applies* all at once. **T-38** lands three spanned,
-disjoint procedure sets in the tree and rewrites REQ-2 to read membership. It
-depends on T-35 and blocks T-24, so it is on US-1's critical path.
+**T-38 is closed: the tree carries three procedure sets, and REQ-2 reads
+membership (D26, D30).** `covered_procedures` is gone from the spec. Members
+are procedures in D28's two-citation shape; ten identity bindings, all
+`in_corpus: true` (seven CPT from `r931cp`, 43775 and 0DV64CZ from `a53028`),
+pairwise disjoint across sets. **A53028's facility ICD-10-PCS lists are spanned
+transcriptions marked `identity: false` and are not lookup keys** — they
+overlap across procedures in the source itself (0D160ZB in two lists; 0DV64CZ
+and 0DB64Z3 inside the lap Roux-en-Y list while the article assigns them to
+LSG), so a facility code does not denote one procedure. Do not promote them.
+The contractor-determined set records a corpus fact; its resolver outcome is
+still T-36's question. Mutation-tested eleven ways in the T-38 close.
 
 **T-09 is closed.** `pytest tests/test_schemas.py` returns zero.
 `pa_agent/contracts.py` holds the models; `pa_agent/stores/policy.py` and
@@ -284,12 +290,12 @@ Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
 closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-24, T-26,
-T-31, T-38 and T-39** — T-40 closed first, by its own reordering clause: T-38
-needs seven code bindings, and writing them unsourced was the mechanism that
-produced the 43775 defect. **T-38 is next on US-1's critical path** — T-24's
-dependency (T-09) is met, but it cannot *close* until T-38 lands the procedure
-sets for it to read. US-1's remaining chain is
-T-38 → T-24 → T-25, and each moves E3 one step; only the last flips it to `PASS`.
+T-31, T-36 and T-39** — T-40 and T-38 closed in that order, T-40 first by T-40's
+own reordering clause. T-36 is unblocked in the sense that its decision can be
+drafted, but its exit runs against `tests/test_resolver.py`, which T-24 creates. **T-24 is next on US-1's critical path** — the tree now
+carries the procedure sets it reads, and `LocalPolicyStore.resolve`'s
+`NotImplementedError` cites it by name. US-1's remaining chain is
+T-24 → T-25; only the last flips E3 to `PASS`.
 **T-40 is closed** — `r931cp` is in the corpus and every binding T-38 writes
 can carry an in-corpus span; `python scripts/verify_sources.py` covers all three
 documents.

@@ -63,10 +63,18 @@ carries less information than they do.
 ### Policy resolution
 
 **REQ-1** Given a procedure code, the resolver returns the governing criteria
-tree and its `policy_version_id`, or `NO_POLICY_FOUND`. Deterministic.
+tree and its `policy_version_id`, or `NO_POLICY_FOUND`. A code bound as an
+identity in none of the tree's three procedure sets is `NO_POLICY_FOUND` — no
+bariatric policy governs it, which is a different answer from a policy saying
+no. Deterministic.
 
-**REQ-2** A requested procedure absent from `covered_procedures` returns
-`NOT_COVERED` without any model call. *(short-circuit sc1)*
+**REQ-2** A requested procedure code bound in the tree's nationally non-covered
+set returns `NOT_COVERED` without any model call. Membership is read from
+`procedure_sets`; it is never inferred from absence in a covered list, because
+absence carries three meanings — denied, delegated to the contractor, outside
+the policy — and collapsing them was D26's defect. What the resolver returns
+for the contractor-determined set is open question 3's second half and T-36's.
+*(short-circuit sc1; rewritten by T-38, D30)*
 
 **REQ-3** A patient with type 2 diabetes and BMI below 35 returns `NOT_COVERED`
 without any model call. *(short-circuit sc2)*

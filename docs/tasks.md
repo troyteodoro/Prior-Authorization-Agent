@@ -574,19 +574,29 @@ same span, sourced rather than provisional. REQ-37 rewritten, open question 6
 closed, and the seven-month run documented in four months is `NOT_MET` in
 `tests/test_criteria_tree.py`. See D24. T-16 builds against the rate.
 
-### `[ ] T-38` Procedure sets in the criteria tree, and REQ-2 rewritten to read them
+### `[x] T-38` Procedure sets in the criteria tree, and REQ-2 rewritten to read them
 **REQ:** 1, 2 · **Depends:** T-35 · **Blocks:** T-24, and US-1's close ·
 **Discovered in:** a design walkthrough, not a task *(D26)*
 **Timebox:** two hours
-**Exit:** `pytest tests/test_criteria_tree.py` —
+**Exit** *(rewritten by D30 — the original demanded a span "naming that code"
+for every code, which D28 had already proven the corpus cannot supply, while
+also demanding 43842 in the non-covered set)*:
+`pytest tests/test_criteria_tree.py` —
 - the tree carries three named procedure sets: nationally covered, nationally
-  non-covered, and contractor-determined
-- every code in every set carries a `(document_id, char_start, char_end)` that
-  slices back to a quote naming that code, the way D23 requires of every other
-  constant in the file
-- the three sets are pairwise disjoint, so no code has two answers
+  non-covered, and contractor-determined; members are **procedures** in D28's
+  two-citation shape
+- every member's `coverage_claim` carries a `(document_id, char_start,
+  char_end)` that slices back to its quote, scoped the way E3's is; every
+  non-covered claim falls inside §C's list, not merely inside the document
+- every identity code binding is `in_corpus: true` and slices back to a quote
+  naming **both** the code and the procedure, in `r931cp` or `a53028` *(D29)*;
+  facility billing lists are spanned transcriptions marked `identity: false`
+  and are not lookup keys *(D30)*
+- the three sets are pairwise disjoint over identity codes, so no code has two
+  answers
 - 43775 is in the contractor-determined set and in neither of the others *(D22)*
 - the code T-35 picked for E3 is in the nationally non-covered set
+- no coverage claim anywhere in the tree cites `r931cp` *(D29's scope rule)*
 - a code in the non-covered set and a code in none of the three are
   distinguishable **from the tree alone**, with no resolver involved — the test
   asserts the two conditions are different lookups and not one absence
@@ -603,6 +613,21 @@ Not folded into T-24 for the reason T-37 gives: a requirement changed by the tas
 that implements it is a requirement nobody agreed to. Not merged into T-36
 because T-36 decides what the resolver returns and this decides what the tree
 records, and T-36's exit needs a resolver that does not exist yet.
+
+**Closed by D30, after T-40 ran first by this task's own reordering clause.**
+Members are procedures in D28's two-citation shape; ten identity bindings, all
+`in_corpus: true` — seven CPT from `r931cp`, 43775 and 0DV64CZ from `a53028` —
+plus A53028's facility ICD-10-PCS lists as spanned transcriptions marked
+`identity: false`, because recording them surfaced the finding that they
+overlap across procedures (0D160ZB in two lists; 0DV64CZ and 0DB64Z3 inside
+the lap Roux-en-Y list while the article assigns them to LSG), so a facility
+code is not a procedure identity in this source. Disjointness runs over
+identities. REQ-1 and REQ-2 rewritten; `covered_procedures` is gone from the
+spec. `LocalPolicyStore.resolve` now cites T-24, and E3 stays
+`BLOCKED/NOT_IMPLEMENTED` with no baseline drift. Mutation-tested eleven ways,
+each caught by the gate built for it — the sharpest being the VBG claim
+re-pointed at §D's delegation paragraph, which slices back perfectly and means
+the opposite, and only the containment gate catches it.
 
 ### `[ ] T-39` A provisional constant must name an *open* question, not any question
 **REQ:** 39 · **Discovered in:** T-37 · **Timebox:** one hour

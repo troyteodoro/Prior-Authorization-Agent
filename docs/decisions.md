@@ -1465,6 +1465,83 @@ D28 posture, which remains the honest one when there is nothing to span.
 
 ---
 
+## D30 — The tree carries three procedure sets of procedures, not codes, and a facility billing list is not an identity
+
+Implements D26's chosen fix. The tree gains `procedure_sets` with three keys —
+`nationally_covered`, `nationally_non_covered`, `contractor_determined` — and
+REQ-2 is rewritten to read membership in the non-covered set, with a code in no
+set falling to REQ-1's `NO_POLICY_FOUND`.
+
+### Chosen — set members are procedures in D28's two-citation shape
+
+Each member is a **procedure**: a spanned `coverage_claim` into `ncd_100_1`
+(scoped and corroborated the way E3's is), and a `codes` list of identity
+bindings, each spanned into the document that names code and procedure together
+— `r931cp` for the seven CPT bindings, `a53028` for 43775 and 0DV64CZ. After
+D29 every binding written here is `in_corpus: true`.
+
+T-38's exit condition asked for a span "naming that code" for every code, which
+D28 had already proven impossible for a corpus that names one code — and the
+same exit demanded 43842 in the non-covered set. The exit is rewritten (working
+rule 5): coverage claims are spanned to quotes naming the *procedure*; code
+bindings are spanned to quotes naming code and procedure in the binding
+document. The non-covered set records all six §C procedures, four of which have
+no code to carry — which is the fact the source states, not a gap.
+
+**Rejected — code-keyed flat sets.** Simpler lookup, but open adjustable
+gastric banding is "Billed with a Not Otherwise Classified (NOC) code" (A53028
+says so, spanned) and gastric balloon has no specific code either. A set that
+can only hold codes cannot record two-sixths of the national non-covered list.
+
+### The finding that shaped the shape: A53028's facility lists overlap
+
+Recording the ICD-10-PCS codes surfaced a fact that decides their role.
+`0D160ZB` sits in both the open Roux-en-Y list and BPD/DS Group B. `0DV64CZ`
+and `0DB64Z3` — the codes A53028's own revision history assigns to laparoscopic
+sleeve gastrectomy, a *contractor-determined* procedure — also sit inside the
+lap Roux-en-Y list under a *nationally covered* heading. In this source, a
+facility code does not denote one procedure, and two of them cross coverage
+categories.
+
+So: **facility lists are recorded as spanned transcriptions, `identity: false`,
+and are not lookup keys.** The pairwise-disjointness gate runs over identity
+bindings only. A resolver keyed on facility-list membership would answer two
+ways for 0DV64CZ, which is D26's collapse rebuilt out of billing data.
+
+**Rejected — PCS codes as identity bindings.** The premise on which they were
+approved ("real, sourced members for the covered set") half-survives contact:
+the spans are real, the identities are not. 0DV64CZ keeps identity — two
+separate A53028 passages bind it to LSG by name and the lap-RYGB appearance is
+a documented anomaly of the R9 revision — but the RYGB/BPD-DS lists do not.
+
+**Rejected — dropping the PCS data entirely.** The transcriptions are what the
+source says, they are cheap to span, and the overlap they document is the
+argument for this entry. Deleting the evidence of why identity fails would
+leave the rule looking arbitrary.
+
+### Two smaller choices
+
+**43645 and 43847 hang under the RYGBP entry, and the grouping is declared
+presentational.** Their descriptors say "gastric bypass … small intestine
+reconstruction" without naming Roux-en-Y or BPD/DS; the transmittal's own
+cross-references chain them to 43846/43644. Both candidate groupings put them
+in the same set, so the set-level answer — the only thing the resolver reads —
+is identical either way, and the entry notes say so. The rejected alternative
+was a fourth covered entry named by descriptor alone, which would put a
+procedure in the tree that the NCD's covered sentence does not name.
+
+**The contractor-determined set is a fact about the corpus, not an outcome.**
+Its resolver behavior is T-36's question and stays open; the set exists because
+NCD §D and A53028's exercise of the delegation are both spanned facts (D26
+already made this argument when it split T-38 from T-36).
+
+**Reverses if:** D26's reversal condition — T-36 rules a delegated procedure
+indistinguishable from a covered one and no second jurisdiction ever lands —
+folds the contractor set into the covered set as a distinction without a
+consumer. A disproved binding falls back to `in_corpus: false` per D29.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the

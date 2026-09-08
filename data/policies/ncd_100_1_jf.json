@@ -5,7 +5,18 @@
   "jurisdiction": {
     "authority": "mac_jurisdiction_f",
     "contractor": "Noridian Healthcare Solutions, LLC",
-    "states": ["AK", "AZ", "ID", "MT", "ND", "OR", "SD", "UT", "WA", "WY"],
+    "states": [
+      "AK",
+      "AZ",
+      "ID",
+      "MT",
+      "ND",
+      "OR",
+      "SD",
+      "UT",
+      "WA",
+      "WY"
+    ],
     "note": "Every quantified constant below comes from A53028, not from CMS. NCD 100.1 quantifies nothing. A different MAC is a different tree over the same NCD (D21)."
   },
   "sources": [
@@ -16,6 +27,10 @@
     {
       "document_id": "a53028",
       "sha256": "7c1ae27731a1da5ca2631d70f2712a0360673adcf9258f43d933f43157e338ec"
+    },
+    {
+      "document_id": "r931cp",
+      "sha256": "13a7afb909f4d4e91023564ec38049e36f772b06827c05958862ba5143e1de10"
     }
   ],
   "decision_expression": "a AND b AND c1 AND c2 AND c3 AND c4 AND c5",
@@ -205,5 +220,477 @@
       },
       "note": "REQ-34: the structured value is authoritative and the disagreement is advisory, unless the two fall on opposite sides of bmi_threshold, in which case the criterion resolves INSUFFICIENT_EVIDENCE with gap_reason SOURCE_CONFLICT (D11)."
     }
-  ]
+  ],
+  "procedure_sets": {
+    "note": "Three pairwise-disjoint answers to what a policy says about a requested code, so that nationally denied, delegated to the contractor, and outside this policy never merge (D26). Members are procedures in D28's two-citation shape; identity code bindings are the lookup keys, facility_code_lists are not (D30). REQ-2 reads the non-covered set; a code bound in no set is REQ-1's NO_POLICY_FOUND.",
+    "nationally_covered": [
+      {
+        "procedure": "Open and laparoscopic Roux-en-Y gastric bypass (RYGBP)",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Effective for services performed on and after February 21, 2006, Open and laparoscopic Roux-en-Y gastric bypass (RYGBP), open and laparoscopic Biliopancreatic Diversion with Duodenal Switch (BPD/DS) or Gastric Reduction Duodenal Switch (BPD/GRDS), and laparoscopic adjustable gastric banding (LAGB) are covered for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity.",
+          "char_start": 5210,
+          "char_end": 5705,
+          "note": "One sentence covers all three nationally covered procedures; each entry cites it. The conditions it states (BMI >= 35, one co-morbidity, prior unsuccessful medical treatment) are the criteria tree's national floor."
+        },
+        "codes": [
+          {
+            "code": "43644",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "r931cp",
+            "quote": "43644- Laparoscopy, surgical, gastric restrictive \nprocedure; with gastric bypass and  Roux-en-Y \ngastroenterostomy (roux limb 150 cm or less).",
+            "char_start": 7899,
+            "char_end": 8042,
+            "note": "Bound by r931cp, the claims-processing transmittal implementing this NCD's 2006 reconsideration. r931cp is citable for code bindings only (D29)."
+          },
+          {
+            "code": "43846",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "r931cp",
+            "quote": "43846-Gastric restrictive procedure, with \ngastric bypass for morbid obesity; with short \nlimb (150 cm or less Roux-en-Y \ngastroenterostomy.",
+            "char_start": 8427,
+            "char_end": 8567,
+            "note": "Bound by r931cp, the claims-processing transmittal implementing this NCD's 2006 reconsideration. r931cp is citable for code bindings only (D29)."
+          },
+          {
+            "code": "43645",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "r931cp",
+            "quote": "43645-Laparoscopy with gastric bypass and \nsmall intestine reconstruction to limit \nabsorption.",
+            "char_start": 8046,
+            "char_end": 8141,
+            "note": "Bound by r931cp, the claims-processing transmittal implementing this NCD's 2006 reconsideration. r931cp is citable for code bindings only (D29). Descriptor names gastric bypass with small-intestine reconstruction without naming Roux-en-Y or BPD/DS; grouped here because the transmittal's cross-references chain it to 43847/43644. Both candidate groupings are inside this set, so the grouping is presentational and the set-level answer does not depend on it (D30)."
+          },
+          {
+            "code": "43847",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "r931cp",
+            "quote": "43847-With small intestine reconstruction to \nlimit absorption.",
+            "char_start": 8652,
+            "char_end": 8715,
+            "note": "Bound by r931cp, the claims-processing transmittal implementing this NCD's 2006 reconsideration. r931cp is citable for code bindings only (D29). Elliptical descriptor continuing 43846's stem. Same presentational-grouping note as 43645 (D30)."
+          }
+        ],
+        "facility_code_lists": [
+          {
+            "label": "laparoscopic Roux-en-Y",
+            "identity": false,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a53028",
+            "char_start": 7678,
+            "char_end": 7921,
+            "codes": [
+              "0DB64Z3",
+              "0DV64CZ",
+              "0D16479",
+              "0D1647A",
+              "0D1647B",
+              "0D1647L",
+              "0D164J9",
+              "0D164JA",
+              "0D164JB",
+              "0D164JL",
+              "0D164K9",
+              "0D164KA",
+              "0D164KB",
+              "0D164KL",
+              "0D164Z9",
+              "0D164ZA",
+              "0D164ZB",
+              "0D164ZL"
+            ],
+            "note": "Spanned transcription of A53028's inpatient facility ICD-10-PCS list. NOT a lookup key: the article's facility lists overlap across procedures (0D160ZB sits in both the open Roux-en-Y list and BPD/DS Group B; 0DV64CZ and 0DB64Z3, which the article's own revision history assigns to laparoscopic sleeve gastrectomy, sit inside the lap Roux-en-Y list), so a facility code does not denote one procedure in this source (D30)."
+          },
+          {
+            "label": "open Roux-en-Y",
+            "identity": false,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a53028",
+            "char_start": 7923,
+            "char_end": 8263,
+            "codes": [
+              "0D16079",
+              "0D1607A",
+              "0D1607B",
+              "0D1607L",
+              "0D160J9",
+              "0D160JA",
+              "0D160JB",
+              "0D160JL",
+              "0D160K9",
+              "0D160KA",
+              "0D160KB",
+              "0D160KL",
+              "0D160Z9",
+              "0D160ZA",
+              "0D160ZB",
+              "0D160ZL",
+              "0D16879",
+              "0D1687A",
+              "0D1687B",
+              "0D1687L",
+              "0D168J9",
+              "0D168JA",
+              "0D168JB",
+              "0D168JL",
+              "0D168K9",
+              "0D168KA",
+              "0D168KB",
+              "0D168KL",
+              "0D168Z9",
+              "0D168ZA",
+              "0D168ZB",
+              "0D168ZL"
+            ],
+            "note": "Spanned transcription of A53028's inpatient facility ICD-10-PCS list. NOT a lookup key: the article's facility lists overlap across procedures (0D160ZB sits in both the open Roux-en-Y list and BPD/DS Group B; 0DV64CZ and 0DB64Z3, which the article's own revision history assigns to laparoscopic sleeve gastrectomy, sit inside the lap Roux-en-Y list), so a facility code does not denote one procedure in this source (D30)."
+          }
+        ]
+      },
+      {
+        "procedure": "Open and laparoscopic Biliopancreatic Diversion with Duodenal Switch (BPD/DS) or Gastric Reduction Duodenal Switch (BPD/GRDS)",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Effective for services performed on and after February 21, 2006, Open and laparoscopic Roux-en-Y gastric bypass (RYGBP), open and laparoscopic Biliopancreatic Diversion with Duodenal Switch (BPD/DS) or Gastric Reduction Duodenal Switch (BPD/GRDS), and laparoscopic adjustable gastric banding (LAGB) are covered for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity.",
+          "char_start": 5210,
+          "char_end": 5705,
+          "note": "Same covered sentence as the other two entries."
+        },
+        "codes": [
+          {
+            "code": "43845",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "r931cp",
+            "quote": "43845-Gastric restrictive procedure with partial \ngastrectomy, pylorus-preserving \nduodenoileostomy and ileoieostomy (50 to 100 \ncm common channel.) to limit absorption \n(biliopancreatic diversion with duodenal \nswitch).",
+            "char_start": 8203,
+            "char_end": 8423,
+            "note": "Bound by r931cp, the claims-processing transmittal implementing this NCD's 2006 reconsideration. r931cp is citable for code bindings only (D29)."
+          }
+        ],
+        "facility_code_lists": [
+          {
+            "label": "BPD with DS or GRDS (combinational: one code from each of three groups)",
+            "identity": false,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a53028",
+            "char_start": 8265,
+            "char_end": 9402,
+            "codes": [
+              "0DB60Z3",
+              "0DB60ZZ",
+              "0DB63Z3",
+              "0DB63ZZ",
+              "0DB67Z3",
+              "0DB67ZZ",
+              "0DB68Z3",
+              "0DB80ZZ",
+              "0DB90ZZ",
+              "0DBB0ZZ",
+              "0D160ZB",
+              "0F190Z3",
+              "0D19079",
+              "0D1907A",
+              "0D1907B",
+              "0D190J9",
+              "0D190JA",
+              "0D190JB",
+              "0D190K9",
+              "0D190KA",
+              "0D190KB",
+              "0D190Z9",
+              "0D190ZA",
+              "0D190ZB",
+              "0D19479",
+              "0D1947A",
+              "0D1947B",
+              "0D194J9",
+              "0D194JA",
+              "0D194JB",
+              "0D194K9",
+              "0D194KA",
+              "0D194KB",
+              "0D194Z9",
+              "0D194ZA",
+              "0D194ZB",
+              "0D19879",
+              "0D1987A",
+              "0D1987B",
+              "0D198J9",
+              "0D198JA",
+              "0D198JB",
+              "0D198K9",
+              "0D198KA",
+              "0D198KB",
+              "0D198Z9",
+              "0D198ZA",
+              "0D198ZB",
+              "0D1A07A",
+              "0D1A07B",
+              "0D1A0JA",
+              "0D1A0JB",
+              "0D1A0KA",
+              "0D1A0KB",
+              "0D1A0ZA",
+              "0D1A0ZB",
+              "0D1A47A",
+              "0D1A47B",
+              "0D1A4JA",
+              "0D1A4JB",
+              "0D1A4KA",
+              "0D1A4KB",
+              "0D1A4ZA",
+              "0D1A4ZB",
+              "0D1A87A",
+              "0D1A87B",
+              "0D1A8JA",
+              "0D1A8JB",
+              "0D1A8KA",
+              "0D1A8KB",
+              "0D1A8ZA",
+              "0D1A8ZB",
+              "0D1A8ZH",
+              "0D1B07B",
+              "0D1B0JB",
+              "0D1B0KB",
+              "0D1B0ZB",
+              "0D1B47B",
+              "0D1B4JB",
+              "0D1B4KB",
+              "0D1B4ZB",
+              "0D1B87B",
+              "0D1B8JB",
+              "0D1B8KB",
+              "0D1B8ZB",
+              "0D1B8ZH"
+            ],
+            "note": "Spanned transcription of A53028's inpatient facility ICD-10-PCS list. NOT a lookup key: the article's facility lists overlap across procedures (0D160ZB sits in both the open Roux-en-Y list and BPD/DS Group B; 0DV64CZ and 0DB64Z3, which the article's own revision history assigns to laparoscopic sleeve gastrectomy, sit inside the lap Roux-en-Y list), so a facility code does not denote one procedure in this source (D30). Combinational: a single group code alone does not denote the procedure at all."
+          }
+        ]
+      },
+      {
+        "procedure": "Laparoscopic adjustable gastric banding (LAGB)",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Effective for services performed on and after February 21, 2006, Open and laparoscopic Roux-en-Y gastric bypass (RYGBP), open and laparoscopic Biliopancreatic Diversion with Duodenal Switch (BPD/DS) or Gastric Reduction Duodenal Switch (BPD/GRDS), and laparoscopic adjustable gastric banding (LAGB) are covered for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity.",
+          "char_start": 5210,
+          "char_end": 5705,
+          "note": "Same covered sentence as the other two entries."
+        },
+        "codes": [
+          {
+            "code": "43770",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "r931cp",
+            "quote": "43770- Laparoscopy, surgical, gastric restrictive \nprocedure; placement of adjustable gastric band \n(gastric band and subcutaneous port  \ncomponents).",
+            "char_start": 7745,
+            "char_end": 7895,
+            "note": "Bound by r931cp, the claims-processing transmittal implementing this NCD's 2006 reconsideration. r931cp is citable for code bindings only (D29)."
+          }
+        ]
+      }
+    ],
+    "nationally_non_covered": [
+      {
+        "procedure": "Open adjustable gastric banding",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Open adjustable gastric banding;",
+          "char_start": 7168,
+          "char_end": 7200,
+          "scoping_quote": {
+            "document_id": "ncd_100_1",
+            "quote": "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:",
+            "char_start": 7076,
+            "char_end": 7166,
+            "note": "The bullet alone names a procedure; this sentence is what makes it a denial. The gate asserts each bullet falls inside the list this sentence opens (D22, D28)."
+          }
+        },
+        "codes": [],
+        "note": "No code of its own to bind: A53028 records it billed with a Not Otherwise Classified code, spanned below. The disqualifying fact D28 recorded when it rejected this procedure for E3.",
+        "no_code_reason": {
+          "document_id": "a53028",
+          "quote": "Open adjustable gastric banding (Billed with a Not Otherwise Classified (NOC) code)",
+          "char_start": 9675,
+          "char_end": 9758,
+          "note": "The MAC's own statement that this procedure has no specific code."
+        }
+      },
+      {
+        "procedure": "Open sleeve gastrectomy",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Open sleeve gastrectomy;",
+          "char_start": 7202,
+          "char_end": 7226,
+          "scoping_quote": {
+            "document_id": "ncd_100_1",
+            "quote": "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:",
+            "char_start": 7076,
+            "char_end": 7166,
+            "note": "The bullet alone names a procedure; this sentence is what makes it a denial. The gate asserts each bullet falls inside the list this sentence opens (D22, D28)."
+          }
+        },
+        "codes": [],
+        "note": "No code bound in the corpus. r931cp's non-covered list marks it billed with an NOC code."
+      },
+      {
+        "procedure": "Laparoscopic sleeve gastrectomy (prior to June 27, 2012)",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Laparoscopic sleeve gastrectomy (prior to June 27, 2012);",
+          "char_start": 7228,
+          "char_end": 7285,
+          "scoping_quote": {
+            "document_id": "ncd_100_1",
+            "quote": "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:",
+            "char_start": 7076,
+            "char_end": 7166,
+            "note": "The bullet alone names a procedure; this sentence is what makes it a denial. The gate asserts each bullet falls inside the list this sentence opens (D22, D28)."
+          }
+        },
+        "codes": [],
+        "note": "Date-qualified: this non-coverage ended June 27, 2012, when NCD section D delegated the procedure to the MACs. The current determination for 43775 is the contractor_determined entry; the code lives there and only there (D22). This entry records what section C says, qualifier included, so the list is complete.",
+        "date_qualifier": "prior to June 27, 2012"
+      },
+      {
+        "procedure": "Open and laparoscopic vertical banded gastroplasty",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Open and laparoscopic vertical banded gastroplasty;",
+          "char_start": 7287,
+          "char_end": 7338,
+          "scoping_quote": {
+            "document_id": "ncd_100_1",
+            "quote": "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:",
+            "char_start": 7076,
+            "char_end": 7166,
+            "note": "The bullet alone names a procedure; this sentence is what makes it a denial. The gate asserts each bullet falls inside the list this sentence opens (D22, D28)."
+          },
+          "corroborating_quote": {
+            "document_id": "a53028",
+            "quote": "Open and laparoscopic vertical banded gastroplasty",
+            "char_start": 9848,
+            "char_end": 9898,
+            "note": "The governing MAC reproduces the national non-covered list without exercising discretion over this procedure - the reproduction A53028 did NOT do for 43775 (D22)."
+          }
+        },
+        "codes": [
+          {
+            "code": "43842",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "r931cp",
+            "quote": "Open vertical banded gastroplasty ( HCPCS \ncode 43842)",
+            "char_start": 15038,
+            "char_end": 15092,
+            "note": "One phrase naming procedure and code; the same span E3's code_binding carries (D29). 43842 is the open approach, a subset of the named non-covered procedure; the laparoscopic approach is billed NOC per r931cp."
+          }
+        ],
+        "note": "E3's procedure (D28)."
+      },
+      {
+        "procedure": "Intestinal bypass surgery",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Intestinal bypass surgery; and,",
+          "char_start": 7340,
+          "char_end": 7371,
+          "scoping_quote": {
+            "document_id": "ncd_100_1",
+            "quote": "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:",
+            "char_start": 7076,
+            "char_end": 7166,
+            "note": "The bullet alone names a procedure; this sentence is what makes it a denial. The gate asserts each bullet falls inside the list this sentence opens (D22, D28)."
+          }
+        },
+        "codes": [],
+        "note": "No code bound in the corpus. D28 records why binding one from recall is the failure mode: its near neighbour 43847 is covered."
+      },
+      {
+        "procedure": "Gastric balloon for treatment of obesity",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Gastric balloon for treatment of obesity.",
+          "char_start": 7373,
+          "char_end": 7414,
+          "scoping_quote": {
+            "document_id": "ncd_100_1",
+            "quote": "The following bariatric surgery procedures are non-covered for all Medicare beneficiaries:",
+            "char_start": 7076,
+            "char_end": 7166,
+            "note": "The bullet alone names a procedure; this sentence is what makes it a denial. The gate asserts each bullet falls inside the list this sentence opens (D22, D28)."
+          }
+        },
+        "codes": [],
+        "note": "No specific code exists: billed with an unlisted-procedure code, and an unlisted code is not a procedure identity (D28)."
+      }
+    ],
+    "contractor_determined": [
+      {
+        "procedure": "Stand-alone laparoscopic sleeve gastrectomy (LSG), on and after June 27, 2012",
+        "coverage_claim": {
+          "document_id": "ncd_100_1",
+          "quote": "Effective for services performed on and after June 27, 2012, Medicare Administrative Contractors (MACs) acting within their respective jurisdictions may determine coverage of stand-alone laparoscopic sleeve gastrectomy (LSG) for the treatment of co-morbid conditions related to obesity in Medicare beneficiaries",
+          "char_start": 7426,
+          "char_end": 7737,
+          "note": "The delegation, not a denial and not a coverage grant. What the resolver returns for this set is T-36's open question; the set records the corpus fact either way (D26, D30).",
+          "corroborating_quote": {
+            "document_id": "a53028",
+            "quote": "Noridian Covered Inpatient Facility ICD-10-CM Procedure Codes for Laparoscopic Sleeve Gastrectomy: 0DV64CZ",
+            "char_start": 7390,
+            "char_end": 7496,
+            "note": "This MAC exercised the delegation and covers the procedure (D22)."
+          }
+        },
+        "codes": [
+          {
+            "code": "43775",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a53028",
+            "quote": "This article is revised to include contractor determined coverage for laparoscopic sleeve gastrectomy (43775).",
+            "char_start": 71315,
+            "char_end": 71425,
+            "note": "The one CPT code the MAC article names, bound to its procedure in one sentence. The code D22 moved out of the non-covered bucket."
+          },
+          {
+            "code": "0DV64CZ",
+            "system": "ICD-10-PCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a53028",
+            "quote": "• CPT 43775 or ICD-10-PCS 0DV64CZ",
+            "char_start": 10620,
+            "char_end": 10653,
+            "note": "Named interchangeably with 43775 for billing the procedure. Its appearance inside the lap Roux-en-Y facility list is a documented anomaly of the R9 revision and does not outweigh the two passages binding it to LSG by name (D30)."
+          }
+        ]
+      }
+    ]
+  }
 }

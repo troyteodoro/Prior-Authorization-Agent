@@ -76,19 +76,18 @@ class LocalPolicyStore:
     # -- policy resolution -------------------------------------------------
 
     def resolve(self, procedure_code: str) -> PolicyRef | None:
-        """Unimplementable until T-38 lands the procedure sets.
+        """Unimplemented until T-24 builds the resolution logic.
 
-        Not a stub for convenience. The tree carries no procedure list of any
-        kind — `covered_procedures` exists in REQ-2 and in no artifact — so
-        there is nothing here to read and any answer this returned would be
-        invented. D26 is the entry, T-38 is the task, and returning `None`
-        meanwhile would quietly report `NO_POLICY_FOUND` for every code in
-        Medicare.
+        Not a stub for convenience. T-38 landed the three procedure sets in the
+        tree (D30), so the data exists — but the lookup that reads identity
+        bindings and maps membership to a `PolicyRef` is T-24's, and returning
+        `None` meanwhile would quietly report `NO_POLICY_FOUND` for every code
+        in Medicare, including the ones the tree now answers.
         """
         raise NotImplementedError(
-            "T-38 has not landed the procedure sets. The criteria tree carries no "
-            "covered, non-covered or contractor-determined list, so resolution "
-            "cannot be answered from source (D26)."
+            "T-24 has not built the resolver. The criteria tree carries the three "
+            "procedure sets (T-38, D30), but nothing reads their identity bindings "
+            "into a resolution yet."
         )
 
     # -- trees -------------------------------------------------------------
