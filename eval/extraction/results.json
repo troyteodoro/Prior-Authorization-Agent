@@ -1,0 +1,2827 @@
+{
+  "task": "T-15",
+  "decision": "D45",
+  "measured_at": "2026-09-08T22:56:58.769326+00:00",
+  "rescored_at": null,
+  "model": "gemini-3.5-flash-lite",
+  "tier": "ai_studio",
+  "temperature": 0.0,
+  "schema_note": "Wider than spike 001's: REQ-38 per-field diet/activity spans and the BMI as a value with its own span. D19's numbers belong to the narrow schema and are not re-run here (D45).",
+  "aggregate": {
+    "notes": 11,
+    "labeled_events": 42,
+    "extracted_events": 42,
+    "matched_events": 42,
+    "precision": 1.0,
+    "recall": 1.0,
+    "req9_traps": 11,
+    "req9_traps_excluded": 11,
+    "req9_exclusion_recall": 1.0,
+    "spans_emitted": 168,
+    "spans_anchored": 168,
+    "spans_normalized": 16,
+    "spans_unescaped": 0,
+    "spans_multi_occurrence": 12,
+    "spans_disambiguated": 7,
+    "model_offsets_usable": 0,
+    "field_agreement": 1.0,
+    "field_total": 126,
+    "total_input_tokens": 10398,
+    "total_output_tokens": 9003,
+    "total_wall_time_ms": 25910.9
+  },
+  "notes": [
+    {
+      "note_id": "n01_clean_run",
+      "corpus": "spike_001",
+      "document_id": "n01_clean_run",
+      "note_sha256": "ebb6ed00978fa7b89e7b7d41bf2b24e75bf9f1b92732dc36f30dbc29af46beea",
+      "cases": [],
+      "labels": {
+        "events": [
+          {
+            "date": "2025-01-09",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-02-06",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-03-06",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-04-03",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-05-08",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-06-05",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [
+          {
+            "date": "2016-08-14",
+            "reason": "unrelated_section"
+          },
+          {
+            "date": "2011-03-02",
+            "reason": "unrelated_section"
+          }
+        ],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2025-01-09",
+          "span": {
+            "document_id": "n01_clean_run",
+            "char_start": 375,
+            "char_end": 599,
+            "quote": "01/09/2025 - Initial program visit. Height 165 cm, weight 112.4 kg, BMI 41.3. Reviewed a 1500 kcal reduced-calorie meal plan in detail and provided a portion guide. Counseled on walking 20 minutes daily, three days per week."
+          },
+          "bmi": 41.3,
+          "bmi_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 443,
+            "char_end": 451,
+            "quote": "BMI 41.3"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 453,
+            "char_end": 538,
+            "quote": "Reviewed a 1500 kcal reduced-calorie meal plan in detail and provided a portion guide"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 540,
+            "char_end": 598,
+            "quote": "Counseled on walking 20 minutes daily, three days per week"
+          }
+        },
+        {
+          "date": "2025-02-06",
+          "span": {
+            "document_id": "n01_clean_run",
+            "char_start": 601,
+            "char_end": 769,
+            "quote": "02/06/2025 - Program visit 2. Weight 110.1 kg, BMI 40.4. Dietary recall reviewed; patient adherent to the meal plan. Activity advanced to four days per week of walking."
+          },
+          "bmi": 40.4,
+          "bmi_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 648,
+            "char_end": 656,
+            "quote": "BMI 40.4"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 658,
+            "char_end": 716,
+            "quote": "Dietary recall reviewed; patient adherent to the meal plan"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 718,
+            "char_end": 768,
+            "quote": "Activity advanced to four days per week of walking"
+          }
+        },
+        {
+          "date": "2025-03-06",
+          "span": {
+            "document_id": "n01_clean_run",
+            "char_start": 771,
+            "char_end": 944,
+            "quote": "03/06/2025 - Program visit 3. Weight 108.8 kg, BMI 39.9. Discussed protein intake and evening snacking. Patient reports 25 minutes of stationary cycling, four days per week."
+          },
+          "bmi": 39.9,
+          "bmi_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 818,
+            "char_end": 826,
+            "quote": "BMI 39.9"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 828,
+            "char_end": 873,
+            "quote": "Discussed protein intake and evening snacking"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 875,
+            "char_end": 943,
+            "quote": "Patient reports 25 minutes of stationary cycling, four days per week"
+          }
+        },
+        {
+          "date": "2025-04-03",
+          "span": {
+            "document_id": "n01_clean_run",
+            "char_start": 946,
+            "char_end": 1101,
+            "quote": "04/03/2025 - Program visit 4. Weight 107.2 kg, BMI 39.3. Meal plan adjusted to 1400 kcal. Continues cycling four days weekly; added light resistance bands."
+          },
+          "bmi": 39.3,
+          "bmi_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 993,
+            "char_end": 1001,
+            "quote": "BMI 39.3"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1003,
+            "char_end": 1034,
+            "quote": "Meal plan adjusted to 1400 kcal"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1036,
+            "char_end": 1100,
+            "quote": "Continues cycling four days weekly; added light resistance bands"
+          }
+        },
+        {
+          "date": "2025-05-08",
+          "span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1103,
+            "char_end": 1264,
+            "quote": "05/08/2025 - Program visit 5. Weight 105.9 kg, BMI 38.9. Reviewed restaurant ordering strategies. Exercise tolerance improved, now 30 minutes five days per week."
+          },
+          "bmi": 38.9,
+          "bmi_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1150,
+            "char_end": 1158,
+            "quote": "BMI 38.9"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1160,
+            "char_end": 1199,
+            "quote": "Reviewed restaurant ordering strategies"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1201,
+            "char_end": 1263,
+            "quote": "Exercise tolerance improved, now 30 minutes five days per week"
+          }
+        },
+        {
+          "date": "2025-06-05",
+          "span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1266,
+            "char_end": 1482,
+            "quote": "06/05/2025 - Program visit 6. Weight 104.6 kg, BMI 38.4. Dietary adherence remains good. Activity sustained at 30 minutes, five days per week. Patient has completed six consecutive months of supervised participation."
+          },
+          "bmi": 38.4,
+          "bmi_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1313,
+            "char_end": 1321,
+            "quote": "BMI 38.4"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1323,
+            "char_end": 1353,
+            "quote": "Dietary adherence remains good"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n01_clean_run",
+            "char_start": 1355,
+            "char_end": 1407,
+            "quote": "Activity sustained at 30 minutes, five days per week"
+          }
+        }
+      ],
+      "assertions": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1060,
+        "output_tokens": 1198,
+        "wall_time_ms": 2989.5256669988157
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2025-01-09",
+            "quote": "01/09/2025 - Initial program visit. Height 165 cm, weight 112.4 kg, BMI 41.3. Reviewed a 1500 kcal reduced-calorie meal plan in detail and provided a portion guide. Counseled on walking 20 minutes daily, three days per week.",
+            "char_start": 322,
+            "char_end": 536,
+            "bmi": 41.3,
+            "bmi_quote": "BMI 41.3",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed a 1500 kcal reduced-calorie meal plan in detail and provided a portion guide",
+            "activity_quote": "Counseled on walking 20 minutes daily, three days per week"
+          },
+          {
+            "date": "2025-02-06",
+            "quote": "02/06/2025 - Program visit 2. Weight 110.1 kg, BMI 40.4. Dietary recall reviewed; patient adherent to the meal plan. Activity advanced to four days per week of walking.",
+            "char_start": 538,
+            "char_end": 703,
+            "bmi": 40.4,
+            "bmi_quote": "BMI 40.4",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary recall reviewed; patient adherent to the meal plan",
+            "activity_quote": "Activity advanced to four days per week of walking"
+          },
+          {
+            "date": "2025-03-06",
+            "quote": "03/06/2025 - Program visit 3. Weight 108.8 kg, BMI 39.9. Discussed protein intake and evening snacking. Patient reports 25 minutes of stationary cycling, four days per week.",
+            "char_start": 705,
+            "char_end": 875,
+            "bmi": 39.9,
+            "bmi_quote": "BMI 39.9",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed protein intake and evening snacking",
+            "activity_quote": "Patient reports 25 minutes of stationary cycling, four days per week"
+          },
+          {
+            "date": "2025-04-03",
+            "quote": "04/03/2025 - Program visit 4. Weight 107.2 kg, BMI 39.3. Meal plan adjusted to 1400 kcal. Continues cycling four days weekly; added light resistance bands.",
+            "char_start": 877,
+            "char_end": 1032,
+            "bmi": 39.3,
+            "bmi_quote": "BMI 39.3",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Meal plan adjusted to 1400 kcal",
+            "activity_quote": "Continues cycling four days weekly; added light resistance bands"
+          },
+          {
+            "date": "2025-05-08",
+            "quote": "05/08/2025 - Program visit 5. Weight 105.9 kg, BMI 38.9. Reviewed restaurant ordering strategies. Exercise tolerance improved, now 30 minutes five days per week.",
+            "char_start": 1034,
+            "char_end": 1195,
+            "bmi": 38.9,
+            "bmi_quote": "BMI 38.9",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed restaurant ordering strategies",
+            "activity_quote": "Exercise tolerance improved, now 30 minutes five days per week"
+          },
+          {
+            "date": "2025-06-05",
+            "quote": "06/05/2025 - Program visit 6. Weight 104.6 kg, BMI 38.4. Dietary adherence remains good. Activity sustained at 30 minutes, five days per week. Patient has completed six consecutive months of supervised participation.",
+            "char_start": 1197,
+            "char_end": 1403,
+            "bmi": 38.4,
+            "bmi_quote": "BMI 38.4",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary adherence remains good",
+            "activity_quote": "Activity sustained at 30 minutes, five days per week"
+          }
+        ],
+        "program_assertions": []
+      },
+      "score": {
+        "labeled_events": 6,
+        "extracted_events": 6,
+        "matched_events": 6,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 2,
+        "traps_req9": 0,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 0,
+        "assertion_required": false,
+        "spans_emitted": 24,
+        "spans_anchored": 24,
+        "spans_normalized": 15,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 18,
+        "field_total": 18,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "n02_gap_month_missed_visits",
+      "corpus": "spike_001",
+      "document_id": "n02_gap_month_missed_visits",
+      "note_sha256": "ed139fc6b5e74e6352dcf31cf1ccd69b80a3f67de4abbbbc66b87bd95bd9ffc8",
+      "cases": [],
+      "labels": {
+        "events": [
+          {
+            "date": "2025-02-11",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-03-13",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-04-10",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-06-12",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-07-10",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [
+          {
+            "date": "2025-05-08",
+            "reason": "missed_visit"
+          },
+          {
+            "date": "2025-05-22",
+            "reason": "missed_visit"
+          },
+          {
+            "date": "2025-05-29",
+            "reason": "unsuccessful_contact"
+          }
+        ],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2025-02-11",
+          "span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 219,
+            "char_end": 382,
+            "quote": "02/11/2025 - Program visit. Weight 118.9 kg, BMI 43.7 recorded. Reviewed\ncalorie-controlled meal plan, 1600 kcal. Activity goal set at 15 minutes of\nwalking daily."
+          },
+          "bmi": 43.7,
+          "bmi_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 264,
+            "char_end": 272,
+            "quote": "BMI 43.7"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 283,
+            "char_end": 332,
+            "quote": "Reviewed\ncalorie-controlled meal plan, 1600 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 333,
+            "char_end": 382,
+            "quote": "Activity goal set at 15 minutes of\nwalking daily."
+          }
+        },
+        {
+          "date": "2025-03-13",
+          "span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 384,
+            "char_end": 539,
+            "quote": "03/13/2025 - Program visit. Weight 117.2 kg, BMI 43.1. Dietary counseling on\ncarbohydrate distribution across meals. Walking increased to 25 minutes daily."
+          },
+          "bmi": 43.1,
+          "bmi_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 429,
+            "char_end": 437,
+            "quote": "BMI 43.1"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 439,
+            "char_end": 500,
+            "quote": "Dietary counseling on\ncarbohydrate distribution across meals."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 501,
+            "char_end": 539,
+            "quote": "Walking increased to 25 minutes daily."
+          }
+        },
+        {
+          "date": "2025-04-10",
+          "span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 541,
+            "char_end": 674,
+            "quote": "04/10/2025 - Program visit. Weight 116.4 kg, BMI 42.8. Reviewed food diary in\ndetail. Reports walking 25 minutes, five days per week."
+          },
+          "bmi": 42.8,
+          "bmi_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 586,
+            "char_end": 594,
+            "quote": "BMI 42.8"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 596,
+            "char_end": 626,
+            "quote": "Reviewed food diary in\ndetail."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 627,
+            "char_end": 674,
+            "quote": "Reports walking 25 minutes, five days per week."
+          }
+        },
+        {
+          "date": "2025-06-12",
+          "span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1045,
+            "char_end": 1222,
+            "quote": "06/12/2025 - Program visit. Weight 117.8 kg, BMI 43.3. Discussed the lapse in\nattendance. Meal plan reviewed and restarted at 1600 kcal. Activity goal reset\nto 20 minutes daily."
+          },
+          "bmi": 43.3,
+          "bmi_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1090,
+            "char_end": 1098,
+            "quote": "BMI 43.3"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1135,
+            "char_end": 1181,
+            "quote": "Meal plan reviewed and restarted at 1600 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1182,
+            "char_end": 1222,
+            "quote": "Activity goal reset\nto 20 minutes daily."
+          }
+        },
+        {
+          "date": "2025-07-10",
+          "span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1224,
+            "char_end": 1347,
+            "quote": "07/10/2025 - Program visit. Weight 116.9 kg, BMI 43.0. Dietary adherence\nimproving. Walking 20 minutes, four days per week."
+          },
+          "bmi": 43.0,
+          "bmi_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1269,
+            "char_end": 1277,
+            "quote": "BMI 43.0"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1279,
+            "char_end": 1307,
+            "quote": "Dietary adherence\nimproving."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1308,
+            "char_end": 1347,
+            "quote": "Walking 20 minutes, four days per week."
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "span": {
+            "document_id": "n02_gap_month_missed_visits",
+            "char_start": 1354,
+            "char_end": 1446,
+            "quote": "Attendance gap during May 2025. Program participation otherwise ongoing since\nFebruary 2025."
+          },
+          "text": "Program participation ongoing since February 2025 with an attendance gap in May 2025"
+        }
+      ],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1017,
+        "output_tokens": 1067,
+        "wall_time_ms": 3072.730292013148
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2025-02-11",
+            "quote": "02/11/2025 - Program visit. Weight 118.9 kg, BMI 43.7 recorded. Reviewed\ncalorie-controlled meal plan, 1600 kcal. Activity goal set at 15 minutes of\nwalking daily.",
+            "char_start": 160,
+            "char_end": 313,
+            "bmi": 43.7,
+            "bmi_quote": "BMI 43.7",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed\ncalorie-controlled meal plan, 1600 kcal.",
+            "activity_quote": "Activity goal set at 15 minutes of\nwalking daily."
+          },
+          {
+            "date": "2025-03-13",
+            "quote": "03/13/2025 - Program visit. Weight 117.2 kg, BMI 43.1. Dietary counseling on\ncarbohydrate distribution across meals. Walking increased to 25 minutes daily.",
+            "char_start": 315,
+            "char_end": 468,
+            "bmi": 43.1,
+            "bmi_quote": "BMI 43.1",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary counseling on\ncarbohydrate distribution across meals.",
+            "activity_quote": "Walking increased to 25 minutes daily."
+          },
+          {
+            "date": "2025-04-10",
+            "quote": "04/10/2025 - Program visit. Weight 116.4 kg, BMI 42.8. Reviewed food diary in\ndetail. Reports walking 25 minutes, five days per week.",
+            "char_start": 470,
+            "char_end": 599,
+            "bmi": 42.8,
+            "bmi_quote": "BMI 42.8",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed food diary in\ndetail.",
+            "activity_quote": "Reports walking 25 minutes, five days per week."
+          },
+          {
+            "date": "2025-06-12",
+            "quote": "06/12/2025 - Program visit. Weight 117.8 kg, BMI 43.3. Discussed the lapse in\nattendance. Meal plan reviewed and restarted at 1600 kcal. Activity goal reset\nto 20 minutes daily.",
+            "char_start": 757,
+            "char_end": 932,
+            "bmi": 43.3,
+            "bmi_quote": "BMI 43.3",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Meal plan reviewed and restarted at 1600 kcal.",
+            "activity_quote": "Activity goal reset\nto 20 minutes daily."
+          },
+          {
+            "date": "2025-07-10",
+            "quote": "07/10/2025 - Program visit. Weight 116.9 kg, BMI 43.0. Dietary adherence\nimproving. Walking 20 minutes, four days per week.",
+            "char_start": 934,
+            "char_end": 1059,
+            "bmi": 43.0,
+            "bmi_quote": "BMI 43.0",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary adherence\nimproving.",
+            "activity_quote": "Walking 20 minutes, four days per week."
+          }
+        ],
+        "program_assertions": [
+          {
+            "quote": "Attendance gap during May 2025. Program participation otherwise ongoing since\nFebruary 2025.",
+            "char_start": 1065,
+            "char_end": 1157,
+            "claim": "Program participation ongoing since February 2025 with an attendance gap in May 2025"
+          }
+        ]
+      },
+      "score": {
+        "labeled_events": 5,
+        "extracted_events": 5,
+        "matched_events": 5,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 3,
+        "traps_req9": 3,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 1,
+        "assertion_required": false,
+        "spans_emitted": 21,
+        "spans_anchored": 21,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 15,
+        "field_total": 15,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "n03_assertion_only",
+      "corpus": "spike_001",
+      "document_id": "n03_assertion_only",
+      "note_sha256": "99f759affc75ba8b99000ffc207f55d41e6e4133ed8e1e0f8dc486c04dfe44ef",
+      "cases": [],
+      "labels": {
+        "events": [],
+        "traps": [
+          {
+            "date": "2021-06-30",
+            "reason": "unrelated_section"
+          },
+          {
+            "date": "2024-10-12",
+            "reason": "unrelated_section"
+          },
+          {
+            "date": "2025-08-04",
+            "reason": "unrelated_section"
+          },
+          {
+            "date": "2025-08-19",
+            "reason": "unrelated_section"
+          }
+        ],
+        "assertion_required": true
+      },
+      "events": [],
+      "assertions": [
+        {
+          "span": {
+            "document_id": "n03_assertion_only",
+            "char_start": 267,
+            "char_end": 413,
+            "quote": "He states that he completed a six-month physician-supervised weight\nmanagement program from January 2025 through June 2025 at an outside facility."
+          },
+          "text": "Completed a six-month physician-supervised weight management program from January 2025 through June 2025 at an outside facility."
+        }
+      ],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 840,
+        "output_tokens": 130,
+        "wall_time_ms": 1053.0513330013491
+      },
+      "raw": {
+        "wm_events": [],
+        "program_assertions": [
+          {
+            "quote": "He states that he completed a six-month physician-supervised weight\nmanagement program from January 2025 through June 2025 at an outside facility.",
+            "char_start": 210,
+            "char_end": 371,
+            "claim": "Completed a six-month physician-supervised weight management program from January 2025 through June 2025 at an outside facility."
+          }
+        ]
+      },
+      "score": {
+        "labeled_events": 0,
+        "extracted_events": 0,
+        "matched_events": 0,
+        "precision": null,
+        "recall": null,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 4,
+        "traps_req9": 0,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 1,
+        "assertion_required": true,
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 0,
+        "field_total": 0,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "n04_unsupervised_prior_attempts",
+      "corpus": "spike_001",
+      "document_id": "n04_unsupervised_prior_attempts",
+      "note_sha256": "5d794ef5a636e1f43b65c7e8a992b2b14992d7e032fb4088fd771e12939bf3dc",
+      "cases": [],
+      "labels": {
+        "events": [
+          {
+            "date": "2025-08-05",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-09-02",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-10-07",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-11-04",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [
+          {
+            "date": "2022-03-07",
+            "reason": "unsupervised_attempt"
+          },
+          {
+            "date": "2022-09-19",
+            "reason": "unsupervised_attempt"
+          },
+          {
+            "date": "2023-01-15",
+            "reason": "unsupervised_attempt"
+          },
+          {
+            "date": "2025-09-16",
+            "reason": "unsuccessful_contact"
+          }
+        ],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2025-08-05",
+          "span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 594,
+            "char_end": 790,
+            "quote": "08/05/2025 - Program visit. Weight 103.6 kg, height 160 cm, BMI 40.5.\nStructured meal plan at 1500 kcal reviewed with the patient. Exercise\nprescription: 20 minutes of walking, four days per week."
+          },
+          "bmi": 40.5,
+          "bmi_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 654,
+            "char_end": 662,
+            "quote": "BMI 40.5"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 664,
+            "char_end": 724,
+            "quote": "Structured meal plan at 1500 kcal reviewed with the patient."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 725,
+            "char_end": 790,
+            "quote": "Exercise\nprescription: 20 minutes of walking, four days per week."
+          }
+        },
+        {
+          "date": "2025-09-02",
+          "span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 792,
+            "char_end": 910,
+            "quote": "09/02/2025 - Program visit. Weight 101.9 kg, BMI 39.8. Food log reviewed.\nReports meeting the walking goal most weeks."
+          },
+          "bmi": 39.8,
+          "bmi_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 837,
+            "char_end": 845,
+            "quote": "BMI 39.8"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 847,
+            "char_end": 865,
+            "quote": "Food log reviewed."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 866,
+            "char_end": 910,
+            "quote": "Reports meeting the walking goal most weeks."
+          }
+        },
+        {
+          "date": "2025-10-07",
+          "span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1023,
+            "char_end": 1167,
+            "quote": "10/07/2025 - Program visit. Weight 100.4 kg, BMI 39.2. Discussed sodium and\nprepared foods. Activity advanced to 30 minutes, four days per week."
+          },
+          "bmi": 39.2,
+          "bmi_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1068,
+            "char_end": 1076,
+            "quote": "BMI 39.2"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1078,
+            "char_end": 1114,
+            "quote": "Discussed sodium and\nprepared foods."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1115,
+            "char_end": 1167,
+            "quote": "Activity advanced to 30 minutes, four days per week."
+          }
+        },
+        {
+          "date": "2025-11-04",
+          "span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1169,
+            "char_end": 1299,
+            "quote": "11/04/2025 - Program visit. Weight 99.1 kg, BMI 38.7. Dietary adherence good.\nContinues 30 minutes of activity four days per week."
+          },
+          "bmi": 38.7,
+          "bmi_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1213,
+            "char_end": 1221,
+            "quote": "BMI 38.7"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1223,
+            "char_end": 1246,
+            "quote": "Dietary adherence good."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n04_unsupervised_prior_attempts",
+            "char_start": 1247,
+            "char_end": 1299,
+            "quote": "Continues 30 minutes of activity four days per week."
+          }
+        }
+      ],
+      "assertions": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 989,
+        "output_tokens": 773,
+        "wall_time_ms": 2856.2043749989243
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2025-08-05",
+            "quote": "08/05/2025 - Program visit. Weight 103.6 kg, height 160 cm, BMI 40.5.\nStructured meal plan at 1500 kcal reviewed with the patient. Exercise\nprescription: 20 minutes of walking, four days per week.",
+            "char_start": 444,
+            "char_end": 622,
+            "bmi": 40.5,
+            "bmi_quote": "BMI 40.5",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Structured meal plan at 1500 kcal reviewed with the patient.",
+            "activity_quote": "Exercise\nprescription: 20 minutes of walking, four days per week."
+          },
+          {
+            "date": "2025-09-02",
+            "quote": "09/02/2025 - Program visit. Weight 101.9 kg, BMI 39.8. Food log reviewed.\nReports meeting the walking goal most weeks.",
+            "char_start": 624,
+            "char_end": 737,
+            "bmi": 39.8,
+            "bmi_quote": "BMI 39.8",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Food log reviewed.",
+            "activity_quote": "Reports meeting the walking goal most weeks."
+          },
+          {
+            "date": "2025-10-07",
+            "quote": "10/07/2025 - Program visit. Weight 100.4 kg, BMI 39.2. Discussed sodium and\nprepared foods. Activity advanced to 30 minutes, four days per week.",
+            "char_start": 822,
+            "char_end": 961,
+            "bmi": 39.2,
+            "bmi_quote": "BMI 39.2",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed sodium and\nprepared foods.",
+            "activity_quote": "Activity advanced to 30 minutes, four days per week."
+          },
+          {
+            "date": "2025-11-04",
+            "quote": "11/04/2025 - Program visit. Weight 99.1 kg, BMI 38.7. Dietary adherence good.\nContinues 30 minutes of activity four days per week.",
+            "char_start": 963,
+            "char_end": 1092,
+            "bmi": 38.7,
+            "bmi_quote": "BMI 38.7",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary adherence good.",
+            "activity_quote": "Continues 30 minutes of activity four days per week."
+          }
+        ],
+        "program_assertions": []
+      },
+      "score": {
+        "labeled_events": 4,
+        "extracted_events": 4,
+        "matched_events": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 4,
+        "traps_req9": 4,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 0,
+        "assertion_required": false,
+        "spans_emitted": 16,
+        "spans_anchored": 16,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 12,
+        "field_total": 12,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "n05_two_programs_sparse_bmi",
+      "corpus": "spike_001",
+      "document_id": "n05_two_programs_sparse_bmi",
+      "note_sha256": "57084c71fb95138347577c574b229214ed545b11d32d52591a75dff54dc5740c",
+      "cases": [],
+      "labels": {
+        "events": [
+          {
+            "date": "2024-03-12",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2024-04-09",
+            "bmi_documented": false,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2024-05-14",
+            "bmi_documented": false,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-02-04",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-03-04",
+            "bmi_documented": false,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-04-01",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-05-06",
+            "bmi_documented": false,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-06-03",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [
+          {
+            "date": "1998-11-22",
+            "reason": "unrelated_section"
+          },
+          {
+            "date": "2004-04-16",
+            "reason": "unrelated_section"
+          },
+          {
+            "date": "2019-05-19",
+            "reason": "unrelated_section"
+          },
+          {
+            "date": "2023-09-28",
+            "reason": "unrelated_section"
+          }
+        ],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2024-03-12",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 410,
+            "char_end": 547,
+            "quote": "03/12/2024 - Program visit. Weight 131.2 kg, height 178 cm, BMI 41.4. Reviewed\nreduced-calorie meal plan. Activity goal 15 minutes daily."
+          },
+          "bmi": 41.4,
+          "bmi_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 470,
+            "char_end": 478,
+            "quote": "BMI 41.4"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 480,
+            "char_end": 515,
+            "quote": "Reviewed\nreduced-calorie meal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 516,
+            "char_end": 547,
+            "quote": "Activity goal 15 minutes daily."
+          }
+        },
+        {
+          "date": "2024-04-09",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 549,
+            "char_end": 670,
+            "quote": "04/09/2024 - Program visit. Weight 129.8 kg. Dietary counseling provided on\nbeverage calories. Reports walking most days."
+          },
+          "bmi": null,
+          "bmi_span": null,
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 594,
+            "char_end": 643,
+            "quote": "Dietary counseling provided on\nbeverage calories."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 644,
+            "char_end": 670,
+            "quote": "Reports walking most days."
+          }
+        },
+        {
+          "date": "2024-05-14",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 672,
+            "char_end": 757,
+            "quote": "05/14/2024 - Program visit. Weight 128.9 kg. Meal plan reviewed. Activity\nmaintained."
+          },
+          "bmi": null,
+          "bmi_span": null,
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 717,
+            "char_end": 736,
+            "quote": "Meal plan reviewed."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 737,
+            "char_end": 757,
+            "quote": "Activity\nmaintained."
+          }
+        },
+        {
+          "date": "2025-02-04",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 841,
+            "char_end": 995,
+            "quote": "02/04/2025 - Program visit. Weight 133.5 kg, BMI 42.1. Structured meal plan at\n1700 kcal initiated. Exercise prescription 20 minutes, three days per week."
+          },
+          "bmi": 42.1,
+          "bmi_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 886,
+            "char_end": 894,
+            "quote": "BMI 42.1"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 896,
+            "char_end": 940,
+            "quote": "Structured meal plan at\n1700 kcal initiated."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 941,
+            "char_end": 995,
+            "quote": "Exercise prescription 20 minutes, three days per week."
+          }
+        },
+        {
+          "date": "2025-03-04",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 997,
+            "char_end": 1113,
+            "quote": "03/04/2025 - Program visit. Weight 132.1 kg. Food diary reviewed in detail.\nWalking 20 minutes, three days per week."
+          },
+          "bmi": null,
+          "bmi_span": null,
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1042,
+            "char_end": 1072,
+            "quote": "Food diary reviewed in detail."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1073,
+            "char_end": 1113,
+            "quote": "Walking 20 minutes, three days per week."
+          }
+        },
+        {
+          "date": "2025-04-01",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1115,
+            "char_end": 1262,
+            "quote": "04/01/2025 - Program visit. Weight 130.7 kg, BMI 41.2. Dietary counseling on\nportion control. Activity increased to 25 minutes, four days per week."
+          },
+          "bmi": 41.2,
+          "bmi_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1160,
+            "char_end": 1168,
+            "quote": "BMI 41.2"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1170,
+            "char_end": 1208,
+            "quote": "Dietary counseling on\nportion control."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1209,
+            "char_end": 1262,
+            "quote": "Activity increased to 25 minutes, four days per week."
+          }
+        },
+        {
+          "date": "2025-05-06",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1264,
+            "char_end": 1399,
+            "quote": "05/06/2025 - Program visit. Weight 129.4 kg. Reviewed meal preparation\nstrategies. Continues 25 minutes of activity four days per week."
+          },
+          "bmi": null,
+          "bmi_span": null,
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1309,
+            "char_end": 1346,
+            "quote": "Reviewed meal preparation\nstrategies."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1347,
+            "char_end": 1399,
+            "quote": "Continues 25 minutes of activity four days per week."
+          }
+        },
+        {
+          "date": "2025-06-03",
+          "span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1401,
+            "char_end": 1520,
+            "quote": "06/03/2025 - Program visit. Weight 128.0 kg, BMI 40.4. Dietary adherence good.\nActivity 30 minutes, four days per week."
+          },
+          "bmi": 40.4,
+          "bmi_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1446,
+            "char_end": 1454,
+            "quote": "BMI 40.4"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1456,
+            "char_end": 1479,
+            "quote": "Dietary adherence good."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "n05_two_programs_sparse_bmi",
+            "char_start": 1480,
+            "char_end": 1520,
+            "quote": "Activity 30 minutes, four days per week."
+          }
+        }
+      ],
+      "assertions": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1111,
+        "output_tokens": 1389,
+        "wall_time_ms": 3378.9895420050016
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2024-03-12",
+            "quote": "03/12/2024 - Program visit. Weight 131.2 kg, height 178 cm, BMI 41.4. Reviewed\nreduced-calorie meal plan. Activity goal 15 minutes daily.",
+            "char_start": 298,
+            "char_end": 435,
+            "bmi": 41.4,
+            "bmi_quote": "BMI 41.4",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed\nreduced-calorie meal plan.",
+            "activity_quote": "Activity goal 15 minutes daily."
+          },
+          {
+            "date": "2024-04-09",
+            "quote": "04/09/2024 - Program visit. Weight 129.8 kg. Dietary counseling provided on\nbeverage calories. Reports walking most days.",
+            "char_start": 437,
+            "char_end": 549,
+            "bmi": null,
+            "bmi_quote": "",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary counseling provided on\nbeverage calories.",
+            "activity_quote": "Reports walking most days."
+          },
+          {
+            "date": "2024-05-14",
+            "quote": "05/14/2024 - Program visit. Weight 128.9 kg. Meal plan reviewed. Activity\nmaintained.",
+            "char_start": 551,
+            "char_end": 634,
+            "bmi": null,
+            "bmi_quote": "",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Meal plan reviewed.",
+            "activity_quote": "Activity\nmaintained."
+          },
+          {
+            "date": "2025-02-04",
+            "quote": "02/04/2025 - Program visit. Weight 133.5 kg, BMI 42.1. Structured meal plan at\n1700 kcal initiated. Exercise prescription 20 minutes, three days per week.",
+            "char_start": 693,
+            "char_end": 845,
+            "bmi": 42.1,
+            "bmi_quote": "BMI 42.1",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Structured meal plan at\n1700 kcal initiated.",
+            "activity_quote": "Exercise prescription 20 minutes, three days per week."
+          },
+          {
+            "date": "2025-03-04",
+            "quote": "03/04/2025 - Program visit. Weight 132.1 kg. Food diary reviewed in detail.\nWalking 20 minutes, three days per week.",
+            "char_start": 847,
+            "char_end": 958,
+            "bmi": null,
+            "bmi_quote": "",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Food diary reviewed in detail.",
+            "activity_quote": "Walking 20 minutes, three days per week."
+          },
+          {
+            "date": "2025-04-01",
+            "quote": "04/01/2025 - Program visit. Weight 130.7 kg, BMI 41.2. Dietary counseling on\nportion control. Activity increased to 25 minutes, four days per week.",
+            "char_start": 960,
+            "char_end": 1099,
+            "bmi": 41.2,
+            "bmi_quote": "BMI 41.2",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary counseling on\nportion control.",
+            "activity_quote": "Activity increased to 25 minutes, four days per week."
+          },
+          {
+            "date": "2025-05-06",
+            "quote": "05/06/2025 - Program visit. Weight 129.4 kg. Reviewed meal preparation\nstrategies. Continues 25 minutes of activity four days per week.",
+            "char_start": 1101,
+            "char_end": 1222,
+            "bmi": null,
+            "bmi_quote": "",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed meal preparation\nstrategies.",
+            "activity_quote": "Continues 25 minutes of activity four days per week."
+          },
+          {
+            "date": "2025-06-03",
+            "quote": "06/03/2025 - Program visit. Weight 128.0 kg, BMI 40.4. Dietary adherence good.\nActivity 30 minutes, four days per week.",
+            "char_start": 1224,
+            "char_end": 1338,
+            "bmi": 40.4,
+            "bmi_quote": "BMI 40.4",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary adherence good.",
+            "activity_quote": "Activity 30 minutes, four days per week."
+          }
+        ],
+        "program_assertions": []
+      },
+      "score": {
+        "labeled_events": 8,
+        "extracted_events": 8,
+        "matched_events": 8,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 4,
+        "traps_req9": 0,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 0,
+        "assertion_required": false,
+        "spans_emitted": 28,
+        "spans_anchored": 28,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 24,
+        "field_total": 24,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "E5",
+      "corpus": "synthesized",
+      "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+      "note_sha256": "4992084dddc702116c7814b03d7ef31d249f8cf30d39eb8fe9693761420f3821",
+      "cases": [
+        "E5"
+      ],
+      "labels": {
+        "events": [
+          {
+            "date": "2025-03-11",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-04-08",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-05-13",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2025-06-10",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2025-03-11",
+          "span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 258,
+            "char_end": 470,
+            "quote": "03/11/2025 - Scheduled program follow-up. No new complaints. Weight 124.7 kg,\nBMI 43.0. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nReports 40 minutes of brisk walking, four days per week."
+          },
+          "bmi": 43.0,
+          "bmi_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 336,
+            "char_end": 344,
+            "quote": "BMI 43.0"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 346,
+            "char_end": 394,
+            "quote": "Reviewed the 1500 kcal reduced-calorie meal plan"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 414,
+            "char_end": 470,
+            "quote": "Reports 40 minutes of brisk walking, four days per week."
+          }
+        },
+        {
+          "date": "2025-04-08",
+          "span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 472,
+            "char_end": 669,
+            "quote": "04/08/2025 - Monthly program visit completed. Weight 124.1 kg, BMI 42.8.\nDiscussed portion control and protein intake on the 1800 kcal plan. Reports 30\nminutes of brisk walking, four days per week."
+          },
+          "bmi": 42.8,
+          "bmi_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 535,
+            "char_end": 543,
+            "quote": "BMI 42.8"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 545,
+            "char_end": 612,
+            "quote": "Discussed portion control and protein intake on the 1800 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 613,
+            "char_end": 669,
+            "quote": "Reports 30\nminutes of brisk walking, four days per week."
+          }
+        },
+        {
+          "date": "2025-05-13",
+          "span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 671,
+            "char_end": 875,
+            "quote": "05/13/2025 - Program visit. Interval history reviewed. Weight 123.8 kg, BMI\n42.7. Nutrition counseling provided; meal plan held at 1500 kcal. Activity\ngoal of 15 minutes daily met on four days this month."
+          },
+          "bmi": 42.7,
+          "bmi_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 743,
+            "char_end": 751,
+            "quote": "BMI\n42.7"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 753,
+            "char_end": 812,
+            "quote": "Nutrition counseling provided; meal plan held at 1500 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 813,
+            "char_end": 875,
+            "quote": "Activity\ngoal of 15 minutes daily met on four days this month."
+          }
+        },
+        {
+          "date": "2025-06-10",
+          "span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 877,
+            "char_end": 1068,
+            "quote": "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week."
+          },
+          "bmi": 42.6,
+          "bmi_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 941,
+            "char_end": 949,
+            "quote": "BMI 42.6"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 951,
+            "char_end": 1012,
+            "quote": "Dietary recall reviewed in detail against the 1800 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+            "char_start": 1013,
+            "char_end": 1068,
+            "quote": "Reports 15\nminutes of pool exercise four days per week."
+          }
+        }
+      ],
+      "assertions": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 913,
+        "output_tokens": 866,
+        "wall_time_ms": 2368.935499995132
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2025-03-11",
+            "quote": "03/11/2025 - Scheduled program follow-up. No new complaints. Weight 124.7 kg,\nBMI 43.0. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nReports 40 minutes of brisk walking, four days per week.",
+            "char_start": 218,
+            "char_end": 401,
+            "bmi": 43.0,
+            "bmi_quote": "BMI 43.0",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed the 1500 kcal reduced-calorie meal plan",
+            "activity_quote": "Reports 40 minutes of brisk walking, four days per week."
+          },
+          {
+            "date": "2025-04-08",
+            "quote": "04/08/2025 - Monthly program visit completed. Weight 124.1 kg, BMI 42.8.\nDiscussed portion control and protein intake on the 1800 kcal plan. Reports 30\nminutes of brisk walking, four days per week.",
+            "char_start": 403,
+            "char_end": 582,
+            "bmi": 42.8,
+            "bmi_quote": "BMI 42.8",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed portion control and protein intake on the 1800 kcal plan.",
+            "activity_quote": "Reports 30\nminutes of brisk walking, four days per week."
+          },
+          {
+            "date": "2025-05-13",
+            "quote": "05/13/2025 - Program visit. Interval history reviewed. Weight 123.8 kg, BMI\n42.7. Nutrition counseling provided; meal plan held at 1500 kcal. Activity\ngoal of 15 minutes daily met on four days this month.",
+            "char_start": 584,
+            "char_end": 771,
+            "bmi": 42.7,
+            "bmi_quote": "BMI\n42.7",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Nutrition counseling provided; meal plan held at 1500 kcal.",
+            "activity_quote": "Activity\ngoal of 15 minutes daily met on four days this month."
+          },
+          {
+            "date": "2025-06-10",
+            "quote": "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week.",
+            "char_start": 773,
+            "char_end": 961,
+            "bmi": 42.6,
+            "bmi_quote": "BMI 42.6",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary recall reviewed in detail against the 1800 kcal plan.",
+            "activity_quote": "Reports 15\nminutes of pool exercise four days per week."
+          }
+        ],
+        "program_assertions": []
+      },
+      "score": {
+        "labeled_events": 4,
+        "extracted_events": 4,
+        "matched_events": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 0,
+        "traps_req9": 0,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 0,
+        "assertion_required": false,
+        "spans_emitted": 16,
+        "spans_anchored": 16,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 12,
+        "field_total": 12,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "E4+E9",
+      "corpus": "synthesized",
+      "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+      "note_sha256": "1c5fb0a834246efe8195aa10a98decc96a7f7beb6125700860f5e7f60c8efcf0",
+      "cases": [
+        "E4",
+        "E9"
+      ],
+      "labels": {
+        "events": [
+          {
+            "date": "2026-01-13",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-02-10",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-03-12",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-05-14",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-06-11",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [
+          {
+            "date": "2026-04-09",
+            "reason": "missed_visit"
+          },
+          {
+            "date": "2026-04-23",
+            "reason": "unsuccessful_contact"
+          }
+        ],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2026-01-13",
+          "span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 259,
+            "char_end": 464,
+            "quote": "01/13/2026 - Routine supervised program visit. Weight 84.9 kg, BMI 35.9. Food\ndiary reviewed; 1200 kcal plan continued without change. Exercise log shows 25\nminutes of stationary cycling, four days weekly."
+          },
+          "bmi": 35.9,
+          "bmi_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 322,
+            "char_end": 330,
+            "quote": "BMI 35.9"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 332,
+            "char_end": 393,
+            "quote": "Food\ndiary reviewed; 1200 kcal plan continued without change."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 394,
+            "char_end": 464,
+            "quote": "Exercise log shows 25\nminutes of stationary cycling, four days weekly."
+          }
+        },
+        {
+          "date": "2026-02-10",
+          "span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 466,
+            "char_end": 655,
+            "quote": "02/10/2026 - Monthly program visit completed. Weight 84.7 kg, BMI 35.8.\nNutrition counseling provided; meal plan held at 1600 kcal. Reports 25 minutes\nof brisk walking, three days per week."
+          },
+          "bmi": 35.8,
+          "bmi_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 528,
+            "char_end": 536,
+            "quote": "BMI 35.8"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 538,
+            "char_end": 597,
+            "quote": "Nutrition counseling provided; meal plan held at 1600 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 598,
+            "char_end": 655,
+            "quote": "Reports 25 minutes\nof brisk walking, three days per week."
+          }
+        },
+        {
+          "date": "2026-03-12",
+          "span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 657,
+            "char_end": 875,
+            "quote": "03/12/2026 - Scheduled program follow-up. No new complaints. Weight 84.4 kg,\nBMI 35.7. Discussed portion control and protein intake on the 1400 kcal plan.\nActivity goal of 20 minutes daily met on three days this month."
+          },
+          "bmi": 35.7,
+          "bmi_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 734,
+            "char_end": 742,
+            "quote": "BMI 35.7"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 744,
+            "char_end": 811,
+            "quote": "Discussed portion control and protein intake on the 1400 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 812,
+            "char_end": 875,
+            "quote": "Activity goal of 20 minutes daily met on three days this month."
+          }
+        },
+        {
+          "date": "2026-05-14",
+          "span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1154,
+            "char_end": 1345,
+            "quote": "05/14/2026 - Routine supervised program visit. Weight 84.2 kg, BMI 35.6. Food\ndiary reviewed; 1500 kcal plan continued without change. Reports 30 minutes of\npool exercise three days per week."
+          },
+          "bmi": 35.6,
+          "bmi_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1217,
+            "char_end": 1225,
+            "quote": "BMI 35.6"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1227,
+            "char_end": 1288,
+            "quote": "Food\ndiary reviewed; 1500 kcal plan continued without change."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1289,
+            "char_end": 1345,
+            "quote": "Reports 30 minutes of\npool exercise three days per week."
+          }
+        },
+        {
+          "date": "2026-06-11",
+          "span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1347,
+            "char_end": 1542,
+            "quote": "06/11/2026 - Monthly program visit completed. Weight 84.2 kg, BMI 35.6.\nNutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 15 minutes, three days per week."
+          },
+          "bmi": 35.6,
+          "bmi_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1409,
+            "char_end": 1417,
+            "quote": "BMI 35.6"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1419,
+            "char_end": 1478,
+            "quote": "Nutrition counseling provided; meal plan held at 1400 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1479,
+            "char_end": 1542,
+            "quote": "Continues\nsupervised exercise, 15 minutes, three days per week."
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "span": {
+            "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+            "char_start": 1555,
+            "char_end": 1653,
+            "quote": "Obesity with continued participation in the supervised weight management\nprogram documented above."
+          },
+          "text": "Continued participation in the supervised weight management program documented above."
+        }
+      ],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1045,
+        "output_tokens": 1148,
+        "wall_time_ms": 2963.171916009742
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2026-01-13",
+            "quote": "01/13/2026 - Routine supervised program visit. Weight 84.9 kg, BMI 35.9. Food\ndiary reviewed; 1200 kcal plan continued without change. Exercise log shows 25\nminutes of stationary cycling, four days weekly.",
+            "char_start": 204,
+            "char_end": 393,
+            "bmi": 35.9,
+            "bmi_quote": "BMI 35.9",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Food\ndiary reviewed; 1200 kcal plan continued without change.",
+            "activity_quote": "Exercise log shows 25\nminutes of stationary cycling, four days weekly."
+          },
+          {
+            "date": "2026-02-10",
+            "quote": "02/10/2026 - Monthly program visit completed. Weight 84.7 kg, BMI 35.8.\nNutrition counseling provided; meal plan held at 1600 kcal. Reports 25 minutes\nof brisk walking, three days per week.",
+            "char_start": 395,
+            "char_end": 567,
+            "bmi": 35.8,
+            "bmi_quote": "BMI 35.8",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Nutrition counseling provided; meal plan held at 1600 kcal.",
+            "activity_quote": "Reports 25 minutes\nof brisk walking, three days per week."
+          },
+          {
+            "date": "2026-03-12",
+            "quote": "03/12/2026 - Scheduled program follow-up. No new complaints. Weight 84.4 kg,\nBMI 35.7. Discussed portion control and protein intake on the 1400 kcal plan.\nActivity goal of 20 minutes daily met on three days this month.",
+            "char_start": 569,
+            "char_end": 765,
+            "bmi": 35.7,
+            "bmi_quote": "BMI 35.7",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed portion control and protein intake on the 1400 kcal plan.",
+            "activity_quote": "Activity goal of 20 minutes daily met on three days this month."
+          },
+          {
+            "date": "2026-05-14",
+            "quote": "05/14/2026 - Routine supervised program visit. Weight 84.2 kg, BMI 35.6. Food\ndiary reviewed; 1500 kcal plan continued without change. Reports 30 minutes of\npool exercise three days per week.",
+            "char_start": 912,
+            "char_end": 1102,
+            "bmi": 35.6,
+            "bmi_quote": "BMI 35.6",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Food\ndiary reviewed; 1500 kcal plan continued without change.",
+            "activity_quote": "Reports 30 minutes of\npool exercise three days per week."
+          },
+          {
+            "date": "2026-06-11",
+            "quote": "06/11/2026 - Monthly program visit completed. Weight 84.2 kg, BMI 35.6.\nNutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 15 minutes, three days per week.",
+            "char_start": 1104,
+            "char_end": 1284,
+            "bmi": 35.6,
+            "bmi_quote": "BMI 35.6",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Nutrition counseling provided; meal plan held at 1400 kcal.",
+            "activity_quote": "Continues\nsupervised exercise, 15 minutes, three days per week."
+          }
+        ],
+        "program_assertions": [
+          {
+            "quote": "Obesity with continued participation in the supervised weight management\nprogram documented above.",
+            "char_start": 1297,
+            "char_end": 1391,
+            "claim": "Continued participation in the supervised weight management program documented above."
+          }
+        ]
+      },
+      "score": {
+        "labeled_events": 5,
+        "extracted_events": 5,
+        "matched_events": 5,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 2,
+        "traps_req9": 2,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 1,
+        "assertion_required": false,
+        "spans_emitted": 21,
+        "spans_anchored": 21,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 2,
+        "spans_disambiguated": 1,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 15,
+        "field_total": 15,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "E2+E7",
+      "corpus": "synthesized",
+      "document_id": "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note.txt",
+      "note_sha256": "a2e35e7f36a534f0070f205a4572c58c689b68d7a5fd17df3cbccd96617bc2db",
+      "cases": [
+        "E2",
+        "E7"
+      ],
+      "labels": {
+        "events": [],
+        "traps": [
+          {
+            "date": "2026-02-11",
+            "reason": "unrelated_section_date"
+          },
+          {
+            "date": "2025-10-03",
+            "reason": "unrelated_section_date"
+          }
+        ],
+        "assertion_required": false
+      },
+      "events": [],
+      "assertions": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 655,
+        "output_tokens": 19,
+        "wall_time_ms": 554.5231669966597
+      },
+      "raw": {
+        "wm_events": [],
+        "program_assertions": []
+      },
+      "score": {
+        "labeled_events": 0,
+        "extracted_events": 0,
+        "matched_events": 0,
+        "precision": null,
+        "recall": null,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 2,
+        "traps_req9": 0,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 0,
+        "assertion_required": false,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 0,
+        "field_total": 0,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "E6+E10",
+      "corpus": "synthesized",
+      "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+      "note_sha256": "ac4e68e1b9696398f24dd732d4eaaa426b29461c9ab3fc103f3ea8b6e93553f8",
+      "cases": [
+        "E6",
+        "E10"
+      ],
+      "labels": {
+        "events": [
+          {
+            "date": "2026-03-09",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-04-13",
+            "bmi_documented": false,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-05-11",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-06-08",
+            "bmi_documented": false,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2026-03-09",
+          "span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 259,
+            "char_end": 470,
+            "quote": "03/09/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1500 kcal.\nContinues supervised exercise, 40 minutes, three days per week."
+          },
+          "bmi": 45.0,
+          "bmi_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 337,
+            "char_end": 345,
+            "quote": "BMI 45.0"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 347,
+            "char_end": 406,
+            "quote": "Nutrition counseling provided; meal plan held at 1500 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 407,
+            "char_end": 470,
+            "quote": "Continues supervised exercise, 40 minutes, three days per week."
+          }
+        },
+        {
+          "date": "2026-04-13",
+          "span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 472,
+            "char_end": 693,
+            "quote": "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week."
+          },
+          "bmi": null,
+          "bmi_span": null,
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 578,
+            "char_end": 637,
+            "quote": "Nutrition counseling provided; meal plan held at\n1800 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 638,
+            "char_end": 693,
+            "quote": "Reports 30 minutes of pool exercise five days per week."
+          }
+        },
+        {
+          "date": "2026-05-11",
+          "span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 695,
+            "char_end": 906,
+            "quote": "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1600 kcal. Activity\ngoal of 30 minutes daily met on three days this month."
+          },
+          "bmi": 45.0,
+          "bmi_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 773,
+            "char_end": 781,
+            "quote": "BMI 45.0"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 783,
+            "char_end": 842,
+            "quote": "Nutrition counseling provided; meal plan held at 1600 kcal."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 843,
+            "char_end": 906,
+            "quote": "Activity\ngoal of 30 minutes daily met on three days this month."
+          }
+        },
+        {
+          "date": "2026-06-08",
+          "span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 908,
+            "char_end": 1129,
+            "quote": "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+          },
+          "bmi": null,
+          "bmi_span": null,
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 1006,
+            "char_end": 1073,
+            "quote": "Discussed portion control and protein intake on the\n1800 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 1074,
+            "char_end": 1129,
+            "quote": "Reports 30 minutes of pool exercise five days per week."
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "span": {
+            "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
+            "char_start": 1142,
+            "char_end": 1240,
+            "quote": "Obesity with continued participation in the supervised weight management\nprogram documented above."
+          },
+          "text": "Continued participation in supervised weight management program"
+        }
+      ],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 913,
+        "output_tokens": 913,
+        "wall_time_ms": 2392.5129999988712
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2026-03-09",
+            "quote": "03/09/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1500 kcal.\nContinues supervised exercise, 40 minutes, three days per week.",
+            "char_start": 169,
+            "char_end": 353,
+            "bmi": 45.0,
+            "bmi_quote": "BMI 45.0",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Nutrition counseling provided; meal plan held at 1500 kcal.",
+            "activity_quote": "Continues supervised exercise, 40 minutes, three days per week."
+          },
+          {
+            "date": "2026-04-13",
+            "quote": "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week.",
+            "char_start": 355,
+            "char_end": 541,
+            "bmi": null,
+            "bmi_quote": "",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Nutrition counseling provided; meal plan held at\n1800 kcal.",
+            "activity_quote": "Reports 30 minutes of pool exercise five days per week."
+          },
+          {
+            "date": "2026-05-11",
+            "quote": "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1600 kcal. Activity\ngoal of 30 minutes daily met on three days this month.",
+            "char_start": 543,
+            "char_end": 724,
+            "bmi": 45.0,
+            "bmi_quote": "BMI 45.0",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Nutrition counseling provided; meal plan held at 1600 kcal.",
+            "activity_quote": "Activity\ngoal of 30 minutes daily met on three days this month."
+          },
+          {
+            "date": "2026-06-08",
+            "quote": "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week.",
+            "char_start": 726,
+            "char_end": 925,
+            "bmi": null,
+            "bmi_quote": "",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed portion control and protein intake on the\n1800 kcal plan.",
+            "activity_quote": "Reports 30 minutes of pool exercise five days per week."
+          }
+        ],
+        "program_assertions": [
+          {
+            "quote": "Obesity with continued participation in the supervised weight management\nprogram documented above.",
+            "char_start": 941,
+            "char_end": 1032,
+            "claim": "Continued participation in supervised weight management program"
+          }
+        ]
+      },
+      "score": {
+        "labeled_events": 4,
+        "extracted_events": 4,
+        "matched_events": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 0,
+        "traps_req9": 0,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 1,
+        "assertion_required": false,
+        "spans_emitted": 15,
+        "spans_anchored": 15,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 4,
+        "spans_disambiguated": 2,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 12,
+        "field_total": 12,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "E1+E11+E10c",
+      "corpus": "synthesized",
+      "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+      "note_sha256": "05128f2f3548a47dbdf9c977d69de76acced4aa99388e26b6be7dd95e1b63d5a",
+      "cases": [
+        "E1",
+        "E11",
+        "E10c"
+      ],
+      "labels": {
+        "events": [
+          {
+            "date": "2024-08-05",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2024-09-02",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-03-10",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-04-14",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-05-12",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          },
+          {
+            "date": "2026-06-09",
+            "bmi_documented": true,
+            "diet_documented": true,
+            "activity_documented": true
+          }
+        ],
+        "traps": [
+          {
+            "date": "2025-01-15",
+            "reason": "unsupervised_attempt"
+          }
+        ],
+        "assertion_required": false
+      },
+      "events": [
+        {
+          "date": "2024-08-05",
+          "span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 253,
+            "char_end": 450,
+            "quote": "08/05/2024 - Monthly program visit completed. Weight 116.6 kg, BMI 39.1.\nDiscussed portion control and protein intake on the 1500 kcal plan. Reports 30\nminutes of brisk walking, five days per week."
+          },
+          "bmi": 39.1,
+          "bmi_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 316,
+            "char_end": 324,
+            "quote": "BMI 39.1"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 326,
+            "char_end": 393,
+            "quote": "Discussed portion control and protein intake on the 1500 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 394,
+            "char_end": 450,
+            "quote": "Reports 30\nminutes of brisk walking, five days per week."
+          }
+        },
+        {
+          "date": "2024-09-02",
+          "span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 452,
+            "char_end": 649,
+            "quote": "09/02/2024 - Monthly program visit completed. Weight 115.7 kg, BMI 38.8.\nDiscussed portion control and protein intake on the 1400 kcal plan. Reports 15\nminutes of pool exercise three days per week."
+          },
+          "bmi": 38.8,
+          "bmi_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 515,
+            "char_end": 523,
+            "quote": "BMI 38.8"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 525,
+            "char_end": 592,
+            "quote": "Discussed portion control and protein intake on the 1400 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 593,
+            "char_end": 649,
+            "quote": "Reports 15\nminutes of pool exercise three days per week."
+          }
+        },
+        {
+          "date": "2026-03-10",
+          "span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 651,
+            "char_end": 870,
+            "quote": "03/10/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nActivity goal of 40 minutes daily met on three days this month."
+          },
+          "bmi": 37.6,
+          "bmi_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 729,
+            "char_end": 737,
+            "quote": "BMI 37.6"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 739,
+            "char_end": 787,
+            "quote": "Reviewed the 1500 kcal reduced-calorie meal plan"
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 807,
+            "char_end": 870,
+            "quote": "Activity goal of 40 minutes daily met on three days this month."
+          }
+        },
+        {
+          "date": "2026-04-14",
+          "span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 872,
+            "char_end": 1062,
+            "quote": "04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Reports 40 minutes of\npool exercise five days per week."
+          },
+          "bmi": 37.6,
+          "bmi_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 935,
+            "char_end": 943,
+            "quote": "BMI 37.6"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 945,
+            "char_end": 1006,
+            "quote": "Food\ndiary reviewed; 1600 kcal plan continued without change."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1007,
+            "char_end": 1062,
+            "quote": "Reports 40 minutes of\npool exercise five days per week."
+          }
+        },
+        {
+          "date": "2026-05-12",
+          "span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1064,
+            "char_end": 1268,
+            "quote": "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1500 kcal plan. Continues\nsupervised exercise, 30 minutes, five days per week."
+          },
+          "bmi": 37.6,
+          "bmi_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1128,
+            "char_end": 1136,
+            "quote": "BMI 37.6"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1138,
+            "char_end": 1205,
+            "quote": "Discussed portion control and protein intake on the 1500 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1206,
+            "char_end": 1268,
+            "quote": "Continues\nsupervised exercise, 30 minutes, five days per week."
+          }
+        },
+        {
+          "date": "2026-06-09",
+          "span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1270,
+            "char_end": 1467,
+            "quote": "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week."
+          },
+          "bmi": 37.6,
+          "bmi_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1333,
+            "char_end": 1341,
+            "quote": "BMI 37.6"
+          },
+          "diet_documented": true,
+          "diet_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1343,
+            "char_end": 1404,
+            "quote": "Dietary recall reviewed in detail against the 1500 kcal plan."
+          },
+          "activity_documented": true,
+          "activity_span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1405,
+            "char_end": 1467,
+            "quote": "Continues\nsupervised exercise, 20 minutes, five days per week."
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "span": {
+            "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
+            "char_start": 1495,
+            "char_end": 1660,
+            "quote": "Patient reports a self-directed attempt beginning 01/15/2025, undertaken\nwithout clinical supervision and with no visits or monitoring by this or any\nother practice."
+          },
+          "text": "self-directed weight loss attempt starting 2025-01-15"
+        }
+      ],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1089,
+        "output_tokens": 1402,
+        "wall_time_ms": 3532.5464170018677
+      },
+      "raw": {
+        "wm_events": [
+          {
+            "date": "2024-08-05",
+            "quote": "08/05/2024 - Monthly program visit completed. Weight 116.6 kg, BMI 39.1.\nDiscussed portion control and protein intake on the 1500 kcal plan. Reports 30\nminutes of brisk walking, five days per week.",
+            "char_start": 139,
+            "char_end": 315,
+            "bmi": 39.1,
+            "bmi_quote": "BMI 39.1",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed portion control and protein intake on the 1500 kcal plan.",
+            "activity_quote": "Reports 30\nminutes of brisk walking, five days per week."
+          },
+          {
+            "date": "2024-09-02",
+            "quote": "09/02/2024 - Monthly program visit completed. Weight 115.7 kg, BMI 38.8.\nDiscussed portion control and protein intake on the 1400 kcal plan. Reports 15\nminutes of pool exercise three days per week.",
+            "char_start": 317,
+            "char_end": 494,
+            "bmi": 38.8,
+            "bmi_quote": "BMI 38.8",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed portion control and protein intake on the 1400 kcal plan.",
+            "activity_quote": "Reports 15\nminutes of pool exercise three days per week."
+          },
+          {
+            "date": "2026-03-10",
+            "quote": "03/10/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nActivity goal of 40 minutes daily met on three days this month.",
+            "char_start": 496,
+            "char_end": 691,
+            "bmi": 37.6,
+            "bmi_quote": "BMI 37.6",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Reviewed the 1500 kcal reduced-calorie meal plan",
+            "activity_quote": "Activity goal of 40 minutes daily met on three days this month."
+          },
+          {
+            "date": "2026-04-14",
+            "quote": "04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Reports 40 minutes of\npool exercise five days per week.",
+            "char_start": 693,
+            "char_end": 870,
+            "bmi": 37.6,
+            "bmi_quote": "BMI 37.6",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Food\ndiary reviewed; 1600 kcal plan continued without change.",
+            "activity_quote": "Reports 40 minutes of\npool exercise five days per week."
+          },
+          {
+            "date": "2026-05-12",
+            "quote": "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1500 kcal plan. Continues\nsupervised exercise, 30 minutes, five days per week.",
+            "char_start": 872,
+            "char_end": 1056,
+            "bmi": 37.6,
+            "bmi_quote": "BMI 37.6",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Discussed portion control and protein intake on the 1500 kcal plan.",
+            "activity_quote": "Continues\nsupervised exercise, 30 minutes, five days per week."
+          },
+          {
+            "date": "2026-06-09",
+            "quote": "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week.",
+            "char_start": 1058,
+            "char_end": 1242,
+            "bmi": 37.6,
+            "bmi_quote": "BMI 37.6",
+            "diet_documented": true,
+            "activity_documented": true,
+            "diet_quote": "Dietary recall reviewed in detail against the 1500 kcal plan.",
+            "activity_quote": "Continues\nsupervised exercise, 20 minutes, five days per week."
+          }
+        ],
+        "program_assertions": [
+          {
+            "quote": "Patient reports a self-directed attempt beginning 01/15/2025, undertaken\nwithout clinical supervision and with no visits or monitoring by this or any\nother practice.",
+            "char_start": 1269,
+            "char_end": 1438,
+            "claim": "self-directed weight loss attempt starting 2025-01-15"
+          }
+        ]
+      },
+      "score": {
+        "labeled_events": 6,
+        "extracted_events": 6,
+        "matched_events": 6,
+        "precision": 1.0,
+        "recall": 1.0,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 1,
+        "traps_req9": 1,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 1,
+        "assertion_required": false,
+        "spans_emitted": 25,
+        "spans_anchored": 25,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 6,
+        "spans_disambiguated": 4,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 18,
+        "field_total": 18,
+        "field_disagreements": []
+      }
+    },
+    {
+      "note_id": "E8+E10b",
+      "corpus": "synthesized",
+      "document_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note.txt",
+      "note_sha256": "edef80a1a715609bcc8174ad02f42b362c5d05ca832d30357439af556051a328",
+      "cases": [
+        "E8",
+        "E10b"
+      ],
+      "labels": {
+        "events": [],
+        "traps": [
+          {
+            "date": "2026-01-20",
+            "reason": "unsupervised_attempt"
+          }
+        ],
+        "assertion_required": true
+      },
+      "events": [],
+      "assertions": [
+        {
+          "span": {
+            "document_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note.txt",
+            "char_start": 229,
+            "char_end": 347,
+            "quote": "Patient reports completing a six-month medically supervised weight-loss program last year; no visit records available."
+          },
+          "text": "Completed a six-month medically supervised weight-loss program last year"
+        }
+      ],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 766,
+        "output_tokens": 98,
+        "wall_time_ms": 748.6983749986393
+      },
+      "raw": {
+        "wm_events": [],
+        "program_assertions": [
+          {
+            "quote": "Patient reports completing a six-month medically supervised weight-loss program last year; no visit records available.",
+            "char_start": 91,
+            "char_end": 208,
+            "claim": "Completed a six-month medically supervised weight-loss program last year"
+          }
+        ]
+      },
+      "score": {
+        "labeled_events": 0,
+        "extracted_events": 0,
+        "matched_events": 0,
+        "precision": null,
+        "recall": null,
+        "missed": [],
+        "spurious": [],
+        "traps_total": 1,
+        "traps_req9": 1,
+        "traps_extracted": [],
+        "req9_traps_extracted": [],
+        "assertions": 1,
+        "assertion_required": true,
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 1,
+        "spans_unescaped": 0,
+        "spans_multi_occurrence": 0,
+        "spans_disambiguated": 0,
+        "model_offsets_usable": 0,
+        "dropped": [],
+        "field_agreements": 0,
+        "field_total": 0,
+        "field_disagreements": []
+      }
+    }
+  ]
+}

@@ -291,11 +291,11 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-15, T-26 and T-41**.
-**US-2 and US-3 are delivered**; T-06, T-07 and T-31 are closed, so the note
-corpus and the gap vocabulary both exist and **T-15 is the next task — the
-one place a model enters the system**. After it, T-16 is immediately
-buildable (its two dependencies were T-15 and T-31). **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-16, T-26 and T-41**.
+**US-2 and US-3 are delivered**, and T-15 has closed, so **T-16 (the c1–c5
+predicates) is the next task** — both its dependencies, T-15 and T-31, are
+done. T-33, T-17 and T-18 open up behind it; US-4 closes when E4, E5, E6, E7,
+E9, E10, E10b, E10c and E11 all pass. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
@@ -436,6 +436,30 @@ of its absence. It propagates onto `GapEntry` and survives serialization.
 Criteria (a) and (b) carry `NO_EVIDENCE_RETRIEVED`. **T-16, T-17, T-19 and
 T-33 must supply a reason at every abstention branch** — the validator makes
 that mechanical rather than remembered.
+
+**T-15 is closed (D45, D46, D47), and the model is in the system.**
+`pa_agent/extraction.py` is the one model leaf — a declared leaf that routes
+nothing (Art. I). It carries spike 001's prompt essentially verbatim so D19's
+result keeps meaning something, widened by REQ-38's per-field spans and the
+BMI as a value; that widening makes it **a new measurement, not D19's re-run**.
+Measured twice over 11 notes: precision 1.000, recall 1.000, REQ-9 exclusion
+11/11, field agreement 1.000, **0 model-emitted offsets usable**.
+
+**Two anchoring defects were found by running it, not by review.** Seven
+per-field spans cited the *wrong encounter* while passing T-11 — a repeated
+`BMI 37.6` anchoring to the first month — so `pa_agent/anchor.py` now
+disambiguates by proximity to the event, and T-15's exit gained the clause
+T-11 structurally cannot check. And the model double-escaped newlines on one
+run, which cost six encounters until the quote is unescaped before matching.
+**Both were verified by `--rescore` for zero model calls**; D18 built that
+path for exactly this.
+
+**Measurement and gate are separate:** `scripts/run_extraction.py` spends the
+calls, `pytest` re-reads the recording, re-hashes every note, re-validates
+every span through T-11, and checks the recorded model is the pin. Do not make
+the gate call a model. Both anchoring repairs also carry direct synthetic
+tests, because their triggers are intermittent and a recording may not
+exercise them.
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in

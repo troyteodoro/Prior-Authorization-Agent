@@ -490,14 +490,48 @@ case erased), a missed visit reading like a visit, a documented BMI written
 off by one, and a note tampered on disk — which fails at `Document`'s hash
 validator before any test sees it.
 
-### `[ ] T-15` `wm_events` extraction agent
+### `[x] T-15` `wm_events` extraction agent
 **REQ:** 8, 9, 10, 35, 38 · **Depends:** T-00, T-07, T-11
-**Exit:** `pytest tests/test_extraction.py` — correct events on the five
+**Exit** *(gains a clause from D46 — see below)*:
+`pytest tests/test_extraction.py` — correct events on the five
 `spike/spike_001/notes/` cases and three synthesized notes; every span passes
-T-11; E8's note yields zero `wm_events` and at least one `program_assertions[]`
-span
+T-11; **every per-field span is nearer its own event than any other event's**;
+E8's note yields zero `wm_events` and at least one `program_assertions[]` span
 The only place in the system where a model exercises judgment. The spike's notes
 double as regression cases.
+
+**Closed by D45, D46 and D47.** `pa_agent/extraction.py` carries the spike's
+prompt and schema essentially verbatim — D19 measured 1.000/1.000 on that
+formulation with no tuning, and rewriting it would restart the prompt's
+history — widened only by REQ-38's per-field spans and the BMI as a *value*
+(the contract stores `WmEvent.bmi`, and T-33 has nothing to reconcile
+without it). So this is a **new measurement on a wider schema, not D19's
+re-run**. Anchoring is `pa_agent/anchor.py`, separate from `spans.py` because
+a locator must not be able to launder its bugs through the validator.
+
+**Measured over 11 notes, twice:** event precision 1.000, recall 1.000, REQ-9
+exclusion 11/11, REQ-38 field agreement 1.000 (126 fields), every span
+anchored, and **0 of the model's own offsets usable** — D19's finding
+reproduced, so D17's reversal clause stays dead. Event dates and every
+documentation flag were identical across both runs; quote *encoding* and
+assertion emission on notes that also have events were not (D47).
+
+**Two defects the first measurement found, both fixed here.** Seven of 162
+per-field spans cited the **wrong encounter** — a repeated `BMI 37.6`
+anchoring to the first month — while slicing back perfectly and passing T-11;
+the exit condition as written would have shipped them, so D46 fixed the
+anchoring by proximity and added the clause above. And the model returned
+double-escaped newlines on one run, costing six real encounters until D47
+unescaped them. Both repairs were verified by replaying recorded payloads for
+**zero model calls** — D18 built `--rescore` for exactly this and it paid on
+its first use.
+
+Mutation-tested seven ways, each caught: the proximity fix undone, the
+unescape fix undone, a synthesized note edited after measurement, a spike
+note edited after measurement, the recorded model not the pin, a trap
+smuggled in as an event, and a fabricated quote. The unescape mutation
+initially passed — the live recording did not exercise that path — which is
+why both anchoring repairs now carry direct synthetic tests.
 
 ### `[x] T-31` `gap_reason` on `INSUFFICIENT_EVIDENCE`
 **REQ:** 31 · **Depends:** T-09 · **Blocks:** T-16, T-17, T-19, T-33

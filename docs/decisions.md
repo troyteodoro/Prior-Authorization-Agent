@@ -2509,6 +2509,260 @@ value, and the enum grows only against that test.
 
 ---
 
+## D45 — The spike's prompt is promoted unchanged, anchoring becomes a module, and the gate spends no model call
+
+T-15's design. The one place in the system where a model exercises judgment
+(Art. I: it is a declared leaf, it routes nothing).
+
+### Chosen — the prompt and schema move out of the spike essentially verbatim
+
+D19 measured event precision 1.000, recall 1.000 and REQ-9 exclusion 21/21 on
+**that exact formulation, with no tuning spent**. Rewriting it here would
+throw the measurement away and start the prompt's history over at zero. So
+`pa_agent/extraction.py` carries the spike's instruction text and schema, and
+the spike's notes stay regression cases against them.
+
+**One deliberate widening, and it is a change to the thing measured.** REQ-38
+requires `diet_documented` and `activity_documented` to carry their own spans
+when true — `WmEvent`'s validator refuses the flag without the span — and the
+spike explicitly deferred those to T-15 to avoid testing something other than
+event fidelity. Adding them means **this is not D19's measurement re-run**:
+it is a new measurement on a wider schema, and any number from it is quoted
+as such. D19's numbers stay attached to the narrow schema that produced them.
+
+### Chosen — anchoring is promoted to `pa_agent/anchor.py`, not folded into `spans.py`
+
+D19 killed D17's reversal clause: 0 of 80 model-emitted offset pairs were
+usable, even modulo whitespace. Quote anchoring is therefore not optional
+machinery and T-15 must ship it. It lands as its own module because
+**locating and validating are different operations**: `anchor` answers "where
+is this quote", `validate` answers "should this span be accepted", and the
+validator must not depend on the locator — otherwise a bug in location could
+launder itself through the check that exists to catch it. `spans.py`'s import
+assertion (D38) stays exactly as tight as it was.
+
+The model's own offsets are still recorded and their agreement rate still
+reported, because that is the number that would reverse this choice, and it
+cannot reverse if nobody keeps measuring it.
+
+### Chosen — `pytest` verifies recorded artifacts; a separate script spends the calls
+
+D17's split, for D17's reasons, now load-bearing rather than convenient: a
+gate that calls a model is slow, rate-limited (D5 throttles to eight to eleven
+runs a day), non-deterministic under an outage, and answers differently on two
+invocations. `scripts/run_extraction.py` measures and writes
+`eval/extraction/results.json`; `pytest tests/test_extraction.py` re-reads it
+and spends nothing.
+
+The staleness that split invites is answered exactly as D17 answered it, and
+one step further:
+
+- every note is **re-hashed** before its results are believed, so a corpus
+  that moved under a recording fails rather than scoring;
+- every recorded span is **re-validated through T-11**, not merely re-sliced —
+  the gate uses the same rejector production will;
+- the recorded model identifier must equal `PINNED_MODEL` (T-34's argument:
+  a finding whose provenance can drift without failing anything is not a
+  finding).
+
+**Rejected — the gate calls the model live.** Honest in the sense that it
+tests the real path, and it makes `pytest` a network-dependent, quota-consuming
+coin flip. The measurement is a measurement; the gate is a gate.
+
+### Chosen — labels come from T-06's manifests for the synthesized notes
+
+The manifests already declare every encounter, its documentation flags, and
+every trap with its type (D42), which is exactly the label shape the spike's
+`labels.json` uses. Deriving labels from them rather than writing a second
+label file keeps one source of truth — a second one would be free to disagree,
+and the disagreement would look like a model error.
+
+**Reverses if:** a note's correct extraction turns out to depend on something
+the manifest does not declare, which would mean the manifest is not ground
+truth for that fact and T-06's shape needs the field, not the labels a
+workaround.
+
+---
+
+## D46 — A per-field span is located inside its own encounter, and T-15's exit gains the check T-11 structurally cannot make
+
+**Found by running T-15's first measurement**, not by review. D17 named this
+risk and the spike measured it at zero; the first real corpus put it at
+**7 of 162 event-scoped spans (4.3%)**.
+
+### The finding
+
+`spans_multi_occurrence` jumped from 0 in spike 001 to 12 of 169 here, and
+seven of those anchored to the wrong encounter: a `bmi_span` for the June
+visit pointing at March's identical `BMI 37.6`, an `activity_span` for one
+month landing on another month's identical phrasing. Every one of them
+**slices back to its quote exactly and passes T-11**. Article III's mechanical
+check cannot catch it, because the cited text is genuinely there — it is just
+somewhere else.
+
+The spike's zero was a property of its corpus, not of the mechanism: notes
+written by hand gave the patient a different BMI every month, so no short
+quote repeated. Real charts repeat. A plateaued weight produces four
+identical `BMI 37.6` lines, and that is the normal case, not a synthetic one.
+
+**Why it matters more than its rate suggests.** c4 asks whether *this month's*
+encounter documented a BMI. A span citing another month's identical value
+substantiates the claim with the wrong evidence, and the verifier (Art. V)
+receives that span and confirms it, because the passage does say `BMI 37.6`.
+It is a citation that is true about the document and false about the claim —
+the failure mode this project exists to argue against, arriving through the
+one door the span validator cannot watch.
+
+### Chosen — sub-spans anchor near their event, not near the top of the document
+
+`anchor` takes an optional `prefer_near` window. When a quote occurs more than
+once, the occurrence **closest to that window** wins; ties keep the first, so
+the single-occurrence path is unchanged. The event's own quote is anchored
+first (it contains the date, so it is unique in practice), and its offsets
+become the window for the encounter's `bmi_quote`, `diet_quote` and
+`activity_quote`.
+
+The rule is a statement about what those fields mean: a per-field span
+documents *this* encounter, so searching the whole document for it was the
+bug. Distance to the event span is the criterion rather than membership in a
+blank-line block, because blocks are this corpus's formatting and a real chart
+export may have none.
+
+**Rejected — a longer quote from the model.** D17's own reversal clause
+("anchoring needs a disambiguating window and the schema gains a context
+field"). It spends a prompt change and a re-measurement to buy what Python
+already has: the event's location. It also degrades under exactly the
+condition that produces the problem, since a longer quote around a repeated
+line is itself more likely to repeat.
+
+**Rejected — reject multi-occurrence spans outright.** Fail-closed and
+appealing, and it would drop 12 spans of which 5 were correctly anchored,
+demoting honest REQ-38 flags for a formatting property of the note.
+
+**Rejected — accept it and record the rate.** What the spike did, correctly,
+for a number it measured at zero. At 4.3% with a known mechanism and a
+deterministic fix available, recording it instead of fixing it would be
+choosing a caveat over a correction.
+
+### Chosen — T-15's exit condition gains a check, because "every span passes T-11" does not cover this
+
+The exit reads *every span passes T-11*. All seven defective spans pass T-11.
+An exit condition that a known defect satisfies is not an exit condition
+(working rule 4, D10's precedent), so it gains a clause:
+
+> every event-scoped span is nearer to its own event's span than to any other
+> event's span in the same note
+
+Format-independent, and it is precisely the property that was violated.
+Rewriting an exit condition is a design decision and is logged before the code
+(working rule 5, D28's precedent). This stays inside T-15 rather than becoming
+a new task: D18 and D19 already assigned the span-location mechanism to T-15,
+and a locator that cites the wrong encounter is that mechanism unbuilt.
+
+**Reverses if:** the nearest-occurrence rule picks wrongly on a chart whose
+encounters interleave rather than run in blocks — a note where March's
+follow-up text sits physically closer to June's entry than to March's. Then
+anchoring needs the model to return one contiguous quote per encounter and
+locate the fields inside it, which is a schema change and a re-measurement.
+
+---
+
+## D47 — T-15 result: the facts are stable, the encoding is not, and a double-escaped newline is a transport artifact
+
+Two findings from running T-15, both measured rather than reasoned about.
+Logged here because D19's stability claim was made on the narrow schema and
+this is the first evidence about the wider one.
+
+### Measured — 2026-09-08, `gemini-3.5-flash-lite`, temperature 0, two complete runs over 11 notes
+
+Five spike notes and six synthesized ones, 22 model calls total.
+
+| | run A | run B |
+|---|---|---|
+| event precision | **1.000** | **1.000** |
+| event recall | **1.000** | **1.000** |
+| matched events | 42/42 | 42/42 |
+| REQ-9 exclusion | **11/11** | **11/11** |
+| REQ-38 field agreement | 1.000 (126) | 1.000 (126) |
+| spans anchored | 170/170 | 168/168 |
+| **model-emitted offsets usable** | **0** | **0** |
+
+**Stable across both runs:** every event date on all 11 notes, and every
+`bmi`/`diet_documented`/`activity_documented` value on every matched event.
+That is the property T-15 needed — these notes are usable as regression cases
+only if a note yields the same events twice — and it now holds on the wider
+schema, not only on D19's narrow one.
+
+**Not stable, and worth naming:**
+
+- *Quote encoding.* Run A double-escaped newlines inside its JSON strings
+  (15 spans arrived carrying a literal backslash and an `n` where the note has
+  a line break); run B emitted none and needed D18 normalization for 16 spans
+  instead. Same information, different encoding, identical temperature.
+- *Assertion emission on notes that also document encounters.* `n05` and `E5`
+  each produced one `program_assertion` in run A and none in run B. **E8 and
+  n03 — the refusal cases — produced exactly one in both**, which is the count
+  that matters: D12 detects `UNSUBSTANTIATED_ASSERTION` from *zero events plus
+  at least one assertion*, so an extra assertion on a note that has events
+  changes no verdict. Harmless today, and recorded because it stops being
+  harmless if a later consumer reads assertions without D12's zero-event
+  guard.
+
+**D19's exclusion caveat carries over unchanged.** The 11 REQ-9-shaped traps
+here are a small n, and the corpus is still notes written for this project
+scored against labels written for it — T-07's are the agent's own, which D42
+already put on the record.
+
+### Chosen — a literal `\n` inside a quote is unescaped before anchoring
+
+The model returned a JSON string holding backslash-`n` where the note holds a
+newline, so nothing matched and six real encounters on `n01` were dropped as
+unanchorable. That is a property of the encoding, not of the claim — the same
+class of fact as D18's line wrap — and `pa_agent.anchor.unescape_literal_whitespace`
+repairs it with no threshold to tune: the two characters either are there or
+are not. It applies to the **quote only**; the document is never rewritten, so
+the offsets produced still point into the unmodified note, and the recorded
+`anchor_mode` says `unescaped` so the rate stays visible instead of being
+absorbed.
+
+**Rejected — treat it as the model's problem and drop the events.** The
+literal reading, and it is what happened: run A scored recall 0.857 because
+one note's six encounters were unanchorable for a reason that has nothing to
+do with whether the model read the note correctly. D18 rejected the identical
+argument for line wrapping — failing an honest citation for an encoding
+property makes a correct model look fabricating.
+
+**Rejected — repair it in the prompt.** Asking the model not to double-escape
+spends a prompt change and a re-measurement on something Python fixes exactly,
+and it would fail silently the next time the model chose the other encoding.
+
+### `--rescore` paid for itself immediately
+
+D18 built the re-anchoring path so that changing the anchor rule would not
+cost a re-measurement, and D46 changed the rule the same afternoon. Both
+repairs — proximity disambiguation and unescaping — were verified by replaying
+the recorded payloads for **zero model calls**, against notes re-hashed first.
+The one re-run this work did spend was the run that happened before payloads
+were being recorded at all, which is the argument for recording them.
+
+### Both repairs are tested directly, because both triggers are intermittent
+
+Removing the unescape repair broke nothing in the gate, because the recording
+it runs against happens to be the run that did not double-escape. A gate whose
+coverage depends on which way a model felt that afternoon is not coverage, so
+`anchor` gets synthetic tests for both mechanisms — the D27 scorer-self-check
+pattern, applied to a branch that appears and disappears rather than one that
+has not arrived yet.
+
+**Reverses if:** the escaping variance disappears across a longer series (then
+the unescape path is dead code kept for a fault nobody sees, and its rate is
+already reported so that is checkable), or assertion emission becomes
+load-bearing for a consumer without D12's zero-event guard — in which case the
+instability above is a defect rather than a note, and it needs a prompt
+change and its own measurement.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
