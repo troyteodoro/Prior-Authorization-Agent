@@ -56,6 +56,7 @@ from pa_agent.contracts import (  # noqa: E402
     Determination,
     DeterminationOutcome,
 )
+from pa_agent.determination import determine  # noqa: E402
 from pa_agent.stores.policy import LocalPolicyStore  # noqa: E402
 
 EVAL_DIR = Path(__file__).resolve().parent
@@ -161,18 +162,24 @@ def score(case: dict[str, Any], determination: Determination) -> CaseResult:
 
 
 def _determine(case: dict[str, Any], policy_store: Any) -> Determination:
-    """The seam T-24 and T-25 fill in. Today it reaches storage and stops.
+    """The seam T-24 and T-25 filled: the system under test, end to end.
 
-    `LocalPolicyStore.resolve` raises `NotImplementedError` citing T-38, which
-    is the correct answer to "what is the governing policy for this code"
-    while the criteria tree carries no procedure sets. The harness records that
-    message rather than a status it invented (D26, D27).
+    A `NoPolicyResult` for a case that expects an outcome is raised rather than
+    coerced — no labeled case expects `NO_POLICY_FOUND` today (T-21 owns adding
+    one, and the scorer learns the shape then), and converting it into any
+    `DeterminationOutcome` here would be D26's collapse performed by the
+    grader.
     """
-    policy_store.resolve(case["procedure_code"])
-    raise NotImplementedError(
-        "T-25 has not built determination assembly: resolution returned, and "
-        "there is nothing yet that turns a PolicyRef into a Determination."
+    result = determine(
+        policy_store, case["procedure_code"], patient_id=case.get("patient_id")
     )
+    if not isinstance(result, Determination):
+        raise RuntimeError(
+            f"no policy governs {case['procedure_code']}, but the case expects "
+            f"{case['expect']['outcome']}; NO_POLICY_FOUND is not an outcome "
+            "and the scorer cannot grade it yet (T-21)"
+        )
+    return result
 
 
 def run_case(case: dict[str, Any], policy_store: Any) -> CaseResult:
@@ -239,7 +246,7 @@ def _synthetic_determination(
 
 
 def self_check() -> list[tuple[str, bool, str]]:
-    """Score six synthetic cases whose answers are known.
+    """Score synthetic cases whose answers are known.
 
     Every branch below is one no real case can reach until T-25 produces a
     determination. Without this the code that decides whether US-1 passed would
@@ -304,6 +311,18 @@ def self_check() -> list[tuple[str, bool, str]]:
     record(
         "any other exception is FAIL/UNEXPECTED_EXCEPTION",
         run_case(_synthetic_case(), _RaisingStore(ValueError("boom"))),
+        ("FAIL", "UNEXPECTED_EXCEPTION"),
+    )
+
+    class _UngoverningStore:
+        """resolve() returns None: no policy binds any code."""
+
+        def resolve(self, procedure_code: str) -> None:
+            return None
+
+    record(
+        "an ungoverned code under an outcome expectation is FAIL, never a coerced denial",
+        run_case(_synthetic_case(), _UngoverningStore()),
         ("FAIL", "UNEXPECTED_EXCEPTION"),
     )
 

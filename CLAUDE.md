@@ -289,17 +289,33 @@ inside the non-covered list — only the date-qualifier assertion catches it.
 Active task: **none. Pick the next one before writing code.**
 
 T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-25, T-26,
-T-31, T-36 and T-39**. T-36 is fully closeable at last: `tests/test_resolver.py`
-exists, and the resolver's contractor-determined branch raises naming it. **T-24 is closed (D31): facts in the store, judgment in
+closed. T-11 sits behind T-08. The ready set is now **T-04, T-08, T-26, T-31, T-36
+and T-39**. T-36 is fully closeable: `tests/test_resolver.py` exists, and the
+resolver's contractor-determined branch raises naming it. With US-1 delivered,
+US-2's chain (T-04 → T-05, T-08 → T-11, T-12) is the next story spine, and
+T-39 should land before T-13 or T-33 unflags anything. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and **raises citing T-36 for a
 contractor-determined code** — do not "fix" that raise by picking a mapping.
 The contracts carry typed procedure sets whose validators refuse an unsourced
-identity binding and a code bound in two sets. **T-25 is the last step on
-US-1's critical path**: determination assembly flips E3 to `PASS`, and that
-baseline update is the commit that closes the story.
+identity binding and a code bound in two sets.
+
+**T-25 is closed (D32), and with it US-1 — the first delivered story.**
+`python -m pa_agent.cli --patient X --procedure 43842` prints a `NOT_COVERED`
+determination citing its denial with spans, version id recorded, zero model
+calls; `python eval/run_eval.py` reports E3 `PASS` against the updated
+baseline. Three shapes D32 fixed: `Determination.patient_id` is `None` when no
+patient was consulted (refused alongside criterion results),
+`Determination.coverage_claim` carries the denial's citation (valid only with
+`NOT_COVERED`; sc2's citation shape is **T-14's**, not this field's), and
+`NO_POLICY_FOUND` is `NoPolicyResult`, deliberately not a `Determination`
+because REQ-4's version id cannot exist for it. `pa_agent/cli.py` is the one
+place a store is constructed (REQ-41). `tests/test_determination.py` exists
+and is the file **T-19's exit names** — T-19 extends it, and covered codes
+currently raise citing T-19. The harness scorer runs eight self-checks; the
+eighth pins that an ungoverned code under an outcome expectation is `FAIL`,
+never a coerced denial.
 **T-40 is closed** — `r931cp` is in the corpus and every binding T-38 writes
 can carry an in-corpus span; `python scripts/verify_sources.py` covers all three
 documents.

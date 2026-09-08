@@ -1,10 +1,10 @@
 {
   "recorded_on": "2026-09-08",
-  "note": "The status every case in eval/cases.json currently reports. The gate compares against this and fails on any difference in either direction, so a case that starts passing must be acknowledged in a diff (D27). E3 moved from BLOCKED/CASE_UNSPECIFIED to BLOCKED/NOT_IMPLEMENTED when T-35 supplied its procedure code (43842, D28): the case now reaches LocalPolicyStore.resolve and gets the NotImplementedError citing T-38. T-38, T-24 and T-25 stand between it and PASS. US-1 closes on the commit that moves E3 to PASS here.",
+  "note": "Observed status per case. Updated by --update-baseline; the change is meant to be read as a diff (D27).",
   "cases": {
     "E3": {
-      "status": "BLOCKED",
-      "reason_class": "NOT_IMPLEMENTED"
+      "status": "PASS",
+      "reason_class": null
     }
   }
 }

@@ -594,12 +594,44 @@ class Determination(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    patient_id: str
+    # `None` means no patient was consulted — true for sc1, where the denial is
+    # a fact about the procedure (D32). Refused alongside criterion_results by
+    # the validator below.
+    patient_id: str | None
     procedure_code: str
     policy_version_id: str = Field(min_length=1)
     outcome: DeterminationOutcome
+    # The denial's citation, copied from the resolver so the reviewable
+    # artifact cites itself (Art. III, US-1's "with the reason"). Only valid
+    # with NOT_COVERED. Optional because sc2's citation shape is T-14's
+    # decision, not this field's (D32).
+    coverage_claim: CoverageClaim | None = None
     criterion_results: list[CriterionResult] = Field(default_factory=list)
     metrics: list[CallMetrics] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _a_patientless_determination_adjudicates_nobody(self) -> Determination:
+        """D32: criterion verdicts are claims about a patient's evidence."""
+        if self.patient_id is None and self.criterion_results:
+            raise ValueError(
+                "patient_id is None but criterion_results is not empty; a "
+                "criterion verdict with no patient is adjudicating nobody (D32)"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _the_reason_matches_the_outcome(self) -> Determination:
+        """D32: a coverage citation under any outcome but NOT_COVERED is a
+        sentence that parses and means nothing."""
+        if (
+            self.coverage_claim is not None
+            and self.outcome is not DeterminationOutcome.NOT_COVERED
+        ):
+            raise ValueError(
+                f"coverage_claim on a {self.outcome.value} determination; the "
+                "denial citation belongs only to NOT_COVERED (D32)"
+            )
+        return self
 
     @model_validator(mode="after")
     def _abstention_never_reports_met(self) -> Determination:

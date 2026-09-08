@@ -190,10 +190,24 @@ baseline drift. Seven mutations, each caught — including the contractor branch
 quietly mapping like covered, and a schema gate D31 records as having passed by
 accidental substring match.
 
-### `[ ] T-25` Determination assembly, minimal
+### `[x] T-25` Determination assembly, minimal
 **REQ:** 4, 21 · **Depends:** T-24
 **Exit:** `python -m pa_agent.cli --patient X --procedure 43842` prints a
 `NOT_COVERED` determination carrying `policy_version_id`, model-call counter zero
+
+**Closed by D32.** `pa_agent/determination.py` assembles sc1:
+`NOT_COVERED` arrives with the resolver's spanned claim copied onto the
+artifact (`Determination.coverage_claim`, valid only with that outcome),
+`patient_id` may be `None` when no patient was consulted, and
+`NO_POLICY_FOUND` is `NoPolicyResult` — not a `Determination`, because REQ-4's
+version id cannot exist for it. Covered codes raise citing T-19; the T-36
+raise propagates. The CLI prints one JSON document and exits 0 for answers, 2
+for unbuilt paths. Filling the harness seam flipped E3 to `PASS`; the gate
+failed on drift and the baseline diff rides in this commit — which, per this
+story's close condition, is US-1 closing. The scorer gained an eighth
+self-check (an ungoverned code under an outcome expectation is `FAIL`, never a
+coerced denial). Nine mutations, each caught, including the harness coercing
+`NO_POLICY_FOUND` into a denial — caught by that eighth check.
 43842 is open vertical banded gastroplasty, which NCD 100.1 names non-covered for
 all Medicare beneficiaries unconditionally, so the case exits through sc1.
 
@@ -208,6 +222,11 @@ the commit moving E3 to `PASS` in `eval/baseline.json`, after T-35 supplies the
 code, T-38 the procedure sets, T-24 the resolver and T-25 determination assembly.
 Until then the gate returns zero on a `BLOCKED` E3 and fails the moment that
 changes without being recorded *(D27)*.
+
+**US-1 is closed.** That commit is T-25's: E3 reports `PASS`,
+`python eval/run_eval.py` returns zero against the updated baseline, and the
+chain ran exactly as written — T-35 the code, T-38 the sets, T-24 the resolver,
+T-25 the assembly.
 
 ---
 

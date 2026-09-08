@@ -1619,6 +1619,77 @@ proves unable to supply claims and membership efficiently, in which case the
 
 ---
 
+## D32 — A short-circuit determination cites its denial and may have no patient, and NO_POLICY_FOUND is not a determination
+
+T-25's design. Three shapes settle here, each the smallest honest one.
+
+### Chosen — `patient_id` becomes `str | None`, and `None` means no patient was consulted
+
+sc1 is a fact about the procedure: E3's eval case carries `patient_id: null`
+because no patient data enters the answer, and the artifact should say the same
+thing. A validator refuses `None` on any determination carrying
+`criterion_results` — criterion verdicts are claims about a patient's evidence,
+and a patient-less one would be adjudicating nobody.
+
+**Rejected — a placeholder string.** `"unspecified"` in a required field keeps
+the contract unchanged and puts a fabricated value in a reviewable artifact,
+which is the move D28 refused for a code and D22 spent an entry undoing.
+
+### Chosen — `coverage_claim` on the `Determination`, allowed only with `NOT_COVERED`
+
+US-1 asks for the result "with the reason," and Article III says a reason is a
+span. The assembly copies the resolver's claim — bullet plus scoping sentence —
+onto the artifact, so the reviewable output cites its own denial rather than
+deferring to whoever still has the resolver result in hand. The validator
+refuses the field on any other outcome: an approval carrying a non-coverage
+citation is a sentence that parses and means nothing.
+
+Optional rather than required, in writing: sc2's `NOT_COVERED` (REQ-3, T-14)
+may cite a criterion constant instead of a procedure-set claim, and that shape
+is T-14's decision. If T-14 lands a different citation field, the validator
+tightens then.
+
+**Rejected — reason as prose.** A `reason: str` reads well in a demo and is
+unverifiable by construction.
+
+### Chosen — `NO_POLICY_FOUND` is `NoPolicyResult`, a type that is not a `Determination`
+
+REQ-4 requires every determination to record the `policy_version_id` it was
+evaluated against, and a code no policy governs has none — the impossibility is
+the argument. US-1's second bullet ("rather than a denial") is enforced by the
+type system the way D31 enforced the resolver's three answers: a caller cannot
+mistake `NoPolicyResult` for a denial without noticing it holds no outcome at
+all.
+
+**Rejected — a fifth `DeterminationOutcome`.** It would let every downstream
+consumer treat "no policy" as one more verdict in the same envelope, REQ-4
+permanently unsatisfiable for one enum member, and D26's collapse waiting one
+`elif` away.
+
+### The rest, briefly
+
+Assembly lives in `pa_agent/determination.py`; its tests create
+`tests/test_determination.py`, the file T-19's exit already names — created by
+the task that needs it first, extended by T-19, the same pattern as T-24 and
+`tests/test_resolver.py`. A covered code raises `NotImplementedError` citing
+**T-19**, the aggregator that turns criterion results into a determination;
+the contractor-determined raise from D31 propagates untouched, still naming
+T-36. The CLI constructs the one `LocalPolicyStore` (REQ-41) and prints JSON;
+`NO_POLICY_FOUND` exits zero because a deterministic answer is not an error,
+while the unbuilt paths exit non-zero naming their task.
+
+Filling the harness's `_determine` seam flips E3 to `PASS`, which fails the
+gate on drift; the `--update-baseline` diff rides in the close commit, and per
+the board that commit is US-1 closing — D27's mechanism recording a story
+delivered rather than a table quietly improving.
+
+**Reverses if:** T-14 lands a unified citation shape for both short-circuits
+(the `coverage_claim` validator then tightens or the field generalizes), or a
+caller emerges that genuinely needs `NO_POLICY_FOUND` inside a determination
+envelope — in which case the argument to reopen is REQ-4's, not convenience.
+
+---
+
 ## Kill criteria — written before the work, not after
 
 - c3 precision below 0.8 after two distinct retrieval strategies: the
