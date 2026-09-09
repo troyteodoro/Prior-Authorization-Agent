@@ -288,14 +288,36 @@ named in T-36. Ten mutations, each caught by the check that should catch it; the
 sharpest is citing 43775's own bullet, which slices back, is unique, and sits
 inside the non-covered list — only the date-qualifier assertion catches it.
 
+**T-43 is closed (D49), and the declared environment equals the installed one.**
+`requirements.txt` claimed pydantic 2.12.3 and pytest 8.4.2 while the venv held
+2.13.5 and 9.1.1, and `google-genai` — the SDK issuing every model call the
+project has measured — was undeclared, arriving transitively through
+`google-adk`. **The pins move up to the installed set**, because that is the
+environment every recorded number in this repo was produced by; the file is
+what drifted. `python scripts/check_env.py` returns zero: it parses every
+tracked `.py` with `ast`, maps third-party imports to distributions, and fails
+on an undeclared import, a stale pin, a range instead of an exact pin, or an
+import it cannot map. Mutation-tested five ways. It compares file to
+environment and **cannot tell you the environment is correct** — model
+provenance still rests on `PINNED_MODEL`.
+
 Active task: **none. Pick the next one before writing code.**
 
-T-15 is **not** unblocked: it depends on T-00, T-07 and T-11, and only T-00 is
-closed. T-11 sits behind T-08. The ready set is now **T-17, T-18, T-20,
-T-26, T-33, T-41 and T-42**. **US-2 and US-3 are delivered**, and c1–c5 now
-evaluate correctly on every edge case. US-4 still needs **T-33**
-(reconciliation, E10/E10b/E10c) and **T-18** (the workflow graph) before it
-closes; T-19 then closes US-5 and T-17 US-6. **T-24 is closed (D31): facts in the store, judgment in
+**The plan is: ship a working determination, then measure the agentic
+alternative.** Phase 1 closes US-4 and US-5 by making the CLI answer —
+**T-33** (reconciliation) → **T-46** (`PolicyStore.get_value_set`, discovered:
+no production module loads the value set today) → **T-18** (the workflow graph,
+as an ADK `Workflow` with every node deterministic, so Article I holds
+literally) → **T-19** (the aggregator, which retires the `NotImplementedError`
+and gives `criteria.py` its first production caller) → **T-59** (README with a
+runnable demo path). Phase 2 is US-6, US-7 and US-9. **Phase 3 builds the
+model-orchestrated coordinator as a measured second implementation, not a
+replacement** — so no article is amended, `eval/run_eval.py` keeps its
+exact-match contract, and the deterministic path from T-19 is the differential
+oracle. The deliverable there is the comparison, not the coordinator.
+
+**US-2 and US-3 are delivered**, and c1–c5 now evaluate correctly on every edge
+case. **T-24 is closed (D31): facts in the store, judgment in
 `pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
 membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
 `NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —

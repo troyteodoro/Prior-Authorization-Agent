@@ -1,4 +1,25 @@
+# Exact pins only. These follow the installed environment, not the other way
+# around: every recorded measurement in docs/decisions.md was produced by this
+# set, so a pin that disagrees with it is a false claim, not a stricter one.
+# Verified by `python scripts/check_env.py`. (D49, T-43)
+
+# The agent framework. Pinned exactly because every ADK API fact in CLAUDE.md
+# was established by reading the installed 2.8.0 source, and most ADK material
+# online is 1.x. (D16)
 google-adk==2.8.0
-pydantic==2.12.3
-pytest==8.4.2
+
+# The SDK that issues every model call the project has measured. A direct
+# import of scripts/run_extraction.py and spike/spike_001/run.py; it also
+# arrives transitively through google-adk, which is exactly why it is declared
+# here — otherwise an unrelated adk upgrade can move it underneath measured
+# code with no gate noticing. (D49)
+google-genai==2.22.0
+
+# The contracts layer. Article III and IV are enforced by its validators.
+pydantic==2.13.5
+
+# T-40: extracts r931cp from a static PDF, byte-stable and re-downloadable.
 pypdf==6.18.0
+
+# The gate.
+pytest==9.1.1

@@ -2836,6 +2836,80 @@ predicate then takes the window into account and this entry is superseded
 rather than edited.
 
 ---
+## D49 — The pins follow the installed set, not the file, and every direct import is declared
+
+T-43's design. The smallest task on the board and the one that decides whether
+any number already recorded in this log still means something.
+
+### The defect
+
+`requirements.txt` pins `pydantic==2.12.3` and `pytest==8.4.2`. The virtualenv
+holds **pydantic 2.13.5 and pytest 9.1.1**. Nothing in this repository has ever
+been measured on the pinned versions: D19's spike numbers, D45 and D47's T-15
+extraction figures, D48's predicate results and all 289 tests were produced by
+the interpreter and libraries currently installed.
+
+Separately, `scripts/run_extraction.py` and `spike/spike_001/run.py` both
+import `google.genai`, and `scripts/verify_sources.py` imports `pypdf`. Only
+`pypdf` is declared. **`google-genai` arrives transitively through
+`google-adk`** and is named nowhere. `pa_agent/extraction.py` is deliberately
+not among the importers — D5 keeps the client injected so no module in the
+package reads a credential — but the distribution it runs on is undeclared all
+the same.
+
+### Chosen — pin *up* to what is installed
+
+The file is the artifact that drifted; the venv is the artifact that produced
+the findings. Editing the file costs nothing and invalidates nothing.
+Downgrading the venv to match the file would invalidate every recorded
+measurement in this log to satisfy a line that was never measured on.
+
+**Rejected — pin down, reinstall to match the file.** It is the reading that
+treats the committed file as authoritative, which is normally correct. Here it
+inverts the evidence: the recorded numbers are the durable artifact and the
+pin is a claim *about* them. A pin that disagrees with the environment that
+produced the measurement is not a stricter pin, it is a false one.
+
+**Rejected — a version range, or `pip-compile` and a lockfile.** A lockfile is
+the right answer for a team or for CI, and this project has neither (working
+rule 9). A range would let the set drift again silently, which is the defect.
+Exact pins in one readable file is the smallest thing that closes it.
+
+### Chosen — `google-genai` becomes a declared direct dependency
+
+An undeclared direct import is a provenance hole of exactly the kind D20 and
+T-34 exist to close for the model identifier. `google-genai` is the SDK that
+issues **every model call the project has ever measured**. Today a
+`google-adk` upgrade is free to move it underneath `pa_agent/extraction.py`,
+and no gate in the repo would notice — the recorded model name would still
+match `PINNED_MODEL`, the notes would still re-hash, and the transport would be
+a different piece of software. D47 already established that a transport detail
+can change the payload: a double-escaped newline cost six encounters.
+
+### Chosen — the check is a scan, not a list
+
+`scripts/check_env.py` parses every tracked `.py` with `ast`, collects
+third-party top-level imports, maps them to distributions, and fails when one
+is missing from `requirements.txt` or when a pin disagrees with the installed
+version. A hand-maintained list would need remembering; this needs nothing.
+
+The scan resolves `from google import genai` to `google.genai` rather than to
+`google`, because the namespace package is shared by two distributions that
+this project pins independently. An import it cannot map fails the check
+loudly rather than being skipped — a dependency the checker does not
+understand is the case the checker exists for.
+
+**Cost:** the check reads the *installed* environment, so it passes on a
+machine whose venv is wrong in the same way the file is wrong. It closes drift
+between file and environment, not the correctness of either. Article X's
+provenance still rests on `PINNED_MODEL` and the recorded measurements.
+
+**Reverses if:** the project gains CI or a second developer, where a lockfile's
+exact transitive closure outweighs one readable file — or if an installed
+version is found to carry a defect the older pin did not, in which case the
+downgrade is a measurement event and every affected number is re-recorded, not
+inherited.
+
 
 ## Kill criteria — written before the work, not after
 

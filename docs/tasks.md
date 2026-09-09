@@ -1102,6 +1102,28 @@ code and procedure, `pytest tests/test_e3_code.py` slices it back, and
 until T-38 and T-24. Open question 7 closed.
 
 ---
+### `[x] T-43` Reconcile the environment pins and declare every direct import
+**Depends:** none · **Discovered in:** the T-18 architecture review *(D49)* ·
+**Guards:** D19, D45, D47, D48
+**Exit:** `python scripts/check_env.py` returns zero —
+- every pin in `requirements.txt` equals the version installed in the running
+  interpreter's environment;
+- every third-party top-level import in tracked Python resolves to a
+  distribution named in `requirements.txt`, found by parsing each file with
+  `ast` rather than from a hand-kept list;
+- an import the scan cannot map to a distribution **fails** rather than being
+  skipped;
+- `google-adk` is still pinned at exactly `2.8.0`;
+
+and `pytest` still returns 289 passing on the declared set.
+
+`requirements.txt` claimed `pydantic==2.12.3` and `pytest==8.4.2` while the venv
+held 2.13.5 and 9.1.1, and `google-genai` — the SDK issuing every model call the
+project has measured — was undeclared, arriving transitively through
+`google-adk`. The pins move **up** to the installed set, because that is the
+environment every recorded number in `docs/decisions.md` was produced by; the
+file is what drifted. *(D49)*
+
 
 ## Working rules
 
