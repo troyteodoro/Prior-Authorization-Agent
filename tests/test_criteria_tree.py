@@ -223,14 +223,32 @@ def _open_questions() -> set[int]:
     return open_qs
 
 
-def test_provisional_constants_name_an_open_question_that_exists(tree):
-    open_questions = _open_questions()
-    assert open_questions, "the Open questions section lists nothing"
-    provisional = [(n, b) for n, b in _all_constants(tree) if b.get("provisional")]
-    assert provisional, (
-        "no provisional constants. If every value is now sourced, this test and "
-        "D23's third section should be retired deliberately, not by accident."
+#: Provisional constants the tree is expected to carry. T-33 closed the last
+#: one (question 5, D51), so this is zero. It is pinned rather than dropped
+#: because the assertion it replaces — "at least one provisional constant
+#: exists" — was what kept this test from silently becoming vacuous. A new
+#: provisional constant is now a visible diff against a stated number, and the
+#: per-constant rules below still apply to it.
+EXPECTED_PROVISIONAL_CONSTANTS = 0
+
+
+def test_the_count_of_provisional_constants_is_the_expected_one(tree):
+    """D51: closing the last open question is a deliberate event, not a quiet
+    one. Raising this number means a task is consuming a value nobody has
+    decided; lowering it means a question closed and §9 should say so."""
+    provisional = [n for n, b in _all_constants(tree) if b.get("provisional")]
+    assert len(provisional) == EXPECTED_PROVISIONAL_CONSTANTS, (
+        f"tree carries {len(provisional)} provisional constant(s) {provisional}, "
+        f"expected {EXPECTED_PROVISIONAL_CONSTANTS}. Update this constant in the "
+        "same commit that opens or closes the question, so the change is reviewed."
     )
+
+
+def test_provisional_constants_name_an_open_question_that_exists(tree):
+    """Vacuous while the tree carries none, and kept for the next one. The
+    guard that made it non-vacuous now lives in the test above (D51)."""
+    open_questions = _open_questions()
+    provisional = [(n, b) for n, b in _all_constants(tree) if b.get("provisional")]
     for name, body in provisional:
         question = body.get("open_question")
         assert isinstance(question, int), (
@@ -309,10 +327,15 @@ def test_a_question_outside_both_subsections_fails():
         )
 
 
-def test_the_specs_own_section_parses_and_both_subsections_are_populated():
-    """On the real spec: structure holds, and neither list is empty today.
-    When the last question closes, retire this deliberately alongside the
-    provisional-constants test, not by accident."""
+def test_the_specs_own_section_parses_and_states_a_status_for_every_question():
+    """On the real spec: the structure D34 requires still holds.
+
+    The "Still open is non-empty" half was retired by T-33, which closed the
+    last question (D51). Both subsections must still exist — a missing heading
+    is supposed to fail — and `_question_statuses` still refuses a number under
+    both or under neither. `Resolved` stays asserted non-empty: questions have
+    been closed, and an empty Resolved list would mean the parser stopped
+    reading them."""
     spec = SPEC_PATH.read_text(encoding="utf-8")
     match = re.search(r"^##\s+\d+\.\s+Open questions\s*$", spec, re.MULTILINE)
     section = spec[match.end() :]
@@ -320,8 +343,8 @@ def test_the_specs_own_section_parses_and_both_subsections_are_populated():
     if nxt:
         section = section[: nxt.start()]
     open_qs, resolved_qs = _question_statuses(section)
-    assert open_qs, "the Still open subsection lists nothing"
     assert resolved_qs, "the Resolved subsection lists nothing"
+    assert not open_qs & resolved_qs, "a question is listed as both"
 
 
 # --------------------------------------------------------------------------

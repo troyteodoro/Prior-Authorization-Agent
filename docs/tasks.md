@@ -615,11 +615,11 @@ D26 and D28 each argued for; no eval case distinguishes the two readings, so
 nothing is being papered over.
 
 
-### `[ ] T-33` Source reconciliation for criterion (a)
+### `[x] T-33` Source reconciliation for criterion (a)
 **REQ:** 31, 34, 39 · **Depends:** T-13, T-15, T-31, T-39
 **Exit:** `pytest tests/test_reconciliation.py` — E10 (same side of 35.0, beyond
 tolerance) keeps the structured verdict and records one `discrepancies[]` entry;
-E10c (below tolerance) records none; E10b (34.8 against 36.2) resolves
+E10c (below tolerance) records none; E10b (34.6 against 36.2) resolves
 `INSUFFICIENT_EVIDENCE` with `gap_reason` `SOURCE_CONFLICT`; the gap list is
 untouched in all three; no model call; tolerance read from the criteria tree
 Runs after extraction rather than inside T-13, because the note BMI does not

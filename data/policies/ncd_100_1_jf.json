@@ -210,11 +210,11 @@
       "note_source": "wm_event.bmi",
       "authoritative": "structured",
       "discrepancy_tolerance": {
-        "value": null,
+        "value": 1.0,
         "type": "number_absolute",
-        "provisional": true,
-        "open_question": 5,
-        "note": "REQ-39 records a disagreement only at or beyond this tolerance, and D14 is explicit that a structured 38.1 against a note 38.0 is a rounding artifact while 38.1 against 45 is the case the list exists for. No source text bounds it — it is a judgment about what wastes a reviewer's attention, not a coverage rule. T-33 must not supply its own default."
+        "provisional": false,
+        "settled_question": 5,
+        "note": "Decided, not sourced (D51, Troy, 2026-09-08): 1.0 BMI points. No source text bounds it — it is a judgment about what wastes a reviewer's attention, not a coverage rule. A full point is beyond rounding and beyond the variance of two measurements taken weeks apart (roughly six pounds), so a disagreement at or above it is a documentation problem rather than noise. D14's two poles are both handled. The eval set does not decide this: E10 is a gap of 5.77 and E10c a gap of 0.05, so 0.5, 1.0 and 2.0 all pass — the choice is materiality, not a constraint the suite validates."
       },
       "note": "REQ-34: the structured value is authoritative and the disagreement is advisory, unless the two fall on opposite sides of bmi_threshold, in which case the criterion resolves INSUFFICIENT_EVIDENCE with gap_reason SOURCE_CONFLICT (D11)."
     }

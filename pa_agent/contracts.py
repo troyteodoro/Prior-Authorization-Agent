@@ -32,7 +32,7 @@ from __future__ import annotations
 import hashlib
 from datetime import date
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -152,6 +152,10 @@ class PolicyConstant(BaseModel):
     source: EvidenceSpan | None = None
     provisional: bool = False
     open_question: int | None = None
+    # The question a *settled* constant was closed by. Declared rather than
+    # tolerated as an extra key: a constant carrying its provenance in a field
+    # pydantic silently drops is not carrying it (D51).
+    settled_question: int | None = None
     comparison: str | None = None
     note: str | None = None
 
@@ -171,6 +175,11 @@ class PolicyConstant(BaseModel):
             raise ValueError(
                 "a constant with no value is provisional, and says which question "
                 "would settle it"
+            )
+        if self.provisional and self.settled_question is not None:
+            raise ValueError(
+                "a provisional constant names an open question, not a settled "
+                "one; the two are different claims about the same number (D51)"
             )
         return self
 
@@ -385,6 +394,37 @@ class ExclusionMatch(BaseModel):
     evidence: list[EvidenceSpan] = Field(min_length=1)
 
 
+class ReconciledFact(BaseModel):
+    """One fact two sources both report, and the rule for when they disagree.
+
+    `discrepancy_tolerance` is a `PolicyConstant` rather than a bare float so
+    that D23's guarantees reach it: a provisional constant cannot carry a value,
+    a settled one cannot be null, and `require()` raises instead of returning
+    `None`. T-33's exit asks for the tolerance to be *read from the tree*, and a
+    `dict.get` returning `None` would compare as absent rather than fail (D51).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    fact: str = Field(min_length=1)
+    structured_source: str
+    note_source: str
+    authoritative: Literal["structured", "note"]
+    discrepancy_tolerance: PolicyConstant
+    note: str | None = None
+
+    def tolerance(self) -> float:
+        """The materiality threshold, or a raise naming the open question."""
+        constant = self.discrepancy_tolerance
+        if constant.provisional:
+            raise ValueError(
+                f"{self.fact}: discrepancy_tolerance is provisional, awaiting "
+                f"open question {constant.open_question}. A task consuming it "
+                "must not supply its own default (D23)."
+            )
+        return float(constant.value)
+
+
 class CriteriaTree(BaseModel):
     """A policy compiled into criteria, constants and a decision expression.
 
@@ -403,7 +443,7 @@ class CriteriaTree(BaseModel):
     sources: list[SourceRef]
     decision_expression: str
     criteria: list[Criterion]
-    reconciled_facts: list[dict[str, Any]] = Field(default_factory=list)
+    reconciled_facts: list[ReconciledFact] = Field(default_factory=list)
     categorical_exclusions: list[CategoricalExclusion] = Field(default_factory=list)
     procedure_sets: ProcedureSets | None = None
 
@@ -428,6 +468,14 @@ class CriteriaTree(BaseModel):
                 return criterion
         raise KeyError(
             f"{self.policy_version_id} defines no criterion {criterion_id!r}"
+        )
+
+    def reconciled_fact(self, fact: str) -> ReconciledFact:
+        for reconciled in self.reconciled_facts:
+            if reconciled.fact == fact:
+                return reconciled
+        raise KeyError(
+            f"{self.policy_version_id} reconciles no fact {fact!r}"
         )
 
 
@@ -599,6 +647,38 @@ class CallMetrics(BaseModel):
     wall_time_ms: float = Field(ge=0)
 
 
+class Discrepancy(BaseModel):
+    """Two sources disagreeing about one fact, recorded advisorily (REQ-39).
+
+    Deliberately not a gap and deliberately not a verdict: D14 kept this off the
+    gap list because that list answers exactly one question — what should Sam go
+    collect — and a disagreement between two recorded values is not something to
+    go collect. It never blocks emission and never changes a verdict.
+
+    Both spans are required. A discrepancy citing one side is an accusation
+    against a value nobody can look up (Art. III).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    criterion_id: str = Field(min_length=1)
+    fact: str = Field(min_length=1)
+    authoritative_value: float
+    other_value: float
+    authoritative_span: EvidenceSpan
+    other_span: EvidenceSpan
+    detail: str | None = None
+
+    @model_validator(mode="after")
+    def _a_discrepancy_has_two_different_values(self) -> Discrepancy:
+        if self.authoritative_value == self.other_value:
+            raise ValueError(
+                f"{self.criterion_id}/{self.fact}: both sources read "
+                f"{self.authoritative_value}; agreement is not a discrepancy"
+            )
+        return self
+
+
 class CriterionResult(BaseModel):
     """One criterion, adjudicated.
 
@@ -616,7 +696,22 @@ class CriterionResult(BaseModel):
     # REQ-31: what to go collect. Required on an abstention, refused on
     # anything else — the mirror of the span rule above (D44).
     gap_reason: GapReason | None = None
+    # REQ-39: advisory, never on the gap list, never changing this verdict.
+    # Reconciliation (T-33) is the only thing that fills it.
+    discrepancies: list[Discrepancy] = Field(default_factory=list)
     detail: str | None = None
+
+    @model_validator(mode="after")
+    def _a_discrepancy_belongs_to_this_criterion(self) -> CriterionResult:
+        """REQ-39 names the criterion on every entry; an entry filed under a
+        different one would be aggregated onto the determination pointing at a
+        criterion that never produced it."""
+        wrong = [d.criterion_id for d in self.discrepancies if d.criterion_id != self.criterion_id]
+        if wrong:
+            raise ValueError(
+                f"{self.criterion_id}: carries discrepancies filed under {wrong}"
+            )
+        return self
 
     @model_validator(mode="after")
     def _spans_match_the_verdict(self) -> CriterionResult:

@@ -319,6 +319,32 @@ value; the ten others record `None`, including every note carrying per-encounter
 BMIs, so nothing was borrowed upward. E8 still yields zero events. Mutation-tested
 four ways, and `--rescore` reproduces the aggregate exactly.
 
+**T-33 is closed (D51), open question 5 is answered, and the tree carries no
+provisional constant.** `discrepancy_tolerance` is **1.0 BMI points by Troy's
+decision** — recorded like D40's lookback, a judgment with a name and a date,
+never a span. The eval set does not constrain it: E10's gap is 5.77 and E10c's
+is 0.05, so 0.5, 1.0 and 2.0 all pass every case, and saying so is the point.
+
+`pa_agent/reconcile.py` implements REQ-34 and REQ-39 over **real committed
+data** — criterion (a) on the FHIR bundles, the note side from the recording.
+Opposite sides of 35.0 resolve `INSUFFICIENT_EVIDENCE`/`SOURCE_CONFLICT` with
+**no spans** (an abstention cites nothing) and magnitude is irrelevant there;
+same-side disagreements leave the verdict alone and record an advisory
+`Discrepancy` only at or beyond tolerance. E10b is a genuine **downgrade** —
+(a) alone answers `NOT_MET` — which is what makes it test REQ-34's second
+branch rather than an abstention that was going to happen anyway.
+
+`reconciled_facts` is now a typed `ReconciledFact` whose tolerance is a
+`PolicyConstant`, so `require()`-style guards reach it; the BMI selection is
+extracted to `criteria.most_recent_bmi` so reconciliation and criterion (a)
+cannot drift about which value is authoritative. **Two guards in
+`tests/test_criteria_tree.py` were retired deliberately** — they asserted a
+provisional constant and an open question still existed — and replaced by a
+count pinned at zero, so a new one is a visible diff. Mutation-tested six ways.
+Spec §6's BMI figures were corrected to the committed data (E10b 34.6, E10c
+37.65/37.6); they were illustrative numbers written in T-01 before any patient
+existed, and nothing read them.
+
 Active task: **none. Pick the next one before writing code.**
 
 **The plan is: ship a working determination, then measure the agentic

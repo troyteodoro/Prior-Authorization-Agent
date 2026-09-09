@@ -58,6 +58,26 @@ def _months_between(earlier: date, later: date) -> int:
     return months
 
 
+def _bmi_series(observations: list[Observation]) -> list[Observation]:
+    """BMI observations, oldest first.
+
+    Extracted so reconciliation selects the *same* authoritative value criterion
+    (a) did (T-33). Two copies of this ordering would be free to disagree, and
+    the disagreement would surface as a discrepancy against a value no verdict
+    was ever based on.
+    """
+    return sorted(
+        (o for o in observations if o.code == BMI_LOINC),
+        key=lambda o: o.effective_date,
+    )
+
+
+def most_recent_bmi(observations: list[Observation]) -> Observation | None:
+    """The observation criterion (a) adjudicates on, or None."""
+    series = _bmi_series(observations)
+    return series[-1] if series else None
+
+
 def evaluate_criterion_a(
     criterion: Criterion, observations: list[Observation], as_of: date
 ) -> CriterionResult:
@@ -66,10 +86,7 @@ def evaluate_criterion_a(
     threshold = criterion.require("bmi_threshold")
     lookback_months = criterion.require("lookback_months")
 
-    bmis = sorted(
-        (o for o in observations if o.code == BMI_LOINC),
-        key=lambda o: o.effective_date,
-    )
+    bmis = _bmi_series(observations)
     if not bmis:
         return CriterionResult(
             criterion_id=criterion.id,

@@ -2985,6 +2985,102 @@ it gets recorded rather than retried.
 **Reverses if:** the re-measurement shows event extraction degrading. Then the
 note-level BMI moves to a second, separate call over the same note rather than
 sharing the extraction prompt, at the cost of one more call per note.
+## D51 — The tolerance is 1.0 by Troy's decision, `reconciled_facts` becomes typed, and closing the last open question retires two guards on purpose
+
+T-33's design. It closes open question 5, the last provisional constant in the
+tree, and that has consequences beyond the constant.
+
+### Chosen — `discrepancy_tolerance` is **1.0 BMI points**, decided rather than sourced
+
+No source text bounds it. Like D40's lookback it is recorded as a judgment with
+a name and a date attached, never as a span: **Troy, 2026-09-08.**
+
+A full BMI point is beyond rounding and beyond the variance of two measurements
+taken weeks apart — roughly six pounds for an average-height adult — so a
+disagreement at or above it is a documentation problem rather than noise. D14's
+two poles are both handled: the rounding artifact stays silent and the case the
+list exists for is listed.
+
+The eval set does **not** decide this. Measured against the committed data, not
+the spec's illustrative numbers: E10 is 39.23 against 45.0, a gap of 5.77;
+E10c is 37.65 against 37.6, a gap of 0.05. Any tolerance in that range passes
+all three cases, so choosing 1.0 over 0.5 or 2.0 is a materiality judgment the
+cases cannot make. Saying so is the point — a constant that three different
+values would satisfy is not being validated by the suite that passes.
+
+**Rejected — 0.5.** Catches more, and lists differences that are two
+measurements taken weeks apart. D14 already argued that a list reporting noise
+beside signal trains Sam to ignore it.
+
+**Rejected — 2.0.** Quietest, and closest to D14's own example. It would let a
+1.5-point disagreement reach a payer unremarked, which is the failure the list
+exists to prevent.
+
+**Reverses if:** T-22 shows material discrepancies in a large fraction of cases
+(D14's own reversal condition), or if a discrepancy that mattered fell below
+1.0 — either is a measurement, and the constant moves with a new entry rather
+than by edit.
+
+### Chosen — `reconciled_facts` stops being `list[dict[str, Any]]`
+
+It becomes a `ReconciledFact` model whose `discrepancy_tolerance` is a
+`PolicyConstant`. That is not tidying: `PolicyConstant`'s validator refuses a
+provisional constant carrying a value and refuses a non-provisional one that is
+null, and `require()` raises rather than returning `None`. Typing the field is
+what makes "tolerance read from the criteria tree" in T-33's exit a guarantee
+instead of a `dict.get` that returns `None` and compares as zero.
+
+**Rejected — read the dict directly in `reconcile()`.** One line shorter, and
+it puts the one constant this task exists to consume outside every guard the
+repo already built for exactly this.
+
+### Chosen — reconciliation is `pa_agent/reconcile.py`, not a function in `criteria.py`
+
+`criteria.py` holds predicates that answer a criterion from evidence.
+Reconciliation is a different operation: it takes an already-produced
+`CriterionResult` and two sources, and may downgrade it. Folding it in would
+mean criterion (a) is evaluated in two places, and REQ-34's "may downgrade a
+verdict criterion (a) already produced" is precisely a statement that these are
+two steps. It runs after extraction, so it cannot live inside T-13's path at
+all (D11).
+
+### Chosen — closing the last open question retires two guards, deliberately
+
+`tests/test_criteria_tree.py` currently asserts that at least one provisional
+constant exists and that §9 lists at least one open question. Both were
+correct while a provisional constant existed, and both were written with an
+instruction attached: *"If every value is now sourced, this test and D23's
+third section should be retired deliberately, not by accident."* T-33 is that
+moment.
+
+They are replaced rather than deleted. The per-constant rules stay and become
+vacuously true; what changes is that the count of provisional constants is now
+**pinned at zero**, so a new provisional constant appearing is a visible diff
+against a stated expectation rather than a silent return to the old state. §9's
+`### Still open` heading stays with an explicit "none" line, because
+`_question_statuses` requires both subsections to exist and a missing heading is
+supposed to fail.
+
+**Rejected — deleting the two assertions.** The test would still pass over an
+empty list and would never say so. A guard that silently stops guarding is the
+failure D34 wrote this parser to end.
+
+### Chosen — spec §6's numbers are corrected to the committed data, inside this task
+
+§6 says E10b is "Structured 34.8" and E10c is "Structured 38.1, note 38.0". The
+bundles hold **34.6** and **37.65 against 37.6**. No behavior changes — 34.6 and
+34.8 are both below 35.0, and 0.05 and 0.1 are both below any tolerance under
+consideration — but T-33's exit condition cites "34.8 against 36.2" and a task
+cannot close honestly against a number the data does not carry.
+
+Corrected here rather than deferred to a new task because the current task's own
+exit text is one of the wrong numbers. Working rule 6 sends *discovered work* to
+a new task; this is a defect in the specification of the task in hand.
+
+**How it happened, since it is worth recording:** §6 was written in T-01 before
+any patient existed, and T-06 assigned cases to the bundles the population
+actually produced (D42). The illustrative numbers were never revisited. Nothing
+read them, so nothing failed — which is the argument for T-55's ledger.
 
 
 ## Kill criteria — written before the work, not after

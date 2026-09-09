@@ -293,9 +293,9 @@ Each becomes a labeled eval case. This list is the eval set's outline.
 | E7 | No weight-management documentation anywhere | c1 `INSUFFICIENT_EVIDENCE`, `NO_EVIDENCE_RETRIEVED` |
 | E8 | Note asserts program completion; no visit detail | c3 `INSUFFICIENT_EVIDENCE`, `UNSUBSTANTIATED_ASSERTION`, zero `wm_events` |
 | E9 | Missed-visit dates present in the gap month | c3 `NOT_MET`, not fooled |
-| E10 | Structured and note BMI disagree beyond tolerance, same side of 35.0 | `MET`, one `discrepancies[]` entry, gap list untouched |
-| E10b | Structured 34.8, note 36.2 — disagreement crosses 35.0 | c(a) `INSUFFICIENT_EVIDENCE`, `SOURCE_CONFLICT` |
-| E10c | Structured 38.1, note 38.0 — below tolerance | `MET`, `discrepancies[]` empty |
+| E10 | Structured 39.23, note 45.0 — beyond tolerance, same side of 35.0 | `MET`, one `discrepancies[]` entry, gap list untouched |
+| E10b | Structured 34.6, note 36.2 — disagreement crosses 35.0 | c(a) `INSUFFICIENT_EVIDENCE`, `SOURCE_CONFLICT` |
+| E10c | Structured 37.65, note 37.6 — below tolerance | `MET`, `discrepancies[]` empty |
 | E11 | Two supervised programs, one qualifying, one not | `MET` on the qualifying run |
 | E12 | BMI exactly 35.0 | c(a) `MET`, boundary inclusive |
 
@@ -357,14 +357,12 @@ under — the criteria-tree gate reads the `Still open` list and nothing parses
 
 ### Still open
 
-Opened in T-01, a constant the criteria tree carries as `provisional: true`
-rather than as a bare number *(D23)*, naming the task that must resolve it
-before that task can be trusted.
-
-5. **What is `discrepancy_tolerance` for BMI?** D14 requires a materiality
-   threshold so a structured 38.1 against a note 38.0 is not listed beside 38.1
-   against 45. No source text bounds it — it is a judgment about what wastes
-   Sam's attention, not a coverage rule. **T-33 must not supply its own default.**
+**None.** T-33 closed the last one, and the criteria tree now carries no
+`provisional: true` constant. The heading stays because §9 states status by
+subsection and a missing one is supposed to fail the gate *(D34)*, and the
+count of provisional constants is pinned at zero in
+`tests/test_criteria_tree.py` so a new one is a visible diff rather than a
+silent return to the old state *(D51)*.
 
 ### Resolved
 
@@ -441,6 +439,17 @@ Question 7 opened in T-35, a corpus question rather than a clinical one:
    is citable for code bindings **only** — its coverage content predates the
    June 27, 2012 LSG delegation and is stale, so a coverage claim spanned into
    it would be D22 rebuilt with a citation. Closed by T-40, see D29.
+
+Question 5 opened in T-01 and is the last provisional constant the tree carried:
+
+5. ~~What is `discrepancy_tolerance` for BMI?~~ **1.0 BMI points.** Decided, not
+   sourced — no source text bounds it, so it is recorded as a judgment with a
+   name and a date the way D40's lookback was *(D51, Troy, 2026-09-08)*. A full
+   point is beyond rounding and beyond the variance of two measurements taken
+   weeks apart, roughly six pounds. The eval set does **not** constrain it:
+   measured on the committed bundles, E10's gap is 5.77 and E10c's is 0.05, so
+   0.5, 1.0 and 2.0 all pass every case — the choice is a materiality judgment,
+   not something the suite validates. Closed by T-33, see D51.
 
 Also settled by T-02 and worth stating once: every quantified constant in the
 criteria tree comes from A53028, a **Noridian Jurisdiction F** article, not from
