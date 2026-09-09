@@ -345,6 +345,17 @@ Spec §6's BMI figures were corrected to the committed data (E10b 34.6, E10c
 37.65/37.6); they were illustrative numbers written in T-01 before any patient
 existed, and nothing read them.
 
+**T-46 is closed (D52), and the value set reaches criterion (b) through the
+port.** T-13 left "which port serves it at runtime" explicitly to T-18; until
+now the only readers were two test files, by path. `PolicyStore.get_value_set`
+returns a `frozenset[str]` of **SNOMED** codes — the system `Condition.code`
+actually carries — and the test proves it by intersecting the set with the
+committed bundles. An ICD-10 set would load cleanly, compare cleanly and match
+nobody, so criterion (b) would abstain for every patient and every downstream
+test would agree with it; the mutation that swaps them is caught. An unknown id
+raises rather than returning an empty set, and a file whose `value_set_id` no
+longer matches its path raises.
+
 Active task: **none. Pick the next one before writing code.**
 
 **The plan is: ship a working determination, then measure the agentic

@@ -3082,6 +3082,65 @@ any patient existed, and T-06 assigned cases to the bundles the population
 actually produced (D42). The illustrative numbers were never revisited. Nothing
 read them, so nothing failed — which is the argument for T-55's ledger.
 
+## D52 — The value set arrives through the policy port, and the codes it yields are the ones the conditions speak
+
+T-46's design. Discovered work, opened in the T-18 architecture review: T-13
+built criterion (b) to take a value set as a parameter and left "which port
+serves it at runtime" explicitly to T-18. Nothing in `pa_agent/` loads the file
+today — only `tests/test_criteria_ab.py` and `tests/test_valueset.py`, both by
+path.
+
+### Chosen — `PolicyStore.get_value_set(value_set_id) -> frozenset[str]`
+
+It belongs to the **policy** port, not the patient one. A value set is a
+compiled fragment of the policy: A53028's Group 1 decides which comorbidities
+count, and T-05 anchored each entry to the article. It travels with the tree
+and is versioned with it (Art. VII).
+
+The id comes from criterion (b)'s `value_set_id` constant, so the tree names
+what it needs and the caller never writes a literal. That is the same shape
+`policy_version_id` already has, and it is what keeps REQ-41 honest: no module
+outside an adapter names a storage location.
+
+**Rejected — returning the full entries.** Callers would then be free to read
+the ICD-10 anchors and the mapping provenance, and criterion (b) needs neither.
+A `frozenset[str]` is the whole interface a set-membership predicate has, and a
+narrower return is a smaller thing to keep stable when the production adapter
+lands (D25).
+
+**Rejected — inlining the codes into the criteria tree.** D3 and D23 already
+refused this: 543 codes would make every diff of the tree unreviewable, and
+Article VII wants a reviewer for every clinical rule change.
+
+### Chosen — the set yields SNOMED codes, because that is what the conditions carry
+
+T-05 built the entries around SNOMED concepts with ICD-10 anchors spanned into
+A53028, and admitted in writing that the SNOMED-to-ICD-10 hop is unsourced
+(`in_corpus: false`, D36). `LocalPatientStore` reports `Condition.code` as
+SNOMED, and `evaluate_criterion_b` tests `code in value_set`. So the port
+returns the codes the predicate will actually be handed.
+
+Stating it because the alternative is a silent no-match: a set of ICD-10 codes
+would be well-formed, load cleanly, compare cleanly, and find a comorbidity in
+nobody. Criterion (b) would answer `INSUFFICIENT_EVIDENCE` for every patient
+and every downstream test would agree with it — the failure mode D31 named
+about `resolve` returning `None`.
+
+**Rejected — returning both systems in one set.** It would make the predicate
+pass under either encoding, which sounds robust and is how a mapping defect
+stops being visible.
+
+### Chosen — the adapter verifies the file names the set it was asked for
+
+Cheap, and it catches the case a rename creates: a file whose contents no
+longer match its path. An unknown id raises rather than returning an empty
+set — an empty comorbidity list is a claim about the policy, and manufacturing
+it here would deny every patient a criterion they might meet.
+
+**Reverses if:** a second jurisdiction needs the same fact under a different
+code system, at which point the port returns a richer object and the predicate
+is told which system to read.
+
 
 ## Kill criteria — written before the work, not after
 

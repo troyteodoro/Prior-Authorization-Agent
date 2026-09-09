@@ -76,6 +76,16 @@ class PolicyStore(Protocol):
         """A source document, content-verified, for spans to be checked against."""
         ...
 
+    def get_value_set(self, value_set_id: str) -> frozenset[str]:
+        """The codes a value set admits, by the id a criterion's constant names.
+
+        A value set is a compiled fragment of the policy — A53028's Group 1
+        decides which comorbidities count — so it travels with the tree and is
+        versioned with it (Art. VII, D52). The return is deliberately just the
+        codes: set membership is the whole interface a predicate has.
+        """
+        ...
+
 
 class LocalPolicyStore:
     """`PolicyStore` over the repository as it stands: T-01's tree, T-02's corpus."""
@@ -88,6 +98,8 @@ class LocalPolicyStore:
         self._binding_cache: dict[str, tuple[CriteriaTree, CoverageStatus, Any]] | None = None
         self._documents: dict[str, Document] = {}
         self._manifest: dict[str, dict] | None = None
+        self._value_set_dir = self._root / "value_sets"
+        self._value_sets: dict[str, frozenset[str]] = {}
 
     # -- policy resolution -------------------------------------------------
 
@@ -206,6 +218,43 @@ class LocalPolicyStore:
         )
         self._documents[document_id] = document
         return document
+
+    def get_value_set(self, value_set_id: str) -> frozenset[str]:
+        """The SNOMED codes this value set admits (D52).
+
+        SNOMED because that is what `LocalPatientStore` reports on
+        `Condition.code` and what `evaluate_criterion_b` tests membership
+        against. A set of ICD-10 codes would load cleanly, compare cleanly and
+        match nobody — criterion (b) would abstain for every patient and every
+        downstream test would agree with it.
+        """
+        if value_set_id in self._value_sets:
+            return self._value_sets[value_set_id]
+
+        path = self._value_set_dir / f"{value_set_id}.json"
+        if not path.exists():
+            available = sorted(p.stem for p in self._value_set_dir.glob("*.json"))
+            raise KeyError(
+                f"no value set {value_set_id!r} in {self._value_set_dir}; "
+                f"available: {available}. An empty set here would be a claim "
+                "about the policy, and would deny every patient a criterion "
+                "they might meet (D52)."
+            )
+
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        declared = payload.get("value_set_id")
+        if declared != value_set_id:
+            raise ValueError(
+                f"{path.name} declares value_set_id {declared!r}; a file whose "
+                "contents no longer match its path is a rename that half "
+                "happened"
+            )
+        entries = payload.get("entries") or []
+        if not entries:
+            raise ValueError(f"{path.name} admits no codes; see D52")
+        codes = frozenset(str(entry["code"]) for entry in entries)
+        self._value_sets[value_set_id] = codes
+        return codes
 
     def document_ids(self) -> list[str]:
         """The corpus, for tests and for the plane-separation walk."""

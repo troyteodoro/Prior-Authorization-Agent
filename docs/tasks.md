@@ -1144,6 +1144,24 @@ has no encounters by design (it is also E8), so nothing in the system could
 reach the value REQ-34 needs. Both sub-35 patients are deliberately
 encounter-free, so no fixture can host the case instead. *(D50)*
 
+### `[x] T-46` The value set arrives through the policy port
+**REQ:** 41 · **Depends:** T-05, T-09 · **Discovered in:** the T-18
+architecture review *(D52)* · **Blocks:** T-18
+**Exit:** `pytest tests/test_valueset_port.py` — `PolicyStore` declares
+`get_value_set(value_set_id) -> frozenset[str]`; `LocalPolicyStore` serves it;
+the id comes from criterion (b)'s `value_set_id` constant rather than a
+literal; an unknown id raises and a file whose `value_set_id` no longer matches
+its path raises; the codes returned are the system `Condition.code` actually
+carries, proved by intersecting them with the committed bundles; criterion (b)
+answers `MET` for a real patient end to end; and no module under `pa_agent/`
+outside `stores/` names the value set's location.
+
+T-13 built criterion (b) to take the set as a parameter and left "which port
+serves it at runtime" explicitly to T-18. Until now the only readers were two
+test files, both by path. The set is a compiled fragment of the **policy** —
+A53028's Group 1 decides which comorbidities count — so it travels with the
+tree and is versioned with it. *(D52)*
+
 
 ## Working rules
 
