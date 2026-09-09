@@ -271,6 +271,12 @@ def main() -> int:
                 {"span": a.span.model_dump(mode="json"), "text": a.text}
                 for a in result.assertions
             ],
+            # T-60: the note-level BMI, which belongs to no encounter (D50).
+            "current_bmi": result.current_bmi,
+            "current_bmi_span": (
+                result.current_bmi_span.model_dump(mode="json")
+                if result.current_bmi_span else None
+            ),
             "metrics": result.metrics.model_dump(mode="json") if result.metrics else None,
             # The model's own output, kept so a future anchoring rule can be
             # replayed without spending the corpus again (D18, D46).

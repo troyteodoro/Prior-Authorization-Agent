@@ -1124,6 +1124,26 @@ project has measured — was undeclared, arriving transitively through
 environment every recorded number in `docs/decisions.md` was produced by; the
 file is what drifted. *(D49)*
 
+### `[x] T-60` A note-level current BMI, and a new extraction measurement
+**REQ:** 34, 38 · **Depends:** T-15 · **Discovered in:** T-33 *(D50)* ·
+**Blocks:** T-33
+**Exit:** `python scripts/run_extraction.py` records a fresh
+`eval/extraction/results.json`, then `pytest tests/test_extraction.py` returns
+zero over the recording, spending no model call, and additionally —
+- `Extraction` carries `current_bmi` and `current_bmi_quote`, and
+  `ExtractionResult` carries the value with a span that validates through T-11;
+- the E10b note yields `current_bmi` 36.2 anchored to its own clinic line,
+  with **zero** `wm_events`, so E8 is unchanged;
+- notes stating no standalone BMI yield `current_bmi` `None` rather than a
+  value borrowed from an encounter;
+- event precision, recall and REQ-9 exclusion are reported for the widened
+  schema and any movement against T-15's figures is recorded, not retried.
+
+E10b's BMI sits in a standalone `Measured in clinic today` line and its patient
+has no encounters by design (it is also E8), so nothing in the system could
+reach the value REQ-34 needs. Both sub-35 patients are deliberately
+encounter-free, so no fixture can host the case instead. *(D50)*
+
 
 ## Working rules
 

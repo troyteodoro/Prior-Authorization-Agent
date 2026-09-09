@@ -86,6 +86,8 @@ def _all_spans(record: dict) -> list[tuple[str, dict]]:
                 spans.append((f"{label} {event['date']}", event[label]))
     for i, assertion in enumerate(record["assertions"]):
         spans.append((f"assertion {i}", assertion["span"]))
+    if record.get("current_bmi_span"):
+        spans.append(("current_bmi", record["current_bmi_span"]))
     return spans
 
 
@@ -400,3 +402,81 @@ def test_a_single_occurrence_is_unaffected_by_the_window():
     scoped = anchor("n", text, "BMI 41.3", prefer_near=(0, 5))
     assert plain.char_start == scoped.char_start
     assert scoped.disambiguated is False
+
+
+# --------------------------------------------------------------------------
+# T-60: the note's current BMI, which belongs to no encounter (D50)
+# --------------------------------------------------------------------------
+
+
+def _record(results: dict, case: str) -> dict:
+    matching = [n for n in results["notes"] if case in (n.get("cases") or [])]
+    assert len(matching) == 1, f"expected exactly one note carrying {case}"
+    return matching[0]
+
+
+def test_e10b_yields_a_current_bmi_from_its_own_clinic_line(results, texts):
+    """The case T-60 exists for. Its patient has no encounters by design (it is
+    also E8), so this value is reachable only as a note-level fact (D50)."""
+    record = _record(results, "E10b")
+    assert record["current_bmi"] == 36.2, (
+        f"E10b's note states BMI 36.2 outside any encounter; recorded "
+        f"{record['current_bmi']!r}. Without it REQ-34 has nothing to "
+        "reconcile against and the case cannot be evaluated at all."
+    )
+    span = record["current_bmi_span"]
+    assert span is not None, "a BMI nobody can cite is not a documented BMI (D15)"
+    sliced = texts[span["document_id"]][span["char_start"]:span["char_end"]]
+    assert "36.2" in sliced, f"span slices to {sliced!r}, which does not carry the value"
+
+
+def test_e10b_still_yields_zero_events(results):
+    """E8 and E10b share a note. Reaching E10b must not manufacture an
+    encounter, which would silently retire E8's refusal test."""
+    assert _record(results, "E10b")["events"] == []
+
+
+def test_a_note_without_a_standalone_bmi_records_none(results):
+    """The failure mode the instruction guards: carrying an encounter's BMI up
+    to the note level. Every note but E10b's states no current BMI, and the
+    ones with per-encounter BMIs are exactly where borrowing would show."""
+    borrowed = [
+        n["note_id"] for n in results["notes"]
+        if n["note_id"] != _record(results, "E10b")["note_id"]
+        and n.get("current_bmi") is not None
+    ]
+    assert not borrowed, (
+        f"{borrowed} recorded a note-level BMI. Either the note genuinely "
+        "states one and the manifest should say so, or an encounter's value "
+        "was promoted, which makes reconciliation compare a fact against itself."
+    )
+
+
+def test_notes_with_event_bmis_did_not_promote_one(results):
+    """Sharper than the test above: these notes carry per-encounter BMIs, so a
+    model inclined to borrow has something to borrow."""
+    for note in results["notes"]:
+        if note.get("current_bmi") is None:
+            continue
+        event_bmis = {e["bmi"] for e in note["events"] if e["bmi"] is not None}
+        assert note["current_bmi"] not in event_bmis or not event_bmis, (
+            f"{note['note_id']}: current_bmi {note['current_bmi']} equals an "
+            f"encounter BMI in {sorted(event_bmis)}; a note-level fact that "
+            "duplicates an encounter is the borrowing D50 forbade."
+        )
+
+
+def test_the_widened_schema_held_the_measured_numbers(results):
+    """T-60 widened the schema T-15 measured, so this is a new measurement
+    (D45's rule). It held: the assertion is that it still holds, and a drop is
+    the finding D50's reversal clause turns on."""
+    aggregate = results["aggregate"]
+    assert aggregate["precision"] == 1.0
+    assert aggregate["recall"] == 1.0
+    assert aggregate["req9_exclusion_recall"] == 1.0
+    assert aggregate["field_agreement"] == 1.0
+    assert aggregate["spans_anchored"] == aggregate["spans_emitted"]
+    assert aggregate["model_offsets_usable"] == 0, (
+        "the model emitted a usable offset pair; D18's anchoring rule was "
+        "written on zero of eighty and reverses on evidence, not on a hunch"
+    )

@@ -2910,6 +2910,82 @@ version is found to carry a defect the older pin did not, in which case the
 downgrade is a measurement event and every affected number is re-recorded, not
 inherited.
 
+## D50 — The note states a current BMI that belongs to no encounter, and reconciliation needs it
+
+T-60's design. Discovered in T-33: E10b cannot be evaluated at all under the
+schema T-15 measured.
+
+### The defect
+
+REQ-34 reconciles "a structured value and a note-extracted value for the same
+fact." For BMI the structured side is criterion (a)'s: the most recent
+`Observation`. The note side was assumed to be `WmEvent.bmi`, and for E10 and
+E10c it is — 45.0 and 37.6 both sit on documented encounters.
+
+**E10b has no encounters.** Its patient is also E8, the unsubstantiated
+assertion case, and the note documents a claim with no visit records behind it
+by design. The BMI the case turns on is a standalone line —
+`Measured in clinic today: weight 105.4 kg, BMI 36.2.` — and
+`ExtractedAssertion` carries no BMI, so nothing in the system can reach it.
+
+This is structural rather than an oversight in the fixture. The cross-threshold
+case needs a structured BMI below 35.0, and **both sub-35 patients in the
+population are deliberately encounter-free**: 49092fd9 is E7 (nothing
+documented) and bc6748d3 is E8. A patient with a qualifying run *and* a sub-35
+structured BMI is a seventh fixture that does not exist, and manufacturing one
+would be inventing data to make a case reachable.
+
+### Chosen — `Extraction` gains a note-level `current_bmi` with its own span
+
+The note's *current* BMI is a different fact from an encounter's BMI, and
+conflating them was the actual modelling error. Criterion (a) asks what the
+patient's BMI is now; c4 asks whether each month of a supervised run documented
+one. A BMI recorded at a supervised visit eight months ago is evidence for c4
+and is not the note's answer to criterion (a).
+
+So the note side of BMI reconciliation is **the most recent BMI the note
+states**, taken over the union of `current_bmi` and the event BMIs. E10 and
+E10c continue to resolve to their encounter values because those are the most
+recent BMIs their notes state; E10b resolves to the clinic line because it is
+the only one its note has.
+
+**Rejected — put a `bmi` field on `ExtractedAssertion`.** It reaches E10b and
+it is wrong: the 36.2 is not part of the claim the assertion makes. The
+assertion is "completed a six-month program"; the BMI is a measurement taken
+today that happens to sit in the same note. Attaching it to the assertion would
+make a discrepancy inherit the assertion's unsubstantiated status.
+
+**Rejected — let reconciliation fall back to any BMI-looking number in the
+note, found in Python.** That is a regex over prose deciding what a clinical
+value means, which is the model's job under Article II's division and the
+project's own D2. It would also silently pick up a target weight or a
+historical figure.
+
+**Rejected — re-point E10b at another patient.** No patient can host it, per
+the structural argument above.
+
+### Chosen — this is a new measurement, and it is its own task
+
+D45 established that widening the schema means the numbers belong to the wider
+schema; D47 showed a transport detail changing the payload. T-60 therefore
+re-runs `scripts/run_extraction.py` and records a fresh
+`eval/extraction/results.json`, rather than folding a model run into T-33,
+whose exit condition says *no model call*.
+
+The instruction gains one paragraph and the schema two fields. Everything D19
+and T-15 measured stays in place; what is reported afterward is the new run's
+numbers, quoted as such.
+
+**Cost:** every prompt edit is a chance to move the numbers that already hold.
+The paragraph is additive and scoped to a fact the current instruction never
+mentions, which is the smallest change that reaches the case — but "smallest"
+is not "none", and if event precision or recall moves, that is the finding and
+it gets recorded rather than retried.
+
+**Reverses if:** the re-measurement shows event extraction degrading. Then the
+note-level BMI moves to a second, separate call over the same note rather than
+sharing the extraction prompt, at the cost of one more call per note.
+
 
 ## Kill criteria — written before the work, not after
 

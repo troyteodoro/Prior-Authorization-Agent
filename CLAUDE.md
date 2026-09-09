@@ -301,6 +301,24 @@ import it cannot map. Mutation-tested five ways. It compares file to
 environment and **cannot tell you the environment is correct** — model
 provenance still rests on `PINNED_MODEL`.
 
+**T-60 is closed (D50), and the note's current BMI is a fact of its own.**
+Discovered in T-33: E10b's BMI sits in a standalone `Measured in clinic today`
+line, its patient has no encounters *by design* (it is also E8), and both sub-35
+patients in the population are deliberately encounter-free — so **no fixture
+could host the case** and nothing in the system could reach the value REQ-34
+needs. `Extraction` gained `current_bmi` and `current_bmi_quote`, anchored like
+any other claim and with no `prefer_near`, because it belongs to no encounter.
+A note-level BMI is a **different fact** from `WmEvent.bmi`: criterion (a) asks
+what the patient's BMI is now, c4 asks what each month of a run documented, and
+conflating them was the real modelling error.
+
+**The widened schema held every number** — a new measurement per D45's rule, not
+a re-run: precision 1.000, recall 1.000, REQ-9 exclusion 11/11, field agreement
+1.000, 171/171 spans anchored, 0 model offsets usable. Only E10b's note yields a
+value; the ten others record `None`, including every note carrying per-encounter
+BMIs, so nothing was borrowed upward. E8 still yields zero events. Mutation-tested
+four ways, and `--rescore` reproduces the aggregate exactly.
+
 Active task: **none. Pick the next one before writing code.**
 
 **The plan is: ship a working determination, then measure the agentic

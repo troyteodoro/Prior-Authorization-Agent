@@ -28,7 +28,7 @@ from datetime import date
 from pydantic import BaseModel, Field
 
 from pa_agent.anchor import AnchoredSpan, anchor
-from pa_agent.contracts import CallMetrics, ProgramAssertion, WmEvent
+from pa_agent.contracts import CallMetrics, EvidenceSpan, ProgramAssertion, WmEvent
 from pa_agent.model_pin import PINNED_MODEL
 
 EXTRACTION_TEMPERATURE = 0.0  # Art. II: the same note yields the same events
@@ -76,6 +76,23 @@ class ExtractedAssertion(BaseModel):
 class Extraction(BaseModel):
     wm_events: list[ExtractedEvent] = Field(default_factory=list)
     program_assertions: list[ExtractedAssertion] = Field(default_factory=list)
+    # T-60: the note's own current BMI, which belongs to no encounter. A
+    # different fact from `ExtractedEvent.bmi` — criterion (a) asks what the
+    # patient's BMI is now, c4 asks what each month of a run documented (D50).
+    current_bmi: float | None = Field(
+        default=None,
+        description=(
+            "The patient's current BMI as stated in this note outside any "
+            "listed encounter, or null if the note states none."
+        ),
+    )
+    current_bmi_quote: str = Field(
+        default="",
+        description=(
+            "If current_bmi is present, the verbatim phrase recording it. "
+            "Else empty."
+        ),
+    )
 
 
 # The spike's instruction, unchanged except for the two REQ-38 quote fields.
@@ -125,6 +142,19 @@ Return every qualifying encounter in the note, including encounters from
 programs that are old, discontinued, or appear irrelevant to the current
 request. Do not filter by date, by recency, or by which program looks most
 relevant. Choosing among them happens elsewhere.
+
+Separately from the encounters, the note may state the patient's CURRENT BMI
+outside any listed encounter — a measurement taken at this visit, or a figure
+given as the patient's present status. Return it as:
+
+  current_bmi        that BMI value, as a number. Null if the note states no
+                     such value. Never compute one, never carry one over from
+                     an encounter, and never use a target or goal weight.
+  current_bmi_quote  when current_bmi is present, the verbatim phrase from the
+                     note that records it. Empty otherwise.
+
+A BMI belonging to a listed encounter goes on that wm_event and not here. A
+note may have both, one, or neither.
 """
 
 
@@ -146,6 +176,11 @@ class ExtractionResult:
     document_id: str
     events: list[WmEvent] = field(default_factory=list)
     assertions: list[ProgramAssertion] = field(default_factory=list)
+    # T-60: the note's current BMI and where it is stated. `None` when the note
+    # states none, and also when it stated one Python could not anchor — D15's
+    # rule, applied here: a BMI nobody can cite is not a documented BMI.
+    current_bmi: float | None = None
+    current_bmi_span: EvidenceSpan | None = None
     anchored_spans: list[AnchoredSpan] = field(default_factory=list)
     dropped: list[dict] = field(default_factory=list)
     metrics: CallMetrics | None = None
@@ -243,6 +278,18 @@ def build_result(
                 activity_span=activity_span,
             )
         )
+
+    # T-60: the note-level BMI, anchored like any other claim. No `prefer_near`
+    # — it belongs to no encounter, which is the whole point of the field.
+    if extraction.current_bmi is not None:
+        located_current = _anchor_or_drop(
+            document_id, text, extraction.current_bmi_quote, -1, -1,
+            result.dropped, "current_bmi_quote_unanchorable",
+            result.anchored_spans,
+        )
+        if located_current is not None:
+            result.current_bmi = extraction.current_bmi
+            result.current_bmi_span = located_current.to_span()
 
     for raw_assertion in extraction.program_assertions:
         located = _anchor_or_drop(
