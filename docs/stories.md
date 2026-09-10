@@ -122,9 +122,9 @@ is the one a model would get wrong.
 - **Given** c3 has failed **When** c4 and c5 are evaluated **Then** both return
   `INSUFFICIENT_EVIDENCE`, because no qualifying period exists to scope to ·
   *REQ-15*
-- **Given** a qualifying run **When** c5 is evaluated **Then** the required count
-  of diet- and activity-documented events comes from the criteria tree ·
-  *REQ-37, Article VII*
+- **Given** a qualifying run **When** c5 is evaluated **Then** the required
+  rate — diet and activity documented in every month of the run — comes from
+  the criteria tree · *REQ-37, Article VII, D24*
 - **Given** a structured and a note BMI disagreeing beyond tolerance on the same
   side of 35.0 **When** reconciliation runs **Then** the structured value stands
   and the disagreement appears on `discrepancies[]`, not the gap list ·
@@ -195,7 +195,7 @@ over its output.
 > **I want** to see accuracy, abstention, and cost across the labeled set
 > **So that** I can decide where this is safe to use and where it is not
 
-**Value:** the deliverable Narayan actually reads.
+**Value:** the deliverable an external reviewer actually reads.
 
 - **Given** the labeled eval set **When** the harness runs **Then** it reports
   per-criterion precision on `MET`, span validity rate, and abstention rate ·
@@ -275,6 +275,7 @@ Tracked as spikes or technical tasks.
 | Value set verification | Task | Enabler under US-2 |
 | Note synthesizer | Task | Test data, not a user outcome |
 | Plane separation check | Task | Enforces Article VI, no user outcome |
+| US-5.5 Orchestration (T-61–T-68 on the board) | Task group | The agentic differential against the deterministic oracle — a measurement, not a persona-visible behavior. Numbered like a story only so its tasks have a home on a board organised by story *(D72)* |
 
 If one of these ends up phrased "As a developer, I want…", it belonged in this
 table.

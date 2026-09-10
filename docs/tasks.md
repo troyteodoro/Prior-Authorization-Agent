@@ -16,10 +16,10 @@ answers the second question, once.
 
 ## Path to v1
 
-Fifty-seven tasks are on this board — IDs run to T-71 but numbering is not
-contiguous, so the highest id is not the count. **44 are closed and 13 are
-open.** Nine of the 13 sit on the critical path to the acceptance gates in spec
-§7. This is that path, in order. *(D70)*
+Fifty-eight tasks are on this board — IDs run to T-72 but numbering is not
+contiguous, so the highest id is not the count. **44 are closed and 14 are
+open.** Ten of the 14 sit on the critical path to the acceptance gates in spec
+§7. This is that path, in order. *(D70, extended by D72)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
@@ -28,7 +28,7 @@ open.** Nine of the 13 sit on the critical path to the acceptance gates in spec
 | 3 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
 | 4 | `T-17` | **closes US-6** · implements **Article V** | ready |
 | 5 | `T-32` | gates **Article VI** / REQ-33 | ready |
-| 6 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21 |
+| 6 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -738,7 +738,12 @@ without those the aggregator could be a conjunction over verdicts nobody produce
 
 ---
 
-## 'US-5.5' Orchestration
+## `US-5.5` Orchestration
+
+Not a user story — the differential measurement has no persona-visible
+behaviour, which is the Not-stories table's own criterion, and it has a row
+there (`docs/stories.md`). Numbered like a story so this chain of tasks has a
+home on a board organised by story-of-origin *(D72)*.
 
 ### `[x] T-62` ADK extraction runner and its declared tools
 **REQ:** 22, 41, 52, 53 · **Depends:** T-12, T-15, T-46 · **Blocks:** T-61, T-63
@@ -958,11 +963,8 @@ patient, and a script that stops pretending one runner reads both corpora.
 
 ### `[x] T-63` Measure the ADK runner against the direct runner
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
-**Status:** **ready and fully unblocked** in both modes since T-67 and T-68. Off
-the critical path because it spends model calls and is in no gate — run it
-whenever calls are being spent. Kept rather than withdrawn: `AdkExtractionRunner`
-is in the tree and unmeasured, and four tasks (T-65 through T-68) were spent
-making it measurable *(D70)*.
+**Status:** **closed** — both modes measured and recorded *(D71; status line
+corrected by D72)*. Still in no gate: a re-run spends model calls.
 **Exit:** `python scripts/run_adk_extraction.py` writes a recording over the same
 eleven notes, `--tool-fetch` writes one over the **six addressable** notes, and a
 decisions entry quotes each aggregate beside `eval/extraction/results.json`'s —
@@ -1196,6 +1198,14 @@ rejection resolves the criterion to `INSUFFICIENT_EVIDENCE` with `gap_reason`
 `VERIFIER_REJECTED`, spends exactly one verifier call, and still emits a
 `Determination`
 
+Two design points the build must decide and log before the code *(working rule
+5, noted by D72)*: how the verifier keeps every gate and the default CLI path at
+zero model calls once it sits in the chain — spec §6 implies a stubbed verifier
+and the recorded-or-stubbed harness story is unwritten — and whether the live
+verifier gets its own measurement, since the repo's measure-then-replay pattern
+(T-63's shape) has no analogue for it and D20's reversal clause already
+anticipates the second pinned model.
+
 **US-6 closes when:** a verifier rejection resolves to `INSUFFICIENT_EVIDENCE`
 end to end, carrying `VERIFIER_REJECTED`.
 
@@ -1219,12 +1229,30 @@ Expect the baseline diff to be the substance of the close: D27's gate fails on
 drift in **either** direction, so every case moving off `BLOCKED` is acknowledged
 in the commit rather than noticed in a table.
 
+### `[ ] T-72` A5's curve names a threshold the system does not have
+**REQ:** none — reconciles acceptance gate A5 · **Blocks:** T-22 ·
+**Discovered in:** the D72 documentation review · **Timebox:** two hours
+**Status:** on the critical path — T-22 cannot be specified without it; runnable
+any time, since it depends on nothing open
+**Exit:** a decision entry choosing what A5's coverage/accuracy curve is a curve
+*over* — or replacing it — then spec §7's A5 and US-7's third bullet read the
+choice, and T-22's exit names the mechanism.
+
+A5, US-7 and T-22's exit all ask for a curve across "a range of fail-closed
+thresholds," naming the threshold where abstention reaches one. No such
+threshold exists: every verdict is a deterministic predicate with no confidence
+score, and no decision entry defines the sweep variable. The candidate readings
+differ in kind — sweep a real constant the tree carries
+(`discrepancy_tolerance`, the lookback window) and report abstention against
+it, or replace the curve with an abstention account per `gap_reason` — and they
+produce different reports, which is why this is a decision and not a patch made
+while building T-22 *(working rule 5; T-37's shape)*.
+
 ### `[ ] T-22` Metrics report
-**Depends:** T-20, T-21 · **Gates:** A2, A3, A5, A6
-**Status:** on the critical path; blocked on T-21
+**Depends:** T-20, T-21, T-72 *(D72)* · **Gates:** A2, A3, A5, A6
+**Status:** on the critical path; blocked on T-21 and T-72
 **Exit:** `eval/report.md` with per-criterion precision, span validity rate,
-abstention rate, coverage/accuracy curve, cost and latency
-The curve is the deliverable. Name the threshold where abstention reaches one.
+abstention rate, the A5 measurement T-72 chooses, cost and latency
 
 ### `[ ] T-28` Baseline and base rate in the metrics report
 **Depends:** T-22 · **Gates:** A2
@@ -1284,8 +1312,10 @@ point past the end of the document, a predicate raises. Each asserts `ERROR` wit
 the right `error_code`, no `Determination` emitted, and a non-zero CLI exit. The
 raising call is retryable, so it asserts `ERROR` only after N attempts and checks
 the count; the other three assert `ERROR` on first occurrence with one model call
-spent. Greps the package for bare `except:` and `except Exception:` without a
-re-raise and finds none.
+spent. Asserts on the AST of every module under `pa_agent/` that no `except`
+handler is bare or catches `Exception` without re-raising or mapping to a named
+`error_code` (REQ-27) — parsed, not grepped. *(Was a grep; strengthened by D72
+on D65's and D67's precedent that substring scans are the gameable form.)*
 
 ### `[ ] T-30` `ERROR` accounting in the eval harness
 **REQ:** 28 · **Depends:** T-10, T-26 · **Gates:** A9

@@ -3162,7 +3162,9 @@ number is moving the goalpost, and the entry that does it has to say so.
 
 ---
 
-## Open questions for Narayan
+## Open questions
+
+Project and scope questions route to Troy *(D72)*.
 
 1. Does the criteria-tree shape match how the team models coverage policy, or is
    there an existing internal representation this should conform to?
@@ -5054,3 +5056,126 @@ the tier and not about tool-directed fetching, and `--tool-fetch` becomes worth
 reconsidering for cases where the caller genuinely does not hold the document.
 Nothing in the current architecture has such a case: `ExtractionRunner.run` takes
 the text.
+
+---
+
+## D72 — A documentation-soundness pass: the spec's scope catches up with its own body, and A5's curve gets a decision task
+
+A review pass over the five governing documents, written before the edits it
+justifies (Article IX). Like D70 it is not a numbered task — its exit would be
+`check_gates.py`, which returns zero whether or not the prose is right, and a
+gate that cannot fail the work is not that work's gate (D10). Every mechanical
+claim the documents make was verified first: 57 tasks, 44 closed, 13 open, all
+eight gates green, 535 tests across 25 files — all exact. The findings below
+are what did not hold.
+
+### Spec §3's scope contradicts the spec's own body, and is rewritten
+
+Two bullets and the status line, each stale in a different direction:
+
+- *"A model-adjudicated agentic implementation"* was in scope while §5's own
+  *Unclaimed in v1* table says the model adjudicates nothing — REQ-44 and
+  REQ-47 are unclaimed, and D63 deliberately built model-directed **retrieval**
+  instead. One document asserting both is the contradiction D70 cleaned out of
+  CLAUDE.md, sitting in the document that outranks it. The bullet now says
+  model-*directed*, and points at the Unclaimed table.
+- *"National coverage only. No MAC jurisdiction resolution"* contradicts D21,
+  which established that every quantified constant comes from Noridian
+  Jurisdiction F's A53028 and that claiming otherwise in a review "would be a
+  misstatement." The spec's own scope line was that misstatement. It now reads
+  one policy, one jurisdiction, no multi-MAC resolution — the last clause being
+  the part that was always true.
+- *"Status: draft, pending spike 001"* — the spike closed 2026-09-07 (D19).
+
+**Rejected — leaving §3 as an aspiration** ("model-adjudicated" as the
+eventual target). A scope section states what v1 contains; the eventual target
+already has a home in the Unclaimed table's "what would claim it" column, and
+two homes for one claim is the drift mechanism D70 named.
+
+### A5 names a threshold the system does not have — registered as T-72
+
+A5, US-7's third bullet and T-22's exit all require a coverage/accuracy curve
+across "a range of fail-closed thresholds," naming the threshold where
+abstention reaches one. No such threshold exists: every verdict is a
+deterministic predicate with no confidence score, and no decision entry
+defines what the curve's x-axis would be. T-22 is unimplementable as written.
+
+The candidate readings differ in kind — sweep a real constant the tree carries
+(`discrepancy_tolerance`, the lookback window) and report abstention against
+it, or replace the curve with an abstention account per `gap_reason` — and
+they produce different reports. That makes it a decision, not a patch made
+while building T-22 (working rule 5; T-37's shape exactly: a requirement
+reconciled *before* the task that would otherwise implement it wrongly).
+**T-72 blocks T-22** and joins the critical path; the board's counts and
+`Path to v1`, and CLAUDE.md's copies of them, move together (D70's rule).
+
+**Rejected — patching A5's wording now, inside this pass.** Choosing the
+curve's mechanism is the substance of T-72, and a documentation pass that
+quietly decided it would be the move working rule 5 exists to prevent.
+
+### T-17 carries two unstated design decisions, noted on the task
+
+The verifier is a model call inserted into a chain whose every gate spends
+zero model calls, and nothing says how the harness and default CLI path stay
+free once it lands — spec §6's note implies a stubbed verifier, and the
+recorded-or-stubbed story is unwritten. And no task measures the live
+verifier: the repo's pattern is measure-then-replay (T-63 for the ADK) and
+there is no analogue here, though D20's reversal clause already anticipates
+the second pinned model. Both are T-17's own design decisions and working
+rule 5 will force them into an entry when it is built; the note on the task
+exists so the "one task" estimate for Article V is read with open eyes.
+
+### Smaller corrections, each with its reason
+
+- **Spec §6's E10 row read as false.** Its Expected cell said bare `MET`, and
+  E10's patient is also E6, whose c4 is `NOT_MET` — the overall outcome cannot
+  be `MET`. The row means criterion (a), and unlike E10b's and E12's rows it
+  did not say so. Scoped to `c(a) MET` before T-21 labels against it.
+- **T-29's exit greps for bare `except`.** The repo's own precedent is that
+  substring scans are the brittle form — D65 and D67 each replaced one with an
+  AST parse after a behavioural or textual check proved gameable, and T-70
+  exists because a gate asserted on a substring. Rewritten to an AST assertion
+  before the task is built, which is the cheap moment.
+- **T-63's `Status:` line still said "ready and fully unblocked"** two
+  paragraphs above "Closed by D71." Updated to closed.
+- **stories.md still called c5 a "count."** REQ-37 became a rate in D24;
+  the story bullet now reads the rate. Stories defer to spec for detail, which
+  is why this is a wording fix and not a behaviour question.
+- **US-5.5 existed on the board and in no story document**, though tasks are
+  "grouped under the story each one serves." It is deliberately not a user
+  story — the differential measurement has no persona-visible behaviour, which
+  is the Not-stories table's own criterion — so it gets a row in that table
+  rather than a persona and acceptance criteria, and the board heading says so.
+- **A named individual appeared in two documents and is removed from both.**
+  Troy's rule: no third party is named in `docs/`, and any question about the
+  project routes to Troy. US-7's value line now reads "an external reviewer,"
+  and this log's open-questions section is retitled to plain "Open questions"
+  with the routing stated under it. The three questions it holds are unchanged
+  — they are real open scope questions, and deleting them to remove a heading
+  would have thrown away content to fix an address. *(Rejected — moving them
+  into spec §9: its numbers are load-bearing and its gate parses the section
+  structure, a heavy home for questions no gate reads.)*
+
+### The numbering gaps are deliberate, and one reference is historical
+
+The decision log jumps D52 → D61 and the board skips T-44–T-45 and T-47–T-59.
+D53 is accounted for in D62 (an abandoned parallel worktree carried it); the
+rest of both ranges were consumed or reserved by the same abandoned pass and
+never landed. Nothing was deleted from this log — the preamble's append-only
+claim holds — and this paragraph exists so an auditor counting entries reads
+the gap as provenance rather than as excision. The same is true of task ids:
+tasks.md already states its numbering is non-contiguous.
+
+**D51's "T-55's ledger" is a reference to a task that was never registered** —
+a planned cross-reference ledger from the abandoned numbering range. The
+reference stays as written (entries are never edited); it is declared
+historical here. **Rejected — registering the ledger now.** The argument it
+gestured at (illustrative numbers nobody reads going stale) has since been
+answered structurally: D70's cleanup removed the duplicated prose, and T-69's
+gate-membership test is the pattern that keeps a list from rotting. A ledger
+task today would be process without a failure mode to catch.
+
+**Reverses if:** a corrected statement turns out to have been load-bearing as
+written — in which case the correction was drawn in the wrong place and comes
+back with its own entry — or T-72's decision lands somewhere neither candidate
+reading anticipated, in which case A5's text follows that entry, not this one.

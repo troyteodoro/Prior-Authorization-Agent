@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent, v1
 
-**Status:** draft, pending spike 001
+**Status:** active — v1 in progress *(was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -33,12 +33,16 @@ carries less information than they do.
 
 **In scope for v1**
 
-- One policy: NCD 100.1, bariatric surgery.
-- National coverage only. No MAC jurisdiction resolution.
+- One policy, one jurisdiction: NCD 100.1, bariatric surgery, as Noridian
+  Jurisdiction F implements it — A53028 supplies every quantified constant
+  *(D21)*. No multi-MAC jurisdiction resolution. *(Was "National coverage
+  only", which D21 disproved; corrected by D72.)*
 - Synthetic patients from Synthea plus manifest-driven synthesized notes.
 - Local execution. No deployment.
 - A deterministic reference implementation.
-- A model-adjudicated agentic implementation using bounded tool calling.
+- A model-directed agentic implementation using bounded tool calling — the
+  model directs retrieval; adjudication is permitted by Amendment 1 and
+  deliberately unclaimed, see §5's *Unclaimed in v1* *(D63, D72)*.
 - Differential evaluation of both implementations on the same cases.
 
 **Explicitly out of scope for v1**
@@ -398,7 +402,7 @@ Each becomes a labeled eval case. This list is the eval set's outline.
 | E7 | No weight-management documentation anywhere | c1 `INSUFFICIENT_EVIDENCE`, `NO_EVIDENCE_RETRIEVED` |
 | E8 | Note asserts program completion; no visit detail | c3 `INSUFFICIENT_EVIDENCE`, `UNSUBSTANTIATED_ASSERTION`, zero `wm_events` |
 | E9 | Missed-visit dates present in the gap month | c3 `NOT_MET`, not fooled |
-| E10 | Structured 39.23, note 45.0 — beyond tolerance, same side of 35.0 | `MET`, one `discrepancies[]` entry, gap list untouched |
+| E10 | Structured 39.23, note 45.0 — beyond tolerance, same side of 35.0 | c(a) `MET`, one `discrepancies[]` entry, gap list untouched *(criterion-scoped — its patient also carries E6, so the overall outcome is E6's; D72)* |
 | E10b | Structured 34.6, note 36.2 — disagreement crosses 35.0 | c(a) `INSUFFICIENT_EVIDENCE`, `SOURCE_CONFLICT` |
 | E10c | Structured 37.65, note 37.6 — below tolerance | `MET`, `discrepancies[]` empty |
 | E11 | Two supervised programs, one qualifying, one not | `MET` on the qualifying run |

@@ -28,8 +28,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-71, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
-| `docs/decisions.md` | D1–D71, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-72, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
+| `docs/decisions.md` | D1–D72, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -307,8 +307,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**44 of 57 tasks closed, 13 open. All 8 gates green** (`check_gates.py`, ~12s,
-535 tests across 25 files). IDs run to T-71, but numbering is not contiguous —
+**44 of 58 tasks closed, 14 open. All 8 gates green** (`check_gates.py`, ~12s,
+535 tests across 25 files). IDs run to T-72, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3**. `python -m pa_agent.cli --patient <uuid>
@@ -321,10 +321,10 @@ the aggregator and the gap list work and are pinned by unit tests; both stories
 close on eval-harness rows and `eval/cases.json` holds one case. That is
 **T-21**, and it is why the board's order starts where it does.
 
-Open, in order: **T-41 → T-21 → T-29/T-30 → T-17 → T-32 → T-22/T-28/T-23**, with
-T-27, T-42, T-70 and T-71 off the path. `docs/tasks.md` opens with `Path to v1`, which
-states this once with what each step gates — read it rather than this paragraph
-*(D70)*.
+Open, in order: **T-41 → T-21 → T-29/T-30 → T-17 → T-32 → T-72/T-22/T-28/T-23**,
+with T-27, T-42, T-70 and T-71 off the path. `docs/tasks.md` opens with `Path to
+v1`, which states this once with what each step gates — read it rather than this
+paragraph *(D70, D72)*.
 
 Two things worth knowing before a review: **Article V has no implementation**
 (that is T-17, one task), and **REQ-44/REQ-47 are unclaimed on purpose** —
