@@ -876,12 +876,27 @@ The check that makes truncation *safe* rather than merely cheap is
 tool is a cost control and not a quiet correctness change. The mutation that
 assembles the bundle from the model's view fails it.
 
-### `[ ] T-67` The spike notes have no address on the patient plane
+### `[x] T-67` The spike notes have no address on the patient plane
 **REQ:** 41 · **Depends:** T-64 · **Discovered in:** the T-66 build *(D66)*
 **Blocks:** T-63 under `--tool-fetch`
-**Exit:** `python scripts/run_adk_extraction.py --tool-fetch` reaches all eleven
-notes, or the corpus split is written down and the script scores the two halves
-separately instead of failing five of them.
+**Exit:** `pytest tests/test_adk_measurement.py` returns zero: the eleven notes
+partition into addressable and not *by asking the port*, a note the model was
+never asked about is counted `skipped` and never `failed`, the `tool_fetch` path
+runs end to end on an addressable note for zero model calls, and `--compare`
+refuses to print two aggregates computed over different note sets.
+
+**The registered exit was rewritten by D67** — it named
+`python scripts/run_adk_extraction.py --tool-fetch`, which spends model calls, and
+T-63 says in its own text that it is in no gate for that reason. A check that
+costs money and varies run to run is not a gate. The measurement stays T-63's.
+
+**Closed.** `pytest tests/test_adk_measurement.py` returns zero, 18 tests,
+thirteen mutations caught. The spike notes stay off the patient plane (D67 rejects
+the manifest entry in writing); `--tool-fetch` skips them by asking the port, names
+each skip, and reports `by_corpus` in every mode. Building the gate also found that
+the script had **never run at all** — all three record sites read a `case["labels"]`
+key the corpus builders do not produce, so it raised `KeyError` on note one in both
+modes. T-63 is unblocked in both modes, not only under `--tool-fetch`.
 
 Spike 001's notes are `n01_clean_run` and friends. They are in no patient manifest,
 so `PatientStore.get_document` raises and the scoped note reader has nothing to
@@ -898,11 +913,19 @@ patient, and a script that stops pretending one runner reads both corpora.
 
 ### `[ ] T-63` Measure the ADK runner against the direct runner
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
-**Exit:** `python scripts/run_adk_extraction.py` writes
-`eval/extraction/adk_results.json` over the same eleven notes, and a decisions entry
-quotes its aggregate beside `eval/extraction/results.json`'s — precision, recall,
-REQ-9 exclusion, field agreement, spans anchored, model offsets usable, tokens,
-wall time — for both `tool_fetch` modes, **naming the tier**.
+**Exit:** `python scripts/run_adk_extraction.py` writes a recording over the same
+eleven notes, `--tool-fetch` writes one over the **six addressable** notes, and a
+decisions entry quotes each aggregate beside `eval/extraction/results.json`'s —
+precision, recall, REQ-9 exclusion, field agreement, spans anchored, model offsets
+usable, tokens, wall time — for both `tool_fetch` modes, **naming the tier**.
+
+**Eleven and six, not eleven and eleven** *(D67)*. Spike 001's five notes have no
+patient, so the scoped note reader cannot resolve their ids; `--tool-fetch` skips
+them by asking the port and says so. Quote `by_corpus["synthesized"]` when
+comparing across modes — `--compare` recomputes over the notes both recordings
+scored, so the tool and no-tool columns are the same six notes.
+
+**Depends on T-68**: the two modes currently write one path.
 
 **Spends model calls, so it is in no gate.** Nothing may claim D45's numbers for the
 ADK path until this runs: D45's rule is that a changed call configuration is a new
@@ -915,6 +938,25 @@ a `SetModelResponseTool` and an instruction to answer through it. D5 develops on
 Studio and evals on Vertex, so the tool-calling path runs a **different prompt** on
 the two tiers, and a number from one is not a number for the other. *(D62)*
 
+
+### `[ ] T-68` The two `tool_fetch` modes overwrite one recording
+**REQ:** 22 · **Depends:** T-67 · **Discovered in:** the T-67 build *(D67)*
+**Blocks:** T-63
+**Exit:** `python scripts/run_adk_extraction.py` and
+`python scripts/run_adk_extraction.py --tool-fetch` leave two recordings on disk,
+and `--compare` names which one it is reading. A test builds both for zero model
+calls, as `tests/test_adk_measurement.py` already builds one.
+
+`ADK_PATH` is a module constant, so the second run of the pair overwrites the
+first and T-63 cannot quote both aggregates — its exit condition asks for both
+modes. The payload already records `"tool_fetch"`, so the file knows which mode
+produced it; nothing else does.
+
+Registered rather than folded into T-67, because "one recording per mode" is a
+question about how the measurement is stored and compared, and T-67's was about
+which notes each mode can reach. Small, but it has a real choice in it — a
+mode-suffixed filename, an `--out` argument, or one file holding both runs — and
+whichever is picked, `--compare` has to say what it is comparing.
 
 ### `[x] T-61` Agentic orchestration and model adjudication
 

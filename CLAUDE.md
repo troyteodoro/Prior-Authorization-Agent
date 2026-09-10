@@ -372,7 +372,7 @@ test would agree with it; the mutation that swaps them is caught. An unknown id
 raises rather than returning an empty set, and a file whose `value_set_id` no
 longer matches its path raises.
 
-Active task: **none. T-67 and T-63 are next — see below.**
+Active task: **none. T-68 then T-63 are next — see below.**
 
 **T-18, T-19, T-20, T-26 and T-62 are closed (D62). The system answers.**
 `python -m pa_agent.cli --patient <uuid> --procedure 43775` prints a real
@@ -473,11 +473,37 @@ to keep it gone (T-64's AST shape, for T-64's reason: a parse-then-fall-through
 mutation survives a behavioural test). Fifteen mutations across both tasks, all
 caught.
 
-**T-67 is registered, not fixed:** spike 001's notes (`n01_clean_run` and friends)
-are in no patient manifest, so under `--tool-fetch` five of T-63's eleven notes
-fail before the model sees anything. **Pre-existing** — `_patient_of` derived the
-patient `n01_clean_run` and `get_notes` raised just as loudly — and it surfaces now
-only because T-63 is next.
+**T-67 is closed (D67): the spike notes stay off the patient plane, and
+`--tool-fetch` measures six notes rather than eleven.** Spike 001's five notes have
+no patient — no bundle, no observation, nothing for REQ-34 to reconcile against —
+so the scoped reader's `PatientStore.get_document` cannot resolve their ids. **D67
+rejects giving them a manifest entry in writing**: it would put a measurement
+fixture in the data plane (D42's line), make `LocalPatientStore` serve documents
+`get_notes` returns for no patient, and void T-07's provenance claim on
+`data/patients/notes/manifest.json`. Extraction is the one thing here that needs no
+patient — `ExtractionRunner.run(document_id, text)` has no patient id — so the
+address is not missing, it was never coherent.
+
+`scripts/run_adk_extraction.py` now **asks the port** which notes a mode can reach
+(never `case["corpus"]`, and `test_the_split_reads_no_corpus_label` parses the two
+functions to keep it that way — a label check that falls through to the port
+answers identically on all eleven notes). A note the model was never asked about is
+**`skipped`, not `failed`** — D27's `BLOCKED`-is-not-`FAIL` at a third site — and
+`by_corpus` is reported in every mode. `--compare` **recomputes both columns over
+the notes both recordings scored** and names everything it dropped; an eleven-note
+column beside a six-note one is twelve rows that look like a comparison and are
+not one.
+
+**The gate found that the script had never run.** All three record sites read
+`case["labels"]`, a key neither corpus builder produces, so it raised `KeyError` on
+note one in *both* modes since T-62 wrote it. One `_record_base()` now, and
+`pytest tests/test_adk_measurement.py` drives `measure()` with a stub runner for
+zero model calls. **"In no gate" was read as "this file is not testable"** — the
+bookkeeping around a measurement is ordinary code, which is the split `--rescore`
+already made for `run_extraction.py`.
+
+**T-68 is registered, not fixed:** `ADK_PATH` is a module constant, so
+`--tool-fetch` overwrites the plain run's recording and T-63's exit asks for both.
 
 **US-4 and US-5 have not closed.** Their closing conditions are E4–E11 and E1/E8
 passing *in the harness*, and `eval/cases.json` still holds one case. That is

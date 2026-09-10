@@ -4165,3 +4165,190 @@ the patient `n01_clean_run` from those same ids and `get_notes` raised on it jus
 as loudly. It surfaces now because T-63 is the next thing to run and will hit it.
 Registered rather than fixed, because "where do the spike notes live on the patient
 plane" is D42's question about what the corpus is, not a tool signature.
+
+---
+
+## D67 — The spike notes have no patient, so `--tool-fetch` measures the addressable corpus and the script never pools two of them
+
+T-67's design, written before the code.
+
+### The finding, reproduced before it was designed against
+
+Under `--tool-fetch` the model is handed a `document_id` and nothing else, and
+`read_note` resolves it through `PatientStore.get_document`. Five of T-63's eleven
+notes are spike 001's, whose ids (`n01_clean_run` and the rest) are in no patient
+manifest, so the port raises before the model is asked anything:
+
+    spike_001    n01_clean_run                   RAISES KeyError
+    ... (five)
+    synthesized  E5                              RESOLVES
+    ... (six)
+
+The split is exactly corpus-shaped, 5 and 6, and it is **pre-existing** — D66
+recorded that `_patient_of("n01_clean_run")` derived the patient `n01_clean_run`
+and `get_notes` raised on it just as loudly.
+
+### The question is D42's, not a tool signature's
+
+T-67 registered it as "do the spike notes belong to the patient plane at all."
+
+**Chosen — they do not, and the script stops pretending one runner reads both
+corpora.**
+
+The positive reason first, because it is the whole argument: the spike notes
+genuinely have no patient. There is no bundle behind them, no structured
+observation, no `as_of`, nothing for REQ-34 to reconcile against. They were
+written to measure extraction, and extraction is the one thing in this system
+that needs no patient — `ExtractionRunner.run(document_id, text)` has no patient
+id in its signature, which is precisely why T-66 could not reuse
+`get_patient_document` and had to build `build_note_reader`. The address is not
+missing; it was never a coherent thing for them to have.
+
+**Rejected — a notes-manifest entry that admits they have no patient.** T-67
+named this as one of the two honest answers and it is the weaker one, for three
+reasons.
+
+1. `LocalPatientStore` would serve documents that no patient owns. `_namespace()`
+   would resolve `n01_clean_run` while `get_notes(p)` returned it for no `p`, so
+   the patient plane would carry documents reachable only by an id the caller
+   already knows. That is the shape D65 spent a task removing — an id that
+   carries a guarantee the port does not make — reintroduced one layer up.
+2. It puts a measurement fixture inside the data plane. D42 put T-06's manifests
+   in `eval/` because the system under test must never read them. The spike notes
+   are graded by `spike/spike_001/labels.json`, and giving them a patient-plane
+   address makes the corpus that grades the extractor addressable by the system
+   being graded. Nothing exploits that today; the line is the point.
+3. `data/patients/notes/manifest.json` is T-07's artifact. It records
+   `"task": "T-07"`, `"decision": "D43"` and `"seed": 7`, and every entry in it
+   was rendered from a T-06 manifest by seeded templating. Hand-adding five
+   entries with no manifest behind them makes that file two things and voids the
+   provenance claim D43 rests on — that no note contains a date the manifest does
+   not declare.
+
+**Rejected — a second document port so `read_note` could read either corpus.**
+Working rule 9: infrastructure the project has not earned, built for a
+measurement script. It also defeats its own purpose. The two halves would then be
+read through two different adapters, so `--tool-fetch` would be measuring the
+runner *and* the adapter, and the corpus split would still be there — moved
+inside the thing that was supposed to remove it, where no reader of the numbers
+would find it.
+
+**Rejected — dropping spike 001 from T-63 entirely.** It carries the REQ-9 traps
+D19's kill criterion was measured against, and 21/21 is the honest number D19
+insists on. Losing those notes from the *no-tool* comparison, where they work
+perfectly well, would cost the one ADK measurement that is directly comparable to
+D19's own configuration, in order to fix a problem that only exists in the other
+mode.
+
+### What the script does instead — three changes, the last two with teeth
+
+**1. Addressability is asked of the port, never inferred from the corpus name.**
+`addressable(store, case)` calls `store.get_document(...)` and reports whether it
+resolved. A `case["corpus"] == "spike_001"` test answers identically on every
+input this repo can produce today, and it is the read-structure-out-of-an-
+identifier mutation D65 and T-66 spent two tasks deleting, rewritten in a script
+where nobody would look for it. Asking the port also means that if the split is
+ever closed — a real patient corpus, a second measurement set — the script
+follows with no edit.
+
+**2. A note the model was never asked about is `skipped`, not `failed`.** Three
+outcomes now: scored, failed, skipped. `failed` means the model was asked and
+produced nothing; `skipped` means the corpus has no address for that note under
+this mode. Folding a skip into `failed` would report the ADK runner failing five
+of eleven notes, which is false — it never ran on them. This is D27's
+`BLOCKED`-is-not-`FAIL` line and REQ-28's rule about faults and findings, read
+once more at a third site: "answered wrongly," "errored," and "was never asked"
+have three different next actions and only one of them is about the runner.
+
+**3. Every mode reports per-corpus aggregates, and `--compare` refuses to compare
+two different note sets.** The failure this closes is specific. An eleven-note
+direct aggregate printed beside a six-note ADK aggregate is two columns of
+numbers that look like a comparison and are not one, and the old `compare()`
+would have printed it without comment — `notes` was one row among twelve, and a
+reader would have had to notice `11` against `6` and work out for themselves what
+it did to the eleven rows below. `compare()` now intersects the two recordings by
+`note_id`, recomputes both aggregates over that intersection with the same
+`_aggregate`, names what it dropped from each side, and prints the full-corpus
+columns only when the two note sets are identical.
+
+`by_corpus` is reported in **both** modes, not only the one that needs it. A
+figure that appears when there is a problem and vanishes when there is not is a
+figure nobody learns to read, and the six synthesized notes should be comparable
+across all four runner × `tool_fetch` combinations without the spike five
+diluting one side of it.
+
+### A defect the gate found by existing: the script had never run
+
+Building the record-shape test turned one up. All three record sites in
+`run_adk_extraction.py` — the scored path, the failed path, and the skipped path
+this task added — wrote `"labels": case["labels"]`, and neither `spike_cases()`
+nor `synthesized_cases()` produces a `labels` key. `run_extraction.py` assembles
+it at record time from `case["events"]`, `case["traps"]` and
+`case["assertion_required"]`.
+
+So `python scripts/run_adk_extraction.py` raised `KeyError: 'labels'` on note one
+of every run, in **both** modes, and had done since T-62 wrote it. Nothing caught
+it, and nothing could have: the script spends model calls, T-63 says it is in no
+gate, and no test had ever built one of its records.
+
+Fixed here rather than registered as a task, and that is a judgment call worth
+naming. Working rule 6 exists so scope does not grow silently; this is a
+three-line typo inside the two record shapes T-67 is already rewriting, it blocks
+T-63 in every mode rather than only under `--tool-fetch`, and registering a task
+to repair a `KeyError` in a file this task is editing would be process for its own
+sake. Recorded here so it is not silent. The three copies are now one
+`_record_base()`, and `test_the_whole_measure_path_runs_without_a_model` drives
+`measure()` with a stub runner so the record shapes are built on every `pytest`
+run — the closest a gate can get to T-63 without spending T-63's budget.
+
+**The general lesson is about what "in no gate" costs.** A script excluded from
+the gate because it spends money is still code, and the parts of it that are not
+the measurement — argument handling, record assembly, aggregation, comparison —
+are ordinary code that ordinary tests can reach. T-63 not being gated was read as
+this file not being gated. Splitting the measurement from the bookkeeping is what
+D17 and D45 already did for `run_extraction.py` with `--rescore`; this is the same
+split arriving late for the ADK script.
+
+### T-67's exit condition was rewritten, and that is this entry's other half
+
+As registered, T-67 closed on `python scripts/run_adk_extraction.py --tool-fetch`
+"reaching all eleven notes." That command spends model calls. T-63 says in its own
+text that it is in no gate for exactly that reason, and Article VIII needs a check
+that is repeatable at zero cost — a measurement that costs money and varies run to
+run is not a gate, it is the thing a gate protects. A defect in the task's own
+text, of the same kind D28 found in T-35's, and rewritten here rather than
+worked around.
+
+**New exit:** `pytest tests/test_adk_measurement.py` returns zero. It asks the
+real `LocalPatientStore` which of the eleven notes the tool path can address and
+asserts the split is 6/5 and corpus-aligned; asserts the partition is computed
+from the port and not from the corpus label, by moving a spike note's id into the
+addressable set and watching the answer change; drives the `tool_fetch` path end
+to end on a synthesized note through a `BaseLlm` fake for zero model calls;
+asserts a skipped note is counted apart from a failed one and reaches no
+aggregate; asserts `compare()` refuses to pool two recordings covering different
+notes; and drives `measure()` itself with a stub runner. The measurement — the
+model calls and the numbers — stays T-63's, unchanged, and still in no gate.
+
+Thirteen mutations, each caught by the check that should catch it. The one worth
+naming is D65's shape again: `addressable` checking `case["corpus"] == "spike_001"`
+*and then* falling through to the port answers identically on all eleven notes, so
+both behavioural tests pass over it. `test_the_split_reads_no_corpus_label` parses
+the two functions instead, which is why it exists alongside tests that look like
+they already cover it.
+
+### Discovered work
+
+**T-68** — the two `tool_fetch` modes write one path. `ADK_PATH` is a module
+constant, so `--tool-fetch` overwrites the recording the plain run just made, and
+T-63's exit asks for both modes' aggregates. Registered rather than folded in here:
+"one recording per mode" is a question about how a measurement is stored and
+compared, T-67's was about which notes each mode can reach, and the fix has a real
+choice in it (a mode-suffixed filename, an `--out` argument, or one file holding
+both) that `--compare` then has to reflect.
+
+**Reversal condition.** If the spike notes ever acquire real patients — a T-06-
+style manifest with bundles behind them — the split closes on its own, because
+addressability is asked of the port. If instead a future corpus is deliberately
+patient-less, this entry is the precedent: the corpus is not made to fit the
+plane, the measurement is made to say which corpus it covers.
