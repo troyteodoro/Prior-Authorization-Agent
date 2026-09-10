@@ -17,19 +17,25 @@ what REQ-26 asks for and the same argument applies below it:
   one.
 - a `CriterionResult` that is `MET` or `NOT_MET` without a span, or
   `INSUFFICIENT_EVIDENCE` with one, cannot be constructed (REQ-5).
+- an `ERROR` without a classified `error_code` and the exception text, or any
+  other verdict carrying either, cannot be constructed (REQ-30, T-26).
+- a `Determination` over any criterion in `ERROR` cannot be constructed
+  (REQ-26, T-26). This is A9, and it is an invariant rather than a check in the
+  assembler because a check one caller can forget is not what REQ-26 asks for.
 
 **Deliberately absent, and not oversights.** Each belongs to a task that has not
 run, and building it here would be building ahead:
 
-- `CriterionVerdict.ERROR`, `error_code`, `error_detail` — **T-26**. Article IV
-  requires three states that never collapse; this enum currently has two of them
-  and the third arrives with the machinery that classifies it.
-- `CriterionResult.discrepancies[]` — **T-33** (REQ-39).
+- *mapping* a fault onto `CriterionVerdict.ERROR` — **T-29**. The state and its
+  classification exist here; deciding that an unanchorable quote or a raising
+  predicate becomes one, and wiring REQ-24's abort, is the fault-injection
+  task's. T-26 built the vocabulary, not the sentences (D62).
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import date
 from enum import Enum
 from typing import Any, Literal
@@ -605,18 +611,85 @@ class GapReason(str, Enum):
 
 
 class CriterionVerdict(str, Enum):
-    """Two of Article IV's three states. `ERROR` arrives with T-26.
+    """Article IV's three states, all present since T-26.
 
     `NOT_MET` and `INSUFFICIENT_EVIDENCE` are not synonyms and the article
     forbids collapsing them: evidence that exists and falls outside a required
     window is `NOT_MET`; evidence that cannot be found is
     `INSUFFICIENT_EVIDENCE`, and only the second tells the specialist what to go
     collect.
+
+    `ERROR` is the third and is not a verdict about the chart at all — it says
+    the system could not evaluate the criterion (REQ-23). All three read as "not
+    approved" to a casual reader, which is exactly why the article names them
+    separately and why they carry different payloads: `NOT_MET` cites the
+    evidence that fell short, `INSUFFICIENT_EVIDENCE` names what to go collect,
+    and `ERROR` names the fault and cites nothing.
     """
 
     MET = "MET"
     NOT_MET = "NOT_MET"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
+    # T-26. Deliberately last: the enum's order is the order the states were
+    # earned, and this one required the classifying enum and the determination
+    # validator below to arrive with it (D62).
+    ERROR = "ERROR"
+
+
+class ErrorClass(str, Enum):
+    """Whether an `ErrorCode` is worth a second attempt (REQ-18a, D8)."""
+
+    RETRYABLE = "retryable"
+    TERMINAL = "terminal"
+
+
+class ErrorCode(str, Enum):
+    """REQ-30's closed enum. Every member carries its own classification.
+
+    The classification rides on the member rather than in a lookup table
+    beside it, because REQ-30's last sentence is *"a member added without a
+    classification defaults to terminal"* — and a default written into
+    `__new__` is that sentence enforced by the language. A sixth member added
+    as `SOMETHING = ("SOMETHING",)` is terminal without anyone remembering to
+    file it, and the failure mode of forgetting is "we did not retry", never
+    "we retried a fault that cannot succeed".
+
+    Free-text reasons are not permitted (REQ-30). `CriterionResult.error_detail`
+    carries the exception text *alongside* the code; it never replaces it.
+
+    | Code | Class | Raised when |
+    |---|---|---|
+    | `MODEL_CALL_FAILED` | retryable | the call itself failed; a second one may not |
+    | `SOURCE_UNAVAILABLE` | retryable | a store could not serve a document |
+    | `SCHEMA_INVALID` | terminal | the response did not validate; the same prompt will not fix it |
+    | `SPAN_VALIDATION_FAILED` | terminal | a span did not slice back (T-11's three reasons) |
+    | `PREDICATE_EXCEPTION` | terminal | a criterion predicate raised |
+    """
+
+    def __new__(cls, value: str, retryable: bool = False) -> ErrorCode:
+        obj = str.__new__(cls, value)
+        obj._value_ = value
+        obj._retryable = retryable
+        return obj
+
+    MODEL_CALL_FAILED = ("MODEL_CALL_FAILED", True)
+    SOURCE_UNAVAILABLE = ("SOURCE_UNAVAILABLE", True)
+    SCHEMA_INVALID = ("SCHEMA_INVALID",)
+    SPAN_VALIDATION_FAILED = ("SPAN_VALIDATION_FAILED",)
+    PREDICATE_EXCEPTION = ("PREDICATE_EXCEPTION",)
+
+    @property
+    def classification(self) -> ErrorClass:
+        return ErrorClass.RETRYABLE if self._retryable else ErrorClass.TERMINAL
+
+    @property
+    def retryable(self) -> bool:
+        """REQ-18a: only a retryable code consumes an attempt and is retried."""
+        return self._retryable
+
+    @property
+    def terminal(self) -> bool:
+        return not self._retryable
 
 
 class DeterminationOutcome(str, Enum):
@@ -645,6 +718,74 @@ class CallMetrics(BaseModel):
     input_tokens: int = Field(ge=0)
     output_tokens: int = Field(ge=0)
     wall_time_ms: float = Field(ge=0)
+
+
+class ToolCall(BaseModel):
+    """One tool invocation a model made, recorded in order (Art. X, REQ-49).
+
+    `arguments_digest`, not the arguments. A tool-call log is instrumentation:
+    it ends up in a run record and eventually in a report, and a log holding
+    `patient_id` verbatim is patient data sitting outside the patient plane.
+    A digest still proves two calls differed, which is the whole question a
+    trace answers, and Article VI is mostly about not leaking by accident (D62).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str = Field(min_length=1)
+    arguments_digest: str = Field(min_length=1)
+    ok: bool
+    wall_time_ms: float = Field(ge=0)
+    detail: str | None = None
+
+    @classmethod
+    def digest(cls, arguments: dict[str, Any]) -> str:
+        """A stable 16-hex digest of a call's arguments. Never reversible."""
+        canonical = json.dumps(arguments, sort_keys=True, default=str)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+
+
+class RunTrace(BaseModel):
+    """What one run of the model leaf actually did (Art. X, REQ-49).
+
+    Rides on the workflow result rather than on `Determination`, deliberately.
+    `Determination.metrics` is the counter A4 asserts reads zero for E2 and E3,
+    and widening the reviewable artifact with a tool trace would change what
+    that object is for. A determination is what a human reads; this is what an
+    engineer reads (D62).
+
+    `termination_reason` is a string rather than an enum because the reasons are
+    not yet closed — T-61 will add its own, and a premature enum here would be
+    amended by every task that discovers a new way to stop.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    runner_name: str = Field(min_length=1)
+    model: str | None = None
+    prompt_version: str | None = None
+    document_id: str | None = None
+    steps: list[str] = Field(default_factory=list)
+    tool_calls: list[ToolCall] = Field(default_factory=list)
+    attempts: int = Field(default=1, ge=1)
+    termination_reason: str | None = None
+    metrics: list[CallMetrics] = Field(default_factory=list)
+
+    @property
+    def model_calls(self) -> int:
+        return len(self.metrics)
+
+    @property
+    def total_input_tokens(self) -> int:
+        return sum(m.input_tokens for m in self.metrics)
+
+    @property
+    def total_output_tokens(self) -> int:
+        return sum(m.output_tokens for m in self.metrics)
+
+    @property
+    def total_wall_time_ms(self) -> float:
+        return sum(m.wall_time_ms for m in self.metrics)
 
 
 class Discrepancy(BaseModel):
@@ -683,9 +824,19 @@ class CriterionResult(BaseModel):
     """One criterion, adjudicated.
 
     REQ-5 is enforced here: `MET` and `NOT_MET` carry at least one span, and
-    `INSUFFICIENT_EVIDENCE` carries none. The second half matters as much as the
-    first — an abstention that ships a span invites a reader to treat it as a
-    weak finding rather than as an absence.
+    `INSUFFICIENT_EVIDENCE` and `ERROR` carry none. The second half matters as
+    much as the first — an abstention that ships a span invites a reader to
+    treat it as a weak finding rather than as an absence.
+
+    Each of Article IV's three non-`MET` states carries a different payload, and
+    the validators below make the three shapes mutually exclusive rather than
+    conventional:
+
+    | Verdict | spans | gap_reason | error_code |
+    |---|---|---|---|
+    | `MET` / `NOT_MET` | ≥ 1 | none | none |
+    | `INSUFFICIENT_EVIDENCE` | none | required | none |
+    | `ERROR` | none | none | required |
     """
 
     model_config = ConfigDict(frozen=True)
@@ -696,6 +847,11 @@ class CriterionResult(BaseModel):
     # REQ-31: what to go collect. Required on an abstention, refused on
     # anything else — the mirror of the span rule above (D44).
     gap_reason: GapReason | None = None
+    # REQ-30 (T-26): required on `ERROR`, refused everywhere else. A classified
+    # code and the exception text, never one without the other — the code is
+    # what a report can count, the text is what a developer can act on.
+    error_code: ErrorCode | None = None
+    error_detail: str | None = None
     # REQ-39: advisory, never on the gap list, never changing this verdict.
     # Reconciliation (T-33) is the only thing that fills it.
     discrepancies: list[Discrepancy] = Field(default_factory=list)
@@ -715,6 +871,10 @@ class CriterionResult(BaseModel):
 
     @model_validator(mode="after")
     def _spans_match_the_verdict(self) -> CriterionResult:
+        # `ERROR` joins `INSUFFICIENT_EVIDENCE` on the unsubstantiated side, so
+        # REQ-5's second half covers it without a new branch: a criterion that
+        # could not be evaluated has no evidence to cite, and a span on one
+        # would be a citation supporting nothing (T-26).
         substantiated = self.verdict in (
             CriterionVerdict.MET,
             CriterionVerdict.NOT_MET,
@@ -749,6 +909,45 @@ class CriterionResult(BaseModel):
                 f"{self.criterion_id}: {self.verdict.value} carries "
                 f"gap_reason {self.gap_reason.value} (REQ-31). Only an "
                 "abstention has a gap to explain."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _an_error_names_its_fault_and_nothing_else(self) -> CriterionResult:
+        """REQ-30 (T-26), and the sharpest edge in Article IV.
+
+        An `ERROR` carries a classified code and the exception text. It carries
+        **no** `gap_reason`, and the validator above already refuses one — worth
+        stating why, because a reader who sees three not-approved states will
+        reach for the gap list to explain all three. A gap reason says what to
+        go collect. An `ERROR` means the system could not evaluate: there is
+        nothing for Sam to collect, nobody failed to document anything, and
+        offering a next action for a fault is precisely the collapse the article
+        forbids between `ERROR` and `INSUFFICIENT_EVIDENCE` (D9, D62).
+        """
+        errored = self.verdict is CriterionVerdict.ERROR
+        if errored and self.error_code is None:
+            raise ValueError(
+                f"{self.criterion_id}: ERROR without an error_code (REQ-30). "
+                "Free-text reasons are not permitted; the code is what the "
+                "harness counts and what REQ-18a reads to decide on a retry."
+            )
+        if errored and not (self.error_detail or "").strip():
+            raise ValueError(
+                f"{self.criterion_id}: ERROR without error_detail (REQ-30). "
+                "The underlying exception is surfaced, not swallowed (REQ-24)."
+            )
+        if not errored and self.error_code is not None:
+            raise ValueError(
+                f"{self.criterion_id}: {self.verdict.value} carries error_code "
+                f"{self.error_code.value} (REQ-30). Only a criterion that could "
+                "not be evaluated has a fault to name."
+            )
+        if not errored and self.error_detail is not None:
+            raise ValueError(
+                f"{self.criterion_id}: {self.verdict.value} carries "
+                "error_detail (REQ-30). Use `detail` for a finding; "
+                "`error_detail` is the exception text behind an ERROR."
             )
         return self
 
@@ -847,6 +1046,53 @@ class Determination(BaseModel):
                 "(REQ-20). Unsupported never becomes met."
             )
         return self
+
+    @model_validator(mode="after")
+    def _no_determination_is_presented_over_an_error(self) -> Determination:
+        """REQ-26 (T-26), and the whole of A9 — zero determinations presented
+        with a criterion in `ERROR`.
+
+        Enforced here rather than in the aggregator on purpose: REQ-26 says the
+        object *cannot be constructed*, and a check in the assembler is a check
+        one caller can forget. An `ERROR` aborts the determination (REQ-24) and
+        the exception is surfaced, so the failure is loud at exactly the moment
+        somebody tries to hand a reviewer a packet the system could not compute.
+
+        This is not a fourth `DeterminationOutcome`. There is no such thing as
+        an errored determination — there is a determination, or there is a fault
+        and no determination.
+        """
+        errored = [
+            r.criterion_id
+            for r in self.criterion_results
+            if r.verdict is CriterionVerdict.ERROR
+        ]
+        if errored:
+            codes = ", ".join(
+                f"{r.criterion_id}={r.error_code.value}"
+                for r in self.criterion_results
+                if r.verdict is CriterionVerdict.ERROR and r.error_code is not None
+            )
+            raise ValueError(
+                f"determination over criterion(s) in ERROR: {errored} ({codes}). "
+                "REQ-24 aborts the determination and REQ-26 makes it "
+                "unconstructible; A9 gates on zero of these reaching a reviewer."
+            )
+        return self
+
+    @property
+    def discrepancies(self) -> list[Discrepancy]:
+        """REQ-39: every recorded disagreement, aggregated from the criteria.
+
+        Computed, not stored, for the reason `gap_list` is: a stored copy is a
+        second source of truth free to disagree with the results it summarizes.
+
+        Deliberately disjoint from `gap_list` — that list answers "what should
+        Sam go collect", and a disagreement between two values that were both
+        recorded is not something to go collect (D14). Nothing here is a gap and
+        no entry appears on both.
+        """
+        return [d for r in self.criterion_results for d in r.discrepancies]
 
     @property
     def gap_list(self) -> list[GapEntry]:

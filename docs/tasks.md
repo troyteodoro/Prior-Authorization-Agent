@@ -625,13 +625,38 @@ untouched in all three; no model call; tolerance read from the criteria tree
 Runs after extraction rather than inside T-13, because the note BMI does not
 exist until T-15 and US-2 makes no model call. *(D11)*
 
-### `[ ] T-18` Workflow graph
-**REQ:** 1, 4, 19 · **Depends:** T-13, T-16
-**Exit:** `pytest tests/test_workflow.py` — fan-out, fan-in, retry, and
-fail-closed all exercised; grep the module for branching on model output and find
-none
+### `[x] T-18` Workflow graph
+**REQ:** 1, 4, 19, 52 · **Depends:** T-13, T-16, T-46 · **Blocks:** T-19, T-61
+**Exit:** `pytest tests/test_workflow.py` —
+- the step sequence is a module-level constant, and a run visits exactly those
+  steps in exactly that order — asserted against the recorded trace, not read
+- **fan-out:** N notes produce N extraction calls, one per note, each recorded
+- **fan-in:** events merge across notes and every merged span still validates
+  through T-11 against the document it came from
+- **retry:** a runner raising a retryable fault is retried to the declared budget
+  and the attempts are recorded; exhaustion raises rather than returning a
+  partial result
+- **fail-closed:** a malformed model payload raises and never becomes a
+  zero-event extraction
+- sc1 `NotCovered`, sc1 `NoPolicyFound` and sc2 each complete with an extraction
+  runner whose `run()` raises, so zero model calls is *proved* rather than counted
+- no branch key derives from model output: asserted on the module AST, plus two
+  different extractions visiting the same step sequence
 
-### `[ ] T-20` Cost and latency instrumentation
+*Exit condition rewritten by D62* (was: "fan-out, fan-in, retry, and fail-closed
+all exercised; grep the module for branching on model output and find none"). The
+clauses are the same four; each is now a check. A grep is not an exit condition
+(D10), and "fail-closed" had to name *what* fails closed — a malformed extraction
+becoming an empty one is the failure `spike/spike_001/run.py` already documents in
+writing, where a transport error scores as flawless precision.
+
+The graph is plain Python and deliberately **not** an ADK `Workflow`: that would
+put `google.adk` on the import path of every deterministic test, and the three
+`sys.modules` assertions that would catch it are the ones that would have to be
+deleted to allow it. This graph has one conditional — whether a short circuit
+fired — and that is a `return`, not an edge. *(D62)*
+
+### `[x] T-20` Cost and latency instrumentation
 **REQ:** 22 · **Depends:** T-15
 **Exit:** `python eval/run_eval.py` prints per-run token counts and wall time
 Lands with the first model call, not on day five. *(Article X)*
@@ -642,17 +667,220 @@ Lands with the first model call, not on day five. *(Article X)*
 
 ## `US-5` The gap list — day 4
 
-### `[ ] T-19` Aggregator and gap list
-**REQ:** 19, 20, 21, 31, 39, 42 · **Depends:** T-18, T-31
-**Exit:** `pytest tests/test_determination.py` — boolean tree evaluated in
-Python; gap list populated; documentation gaps distinguishable from substantive
-failures by `gap_reason` rather than by prose; `discrepancies[]` surfaced as a
-separate list with no entry appearing on both; a determination for a
-contractor-determined code cites both the NCD's delegation and the MAC's
-exercise of it, never the NCD alone *(added by D33 — the NCD deliberately does
-not answer for a delegated procedure)*
+### `[x] T-19` Aggregator and gap list
+**REQ:** 19, 20, 21, 31, 39, 42 · **Depends:** T-18, T-31 · **Blocks:** T-61
+**Exit:** `pytest tests/test_determination.py` —
+- the **policy's** `decision_expression` is parsed and evaluated in Python over
+  the criterion verdicts — parsed, not `eval()`'d and not hardcoded as `all(...)`,
+  because REQ-19 says the expression decides and a hardcoded conjunction silently
+  ignores an `OR` a future tree carries. An unknown token raises.
+- REQ-20: any criterion resolving `INSUFFICIENT_EVIDENCE` propagates to an overall
+  `INSUFFICIENT_EVIDENCE`, never `MET`
+- gap list populated; documentation gaps distinguishable from substantive failures
+  by `gap_reason` rather than by prose
+- `discrepancies[]` surfaced as a separate list with no entry appearing on both
+- a determination for a contractor-determined code cites both the NCD's delegation
+  and the MAC's exercise of it, never the NCD alone *(added by D33 — the NCD
+  deliberately does not answer for a delegated procedure)*
+- E1's and E8's patients each produce their expected determination end to end from
+  the recorded extraction, with zero model calls
+
+*Exit condition extended by D62*: every original clause stands. Added are the
+expression-parsing requirement, REQ-20's propagation, and the two end-to-end rows —
+without those the aggregator could be a conjunction over verdicts nobody produced.
 
 **US-5 closes when:** E1 and E8 pass.
+
+---
+
+## 'US-5.5' Orchestration
+
+### `[x] T-62` ADK extraction runner and its declared tools
+**REQ:** 22, 41, 52, 53 · **Depends:** T-12, T-15, T-46 · **Blocks:** T-61, T-63
+**Discovered in:** the T-18 build *(D62)*
+**Exit:** `pytest tests/test_adk_agent.py` — **zero model calls**, driven against a
+fake `BaseLlm` so the test exercises real `LlmAgent`, `Runner` and `FunctionTool`
+objects rather than a mock of them:
+
+- each declared tool reaches its data through the injected port and by no other
+  route: one port call per invocation with the arguments forwarded, and a store
+  that raises leaves the tool with no answer to give
+- neither tool module opens a file, names a path, or holds a connection —
+  asserted on the module AST (REQ-41)
+- the patient toolset and the policy toolset live in separate modules and no third
+  module imports both (REQ-53, Art. VI)
+- the extraction agent's allowlist contains the note-text tools **only**: it is not
+  given `get_patient_observations` or `get_patient_conditions`
+- Article I holds by construction: `include_contents="none"`, both
+  `disallow_transfer_to_*` set with no `sub_agents` so the flow is `SingleFlow`
+  and no `transfer_to_agent` tool is ever injected, a literal tool list, and a
+  `max_llm_calls` ceiling
+- ADK's structured output round-trips through `build_result()` and produces the
+  same `ExtractionResult` the direct path does from the same payload, with every
+  span re-validated through T-11 (REQ-52)
+- a fabricated quote is counted in `dropped[]` and yields no `WmEvent`; a
+  fabricated `bmi_quote` demotes the BMI rather than failing the note (D15)
+- malformed output raises `ExtractionOutputError` and **never** becomes a
+  zero-event extraction
+- the run records one `CallMetrics` naming the pinned model, an ordered tool-call
+  trace, the attempt count and a termination reason (REQ-22, Art. X)
+
+**Why the allowlist is narrower than the toolset.** Handing extraction
+`get_patient_observations` would give the model the structured BMI while asking it
+for the note's. T-33 and T-60 exist because those are two independent readings that
+can disagree; E10b is the case where they disagree across 35.0. A model shown both
+has no reason to disagree, and the system would keep passing every test it has
+because the tests compare the two values and would now find them equal. *(D62)*
+
+### `[ ] T-64` One document namespace over the patient plane
+**REQ:** 41 · **Depends:** T-12, T-13 · **Discovered in:** the T-19 build *(D62)*
+**Exit:** `pytest tests/test_fhir.py` — `PatientStore.get_document` resolves any
+`document_id` a patient-plane span can carry: a bundle filename **and** a note id.
+A caller holding a validated span must not have to know which read served it.
+
+Today `get_document` resolves bundle filenames only, and notes arrive through
+`get_notes`. So validating a determination's spans means building the index from
+both reads, and the alternative a caller reaches for is branching on whether the
+id contains a slash — a convention, which is the thing REQ-41's ports exist to
+remove. `tests/test_determination.py` does the two-read version with a comment
+naming this task rather than hiding it.
+
+Not fixed inside T-19 because it widens a port a closed task owns (T-12), and
+because "is `document_id` one namespace per plane or one per accessor" is a design
+question with a second answer worth writing down: notes and bundles have different
+provenance and different hashes, and a single namespace has to keep them
+distinguishable. **T-17's verifier will hit this first** — it receives a span and
+nothing else, so it has no patient id to call `get_notes` with.
+
+### `[ ] T-65` Bound what a tool may return
+**REQ:** 46 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
+**Exit:** `pytest tests/test_agentic_workflow.py` — no declared tool can return an
+unbounded collection: a patient with thousands of observations yields a bounded or
+paged response, and the agentic input-token ratio for E2+E7 drops from 446x toward
+the 10-30x the other five patients cost.
+
+D64 measured the whole of that outlier to one cause. `get_patient_observations`
+returns every row — 3,780 for E2+E7's patient — the payload enters the context
+window, and `include_contents="default"` re-sends it on every subsequent turn.
+Cost is tool-payload size times turns, and it scales with the patient's chart
+rather than with the question.
+
+**This is a tool-contract question, not a model question.** The deterministic path
+reads the same 3,780 observations through the same port and pays nothing for them,
+because they never enter a context window and `most_recent_bmi` picks one. The
+options are a filtered or paged view, or keeping structured facts out of the
+model's reach entirely — which is what REQ-53 already does for the extractor, for
+a correctness reason rather than a cost one.
+
+Registered rather than fixed inside T-61: changing the tool would invalidate the
+measurement that found this.
+
+### `[ ] T-63` Measure the ADK runner against the direct runner
+**REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
+**Exit:** `python scripts/run_adk_extraction.py` writes
+`eval/extraction/adk_results.json` over the same eleven notes, and a decisions entry
+quotes its aggregate beside `eval/extraction/results.json`'s — precision, recall,
+REQ-9 exclusion, field agreement, spans anchored, model offsets usable, tokens,
+wall time — for both `tool_fetch` modes, **naming the tier**.
+
+**Spends model calls, so it is in no gate.** Nothing may claim D45's numbers for the
+ADK path until this runs: D45's rule is that a changed call configuration is a new
+measurement, and this changes the SDK, and under `tool_fetch` the prompt too.
+
+**The tier is not cosmetic here.** `output_schema` and `tools` are usable together
+in 2.8.0, but natively only on Vertex: `models/_capabilities.py` gates
+`output_schema_and_tools` on the Vertex variant, so on AI Studio ADK instead injects
+a `SetModelResponseTool` and an instruction to answer through it. D5 develops on AI
+Studio and evals on Vertex, so the tool-calling path runs a **different prompt** on
+the two tiers, and a number from one is not a number for the other. *(D62)*
+
+
+### `[x] T-61` Agentic orchestration and model adjudication
+
+**REQ:** 43, 45, 46, 48, 49, 50, 51  
+**Depends:** T-18, T-19, T-20, T-26, T-46, T-62
+
+**REQ-44 and REQ-47 are deliberately not claimed (D63).** They describe the model
+*evaluating criteria and determining outcomes*, and this task does not build that.
+Amendment 1 reserves date arithmetic, numeric comparisons, counting, sorting and
+set membership to Python **on both paths** — which is the entire decision procedure
+for all seven criteria — so there is no verdict the model could decide without
+doing something the amendment reserves. The model directs retrieval here and Python
+still adjudicates. Both requirements stay in the spec, unclaimed, which is the
+honest state: a permission the constitution grants and no task has yet taken up.
+Listing them here would make A7's "every REQ maps to a passing check" a lie.
+
+**T-26 and T-62 added to `Depends` by D62.** T-26 was missing and it is real: this
+task's exit requires malformed and contradictory output to resolve to `ERROR`, and
+`ERROR` did not exist — `CriterionVerdict` carried two of Article IV's three states
+and `tests/test_schemas.py` asserted the third's absence on purpose. T-62 for the
+same reason: this task's tool allowlist, tool-call trace and run bounds are T-62's,
+reused rather than rebuilt.
+
+**Amendment 1 is what makes this task legal.** D62 restored Articles I and II to
+their committed text after they had been rewritten in place, and kept Amendment 1
+appended and scoped instead. Model adjudication is permitted here, on this path,
+measured against the deterministic implementation — which is only an oracle because
+it is still bound by the articles as written.
+
+**Exit:** `pytest tests/test_agentic_workflow.py` and
+`python eval/run_agentic_eval.py` — **both spend zero model calls.**
+
+The tests must prove that:
+
+- the model can select only allowlisted tools, and a call to anything else is
+  refused rather than answered;
+- tool calls are recorded in order, with arguments digested rather than stored;
+- the model can request additional evidence — a second document, the structured
+  facts — and the run reflects what it asked for;
+- execution stops at the step, timeout and retry limits, and exhausting any of
+  them terminates with a named reason rather than a partial answer;
+- every document the model gathered is hash-verified and every span it produced
+  validates through T-11 before a criterion sees it;
+- malformed and contradictory model output resolves to `ERROR` with a classified
+  code, never to a verdict;
+- a planner that gathered nothing yields `INSUFFICIENT_EVIDENCE`, never `NOT_MET`
+  — "the model did not look" and "the chart does not say" are different answers;
+- policy artifacts cannot be modified by the model: the policy tools are
+  read-only and the criteria tree is never written;
+- deterministic validation remains authoritative — the same gathered evidence
+  produces the same verdicts as the fixed planner, because the criteria code is
+  the same code;
+- agentic and deterministic results are compared on identical inputs.
+
+`python eval/run_agentic_eval.py` scores a recording and reports criterion-level
+and overall differences against the deterministic oracle, plus unsupported-outcome
+rate, citation validity, error rate, token usage, latency, tool-call count and
+termination reason. `--measure` spends the calls and writes the recording.
+
+*Exit condition rewritten by D63*, for two defects in its own text. It named
+`python eval/run_agentic_eval.py` as a gate while requiring live comparison, so
+every run would cost money — and **a gate that costs money is a gate that gets
+skipped** (Art. VIII). It also asked for model *outcomes* to carry verified spans,
+which describes a path this task does not build; the equivalent obligation, that
+gathered evidence is verified before a criterion sees it, replaces it.
+
+**US-5.5 closes when:** the agentic path completes the differential without
+violating its execution bounds, and every discrepancy is reported rather than
+silently reconciled.
+
+*(Was "US-7 closes when". T-61 sits under US-5.5; US-7 is "Show me where the
+system stops being reliable" and closes on T-21, T-22, T-23 and T-28, none of
+which this task touches. Corrected by D63.)*
+
+**Closed by D64.** `pytest tests/test_agentic_workflow.py` returns zero (29
+tests, no model call) and `python eval/run_agentic_eval.py` returns zero against
+`eval/agentic/results.json`.
+
+The measurement: **6/6 outcomes and 42/42 criteria agreeing, 80/80 spans valid,
+zero errors, every bound respected — at 73.4x the input tokens and 4.7x the model
+calls.** The agentic path is exactly as correct as the oracle and pointless on
+this corpus, which is a more useful result than a disagreement would have been.
+
+The per-patient spread is 10x to 446x and the outlier has one cause: a patient
+with 3,780 observations, a tool that returns all of them, and a context that
+re-sends them every turn. **The model pays to look at data Python filters for
+free.** That is T-65.
 
 ---
 
@@ -708,7 +936,7 @@ in week 2.
 
 ## `US-9` Withhold what the system couldn't compute
 
-### `[ ] T-26` `ERROR` state in the data contracts
+### `[x] T-26` `ERROR` state in the data contracts
 **REQ:** 18a, 23, 24, 26, 30 · **Depends:** T-09 · **Blocks:** T-29, T-30 ·
 **Gates:** A9
 **Exit:** `pytest tests/test_error_state.py` — `ERROR` on `CriterionVerdict`; an

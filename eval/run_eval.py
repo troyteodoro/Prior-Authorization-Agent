@@ -57,6 +57,8 @@ from pa_agent.contracts import (  # noqa: E402
     DeterminationOutcome,
 )
 from pa_agent.determination import determine  # noqa: E402
+from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
+from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 from pa_agent.stores.policy import LocalPolicyStore  # noqa: E402
 
 EVAL_DIR = Path(__file__).resolve().parent
@@ -97,10 +99,23 @@ class CaseResult:
     reason_class: ReasonClass | None = None
     reason: str = ""
     model_calls: int | None = None
+    # T-20 (Art. X): measured per case, from the determination's own metrics.
+    # Deliberately outside `key` below — see the note there.
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    wall_time_ms: float | None = None
 
     @property
     def key(self) -> tuple[str, str | None]:
-        """What the baseline records and diffs."""
+        """What the baseline records and diffs.
+
+        Status and reason class only. **The T-20 numbers are excluded on
+        purpose**: tokens and latency vary between runs of the same model on the
+        same input, and folding them in would make D27's exact-match gate fail on
+        noise — which is how a gate stops being run. Cost is *reported* every run
+        and *asserted* nowhere, which is also why A6 asks for it to be reported
+        rather than bounded.
+        """
         return (
             self.status.value,
             self.reason_class.value if self.reason_class else None,
@@ -113,6 +128,9 @@ class CaseResult:
             "reason_class": self.reason_class.value if self.reason_class else None,
             "reason": self.reason,
             "model_calls": self.model_calls,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "wall_time_ms": self.wall_time_ms,
         }
 
 
@@ -132,6 +150,16 @@ def score(case: dict[str, Any], determination: Determination) -> CaseResult:
     case_id = case["case_id"]
     expect = case["expect"]
     calls = determination.model_calls
+    # T-20 (Art. X): read off the determination, which sums its own `CallMetrics`.
+    # Recorded on every outcome including a failure — a case that answers wrongly
+    # still cost what it cost, and dropping the number on the failures would make
+    # the reported total quietly optimistic.
+    measured = {
+        "model_calls": calls,
+        "input_tokens": determination.total_input_tokens,
+        "output_tokens": determination.total_output_tokens,
+        "wall_time_ms": determination.total_wall_time_ms,
+    }
 
     expected_outcome = DeterminationOutcome(expect["outcome"])
     if determination.outcome is not expected_outcome:
@@ -140,7 +168,7 @@ def score(case: dict[str, Any], determination: Determination) -> CaseResult:
             CaseStatus.FAIL,
             ReasonClass.WRONG_OUTCOME,
             f"expected {expected_outcome.value}, got {determination.outcome.value}",
-            calls,
+            **measured,
         )
 
     budget = expect.get("max_model_calls")
@@ -150,18 +178,46 @@ def score(case: dict[str, Any], determination: Determination) -> CaseResult:
             CaseStatus.FAIL,
             ReasonClass.MODEL_CALLS_EXCEEDED,
             f"{calls} model call(s) against a budget of {budget}",
-            calls,
+            **measured,
         )
 
-    return CaseResult(case_id, CaseStatus.PASS, None, "", calls)
+    return CaseResult(case_id, CaseStatus.PASS, None, "", **measured)
 
 
 # --------------------------------------------------------------------------
 # The system under test
 # --------------------------------------------------------------------------
 
+#: The date every window is measured from. T-06 pinned the ground truth here and
+#: every recency verdict moves with it, so a harness reading `date.today()` would
+#: score a different system every morning.
+EVAL_AS_OF = date(2026, 9, 1)
 
-def _determine(case: dict[str, Any], policy_store: Any) -> Determination:
+EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
+
+
+def _recorded_runner() -> Any:
+    """T-15's recording as an `ExtractionRunner`. Spends nothing.
+
+    The harness reads the file, not the runner: REQ-41 keeps storage locations out
+    of `pa_agent/`, and this module is the grader.
+    """
+    if not EXTRACTION_RESULTS.exists():
+        return None
+    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    return RecordedExtractionRunner.from_records(
+        recording["notes"], model=recording.get("model")
+    )
+
+
+
+def _determine(
+    case: dict[str, Any],
+    policy_store: Any,
+    patient_store: Any = None,
+    extraction_runner: Any = None,
+    as_of: Any = None,
+) -> Determination:
     """The seam T-24 and T-25 filled: the system under test, end to end.
 
     A `NoPolicyResult` for a case that expects an outcome is raised rather than
@@ -171,7 +227,12 @@ def _determine(case: dict[str, Any], policy_store: Any) -> Determination:
     grader.
     """
     result = determine(
-        policy_store, case["procedure_code"], patient_id=case.get("patient_id")
+        policy_store,
+        case["procedure_code"],
+        patient_id=case.get("patient_id"),
+        patient_store=patient_store,
+        as_of=as_of,
+        extraction_runner=extraction_runner,
     )
     if not isinstance(result, Determination):
         raise RuntimeError(
@@ -182,7 +243,13 @@ def _determine(case: dict[str, Any], policy_store: Any) -> Determination:
     return result
 
 
-def run_case(case: dict[str, Any], policy_store: Any) -> CaseResult:
+def run_case(
+    case: dict[str, Any],
+    policy_store: Any,
+    patient_store: Any = None,
+    extraction_runner: Any = None,
+    as_of: Any = None,
+) -> CaseResult:
     """Run one labeled case and classify the result.
 
     The broad handler is deliberate and is not the thing REQ-27 forbids: it
@@ -202,7 +269,9 @@ def run_case(case: dict[str, Any], policy_store: Any) -> CaseResult:
         )
 
     try:
-        determination = _determine(case, policy_store)
+        determination = _determine(
+            case, policy_store, patient_store, extraction_runner, as_of
+        )
     except NotImplementedError as exc:
         return CaseResult(
             case_id, CaseStatus.BLOCKED, ReasonClass.NOT_IMPLEMENTED, str(exc)
@@ -326,10 +395,46 @@ def self_check() -> list[tuple[str, bool, str]]:
         ("FAIL", "UNEXPECTED_EXCEPTION"),
     )
 
-    return [
+    generic = [
         (label, observed == expected, f"expected {expected}, got {observed}")
         for label, observed, expected in checks
     ]
+
+    # T-20's own self-check, and it is not about a key.
+    #
+    # Every case in the set today is a zero-call short circuit, so the reported
+    # tokens and wall time are legitimately 0 — and a wiring bug that dropped the
+    # numbers would report exactly the same 0. This is the check that tells those
+    # two apart: a determination carrying metrics must report them (Art. X).
+    # Its own metric with non-zero numbers. The shared `metric` above is all
+    # zeros — it exists to make `model_calls` non-zero for the budget checks — and
+    # reusing it here would make this assertion `0 == 2 * 0`, which is exactly the
+    # vacuous check this is supposed to replace.
+    costly = CallMetrics(
+        model="self-check",
+        purpose="self-check",
+        input_tokens=13,
+        output_tokens=7,
+        wall_time_ms=2.5,
+    )
+    measured = score(
+        _synthetic_case(expect={"outcome": "NOT_COVERED", "max_model_calls": None}),
+        _synthetic_determination(DeterminationOutcome.NOT_COVERED, [costly, costly]),
+    )
+    generic.append(
+        (
+            "a determination with metrics reports its tokens and wall time",
+            (
+                measured.model_calls == 2
+                and measured.input_tokens == 26
+                and measured.output_tokens == 14
+                and measured.wall_time_ms == 5.0
+            ),
+            f"model_calls={measured.model_calls} in={measured.input_tokens} "
+            f"out={measured.output_tokens} ms={measured.wall_time_ms}",
+        )
+    )
+    return generic
 
 
 # --------------------------------------------------------------------------
@@ -399,13 +504,34 @@ def print_report(results: list[CaseResult], drift: list[str], baseline_path: Pat
     for result in results:
         counts[result.status] += 1
     calls = sum(r.model_calls or 0 for r in results)
+    input_tokens = sum(r.input_tokens or 0 for r in results)
+    output_tokens = sum(r.output_tokens or 0 for r in results)
+    wall_ms = sum(r.wall_time_ms or 0.0 for r in results)
 
     print()
     print(
         f"  {len(results)} case(s): {counts[CaseStatus.PASS]} PASS, "
         f"{counts[CaseStatus.FAIL]} FAIL, {counts[CaseStatus.BLOCKED]} BLOCKED"
     )
+    # T-20 / Article X. Reported, never asserted: tokens and latency move between
+    # runs of the same model on the same input, and folding them into the gate
+    # would fail it on noise. A6 asks for cost and latency *reported* from
+    # instrumentation, and these come off each determination's own metrics.
     print(f"  model calls spent: {calls}")
+    print(
+        f"  tokens: {input_tokens} in, {output_tokens} out"
+        f"  ·  wall time: {wall_ms:.1f}ms"
+    )
+    if calls:
+        print(
+            f"  per model call: {input_tokens / calls:.0f} in, "
+            f"{output_tokens / calls:.0f} out, {wall_ms / calls:.0f}ms"
+        )
+    if counts[CaseStatus.BLOCKED]:
+        print(
+            f"  ({counts[CaseStatus.BLOCKED]} case(s) BLOCKED, so these totals "
+            "cover a subset of the eval set)"
+        )
     print()
 
     rel = baseline_path.relative_to(REPO_ROOT) if baseline_path.is_relative_to(REPO_ROOT) else baseline_path
@@ -470,7 +596,22 @@ def main(argv: list[str] | None = None) -> int:
         return EXIT_HARNESS_BROKEN
 
     policy_store = LocalPolicyStore()
-    results = [run_case(case, policy_store) for case in cases]
+    patient_store = LocalPatientStore()
+    # REQ-52: the harness supplies the model leaf, and supplies the free one. A
+    # replay of T-15's recording answers every note in the corpus for zero calls,
+    # so `run_eval.py` stays a command anyone can run — which is what makes D27's
+    # exact-match gate something that gets run rather than something that gets
+    # skipped because it costs money.
+    #
+    # Wired in now although E3 never reaches it: without this, the first covered
+    # case T-21 adds would report BLOCKED/NOT_IMPLEMENTED for a path that is built,
+    # and the drift would be read as a regression in the system rather than a gap
+    # in the harness.
+    extraction_runner = _recorded_runner()
+    results = [
+        run_case(case, policy_store, patient_store, extraction_runner, EVAL_AS_OF)
+        for case in cases
+    ]
 
     if args.update_baseline:
         note = (

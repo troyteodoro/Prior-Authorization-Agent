@@ -5,7 +5,15 @@ carries a sub-35 BMI, so at an `as_of` inside that BMI's window the request is
 exactly E2's shape. Both citations on the artifact are validated by T-11 —
 the policy claim against the NCD, the patient evidence against the bundle.
 The non-firing branches (stale BMI, high BMI, no T2DM, contractor scope) each
-land on the T-19 raise the covered path always had.
+fall through to the criteria chain and are asserted to reach a determination that
+is **not** `NOT_COVERED`.
+
+*Updated by D62.* Those four branches used to assert the `NotImplementedError`
+citing T-19 — the strongest statement available while the covered path was
+unbuilt, and the shape D31 warned about: a test that passes because a feature is
+missing keeps passing for the wrong reason the moment it lands. T-18 and T-19
+built the path, so each branch now asserts the thing it always meant, which is
+that sc2 declined to deny this chart.
 """
 
 from __future__ import annotations
@@ -18,6 +26,7 @@ import pytest
 
 from pa_agent.contracts import (
     Condition,
+    CriterionVerdict,
     Determination,
     DeterminationOutcome,
     EvidenceSpan,
@@ -27,11 +36,13 @@ from pa_agent.criteria import BMI_LOINC, evaluate_sc2
 from pa_agent.determination import determine
 from pa_agent.index import DocumentIndex
 from pa_agent.spans import validate
+from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PATIENT_MANIFEST = REPO_ROOT / "data" / "patients" / "manifest.json"
+EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
 
 COVERED_CODE = "43644"  # laparoscopic RYGB, nationally covered
 CONTRACTOR_CODE = "43775"
@@ -64,6 +75,16 @@ def patients() -> list[dict]:
 @pytest.fixture(scope="module")
 def t2dm_patient(patients) -> dict:
     return next(r for r in patients if r["has_active_t2dm"])
+
+
+@pytest.fixture(scope="module")
+def runner() -> RecordedExtractionRunner:
+    """T-15's recording, replayed. The fall-through branches need to reach a
+    real determination and this reaches one for nothing (REQ-52, D62)."""
+    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    return RecordedExtractionRunner.from_records(
+        recording["notes"], model=recording["model"]
+    )
 
 
 @pytest.fixture(scope="module")
@@ -144,56 +165,100 @@ def test_e2_is_distinguishable_from_a_criteria_failure(
 # --------------------------------------------------------------------------
 
 
-def _expect_t19(policy_store, patient_store, code, patient_id, as_of, match="T-19"):
-    with pytest.raises(NotImplementedError, match=match):
-        determine(
-            policy_store,
-            code,
-            patient_id=patient_id,
-            patient_store=patient_store,
-            as_of=as_of,
-        )
+def _expect_fall_through(
+    policy_store, patient_store, runner, code, patient_id, as_of
+) -> Determination:
+    """Assert sc2 declined, and return the determination the chain produced.
+
+    "sc2 did not fire" and "the request was denied for some other reason" are
+    different outcomes, and the distinction is the whole of D41: a categorical
+    exclusion denies on a rule, while the criteria chain adjudicates evidence.
+    Asserting the outcome is not `NOT_COVERED` separates them — and asserting
+    `criterion_results` is non-empty proves the chain actually ran rather than
+    returning some third empty thing.
+    """
+    determination = determine(
+        policy_store,
+        code,
+        patient_id=patient_id,
+        patient_store=patient_store,
+        as_of=as_of,
+        extraction_runner=runner,
+    )
+    assert isinstance(determination, Determination)
+    assert determination.outcome is not DeterminationOutcome.NOT_COVERED, (
+        f"{code} for {patient_id} at {as_of} was denied categorically; sc2 was "
+        "not supposed to fire on this chart (D41)"
+    )
+    assert determination.criterion_results, (
+        "no criterion results: the request did not reach the criteria chain"
+    )
+    assert determination.coverage_claim is None, (
+        "a criteria determination carries no coverage_claim — that field is the "
+        "denial's citation and belongs only to NOT_COVERED (D32)"
+    )
+    return determination
 
 
 def test_a_stale_sub35_bmi_does_not_categorically_deny(
-    policy_store, patient_store, t2dm_patient
+    policy_store, patient_store, runner, t2dm_patient
 ):
     """The same chart at today's date: the BMI is outside the window, so sc2
     declines to deny and the request falls through to the criteria chain —
     which handles staleness as NOT_MET (REQ-16), not as a categorical denial
     issued on evidence the approval path would refuse (D41)."""
-    _expect_t19(
-        policy_store, patient_store, COVERED_CODE,
+    determination = _expect_fall_through(
+        policy_store, patient_store, runner, COVERED_CODE,
         t2dm_patient["patient_id"], TODAY_ISH,
+    )
+    criterion_a = next(
+        r for r in determination.criterion_results if r.criterion_id == "a"
+    )
+    assert criterion_a.verdict is CriterionVerdict.NOT_MET, (
+        "REQ-16: evidence present but outside the window is NOT_MET. That is the "
+        "answer sc2 declined to pre-empt, and it reads differently on the gap "
+        "list from a categorical denial"
     )
 
 
-def test_a_high_bmi_patient_is_not_excluded(policy_store, patient_store, patients):
+def test_a_high_bmi_patient_is_not_excluded(
+    policy_store, patient_store, runner, patients
+):
     high = next(r for r in patients if r["latest_bmi"] >= 40)
-    _expect_t19(
-        policy_store, patient_store, COVERED_CODE, high["patient_id"], TODAY_ISH
+    _expect_fall_through(
+        policy_store, patient_store, runner, COVERED_CODE,
+        high["patient_id"], TODAY_ISH,
     )
 
 
 def test_a_sub35_patient_without_t2dm_is_not_excluded(
-    policy_store, patient_store, patients
+    policy_store, patient_store, runner, patients
 ):
     record = next(
         r for r in patients
         if r["latest_bmi"] < 35 and not r["has_active_t2dm"]
         and r["latest_bmi_date"] >= "2026"
     )
-    _expect_t19(
-        policy_store, patient_store, COVERED_CODE, record["patient_id"], TODAY_ISH
+    _expect_fall_through(
+        policy_store, patient_store, runner, COVERED_CODE,
+        record["patient_id"], TODAY_ISH,
     )
 
 
-def test_the_contractor_code_skips_sc2(policy_store, patient_store, t2dm_patient):
+def test_the_contractor_code_skips_sc2(
+    policy_store, patient_store, runner, t2dm_patient
+):
     """The 04/2009 exclusion predates the LSG delegation and never names LSG;
     a contractor-determined request proceeds to the MAC's criteria even for
-    the chart that fires sc2 on a covered code (D41's scope rule)."""
-    _expect_t19(
-        policy_store, patient_store, CONTRACTOR_CODE,
+    the chart that fires sc2 on a covered code (D41's scope rule).
+
+    This is the sharpest of the four: the *same patient at the same as_of* is
+    denied categorically on `COVERED_CODE` two tests above and adjudicated on
+    evidence here. Nothing about the chart changed; the procedure's coverage
+    status did.
+    """
+    _expect_fall_through(
+        policy_store, patient_store, runner, CONTRACTOR_CODE,
         t2dm_patient["patient_id"], E2_AS_OF,
     )
 

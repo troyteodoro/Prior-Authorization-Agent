@@ -95,19 +95,29 @@ def test_the_seven_models_exist_and_construct() -> None:
     assert CriterionVerdict.NOT_MET != CriterionVerdict.INSUFFICIENT_EVIDENCE
 
 
-def test_error_state_is_absent_and_belongs_to_t26() -> None:
-    """Article IV names three states; two are built and the third has a task.
+def test_article_ivs_three_states_are_all_present_and_all_distinct() -> None:
+    """The three states, pinned as a closed set.
 
-    Asserted rather than left implicit so that adding `ERROR` here without doing
-    T-26 — the enum classifying every code retryable or terminal, and the
-    validator refusing a determination that carries one — fails loudly.
+    **This guard replaces one that was retired on purpose (D62).** It used to
+    assert `not hasattr(CriterionVerdict, "ERROR")`, so that adding the third
+    state without T-26 — the enum classifying every code retryable or terminal,
+    and the validator refusing a determination that carries one — would fail
+    loudly. T-26 has now done that work, so the guard has done its job and is
+    replaced by the real thing it was standing in for: the set is closed here,
+    and `tests/test_error_state.py` holds the machinery.
+
+    Same move as D51, where two guards asserting a provisional constant still
+    existed were retired and replaced by a count pinned at zero. A retired guard
+    is recorded in a decision entry, never quietly deleted, because the diff is
+    the only place a reviewer can see that a check stopped being enforced.
     """
-    assert not hasattr(CriterionVerdict, "ERROR")
     assert {v.value for v in CriterionVerdict} == {
         "MET",
         "NOT_MET",
         "INSUFFICIENT_EVIDENCE",
+        "ERROR",
     }
+    assert len(set(CriterionVerdict)) == 4, "a fourth state needs an article"
 
 
 # --------------------------------------------------------------------------
@@ -548,13 +558,29 @@ def test_the_patient_contracts_exist_for_t12_to_fill() -> None:
 
 
 def test_no_model_is_imported_by_the_contracts_or_the_stores() -> None:
-    """Article II's boundary, checked the way T-11's exit condition checks it."""
-    import sys
+    """Article II's boundary.
 
-    for module in (
-        "pa_agent.contracts",
-        "pa_agent.stores.policy",
-        "pa_agent.stores.patient",
-    ):
-        __import__(module)
-    assert "google.adk" not in sys.modules
+    Checked in a **fresh interpreter**, not with a `sys.modules` lookup in this
+    process. `tests/test_adk_agent.py` imports `google.adk` legitimately — that is
+    what it is for — so a `sys.modules` check here passes or fails by test
+    ordering, and what it would really be asserting is "nothing in this process
+    loaded the ADK" rather than "this module does not". The subprocess form is the
+    one `tests/test_resolver.py` already uses, for exactly this reason (D62).
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    probe = (
+        "import sys; "
+        "import pa_agent.contracts, pa_agent.stores.policy, pa_agent.stores.patient; "
+        "assert 'google.adk' not in sys.modules, 'the contracts pulled in the ADK'; "
+        "assert 'google.genai' not in sys.modules, 'the contracts pulled in genai'"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", probe],
+        capture_output=True,
+        text=True,
+        cwd=Path(__file__).resolve().parent.parent,
+    )
+    assert result.returncode == 0, result.stderr

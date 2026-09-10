@@ -84,9 +84,25 @@ you.** Do not override these from prior knowledge.
 - `Workflow` is a Pydantic model. Its `edges` field is a **static list of edges
   supplied at construction**. Other fields: `retry_config`, `max_concurrency`,
   `state_schema`, `input_schema`, `output_schema`, `timeout`.
-- `edges` accepts `dict[bool|int|str, ...]` for conditional routing. **Keying a
-  branch off model output violates Article I. Never do this.** Branch keys come
-  from deterministic Python values only.
+- `edges` is `list[EdgeItem]` where `EdgeItem = Edge | tuple[ChainElement, ...]`
+  and a `RoutingMap` inside `ChainElement` carries conditional routing (*corrected
+  in D62; the earlier note said `dict[bool|int|str, ...]`*). **Keying a branch off
+  model output violates Article I. Never do this.** Branch keys come from
+  deterministic Python values only.
+- `SequentialAgent`, `ParallelAgent` and `LoopAgent` are all **deprecated** in
+  2.8.0 in favour of `Workflow`. `LlmAgent` is itself a `BaseNode`.
+- `output_schema` and `tools` work **together**, but natively only on Vertex:
+  `models/_capabilities.py` gates `output_schema_and_tools` on the Vertex
+  variant, so on AI Studio ADK injects a `SetModelResponseTool` and an extra
+  instruction instead. **The tier changes the prompt, not just the endpoint** (D62).
+- `LlmAgent(model=<BaseLlm instance>)` runs the whole flow — tool calls,
+  `output_schema`, plugin hooks, `usage_metadata` — with **no network and no
+  credential**. That is how `tests/test_adk_agent.py` tests ADK rather than a
+  mock of it. Do not import `google.adk.cli.agent_test_runner`; copy the pattern.
+- Setting `disallow_transfer_to_parent` and `disallow_transfer_to_peers` with no
+  `sub_agents` makes `_llm_flow` select `SingleFlow`, so `transfer_to_agent` is
+  never injected. `RunConfig(max_llm_calls=N)` is the only budget knob and counts
+  LLM calls, so one tool round trip costs two.
 - CLI verbs: `adk web`, `run`, `create`, `eval`, `eval_set`, `test`,
   `conformance`, `migrate`, `api_server`, `deploy`.
 - `adk create <name>` writes `__init__.py`, `agent.py`, `.env`, `.gitignore`
@@ -356,20 +372,65 @@ test would agree with it; the mutation that swaps them is caught. An unknown id
 raises rather than returning an empty set, and a file whose `value_set_id` no
 longer matches its path raises.
 
-Active task: **none. Pick the next one before writing code.**
+Active task: **none. T-61 is next — see the plan below.**
 
-**The plan is: ship a working determination, then measure the agentic
-alternative.** Phase 1 closes US-4 and US-5 by making the CLI answer —
-**T-33** (reconciliation) → **T-46** (`PolicyStore.get_value_set`, discovered:
-no production module loads the value set today) → **T-18** (the workflow graph,
-as an ADK `Workflow` with every node deterministic, so Article I holds
-literally) → **T-19** (the aggregator, which retires the `NotImplementedError`
-and gives `criteria.py` its first production caller) → **T-59** (README with a
-runnable demo path). Phase 2 is US-6, US-7 and US-9. **Phase 3 builds the
-model-orchestrated coordinator as a measured second implementation, not a
-replacement** — so no article is amended, `eval/run_eval.py` keeps its
-exact-match contract, and the deterministic path from T-19 is the differential
-oracle. The deliverable there is the comparison, not the coordinator.
+**T-18, T-19, T-20, T-26 and T-62 are closed (D62). The system answers.**
+`python -m pa_agent.cli --patient <uuid> --procedure 43775` prints a real
+determination — seven criterion verdicts, spans that slice back, a gap list, and
+Article X's counters — for **zero model calls**, because the default extraction
+runner replays T-15's recording.
+
+**The seam is one port.** `pa_agent/runners.py` declares `ExtractionRunner`
+(REQ-52), and three things satisfy it: `DirectExtractionRunner` (raw
+`google-genai`, D45's measured configuration), `AdkExtractionRunner`
+(`google-adk` 2.8.0, in `pa_agent/agent/`), and `RecordedExtractionRunner`
+(replays `notes[].raw`, spends nothing). **Every one returns through
+`build_result()`, which is the trust boundary** — ADK output is untrusted model
+output and there is no private route to a `WmEvent`. The recorded runner is why
+`pytest` and `eval/run_eval.py` evaluate the whole chain end to end for free.
+
+**The graph is plain Python and deliberately not an ADK `Workflow`.**
+`pa_agent/workflow.py` holds `STEPS`, a module-level tuple of nine named
+callables, and a driver that walks it and records what it visited. An ADK
+`Workflow` would put `google.adk` on the import path of every deterministic
+test, and the three `sys.modules` assertions that would catch that are the ones
+that would have to be deleted to allow it. The graph has one conditional —
+whether a short circuit fired — and that is a `return`, not an edge.
+
+**Article I is asserted structurally, not promised.** The driver's body contains
+no branch on model output; every loop iterable is enumerated in the gate
+(`STEPS`, `tree.criteria`, `range(max_attempts)`, `state.notes`); the count of
+branches anywhere in `workflow.py` that read an extraction field is **pinned at
+one** — the note-level BMI merge, which routes nothing — so a second is a visible
+diff. On the agent side: `SingleFlow` (so `transfer_to_agent` is never injected),
+`include_contents="none"`, a literal tool list, and a `max_llm_calls` ceiling.
+
+**The extraction agent's allowlist is narrower than its toolset, and that is the
+sharpest decision in T-62.** It gets `get_patient_document` and
+`get_patient_notes`. It is **not** given `get_patient_observations` — handing the
+model the structured BMI while asking it for the note's is how T-33's and T-60's
+two independent readings stop being two, and E10b would quietly start agreeing
+while every test kept passing. `patient_tools.py` and `policy_tools.py` are
+separate modules and nothing imports both (Art. VI, REQ-53). **The policy tools
+have no model consumer today** — they are the declared surface T-61 will hand its
+adjudicator.
+
+**Nothing may quote D45's numbers for the ADK path.** It is a different SDK, and
+under `--tool-fetch` a different prompt. `scripts/run_adk_extraction.py` is the
+measurement and **T-63 is open**; it reuses `run_extraction.py`'s corpus and
+scorer by import, so the runner is the only difference.
+
+**Next is T-61**, and its runway is clear: T-18, T-19, T-20, T-26 and T-62 all
+closed this pass, and T-26 was added to its `Depends` because its exit needs an
+`ERROR` state that did not exist. Amendment 1 is what makes T-61 legal — D62
+restored Articles I and II after they had been rewritten in place, and kept the
+amendment appended and scoped instead, so the deterministic path stays bound by
+the articles and therefore stays an oracle.
+
+**US-4 and US-5 have not closed.** Their closing conditions are E4–E11 and E1/E8
+passing *in the harness*, and `eval/cases.json` still holds one case. That is
+**T-21**. A determination that works and an eval set that grades it are two
+deliverables and only the first landed.
 
 **US-2 and US-3 are delivered**, and c1–c5 now evaluate correctly on every edge
 case. **T-24 is closed (D31): facts in the store, judgment in
@@ -545,6 +606,17 @@ to it (the tree's `scoped_to: "c3"`). A zero-event abstention reads
 `UNSUBSTANTIATED_ASSERTION` (E8), without one `NO_EVIDENCE_RETRIEVED` (E7),
 D12's rule at both c1 and c3. Every `NOT_MET` cites the evidence that fell
 short, never the absence.
+
+**Three open items discovered while building this pass.** **T-63** measures the
+ADK runner against the direct one (spends calls, in no gate). **T-64** is one
+document namespace over the patient plane — `PatientStore.get_document` resolves
+bundle filenames only, so validating a determination's spans means reading through
+`get_notes` too, and T-17's verifier will hit it first because it receives a span
+and no patient id. And three `sys.modules` guards in `test_schemas.py`,
+`test_reconciliation.py` and `test_error_state.py` were **order-dependent** — they
+asserted "nothing in this process loaded the ADK", not "this module does not" — and
+are now fresh-interpreter subprocess probes, the shape `test_resolver.py` had
+already written down (D62).
 
 **T-42 is registered, not fixed:** REQ-14 picks the *longest* run and c2 then
 tests that run's recency, so a long stale run beats a short recent one and the

@@ -1,0 +1,401 @@
+{
+  "task": "T-61",
+  "decision": "D63",
+  "measured_at": "2026-09-10T04:24:57.109868+00:00",
+  "model": "gemini-3.5-flash-lite",
+  "tier": "ai_studio",
+  "prompt_version": "t61-retrieval-v1",
+  "procedure_code": "43775",
+  "as_of": "2026-09-01",
+  "bounds": {
+    "max_steps": 12,
+    "max_llm_calls": 16
+  },
+  "note": "Extraction is eval/extraction/results.json on both sides, so the one variable is which evidence reached the criteria (D63).",
+  "aggregate": {
+    "patients": 6,
+    "scored": 6,
+    "errors": 0,
+    "error_rate": 0.0,
+    "outcome_disagreements": 0,
+    "outcome_agreement_rate": 1.0,
+    "criterion_disagreements": 0,
+    "criteria_compared": 42,
+    "criterion_agreement_rate": 1.0,
+    "unsupported_outcomes": 17,
+    "unsupported_rate": 0.4048,
+    "spans_valid": 80,
+    "spans_total": 80,
+    "citation_validity": 1.0,
+    "total_model_calls": 28,
+    "total_input_tokens": 463124,
+    "total_output_tokens": 6186,
+    "total_wall_time_ms": 48159.9,
+    "oracle_model_calls": 6,
+    "oracle_input_tokens": 6311,
+    "oracle_output_tokens": 4530,
+    "input_token_ratio": 73.4,
+    "model_call_ratio": 4.7
+  },
+  "patients": [
+    {
+      "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
+      "cases": [
+        "E5"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "NOT_MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+          "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json"
+        ],
+        "model_calls": 1,
+        "input_tokens": 1068,
+        "output_tokens": 958,
+        "wall_time_ms": 2436.2
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "NOT_MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
+          "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json"
+        ],
+        "spans_valid": 22,
+        "spans_total": 22,
+        "model_calls": 6,
+        "input_tokens": 32180,
+        "output_tokens": 1229,
+        "wall_time_ms": 6089.7
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "cases": [
+        "E4",
+        "E9"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "NOT_MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c2",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+        ],
+        "model_calls": 1,
+        "input_tokens": 1200,
+        "output_tokens": 1165,
+        "wall_time_ms": 2970.2
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "NOT_MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c2",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
+          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+        ],
+        "spans_valid": 9,
+        "spans_total": 9,
+        "model_calls": 4,
+        "input_tokens": 16870,
+        "output_tokens": 1441,
+        "wall_time_ms": 5382.8
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+      "cases": [
+        "E2",
+        "E7"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "NOT_MET",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json"
+        ],
+        "model_calls": 1,
+        "input_tokens": 810,
+        "output_tokens": 38,
+        "wall_time_ms": 612.4
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "NOT_MET",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json"
+        ],
+        "spans_valid": 3,
+        "spans_total": 3,
+        "model_calls": 4,
+        "input_tokens": 361110,
+        "output_tokens": 324,
+        "wall_time_ms": 21671.6
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
+      "cases": [
+        "E6",
+        "E10"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt"
+        ],
+        "model_calls": 1,
+        "input_tokens": 1068,
+        "output_tokens": 933,
+        "wall_time_ms": 2362.9
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt"
+        ],
+        "spans_valid": 20,
+        "spans_total": 20,
+        "model_calls": 4,
+        "input_tokens": 20666,
+        "output_tokens": 1224,
+        "wall_time_ms": 4939.2
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "cases": [
+        "E1",
+        "E11",
+        "E10c"
+      ],
+      "oracle": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt"
+        ],
+        "model_calls": 1,
+        "input_tokens": 1244,
+        "output_tokens": 1309,
+        "wall_time_ms": 3336.1
+      },
+      "agentic": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt"
+        ],
+        "spans_valid": 25,
+        "spans_total": 25,
+        "model_calls": 4,
+        "input_tokens": 12361,
+        "output_tokens": 1555,
+        "wall_time_ms": 5640.6
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+      "cases": [
+        "E8",
+        "E10b"
+      ],
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "INSUFFICIENT_EVIDENCE",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "a",
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json"
+        ],
+        "model_calls": 1,
+        "input_tokens": 921,
+        "output_tokens": 127,
+        "wall_time_ms": 849.6
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "INSUFFICIENT_EVIDENCE",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "a",
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json"
+        ],
+        "spans_valid": 1,
+        "spans_total": 1,
+        "model_calls": 6,
+        "input_tokens": 19937,
+        "output_tokens": 413,
+        "wall_time_ms": 4436.0
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    }
+  ],
+  "rescored_at": "2026-09-10T04:25:43.609646+00:00"
+}

@@ -326,8 +326,26 @@ def test_reconciliation_agrees_with_criterion_a_about_which_bmi_is_authoritative
 
 
 def test_reconciliation_spends_no_model_call():
-    assert "google.adk" not in sys.modules
-    assert "google.genai" not in sys.modules
+    """No model client is reachable from the reconciler.
+
+    Checked in a **fresh interpreter**, not with a `sys.modules` lookup in this
+    process. `tests/test_adk_agent.py` imports `google.adk` legitimately — that is
+    what it is for — so a `sys.modules` check here passes or fails by test
+    ordering, and what it would really be asserting is "nothing in this process
+    loaded the ADK" rather than "this module does not". The subprocess form is the
+    one `tests/test_resolver.py` already uses, for exactly this reason (D62).
+    """
+    import subprocess
+
+    probe = (
+        "import sys; import pa_agent.reconcile; "
+        "assert 'google.adk' not in sys.modules, 'reconcile pulled in the ADK'; "
+        "assert 'google.genai' not in sys.modules, 'reconcile pulled in genai'"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, cwd=REPO_ROOT
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_the_module_imports_no_model_and_no_store():
