@@ -372,7 +372,7 @@ test would agree with it; the mutation that swaps them is caught. An unknown id
 raises rather than returning an empty set, and a file whose `value_set_id` no
 longer matches its path raises.
 
-Active task: **none. T-61 is next — see the plan below.**
+Active task: **none. T-65 and T-66 are next, batched — see below.**
 
 **T-18, T-19, T-20, T-26 and T-62 are closed (D62). The system answers.**
 `python -m pa_agent.cli --patient <uuid> --procedure 43775` prints a real
@@ -607,16 +607,44 @@ to it (the tree's `scoped_to: "c3"`). A zero-event abstention reads
 D12's rule at both c1 and c3. Every `NOT_MET` cites the evidence that fell
 short, never the absence.
 
-**Three open items discovered while building this pass.** **T-63** measures the
-ADK runner against the direct one (spends calls, in no gate). **T-64** is one
-document namespace over the patient plane — `PatientStore.get_document` resolves
-bundle filenames only, so validating a determination's spans means reading through
-`get_notes` too, and T-17's verifier will hit it first because it receives a span
-and no patient id. And three `sys.modules` guards in `test_schemas.py`,
+**Two open items discovered while building this pass.** **T-63** measures the
+ADK runner against the direct one (spends calls, in no gate). And three
+`sys.modules` guards in `test_schemas.py`,
 `test_reconciliation.py` and `test_error_state.py` were **order-dependent** — they
 asserted "nothing in this process loaded the ADK", not "this module does not" — and
 are now fresh-interpreter subprocess probes, the shape `test_resolver.py` had
 already written down (D62).
+
+**T-64 is closed (D65): the patient plane is one document namespace.**
+`PatientStore.get_document` resolves any id a patient-plane span can carry — a
+bundle filename or a note id — because a validated `EvidenceSpan` carries a
+`document_id` and nothing else, and **T-17's verifier is handed a span and
+deliberately no patient id**, so `get_notes` is not a route it has. The adapter
+resolves by looking the id up in the two manifests and **never by inspecting the
+id**: a `.json` suffix and a slash are facts about how T-04 and T-07 named things,
+not port guarantees. Uniqueness is enforced — two records claiming one id raise
+rather than letting whichever manifest loaded second win. `tests/test_determination.py`
+and `eval/run_agentic_eval.py` each lost their hand-rolled union of the two reads.
+
+**A `kind` field on `Document` was rejected**: no consumer reads it, and the facts
+that distinguish a note from a bundle already live in the manifests.
+
+**The `get_patient_document` tool was deliberately not widened, and `_patient_of`
+survives.** The tool is *scoping*, not resolving. Point it at the widened
+namespace and the extraction agent — whose allowlist is exactly this tool plus
+`get_patient_notes` — can read a FHIR bundle by filename and so obtain the
+structured BMI T-62 withheld from it on purpose; every test would keep passing,
+because the tests compare the note reading to the structured one and would now
+find them equal. That is **T-66**: `get_patient_document(patient_id, document_id)`.
+It changes a function declaration, therefore the prompt, therefore D64's
+measurement — so **batch T-65 and T-66** and re-measure once.
+
+**One T-64 pin is structural rather than behavioural.** A resolver that branches
+on the id's shape and *then* falls through to the record answers identically on
+every input this corpus can produce, and the mutation written to catch it
+survived. `test_the_resolver_reads_no_structure_out_of_an_id` parses the adapter
+instead, refusing a path shape or a `startswith`/`endswith`/`split` inside the two
+resolving functions, docstrings exempt. Seven mutations, all caught.
 
 **T-42 is registered, not fixed:** REQ-14 picks the *longest* run and c2 then
 tests that run's recency, so a long stale run beats a short recent one and the

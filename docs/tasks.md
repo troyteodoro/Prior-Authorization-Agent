@@ -732,7 +732,7 @@ can disagree; E10b is the case where they disagree across 35.0. A model shown bo
 has no reason to disagree, and the system would keep passing every test it has
 because the tests compare the two values and would now find them equal. *(D62)*
 
-### `[~] T-64` One document namespace over the patient plane
+### `[x] T-64` One document namespace over the patient plane
 **REQ:** 41 · **Depends:** T-12, T-13 · **Discovered in:** the T-19 build *(D62)*
 **Blocks:** T-17 · **Designed by:** D65
 **Exit:** `pytest tests/test_fhir.py` — `PatientStore.get_document` resolves any
@@ -765,6 +765,24 @@ survives this task.** The tool is scoping, not resolving: point it at the widene
 port and the extraction agent, whose allowlist is exactly this tool plus
 `get_patient_notes`, can read a FHIR bundle by filename and get the structured BMI
 that T-62 withheld from it on purpose. That is **T-66**.
+
+**Closed by D65.** `pytest tests/test_fhir.py` returns zero (18 tests).
+`get_document` resolves the union of the two manifests, a colliding id raises
+instead of picking a winner, and REQ-7's re-hash covers both halves —
+parametrized, because the bundle reaches its hash through `_bundle` and the note
+through `Document`'s own validator, and either could be dropped without the other
+noticing.
+
+**One pin is structural rather than behavioural.** A resolver that branches on
+`.json` or on a slash and *then* falls through to the record answers identically
+on every input this corpus can produce — the fast path is redundant with the
+lookup behind it, and the first mutation written to catch it survived. So
+`test_the_resolver_reads_no_structure_out_of_an_id` parses the adapter and refuses
+a path shape or a `startswith`/`endswith`/`split` inside the two resolving
+functions, docstrings exempt. Mutation-tested seven ways.
+
+`tests/test_determination.py` and `eval/run_agentic_eval.py` each lost their
+hand-rolled union of the two reads. That they got shorter is the deliverable.
 
 ### `[ ] T-66` The document tool scopes by argument, not by id shape
 **REQ:** 41, 53 · **Depends:** T-64 · **Discovered in:** the T-64 design *(D65)*

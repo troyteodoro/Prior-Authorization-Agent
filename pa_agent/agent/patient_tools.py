@@ -212,10 +212,18 @@ def _patient_of(document_id: str) -> str:
     """The patient a note document_id belongs to.
 
     T-07 names every note `<patient_id>/chart_note.txt`, so the id carries its
-    owner. This is a convention rather than a port guarantee, and **T-64 is the
-    task that removes it** — `PatientStore.get_document` should resolve a note id
-    directly, and until it does, a caller holding a span has to know which read
-    serves it. Written as one function with a name so there is exactly one place
-    to delete.
+    owner. This is a convention rather than a port guarantee, and **T-66 is the
+    task that removes it** — by passing the patient id the model already holds,
+    not by reaching for the widened port.
+
+    T-64 widened `PatientStore.get_document` to resolve the whole patient plane,
+    and this function deliberately does not use it (D65). What it is doing is
+    *scoping*, not resolving: the tool answers for one patient's notes and for
+    nothing else. Point it at the widened namespace and the extraction agent —
+    whose allowlist is this tool plus `get_patient_notes` — can read a FHIR
+    bundle by filename and so obtain the structured BMI that T-62 withheld from
+    it on purpose, which is exactly how T-33's two independent readings stop
+    being two. Written as one function with a name so there is exactly one place
+    to delete when T-66 lands.
     """
     return document_id.split("/", 1)[0]

@@ -140,11 +140,11 @@ def _citation_validity(determination: Determination, patient_store) -> tuple[int
         # than answer the question it was asked.
         return 0, 0
 
+    # One read per cited document. T-64 made `get_document` resolve the whole
+    # patient plane, so the note pre-load this used to do — and the "whatever is
+    # left must be a bundle" fallback behind it — are the port's job now (D65).
     index = DocumentIndex()
-    if determination.patient_id:
-        for note in patient_store.get_notes(determination.patient_id):
-            index.add(note)
-    for document_id in wanted - set(index.ids()):
+    for document_id in wanted:
         try:
             index.add(patient_store.get_document(document_id))
         except Exception:

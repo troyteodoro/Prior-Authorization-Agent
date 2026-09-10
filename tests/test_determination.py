@@ -589,22 +589,18 @@ def test_e1s_every_verdict_cites_a_span_that_slices_back(
     """
     determination = _determine_case(store, patient_store, runner, e1_patient)
 
-    # The index is built from both patient-plane reads, because `get_document`
-    # resolves bundle filenames and notes arrive through `get_notes` — two
-    # namespaces over one plane. Registered as **T-64**: a caller holding a span
-    # should not have to guess which read serves its `document_id`, and the
-    # alternative (branching on whether the id contains a slash) is the kind of
-    # convention REQ-41's ports exist to remove. Written out here rather than
-    # papered over, so the wart is visible.
+    # One accessor, because T-64 made the patient plane one document namespace
+    # (D65): `get_document` resolves a bundle filename and a note id alike, so
+    # this loop never asks which read served a span. The two-read version that
+    # used to sit here — notes first, then bundles for whatever was left — is
+    # what the port now owns.
     index = DocumentIndex()
-    for note in patient_store.get_notes(e1_patient):
-        index.add(note)
     wanted = {
         span.document_id
         for result in determination.criterion_results
         for span in result.spans
     }
-    for document_id in wanted - set(index.ids()):
+    for document_id in wanted:
         index.add(patient_store.get_document(document_id))
 
     checked = 0
