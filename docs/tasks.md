@@ -17,15 +17,15 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-two tasks are on this board — IDs run to T-76 but numbering is not
-contiguous, so the highest id is not the count. **45 are closed and 17 are
-open.** Twelve of the 17 sit on the critical path to the acceptance gates in
+contiguous, so the highest id is not the count. **46 are closed and 16 are
+open.** Eleven of the 16 sit on the critical path to the acceptance gates in
 spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
 — ownership is ratified before the path resumes)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
-| 1 | `T-73` | the ratification ledger and its gate *(D74)* | ready — **next** |
-| 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | after T-73; Troy's reading |
+| 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
+| 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
 | 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
 | 4 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | after T-75 *(D74)* |
 | 5 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
@@ -1357,11 +1357,12 @@ emitted, and a seeded `ERROR` leaves the abstention rate unchanged.
 
 Real work with a runnable exit that delivers no user outcome.
 
-### `[ ] T-73` The ratification ledger and its gate
+### `[x] T-73` The ratification ledger and its gate
 **REQ:** none — implements D74's protocol · **Blocks:** T-74, T-75, T-76,
 T-21's rewritten exit · **Discovered in:** the D74 ownership review ·
 **Timebox:** half a day
-**Status:** **first on the critical path** *(D74)*
+**Status:** closed — 235 ids seeded `proposed`, the gate is ninth in `GATES`,
+20 tests in `tests/test_check_ownership.py`
 **Exit:** `python scripts/check_ownership.py` returns zero — and
 `python scripts/check_gates.py` green with the new gate in `GATES`, which
 T-69's membership test forces in the same commit

@@ -99,16 +99,17 @@ deterministic path is usable as a regression oracle *(D62)*.
 `python` is not on PATH; the tracked venv is at `./venv/bin/python`.
 
 ```bash
-./venv/bin/python scripts/check_gates.py        # all 8 gates, ~12s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (537 tests, ~8s)
+./venv/bin/python scripts/check_gates.py        # all 9 gates, ~13s. Required at every close.
+./venv/bin/python -m pytest -q                  # the suite alone (557 tests, ~8s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
 
-The eight gates, all zero-cost: `pytest`, then `check_env.py`,
+The nine gates, all zero-cost: `pytest`, then `check_env.py`,
 `check_skeleton.py`, `verify_sources.py --offline`, `select_patients.py
 --verify`, `spike/spike_001/run.py --verify`, `eval/run_eval.py`,
-`eval/run_agentic_eval.py`. **Membership is a rule, not a taste call** — a
+`eval/run_agentic_eval.py`, `check_ownership.py` *(D74)*. **Membership is a
+rule, not a taste call** — a
 command is a gate iff some task's exit condition names it *and* it spends no
 model call and touches no network. Everything else tracked under `scripts/`,
 `eval/` and `spike/` sits in `EXCLUDED` with a stated reason, and
@@ -320,8 +321,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**45 of 62 tasks closed, 17 open. All 8 gates green** (`check_gates.py`, ~12s,
-537 tests across 25 files). IDs run to T-76, but numbering is not contiguous —
+**46 of 62 tasks closed, 16 open. All 9 gates green** (`check_gates.py`, ~13s,
+557 tests across 26 files). IDs run to T-76, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3**. `python -m pa_agent.cli --patient <uuid>
@@ -334,7 +335,7 @@ the aggregator and the gap list work and are pinned by unit tests; both stories
 close on eval-harness rows and `eval/cases.json` holds one case. That is
 **T-21**, and it is why the board's order starts where it does.
 
-Open, in order: **T-73 → T-74 → T-75 → T-21 → T-29/T-30 → T-17 → T-32 →
+Open, in order: **T-74 → T-75 → T-21 → T-29/T-30 → T-17 → T-32 →
 T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70 and T-71 off the path. The
 ratification tasks come first because D74 restores human ownership of every
 load-bearing ID — ledger `docs/ratifications.json`, gate
@@ -420,9 +421,10 @@ eval/
                      adk_results_tool_fetch.json — T-63's two, one per mode (D68).
   agentic/           results.json — T-61's recording
 spike/spike_001/     notes/, results.json, run.py — five notes, no patient
-scripts/             check_gates, check_env, check_skeleton, verify_sources,
-                     select_patients, synthesize_notes, run_extraction,
-                     run_adk_extraction
-tests/               25 files, 537 tests
-docs/
+scripts/             check_gates, check_env, check_skeleton, check_ownership,
+                     verify_sources, select_patients, synthesize_notes,
+                     run_extraction, run_adk_extraction
+tests/               26 files, 557 tests
+docs/                the five governing docs plus ratifications.json — D74's
+                     ledger, statuses beyond `proposed` are Troy's edits only
 ```
