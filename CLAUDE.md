@@ -28,8 +28,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-69, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
-| `docs/decisions.md` | D1–D70, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-71, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
+| `docs/decisions.md` | D1–D71, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -94,7 +94,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 8 gates, ~12s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (532 tests, ~8s)
+./venv/bin/python -m pytest -q                  # the suite alone (535 tests, ~8s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -205,11 +205,19 @@ passing**, because the tests are written in terms of the thing that broke.
   Git is the source of truth; a store may serve a deploy-time read-only
   projection.
 - **A changed call configuration is a new measurement, never a re-run** *(D45)*.
-  A changed tool declaration is a changed prompt *(D64, D66)*. A changed SDK is a
-  changed measurement *(T-63)*. Nothing may quote D45's numbers for the ADK path.
+  A changed tool declaration is a changed prompt *(D64, D66)*; a changed SDK is a
+  changed measurement *(D71)*; and **the tier can change the prompt too**, not just
+  the endpoint — on AI Studio `output_schema` + `tools` becomes an injected
+  `SetModelResponseTool` *(D62, measured in D71)*. The ADK path has its own numbers
+  now and D45's still may not be quoted for it.
 - **Never make a gate call a model** *(D45)*. Measurement scripts spend the
   calls; `pytest` re-reads the recording, re-hashes every note, re-validates
   every span and checks the recorded model is the pin.
+- **Count every model turn, not just the first** *(D71, and commit `89d2cd1`
+  before it)*. A tool round trip is two LLM calls. A note's singular `metrics` is
+  turn one; `trace["metrics"]` is all of them. Summing the wrong one understated
+  T-63's output tokens 12.1x and inverted the comparison's sign, using figures
+  that were each individually real.
 - **`pa_agent/model_pin.py` is the only tracked Python that may name a model**
   *(D20)*, test files included — that rule is what left the suite red in T-67.
 - **Spans are located by searching the model's verbatim quote**, exact first then
@@ -299,8 +307,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**43 of 55 tasks closed, 12 open. All 8 gates green** (`check_gates.py`, ~12s,
-532 tests across 25 files). IDs run to T-69, but numbering is not contiguous —
+**44 of 57 tasks closed, 13 open. All 8 gates green** (`check_gates.py`, ~12s,
+535 tests across 25 files). IDs run to T-71, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3**. `python -m pa_agent.cli --patient <uuid>
@@ -314,7 +322,7 @@ close on eval-harness rows and `eval/cases.json` holds one case. That is
 **T-21**, and it is why the board's order starts where it does.
 
 Open, in order: **T-41 → T-21 → T-29/T-30 → T-17 → T-32 → T-22/T-28/T-23**, with
-T-63, T-27 and T-42 off the path. `docs/tasks.md` opens with `Path to v1`, which
+T-27, T-42, T-70 and T-71 off the path. `docs/tasks.md` opens with `Path to v1`, which
 states this once with what each step gates — read it rather than this paragraph
 *(D70)*.
 
@@ -388,13 +396,13 @@ eval/
   cases.json         the eval set (one case; T-21 expands it)
   baseline.json      what run_eval.py diffs against
   manifests/         T-06's ground truth — the system under test never reads it
-  extraction/        results.json — T-15's recording. T-63's two ADK recordings
-                     land here as adk_results_{inline,tool_fetch}.json (D68).
+  extraction/        results.json (T-15) plus adk_results_inline.json and
+                     adk_results_tool_fetch.json — T-63's two, one per mode (D68).
   agentic/           results.json — T-61's recording
 spike/spike_001/     notes/, results.json, run.py — five notes, no patient
 scripts/             check_gates, check_env, check_skeleton, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction
-tests/               25 files, 532 tests
+tests/               25 files, 535 tests
 docs/
 ```

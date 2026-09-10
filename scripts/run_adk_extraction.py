@@ -414,7 +414,7 @@ def _aggregate(every: list[dict], nest: bool = True) -> dict:
     field_disagreements = sum(
         len(r["score"]["field_disagreements"]) for r in scored
     )
-    metrics = [r["metrics"] for r in scored if r.get("metrics")]
+    metrics = _turn_metrics(scored)
     tool_calls = sum(
         len((r.get("trace") or {}).get("tool_calls") or []) for r in scored
     )
@@ -451,6 +451,37 @@ def _aggregate(every: list[dict], nest: bool = True) -> dict:
         "total_wall_time_ms": round(sum(m["wall_time_ms"] for m in metrics), 1),
         **({"by_corpus": by_corpus} if nest else {}),
     }
+
+
+def _turn_metrics(scored: list[dict]) -> list[dict]:
+    """Every model turn's metrics, not just the first one of each note (T-63).
+
+    A note's record carries a singular `metrics` — the `ExtractionResult`'s, which
+    is turn one — and a `trace` whose `metrics` list holds **every** turn the
+    recorder saw. Under `--tool-fetch` a note costs two turns: the model calls
+    `read_note`, and then answers. Summing the singular field counts the tool-call
+    turn and drops the one carrying the extraction.
+
+    Measured on this task's own recording: input understated 2.27x, wall 3.65x,
+    and **output tokens 12.1x** — 330 reported against 3,992 actually spent. It
+    also inverted the comparison's sign, reporting the tool path as cheaper and
+    faster than the direct runner when it is 3.6x the input tokens and slower.
+
+    Article X says cost is measured and never estimated; a total that silently
+    omits half the turns is an estimate wearing instrumentation's clothes. This is
+    the same defect commit 89d2cd1 fixed for determinations — *count every model
+    turn, not just the first* — reappearing one layer down, which is why the fallback
+    below is deliberate rather than defensive: a recording written before traces
+    existed still aggregates, and it aggregates the only thing it has.
+    """
+    out: list[dict] = []
+    for record in scored:
+        turns = (record.get("trace") or {}).get("metrics") or []
+        if turns:
+            out.extend(turns)
+        elif record.get("metrics"):
+            out.append(record["metrics"])
+    return out
 
 
 def _covered(recording: dict) -> dict[str, dict]:

@@ -16,10 +16,10 @@ answers the second question, once.
 
 ## Path to v1
 
-Fifty-five tasks are on this board — IDs run to T-69 but numbering is not
-contiguous, so the highest id is not the count. **Forty-three are closed and
-twelve are open.** Nine of the twelve sit on the critical path to the acceptance
-gates in spec §7. This is that path, in order. *(D70)*
+Fifty-seven tasks are on this board — IDs run to T-71 but numbering is not
+contiguous, so the highest id is not the count. **44 are closed and 13 are
+open.** Nine of the 13 sit on the critical path to the acceptance gates in spec
+§7. This is that path, in order. *(D70)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
@@ -34,9 +34,10 @@ Off the path. Real work, nothing waiting on it:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
-| `T-63` | spends model calls, in no gate, two-hour timebox | whenever calls are being spent |
 | `T-27` | needs the full eval set and the report to write into | after T-21 and T-22 |
 | `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
+| `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
+| `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
 
 **Why T-21 is second and not later.** US-4 and US-5 are *built and ungraded* —
 every predicate, the reconciliation, the aggregator and the gap list work and are
@@ -955,7 +956,7 @@ patient plane at all" is a question about what the corpus is (D42, D43), not abo
 tool signature. The two honest answers are a manifest entry that admits they have no
 patient, and a script that stops pretending one runner reads both corpora.
 
-### `[ ] T-63` Measure the ADK runner against the direct runner
+### `[x] T-63` Measure the ADK runner against the direct runner
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
 **Status:** **ready and fully unblocked** in both modes since T-67 and T-68. Off
 the critical path because it spends model calls and is in no gate — run it
@@ -990,6 +991,31 @@ a `SetModelResponseTool` and an instruction to answer through it. D5 develops on
 Studio and evals on Vertex, so the tool-calling path runs a **different prompt** on
 the two tiers, and a number from one is not a number for the other. *(D62)*
 
+
+**Closed by D71.** Both recordings written, both aggregates quoted, tier named.
+**Extraction fidelity is identical on all three paths** — precision, recall,
+REQ-9 exclusion and field agreement all 1.000, and **0 model-emitted offsets
+usable** for a third time across a third call configuration (D18 holds).
+
+Inline costs nothing: +5.9% input tokens, +3.7% wall over `google-genai`.
+**`--tool-fetch` costs 3.64x the input tokens and 1.26x the wall time** to fetch a
+document the caller was already holding — `ExtractionRunner.run(document_id, text)`
+receives the text as an argument, and the tool path spends a turn asking for it.
+Twelve tool calls for six notes.
+
+**Two findings the run produced, neither by review.** One span in 76 failed to
+anchor: under `--tool-fetch` the model wrote `completed` where E8's note says
+`completing`, and Article III refused the paraphrase on string comparison. That
+span is E8's only evidence, so its loss would change `UNSUBSTANTIATED_ASSERTION`
+into `NO_EVIDENCE_RETRIEVED` — and no aggregate figure reports it, which is
+**T-71**. And the measurement was **counting one turn of two**, understating
+tool-fetch output tokens 12.1x and inverting the comparison's sign; fixed here
+(D68's precedent — bookkeeping, and the data was already in `trace["metrics"]`,
+so the repair spent no calls), with four mutations caught.
+
+**These are AI Studio numbers and the tier changed the prompt**, not just the
+endpoint: the 11 unescaped spans are the `SetModelResponseTool` round trip D62
+predicted. A Vertex run is a new measurement.
 
 ### `[x] T-68` The two `tool_fetch` modes overwrite one recording
 **REQ:** 22 · **Depends:** T-67 · **Discovered in:** the T-67 build *(D67)*
@@ -1562,6 +1588,53 @@ a requirement nobody agreed to *(working rule 5)*. No case in spec §6
 distinguishes the readings today — E5 has one run and E11's longest is also
 its most recent — so this blocks nothing until a chart with two real programs
 lands.
+
+### `[ ] T-71` A lost assertion reports as a flawless run
+**REQ:** 31, 35 · **Depends:** T-16, T-31 · **Discovered in:** the T-63
+measurement *(D71)* · **Timebox:** two hours
+**Status:** ready, off the critical path
+**Exit:** `pytest tests/test_adk_measurement.py` — the aggregate reports
+assertion coverage, and a recording in which a note carrying
+`assertion_required: true` yields zero assertions is distinguishable **from the
+aggregate alone**, without opening a per-note record.
+
+T-63 lost E8's `program_assertions[]` span to a paraphrase the anchorer correctly
+refused. The per-note score says so exactly — `assertion_required: true`,
+`assertions: 0` — and the aggregate reports precision 1.000, recall 1.000, REQ-9
+exclusion 1.000 and field agreement 1.000, because a note with zero labeled events
+contributes to no fidelity ratio. The only visible trace is `spans_emitted` sitting
+one above `spans_anchored`.
+
+That is spike 001's documented trap wearing new clothes: *a transport error scores
+as flawless precision*. Here a refused citation does. E8 is the refusal test and
+the whole argument for `gap_reason` (D12, D44) — losing its evidence changes what
+the determination tells Sam to collect, and no headline figure moves.
+
+Not folded into T-63: T-63's exit names the figures it must quote, and adding one
+inside it is a requirement changed by the task that implements it *(working rule
+5, and the reason T-37 and T-38 exist)*.
+
+### `[ ] T-70` A comparison gate asserts on a substring
+**REQ:** none — a test-quality defect · **Discovered in:** the T-63 measurement
+*(D71)* · **Timebox:** one hour
+**Status:** ready, off the critical path
+**Exit:** `pytest tests/test_adk_measurement.py` —
+`test_compare_recomputes_over_the_intersection_and_never_pools` asserts that the
+sentinel value is absent **from the parsed column it belongs to**, not from the
+whole rendered output, and a mutation that pools the corpora still fails it.
+
+The test writes a sentinel of 99 into one runner's spike-note score and asserts
+`"99" not in out`. Any figure anywhere in the comparison that happens to contain
+those two digits fails it — and this task's own corrected tool-fetch input total is
+**22,969**. The assertion is one substring collision away from failing for a reason
+unrelated to what it tests, which is D31's stale-substring lesson pointed at a gate
+rather than at a message.
+
+Registered rather than fixed inside T-63 for the same reason as T-71. Honest note
+on how it surfaced: the test failed **once**, during a mutation pass that was
+rewriting the script and clearing `__pycache__` between runs, and did not reproduce
+in five subsequent full-suite runs. The flake is unproven; **the brittleness is
+not** — it is visible by reading the line, and that alone is the defect.
 
 ### `[ ] T-41` E12 has no patient, and the boundary case needs one
 **REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row · **Gates:** A1 ·

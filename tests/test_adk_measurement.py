@@ -663,3 +663,77 @@ def test_a_missing_recording_names_the_command_that_makes_it(
     assert "python scripts/run_extraction.py" in err
     assert script.adk_path(tool_fetch).name in err
     assert ("--tool-fetch" in err) is tool_fetch
+
+
+# --------------------------------------------------------------------------
+# Every model turn is counted, not just the first (T-63, D71)
+# --------------------------------------------------------------------------
+
+
+def _turn(input_tokens: int, output_tokens: int, wall_time_ms: float) -> dict:
+    return {
+        "model": PINNED_MODEL,
+        "purpose": "extraction",
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "wall_time_ms": wall_time_ms,
+    }
+
+
+def test_a_two_turn_note_reports_both_turns(script):
+    """The defect T-63's own measurement found, pinned.
+
+    Under `--tool-fetch` a note costs two model turns: the model calls `read_note`,
+    then answers. The record's singular `metrics` is turn one; `trace["metrics"]`
+    holds both. Summing the singular field counted the tool-call turn and dropped
+    the turn carrying the extraction, understating output tokens 12.1x on the real
+    recording and inverting the comparison's sign.
+
+    Article X: cost is measured, never estimated. A total that omits half the
+    turns is an estimate wearing instrumentation's clothes.
+    """
+    record = _record(
+        "a",
+        "synthesized",
+        score=_score(),
+        metrics=_turn(1684, 54, 677.0),
+        trace={
+            "tool_calls": [{"name": "read_note"}],
+            "metrics": [_turn(1684, 54, 677.0), _turn(2157, 757, 2266.0)],
+        },
+    )
+    aggregate = script._aggregate([record], nest=False)
+
+    assert aggregate["total_input_tokens"] == 1684 + 2157
+    assert aggregate["total_output_tokens"] == 54 + 757
+    assert aggregate["total_wall_time_ms"] == pytest.approx(677.0 + 2266.0)
+
+
+def test_a_single_turn_note_is_unchanged_by_the_fix(script):
+    """Inline mode is one turn per note, so the trace and the singular field agree.
+    The real inline recording was byte-identical before and after this fix, which
+    is what makes it a repair to the tool path rather than a change of units."""
+    record = _record(
+        "a",
+        "synthesized",
+        score=_score(),
+        metrics=_turn(1262, 1244, 3501.0),
+        trace={"tool_calls": [], "metrics": [_turn(1262, 1244, 3501.0)]},
+    )
+    aggregate = script._aggregate([record], nest=False)
+
+    assert aggregate["total_input_tokens"] == 1262
+    assert aggregate["total_output_tokens"] == 1244
+
+
+def test_a_record_with_no_trace_still_aggregates_its_metrics(script):
+    """The fallback is deliberate, not defensive. `results.json` and any recording
+    written before traces existed carry a singular `metrics` and no trace; they
+    must keep aggregating, and the only honest total is the one turn they hold."""
+    record = _record(
+        "a", "synthesized", score=_score(), metrics=_turn(900, 40, 800.0)
+    )
+    aggregate = script._aggregate([record], nest=False)
+
+    assert aggregate["total_input_tokens"] == 900
+    assert aggregate["total_output_tokens"] == 40

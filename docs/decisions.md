@@ -4898,3 +4898,159 @@ this entry does not retire — Synthea cannot be seeded to produce a BMI of exac
 35.0 on demand, so its two candidate shapes are a seed search that may not
 terminate usefully and a documented synthetic observation, which is a decision
 about whether the population stays purely generated.
+
+---
+
+## D71 — T-63 result: the ADK runner extracts identically, and the tool path pays 3.6x to fetch what the caller already had
+
+T-63's measurement, and the two defects running it found. Numbers below are
+**AI Studio** (`MEASURED_TIER = "ai_studio"`), `gemini-3.5-flash-lite`,
+temperature 0.0, `google-adk` 2.8.0, prompt version `t15-instruction-v1`.
+Recorded in `eval/extraction/adk_results_inline.json` and
+`adk_results_tool_fetch.json`, one file per mode (D68).
+
+### Inline — eleven notes, both runners scored all eleven
+
+|  | direct (`google-genai`) | adk inline |
+|---|---|---|
+| precision | 1.000 | 1.000 |
+| recall | 1.000 | 1.000 |
+| REQ-9 exclusion | 1.000 | 1.000 |
+| field agreement | 1.000 | 1.000 |
+| spans emitted / anchored | 171 / 171 | 165 / 165 |
+| model offsets usable | 0 | 0 |
+| input tokens | 12,103 | 12,822 |
+| output tokens | 9,371 | 8,697 |
+| wall time | 25,920.8 ms | 26,884.6 ms |
+
+**The SDK swap costs nothing and changes nothing.** +5.9% input tokens, +3.7%
+wall, identical on every fidelity figure. D45's numbers could not be quoted for
+this path and now do not need to be: it has its own, and they agree.
+
+**0 of 165 model-emitted offsets were usable**, a third independent
+reproduction of D18's finding across a third call configuration. D17's reversal
+clause stays dead.
+
+### Tool-fetch — six addressable notes (D67), against the direct runner's same six
+
+|  | direct | adk tool_fetch |
+|---|---|---|
+| precision | 1.000 | 1.000 |
+| recall | 1.000 | 1.000 |
+| REQ-9 exclusion | 1.000 | 1.000 |
+| field agreement | 1.000 | 1.000 |
+| spans emitted / anchored | 79 / 79 | 76 / **75** |
+| spans unescaped | 0 | **11** |
+| model offsets usable | 0 | 0 |
+| tool calls | 0 | 12 |
+| input tokens | 6,311 | **22,969** |
+| output tokens | 4,530 | 3,992 |
+| wall time | 12,567.4 ms | 15,835.4 ms |
+
+**3.64x the input tokens and 1.26x the wall time to fetch a document the caller
+was already holding.** `ExtractionRunner.run(document_id, text)` receives the
+note text as an argument; under `--tool-fetch` the runner declines to pass it and
+the model spends a turn asking for it instead. Twelve tool calls for six notes —
+two turns per note, and the first turn's whole output is the tool call.
+
+This is D64's finding at a smaller scale and with a cleaner cause. There the model
+paid to look at data Python filters for free; here it pays to request data the
+caller had in hand.
+
+### The unanchored span is a paraphrase, and Article III caught it
+
+One span in 76 failed to anchor, on `E8+E10b`. The model quoted
+`"completed a six-month\nmedically supervised weight-loss program last year"`;
+the note says **`completing`**. The direct and inline runs both quoted the note
+verbatim on the same sentence.
+
+The system behaved exactly as designed: `dropped[]` carries
+`{"reason": "assertion_quote_unanchorable", ...}` and no `ProgramAssertion` was
+built. A fabricated citation failed on string comparison rather than on judgment,
+which is Article III's whole claim, tested here by an accident rather than a
+fixture.
+
+**The consequence is not cosmetic.** That span is E8's only evidence, and D12's
+rule reads `program_assertions` to choose between `UNSUBSTANTIATED_ASSERTION`
+("find the visit notes behind the claim") and `NO_EVIDENCE_RETRIEVED` ("find a
+program"). Losing it changes what the determination tells Sam to go and collect.
+The scored record says so plainly — `assertion_required: true`, `assertions: 0` —
+and **nothing in the aggregate surfaces that**, which is **T-71**.
+
+**One run, not a rate.** D47 already recorded that quote encoding and assertion
+emission are the unstable parts of this model's output while dates and
+documentation flags are stable. This is recorded, not retried — D45's rule, and
+retrying until the paraphrase went away would be selecting a measurement.
+
+`spans_unescaped: 11` against 0 on both other paths is the same family: on AI
+Studio the answer returns as a `set_model_response` tool-call argument, and that
+encoding round trip re-escapes newlines. D47 built the unescape for the direct
+path and it paid again here.
+
+### The defect this measurement found in itself: half the turns were not counted
+
+The first comparison reported tool-fetch as **cheaper and faster** than the direct
+runner — 10,108 input tokens, 330 output, 4,340 ms. That was wrong in a way worth
+recording, because every figure in it was real.
+
+Each note's record carries a singular `metrics` (the `ExtractionResult`'s, which is
+turn one) and a `trace` whose `metrics` list holds every turn. `_aggregate` summed
+the singular field. Under `--tool-fetch` that counts the turn that emits the tool
+call and drops the turn that carries the extraction:
+
+| | reported | actual | understated |
+|---|---|---|---|
+| input tokens | 10,108 | 22,969 | 2.27x |
+| output tokens | 330 | 3,992 | **12.10x** |
+| wall time | 4,340.6 ms | 15,835.4 ms | 3.65x |
+
+Inline was unaffected — one turn per note, so the two agree, and that recording is
+byte-identical before and after the repair. **The error inverted the comparison's
+sign**: the tool path read as 0.6x the direct runner's input and faster, where it
+is 3.6x and slower.
+
+Article X says cost is measured and never estimated. A total that silently omits
+half the turns is an estimate wearing instrumentation's clothes, and it is the
+same defect commit `89d2cd1` fixed for determinations — *count every model turn,
+not just the first* — reappearing one layer down in the measurement that grades
+them.
+
+**Fixed here rather than registered**, on D68's precedent: it is the measurement's
+own bookkeeping, the data was already on disk in `trace["metrics"]`, and the repair
+recomputed both recordings' aggregates for **zero model calls**. Publishing the
+uncorrected numbers would have put a 12x understatement into the record and poisoned
+every later comparison against it. `_turn_metrics()` carries the fallback for a
+recording with no trace deliberately — `results.json` has none, and the only honest
+total for a file holding one turn is that turn. Four mutations, each caught: the
+singular summation restored, the fallback dropped, and the trace reduced to its
+first and to its last turn.
+
+### Why `spans_emitted` differs at all
+
+171 / 165 inline and 79 / 76 tool-fetch, with field agreement 1.000 in both. The
+per-field quotes (`bmi_quote`, `diet_quote`, `activity_quote`) are optional under
+REQ-38 and the model emits slightly fewer of them through ADK. No labeled field
+disagrees and no event is missed, so this is emission volume rather than fidelity
+— **stated rather than explained**, because nothing here measures why and a
+plausible story would be a guess with a number attached.
+
+### What this does not establish
+
+**These are AI Studio numbers, and under `--tool-fetch` the tier changes the
+prompt, not just the endpoint.** `output_schema` + `tools` is native on Vertex
+only; on AI Studio ADK injects a `SetModelResponseTool` and an extra instruction,
+which is visible in this run as the 11 unescaped spans. A Vertex run of the same
+corpus is a **new measurement**, not a confirmation of this one — and the
+tool-fetch column is the one most likely to move.
+
+**Six notes and eleven notes are small.** One paraphrase is 1/76 spans here and
+would be a different rate on a corpus that had more of them.
+
+### Reversal condition
+
+If a Vertex run shows the tool path's overhead is an AI Studio artifact — the
+native schema path removing the second turn — then the 3.64x is a statement about
+the tier and not about tool-directed fetching, and `--tool-fetch` becomes worth
+reconsidering for cases where the caller genuinely does not hold the document.
+Nothing in the current architecture has such a case: `ExtractionRunner.run` takes
+the text.
