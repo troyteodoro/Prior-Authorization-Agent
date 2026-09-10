@@ -4677,3 +4677,224 @@ If the ritual grows past the point where a closer will run it — the plausible
 trigger is `pytest` itself getting slow, not the script list getting longer — the
 answer is to make the suite fast, not to split the gate. A `check_gates --fast`
 that runs a subset would recreate exactly the gap this entry closes.
+
+---
+
+## D70 — The board states its own order, A7 admits an unclaimed list, and CLAUDE.md stops being a changelog
+
+A board-and-documents pass, written before the edits it justifies (Article IX).
+It touches `docs/spec.md` and `docs/tasks.md`, both of which outrank a prompt, so
+the reasoning belongs here rather than in a commit message.
+
+Not a numbered task. The precedent is commit `4827cec`, "Resolve doc
+contradictions from design review, then compress the records", which was the same
+shape and carried no number. A documentation reorganisation whose exit condition
+is `scripts/check_gates.py` would be the weak exit D10 refuses: the gate returns
+zero whether or not the reorganisation was any good, so the command would be
+measuring the repo rather than the work.
+
+### The triage came up nearly empty, and that is the finding
+
+The brief was to remove tasks that no longer pertain to where the application is
+going. Twelve tasks are open. **None of them were withdrawn**, and the reason is
+worth recording, because a triage that removes nothing looks like a triage that
+was not performed.
+
+The board has been pruning itself continuously. T-35 re-pointed a case rather
+than leaving a disproved code on it; T-37 rewrote a requirement before the task
+that would have implemented it wrongly; T-38 replaced a bucket structure the spec
+had got wrong; T-42, T-65, T-66, T-67 and T-68 were each registered by the task
+that discovered them instead of being fixed inside it. Working rule 6 has been
+converting drift into numbered work all along, which is precisely why there is no
+accumulated pile of stale work to sweep. **The absence of dead tasks is evidence
+the rule is being followed, not evidence the board was not read.**
+
+What the pass did find was one exit condition aimed at machinery that never
+existed, and one acceptance gate that cannot hold as written. Both are below.
+
+### T-27 and REQ-25: recall@k has no k, and the requirement became real anyway
+
+T-27's exit reads *"`python eval/run_eval.py` prints per-criterion recall@k
+against the manifest ground truth"*, and its stated purpose is to make D4's
+reversal condition measurable. Both halves are stale, in opposite directions.
+
+`recall@k` presumes a ranked retriever returning a top-k. D4 rejected exactly
+that, so the system has never had a k. The deterministic path serves the whole
+note through `get_notes`; criterion (a) reads the port's full observation list and
+`most_recent_bmi` picks one. Nothing is ranked and nothing is cut, so the fraction
+of cases where "the retrieved set contains the span" is 1.000 by construction and
+measuring it asserts nothing.
+
+But since T-61 the requirement has a genuine referent. `AgenticRetrievalPlanner`
+**chooses what to gather**, and D63 names the failure mode in its own module
+docstring: *"a skipped note leaves c3 measuring a shorter run, forgotten
+observations make criterion (a) abstain."* Each of those produces a determination
+that is entirely well-formed and quietly wrong. That is a retrieval-recall risk
+with a real mechanism behind it, and nothing currently measures it — D64 reports
+outcome and criterion agreement, which would catch a skipped note only when it
+happened to change a verdict on these six patients.
+
+**So REQ-25 is re-pointed rather than deleted**, and T-27 is rewritten in place
+keeping its id. The measurement becomes *planner recall against the oracle's
+evidence bundle*: for each criterion, did the agentic planner gather the evidence
+`FixedRetrievalPlanner` read? The oracle already produces the denominator, which
+is what makes this cheap — the differential harness holds both bundles on
+identical inputs today and compares only the verdicts downstream of them.
+
+**Rejected: deleting REQ-25 under §5's own rule** that a requirement with no check
+is a wish. Defensible, and wrong here — the wish had a referent all along and the
+check was written against the wrong mechanism. Deleting it would remove the only
+requirement that measures whether model-directed retrieval loses evidence, at the
+exact moment the project acquired model-directed retrieval.
+
+### D4's reversal condition now points at a number this repo produces
+
+D4 rejected Vertex AI Vector Search and set a reversal condition: *"Measured
+retrieval recall falls below the 0.85 threshold. A number, not a hunch."* That
+condition has been unfalsifiable since the day it was written, because nothing
+measured retrieval recall and nothing could — there was no retriever to miss
+anything. A reversal condition nobody can evaluate is a rejection with no exit.
+
+Re-pointed T-27 supplies the number. D4's threshold now reads against planner
+recall, and the second tripwire already exists: T-65 made `get_patient_notes`
+**fault** rather than truncate, on the argument that the note list is the model's
+action space and there is no page two. A chart carrying more notes than
+`MAX_ROWS` raises `NoteListTooLarge` rather than quietly serving a shorter chart.
+
+**Rejected: building a vector-search tool now.** Troy raised it directly and it is
+the right question to raise; it is still over-engineering today, for four reasons
+that are worth having in writing so the next person does not re-derive them.
+
+1. **There is nothing to retrieve from.** The note corpus is one `chart_note.txt`
+   per patient across six patients. `MAX_ROWS` is 50 and `get_patient_notes`
+   returns one row. An index over six documents returns all six.
+2. **D4's structured-query argument survived Amendment 1 and got stronger.** The
+   questions are *did this happen, in this window, documented this often* — date
+   arithmetic, counting and set membership, all three reserved to Python on both
+   paths. Embeddings answer *what resembles this*, which is not a question any of
+   the seven criteria asks.
+3. **It would make the differential unreadable.** D64's result is legible —
+   6/6 outcomes, 42/42 criteria, 13.9x cost after T-65 — precisely because
+   exactly one variable differs between the two paths: who decides what to fetch.
+   Give the agentic path a retrieval mechanism the oracle does not have and a
+   disagreement can no longer be attributed to anything.
+4. **Working rule 9 names it**, and D4 priced it: an always-on billed endpoint
+   plus a new evaluation surface.
+
+**Reverses if:** planner recall falls below 0.85 on the labeled set, or
+`NoteListTooLarge` fires in a real run. Either one is a measurement, which is the
+form D4 asked for and could not previously get.
+
+### A7 cannot hold as written, and the fix is T-69's shape
+
+A7 requires *every REQ mapped to a passing check*. REQ-44 and REQ-47 are
+unclaimed, and T-61 explains in its own text why: Amendment 1 reserves date
+arithmetic, numeric comparison, counting, sorting and set membership to Python on
+**both** paths, and that is the entire decision procedure for all seven criteria.
+There is no verdict a model could determine without doing something the amendment
+reserves. T-61 declined to list them and said so — *"Listing them here would make
+A7's 'every REQ maps to a passing check' a lie."*
+
+That was the honest move and it left the contradiction one layer up: with the two
+requirements sitting in §5 unclaimed, A7 is unsatisfiable, and T-23's
+`check_req_coverage.py` would have to either fail forever or quietly skip two
+requirements.
+
+**A7 is amended** to permit a declared unclaimed list carrying a stated reason and
+the condition that would claim it, and the list does not grow without a decision
+entry. This is T-69's `EXCLUDED` mapping in a different document and for the same
+argument: the membership is auditable, each entry states why, and a new member is
+a visible diff rather than a silent omission. D51 pinned the count of provisional
+constants at zero on the same reasoning.
+
+**Rejected: deleting REQ-44 and REQ-47 from §5.** They are permissions Amendment 1
+actually grants. Deleting them would make the spec describe a constitution the
+repo does not have, and the next reader would find the amendment permitting model
+adjudication and no requirement corresponding to it.
+
+**Rejected: registering a task to build them.** D64 measured the agentic path as
+producing identical answers at 13.9x the input tokens. A task claiming REQ-44 and
+REQ-47 would buy a passing check, not a capability, and it would spend a week
+doing it.
+
+**Reverses if:** a later amendment relaxes one of Amendment 1's reservations, or a
+criterion arrives whose decision procedure falls outside the reserved list. Either
+makes the requirements claimable and the list shrinks by one.
+
+### The order is story-first, and it is written down because it was not
+
+Nine of the twelve open tasks sit on the critical path to A1–A9, and that ordering
+existed in no document. `docs/tasks.md` is organised by story-of-origin, which is
+the right structure for *why a task exists* and a poor one for *what to do next* —
+answering that took a full read of 1,628 lines.
+
+The board gains a `Path to v1` section stating the sequence once. It is
+story-first per working rule 7, and the strongest argument for it is arithmetic
+rather than principle: **US-4 and US-5 are built and ungraded.** Every predicate,
+the reconciliation, the aggregator and the gap list all work and are pinned by
+unit tests, but both stories close on eval-harness rows and `eval/cases.json`
+holds one case. T-21 converts two stories' worth of finished work into two closed
+stories for one task's cost. Nothing else on the board has that ratio.
+
+T-41 goes first because it is T-21's only blocker (E12 needs a patient whose
+*structured* BMI is 35.0). Then US-9 (T-29, T-30), then US-6 (T-17) — **Article V
+has zero implementation today, and it is the largest constitutional hole on the
+board at one task.** Then T-32, then the US-7 report chain, which wants the full
+eval set beneath it and so cannot come earlier without being rewritten later.
+
+**Rejected: acceptance-first** (drive straight to `eval/report.md` and the README).
+It produces a demo sooner and leaves Article V unimplemented behind it, which is
+the wrong thing to be able to say in a review of a project whose argument is that
+it abstains rather than guesses.
+
+### CLAUDE.md: the rule that decides what belongs in it
+
+CLAUDE.md had become two documents wearing one hat. Half is governance that binds
+every session — document precedence, the articles most often violated by accident,
+the working rules, and the verified ADK 2.8.0 facts that exist because most ADK
+material online is 1.x and will mislead a reader. The other half is a changelog
+that grew a paragraph per close since T-03 and restates `docs/decisions.md`.
+
+It had also started contradicting itself. It asserted *"Outside the spike the
+skeleton is still empty scaffolding … no criteria tree, no schemas, no policy
+data, and the only test is T-34's"* twenty paragraphs after describing the
+criteria tree, the schemas, the policy corpus and twenty-eight test files. It
+dated the board at T-33, the spec at REQ-40 and this log at D1–D15. Every one of
+those was true when written, which is the mechanism: an append-only summary of a
+moving repo is a record of the past presented as the present.
+
+**The rule, stated once so the next compression does not need re-deciding:
+CLAUDE.md keeps what a future session must not violate. `docs/decisions.md` keeps
+why.** A paragraph that only narrates what happened moves out; a paragraph naming
+a constraint stays, compressed to the constraint plus its D-number.
+
+The compressed file gains one section it did not have: **invariants whose failure
+mode is that every test keeps passing.** That set is small and it is the genuinely
+dangerous one — handing the extraction agent the structured observations makes
+T-33's two independent readings agree, and the tests, which compare those two
+readings, would start passing *because* the system broke. A rule that is only
+enforced by a test does not need to be in CLAUDE.md at all; these do, because
+nothing enforces them.
+
+**Rejected: a full `/init` regeneration.** It produces a structurally accurate
+codebase summary and loses the precedence table, the ADK-is-not-1.x facts and the
+working rules. For this repo that is a regression, so `/init` was run for the
+structural pass and reconciled against the existing file rather than replacing it.
+
+**Rejected: correcting the false statements and leaving the structure.** Cheapest
+and it fixes nothing — the file keeps growing a paragraph per close and is back
+here in ten tasks.
+
+**Reverses if:** a session breaks an invariant that was compressed away. Then that
+invariant returns to the file with its D-number, and the compression rule was
+drawn in the wrong place rather than being wrong.
+
+### What this pass does not do
+
+It does not make the board correct, only ordered. Every open task's exit condition
+is the one its author wrote, and this pass rewrote exactly one of them; the rest
+are as trustworthy as they were yesterday. T-41 in particular carries a real risk
+this entry does not retire — Synthea cannot be seeded to produce a BMI of exactly
+35.0 on demand, so its two candidate shapes are a seed search that may not
+terminate usefully and a documented synthetic observation, which is a decision
+about whether the population stays purely generated.

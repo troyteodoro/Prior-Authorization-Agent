@@ -216,6 +216,25 @@ as 446x the deterministic path's input tokens for an identical answer. Bounding 
 response is also what keeps the model's view and the evidence path separable: the
 criteria read the port's full result, never the model's copy.
 
+#### Unclaimed in v1
+
+A7 requires every REQ to map to a passing check. These map to none, deliberately.
+The list is closed: **it does not grow without an entry in `docs/decisions.md`**,
+and `scripts/check_req_coverage.py` (T-23) reads it rather than assuming it empty.
+*(D63, D70)*
+
+| REQ | Why unclaimed | What would claim it |
+|---|---|---|
+| REQ-44 | Amendment 1 reserves date arithmetic, numeric comparison, counting, sorting and set membership to Python on **both** paths, and those are the entire decision procedure for all seven criteria. There is no verdict a model could determine without doing something reserved. | A later amendment relaxing one of those reservations, or a criterion whose decision procedure falls outside the reserved list. |
+| REQ-47 | Same reservation. The obligation it states — verified spans behind any model-determined outcome — has no outcome to attach to while REQ-44 is unclaimed. | Whatever claims REQ-44. |
+
+They stay in §5 rather than being deleted, because Amendment 1 genuinely grants
+these permissions and a spec that omitted them would describe a constitution this
+repo does not have. T-61 built the agentic path without claiming them and said so;
+this table is that statement made auditable. Note also that D64 measured the
+agentic path as producing identical answers at 13.9x the input tokens, so a task
+claiming these would buy a passing check rather than a capability.
+
 ### Adjudication
 
 **REQ-11** Criterion (a) is evaluated by numeric comparison against the most
@@ -346,9 +365,18 @@ it meets `discrepancy_tolerance` for that fact, declared in the criteria tree.
 **REQ-22** Every model call records model name, input tokens, output tokens, and
 wall time. Totals appear on the determination. *(Art. X)*
 
-**REQ-25** Retrieval recall is measured per criterion on the eval set: the
-fraction of cases where the retrieved set contains the span holding the
-ground-truth fact. Reported in `eval/report.md`.
+**REQ-25** Planner recall is measured per criterion on the eval set: the fraction
+of cases where the evidence the agentic planner gathered contains the span the
+deterministic planner read for that criterion. Reported in `eval/report.md`.
+*(rewritten by D70)*
+
+It was drafted as `recall@k` against a ranked retriever, which D4 rejected and the
+system therefore never had — the deterministic path serves whole notes and reads
+the port's full observation list, so the figure was 1.000 by construction. Since
+T-61 the requirement has a mechanism: `AgenticRetrievalPlanner` chooses what to
+gather, and a skipped note leaves c3 measuring a shorter run while producing a
+determination that is entirely well-formed *(D63)*. This is the number D4's 0.85
+reversal condition now reads against.
 
 **REQ-28** The eval harness counts `ERROR` separately. `ERROR` is never folded
 into the abstention rate or into any `INSUFFICIENT_EVIDENCE` count.
@@ -398,7 +426,7 @@ v1 is done when all of the following hold on the labeled eval set.
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | Abstention rate reported, with the coverage/accuracy curve |
 | A6 | Cost and latency per determination reported from instrumentation |
-| A7 | Every REQ mapped to a passing check |
+| A7 | Every REQ maps to a passing check, or appears in §5's *Unclaimed in v1* list with a stated reason and the condition that would claim it. The list does not grow without a decision entry. |
 | A8 | Failure modes documented in the README, including where the system degrades |
 | A9 | Zero determinations presented with a criterion in `ERROR` state |
 
@@ -409,6 +437,15 @@ worse, so precision on `MET` is gated and recall is only reported.
 A2 carries a baseline because 0.90 alone is not a result. On a set where 0.90 of
 cases are truly `MET`, a system answering `MET` unconditionally clears the gate
 while knowing nothing.
+
+A7 admits a list because the alternative is worse. It read "every REQ mapped to a
+passing check" while REQ-44 and REQ-47 were unclaimed on purpose, which made the
+gate unsatisfiable and left T-23's coverage script with a choice between failing
+forever and silently skipping two requirements. A declared list with a reason per
+entry is the shape T-69's `EXCLUDED` mapping already uses: membership is
+auditable, and a new member is a visible diff rather than an omission. What the
+gate must never become is a list that absorbs whatever is inconvenient — hence
+"does not grow without a decision entry". *(D70)*
 
 A8 is not a formality. A README that names the point at which the system becomes
 useless is the deliverable.

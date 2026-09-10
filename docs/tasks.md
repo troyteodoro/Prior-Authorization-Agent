@@ -8,6 +8,50 @@ Build order is vertical. US-1 ships a running end-to-end system on day one; each
 story after it makes that system do more. Task IDs are stable — renumbering
 breaks every reference to them.
 
+The sections below are organised by **the story a task serves**, which answers
+*why this task exists* and does not answer *what to do next*. `Path to v1` below
+answers the second question, once.
+
+---
+
+## Path to v1
+
+Fifty-five tasks are on this board — IDs run to T-69 but numbering is not
+contiguous, so the highest id is not the count. **Forty-three are closed and
+twelve are open.** Nine of the twelve sit on the critical path to the acceptance
+gates in spec §7. This is that path, in order. *(D70)*
+
+| # | Task | Closes / gates | State |
+|---|---|---|---|
+| 1 | `T-41` | unblocks T-21's E12 row · gates **A1** | ready |
+| 2 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | ready after T-41 |
+| 3 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
+| 4 | `T-17` | **closes US-6** · implements **Article V** | ready |
+| 5 | `T-32` | gates **Article VI** / REQ-33 | ready |
+| 6 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21 |
+
+Off the path. Real work, nothing waiting on it:
+
+| Task | Why it is not sequenced | When |
+|---|---|---|
+| `T-63` | spends model calls, in no gate, two-hour timebox | whenever calls are being spent |
+| `T-27` | needs the full eval set and the report to write into | after T-21 and T-22 |
+| `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
+
+**Why T-21 is second and not later.** US-4 and US-5 are *built and ungraded* —
+every predicate, the reconciliation, the aggregator and the gap list work and are
+pinned by unit tests, but both stories close on eval-harness rows and
+`eval/cases.json` holds one case. T-21 converts two stories' worth of finished
+work into two closed stories for one task's cost. Nothing else on the board has
+that ratio, and working rule 7 is the reason it goes near the front.
+
+**Why T-17 is on the path at all.** Article V — the verifier is blind — has zero
+implementation today. It is the largest constitutional hole in the repo and it is
+one task.
+
+**Why the report chain is last.** T-22, T-28 and T-23 all read the eval set
+beneath them. Built before T-21 they would be rewritten after it.
+
 ---
 
 ## Enablers — before any story
@@ -913,6 +957,11 @@ patient, and a script that stops pretending one runner reads both corpora.
 
 ### `[ ] T-63` Measure the ADK runner against the direct runner
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
+**Status:** **ready and fully unblocked** in both modes since T-67 and T-68. Off
+the critical path because it spends model calls and is in no gate — run it
+whenever calls are being spent. Kept rather than withdrawn: `AdkExtractionRunner`
+is in the tree and unmeasured, and four tasks (T-65 through T-68) were spent
+making it measurable *(D70)*.
 **Exit:** `python scripts/run_adk_extraction.py` writes a recording over the same
 eleven notes, `--tool-fetch` writes one over the **six addressable** notes, and a
 decisions entry quotes each aggregate beside `eval/extraction/results.json`'s —
@@ -1112,7 +1161,9 @@ free.** That is T-65.
 ## `US-6` Trustworthy citations — day 4
 
 ### `[ ] T-17` Blind verifier
-**REQ:** 17, 18, 31 · **Depends:** T-15, T-31
+**REQ:** 17, 18, 31 · **Depends:** T-15, T-31 · **Gates:** Article V
+**Status:** **ready** — both dependencies closed. Fourth on the critical path, and
+the only task implementing Article V, which has no implementation today *(D70)*.
 **Exit:** `pytest tests/test_verifier.py` — mismatched span and verdict rejected;
 the verifier's input contains no reasoning trace and no other criterion; a
 rejection resolves the criterion to `INSUFFICIENT_EVIDENCE` with `gap_reason`
@@ -1127,25 +1178,51 @@ end to end, carrying `VERIFIER_REJECTED`.
 ## `US-7` Where the system stops being reliable — day 5
 
 ### `[ ] T-21` Expand the eval set to all of spec §6
-**Depends:** T-06, T-10
+**Depends:** T-06, T-10, T-41 *(for the E12 row)* · **Gates:** A1, A3
+**Status:** **second on the critical path**, blocked only on T-41
 **Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
+**This is the task that closes two stories.** US-4 and US-5 are built — every
+predicate, the reconciliation, the aggregator and the gap list pass their unit
+tests — and both close on harness rows that do not exist, because
+`eval/cases.json` still holds one case. Their determinations already run end to
+end on recorded extractions for zero model calls, so this is labeling and
+baselining, not building *(D70)*.
+
+Expect the baseline diff to be the substance of the close: D27's gate fails on
+drift in **either** direction, so every case moving off `BLOCKED` is acknowledged
+in the commit rather than noticed in a table.
+
 ### `[ ] T-22` Metrics report
-**Depends:** T-20, T-21
+**Depends:** T-20, T-21 · **Gates:** A2, A3, A5, A6
+**Status:** on the critical path; blocked on T-21
 **Exit:** `eval/report.md` with per-criterion precision, span validity rate,
 abstention rate, coverage/accuracy curve, cost and latency
 The curve is the deliverable. Name the threshold where abstention reaches one.
 
 ### `[ ] T-28` Baseline and base rate in the metrics report
-**Depends:** T-22
+**Depends:** T-22 · **Gates:** A2
+**Status:** on the critical path; blocked on T-22
 **Exit:** `eval/report.md` contains the `MET` base rate and an always-`MET`
 baseline score next to measured precision
 A2 requires it: a precision figure without its base rate does not satisfy the gate.
 
 ### `[ ] T-23` README
-**Depends:** T-22
-**Exit:** `python scripts/check_req_coverage.py` — every REQ maps to a passing
-check
+**Depends:** T-22 · **Gates:** A7, A8
+**Status:** last on the critical path; blocked on T-22
+**Exit:** `python scripts/check_req_coverage.py` — every REQ in spec §5 maps to a
+passing check **or** appears in §5's *Unclaimed in v1* list, and the script reads
+that list rather than assuming it empty. A REQ in neither fails. A REQ added to
+the list without a `docs/decisions.md` entry naming it fails — the list is what
+makes A7 satisfiable, and a list that absorbs whatever is inconvenient makes it
+meaningless instead. *(Exit extended by D70.)*
+
+Closing this task **moves `scripts/check_req_coverage.py` into
+`scripts/check_gates.py`'s `GATES`**, under T-69's membership rule: some task's
+exit condition names it, it spends no model call, it touches no network. The name
+is already referenced in `tests/test_check_gates.py` as a script that does not
+exist yet, so that reference flips rather than being added — and the
+classification test fails if it is left in neither list.
 
 **US-7 closes when:** A1, A2, A3, A5, A6, A7 and A8 all hold. A4 closes under
 US-1 and US-3, A9 under US-9.
@@ -1174,6 +1251,7 @@ The validator assertion is required — a determination constructible over an
 
 ### `[ ] T-29` Fault injection suite and no-silent-failure audit
 **REQ:** 23, 24, 27, 29 · **Depends:** T-11, T-15, T-26 · **Gates:** A9
+**Status:** **ready** — all three dependencies closed. Third on the critical path.
 **Exit:** `pytest tests/test_fault_injection.py` — four tests, one per failure
 point: the model call raises, the model returns unparseable JSON, span offsets
 point past the end of the document, a predicate raises. Each asserts `ERROR` with
@@ -1185,6 +1263,8 @@ re-raise and finds none.
 
 ### `[ ] T-30` `ERROR` accounting in the eval harness
 **REQ:** 28 · **Depends:** T-10, T-26 · **Gates:** A9
+**Status:** **ready** by its stated dependencies; sequenced after T-29 so US-9
+closes in one pass rather than half-closing
 **Exit:** `pytest tests/test_metrics_error_accounting.py` — a seeded `ERROR`
 leaves the reported abstention rate unchanged
 An `ERROR` counted as an abstention would make T-22's curve report caution where
@@ -1199,14 +1279,47 @@ emitted, and a seeded `ERROR` leaves the abstention rate unchanged.
 
 Real work with a runnable exit that delivers no user outcome.
 
-### `[ ] T-27` Retrieval recall instrumentation
-**REQ:** 25 · **Depends:** T-21
-**Exit:** `python eval/run_eval.py` prints per-criterion recall@k against the
-manifest ground truth
-Makes D4's reversal condition measurable against the 0.85 kill criterion.
+### `[ ] T-27` Planner recall against the oracle's evidence bundle
+**REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70
+**Status:** off the critical path; blocked on T-21 and T-22 (needs the full eval
+set and a report to write into)
+**Exit:** `eval/report.md` carries per-criterion planner recall — for each
+criterion, the fraction of cases where the evidence `AgenticRetrievalPlanner`
+gathered contains the span `FixedRetrievalPlanner` read for it — reported beside
+the differential's outcome agreement, and a case where the planner skips a
+document resolves below 1.000 rather than being invisible.
+
+*Was "Retrieval recall instrumentation", exiting on `python eval/run_eval.py`
+printing per-criterion recall@k.* There is no k: D4 rejected the ranked retriever
+that phrasing presumes, so the deterministic path serves whole notes and reads the
+port's full observation list, and the figure was 1.000 by construction.
+
+**The requirement acquired a mechanism in T-61 and nobody re-aimed it.**
+`AgenticRetrievalPlanner` chooses what to gather, and D63 names the failure mode
+in its own docstring — a skipped note leaves c3 measuring a shorter run,
+forgotten observations make criterion (a) abstain — each producing a
+determination that is well-formed and quietly wrong. D64's differential would
+catch that only when it happened to change a verdict on these six patients.
+
+The oracle supplies the denominator, which is what makes this cheap: the harness
+already holds both bundles on identical inputs and today compares only the
+verdicts downstream of them.
+
+**D4's reversal condition now reads against this number.** It was set as
+"measured retrieval recall below 0.85 — a number, not a hunch" and has been
+unfalsifiable since it was written, because nothing measured retrieval recall and
+nothing could. Vector search stays rejected on rule 9 and on a six-document
+corpus; this is what would let it back in on evidence *(D70)*.
 
 ### `[ ] T-32` Plane separation check
 **REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
+**Status:** **ready** — all three dependencies closed. Fifth on the critical path.
+**Partly asserted already, and do not rebuild those.** `test_index.py`,
+`test_spans.py`, `test_criteria_ab.py` and `test_adk_agent.py` each parse one
+module's AST for its own import restriction, and `test_schemas.py:389` and
+`test_resolver.py:215` both name this task where a combined handle would be
+caught. What is missing is the **global** walk: those are per-module assertions
+that a new module joins by remembering to.
 **Exit:** `pytest tests/test_planes.py` — walks the import graph from the policy
 modules and finds no path to a patient-data module, walks it from the
 patient-data modules and finds no path to the policy corpus or an index over it,
@@ -1420,6 +1533,10 @@ the opposite, and only the containment gate catches it.
 ### `[ ] T-42` The longest run is not always the qualifying run
 **REQ:** 14, 32 · **Depends:** T-16 · **Discovered in:** T-16 *(D48)* ·
 **Timebox:** two hours
+**Status:** **ready, off the critical path** — blocks nothing, since no §6 case
+distinguishes the two readings. Kept on the board rather than withdrawn: it is a
+real false `NOT_MET` produced by the selection rule, and the behaviour is pinned
+by a test that has to be changed deliberately *(D70)*.
 **Exit:** a decision entry resolving it, then `pytest tests/test_criteria_c.py`
 — a chart carrying a long stale run *and* a shorter run inside c2's window
 resolves c2 and c3 the way the entry says it should, and the case exists in
@@ -1447,8 +1564,14 @@ its most recent — so this blocks nothing until a chart with two real programs
 lands.
 
 ### `[ ] T-41` E12 has no patient, and the boundary case needs one
-**REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row ·
+**REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row · **Gates:** A1 ·
 **Discovered in:** T-06 *(D42)* · **Timebox:** two hours
+**Status:** **ready, and first on the critical path** — it is T-21's only blocker.
+**The one open task carrying real risk** *(D70)*: Synthea cannot be seeded to
+produce a BMI of exactly 35.0 on demand, so a seed search may not terminate
+usefully and the fallback is a decision about whether the population stays purely
+generated. If the box blows, working rule 8 applies — write the entry naming what
+broke, and T-21 lands the other twelve rows without E12.
 **Exit:** `python scripts/select_patients.py --verify` and
 `pytest tests/test_manifests.py` — a committed patient whose **structured**
 most-recent BMI is exactly 35.0 within the lookback window, recorded in the
@@ -1618,11 +1741,15 @@ tree and is versioned with it. *(D52)*
 
 ## Working rules
 
-1. One task in progress at a time.
-2. Close stories, not layers. A story with four of five tasks done has delivered
-   nothing.
-3. A task that cannot close without violating the constitution is a wrong task.
-   Rewrite it; do not amend the constitution.
-4. Discovered work becomes a new numbered task, not a silent addition to the
-   current one.
-5. Log the decision before writing the code it justifies. *(Article IX)*
+**The rules live in `CLAUDE.md`.** This section used to hold five of them while
+`CLAUDE.md` held ten, and two copies of a rule set are one copy plus a thing that
+drifts — which is the defect this document was just cleaned of. Removed rather
+than reconciled *(D70)*.
+
+Two of them decide how this file changes, so they are worth naming here:
+
+- **Discovered work becomes a new numbered task**, not a silent addition to the
+  task in progress.
+- **Log the decision in `docs/decisions.md` before writing the code it
+  justifies** — including a rewrite of a task's exit condition, because a weak
+  exit condition is a design decision. *(Article IX)*
