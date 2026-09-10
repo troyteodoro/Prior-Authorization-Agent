@@ -8,6 +8,51 @@ Build order is vertical. US-1 ships a running end-to-end system on day one; each
 story after it makes that system do more. Task IDs are stable — renumbering
 breaks every reference to them.
 
+The sections below are organised by **the story a task serves**, which answers
+*why this task exists* and does not answer *what to do next*. `Path to v1` below
+answers the second question, once.
+
+---
+
+## Path to v1
+
+Fifty-seven tasks are on this board — IDs run to T-71 but numbering is not
+contiguous, so the highest id is not the count. **44 are closed and 13 are
+open.** Nine of the 13 sit on the critical path to the acceptance gates in spec
+§7. This is that path, in order. *(D70)*
+
+| # | Task | Closes / gates | State |
+|---|---|---|---|
+| 1 | `T-41` | unblocks T-21's E12 row · gates **A1** | ready |
+| 2 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | ready after T-41 |
+| 3 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
+| 4 | `T-17` | **closes US-6** · implements **Article V** | ready |
+| 5 | `T-32` | gates **Article VI** / REQ-33 | ready |
+| 6 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21 |
+
+Off the path. Real work, nothing waiting on it:
+
+| Task | Why it is not sequenced | When |
+|---|---|---|
+| `T-27` | needs the full eval set and the report to write into | after T-21 and T-22 |
+| `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
+| `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
+| `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
+
+**Why T-21 is second and not later.** US-4 and US-5 are *built and ungraded* —
+every predicate, the reconciliation, the aggregator and the gap list work and are
+pinned by unit tests, but both stories close on eval-harness rows and
+`eval/cases.json` holds one case. T-21 converts two stories' worth of finished
+work into two closed stories for one task's cost. Nothing else on the board has
+that ratio, and working rule 7 is the reason it goes near the front.
+
+**Why T-17 is on the path at all.** Article V — the verifier is blind — has zero
+implementation today. It is the largest constitutional hole in the repo and it is
+one task.
+
+**Why the report chain is last.** T-22, T-28 and T-23 all read the eval set
+beneath them. Built before T-21 they would be rewritten after it.
+
 ---
 
 ## Enablers — before any story
@@ -732,8 +777,9 @@ can disagree; E10b is the case where they disagree across 35.0. A model shown bo
 has no reason to disagree, and the system would keep passing every test it has
 because the tests compare the two values and would now find them equal. *(D62)*
 
-### `[ ] T-64` One document namespace over the patient plane
+### `[x] T-64` One document namespace over the patient plane
 **REQ:** 41 · **Depends:** T-12, T-13 · **Discovered in:** the T-19 build *(D62)*
+**Blocks:** T-17 · **Designed by:** D65
 **Exit:** `pytest tests/test_fhir.py` — `PatientStore.get_document` resolves any
 `document_id` a patient-plane span can carry: a bundle filename **and** a note id.
 A caller holding a validated span must not have to know which read served it.
@@ -752,8 +798,79 @@ provenance and different hashes, and a single namespace has to keep them
 distinguishable. **T-17's verifier will hit this first** — it receives a span and
 nothing else, so it has no patient id to call `get_notes` with.
 
-### `[ ] T-65` Bound what a tool may return
-**REQ:** 46 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
+**D65 answers the design question and narrows the exit.** The namespace is one per
+plane, and the adapter resolves an id by looking it up in the manifests it already
+loads — never by inspecting the id's shape, which would be the same convention
+moved one layer down. Uniqueness is enforced rather than assumed: two records
+claiming one id raise at resolution. A `kind` field on `Document` was rejected —
+no consumer reads it.
+
+**The `get_patient_document` tool is deliberately *not* widened, and `_patient_of`
+survives this task.** The tool is scoping, not resolving: point it at the widened
+port and the extraction agent, whose allowlist is exactly this tool plus
+`get_patient_notes`, can read a FHIR bundle by filename and get the structured BMI
+that T-62 withheld from it on purpose. That is **T-66**.
+
+**Closed by D65.** `pytest tests/test_fhir.py` returns zero (18 tests).
+`get_document` resolves the union of the two manifests, a colliding id raises
+instead of picking a winner, and REQ-7's re-hash covers both halves —
+parametrized, because the bundle reaches its hash through `_bundle` and the note
+through `Document`'s own validator, and either could be dropped without the other
+noticing.
+
+**One pin is structural rather than behavioural.** A resolver that branches on
+`.json` or on a slash and *then* falls through to the record answers identically
+on every input this corpus can produce — the fast path is redundant with the
+lookup behind it, and the first mutation written to catch it survived. So
+`test_the_resolver_reads_no_structure_out_of_an_id` parses the adapter and refuses
+a path shape or a `startswith`/`endswith`/`split` inside the two resolving
+functions, docstrings exempt. Mutation-tested seven ways.
+
+`tests/test_determination.py` and `eval/run_agentic_eval.py` each lost their
+hand-rolled union of the two reads. That they got shorter is the deliverable.
+
+### `[x] T-66` The document tool scopes by argument, not by id shape
+**REQ:** 41, 53 · **Depends:** T-64 · **Discovered in:** the T-64 design *(D65)*
+**Designed by:** D66
+**Exit:** `pytest tests/test_adk_agent.py tests/test_agentic_workflow.py` —
+`get_patient_document(patient_id, document_id)`, `_patient_of` deleted, and a test
+proving the tool refuses a bundle filename: the extraction agent must not be able
+to reach structured observations through the document tool (REQ-53, T-62's
+allowlist argument).
+
+Today the tool derives the owning patient from the id, which works only because
+T-07 names every note `<patient_id>/chart_note.txt`. The model already holds the
+patient id — it called `get_patient_notes` with it — so passing it is free and the
+convention buys nothing.
+
+**Changes a function declaration, therefore changes the prompt, therefore
+invalidates D64's measurement.** D64 refused to change a tool for that reason and
+registered T-65; this obeys the same rule. **Batch T-65 and T-66** so one
+re-measurement of the agentic path covers both.
+
+**Closed by D66**, with a defect found in this task's own text. "The model already
+holds the patient id" is true of the retrieval agent and **false of the extraction
+agent**: `ExtractionRunner.run(document_id, text)` has no patient id to pass and
+that model never called `get_patient_notes`, so deleting `_patient_of` breaks the
+`tool_fetch` variant T-63 exists to measure.
+
+So the scope is supplied twice over, and never parsed. The retrieval agent gets
+`get_patient_document(patient_id, document_id)`. The extraction agent gets
+`build_note_reader(patient_store, document_id)` — one declared tool, `read_note`,
+closed over the single id under review, refusing every other by an equality check
+against a cell the model cannot see or name. `EXTRACTION_ALLOWLIST` is now
+`("read_note",)` and the two allowlists are **disjoint** rather than nested, which
+is a stronger statement than "narrower": the extractor has no route to a second
+document at all — not a bundle, not another patient's note.
+
+`_patient_of` is gone, and `test_no_tool_module_reads_structure_out_of_an_identifier`
+parses both tool modules to keep it gone — the same AST shape T-64 needed when a
+parse-then-fall-through mutation survived a behavioural test. Fifteen mutations
+across both tasks, all caught.
+
+### `[x] T-65` Bound what a tool may return
+**REQ:** 46, 54 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
+**Designed by:** D66
 **Exit:** `pytest tests/test_agentic_workflow.py` — no declared tool can return an
 unbounded collection: a patient with thousands of observations yields a bounded or
 paged response, and the agentic input-token ratio for E2+E7 drops from 446x toward
@@ -775,13 +892,93 @@ a correctness reason rather than a cost one.
 Registered rather than fixed inside T-61: changing the tool would invalidate the
 measurement that found this.
 
-### `[ ] T-63` Measure the ADK runner against the direct runner
+**Closed by D66. E2+E7 went 446x → 20.3x and the aggregate went 73.4x → 13.9x**,
+with 6/6 outcomes, 42/42 criteria, 80/80 spans and zero errors unchanged. The
+spread across six patients collapsed from 10x–446x to 9.5x–20.3x, which is the
+real result: the term that scaled with the patient's chart is gone, and what is
+left is turn variance that moves in both directions.
+
+**REQ-54 is new and this task claims it** — REQ-46 lists step count, timeout, retry
+budget and allowlist, and a bound on a tool's *response* is a fifth thing rather
+than a re-reading of those four. Split rather than edited, so nothing a closed task
+claimed changes meaning.
+
+One ceiling, `MAX_ROWS`, in `pa_agent/agent/tool_bounds.py`, and two behaviours
+behind it: **truncate where the payload informs the model's plan** (observations,
+conditions, the policy value set — each returning `total`, `returned` and
+`truncated`), **fault where the payload is the model's action space**
+(`get_patient_notes`, because every `document_id` the model may then ask for comes
+out of it and there is no page two). A single document is not a collection and is
+exempt.
+
+**Paging was rejected**: it bounds the payload and not the run, so the model pages
+until it holds the chart and the cost returns as turns × payload. **A summary was
+rejected** for foreclosing REQ-44, which is unclaimed and still in the spec.
+
+The check that makes truncation *safe* rather than merely cheap is
+`test_the_bundle_is_the_ports_full_read_and_never_the_models_view`, run on the
+3,780-observation patient: the evidence bundle is the port's full read, so a capped
+tool is a cost control and not a quiet correctness change. The mutation that
+assembles the bundle from the model's view fails it.
+
+### `[x] T-67` The spike notes have no address on the patient plane
+**REQ:** 41 · **Depends:** T-64 · **Discovered in:** the T-66 build *(D66)*
+**Blocks:** T-63 under `--tool-fetch`
+**Exit:** `pytest tests/test_adk_measurement.py` returns zero: the eleven notes
+partition into addressable and not *by asking the port*, a note the model was
+never asked about is counted `skipped` and never `failed`, the `tool_fetch` path
+runs end to end on an addressable note for zero model calls, and `--compare`
+refuses to print two aggregates computed over different note sets.
+
+**The registered exit was rewritten by D67** — it named
+`python scripts/run_adk_extraction.py --tool-fetch`, which spends model calls, and
+T-63 says in its own text that it is in no gate for that reason. A check that
+costs money and varies run to run is not a gate. The measurement stays T-63's.
+
+**Closed.** `pytest tests/test_adk_measurement.py` returns zero, 18 tests,
+thirteen mutations caught. The spike notes stay off the patient plane (D67 rejects
+the manifest entry in writing); `--tool-fetch` skips them by asking the port, names
+each skip, and reports `by_corpus` in every mode. Building the gate also found that
+the script had **never run at all** — all three record sites read a `case["labels"]`
+key the corpus builders do not produce, so it raised `KeyError` on note one in both
+modes. T-63 is unblocked in both modes, not only under `--tool-fetch`.
+
+Spike 001's notes are `n01_clean_run` and friends. They are in no patient manifest,
+so `PatientStore.get_document` raises and the scoped note reader has nothing to
+serve — five of T-63's eleven notes fail before the model sees anything.
+
+**Pre-existing, and not caused by T-66.** `_patient_of("n01_clean_run")` derived the
+patient `n01_clean_run` and `get_notes` raised on it just as loudly; the tool got
+narrower without getting less capable. It surfaces now because T-63 is next.
+
+Registered rather than fixed inside T-66, because "do the spike notes belong to the
+patient plane at all" is a question about what the corpus is (D42, D43), not about a
+tool signature. The two honest answers are a manifest entry that admits they have no
+patient, and a script that stops pretending one runner reads both corpora.
+
+### `[x] T-63` Measure the ADK runner against the direct runner
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
-**Exit:** `python scripts/run_adk_extraction.py` writes
-`eval/extraction/adk_results.json` over the same eleven notes, and a decisions entry
-quotes its aggregate beside `eval/extraction/results.json`'s — precision, recall,
-REQ-9 exclusion, field agreement, spans anchored, model offsets usable, tokens,
-wall time — for both `tool_fetch` modes, **naming the tier**.
+**Status:** **ready and fully unblocked** in both modes since T-67 and T-68. Off
+the critical path because it spends model calls and is in no gate — run it
+whenever calls are being spent. Kept rather than withdrawn: `AdkExtractionRunner`
+is in the tree and unmeasured, and four tasks (T-65 through T-68) were spent
+making it measurable *(D70)*.
+**Exit:** `python scripts/run_adk_extraction.py` writes a recording over the same
+eleven notes, `--tool-fetch` writes one over the **six addressable** notes, and a
+decisions entry quotes each aggregate beside `eval/extraction/results.json`'s —
+precision, recall, REQ-9 exclusion, field agreement, spans anchored, model offsets
+usable, tokens, wall time — for both `tool_fetch` modes, **naming the tier**.
+
+**Eleven and six, not eleven and eleven** *(D67)*. Spike 001's five notes have no
+patient, so the scoped note reader cannot resolve their ids; `--tool-fetch` skips
+them by asking the port and says so. Quote `by_corpus["synthesized"]` when
+comparing across modes — `--compare` recomputes over the notes both recordings
+scored, so the tool and no-tool columns are the same six notes.
+
+**One recording per mode** *(T-68, D68)*: `eval/extraction/adk_results_inline.json`
+and `eval/extraction/adk_results_tool_fetch.json`. `--compare` reads the mode its
+own `--tool-fetch` flag names and prints the path, so the two aggregates this exit
+asks for come from two `--compare` invocations and each says which file it read.
 
 **Spends model calls, so it is in no gate.** Nothing may claim D45's numbers for the
 ADK path until this runs: D45's rule is that a changed call configuration is a new
@@ -794,6 +991,109 @@ a `SetModelResponseTool` and an instruction to answer through it. D5 develops on
 Studio and evals on Vertex, so the tool-calling path runs a **different prompt** on
 the two tiers, and a number from one is not a number for the other. *(D62)*
 
+
+**Closed by D71.** Both recordings written, both aggregates quoted, tier named.
+**Extraction fidelity is identical on all three paths** — precision, recall,
+REQ-9 exclusion and field agreement all 1.000, and **0 model-emitted offsets
+usable** for a third time across a third call configuration (D18 holds).
+
+Inline costs nothing: +5.9% input tokens, +3.7% wall over `google-genai`.
+**`--tool-fetch` costs 3.64x the input tokens and 1.26x the wall time** to fetch a
+document the caller was already holding — `ExtractionRunner.run(document_id, text)`
+receives the text as an argument, and the tool path spends a turn asking for it.
+Twelve tool calls for six notes.
+
+**Two findings the run produced, neither by review.** One span in 76 failed to
+anchor: under `--tool-fetch` the model wrote `completed` where E8's note says
+`completing`, and Article III refused the paraphrase on string comparison. That
+span is E8's only evidence, so its loss would change `UNSUBSTANTIATED_ASSERTION`
+into `NO_EVIDENCE_RETRIEVED` — and no aggregate figure reports it, which is
+**T-71**. And the measurement was **counting one turn of two**, understating
+tool-fetch output tokens 12.1x and inverting the comparison's sign; fixed here
+(D68's precedent — bookkeeping, and the data was already in `trace["metrics"]`,
+so the repair spent no calls), with four mutations caught.
+
+**These are AI Studio numbers and the tier changed the prompt**, not just the
+endpoint: the 11 unescaped spans are the `SetModelResponseTool` round trip D62
+predicted. A Vertex run is a new measurement.
+
+### `[x] T-68` The two `tool_fetch` modes overwrite one recording
+**REQ:** 22 · **Depends:** T-67 · **Discovered in:** the T-67 build *(D67)*
+**Blocks:** T-63
+**Exit:** `python scripts/run_adk_extraction.py` and
+`python scripts/run_adk_extraction.py --tool-fetch` leave two recordings on disk,
+and `--compare` names which one it is reading. A test builds both for zero model
+calls, as `tests/test_adk_measurement.py` already builds one.
+
+`ADK_PATH` is a module constant, so the second run of the pair overwrites the
+first and T-63 cannot quote both aggregates — its exit condition asks for both
+modes. The payload already records `"tool_fetch"`, so the file knows which mode
+produced it; nothing else does.
+
+Registered rather than folded into T-67, because "one recording per mode" is a
+question about how the measurement is stored and compared, and T-67's was about
+which notes each mode can reach. Small, but it has a real choice in it — a
+mode-suffixed filename, an `--out` argument, or one file holding both runs — and
+whichever is picked, `--compare` has to say what it is comparing.
+
+**Closed.** `pytest tests/test_adk_measurement.py` returns zero, 26 tests, six
+mutations caught. The path is **derived from the mode** —
+`adk_results_inline.json` and `adk_results_tool_fetch.json`, selected by
+`adk_path(tool_fetch)` — so no invocation of either mode can land on the other's
+file. `--out` was rejected for keeping one default (avoidable, not impossible);
+one file holding both runs was rejected for needing read-modify-write and for
+breaking the record-for-record diff against `results.json` *(D68)*.
+
+`--compare` takes the same flag, prints the path it read, labels the column from
+the payload's own `tool_fetch` key, and **refuses (exit 2) when the two disagree**
+— louder than the model and tier mismatches beside it, because those still print
+true numbers under a true caption and this one would not.
+
+The regression is a test that runs `measure()` in **both** modes against one
+directory and asserts the first file's bytes are unchanged after the second run;
+asserting two filenames differ passes on a program that writes both and truncates
+one.
+
+**The close also found T-67 had left the suite red.** `_recording()` wrote the
+model name as a literal and `tests/test_model_pin.py` scans tracked Python, test
+files included (D20). T-67's exit names `pytest tests/test_adk_measurement.py`,
+which passed. A task's exit command is not a substitute for the suite; fixed here
+on D67's precedent and recorded in D68 rather than registered. **T-69 registers
+the gap that let it happen.**
+
+### `[x] T-69` A task can close with the rest of the repo red
+**REQ:** none — this is a working rule, not a spec requirement
+**Depends:** none · **Discovered in:** the T-68 build *(D69)*
+**Exit:** `python scripts/check_gates.py` returns zero, running every zero-cost
+gate in the repo; `pytest tests/test_check_gates.py` returns zero and spends
+nothing, asserting that a failing gate fails the command, that every tracked
+script under `scripts/`, `eval/` and `spike/` is either a gate or an exclusion
+with a stated reason, and that the runner refuses to run inside pytest.
+Working rule 4 in `CLAUDE.md` names the second command.
+
+Two consecutive closes produced a finding of this shape — T-67's found a script
+no gate ran, T-68's found a gate no close ran. Both are one sentence read from
+two ends: the set of checks a task runs is smaller than the set the repo has, and
+nothing measured the difference.
+
+**Closed.** Eight gates, about twelve seconds, seven mutations caught. Membership
+is auditable rather than judged: a command is a gate iff some task's exit
+condition names it *and* it spends no model call and touches no network — the
+cost half alone would admit `run_extraction.py --rescore`, which is a
+measurement's bookkeeping and not a check on the repo. `EXCLUDED` carries a
+reason per script and the test fails on a tracked script in neither list, so the
+list cannot rot the way the unwritten rule did.
+
+**A test was deleted during the build and the deletion is the interesting part.**
+Spawning `check_gates.py` from inside pytest to assert the recursion guard is a
+fork bomb once the guard is removed: the child runs the suite, the suite reaches
+the test, and it spawns another child. The mutation pass hung for two minutes and
+returned no exit code — a hang is not a catch. The guard is asserted by parsing
+`main` instead (D69).
+
+**It cannot make anyone type the command.** A pre-commit hook was rejected —
+untracked, so it survives no clone and shows in no diff, and bypassable — and
+working rule 9 names CI explicitly.
 
 ### `[x] T-61` Agentic orchestration and model adjudication
 
@@ -887,7 +1187,9 @@ free.** That is T-65.
 ## `US-6` Trustworthy citations — day 4
 
 ### `[ ] T-17` Blind verifier
-**REQ:** 17, 18, 31 · **Depends:** T-15, T-31
+**REQ:** 17, 18, 31 · **Depends:** T-15, T-31 · **Gates:** Article V
+**Status:** **ready** — both dependencies closed. Fourth on the critical path, and
+the only task implementing Article V, which has no implementation today *(D70)*.
 **Exit:** `pytest tests/test_verifier.py` — mismatched span and verdict rejected;
 the verifier's input contains no reasoning trace and no other criterion; a
 rejection resolves the criterion to `INSUFFICIENT_EVIDENCE` with `gap_reason`
@@ -902,25 +1204,51 @@ end to end, carrying `VERIFIER_REJECTED`.
 ## `US-7` Where the system stops being reliable — day 5
 
 ### `[ ] T-21` Expand the eval set to all of spec §6
-**Depends:** T-06, T-10
+**Depends:** T-06, T-10, T-41 *(for the E12 row)* · **Gates:** A1, A3
+**Status:** **second on the critical path**, blocked only on T-41
 **Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
+**This is the task that closes two stories.** US-4 and US-5 are built — every
+predicate, the reconciliation, the aggregator and the gap list pass their unit
+tests — and both close on harness rows that do not exist, because
+`eval/cases.json` still holds one case. Their determinations already run end to
+end on recorded extractions for zero model calls, so this is labeling and
+baselining, not building *(D70)*.
+
+Expect the baseline diff to be the substance of the close: D27's gate fails on
+drift in **either** direction, so every case moving off `BLOCKED` is acknowledged
+in the commit rather than noticed in a table.
+
 ### `[ ] T-22` Metrics report
-**Depends:** T-20, T-21
+**Depends:** T-20, T-21 · **Gates:** A2, A3, A5, A6
+**Status:** on the critical path; blocked on T-21
 **Exit:** `eval/report.md` with per-criterion precision, span validity rate,
 abstention rate, coverage/accuracy curve, cost and latency
 The curve is the deliverable. Name the threshold where abstention reaches one.
 
 ### `[ ] T-28` Baseline and base rate in the metrics report
-**Depends:** T-22
+**Depends:** T-22 · **Gates:** A2
+**Status:** on the critical path; blocked on T-22
 **Exit:** `eval/report.md` contains the `MET` base rate and an always-`MET`
 baseline score next to measured precision
 A2 requires it: a precision figure without its base rate does not satisfy the gate.
 
 ### `[ ] T-23` README
-**Depends:** T-22
-**Exit:** `python scripts/check_req_coverage.py` — every REQ maps to a passing
-check
+**Depends:** T-22 · **Gates:** A7, A8
+**Status:** last on the critical path; blocked on T-22
+**Exit:** `python scripts/check_req_coverage.py` — every REQ in spec §5 maps to a
+passing check **or** appears in §5's *Unclaimed in v1* list, and the script reads
+that list rather than assuming it empty. A REQ in neither fails. A REQ added to
+the list without a `docs/decisions.md` entry naming it fails — the list is what
+makes A7 satisfiable, and a list that absorbs whatever is inconvenient makes it
+meaningless instead. *(Exit extended by D70.)*
+
+Closing this task **moves `scripts/check_req_coverage.py` into
+`scripts/check_gates.py`'s `GATES`**, under T-69's membership rule: some task's
+exit condition names it, it spends no model call, it touches no network. The name
+is already referenced in `tests/test_check_gates.py` as a script that does not
+exist yet, so that reference flips rather than being added — and the
+classification test fails if it is left in neither list.
 
 **US-7 closes when:** A1, A2, A3, A5, A6, A7 and A8 all hold. A4 closes under
 US-1 and US-3, A9 under US-9.
@@ -949,6 +1277,7 @@ The validator assertion is required — a determination constructible over an
 
 ### `[ ] T-29` Fault injection suite and no-silent-failure audit
 **REQ:** 23, 24, 27, 29 · **Depends:** T-11, T-15, T-26 · **Gates:** A9
+**Status:** **ready** — all three dependencies closed. Third on the critical path.
 **Exit:** `pytest tests/test_fault_injection.py` — four tests, one per failure
 point: the model call raises, the model returns unparseable JSON, span offsets
 point past the end of the document, a predicate raises. Each asserts `ERROR` with
@@ -960,6 +1289,8 @@ re-raise and finds none.
 
 ### `[ ] T-30` `ERROR` accounting in the eval harness
 **REQ:** 28 · **Depends:** T-10, T-26 · **Gates:** A9
+**Status:** **ready** by its stated dependencies; sequenced after T-29 so US-9
+closes in one pass rather than half-closing
 **Exit:** `pytest tests/test_metrics_error_accounting.py` — a seeded `ERROR`
 leaves the reported abstention rate unchanged
 An `ERROR` counted as an abstention would make T-22's curve report caution where
@@ -974,14 +1305,47 @@ emitted, and a seeded `ERROR` leaves the abstention rate unchanged.
 
 Real work with a runnable exit that delivers no user outcome.
 
-### `[ ] T-27` Retrieval recall instrumentation
-**REQ:** 25 · **Depends:** T-21
-**Exit:** `python eval/run_eval.py` prints per-criterion recall@k against the
-manifest ground truth
-Makes D4's reversal condition measurable against the 0.85 kill criterion.
+### `[ ] T-27` Planner recall against the oracle's evidence bundle
+**REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70
+**Status:** off the critical path; blocked on T-21 and T-22 (needs the full eval
+set and a report to write into)
+**Exit:** `eval/report.md` carries per-criterion planner recall — for each
+criterion, the fraction of cases where the evidence `AgenticRetrievalPlanner`
+gathered contains the span `FixedRetrievalPlanner` read for it — reported beside
+the differential's outcome agreement, and a case where the planner skips a
+document resolves below 1.000 rather than being invisible.
+
+*Was "Retrieval recall instrumentation", exiting on `python eval/run_eval.py`
+printing per-criterion recall@k.* There is no k: D4 rejected the ranked retriever
+that phrasing presumes, so the deterministic path serves whole notes and reads the
+port's full observation list, and the figure was 1.000 by construction.
+
+**The requirement acquired a mechanism in T-61 and nobody re-aimed it.**
+`AgenticRetrievalPlanner` chooses what to gather, and D63 names the failure mode
+in its own docstring — a skipped note leaves c3 measuring a shorter run,
+forgotten observations make criterion (a) abstain — each producing a
+determination that is well-formed and quietly wrong. D64's differential would
+catch that only when it happened to change a verdict on these six patients.
+
+The oracle supplies the denominator, which is what makes this cheap: the harness
+already holds both bundles on identical inputs and today compares only the
+verdicts downstream of them.
+
+**D4's reversal condition now reads against this number.** It was set as
+"measured retrieval recall below 0.85 — a number, not a hunch" and has been
+unfalsifiable since it was written, because nothing measured retrieval recall and
+nothing could. Vector search stays rejected on rule 9 and on a six-document
+corpus; this is what would let it back in on evidence *(D70)*.
 
 ### `[ ] T-32` Plane separation check
 **REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
+**Status:** **ready** — all three dependencies closed. Fifth on the critical path.
+**Partly asserted already, and do not rebuild those.** `test_index.py`,
+`test_spans.py`, `test_criteria_ab.py` and `test_adk_agent.py` each parse one
+module's AST for its own import restriction, and `test_schemas.py:389` and
+`test_resolver.py:215` both name this task where a combined handle would be
+caught. What is missing is the **global** walk: those are per-module assertions
+that a new module joins by remembering to.
 **Exit:** `pytest tests/test_planes.py` — walks the import graph from the policy
 modules and finds no path to a patient-data module, walks it from the
 patient-data modules and finds no path to the policy corpus or an index over it,
@@ -1195,6 +1559,10 @@ the opposite, and only the containment gate catches it.
 ### `[ ] T-42` The longest run is not always the qualifying run
 **REQ:** 14, 32 · **Depends:** T-16 · **Discovered in:** T-16 *(D48)* ·
 **Timebox:** two hours
+**Status:** **ready, off the critical path** — blocks nothing, since no §6 case
+distinguishes the two readings. Kept on the board rather than withdrawn: it is a
+real false `NOT_MET` produced by the selection rule, and the behaviour is pinned
+by a test that has to be changed deliberately *(D70)*.
 **Exit:** a decision entry resolving it, then `pytest tests/test_criteria_c.py`
 — a chart carrying a long stale run *and* a shorter run inside c2's window
 resolves c2 and c3 the way the entry says it should, and the case exists in
@@ -1221,9 +1589,62 @@ distinguishes the readings today — E5 has one run and E11's longest is also
 its most recent — so this blocks nothing until a chart with two real programs
 lands.
 
+### `[ ] T-71` A lost assertion reports as a flawless run
+**REQ:** 31, 35 · **Depends:** T-16, T-31 · **Discovered in:** the T-63
+measurement *(D71)* · **Timebox:** two hours
+**Status:** ready, off the critical path
+**Exit:** `pytest tests/test_adk_measurement.py` — the aggregate reports
+assertion coverage, and a recording in which a note carrying
+`assertion_required: true` yields zero assertions is distinguishable **from the
+aggregate alone**, without opening a per-note record.
+
+T-63 lost E8's `program_assertions[]` span to a paraphrase the anchorer correctly
+refused. The per-note score says so exactly — `assertion_required: true`,
+`assertions: 0` — and the aggregate reports precision 1.000, recall 1.000, REQ-9
+exclusion 1.000 and field agreement 1.000, because a note with zero labeled events
+contributes to no fidelity ratio. The only visible trace is `spans_emitted` sitting
+one above `spans_anchored`.
+
+That is spike 001's documented trap wearing new clothes: *a transport error scores
+as flawless precision*. Here a refused citation does. E8 is the refusal test and
+the whole argument for `gap_reason` (D12, D44) — losing its evidence changes what
+the determination tells Sam to collect, and no headline figure moves.
+
+Not folded into T-63: T-63's exit names the figures it must quote, and adding one
+inside it is a requirement changed by the task that implements it *(working rule
+5, and the reason T-37 and T-38 exist)*.
+
+### `[ ] T-70` A comparison gate asserts on a substring
+**REQ:** none — a test-quality defect · **Discovered in:** the T-63 measurement
+*(D71)* · **Timebox:** one hour
+**Status:** ready, off the critical path
+**Exit:** `pytest tests/test_adk_measurement.py` —
+`test_compare_recomputes_over_the_intersection_and_never_pools` asserts that the
+sentinel value is absent **from the parsed column it belongs to**, not from the
+whole rendered output, and a mutation that pools the corpora still fails it.
+
+The test writes a sentinel of 99 into one runner's spike-note score and asserts
+`"99" not in out`. Any figure anywhere in the comparison that happens to contain
+those two digits fails it — and this task's own corrected tool-fetch input total is
+**22,969**. The assertion is one substring collision away from failing for a reason
+unrelated to what it tests, which is D31's stale-substring lesson pointed at a gate
+rather than at a message.
+
+Registered rather than fixed inside T-63 for the same reason as T-71. Honest note
+on how it surfaced: the test failed **once**, during a mutation pass that was
+rewriting the script and clearing `__pycache__` between runs, and did not reproduce
+in five subsequent full-suite runs. The flake is unproven; **the brittleness is
+not** — it is visible by reading the line, and that alone is the defect.
+
 ### `[ ] T-41` E12 has no patient, and the boundary case needs one
-**REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row ·
+**REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row · **Gates:** A1 ·
 **Discovered in:** T-06 *(D42)* · **Timebox:** two hours
+**Status:** **ready, and first on the critical path** — it is T-21's only blocker.
+**The one open task carrying real risk** *(D70)*: Synthea cannot be seeded to
+produce a BMI of exactly 35.0 on demand, so a seed search may not terminate
+usefully and the fallback is a decision about whether the population stays purely
+generated. If the box blows, working rule 8 applies — write the entry naming what
+broke, and T-21 lands the other twelve rows without E12.
 **Exit:** `python scripts/select_patients.py --verify` and
 `pytest tests/test_manifests.py` — a committed patient whose **structured**
 most-recent BMI is exactly 35.0 within the lookback window, recorded in the
@@ -1393,11 +1814,15 @@ tree and is versioned with it. *(D52)*
 
 ## Working rules
 
-1. One task in progress at a time.
-2. Close stories, not layers. A story with four of five tasks done has delivered
-   nothing.
-3. A task that cannot close without violating the constitution is a wrong task.
-   Rewrite it; do not amend the constitution.
-4. Discovered work becomes a new numbered task, not a silent addition to the
-   current one.
-5. Log the decision before writing the code it justifies. *(Article IX)*
+**The rules live in `CLAUDE.md`.** This section used to hold five of them while
+`CLAUDE.md` held ten, and two copies of a rule set are one copy plus a thing that
+drifts — which is the defect this document was just cleaned of. Removed rather
+than reconciled *(D70)*.
+
+Two of them decide how this file changes, so they are worth naming here:
+
+- **Discovered work becomes a new numbered task**, not a silent addition to the
+  task in progress.
+- **Log the decision in `docs/decisions.md` before writing the code it
+  justifies** — including a rewrite of a task's exit condition, because a weak
+  exit condition is a design decision. *(Article IX)*

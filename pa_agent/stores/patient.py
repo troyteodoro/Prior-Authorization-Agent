@@ -52,9 +52,17 @@ class PatientStore(Protocol):
         ...
 
     def get_document(self, document_id: str) -> Document:
-        """A patient-plane source document, content-verified, for spans to be
+        """Any patient-plane source document, content-verified, for spans to be
         checked against — the symmetry D25's reversal note anticipated when it
-        demanded stores expose stable document identity (D40)."""
+        demanded stores expose stable document identity (D40).
+
+        **One namespace over the whole plane (D65).** A structured record and a
+        note both resolve here, because a validated `EvidenceSpan` carries a
+        `document_id` and nothing else, and a caller holding one must not have
+        to know which read produced it. T-17's verifier is the caller that makes
+        this non-negotiable: it is handed a span and deliberately no patient id,
+        so `get_notes` is not a route it has.
+        """
         ...
 
 
@@ -87,6 +95,7 @@ class LocalPatientStore:
         self._extent_cache: dict[str, list[tuple[int, int] | None]] = {}
         self._notes_dir = self._root / "notes"
         self._notes_manifest: dict[str, list[dict]] | None = None
+        self._namespace_cache: dict[str, tuple[str, dict]] | None = None
 
     # -- resolution and verification ---------------------------------------
 
@@ -269,24 +278,72 @@ class LocalPatientStore:
             )
         return documents
 
+    def _namespace(self) -> dict[str, tuple[str, dict]]:
+        """Every patient-plane `document_id`, mapped to the record that owns it.
+
+        Built once from the two manifests, and the *only* thing `get_document`
+        consults. Resolution never inspects the id — a bundle filename ending in
+        `.json` and a note id containing a slash are facts about T-04 and T-07,
+        not guarantees of the port, and branching on either would be the
+        convention REQ-41 exists to remove, moved one layer down where it is
+        harder to see (D65).
+
+        Uniqueness is enforced rather than assumed. "One namespace" is a claim
+        about the id space, so two records claiming one id raise here instead of
+        letting whichever manifest loaded second win.
+        """
+        if self._namespace_cache is None:
+            namespace: dict[str, tuple[str, dict]] = {}
+            for kind, record, document_id in (
+                *(("bundle", r, r["filename"]) for r in self._load_manifest().values()),
+                *(
+                    ("note", r, r["document_id"])
+                    for records in self._load_notes_manifest().values()
+                    for r in records
+                ),
+            ):
+                if document_id in namespace:
+                    prior_kind, _ = namespace[document_id]
+                    raise ValueError(
+                        f"{document_id!r} is claimed by two records "
+                        f"({prior_kind} and {kind}); the patient plane is one "
+                        "document namespace, so an id that means two things "
+                        "means every span into it is ambiguous (REQ-7, D65)."
+                    )
+                namespace[document_id] = (kind, record)
+            self._namespace_cache = namespace
+        return self._namespace_cache
+
     def get_document(self, document_id: str) -> Document:
-        """A bundle file as a `Document`, so patient-plane spans are checkable
-        the way policy-plane spans are (Art. III, D40). `document_id` is the
-        bundle filename; the hash is the manifest's record, and `Document`'s
-        own validator re-verifies it against the text."""
-        by_filename = {
-            r["filename"]: r for r in self._load_manifest().values()
-        }
+        """Any patient-plane document as a `Document`, so its spans are
+        checkable the way policy-plane spans are (Art. III, D40, D65).
+
+        Bundles and notes share one id space and are told apart by the record
+        that names them, never by the shape of the id. Either way the hash is
+        the manifest's and `Document`'s own validator re-verifies it against the
+        text, so a file edited on disk raises here rather than feeding a
+        different document to a span that was validated against the old one
+        (REQ-7).
+        """
+        namespace = self._namespace()
         try:
-            record = by_filename[document_id]
+            kind, record = namespace[document_id]
         except KeyError:
             raise KeyError(
-                f"no document {document_id!r} in the population; the manifest "
-                f"lists {sorted(by_filename)}"
+                f"no document {document_id!r} in the patient plane; the "
+                f"manifests record {len(namespace)} documents "
+                f"({sorted(namespace)})"
             ) from None
-        self._bundle(record["patient_id"])  # reads and hash-verifies
+
+        if kind == "bundle":
+            self._bundle(record["patient_id"])  # reads and hash-verifies
+            return Document(
+                document_id=document_id,
+                text=self._raw_text[record["patient_id"]],
+                sha256=record["sha256"],
+            )
         return Document(
             document_id=document_id,
-            text=self._raw_text[record["patient_id"]],
+            text=(self._notes_dir / record["document_id"]).read_text(encoding="utf-8"),
             sha256=record["sha256"],
         )

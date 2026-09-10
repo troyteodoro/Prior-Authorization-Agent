@@ -142,7 +142,13 @@ class _RecordingPatientStore:
                           clinical_status="active")]
 
     def get_document(self, document_id: str) -> Document:
+        # T-64's widened patient-plane namespace, stubbed: the scoped note reader
+        # resolves through here rather than through `get_notes`, because it holds
+        # no patient id (T-66).
         self.calls.append(("get_document", document_id))
+        for note in self._notes:
+            if note.document_id == document_id:
+                return note
         raise KeyError(document_id)
 
 
@@ -236,7 +242,7 @@ def test_a_missing_document_raises_rather_than_returning_empty_text() -> None:
     store = _RecordingPatientStore(notes=[])
     toolset = build_patient_tools(store)
     with pytest.raises(KeyError):
-        toolset.tools["get_patient_document"]("p1/chart_note.txt")
+        toolset.tools["get_patient_document"]("p1", "p1/chart_note.txt")
 
 
 def test_the_notes_tool_returns_ids_and_not_text(e1_note) -> None:
@@ -248,16 +254,22 @@ def test_the_notes_tool_returns_ids_and_not_text(e1_note) -> None:
     assert listed == {
         "notes": [
             {"document_id": e1_note.document_id, "characters": len(e1_note.text)}
-        ]
+        ],
+        "total": 1,
     }
     body = json.dumps(listed)
     assert e1_note.text[:60] not in body
 
 
-def test_the_observations_tool_reports_everything_and_filters_nothing() -> None:
-    """D39's rule: filtering is the predicates' judgment. A BMI-only or
-    active-only read inside a tool is a filter applied twice, free to disagree
-    with the one criterion (a) applies."""
+def test_the_structured_tools_select_nothing_and_hide_no_field() -> None:
+    """D39's rule survives T-65's cap, and the distinction matters.
+
+    D39 forbids a *semantic* filter in a tool — a BMI-only or active-only read is
+    a filter applied twice, free to disagree with the one criterion (a) applies.
+    T-65 caps the row *count*, which is not a predicate: it drops the oldest rows
+    and says so, and nothing downstream reads the result. So no code is filtered
+    out here and `clinical_status` is reported rather than used.
+    """
     store = _RecordingPatientStore()
     toolset = build_patient_tools(store)
     observations = toolset.tools["get_patient_observations"]("p1")["observations"]
@@ -371,8 +383,10 @@ def test_no_model_facing_policy_tool_can_reach_the_corpus() -> None:
     # explicitly permits crossing.
     context = toolset.tools["get_policy_context"](TREE_VERSION)
     assert set(context) == {
-        "policy_version_id", "title", "jurisdiction", "decision_expression", "criteria",
+        "policy_version_id", "title", "jurisdiction", "decision_expression",
+        "criteria", "criteria_total", "criteria_truncated",
     }
+    assert context["criteria_truncated"] is False
     for criterion in context["criteria"]:
         assert set(criterion) == {"id", "label", "scoped_to", "constants"}
 
@@ -389,8 +403,8 @@ def test_the_patient_tools_import_no_policy_and_the_policy_tools_no_patient() ->
 # --------------------------------------------------------------------------
 
 
-def test_the_extraction_agent_is_given_the_note_tools_only(e1_note) -> None:
-    """The single most consequential line in this task.
+def test_the_extraction_agent_reaches_one_document_and_nothing_else(e1_note) -> None:
+    """The single most consequential line in this task, narrowed by T-66.
 
     Handing extraction `get_patient_observations` would give the model the
     structured BMI while asking it for the note's. T-33 and T-60 exist because
@@ -398,33 +412,50 @@ def test_the_extraction_agent_is_given_the_note_tools_only(e1_note) -> None:
     they disagree by 1.6 across 35.0. A model shown both has no reason to
     disagree — and the system would keep passing every test it has, because the
     tests compare the two values and would now find them equal.
+
+    T-62 stated that as a list of names withheld. T-66 makes it the absence of a
+    reachable second document: the one declared tool is scoped in Python to the
+    note under review (D66).
     """
     store = _RecordingPatientStore(notes=[e1_note])
-    agent = build_extraction_agent(patient_store=store, tool_fetch=True)
+    agent = build_extraction_agent(
+        patient_store=store, tool_fetch=True, document_id=e1_note.document_id
+    )
     names = {tool.__name__ for tool in agent.tools}
-    assert names == set(EXTRACTION_ALLOWLIST)
-    assert "get_patient_observations" not in names
-    assert "get_patient_conditions" not in names
+    assert names == set(EXTRACTION_ALLOWLIST) == {"read_note"}
+    for withheld in (
+        "get_patient_observations",
+        "get_patient_conditions",
+        "get_patient_document",
+        "get_patient_notes",
+    ):
+        assert withheld not in names
 
 
-def test_the_toolset_declares_more_than_the_agent_may_see() -> None:
+def test_the_patient_toolset_declares_far_more_than_the_extractor_may_see() -> None:
     """So the previous assertion is about an allowlist and not about a toolset
-    that happens to be small."""
+    that happens to be small. The full patient plane is four tools; the extractor
+    sees a fifth that reaches exactly one document."""
     declared = set(build_patient_tools(_RecordingPatientStore()).names)
-    assert declared > set(EXTRACTION_ALLOWLIST)
     assert declared == {
         "get_patient_notes",
         "get_patient_document",
         "get_patient_observations",
         "get_patient_conditions",
     }
+    assert not declared & set(EXTRACTION_ALLOWLIST), (
+        "the extractor's tool must not be one of the patient-plane tools; if it "
+        "is, someone re-widened it and the bundle route is back (T-66)"
+    )
 
 
 def test_the_extraction_agent_is_given_no_policy_tool(e1_note) -> None:
     """A note extractor that can read the policy's thresholds is a threshold
     leaking into the model's judgment."""
     store = _RecordingPatientStore(notes=[e1_note])
-    agent = build_extraction_agent(patient_store=store, tool_fetch=True)
+    agent = build_extraction_agent(
+        patient_store=store, tool_fetch=True, document_id=e1_note.document_id
+    )
     names = {tool.__name__ for tool in agent.tools}
     assert not names & {"get_policy_context", "get_policy_value_set"}
 
@@ -446,6 +477,16 @@ def test_without_tool_fetch_the_agent_has_no_tools_at_all() -> None:
 def test_tool_fetch_without_a_store_refuses_to_build() -> None:
     with pytest.raises(ValueError, match="needs a PatientStore"):
         build_extraction_agent(patient_store=None, tool_fetch=True)
+
+
+def test_tool_fetch_without_a_document_id_refuses_to_build() -> None:
+    """T-66. The reader's scope is fixed before the run; there is no fallback
+    that derives it from whatever id the model asks for, because that fallback
+    was `_patient_of` (D66)."""
+    with pytest.raises(ValueError, match="needs the document_id"):
+        build_extraction_agent(
+            patient_store=_RecordingPatientStore(), tool_fetch=True
+        )
 
 
 # --------------------------------------------------------------------------
@@ -503,10 +544,12 @@ def test_the_tool_fetch_variant_only_prepends_a_retrieval_step(e1_note) -> None:
     from pa_agent.extraction import INSTRUCTION
 
     agent = build_extraction_agent(
-        patient_store=_RecordingPatientStore(notes=[e1_note]), tool_fetch=True
+        patient_store=_RecordingPatientStore(notes=[e1_note]),
+        tool_fetch=True,
+        document_id=e1_note.document_id,
     )
     assert agent.instruction.endswith(INSTRUCTION)
-    assert "get_patient_document" in agent.instruction
+    assert "read_note" in agent.instruction
 
 
 def test_the_run_is_bounded_by_a_call_ceiling() -> None:
@@ -524,16 +567,23 @@ def test_the_run_is_bounded_by_a_call_ceiling() -> None:
 def test_the_declaration_the_model_sees_hides_the_injected_store(e1_note) -> None:
     """The closure is the boundary. ADK builds a declaration from
     `inspect.signature`, and a closure's captured cells never appear in one — so
-    the model sees `get_patient_document(document_id)` and has no way to name,
-    reach, or substitute the store behind it."""
+    the model sees `read_note(document_id)` and has no way to name, reach, or
+    substitute the store behind it.
+
+    T-66 leans harder on this than T-62 did: the *scope* is a captured cell too,
+    so the permitted document id is not in the declaration either. The model can
+    echo the id it was given and cannot discover another one."""
     store = _RecordingPatientStore(notes=[e1_note])
-    agent = build_extraction_agent(patient_store=store, tool_fetch=True)
+    agent = build_extraction_agent(
+        patient_store=store, tool_fetch=True, document_id=e1_note.document_id
+    )
     resolved = asyncio.run(agent.canonical_tools())
     by_name = {tool.name: tool for tool in resolved}
-    declaration = by_name["get_patient_document"]._get_declaration()
+    declaration = by_name["read_note"]._get_declaration()
     rendered = str(declaration)
     assert "document_id" in rendered
-    for leaked in ("store", "patient_store", "_RecordingPatientStore", "toolset"):
+    for leaked in ("store", "patient_store", "_RecordingPatientStore", "toolset",
+                   "permitted"):
         assert leaked not in rendered, f"the declaration leaks {leaked!r}"
 
 
@@ -727,14 +777,14 @@ def test_the_run_records_tokens_and_a_termination_reason(e1_note, e1_payload) ->
 
 
 def test_the_tool_call_trace_is_recorded_in_order(e1_note, e1_payload) -> None:
-    """REQ-49. The model calls `get_patient_document`, the tool answers, and the
-    model returns the payload — two LLM turns and one tool call, in that order."""
+    """REQ-49. The model calls `read_note`, the tool answers, and the model
+    returns the payload — two LLM turns and one tool call, in that order."""
     from google.genai import types
 
     store = _RecordingPatientStore(notes=[e1_note])
     fetch = types.Part(
         function_call=types.FunctionCall(
-            name="get_patient_document",
+            name="read_note",
             args={"document_id": e1_note.document_id},
         )
     )
@@ -746,9 +796,9 @@ def test_the_tool_call_trace_is_recorded_in_order(e1_note, e1_payload) -> None:
     result = runner.run(e1_note.document_id, e1_note.text)
 
     names = [call.name for call in result.trace.tool_calls]
-    assert names == ["get_patient_document"], names
+    assert names == ["read_note"], names
     assert result.trace.tool_calls[0].ok is True
-    assert ("get_notes", e1_note.document_id.split("/")[0]) in store.calls, (
+    assert ("get_document", e1_note.document_id) in store.calls, (
         "the tool reached the injected port, not a file"
     )
     assert len(result.events) > 0, "the payload still came back through build_result"
@@ -765,7 +815,7 @@ def test_a_tool_call_trace_records_a_digest_and_never_the_arguments(
     store = _RecordingPatientStore(notes=[e1_note])
     fetch = types.Part(
         function_call=types.FunctionCall(
-            name="get_patient_document",
+            name="read_note",
             args={"document_id": e1_note.document_id},
         )
     )

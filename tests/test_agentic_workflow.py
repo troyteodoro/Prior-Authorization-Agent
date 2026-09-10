@@ -23,12 +23,13 @@ from __future__ import annotations
 
 import ast
 import json
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
 
-from pa_agent.contracts import CriterionVerdict, Document
+from pa_agent.agent.tool_bounds import MAX_ROWS
+from pa_agent.contracts import Condition, CriterionVerdict, Document, Observation
 from pa_agent.retrieval import (
     FixedRetrievalPlanner,
     RetrievalError,
@@ -141,7 +142,7 @@ def _full_run(patient_id: str, document_id: str):
     """The tool sequence a well-behaved planner produces."""
     return [
         _call("get_patient_notes", patient_id=patient_id),
-        _call("get_patient_document", document_id=document_id),
+        _call("get_patient_document", patient_id=patient_id, document_id=document_id),
         _call("get_patient_observations", patient_id=patient_id),
         _call("get_patient_conditions", patient_id=patient_id),
         _plan([document_id]),
@@ -174,7 +175,12 @@ def test_the_gatherer_gets_the_structured_facts_the_extractor_is_denied(
 
     assert "get_patient_observations" in PATIENT_ALLOWLIST
     assert "get_patient_observations" not in EXTRACTION_ALLOWLIST
-    assert set(EXTRACTION_ALLOWLIST) < set(PATIENT_ALLOWLIST)
+    # T-66 made the asymmetry structural rather than a subset relation: the
+    # extractor's one tool is not a patient-plane tool at all, it is a reader
+    # scoped in Python to one document. So the two allowlists are now disjoint,
+    # which is a stronger statement than "narrower" (D66).
+    assert not set(EXTRACTION_ALLOWLIST) & set(PATIENT_ALLOWLIST)
+    assert set(EXTRACTION_ALLOWLIST) == {"read_note"}
 
 
 def test_a_tool_outside_the_allowlist_cannot_be_requested(patient_store, policy_store):
@@ -278,8 +284,8 @@ def test_the_model_can_request_additional_evidence(
     patient_id, document_id = e1
     turns = [
         _call("get_patient_notes", patient_id=patient_id),
-        _call("get_patient_document", document_id=document_id),
-        _call("get_patient_document", document_id=document_id),
+        _call("get_patient_document", patient_id=patient_id, document_id=document_id),
+        _call("get_patient_document", patient_id=patient_id, document_id=document_id),
         _call("get_patient_observations", patient_id=patient_id),
         _plan([document_id]),
     ]
@@ -345,6 +351,329 @@ def test_every_bound_is_a_python_constant(policy_store, patient_store):
         "max_llm_calls counts LLM calls and a tool round trip costs two, so a "
         "ceiling below the tool budget makes the tool budget unreachable"
     )
+
+
+# --------------------------------------------------------------------------
+# REQ-54: no tool returns a collection sized by the chart (T-65, D66)
+# --------------------------------------------------------------------------
+
+
+class _WideStore:
+    """A patient with more of everything than the ceiling admits.
+
+    Synthetic rather than a fixture patient, because the property under test is
+    what happens *past* `MAX_ROWS` and the committed corpus's largest chart is
+    3,780 observations — which exercises truncation but could never exercise the
+    note-list fault, and both branches need a case.
+    """
+
+    def __init__(self, notes: int = 1, rows: int = MAX_ROWS + 1) -> None:
+        self._notes = [
+            Document.from_text(f"wide/note_{i}.txt", f"note {i}")
+            for i in range(notes)
+        ]
+        # Oldest first, so a tool that returned rows in port order and truncated
+        # would keep exactly the wrong ones.
+        self._rows = rows
+
+    def get_notes(self, patient_id: str):
+        return list(self._notes)
+
+    def get_document(self, document_id: str):
+        for note in self._notes:
+            if note.document_id == document_id:
+                return note
+        raise KeyError(document_id)
+
+    def get_observations(self, patient_id: str):
+        return [
+            Observation(
+                code="39156-5",
+                value=40.0 + index,
+                unit="kg/m2",
+                effective_date=date(2020, 1, 1) + timedelta(days=index),
+            )
+            for index in range(self._rows)
+        ]
+
+    def get_conditions(self, patient_id: str):
+        return [
+            Condition(
+                code=f"{index}",
+                system="http://snomed.info/sct",
+                clinical_status="active",
+                onset_date=date(2020, 1, 1) + timedelta(days=index),
+            )
+            for index in range(self._rows)
+        ]
+
+
+def test_no_structured_tool_returns_a_collection_sized_by_the_chart():
+    """T-65's exit, and the whole of D64's 446x outlier.
+
+    `get_patient_observations` returned all 3,780 of one patient's rows, the
+    payload entered the context window, and `include_contents="default"` re-sent
+    it every turn. Cost was payload x turns and it scaled with the chart rather
+    than with the question.
+    """
+    from pa_agent.agent.patient_tools import build_patient_tools
+
+    tools = build_patient_tools(_WideStore()).tools
+    for name, key in (
+        ("get_patient_observations", "observations"),
+        ("get_patient_conditions", "conditions"),
+    ):
+        response = tools[name]("p1")
+        assert len(response[key]) == MAX_ROWS
+        assert response["returned"] == MAX_ROWS
+        assert response["total"] == MAX_ROWS + 1, (
+            "a truncated payload that did not name the true total would be "
+            "indistinguishable from a patient with a thinner chart"
+        )
+        assert response["truncated"] is True
+
+
+def test_a_truncated_read_drops_the_oldest_rows_and_not_the_newest():
+    """If rows must go, the only defensible ones to drop are the oldest —
+    criterion (a)'s lookback is twelve months and c2 asks about recency. A tool
+    that truncated in port order would keep exactly the wrong ones (D66)."""
+    from pa_agent.agent.patient_tools import build_patient_tools
+
+    store = _WideStore()
+    rows = build_patient_tools(store).tools["get_patient_observations"]("p1")
+    dates = [row["effective_date"] for row in rows["observations"]]
+    assert dates == sorted(dates, reverse=True)
+    newest = max(o.effective_date for o in store.get_observations("p1")).isoformat()
+    assert dates[0] == newest
+
+
+def test_the_note_list_faults_rather_than_truncating():
+    """The asymmetry T-65 turns on. Every `document_id` the model may ask for
+    comes out of `get_patient_notes`, so its payload is not information — it is
+    the model's action space, and a truncated list is a shorter chart with a flag
+    nobody can act on. There is no page two. REQ-46 already makes an exceeded
+    bound an error rather than a partial answer."""
+    from pa_agent.agent.patient_tools import build_patient_tools
+    from pa_agent.agent.tool_bounds import ToolBudgetExceeded
+
+    tools = build_patient_tools(_WideStore(notes=MAX_ROWS + 1)).tools
+    with pytest.raises(ToolBudgetExceeded) as raised:
+        tools["get_patient_notes"]("p1")
+    assert str(MAX_ROWS) in str(raised.value)
+    assert str(MAX_ROWS + 1) in str(raised.value)
+
+    # And the fault is recorded rather than swallowed: a call that failed still
+    # happened, and Article X wants the sequence.
+    toolset = build_patient_tools(_WideStore(notes=MAX_ROWS + 1))
+    with pytest.raises(ToolBudgetExceeded):
+        toolset.tools["get_patient_notes"]("p1")
+    assert [c.name for c in toolset.calls] == ["get_patient_notes"]
+    assert toolset.calls[0].ok is False
+
+
+def test_the_bundle_is_the_ports_full_read_and_never_the_models_view(
+    policy_store, patient_store, tree, case_patients
+):
+    """**The pin that makes truncation safe**, on the patient that caused D64's
+    446x.
+
+    Capping a tool's response is a cost change only while the payload informs the
+    model's plan and reaches no criterion. That is D63's design — `gather()`
+    re-reads the structured facts from the port — but nothing was stopping a
+    later change from assembling the bundle out of what the model returned
+    instead. Then a chart truncated at fifty rows would silently become the
+    evidence, and criterion (a) would answer on it.
+    """
+    from pa_agent.agent.patient_tools import build_patient_tools
+
+    patient_id = case_patients["E2"]
+    document_id = patient_store.get_notes(patient_id)[0].document_id
+
+    full = patient_store.get_observations(patient_id)
+    assert len(full) > MAX_ROWS, (
+        "this pin needs a patient whose chart exceeds the ceiling; E2+E7 had "
+        "3,780 observations when D64 measured it"
+    )
+
+    seen = build_patient_tools(patient_store).tools["get_patient_observations"](
+        patient_id
+    )
+    assert seen["truncated"] is True and len(seen["observations"]) == MAX_ROWS
+
+    result = _planner(_full_run(patient_id, document_id)).gather(
+        patient_id, tree, patient_store, policy_store
+    )
+    assert len(result.observations) == len(full), (
+        "the bundle was assembled from the model's view; a capped tool is now a "
+        "correctness change and not a cost control (D66)"
+    )
+    assert result.conditions == patient_store.get_conditions(patient_id)
+
+
+class _WideValueSetStore:
+    """A policy store whose value set is bigger than the ceiling.
+
+    Synthetic, and it has to be: this corpus's obesity-comorbidity set holds two
+    codes, so an unbounded `get_policy_value_set` and a bounded one answer
+    identically on every input the repository can produce — the mutation that
+    removes the cap survives against the committed data. A production value set
+    is thousands of codes, which is the 3,780-observation shape on the other
+    plane (D66).
+    """
+
+    def __init__(self, size: int = MAX_ROWS + 1) -> None:
+        self.codes = frozenset(f"{100000 + i}" for i in range(size))
+
+    def get_value_set(self, value_set_id: str) -> frozenset[str]:
+        return self.codes
+
+    def get_tree(self, policy_version_id: str):  # pragma: no cover - unused here
+        raise NotImplementedError
+
+
+def test_the_value_set_is_bounded_and_criterion_b_still_reads_all_of_it(
+    policy_store, tree
+):
+    """The policy plane's half. It truncates rather than faults because
+    Amendment 1 reserves set membership to Python on both paths: no verdict can
+    turn on which codes the model saw, and criterion (b) reads the port's set."""
+    from pa_agent.agent.policy_tools import build_policy_tools
+
+    value_set_id = tree.criterion("b").require("value_set_id")
+    response = build_policy_tools(policy_store).tools["get_policy_value_set"](
+        value_set_id
+    )
+    assert set(response) == {
+        "value_set_id", "codes", "total", "returned", "truncated"
+    }
+    full = policy_store.get_value_set(value_set_id)
+    assert response["total"] == len(full)
+    assert response["truncated"] is False
+
+    wide = _WideValueSetStore()
+    capped = build_policy_tools(wide).tools["get_policy_value_set"](value_set_id)
+    assert len(capped["codes"]) == MAX_ROWS
+    assert capped["total"] == MAX_ROWS + 1
+    assert capped["truncated"] is True
+
+    # And the criterion is unaffected, which is the reason truncating is legal
+    # here at all: membership is Python's, over the port's full set.
+    assert wide.get_value_set(value_set_id) == frozenset(wide.codes)
+    assert len(wide.get_value_set(value_set_id)) == MAX_ROWS + 1
+
+
+def test_the_ceiling_is_one_python_constant_the_model_never_sees():
+    """Article I and II's shape, applied to T-65: the bound is a module constant,
+    not a number the model proposes, and one number rather than four — four caps
+    would need four justifications and they would all be the same sentence."""
+    from pa_agent.agent import tool_bounds
+
+    assert isinstance(MAX_ROWS, int) and MAX_ROWS > 0
+    caps = {
+        name: value
+        for name, value in vars(tool_bounds).items()
+        if isinstance(value, int) and not name.startswith("_")
+    }
+    assert caps == {"MAX_ROWS": MAX_ROWS}, (
+        f"tool_bounds declares more than one ceiling: {sorted(caps)}"
+    )
+
+    source = (REPO_ROOT / "pa_agent" / "agent" / "patient_tools.py").read_text(
+        encoding="utf-8"
+    )
+    assert str(MAX_ROWS) not in source, (
+        "a tool module naming the ceiling as a literal is a second place to "
+        "change it, and the two would drift"
+    )
+
+
+# --------------------------------------------------------------------------
+# REQ-41 / REQ-53: scope is supplied, never parsed out of an id (T-66, D66)
+# --------------------------------------------------------------------------
+
+
+def test_the_document_tool_refuses_a_bundle_filename(patient_store, case_patients):
+    """T-66's exit, and D65's refusal made mechanical.
+
+    The extraction agent's whole REQ-53 argument is that it must not reach the
+    structured BMI while reporting the note's. A document tool that resolved
+    across T-64's widened patient-plane namespace would hand it a FHIR bundle by
+    filename, and every existing test would keep passing because the tests
+    compare the two readings and would now find them equal.
+    """
+    from pa_agent.agent.patient_tools import build_patient_tools
+
+    patient_id = case_patients["E2"]
+    bundles = json.loads(
+        (REPO_ROOT / "data" / "patients" / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )["bundles"]
+    filename = next(b["filename"] for b in bundles if b["patient_id"] == patient_id)
+
+    # The port resolves it — that is T-64, and it is correct.
+    assert patient_store.get_document(filename).document_id == filename
+
+    # The tool does not, because its scope is this patient's notes.
+    tools = build_patient_tools(patient_store).tools
+    with pytest.raises(KeyError):
+        tools["get_patient_document"](patient_id, filename)
+
+
+def test_the_note_reader_refuses_every_id_but_the_one_it_was_built_for(
+    patient_store, case_patients
+):
+    """The extraction agent holds no patient id — `ExtractionRunner.run` is given
+    a document id and nothing else — so T-66's "pass the id the model already
+    holds" does not reach it. The scope is a captured constant instead, and the
+    check runs before the port is consulted, so the widened namespace is never
+    searched with an id the caller did not authorize."""
+    from pa_agent.agent.patient_tools import build_note_reader
+
+    mine, other = (
+        patient_store.get_notes(case_patients[case])[0].document_id
+        for case in ("E1", "E2")
+    )
+    toolset = build_note_reader(patient_store, mine)
+    assert toolset.names == ["read_note"]
+    assert toolset.tools["read_note"](mine)["text"]
+
+    for refused in (other, "Rayford811_Sanford861_x.json", ""):
+        with pytest.raises(KeyError):
+            toolset.tools["read_note"](refused)
+    assert [c.ok for c in toolset.calls] == [True, False, False, False]
+
+
+def test_no_tool_module_reads_structure_out_of_an_identifier():
+    """D65's structural pin, moved from the adapter to the tools.
+
+    `_patient_of` recovered a note's owner by splitting the id on `/`, which
+    worked only because T-07 named every note `<patient_id>/chart_note.txt`. A
+    resolver that parses an id is a convention wearing a function's clothes, and
+    it is silently wrong the first time a note is named anything else. Asserted on
+    the AST rather than on behaviour, because a parse that falls through to a
+    lookup answers identically on every id this corpus can produce — which is
+    exactly the mutation that survived in T-64.
+    """
+    forbidden = {"split", "rsplit", "partition", "startswith", "endswith",
+                 "removeprefix", "removesuffix"}
+    for name in ("patient_tools.py", "policy_tools.py"):
+        path = REPO_ROOT / "pa_agent" / "agent" / name
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        # On the AST, so the docstring that explains why `_patient_of` is gone
+        # does not itself fail the check. Prose about a deleted function is the
+        # record of the decision; a call to one is the defect.
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                assert node.name != "_patient_of", f"{name} still parses an owner"
+            if isinstance(node, ast.Name):
+                assert node.id != "_patient_of", f"{name} still calls _patient_of"
+            if isinstance(node, ast.Attribute) and node.attr in forbidden:
+                raise AssertionError(
+                    f"{name} calls .{node.attr}() on line {node.lineno}; scope "
+                    "comes from an argument or a captured constant, never from "
+                    "the shape of an identifier (T-66, D66)"
+                )
 
 
 # --------------------------------------------------------------------------
