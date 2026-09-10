@@ -63,6 +63,7 @@ GATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("spike 001's recording", ("spike/spike_001/run.py", "--verify")),  # T-00
     ("the eval baseline", ("eval/run_eval.py",)),  # T-10
     ("the agentic differential", ("eval/run_agentic_eval.py",)),  # T-61
+    ("the ratification ledger", ("scripts/check_ownership.py",)),  # T-73
 )
 
 #: Tracked scripts that are **not** gates, and why. `tests/test_check_gates.py`

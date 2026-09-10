@@ -16,28 +16,39 @@ answers the second question, once.
 
 ## Path to v1
 
-Fifty-eight tasks are on this board — IDs run to T-72 but numbering is not
-contiguous, so the highest id is not the count. **45 are closed and 13 are
-open.** Nine of the 13 sit on the critical path to the acceptance gates in spec
-§7. This is that path, in order. *(D70, extended by D72)*
+Sixty-two tasks are on this board — IDs run to T-76 but numbering is not
+contiguous, so the highest id is not the count. **46 are closed and 16 are
+open.** Eleven of the 16 sit on the critical path to the acceptance gates in
+spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
+— ownership is ratified before the path resumes)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
-| 1 | `T-41` | unblocks T-21's E12 row · gates **A1** | **closed** (D73) |
-| 2 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | ready — **next** |
-| 3 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
-| 4 | `T-17` | **closes US-6** · implements **Article V** | ready |
-| 5 | `T-32` | gates **Article VI** / REQ-33 | ready |
-| 6 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
+| 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
+| 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
+| 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
+| 4 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | after T-75 *(D74)* |
+| 5 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
+| 6 | `T-17` | **closes US-6** · implements **Article V** | ready |
+| 7 | `T-32` | gates **Article VI** / REQ-33 | ready |
+| 8 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
 
 Off the path. Real work, nothing waiting on it:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
+| `T-76` | ratifies the remaining decision entries; the load-bearing set is T-75's | after T-73, in batches, blocks nothing *(D74)* |
 | `T-27` | needs the full eval set and the report to write into | after T-21 and T-22 |
 | `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
 | `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
 | `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
+
+**Why the ratification tasks go first.** D42 put on record that the eval ground
+truth is authored by the agent building the system it grades, and the docs the
+whole repo obeys were agent-drafted under direction. D74 converts that
+direction into recorded ownership — a ledger, a gate, and statuses only Troy
+may write — and the conversion is cheapest *before* T-21 authors the labels
+the acceptance gates will be scored against, not after.
 
 **Why T-21 is second and not later.** US-4 and US-5 are *built and ungraded* —
 every predicate, the reconciliation, the aggregator and the gap list work and are
@@ -1214,9 +1225,20 @@ end to end, carrying `VERIFIER_REJECTED`.
 ## `US-7` Where the system stops being reliable — day 5
 
 ### `[ ] T-21` Expand the eval set to all of spec §6
-**Depends:** T-06, T-10, T-41 *(for the E12 row)* · **Gates:** A1, A3
-**Status:** **next on the critical path** — T-41 closed (D73), nothing blocks it
-**Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
+**Depends:** T-06, T-10, T-41 *(for the E12 row)*, T-73, T-75 *(D74)* ·
+**Gates:** A1, A3 · **Rewritten by:** D74
+**Status:** on the critical path, after T-75 — the labels this task authors are
+what the acceptance gates score against, so ownership is ratified first *(D74)*
+**Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled;
+every case in `eval/cases.json` and every manifest in `eval/manifests/` carries
+an `adjudicated: {by, date}` record, and `python scripts/check_ownership.py
+--require eval` returns zero — closing flips `eval` into the ledger's
+`required_tiers` *(D74)*
+
+Agent-drafted labels land as proposals carrying reasoning and spans; Troy's
+adjudication records are what close them, and the adjudication of each
+patient's manifest happens in the same reading pass that labels its cases
+*(D74 — this is where D42's authorship caveat is retired for the eval set)*.
 
 **This is the task that closes two stories.** US-4 and US-5 are built — every
 predicate, the reconciliation, the aggregator and the gap list pass their unit
@@ -1334,6 +1356,62 @@ emitted, and a seeded `ERROR` leaves the abstention rate unchanged.
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[x] T-73` The ratification ledger and its gate
+**REQ:** none — implements D74's protocol · **Blocks:** T-74, T-75, T-76,
+T-21's rewritten exit · **Discovered in:** the D74 ownership review ·
+**Timebox:** half a day
+**Status:** closed — 235 ids seeded `proposed`, the gate is ninth in `GATES`,
+20 tests in `tests/test_check_ownership.py`
+**Exit:** `python scripts/check_ownership.py` returns zero — and
+`python scripts/check_gates.py` green with the new gate in `GATES`, which
+T-69's membership test forces in the same commit
+
+`docs/ratifications.json` maps every load-bearing ID — Articles I–X and
+Amendment 1, every REQ in spec §5, §6's edge cases, §7's acceptance criteria,
+US-1–US-9, every task on this board, every decision entry — to
+`{status, by, date}`, seeded all-`proposed`, grouped into D74's seven tiers.
+The gate parses the five docs to enumerate the IDs and fails on: a doc ID the
+ledger is missing; a ledger ID resolving in no doc; an `overruled`/`amended`
+entry whose linked task does not resolve on this board; a malformed entry; a
+`proposed` entry in any tier the ledger's `required_tiers` names; and,
+once `eval` is required, a manifest or case in `eval/` without a well-formed
+`adjudicated` record. `--require <tier>` (repeatable) requires a tier for one
+run — the ratification tasks' exits use it before flipping the tier into
+`required_tiers`, after which the bare gate invocation enforces it forever.
+Statuses other than `proposed` are Troy's edits only (working rule 11, D74).
+
+### `[ ] T-74` Ratify the constitution, the spec and the stories
+**Depends:** T-73 · **Discovered in:** D74 · **Timebox:** one session
+**Status:** second on the critical path; the reading is Troy's, not an agent's
+**Exit:** `python scripts/check_ownership.py --require constitution --require
+spec --require stories` returns zero, and the close flips those three tiers
+into `required_tiers`
+
+An agent may scaffold a checklist view; every status written is Troy's edit.
+A disagreement is an `amended` or `overruled` status naming a new numbered
+task (working rule 6) — the gate refuses one that names nothing.
+
+### `[ ] T-75` Ratify the load-bearing decisions and the whole board
+**Depends:** T-74 · **Discovered in:** D74 · **Timebox:** two sessions
+**Status:** third on the critical path; the reading is Troy's, not an agent's
+**Exit:** `python scripts/check_ownership.py --require decisions-core
+--require tasks` returns zero, and the close flips both tiers into
+`required_tiers`
+
+`decisions-core` is the 27-entry set D74 froze — the decisions CLAUDE.md's
+invariants and domain-facts sections cite. A blown timebox gets a decisions
+entry naming what broke (working rule 8), not a silent grind.
+
+### `[ ] T-76` Ratify the remaining decision entries
+**Depends:** T-73 · **Discovered in:** D74
+**Status:** off the critical path; proceeds in batches, blocks nothing
+**Exit:** `python scripts/check_ownership.py --require decisions-all` returns
+zero, and the close flips `decisions-all` into `required_tiers`
+
+D74's reversal clause applies here: if this stalls indefinitely, it shrinks to
+opportunistic ratification and the ledger's `proposed` count keeps the gap
+visible rather than hidden.
 
 ### `[ ] T-27` Planner recall against the oracle's evidence bundle
 **REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70

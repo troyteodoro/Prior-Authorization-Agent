@@ -1,0 +1,1181 @@
+{
+  "note": "D74's ratification ledger. Statuses other than 'proposed' are Troy's edits only (CLAUDE.md working rule 11). Tiers are computed by scripts/check_ownership.py from each id's kind; a tier in 'required_tiers' fails the gate on any entry still 'proposed'. Checked by scripts/check_ownership.py, a gate.",
+  "required_tiers": [],
+  "entries": {
+    "Article I": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article II": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article III": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article IV": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article V": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article VI": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article VII": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article VIII": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article IX": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Article X": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "Amendment 1": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-1": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-2": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-3": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-4": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-42": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-33": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-41": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-5": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-6": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-7": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-8": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-9": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-10": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-35": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-38": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-52": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-53": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-43": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-44": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-45": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-46": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-47": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-48": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-49": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-50": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-51": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-54": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-11": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-12": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-13": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-36": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-32": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-14": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-40": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-37": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-15": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-16": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-34": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-17": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-18": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-18a": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-31": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-23": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-24": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-26": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-27": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-29": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-30": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-19": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-20": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-21": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-39": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-22": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-25": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "REQ-28": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E1": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E2": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E3": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E4": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E5": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E6": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E7": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E8": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E9": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E10": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E10b": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E10c": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E11": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "E12": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A1": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A2": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A3": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A4": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A5": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A6": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A7": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A8": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "A9": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-1": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-2": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-3": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-4": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-5": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-6": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-7": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-9": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "US-8": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-00": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-01": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-02": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-03": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-09": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-10": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-24": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-25": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-04": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-05": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-08": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-11": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-12": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-13": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-14": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-06": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-07": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-15": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-31": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-16": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-33": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-18": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-20": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-19": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-62": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-64": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-66": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-65": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-67": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-63": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-68": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-69": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-61": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-17": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-21": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-72": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-22": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-28": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-23": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-26": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-29": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-30": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-73": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-74": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-75": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-76": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-27": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-32": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-34": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-35": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-36": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-37": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-38": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-42": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-71": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-70": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-41": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-39": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-40": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-43": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-60": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "T-46": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D1": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D2": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D3": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D4": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D5": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D6": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D7": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D8": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D9": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D10": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D11": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D12": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D13": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D14": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D15": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D16": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D17": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D18": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D19": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D20": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D21": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D22": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D23": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D24": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D25": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D26": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D27": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D28": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D29": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D30": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D31": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D32": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D33": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D34": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D35": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D36": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D37": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D38": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D39": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D40": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D41": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D42": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D43": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D44": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D45": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D46": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D47": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D48": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D49": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D50": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D51": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D52": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D61": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D62": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D63": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D64": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D65": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D66": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D67": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D68": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D69": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D70": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D71": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D72": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D73": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "D74": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/cases.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "spike/spike_001/labels.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/manifests/05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/manifests/07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/manifests/49092fd9-d5bf-24e2-474b-00041a279a47.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/manifests/a2e49f37-80ef-906b-5c85-b7b10e1179c1.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/manifests/a8edc52e-9800-0adb-c775-bd81183c355f.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/manifests/afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    },
+    "eval/manifests/bc6748d3-3a0f-9734-7730-4518f5b268fb.json": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-10"
+    }
+  }
+}
