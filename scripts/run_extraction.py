@@ -213,13 +213,9 @@ def main() -> int:
                     "Re-anchoring against it would score a quote against a "
                     "document it never came from (D18)."
                 )
-        client = None
         print(f"re-anchoring {len(cases)} recorded payloads, no model call")
     else:
         load_env()
-        from google import genai
-
-        client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
         print(
             f"{len(cases)} notes, model {PINNED_MODEL}, "
             f"temperature {EXTRACTION_TEMPERATURE}"
@@ -236,7 +232,7 @@ def main() -> int:
         else:
             for attempt in range(RETRIES):
                 try:
-                    result = extract(case["document_id"], case["text"], client)
+                    result = extract(case["document_id"], case["text"])
                     break
                 except Exception as exc:  # noqa: BLE001 — retried, then re-raised
                     if attempt == RETRIES - 1:

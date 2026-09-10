@@ -6,6 +6,30 @@ one, never an edit to what was decided.
 
 ---
 
+## D53 — Route extraction through ADK before T-18
+
+**Chosen:** Move the production extraction leaf from the direct
+`google-genai` client call to the already-verified ADK `Agent`/`Runner` path.
+Keep the graph fixed, create a fresh in-memory session per note, and continue
+to return the existing `ExtractionResult` and `CallMetrics` contracts.
+
+**Rejected:** Wait for T-18 to wire the workflow graph before changing the
+model-call boundary. That leaves the production extraction path on a lower-level
+SDK while the spike and repository skeleton already validate ADK 2.8.0, making
+the two measured paths materially different.
+
+**Why:** ADK is the project's declared orchestration boundary. Using it at the
+declared model leaf preserves Article I while centralizing model configuration,
+session isolation, structured output, usage accounting, and lifecycle cleanup.
+The migration is deliberately an early slice against the task order; it does
+not implement T-18's fan-out/fan-in workflow or change deterministic criteria.
+
+**Reverses if:** ADK 2.8.0 cannot produce the same structured payload and
+metrics contract without a model-quality or reproducibility regression in the
+recorded extraction gate.
+
+---
+
 ## D1 — The criterion is the unit of adjudication, not the document
 
 **Chosen:** Decompose NCD 100.1 into a criteria tree and evaluate each leaf

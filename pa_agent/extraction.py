@@ -20,6 +20,7 @@ zero of eighty model-emitted offset pairs usable.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import time
 from dataclasses import dataclass, field
@@ -311,32 +312,76 @@ def build_result(
 # --------------------------------------------------------------------------
 
 
-def extract(document_id: str, text: str, client, model: str = PINNED_MODEL) -> ExtractionResult:
+async def _extract_with_adk(
+    document_id: str, text: str, model: str
+) -> tuple[dict, int, int]:
+    """Run the declared extraction leaf through ADK with an isolated session."""
+    from google.adk.agents import Agent
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
+    from google.genai import types
+
+    agent = Agent(
+        model=model,
+        name="pa_extractor",
+        description="Extracts weight-management encounters from a clinical note.",
+        instruction=INSTRUCTION,
+        output_schema=Extraction,
+        output_key="extraction",
+        generate_content_config=types.GenerateContentConfig(
+            temperature=EXTRACTION_TEMPERATURE
+        ),
+    )
+    session_service = InMemorySessionService()
+    session_id = f"extract-{document_id.replace('/', '-')}"
+    await session_service.create_session(
+        app_name="pa_agent", user_id="pa_agent", session_id=session_id
+    )
+    runner = Runner(
+        app_name="pa_agent", agent=agent, session_service=session_service
+    )
+    message = types.Content(
+        role="user",
+        parts=[types.Part(text=f"Clinical note (document_id: {document_id}):\n\n{text}")],
+    )
+    payload = None
+    input_tokens = output_tokens = 0
+    try:
+        async for event in runner.run_async(
+            user_id="pa_agent", session_id=session_id, new_message=message
+        ):
+            usage = event.usage_metadata
+            if usage:
+                input_tokens += usage.prompt_token_count or 0
+                output_tokens += usage.candidates_token_count or 0
+            if event.actions and event.actions.state_delta.get("extraction") is not None:
+                payload = event.actions.state_delta["extraction"]
+    finally:
+        await runner.close()
+    if payload is None:
+        raise RuntimeError("ADK extraction completed without a structured payload")
+    if isinstance(payload, str):
+        payload = json.loads(payload)
+    return payload, input_tokens, output_tokens
+
+
+def extract(document_id: str, text: str, model: str = PINNED_MODEL) -> ExtractionResult:
     """One note in, structured facts out. Exactly one model call (Art. X).
 
-    `client` is injected rather than constructed here so nothing in this module
-    reads a credential or names a tier — D5 keeps AI Studio and Vertex as two
-    credentials behind one pinned identifier, and the caller chooses.
+    Credentials remain outside this module; ADK resolves the configured provider
+    from the process environment while this leaf receives only the model pin.
     """
     started = time.perf_counter()
-    response = client.models.generate_content(
-        model=model,
-        contents=f"{INSTRUCTION}\n\nNOTE:\n{text}",
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": Extraction,
-            "temperature": EXTRACTION_TEMPERATURE,
-        },
+    payload, input_tokens, output_tokens = asyncio.run(
+        _extract_with_adk(document_id, text, model)
     )
     elapsed_ms = (time.perf_counter() - started) * 1000.0
 
-    usage = getattr(response, "usage_metadata", None)
     metrics = CallMetrics(
         model=model,
         purpose="extraction",
-        input_tokens=getattr(usage, "prompt_token_count", 0) or 0,
-        output_tokens=getattr(usage, "candidates_token_count", 0) or 0,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
         wall_time_ms=elapsed_ms,
     )
-    payload = json.loads(response.text)
     return build_result(document_id, text, payload, metrics)
