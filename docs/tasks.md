@@ -772,7 +772,7 @@ Studio and evals on Vertex, so the tool-calling path runs a **different prompt**
 the two tiers, and a number from one is not a number for the other. *(D62)*
 
 
-### `[ ] T-61` Agentic orchestration and model adjudication
+### `[~] T-61` Agentic orchestration and model adjudication
 
 **REQ:** 43, 45, 46, 48, 49, 50, 51  
 **Depends:** T-18, T-19, T-20, T-26, T-46, T-62
