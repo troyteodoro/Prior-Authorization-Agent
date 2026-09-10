@@ -87,6 +87,12 @@ deterministic path is usable as a regression oracle *(D62)*.
    no containers, no CI, no vector search. (See D4 for why vector search is out,
    and D70 for the measurement that would let it back in.)
 10. **Never write a real API key into a tracked file.** Placeholder only.
+11. **In `docs/ratifications.json`, an agent writes `proposed` and nothing
+    else.** `ratified`, `amended` and `overruled` are Troy's edits — the ledger
+    records human ownership of every load-bearing ID, and an agent granting
+    itself ratification is the exact failure the ledger exists to prevent
+    *(D74)*. `scripts/check_ownership.py` enforces the ledger's structure;
+    this rule is what scopes its statuses.
 
 ## Commands
 
@@ -314,8 +320,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**45 of 58 tasks closed, 13 open. All 8 gates green** (`check_gates.py`, ~12s,
-537 tests across 25 files). IDs run to T-72, but numbering is not contiguous —
+**45 of 62 tasks closed, 17 open. All 8 gates green** (`check_gates.py`, ~12s,
+537 tests across 25 files). IDs run to T-76, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3**. `python -m pa_agent.cli --patient <uuid>
@@ -328,10 +334,14 @@ the aggregator and the gap list work and are pinned by unit tests; both stories
 close on eval-harness rows and `eval/cases.json` holds one case. That is
 **T-21**, and it is why the board's order starts where it does.
 
-Open, in order: **T-21 → T-29/T-30 → T-17 → T-32 → T-72/T-22/T-28/T-23**,
-with T-27, T-42, T-70 and T-71 off the path. `docs/tasks.md` opens with `Path to
-v1`, which states this once with what each step gates — read it rather than this
-paragraph *(D70, D72)*.
+Open, in order: **T-73 → T-74 → T-75 → T-21 → T-29/T-30 → T-17 → T-32 →
+T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70 and T-71 off the path. The
+ratification tasks come first because D74 restores human ownership of every
+load-bearing ID — ledger `docs/ratifications.json`, gate
+`scripts/check_ownership.py`, working rule 11 — before T-21 authors the labels
+the acceptance gates score against. `docs/tasks.md` opens with `Path to v1`,
+which states this once with what each step gates — read it rather than this
+paragraph *(D70, D72, D74)*.
 
 Two things worth knowing before a review: **Article V has no implementation**
 (that is T-17, one task), and **REQ-44/REQ-47 are unclaimed on purpose** —

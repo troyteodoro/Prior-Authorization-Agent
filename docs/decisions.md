@@ -5262,3 +5262,112 @@ regeneration: after any `--generate`, a base bundle whose hash drifts from
 the committed manifest is restored from git rather than adopted, and
 `--verify` is what makes silent adoption impossible. The drifted regeneration
 was discarded exactly this way during this close.
+
+---
+
+## D74 — Ownership is restored by ratification: a ledger, a gate, and statuses only Troy may write
+
+Troy's decision, 2026-09-10. D42 recorded that the eval ground truth is
+authored by the agent building the system it grades, and D19 that the spike
+corpus and its labels share one author; the caveat has since attached to every
+number this repo can quote. Beyond the eval artifacts, the constitution, the
+spec, the stories, the board and this log were themselves largely agent-drafted
+under Troy's direction, with only D40 and D51 recording a named human choice.
+Troy has decided to convert that direction into recorded ownership: every
+load-bearing ID in the repo gets a human ratification status, machine-checked,
+before the critical path resumes at T-21.
+
+**Chosen — a single tracked ledger, `docs/ratifications.json`.** Every
+load-bearing ID — Articles I–X and Amendment 1, every REQ in spec §5, every §6
+edge case and §7 acceptance criterion, US-1 through US-9, every task on the
+board, every decision in this log — maps to `{status, by, date}`, with `status`
+one of `proposed | ratified | amended | overruled`. The ledger seeds
+all-`proposed` (T-73). Tiers group the entries — `constitution`, `spec`,
+`stories`, `tasks`, `decisions-core`, `decisions-all`, `eval` — and a tier
+listed in the ledger's `required_tiers` fails the gate on any entry still
+`proposed`, so the gate hardens as ratification progresses without its
+invocation ever changing. `amended` and `overruled` pass a required tier:
+each carries Troy's judgment plus a linked task the gate separately verifies,
+and failing them instead would hold every gate in the repo red until the
+linked task closed — a deadlock with working rule 4, since the fixing task's
+own close needs the gates green.
+
+**Chosen — a zero-cost gate, `scripts/check_ownership.py` (T-73).** It parses
+the five docs to enumerate IDs and fails on: an ID the ledger is missing; a
+ledger ID resolving in no doc; an `overruled` or `amended` entry that does not
+name a board task that resolves — working rule 6 mechanized, because a
+disagreement without scheduled work is exactly the silent drift this protocol
+exists to prevent; a malformed entry; a required tier holding a `proposed`
+entry; and, once the `eval` tier is required, a manifest or case without a
+well-formed `adjudicated` record. It joins `GATES` under T-69's membership rule
+the moment T-73's exit names it.
+
+**Chosen — statuses are authorship-scoped by rule.** An agent may write
+`proposed` and nothing else; `ratified`, `amended` and `overruled` are Troy's
+edits. This becomes CLAUDE.md working rule 11, binding future sessions the way
+rule 10 binds them on keys. The gate proves **coverage, not comprehension** —
+it can show every ID carries Troy's status, never that the reading happened —
+and this entry records that limit rather than implying otherwise.
+
+**Chosen — ratification is tiered, and only part of it blocks the path.**
+T-74 (constitution, spec, stories) and T-75 (`decisions-core` plus the whole
+board) block the critical path, which resumes at T-21 only after both close.
+T-76 (`decisions-all`, the remaining entries) proceeds off-path in batches.
+`decisions-core` is the set CLAUDE.md's "Invariants a fresh session will break
+silently" and "Domain facts" sections cite, frozen here so the set cannot
+quietly shrink: **D7, D9, D18, D19, D20, D21, D22, D24, D25, D27, D28, D29,
+D30, D31, D39, D40, D42, D45, D50, D51, D62, D63, D64, D66, D67, D71, D73** —
+27 entries.
+
+**Chosen — the existing ground truth is adjudicated inside T-21, not by a
+retro task.** Labeling every §6 case already requires reading each patient's
+manifest, notes and bundle against the policy; Troy adjudicates the manifest
+facts in that same pass, and each case label and each manifest gains an
+`adjudicated: {by, date}` record. **T-21's exit is therefore rewritten**
+(working rule 5 — a weak exit condition is a design decision): it gains "every
+case in `eval/cases.json` and every manifest in `eval/manifests/` carries an
+`adjudicated` record, and `check_ownership.py` returns zero with the `eval`
+tier required." Agent-drafted labels land as proposals carrying reasoning and
+spans; Troy's adjudication is what closes them.
+
+**Boundary — `check_req_coverage.py` (T-23) is a different claim and stays a
+different script.** Coverage says "REQ-n maps to a passing check"; ownership
+says "a named human ratified REQ-n." Same IDs, different classes of claim —
+D28's two-citation-classes reasoning applied to checks instead of sources.
+Neither script subsumes the other and T-23 is unchanged.
+
+**Rejected:**
+
+- *A markdown ledger.* More readable in review, but the gate would parse
+  formatting that humans edit by hand, and drift in table syntax becomes a
+  gate failure unrelated to ownership. JSON is the shape `eval/baseline.json`
+  already proved for a tracked record read by a gate.
+- *Inline ratification markers in each doc.* Provenance next to content, at
+  the cost of editing every closed entry in an append-only log and touching
+  every ID-load-bearing heading in five files. The log's append-only rule
+  survives only if ratification lives outside it.
+- *A git-author check on the ledger.* Mechanical provenance for `ratified`
+  statuses, but it makes a gate depend on git history shape — a rebase or a
+  squash becomes a failure mode unrelated to correctness. The rule binds
+  sessions instead, and the diff remains the reviewer (D3).
+- *Blocking the path on all 65 decision entries.* This log is over five
+  thousand lines; putting a multi-session reading effort ahead of every v1
+  task is how a timebox dies (working rule 8). The 27 load-bearing entries
+  govern behavior; the rest ratify off-path.
+- *A blind re-label of the existing ground truth before T-21.* Epistemically
+  strongest, but the material has been read and re-read, so the blindness is
+  not actually available; folding adjudication into T-21's labeling pass buys
+  the same human judgment at the point it is already being exercised.
+
+**Cost.** Ratification statuses are one more thing a close touches, and the
+ledger is a merge-conflict magnet if two tasks land together — acceptable
+under working rule 1. And a `proposed` entry in an unrequired tier fails
+nothing, so the gate's guarantee is only as strong as the `required_tiers`
+list — which is why each of T-74, T-75 and T-76 flips its tiers required as
+part of its own close.
+
+**Reverses if:** T-76 stalls indefinitely — then it shrinks to opportunistic
+ratification and the ledger's visible `proposed` count keeps the gap honest
+rather than hidden. Or ratification updates become rote enough that statuses
+stop being read, which is D27's baseline argument returning; then the ledger
+shrinks to the tiers whose ownership is load-bearing.
