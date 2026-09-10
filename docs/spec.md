@@ -37,6 +37,9 @@ carries less information than they do.
 - National coverage only. No MAC jurisdiction resolution.
 - Synthetic patients from Synthea plus manifest-driven synthesized notes.
 - Local execution. No deployment.
+- A deterministic reference implementation.
+- A model-adjudicated agentic implementation using bounded tool calling.
+- Differential evaluation of both implementations on the same cases.
 
 **Explicitly out of scope for v1**
 
@@ -138,6 +141,66 @@ REQ-31. *(D12)*
 
 **REQ-38** Each `wm_event` carries `diet_documented` and `activity_documented`,
 optional booleans defaulting false, each with its own span when true. *(D13)*
+
+**REQ-52** Extraction reaches the system through an `ExtractionRunner` port. Every
+runner's output passes through `build_result()`, which anchors each quote and is the
+only place a `WmEvent`, a `ProgramAssertion` or a note-level BMI is constructed from
+model output. No caller builds one directly, and a quote Python cannot anchor is
+counted in `dropped[]` rather than accepted. *(Art. III, D62)*
+
+The port is what makes the model leaf replaceable without touching a predicate: a
+direct SDK runner, an ADK runner, and a replay runner over a recorded payload are
+three implementations of one interface, and the deterministic chain cannot tell
+them apart. It is also what lets `pytest` evaluate the whole chain for zero model
+calls.
+
+**REQ-53** A model's tool allowlist is declared per agent and is single-plane. The
+extraction agent receives patient-plane tools only; no module holds both the
+patient and the policy toolset. *(Art. VI, D62)*
+
+Single-plane is the smaller, true claim, and it is stronger than it looks: the
+extraction agent is not given the patient's structured observations either.
+REQ-34 exists because the structured BMI and the note BMI are two independent
+sources that can disagree, and a model shown both has no reason to disagree.
+
+### Agentic orchestration and model adjudication
+
+The requirements in this subsection govern the agentic path Amendment 1 opens and
+T-61 builds. They do not relax REQ-11, REQ-12, REQ-13 or REQ-19 on the
+deterministic path, which stays the regression oracle. *(D62)*
+
+**REQ-43** The system provides an agentic orchestration path in which the model
+may select only from an explicit allowlist of tools and workflow steps.
+
+**REQ-44** The model may use tool results and verified evidence to evaluate
+criteria and determine criterion-level and overall outcomes.
+
+**REQ-45** The model may not create or modify policy rules, policy versions,
+tools, evidence, citations, or schemas.
+
+**REQ-46** Agentic execution is bounded by a maximum step count, timeout, retry
+budget, and tool-call allowlist. Exceeding any bound produces `ERROR` or human
+review.
+
+**REQ-47** Every model-determined criterion and overall outcome includes one or
+more mechanically verified evidence spans, or returns
+`INSUFFICIENT_EVIDENCE`. An unsupported or unverifiable outcome cannot be
+emitted as approval or denial.
+
+**REQ-48** Malformed, contradictory, or schema-invalid model output produces
+`ERROR` and never silently becomes `NOT_MET`, `MET`, or `INSUFFICIENT_EVIDENCE`.
+
+**REQ-49** Each agentic run records model identifier, prompt/version identifier,
+tool-call trace, selected steps, retries, token usage, latency, termination
+reason, policy version, and outcome.
+
+**REQ-50** The agentic path is evaluated against the deterministic implementation
+on the same cases. Differences are reported by criterion and outcome rather than
+silently reconciled.
+
+**REQ-51** Deterministic validation remains authoritative for date arithmetic,
+numeric comparisons, counting, sorting, set membership, policy-version selection,
+span validation, execution budgets, and output serialization.
 
 ### Adjudication
 

@@ -3170,3 +3170,364 @@ number is moving the goalpost, and the entry that does it has to say so.
    is CMS national coverage the whole target?
 3. For a real deployment, would the determination packet be the deliverable, or
    the gap list that tells the specialist what documentation to go collect?
+
+## D61 — Model-adjudicated agentic orchestration
+
+**Chosen:** Add a model-directed orchestration layer with tool calling. The model
+may select tools and workflow steps, interpret extracted clinical evidence,
+evaluate criteria, and determine criterion and overall outcomes.
+
+**Rejected:** Keep the model limited to extraction while Python performs every
+adjudicative judgment.
+
+**Why:** The project must demonstrate a genuine agentic architecture rather than
+only manual Python plumbing. Tool selection and evidence-directed reasoning are
+the capabilities being measured.
+
+**Safety boundary:** Python still owns validation, policy-version selection,
+date arithmetic, numeric comparisons, set membership, span verification, retry
+budgets, timeouts, step limits, and output validation. The model cannot invent
+policy, tools, evidence, or citations.
+
+**Verification:** Every model outcome must be supported by mechanically verified
+spans or become `INSUFFICIENT_EVIDENCE`. Invalid or contradictory output becomes
+`ERROR` or human review. The deterministic implementation remains the
+differential oracle.
+
+**Reverses if:** Agentic evaluation shows unacceptable unsupported-outcome,
+citation, non-determinism, or safety-failure rates, or if bounded orchestration
+cannot satisfy the acceptance thresholds added to the specification.
+
+## D62 — The ADK lands at the extraction boundary, the graph stays Python, and Amendment 1 is an amendment rather than a rewrite
+
+T-18's, T-19's, T-62's, T-20's and T-26's design, written before any of them. It
+narrows D61 rather than reversing it: D61 chose a model-adjudicated agentic path
+and is still the charter for T-61. This entry is about the layer underneath it,
+which has to exist first and does not.
+
+### The problem D61 left open
+
+D61 said "add a model-directed orchestration layer with tool calling" and the
+working tree implemented that by **rewriting Articles I, II, IV, V, VII and X of
+the constitution in place.** Article I became "Permit the model to select tools,
+sequence steps, retry, and terminate within bounded limits." Article II became a
+licence for the model to "evaluate criteria and determine criterion and overall
+outcomes." Four `Superseded for the agentic path` notes were stapled under REQ-2,
+REQ-11, REQ-12 and REQ-13.
+
+Two things were wrong with that, and neither is about whether the direction is
+good.
+
+The constitution's preamble says *"Amendments are appended with a date and a
+reason. Articles are never silently edited."* Those articles were edited. The
+amendment procedure existed and was not used.
+
+And the substantive problem: **D61 named the deterministic implementation as the
+differential oracle in the same breath as deleting the articles that make it
+one.** An oracle is only an oracle because it is constrained differently from the
+thing it grades. If Article II permits the model to do arithmetic everywhere, there
+is no second implementation to compare against — there is one implementation with
+a model in more of it, and the comparison D61 promised has nothing on the other
+side.
+
+### Chosen — restore the articles, keep Amendment 1, scope it to a path
+
+Articles I, II, IV, V, VII and X go back to their committed text. Amendment 1 stays,
+appended, dated, and scoped: it opens a second path rather than loosening the
+first. The deterministic modules — `workflow.py`, `aggregate.py`, `criteria.py`,
+`reconcile.py`, `resolver.py` — are named in the amendment as governed by Articles I
+and II as written.
+
+The four supersession notes come out of the spec. Nothing in this work supersedes
+REQ-11, REQ-12, REQ-13 or REQ-2: criterion (a) is still a numeric comparison with no
+model call, and E2 and E3 still complete with zero. A requirement marked superseded
+by a path that does not exist yet is a requirement nobody has to satisfy, and A7
+maps every REQ to a passing check.
+
+**Rejected — leaving the rewritten articles in place.** It is the cheaper move and
+it costs the project the only thing that makes an agentic result credible in a
+review: a constraint the agentic path is measured against. Also, a constitution
+whose articles get edited whenever a task finds them inconvenient is not a
+constitution, and the reviewer will notice that faster than they notice the ADK.
+
+**Rejected — reverting D61, REQ-43 through REQ-51 and T-61 entirely.** T-61 is
+wanted and is next. Deleting its charter to build its foundation is backwards.
+
+### Chosen — the ADK connects at the extraction boundary and nowhere else
+
+The model leaf is note extraction. It was already the only model leaf (D45), and
+the ADK now implements it as a second runner behind a port.
+
+This is less of a change than it looks, and the reason is worth stating: **the ADK
+is where D19 was measured.** `spike/spike_001/run.py` builds an
+`Agent(..., output_schema=Extraction, output_key="extraction")`, runs it through
+`Runner` with an `InMemorySessionService`, and reads the payload off
+`event.actions.state_delta["extraction"]`. T-15 then wrote `pa_agent/extraction.py`
+against raw `google-genai` instead, so the production path and the measured path
+have been different SDKs since D45. Putting ADK back at that seam returns the
+system to the configuration its founding measurement came from.
+
+**Rejected — an ADK coordinator above policy resolution.** The short circuits are
+where the system's cheapest correct answers live: E2 and E3 must complete with zero
+model calls (A4), and a coordinator that decides whether to consult the policy store
+has already spent a call deciding. sc1 and sc2 run before the runner is touched,
+and the T-18 gate proves it with a runner whose `run()` raises.
+
+### Chosen — the workflow graph is plain Python, not an ADK `Workflow`
+
+`Workflow` in 2.8.0 is real and genuinely local: a Pydantic model whose `edges`
+compile to a `Graph` at construction, nodes are `BaseNode`s reading `ctx.state`, and
+`SequentialAgent`/`ParallelAgent`/`LoopAgent` are all deprecated in its favour. It
+would have made Article I literal in a satisfying way — "the graph is an ADK object
+with a static edge list."
+
+It is still the wrong tool for this graph.
+
+The decisive reason is the import boundary. `pa_agent/__init__.py` exists to keep
+`google.adk` out of every import of the deterministic core, and three tests assert
+it: `tests/test_schemas.py`, `tests/test_reconciliation.py`, and
+`tests/test_resolver.py`, the last in a fresh interpreter precisely because
+`sys.modules` pollution is order-dependent. An ADK `Workflow` in `pa_agent/workflow.py`
+puts the ADK on the import path of every deterministic test in the repo, and the
+three assertions that would have caught that are the ones that would have to be
+deleted to allow it.
+
+The second reason is that `Workflow`'s value is routable edges, and this graph has
+one conditional: whether a short circuit fired. That is a `return`, not an edge.
+Trading a straight line of typed calls for an async scheduler, a state dict and
+inter-step event plumbing buys nothing Article I needs and adds a layer where a
+`ctx.state` key typo is a silent `None`.
+
+So `workflow.py` is a module-level tuple of named steps and a driver over it. The
+step names are data, which is what lets the gate assert the visited sequence rather
+than trusting a comment.
+
+*(Correction while here: CLAUDE.md says `Workflow.edges` "accepts
+`dict[bool|int|str, ...]` for conditional routing". In the installed 2.8.0 the type
+is `EdgeItem = Edge | tuple[ChainElement, ...]`, with the routing map inside
+`ChainElement`. Fixed there.)*
+
+### Chosen — `ExtractionRunner` is a port, and `build_result()` stays the trust boundary
+
+```
+ExtractionRunner: run(document_id, text) -> ExtractionResult
+    DirectExtractionRunner     raw google-genai; D45's measured configuration
+    AdkExtractionRunner        google-adk 2.8.0 Agent + Runner + declared tools
+    RecordedExtractionRunner   replays a recorded payload; zero model calls
+```
+
+Three implementations, one interface, and the deterministic chain below cannot tell
+them apart. Every one of them returns through `build_result()`, which is where each
+quote is anchored and where a quote Python cannot locate is counted in `dropped[]`
+instead of accepted. That is REQ-52, and it is the single most important line in
+this entry: **ADK output is untrusted model output**, and the trust boundary is a
+function that already exists and already has a gate.
+
+`RecordedExtractionRunner` is the reason T-18's and T-19's exits are runnable at all.
+The recording already holds every raw payload keyed by `document_id`
+(`eval/extraction/results.json`, `notes[].raw`), so the entire chain — extraction,
+anchoring, span validation, reconciliation, seven criteria, aggregation — evaluates
+end to end for zero model calls and zero non-determinism. It refuses a note whose
+sha256 has moved, which is `--rescore`'s existing rule: re-anchoring against a
+changed document scores a quote against a document it never came from (D18).
+
+**Rejected — `RecordedExtractionRunner(path)`.** REQ-41 says no module outside a
+store adapter names a storage location. It takes payloads; the file read stays in
+the CLI, the harness and the tests, all of which already read that file.
+
+**Rejected — making the ADK runner the default and retiring the direct one.**
+D45's numbers were measured through raw `google-genai` with a native
+`response_schema`. The ADK path is a different call configuration and therefore a
+new measurement, not a confirmation — the rule D45 set for itself. The direct runner
+stays, unchanged, as the thing the ADK runner will be compared against in T-63.
+
+### Chosen — the extraction agent's allowlist is narrower than the toolset
+
+The declared patient tools are `get_patient_notes`, `get_patient_observations`,
+`get_patient_conditions` and `get_patient_document`, each a closure over an injected
+`PatientStore`. The extraction agent is given **only the two that return note text.**
+
+Not an oversight. T-33 and T-60 exist because the structured BMI and the note BMI
+are two independent readings of one fact, and REQ-34 turns a disagreement across
+35.0 into `SOURCE_CONFLICT`. Hand the extraction model `get_patient_observations`
+and the two sources stop being independent: the cheapest way for a model to report a
+note BMI is to report the one it just looked up, and E10b — the case where the two
+disagree by 1.6 across the threshold — quietly starts agreeing. The system would
+still pass every test it has, because the tests compare the note value to the
+structured value and would now find them equal.
+
+That is REQ-53, and it is why the allowlist is a literal list per agent rather than
+"the tools." `policy_tools.py` is a separate module for the same reason at the plane
+level (Art. VI): a note extractor that can read the policy's thresholds is a
+threshold leaking into the model's judgment.
+
+**Rejected — one `tools.py` holding both planes.** REQ-41's closing line is that a
+module able to read both planes would have to hold both handles. Two modules, and a
+test asserting no third module imports both, keeps that literally true.
+
+### Chosen — Article I is enforced by construction, not by comment
+
+Four properties of how the agent is built, each assertable:
+
+- `include_contents="none"` — one shot per note, no accumulated context to steer
+  with, and no note N-1 bleeding into note N (the spike's D17 finding).
+- `disallow_transfer_to_parent=True`, `disallow_transfer_to_peers=True`, no
+  `sub_agents` — ADK's `_llm_flow` property then selects `SingleFlow`, so the
+  `transfer_to_agent` tool is never injected. The model has no mechanism to hand
+  control anywhere. The gate asserts the flow type and the tool's absence.
+- `tools=` a literal list, per REQ-53.
+- `RunConfig(max_llm_calls=N)` — a hard ceiling that raises
+  `LlmCallsLimitExceededError`. It is ADK's only budget knob, and it counts LLM
+  calls, not tool calls, so one tool round trip costs two.
+
+Retry is a Python budget with the spike's classifier (429/500/502/503/504,
+`UNAVAILABLE`, `RESOURCE_EXHAUSTED`), a constructor argument, recorded per run, and
+exhaustion raises. **The model is never asked whether to retry.**
+
+### Chosen — malformed output raises, and never becomes an empty extraction
+
+`ExtractionOutputError` with a closed reason enum, the shape `SpanValidationError`
+already uses. Raised when the run yields no payload, unparseable JSON, or a payload
+`Extraction.model_validate` rejects.
+
+The alternative is the trap the spike already documents in writing: a note that
+extracts nothing leaks no REQ-9 traps, so it scores perfect exclusion, and
+contributes no false positives, so it scores perfect precision. **A transport
+failure reads as flawless extraction.** Returning a zero-event `ExtractionResult` on
+a malformed response is that bug with a different cause.
+
+Mapping the exception onto a verdict is deliberately not the runner's job — D38's
+posture for span rejection, for the same reason: the runner knows the response was
+malformed, and only the criterion knows what that means for the criterion.
+
+### Chosen — T-26 lands here, contracts only, and one guard is retired on purpose
+
+T-61's exit requires malformed and contradictory output to resolve to `ERROR`, and
+`ERROR` does not exist: `CriterionVerdict` carries two of Article IV's three states.
+**That dependency is not on T-61's `Depends` line and it should be** — added, per
+working rule 6.
+
+So T-26 builds now: `CriterionVerdict.ERROR`, an `ErrorCode` enum whose members each
+declare retryable or terminal with an unclassified code defaulting to terminal
+(REQ-30), `error_code` and `error_detail` on `CriterionResult`, validators refusing
+spans (REQ-5) and a `gap_reason` on an `ERROR`, and a `Determination` validator
+raising on any `ERROR` criterion (REQ-26, gating A9).
+
+`ERROR` carries no `gap_reason`, and that is the sharp edge. A gap reason says what
+to go collect. An `ERROR` means the system could not evaluate — there is nothing for
+Sam to collect, and offering a next action for a fault is precisely the collapse
+Article IV forbids between `ERROR` and `INSUFFICIENT_EVIDENCE`. D9's three states
+stay three.
+
+**One guard is retired deliberately.** `tests/test_schemas.py` asserted
+`not hasattr(CriterionVerdict, "ERROR")` so that adding the state without the enum
+and the validator would fail loudly. It has now done exactly its job and is
+replaced by the real thing it was standing in for. Recording the retirement follows
+D51, where two guards asserting a provisional constant were retired and replaced by
+a count pinned at zero, so a regression is a visible diff rather than a silent
+return.
+
+**T-26 is contracts only.** Wiring `ExtractionOutputError` or a span rejection
+*onto* an `ERROR` verdict, and REQ-24's abort, stay **T-29's**. Building the state
+without the mapping is the task as written; building the mapping here would make
+T-29 close on work it did not do.
+
+### Chosen — the trace rides on the workflow result, not on `Determination`
+
+`ToolCall` and `RunTrace` are new contracts. `Determination.metrics:
+list[CallMetrics]` is untouched, so `Determination.model_calls` keeps meaning what
+A4 asserts and `tests/test_schemas.py` needs no change to its shape.
+
+`ToolCall` records a digest of its arguments rather than the arguments. A tool-call
+log holding `patient_id` verbatim is patient data sitting in an instrumentation
+record that will end up in a report, and Article VI is mostly about not letting that
+happen by accident.
+
+The recorder is a `BasePlugin` — `after_model_callback` for `usage_metadata`,
+`before_tool_callback`/`after_tool_callback` for the ordered log. Every hook body is
+wrapped, because ADK re-raises a plugin exception as a `RuntimeError` that aborts the
+run: an observability bug must not be able to kill a determination.
+
+### A finding that changes what T-63 has to measure
+
+`output_schema` and `tools` are documented as usable together in 2.8.0. They are —
+but the mechanism differs by tier. `flows/llm_flows/basic.py` sets a native response
+schema only when `model.capabilities.output_schema_and_tools`, and
+`models/_capabilities.py` makes that **Vertex-only**. On AI Studio with tools
+present, ADK instead injects a `SetModelResponseTool` and appends an instruction
+telling the model to deliver its answer by calling `set_model_response`.
+
+D5 develops on AI Studio and runs evals on Vertex. So **the tool-calling extraction
+path runs a measurably different prompt on the two tiers**, and a number measured on
+one is not a number for the other. `MEASURED_TIER` already exists to record which
+tier produced a result; this is the first case where the tier changes the prompt and
+not just the endpoint.
+
+Consequence: `AdkExtractionRunner` carries a `tool_fetch` boolean.
+`tool_fetch=False` is the spike's exact configuration — note text in the message, no
+tools — so a fidelity comparison against D19 is apples to apples. `tool_fetch=True`
+puts a real tool call on the critical path. T-63 measures both and names the tier.
+Neither may claim D45's numbers until it does.
+
+### Chosen — T-20 now, because Article X says from the first model call
+
+`eval/run_eval.py` prints per-run token counts and wall time. `Determination`
+already computes the totals; `CaseResult` carries them and the report prints them.
+The baseline diffs on `(status, reason_class)` alone, so printing more does not move
+it — checked, not assumed.
+
+It lands here rather than on day five because the first model call reaches a
+determination in this pass, and Article X says the numbers are recorded from that
+call, not retrofitted after there are enough of them to be interesting.
+
+### What this does not fix
+
+**Policy #2 still costs a developer.** c1 through c5 are hand-written Python for one
+policy's shape. A port for the model leaf does nothing about that; the predicate DSL
+is still the answer and still deliberately not open.
+
+**`eval/cases.json` still holds one case.** T-18 and T-19 close on their own pytest
+gates over the recorded extraction. **US-4 and US-5 do not close**, because their
+closing conditions are E4–E11 and E1/E8 passing in the harness, and those rows are
+T-21's. A determination that works and an eval set that grades it are two different
+deliverables and only the first is in this pass.
+
+**T-42 is still open.** REQ-14 picks the longest run and c2 then tests that run's
+recency, so a long stale run beats a short recent one. T-18 runs the chain over that
+defect unchanged, and
+`test_the_longest_run_wins_even_when_an_older_one_is_stale` still pins it.
+
+### Discovered by building it: three order-dependent guards
+
+Adding a test file that legitimately imports `google.adk` broke three assertions
+that had nothing to do with the ADK:
+
+```
+tests/test_schemas.py           assert "google.adk" not in sys.modules
+tests/test_reconciliation.py    assert "google.adk" not in sys.modules
+tests/test_error_state.py       (the same, written this pass)
+```
+
+They were never testing what they read as. Each imports the module under test and
+then checks `sys.modules`, which asserts *"nothing in this process has loaded the
+ADK"* — a property of the whole pytest session, not of `contracts.py`. They passed
+because no test file imported the ADK. `tests/test_adk_agent.py` does, by design,
+and the three failed by collection order.
+
+**`tests/test_resolver.py` had already found this and written the fix down**: it
+uses a fresh-interpreter subprocess probe *"because this suite itself imports
+`pa_agent.model_pin` elsewhere and a `sys.modules` check here would inherit that
+pollution and pass or fail by test ordering."* All three are now that shape, which
+is strictly stronger — they now fail when the module under test gains the import,
+which is the thing they were supposed to catch and previously could not.
+
+Recorded rather than quietly fixed because it is a check that was weaker than it
+looked for four tasks, and the next `sys.modules` assertion somebody writes should
+find this paragraph.
+
+**Reverses if:** the ADK runner measures materially worse than the direct one in
+T-63, in which case the port stays and the ADK runner stops being the default
+without anything above it changing — which is the point of putting a port there. Or:
+a second model leaf appears that genuinely needs to route (T-17's verifier does not;
+it is one call with a fixed input), at which case Article I gets a real amendment
+rather than this one's scoped path.
