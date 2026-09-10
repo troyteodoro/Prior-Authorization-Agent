@@ -66,7 +66,7 @@ from pa_agent.model_pin import PINNED_MODEL
 from pa_agent.runners import ExtractionFailure, ExtractionOutputError
 from pa_agent.stores.patient import PatientStore
 
-from .patient_tools import build_patient_tools
+from .patient_tools import build_note_reader
 
 #: The agent's name. Must be a valid Python identifier — ADK's `BaseNode`
 #: validates `str.isidentifier()`.
@@ -81,18 +81,24 @@ OUTPUT_KEY = "extraction"
 #: pin, applied to the other half of the request.
 PROMPT_VERSION = "t15-instruction-v1"
 
-#: The one tool the extraction agent may reach under `tool_fetch` (REQ-53).
+#: The one tool the extraction agent may reach under `tool_fetch` (REQ-53, T-66).
 #:
-#: `get_patient_notes` is included so the model can resolve a document_id it was
-#: given, and **`get_patient_observations` and `get_patient_conditions` are
-#: deliberately excluded.** T-33 and T-60 exist because the structured BMI and the
-#: note BMI are two independent readings of one fact, and REQ-34 turns a
-#: disagreement across 35.0 into `SOURCE_CONFLICT`. Give the extractor the
-#: structured value and the cheapest way to report a note BMI becomes reporting the
-#: one it just looked up — E10b, where the two disagree by 1.6 across the
-#: threshold, quietly starts agreeing, and every test still passes because the
-#: tests compare the two values and would now find them equal.
-EXTRACTION_ALLOWLIST = ("get_patient_document", "get_patient_notes")
+#: **`get_patient_observations` and `get_patient_conditions` are deliberately
+#: excluded**, and so now is every other patient-plane tool. T-33 and T-60 exist
+#: because the structured BMI and the note BMI are two independent readings of one
+#: fact, and REQ-34 turns a disagreement across 35.0 into `SOURCE_CONFLICT`. Give
+#: the extractor the structured value and the cheapest way to report a note BMI
+#: becomes reporting the one it just looked up — E10b, where the two disagree by
+#: 1.6 across the threshold, quietly starts agreeing, and every test still passes
+#: because the tests compare the two values and would now find them equal.
+#:
+#: T-66 narrowed this from two tools to one. `read_note` is built by
+#: `build_note_reader` and scoped in Python to the single document under review,
+#: so the exclusion above is no longer a list of names withheld — it is the
+#: absence of any reachable second document (D66). `get_patient_notes` was here
+#: only so the model could resolve an id it was given, which a tool taking that id
+#: does not need, and it took a `patient_id` this runner does not have.
+EXTRACTION_ALLOWLIST = ("read_note",)
 
 #: Hard ceiling on LLM calls per note. Two turns is a tool call and its answer;
 #: six leaves room for a retried tool call and no room for a loop.
@@ -109,8 +115,8 @@ def _instruction(tool_fetch: bool) -> str:
     if not tool_fetch:
         return INSTRUCTION
     return (
-        "First call get_patient_document with the document_id you are given, to "
-        "read the note. Then extract from the text it returns.\n\n" + INSTRUCTION
+        "First call read_note with the document_id you are given, to read the "
+        "note. Then extract from the text it returns.\n\n" + INSTRUCTION
     )
 
 
@@ -118,6 +124,7 @@ def build_extraction_agent(
     patient_store: PatientStore | None = None,
     tool_fetch: bool = False,
     model: Any = PINNED_MODEL,
+    document_id: str | None = None,
 ):
     """One `LlmAgent` for note extraction. Constructed, not run.
 
@@ -139,7 +146,15 @@ def build_extraction_agent(
                 "tool_fetch=True needs a PatientStore to build the note tools "
                 "over; the model has no other way to read a document (REQ-41)"
             )
-        tools = build_patient_tools(patient_store).allowlist(*EXTRACTION_ALLOWLIST)
+        if document_id is None:
+            raise ValueError(
+                "tool_fetch=True needs the document_id under review: the note "
+                "reader's scope is fixed in Python before the run, not parsed "
+                "out of whatever id the model asks for (T-66, D66)"
+            )
+        tools = build_note_reader(patient_store, document_id).allowlist(
+            *EXTRACTION_ALLOWLIST
+        )
 
     return LlmAgent(
         name=AGENT_NAME,
@@ -321,11 +336,20 @@ class AdkExtractionRunner:
             return Gemini(model=self._model_name, client=self._client)
         return self._model_name
 
-    def build_agent(self):
+    def build_agent(self, document_id: str | None = None):
+        """The agent for one note.
+
+        Takes the `document_id` because under `tool_fetch` the note reader is
+        scoped to it in Python before the run starts (T-66). A fresh agent per
+        note was already the shape — `_invoke` builds one each time — so this
+        makes an existing per-note construction carry the thing that makes it
+        per-note.
+        """
         return build_extraction_agent(
             patient_store=self._patient_store,
             tool_fetch=self._tool_fetch,
             model=self._model_argument(),
+            document_id=document_id,
         )
 
     def run(self, document_id: str, text: str) -> ExtractionResult:
@@ -346,7 +370,7 @@ class AdkExtractionRunner:
         from google.genai import types
 
         recorder = build_trace_recorder()
-        agent = self.build_agent()
+        agent = self.build_agent(document_id)
 
         self._counter += 1
         session_id = f"{document_id.replace('/', '_')}-{self._counter}"

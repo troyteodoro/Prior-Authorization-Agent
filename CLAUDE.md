@@ -372,7 +372,7 @@ test would agree with it; the mutation that swaps them is caught. An unknown id
 raises rather than returning an empty set, and a file whose `value_set_id` no
 longer matches its path raises.
 
-Active task: **none. T-65 and T-66 are next, batched — see below.**
+Active task: **none. T-67 and T-63 are next — see below.**
 
 **T-18, T-19, T-20, T-26 and T-62 are closed (D62). The system answers.**
 `python -m pa_agent.cli --patient <uuid> --procedure 43775` prints a real
@@ -405,27 +405,79 @@ one** — the note-level BMI merge, which routes nothing — so a second is a vi
 diff. On the agent side: `SingleFlow` (so `transfer_to_agent` is never injected),
 `include_contents="none"`, a literal tool list, and a `max_llm_calls` ceiling.
 
-**The extraction agent's allowlist is narrower than its toolset, and that is the
-sharpest decision in T-62.** It gets `get_patient_document` and
-`get_patient_notes`. It is **not** given `get_patient_observations` — handing the
-model the structured BMI while asking it for the note's is how T-33's and T-60's
-two independent readings stop being two, and E10b would quietly start agreeing
-while every test kept passing. `patient_tools.py` and `policy_tools.py` are
-separate modules and nothing imports both (Art. VI, REQ-53). **The policy tools
-have no model consumer today** — they are the declared surface T-61 will hand its
-adjudicator.
+**The extraction agent reaches exactly one document, and that is the sharpest
+decision in T-62, narrowed by T-66.** It is **not** given
+`get_patient_observations` — handing the model the structured BMI while asking it
+for the note's is how T-33's and T-60's two independent readings stop being two,
+and E10b would quietly start agreeing while every test kept passing. Since T-66 it
+is given no patient-plane tool at all: `EXTRACTION_ALLOWLIST` is `("read_note",)`,
+a reader built by `build_note_reader` and closed over the single id under review.
+The two allowlists are **disjoint**, not nested. `patient_tools.py` and
+`policy_tools.py` are separate modules and nothing imports both (Art. VI, REQ-53);
+`tool_bounds.py` is imported by both and reaches neither plane.
 
 **Nothing may quote D45's numbers for the ADK path.** It is a different SDK, and
 under `--tool-fetch` a different prompt. `scripts/run_adk_extraction.py` is the
 measurement and **T-63 is open**; it reuses `run_extraction.py`'s corpus and
 scorer by import, so the runner is the only difference.
 
-**Next is T-61**, and its runway is clear: T-18, T-19, T-20, T-26 and T-62 all
-closed this pass, and T-26 was added to its `Depends` because its exit needs an
-`ERROR` state that did not exist. Amendment 1 is what makes T-61 legal — D62
-restored Articles I and II after they had been rewritten in place, and kept the
-amendment appended and scoped instead, so the deterministic path stays bound by
-the articles and therefore stays an oracle.
+**Amendment 1 is what makes T-61 legal** — D62 restored Articles I and II after
+they had been rewritten in place, and kept the amendment appended and scoped
+instead, so the deterministic path stays bound by the articles and therefore stays
+an oracle.
+
+**T-65 and T-66 are closed (D66), batched, and re-measured once.** Both change a
+function declaration, a declaration change is a prompt change, and a prompt change
+is a new measurement — D45's rule, which is why D64 registered T-65 rather than
+fixing it inside T-61.
+
+**One sentence covers both: a tool's scope and size are the caller's to fix, never
+parsed out of an id and never left to the chart.**
+
+**T-65 — `MAX_ROWS` in `pa_agent/agent/tool_bounds.py`, one ceiling with two
+behaviours.** *Truncate* where the payload informs the model's plan — observations,
+conditions and the policy value set each return `total`, `returned` and
+`truncated`, most-recent-first. *Fault* where the payload is the model's action
+space: `get_patient_notes` raises, because every `document_id` the model may then
+ask for comes out of it and there is no page two. A single document is not a
+collection and is exempt. Paging was rejected (it bounds the payload, not the run);
+a summary was rejected (it forecloses REQ-44, still unclaimed).
+
+**Truncation is safe only because the tool payload is not the evidence path.**
+`gather()` re-reads observations, conditions and the value set from the port, so
+the model's copy reaches no criterion —
+`test_the_bundle_is_the_ports_full_read_and_never_the_models_view` pins that on the
+3,780-observation patient, and the mutation that assembles the bundle from the
+model's view fails it. **D39 is not reversed**: the adapter still reports
+everything; the cap is one layer above the port and is not a second filter free to
+disagree with criterion (a). **REQ-54 is new** and T-65 claims it — REQ-46's four
+bounds are about the shape of the run, and a bound on a single answer is a fifth
+thing, split rather than edited.
+
+**The measurement: E2+E7 went 446x → 20.3x, the aggregate 73.4x → 13.9x**, with
+6/6 outcomes, 42/42 criteria, 80/80 spans and zero errors unchanged. The spread
+collapsed from 10x–446x to 9.5x–20.3x. What remains is turn variance and it moves
+in both directions — E5 fell 30x→9.5x, E1+E11+E10c *rose* 10x→13.4x — so read the
+aggregate and the spread, never one patient's ratio. `prompt_version` is
+`t61-retrieval-v2`.
+
+**T-66 — scope supplied twice over, and never parsed.** The retrieval agent gets
+`get_patient_document(patient_id, document_id)`. The extraction agent gets
+`read_note`, closed over the one id under review. **T-66's own text had a defect**:
+"the model already holds the patient id" is true of the retrieval agent and false
+of the extractor, whose runner is `run(document_id, text)` and has no patient id to
+pass — so deleting `_patient_of` would have broken the `tool_fetch` variant T-63
+measures. `_patient_of` is gone and
+`test_no_tool_module_reads_structure_out_of_an_identifier` parses both tool modules
+to keep it gone (T-64's AST shape, for T-64's reason: a parse-then-fall-through
+mutation survives a behavioural test). Fifteen mutations across both tasks, all
+caught.
+
+**T-67 is registered, not fixed:** spike 001's notes (`n01_clean_run` and friends)
+are in no patient manifest, so under `--tool-fetch` five of T-63's eleven notes
+fail before the model sees anything. **Pre-existing** — `_patient_of` derived the
+patient `n01_clean_run` and `get_notes` raised just as loudly — and it surfaces now
+only because T-63 is next.
 
 **US-4 and US-5 have not closed.** Their closing conditions are E4–E11 and E1/E8
 passing *in the harness*, and `eval/cases.json` still holds one case. That is
@@ -629,15 +681,12 @@ and `eval/run_agentic_eval.py` each lost their hand-rolled union of the two read
 **A `kind` field on `Document` was rejected**: no consumer reads it, and the facts
 that distinguish a note from a bundle already live in the manifests.
 
-**The `get_patient_document` tool was deliberately not widened, and `_patient_of`
-survives.** The tool is *scoping*, not resolving. Point it at the widened
-namespace and the extraction agent — whose allowlist is exactly this tool plus
-`get_patient_notes` — can read a FHIR bundle by filename and so obtain the
-structured BMI T-62 withheld from it on purpose; every test would keep passing,
-because the tests compare the note reading to the structured one and would now
-find them equal. That is **T-66**: `get_patient_document(patient_id, document_id)`.
-It changes a function declaration, therefore the prompt, therefore D64's
-measurement — so **batch T-65 and T-66** and re-measure once.
+**T-64 deliberately did not widen the `get_patient_document` tool; T-66 rescoped
+it instead.** The tool is *scoping*, not resolving. Pointed at the widened
+namespace it would let the extraction agent read a FHIR bundle by filename and so
+obtain the structured BMI T-62 withheld from it on purpose, and every test would
+keep passing because the tests compare the note reading to the structured one and
+would now find them equal.
 
 **One T-64 pin is structural rather than behavioural.** A resolver that branches
 on the id's shape and *then* falls through to the record answers identically on

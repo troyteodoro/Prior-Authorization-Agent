@@ -1,4 +1,4 @@
-"""T-61 — model-directed retrieval, bounded (REQ-43, 45, 46, 48, 49, 51; D63).
+"""T-61 — model-directed retrieval, bounded (REQ-43, 45, 46, 48, 49, 51, 54; D63, D66).
 
 The model chooses which tools to call, in what order, how many times, and when it
 has gathered enough. Then the evidence it gathered goes through the **existing**
@@ -33,6 +33,12 @@ differential exists rather than a pass/fail assertion.
 - `timeout_s` — wall clock. A model that neither answers nor calls a tool would
   otherwise hang the run rather than fail it.
 - `max_attempts` — retries, on a transport fault only, classified in Python.
+- `MAX_ROWS` — what a single tool response may contain. **T-65 added this one**,
+  and D64 is why: `get_patient_observations` returned one patient's 3,780 rows,
+  `include_contents="default"` re-sent them every turn, and that alone was 446x
+  the deterministic path's input tokens for an identical answer. The other four
+  bound the *shape* of the run; this one bounds the size of a single answer, which
+  is the term that scales with the patient's chart rather than with the question.
 
 Exceeding any of them **terminates with a named reason and raises**. It never
 returns what it happened to have gathered: a partial bundle presented as a
@@ -74,15 +80,16 @@ from .policy_tools import build_policy_tools
 
 AGENT_NAME = "evidence_gatherer"
 OUTPUT_KEY = "retrieval"
-PROMPT_VERSION = "t61-retrieval-v1"
+PROMPT_VERSION = "t61-retrieval-v2"
 
-#: The patient-plane tools this agent may call (REQ-43). All four, unlike the
-#: extraction agent's two — a gatherer that cannot fetch the structured facts
+#: The patient-plane tools this agent may call (REQ-43). All four — where the
+#: extraction agent gets none of them, only a reader scoped in Python to the one
+#: note under review (T-66). A gatherer that cannot fetch the structured facts
 #: cannot assemble the bundle criteria (a) and (b) are adjudicated on.
 #:
-#: REQ-53's reason for denying the extractor two of these does not apply here
-#: (D62): this agent never reports a BMI, it reports which documents to read. It
-#: cannot collapse T-33's two independent readings because it produces neither.
+#: REQ-53's reason for denying the extractor the structured reads does not apply
+#: here (D62): this agent never reports a BMI, it reports which documents to read.
+#: It cannot collapse T-33's two independent readings because it produces neither.
 PATIENT_ALLOWLIST = (
     "get_patient_notes",
     "get_patient_document",
@@ -119,6 +126,12 @@ is evidence the reviewer never sees, and the rules are applied to what you
 return and to nothing else.
 
 Do not fetch the same document twice. You already have what you read.
+
+The observation and condition lists are capped. Each response states the true
+total and whether it was truncated; a truncated response is expected on a large
+chart and is not a failure to retrieve. You are confirming those records exist,
+not reading them — the rules are applied to the full set, which is read
+separately.
 
 When you have all three, stop and return:
 

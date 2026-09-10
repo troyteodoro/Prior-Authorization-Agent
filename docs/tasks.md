@@ -784,8 +784,9 @@ functions, docstrings exempt. Mutation-tested seven ways.
 `tests/test_determination.py` and `eval/run_agentic_eval.py` each lost their
 hand-rolled union of the two reads. That they got shorter is the deliverable.
 
-### `[ ] T-66` The document tool scopes by argument, not by id shape
+### `[x] T-66` The document tool scopes by argument, not by id shape
 **REQ:** 41, 53 · **Depends:** T-64 · **Discovered in:** the T-64 design *(D65)*
+**Designed by:** D66
 **Exit:** `pytest tests/test_adk_agent.py tests/test_agentic_workflow.py` —
 `get_patient_document(patient_id, document_id)`, `_patient_of` deleted, and a test
 proving the tool refuses a bundle filename: the extraction agent must not be able
@@ -802,8 +803,29 @@ invalidates D64's measurement.** D64 refused to change a tool for that reason an
 registered T-65; this obeys the same rule. **Batch T-65 and T-66** so one
 re-measurement of the agentic path covers both.
 
-### `[ ] T-65` Bound what a tool may return
-**REQ:** 46 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
+**Closed by D66**, with a defect found in this task's own text. "The model already
+holds the patient id" is true of the retrieval agent and **false of the extraction
+agent**: `ExtractionRunner.run(document_id, text)` has no patient id to pass and
+that model never called `get_patient_notes`, so deleting `_patient_of` breaks the
+`tool_fetch` variant T-63 exists to measure.
+
+So the scope is supplied twice over, and never parsed. The retrieval agent gets
+`get_patient_document(patient_id, document_id)`. The extraction agent gets
+`build_note_reader(patient_store, document_id)` — one declared tool, `read_note`,
+closed over the single id under review, refusing every other by an equality check
+against a cell the model cannot see or name. `EXTRACTION_ALLOWLIST` is now
+`("read_note",)` and the two allowlists are **disjoint** rather than nested, which
+is a stronger statement than "narrower": the extractor has no route to a second
+document at all — not a bundle, not another patient's note.
+
+`_patient_of` is gone, and `test_no_tool_module_reads_structure_out_of_an_identifier`
+parses both tool modules to keep it gone — the same AST shape T-64 needed when a
+parse-then-fall-through mutation survived a behavioural test. Fifteen mutations
+across both tasks, all caught.
+
+### `[x] T-65` Bound what a tool may return
+**REQ:** 46, 54 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
+**Designed by:** D66
 **Exit:** `pytest tests/test_agentic_workflow.py` — no declared tool can return an
 unbounded collection: a patient with thousands of observations yields a bounded or
 paged response, and the agentic input-token ratio for E2+E7 drops from 446x toward
@@ -824,6 +846,55 @@ a correctness reason rather than a cost one.
 
 Registered rather than fixed inside T-61: changing the tool would invalidate the
 measurement that found this.
+
+**Closed by D66. E2+E7 went 446x → 20.3x and the aggregate went 73.4x → 13.9x**,
+with 6/6 outcomes, 42/42 criteria, 80/80 spans and zero errors unchanged. The
+spread across six patients collapsed from 10x–446x to 9.5x–20.3x, which is the
+real result: the term that scaled with the patient's chart is gone, and what is
+left is turn variance that moves in both directions.
+
+**REQ-54 is new and this task claims it** — REQ-46 lists step count, timeout, retry
+budget and allowlist, and a bound on a tool's *response* is a fifth thing rather
+than a re-reading of those four. Split rather than edited, so nothing a closed task
+claimed changes meaning.
+
+One ceiling, `MAX_ROWS`, in `pa_agent/agent/tool_bounds.py`, and two behaviours
+behind it: **truncate where the payload informs the model's plan** (observations,
+conditions, the policy value set — each returning `total`, `returned` and
+`truncated`), **fault where the payload is the model's action space**
+(`get_patient_notes`, because every `document_id` the model may then ask for comes
+out of it and there is no page two). A single document is not a collection and is
+exempt.
+
+**Paging was rejected**: it bounds the payload and not the run, so the model pages
+until it holds the chart and the cost returns as turns × payload. **A summary was
+rejected** for foreclosing REQ-44, which is unclaimed and still in the spec.
+
+The check that makes truncation *safe* rather than merely cheap is
+`test_the_bundle_is_the_ports_full_read_and_never_the_models_view`, run on the
+3,780-observation patient: the evidence bundle is the port's full read, so a capped
+tool is a cost control and not a quiet correctness change. The mutation that
+assembles the bundle from the model's view fails it.
+
+### `[ ] T-67` The spike notes have no address on the patient plane
+**REQ:** 41 · **Depends:** T-64 · **Discovered in:** the T-66 build *(D66)*
+**Blocks:** T-63 under `--tool-fetch`
+**Exit:** `python scripts/run_adk_extraction.py --tool-fetch` reaches all eleven
+notes, or the corpus split is written down and the script scores the two halves
+separately instead of failing five of them.
+
+Spike 001's notes are `n01_clean_run` and friends. They are in no patient manifest,
+so `PatientStore.get_document` raises and the scoped note reader has nothing to
+serve — five of T-63's eleven notes fail before the model sees anything.
+
+**Pre-existing, and not caused by T-66.** `_patient_of("n01_clean_run")` derived the
+patient `n01_clean_run` and `get_notes` raised on it just as loudly; the tool got
+narrower without getting less capable. It surfaces now because T-63 is next.
+
+Registered rather than fixed inside T-66, because "do the spike notes belong to the
+patient plane at all" is a question about what the corpus is (D42, D43), not about a
+tool signature. The two honest answers are a manifest entry that admits they have no
+patient, and a script that stops pretending one runner reads both corpora.
 
 ### `[ ] T-63` Measure the ADK runner against the direct runner
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls

@@ -3939,3 +3939,229 @@ and structured records — two systems, two id schemes, no authority that owns
 both. D25 already flags stable document identity as the port's reversal
 condition; this is that condition read one level finer, and the answer would be
 a plane-qualified id, decided once in the adapter, never at the call sites.
+
+---
+
+## D66 — A tool's scope and size are the caller's to fix, never parsed out of an id and never the chart's
+
+T-65 and T-66's design, written before the code. They are batched because each one
+changes a function declaration, a declaration change is a prompt change, and a
+prompt change is a new measurement (D45's rule, applied by D64 to registering T-65
+rather than fixing it inside T-61). One re-measurement covers both.
+
+Both tasks are the same sentence read twice. **A declared tool answers within a
+scope and within a size, and both are supplied by the code that built it or by an
+argument the model legitimately holds — never derived from the shape of an
+identifier, and never left to whatever the patient's chart happens to contain.**
+
+### T-65 — the model pays to look at data Python filters for free
+
+D64 measured E2+E7's 446× to one cause: `get_patient_observations` returns every
+row, the patient has 3,780 of them, and `include_contents="default"` re-sends the
+payload on every subsequent turn. Cost is payload × turns and it scales with the
+chart rather than with the question.
+
+**Chosen — one declared ceiling, `MAX_ROWS`, and a truncated read says so.**
+Every collection-returning tool returns at most `MAX_ROWS` rows plus `total`,
+`returned` and `truncated`. Observations and conditions come back most-recent-first,
+because if rows must be dropped the only defensible ones to drop are the oldest —
+criterion (a)'s lookback is twelve months and c2 asks about recency.
+
+**Rejected — a paging parameter.** `get_patient_observations(patient_id, offset)`
+bounds the payload and not the run: the model pages until it has the chart, and the
+cost returns as turns × payload, which is the curve D64 named. A soft bound on the
+thing that caused a 446× is not a bound.
+
+**Rejected — a summary instead of rows** (counts by code, a date range). It is the
+cheapest possible answer and it is cheap because it forecloses REQ-44, which is
+still unclaimed and still in the spec: a model that adjudicates needs values, not
+a histogram. A cap keeps the door REQ-44 walks through; a summary nails it shut for
+a token count.
+
+**Rejected — removing the structured tools from the model's reach**, the way REQ-53
+already removes them from the extractor's. That is the cheapest answer of all and it
+answers a different question. REQ-53's exclusion is a *correctness* argument — two
+independent readings of the BMI must stay two — and it does not reach the retrieval
+agent, which reports neither reading. Borrowing a correctness rule to solve a cost
+problem would leave the real rule harder to state later.
+
+### Why truncating a tool's answer cannot change a verdict, and where it would
+
+This is the part that has to be right, because "the model saw less" is normally a
+correctness change wearing a cost change's clothes.
+
+It is safe **here** because the tool payload is not the evidence path.
+`AgenticRetrievalPlanner.gather` re-reads observations, conditions and the value set
+from the port and puts *those* in the `RetrievalResult`. The model's copy informs
+its plan and reaches no criterion. That is not a happy accident of today's code —
+it is D63's design, and `test_the_bundle_is_the_ports_full_read_not_the_models_view`
+pins it, so a future change that started adjudicating on the tool payload fails
+here rather than silently shipping a chart truncated at fifty rows.
+
+It is **not** safe for the note list, and the note list is treated differently for
+that reason. `get_patient_notes` is the model's action space: every `document_id` it
+can name comes from there, and those ids *are* the evidence path. A truncated list
+is a shorter chart with a flag nobody can act on — there is no page two. So
+exceeding the cap there **raises** rather than truncating. REQ-46 already says a
+bound exceeded produces `ERROR` or human review, and a patient with more notes than
+the system will read is exactly that: today no patient has more than one, so the
+raise is a ceiling made visible rather than a behaviour change.
+
+So the rule is: **truncate where the payload is informational, fault where the
+payload is the model's action space.** One document is not a collection and
+`get_patient_document` is exempt — the extraction instruction says read the note in
+full, and a note truncated at a character count is a clinical claim the system did
+not mean to make.
+
+On the policy plane the value set is capped and truncated rather than faulted.
+Amendment 1 reserves set membership to Python on both paths, so no verdict can turn
+on which codes the model saw; criterion (b) reads the port's full set.
+
+**D39 is not being reversed.** Its rule is that the *adapter* reports everything and
+filtering is the predicates' judgment, and that stands — `LocalPatientStore` still
+returns all 3,780 rows and `tests/test_fhir.py` still says so. The cap is on the
+model's view, one layer above the port, and it is not a second filter free to
+disagree with criterion (a) because nothing downstream of it decides anything.
+
+**Rejected — a per-tool cap.** Four numbers to justify instead of one, and the
+justification for each would be the same sentence. One constant, one place to argue
+with it.
+
+### T-66 — scope by argument where the model holds it, by construction where it does not
+
+`_patient_of(document_id)` recovers the owning patient by splitting on `/`, which
+works only because T-07 named every note `<patient_id>/chart_note.txt`. D65 refused
+to fix that by pointing the tool at T-64's widened port, and was right: the widened
+port resolves bundles, and the extraction agent's allowlist is exactly this tool
+plus `get_patient_notes`, so a widened tool hands it the structured BMI through a
+different door and every existing test keeps passing because the tests compare the
+two readings and would now find them equal.
+
+**Chosen for the retrieval agent — `get_patient_document(patient_id, document_id)`.**
+The model called `get_patient_notes(patient_id)` to get the id, so it holds the
+patient id already and passing it costs nothing. The tool scopes to that patient's
+notes and a bundle filename is simply not in them.
+
+**T-66's stated rationale does not cover the extraction agent, and that is a defect
+in the task's own text.** Under `tool_fetch` the extraction runner hands the model a
+`document_id` and nothing else — `ExtractionRunner.run(document_id, text)` has no
+patient id to give, and the model never called `get_patient_notes`. So the argument
+"the model already holds it" is false there, and deleting `_patient_of` breaks the
+variant T-63 exists to measure.
+
+**Chosen for the extraction agent — the scope is a captured constant, not an
+argument.** `build_note_reader(patient_store, document_id)` declares one tool,
+`read_note(document_id)`, closed over the single id the runner is about to extract
+from; any other id is refused by an equality check in Python against a cell the
+model cannot see or name. `EXTRACTION_ALLOWLIST` becomes `("read_note",)` —
+`get_patient_notes` was there only so the model could resolve an id it was given,
+which a tool that takes that id does not need.
+
+This is strictly narrower than T-66 asked for. The task wanted no route to a bundle;
+this leaves no route to any document but the one in scope, including another
+patient's note. It also lets the reader use T-64's widened `PatientStore.get_document`
+safely, because the scope check runs before the resolution — which is D65's refusal
+honoured rather than contradicted: D65 refused an *unscoped* tool over the widened
+port.
+
+**Rejected — widening `ExtractionRunner.run` to carry a patient id.** It changes
+REQ-52's port and all three runners so that one measurement variant can pass an
+argument, and it is wrong on its own terms: spike 001's notes belong to no patient
+and there is no id to pass.
+
+**Rejected — deriving the patient id inside the extraction runner.** That is
+`_patient_of` with a different caller.
+
+### The checks
+
+`pytest tests/test_agentic_workflow.py tests/test_adk_agent.py`, both spending zero
+model calls. What they have to prove:
+
+- no declared tool returns an unbounded collection: a store with `MAX_ROWS + 1`
+  observations yields `MAX_ROWS` rows, `total` naming the true count, and
+  `truncated` true; the same for conditions and for the policy value set;
+- the note list faults instead of truncating, and the fault names the cap;
+- the evidence bundle a run produces is the port's full read and not the model's
+  view — the mutation that assembles it from the tool payload fails;
+- `get_patient_document(patient_id, document_id)` refuses a real bundle filename
+  from `data/patients/manifest.json`, and `_patient_of` does not exist;
+- `read_note` refuses every id but the one it was built for, and the extraction
+  agent's allowlist is that tool alone;
+- no tool module parses an identifier — asserted on the AST the way
+  `test_the_resolver_reads_no_structure_out_of_an_id` does for the adapter (D65).
+
+And the number: `python eval/run_agentic_eval.py --measure` re-run, with E2+E7's
+input-token ratio quoted against D64's 446×. It spends calls and stays out of every
+gate.
+
+**Reverses if:** a consumer appears that adjudicates on a tool payload rather than
+on the port's read. Then the cap is a correctness risk rather than a cost control,
+and the answer is a filtered view the criterion agrees with by construction — not a
+larger `MAX_ROWS`, which would only move the cliff.
+
+### Result — the outlier is gone and the correctness did not move
+
+Re-measured 2026-09-09, `gemini-3.5-flash-lite` on AI Studio, same six patients,
+extraction held constant on both sides. `eval/agentic/results.json`,
+`prompt_version` `t61-retrieval-v2`.
+
+| | D64 | after T-65 + T-66 |
+|---|---|---|
+| outcomes agreeing | 6 / 6 | **6 / 6** |
+| criteria agreeing | 42 / 42 | **42 / 42** |
+| spans valid | 80 / 80 | **80 / 80** |
+| errors | 0 | **0** |
+| unsupported rate | 0.4048 | 0.4048 |
+| input tokens | 463,124 | **87,964** |
+| **input-token ratio** | **73.4x** | **13.9x** |
+| model calls | 28 | 30 |
+| wall time | 48.2s | 30.8s |
+
+**5.3x fewer input tokens for identical answers with identical citations.** The
+agentic path is still as correct as the oracle and still costs an order of
+magnitude more than it, which is D64's finding intact — what changed is that the
+price no longer scales with the patient's chart.
+
+| case | oracle in | D64 | after |
+|---|---|---|---|
+| E5 | 1,068 | 30x | **9.5x** |
+| E4+E9 | 1,200 | 14x | **10.8x** |
+| E1+E11+E10c | 1,244 | 10x | **13.4x** |
+| E6+E10 | 1,068 | 19x | **15.5x** |
+| E8+E10b | 921 | 22x | **16.5x** |
+| **E2+E7** | 810 | **446x** | **20.3x** |
+
+**E2+E7 went from 446x to 20.3x**, and the spread across six patients collapsed
+from 10x–446x to 9.5x–20.3x. That is the whole claim: the 3,780-observation
+patient now costs about what a 100-observation patient costs, because the term
+that scaled with the chart is gone.
+
+**What is left is turn variance, not chart size, and it moves in both
+directions.** E5 fell 30x→9.5x on six turns becoming four; E1+E11+E10c *rose*
+10x→13.4x on four turns becoming six. Same instruction, same temperature, a
+different number of tool round trips — so a per-patient ratio should be read as
+one sample, and the aggregate and the spread are the numbers that mean something.
+Nothing here says the cap made E1 more expensive.
+
+**Total model calls went 28→30 and that is not a regression the cap caused.**
+Turn counts moved per patient in both directions and the sum drifted by two; no
+run hit `max_steps`, `max_llm_calls` or the timeout, and no planner invented a
+document id or returned an empty bundle.
+
+The prompt changed twice over — `get_patient_document` gained a parameter, and the
+instruction gained a paragraph saying a truncated structured read is expected and
+not a failure to retrieve. That second sentence is why no planner reported
+`gathered=false` on a capped chart. `PROMPT_VERSION` moved to `t61-retrieval-v2`
+so the recording says which prompt produced it (D20's argument, applied to the
+prompt).
+
+### Discovered work
+
+**T-67** — `--tool-fetch` cannot reach spike 001's notes. Their `document_id`s
+(`n01_clean_run` and the rest) are in no patient manifest, so the scoped reader's
+`PatientStore.get_document` raises and five of T-63's eleven notes fail before the
+model sees anything. **Pre-existing and untouched by T-66**: `_patient_of` derived
+the patient `n01_clean_run` from those same ids and `get_notes` raised on it just
+as loudly. It surfaces now because T-63 is the next thing to run and will hit it.
+Registered rather than fixed, because "where do the spike notes live on the patient
+plane" is D42's question about what the corpus is, not a tool signature.

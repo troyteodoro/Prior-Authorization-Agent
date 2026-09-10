@@ -1,4 +1,4 @@
-"""T-62 — the policy-plane tools a model may call (REQ-41, REQ-53; D62).
+"""T-62 — the policy-plane tools a model may call (REQ-41, REQ-53, REQ-54; D62, D66).
 
 Two declared tools over an injected `PolicyStore`, built the same way the patient
 tools are: closures, so the store never appears in a function declaration, and one
@@ -20,6 +20,13 @@ applying. Saying so rather than implying they are wired in.
 They are read-only by construction, which is Article VII's requirement of any
 model-facing policy surface: there is no setter, no write, and no way to reach the
 tree's file. The model may interpret the selected policy and cannot rewrite it.
+
+**Bounded like the patient tools (T-65, REQ-54).** A criteria list is small by
+construction and a value set is not — this corpus's has two codes and a production
+one has thousands, which is the same shape as the 3,780 observations D64 measured.
+Both truncate rather than fault: **Amendment 1 reserves set membership to Python on
+both paths**, so no verdict can turn on which codes the model saw, and criterion (b)
+reads the port's full set through `PolicyStore.get_value_set` regardless (D66).
 """
 
 from __future__ import annotations
@@ -30,6 +37,8 @@ from typing import Any, Callable
 
 from pa_agent.contracts import ToolCall
 from pa_agent.stores.policy import PolicyStore
+
+from .tool_bounds import bounded
 
 
 @dataclass
@@ -86,6 +95,10 @@ def build_policy_tools(policy_store: PolicyStore) -> PolicyToolset:
                     f"{type(exc).__name__}")
             raise
         _record("get_policy_context", arguments, started, True)
+        # Bounded for the same reason the patient tools are, though a tree with
+        # more criteria than the ceiling would be a policy nobody could review.
+        # The uniform rule is worth more than the exemption (REQ-54).
+        criteria, meta = bounded(tree.criteria)
         return {
             "policy_version_id": tree.policy_version_id,
             "title": tree.title,
@@ -98,6 +111,8 @@ def build_policy_tools(policy_store: PolicyStore) -> PolicyToolset:
             # and never so it can evaluate it. `pa_agent.aggregate` computes the
             # outcome from this same string, in Python (Art. II).
             "decision_expression": tree.decision_expression,
+            "criteria_total": meta["total"],
+            "criteria_truncated": meta["truncated"],
             "criteria": [
                 {
                     "id": criterion.id,
@@ -112,7 +127,7 @@ def build_policy_tools(policy_store: PolicyStore) -> PolicyToolset:
                         for name, constant in criterion.constants.items()
                     },
                 }
-                for criterion in tree.criteria
+                for criterion in criteria
             ],
         }
 
@@ -132,7 +147,11 @@ def build_policy_tools(policy_store: PolicyStore) -> PolicyToolset:
                     f"{type(exc).__name__}")
             raise
         _record("get_policy_value_set", arguments, started, True)
-        return {"value_set_id": value_set_id, "codes": sorted(codes)}
+        # Truncates rather than faults. A model cannot decide membership anyway —
+        # Amendment 1 reserves it to Python — so a partial list informs and never
+        # adjudicates, and criterion (b) reads the port's full set (D66).
+        listed, meta = bounded(sorted(codes))
+        return {"value_set_id": value_set_id, "codes": listed, **meta}
 
     toolset.tools = {
         "get_policy_context": get_policy_context,

@@ -202,6 +202,20 @@ silently reconciled.
 numeric comparisons, counting, sorting, set membership, policy-version selection,
 span validation, execution budgets, and output serialization.
 
+**REQ-54** A declared tool's response is bounded. No tool returns a collection whose
+size is a property of the patient's chart or the policy corpus: a read past the
+declared ceiling either returns the ceiling's worth of rows alongside the true total
+and a truncation flag, or fails with the ceiling named. A truncated response is
+permitted only where the payload informs the model's plan; where the payload is the
+set of things the model may then ask for, exceeding the ceiling is a fault. *(REQ-46,
+Art. X, D66)*
+
+Because cost is tool-payload size times turns, an unbounded tool scales with the
+chart rather than with the question — D64 measured one patient's 3,780 observations
+as 446x the deterministic path's input tokens for an identical answer. Bounding the
+response is also what keeps the model's view and the evidence path separable: the
+criteria read the port's full result, never the model's copy.
+
 ### Adjudication
 
 **REQ-11** Criterion (a) is evaluated by numeric comparison against the most
