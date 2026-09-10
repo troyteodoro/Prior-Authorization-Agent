@@ -306,17 +306,75 @@ def test_a_tool_module_opens_no_file_and_names_no_path(module) -> None:
         assert forbidden not in source, f"{module} contains {forbidden}"
 
 
-def test_no_module_holds_both_planes_toolsets() -> None:
-    """Article VI, and REQ-41's closing line read literally: a module able to read
-    both planes would have to hold both handles. Two modules is what makes holding
-    both a visible act — and the extraction agent holds one."""
+#: The one module allowed to hold both toolsets, named so a second is a visible
+#: diff rather than a silent addition (T-61, D63).
+_BOTH_PLANES = {"pa_agent/agent/retrieval_agent.py"}
+
+
+def test_only_the_declared_module_holds_both_planes_toolsets() -> None:
+    """Article VI, and REQ-41's closing line: a module able to read both planes
+    would have to hold both handles. Two modules is what makes holding both a
+    **visible act** rather than an accident — and the count is pinned at one.
+
+    T-61's gatherer is that one, and it is legal for the reason Article VI states
+    itself: *"The criterion text does cross. The policy corpus and its index do
+    not."* Its policy tools return compiled criteria — ids, labels, constants, the
+    decision expression — and no document, no span and no corpus text. The test
+    below asserts that, and it is the assertion that carries the article's actual
+    content. This one only counts handles.
+
+    `pa_agent/workflow.py` holds both *store* handles for the same reason and
+    T-18's gate says so explicitly. Holding both is permitted; holding both by
+    accident is what these two tests prevent.
+    """
     both = []
     for path in (REPO_ROOT / "pa_agent").rglob("*.py"):
-        imported = _imports(path)
-        names = {n.rsplit(".", 1)[-1] for n in imported}
+        names = {n.rsplit(".", 1)[-1] for n in _imports(path)}
         if {"patient_tools", "policy_tools"} <= names:
             both.append(str(path.relative_to(REPO_ROOT)))
-    assert both == [], f"these modules import both toolsets: {both}"
+    assert set(both) == _BOTH_PLANES, (
+        f"modules holding both toolsets: {sorted(both)}; expected exactly "
+        f"{sorted(_BOTH_PLANES)}. A new one needs an Article VI argument in a "
+        "decisions entry, not a passing suite."
+    )
+
+
+def test_no_model_facing_policy_tool_can_reach_the_corpus() -> None:
+    """**This is Article VI's actual content**, and the reason the exception above
+    is an exception rather than a breach.
+
+    The article's smaller, true claim is that the compiled criterion crosses the
+    boundary and the policy corpus does not. So the test is not "does a module
+    hold both handles" — it is "can a model holding both reach the source
+    documents". It cannot: `PolicyStore.get_document` is not wrapped as a tool,
+    and nothing in the policy toolset returns document text or a span.
+
+    Without this, a later commit could add `get_policy_document` to the toolset,
+    the count above would still read one, and the corpus would be in a context
+    window alongside patient data.
+    """
+    from pa_agent.agent.policy_tools import build_policy_tools
+
+    toolset = build_policy_tools(LocalPolicyStore())
+    assert set(toolset.names) == {"get_policy_context", "get_policy_value_set"}
+
+    source = (REPO_ROOT / "pa_agent" / "agent" / "policy_tools.py").read_text(
+        encoding="utf-8"
+    )
+    for corpus_reach in ("get_document", "document_id", "char_start", ".text"):
+        assert corpus_reach not in source, (
+            f"policy_tools.py mentions {corpus_reach!r}; the corpus does not "
+            "cross the plane boundary (Art. VI)"
+        )
+
+    # And what it does return is the compiled criterion, which the article
+    # explicitly permits crossing.
+    context = toolset.tools["get_policy_context"](TREE_VERSION)
+    assert set(context) == {
+        "policy_version_id", "title", "jurisdiction", "decision_expression", "criteria",
+    }
+    for criterion in context["criteria"]:
+        assert set(criterion) == {"id", "label", "scoped_to", "constants"}
 
 
 def test_the_patient_tools_import_no_policy_and_the_policy_tools_no_patient() -> None:

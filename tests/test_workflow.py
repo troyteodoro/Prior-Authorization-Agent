@@ -157,13 +157,21 @@ def test_the_facts_are_loaded_before_the_criteria_that_read_them() -> None:
     `qualifying_run` precedes `criteria_c`, because c2, c4 and c5 all scope to the
     run c3 identified and computing it four times is four things free to disagree
     (D48).
+
+    *`gather` replaced the three load steps in T-61 (D63).* Everything that
+    depended on their ordering now depends on its: one step assembles the whole
+    bundle, so "the facts are loaded before the criteria that read them" is a
+    single edge rather than three.
     """
     order = list(STEP_NAMES)
-    assert order.index("load_notes") < order.index("extract")
+    assert order.index("gather") == 0, (
+        "nothing precedes retrieval: every later step reads what it assembled"
+    )
+    assert order.index("gather") < order.index("extract")
     assert order.index("extract") < order.index("reconcile")
     assert order.index("criterion_a") < order.index("reconcile")
-    assert order.index("load_structured_facts") < order.index("criterion_a")
-    assert order.index("load_value_set") < order.index("criterion_b")
+    assert order.index("gather") < order.index("criterion_a")
+    assert order.index("gather") < order.index("criterion_b")
     assert order.index("qualifying_run") < order.index("criteria_c")
 
 
@@ -763,6 +771,7 @@ def test_the_workflow_reaches_data_only_through_the_two_ports() -> None:
         "pa_agent.contracts",
         "pa_agent.criteria",
         "pa_agent.reconcile",
+        "pa_agent.retrieval",
         "pa_agent.runners",
         "pa_agent.stores.patient",
         "pa_agent.stores.policy",

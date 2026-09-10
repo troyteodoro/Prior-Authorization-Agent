@@ -60,6 +60,10 @@ from pa_agent.criteria import (
     qualifying_run,
 )
 from pa_agent.reconcile import reconcile_bmi
+from pa_agent.retrieval import (
+    FixedRetrievalPlanner,
+    RetrievalPlanner,
+)
 from pa_agent.runners import ExtractionOutputError, ExtractionRunner
 from pa_agent.stores.patient import PatientStore
 from pa_agent.stores.policy import PolicyRef, PolicyStore
@@ -161,36 +165,31 @@ class WorkflowRun:
 # --------------------------------------------------------------------------
 
 
-def step_load_structured_facts(state: WorkflowState, ctx: _Context) -> None:
-    """REQ-41: the patient plane, through the port and nowhere else.
+def step_gather(state: WorkflowState, ctx: _Context) -> None:
+    """Assemble the evidence this request is adjudicated on, through the planner.
 
-    Reports everything and filters nothing — an active-only or BMI-only read
-    belongs to the predicates, and D39 refused it inside the adapter for the same
-    reason it is refused here: a filter applied twice is a filter that can
-    disagree with itself.
+    *Was three steps — `load_structured_facts`, `load_value_set`, `load_notes` —
+    until T-61 put a port here (D63).* They were three fixed store reads;
+    `FixedRetrievalPlanner` is those same three reads and nothing else changed for
+    the deterministic path.
+
+    The port is what lets a model-directed planner decide what to fetch while
+    everything below this line stays identical. Note what the step does **not**
+    do: it does not inspect what came back and decide whether to ask for more.
+    A planner returns a bundle or raises; the graph does not negotiate with it.
+
+    Fan-out width is still decided here rather than by the model mid-extraction —
+    `len(state.notes)` is fixed the moment this step returns.
     """
-    state.observations = ctx.patient_store.get_observations(state.patient_id)
-    state.conditions = ctx.patient_store.get_conditions(state.patient_id)
-
-
-def step_load_value_set(state: WorkflowState, ctx: _Context) -> None:
-    """T-46: criterion (b)'s value set, by the id the tree's constant names.
-
-    The id comes from the policy, so no caller writes a code-system literal, and
-    the set arrives through the *policy* port because a value set is a compiled
-    fragment of the policy and travels with it (D52).
-    """
-    value_set_id = state.tree.criterion("b").require("value_set_id")
-    state.value_set = ctx.policy_store.get_value_set(value_set_id)
-
-
-def step_load_notes(state: WorkflowState, ctx: _Context) -> None:
-    """The note corpus for this patient, hash-verified by the adapter (REQ-7).
-
-    This is where the fan-out width is decided, and it is decided here — in
-    Python, from the store — rather than by the model choosing what to read.
-    """
-    state.notes = ctx.patient_store.get_notes(state.patient_id)
+    plan = ctx.planner.gather(
+        state.patient_id, state.tree, ctx.patient_store, ctx.policy_store
+    )
+    state.observations = plan.observations
+    state.conditions = plan.conditions
+    state.value_set = plan.value_set
+    state.notes = plan.notes
+    if plan.trace is not None:
+        state.traces.append(plan.trace)
 
 
 def step_extract(state: WorkflowState, ctx: _Context) -> None:
@@ -309,9 +308,7 @@ def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
 #: visited, and `tests/test_workflow.py` asserts the visited list against this
 #: tuple rather than against a comment.
 STEPS: tuple[tuple[str, object], ...] = (
-    ("load_structured_facts", step_load_structured_facts),
-    ("load_value_set", step_load_value_set),
-    ("load_notes", step_load_notes),
+    ("gather", step_gather),
     ("extract", step_extract),
     ("criterion_a", step_criterion_a),
     ("reconcile", step_reconcile),
@@ -343,6 +340,7 @@ class _Context:
     patient_store: PatientStore
     policy_store: PolicyStore
     runner: ExtractionRunner
+    planner: RetrievalPlanner = field(default_factory=FixedRetrievalPlanner)
     max_attempts: int = DEFAULT_MAX_ATTEMPTS
 
 
@@ -419,6 +417,7 @@ def run_criteria_workflow(
     patient_id: str,
     as_of: date,
     max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    planner: RetrievalPlanner | None = None,
 ) -> WorkflowRun:
     """Walk `STEPS` in order and assemble the determination (T-18, T-19).
 
@@ -440,6 +439,7 @@ def run_criteria_workflow(
         patient_store=patient_store,
         policy_store=policy_store,
         runner=extraction_runner,
+        planner=planner if planner is not None else FixedRetrievalPlanner(),
         max_attempts=max_attempts,
     )
 

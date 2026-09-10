@@ -3695,6 +3695,35 @@ set…"**. T-61 sits under US-5.5 Orchestration; US-7 is "Show me where the syst
 stops being reliable" and closes on T-21, T-22, T-23 and T-28. T-61 closes none of
 those. Corrected to name US-5.5.
 
+### Article VI, and the check that was measuring the wrong thing
+
+T-62 asserted that **no module imports both toolsets**. T-61's gatherer does — it
+needs the patient plane to read the chart and the policy plane to know what the
+rule requires — so the check fired immediately, which is what a good check does.
+
+It was measuring the wrong property. Article VI states its own smaller, true
+claim: *"The criterion text does cross. The policy corpus and its index do not."*
+So the question is not whether a module holds two handles — `pa_agent/workflow.py`
+has held both store handles since T-18 and its gate says so explicitly — but
+whether a model holding both can reach the **source documents**.
+
+It cannot. `get_policy_context` returns compiled criteria: ids, labels, constants,
+the decision expression. No document, no span, no corpus text.
+`PolicyStore.get_document` is not wrapped as a tool at all. That is exactly the
+object the article permits to cross.
+
+So the count is pinned at one named module, and a **second check now carries the
+article's actual content**: no model-facing policy tool can reach the corpus.
+Without it, a later commit could add `get_policy_document` to the toolset, the
+count would still read one, and the corpus would be sitting in a context window
+next to patient data with every test green.
+
+Third time this pass a check has looked stronger than it was — after the
+order-dependent `sys.modules` guards and the halved token count. The pattern is
+worth naming: **each was a check on a proxy rather than on the property**, and
+each survived because the proxy happened to track the property until something
+changed.
+
 **Reverses if:** model-directed retrieval turns out to agree with fixed retrieval
 on every case and every budget — at which point the interesting question moves to
 where the model's *judgment* diverges, and the refused alternative above becomes
