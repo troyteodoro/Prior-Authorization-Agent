@@ -17,14 +17,14 @@ answers the second question, once.
 ## Path to v1
 
 Fifty-eight tasks are on this board — IDs run to T-72 but numbering is not
-contiguous, so the highest id is not the count. **44 are closed and 14 are
-open.** Ten of the 14 sit on the critical path to the acceptance gates in spec
+contiguous, so the highest id is not the count. **45 are closed and 13 are
+open.** Nine of the 13 sit on the critical path to the acceptance gates in spec
 §7. This is that path, in order. *(D70, extended by D72)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
-| 1 | `T-41` | unblocks T-21's E12 row · gates **A1** | ready |
-| 2 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | ready after T-41 |
+| 1 | `T-41` | unblocks T-21's E12 row · gates **A1** | **closed** (D73) |
+| 2 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | ready — **next** |
 | 3 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
 | 4 | `T-17` | **closes US-6** · implements **Article V** | ready |
 | 5 | `T-32` | gates **Article VI** / REQ-33 | ready |
@@ -485,7 +485,7 @@ is the **only** possible E1 (the one patient with an in-window BMI ≥ 35 *and*
 an active value-set comorbidity), and E9 overlays E4, E10 overlays E6, E10b
 overlays E8 as criterion-scoped expectations that do not collide. Eleven of
 spec §6's cases are covered; E3 has no patient by design (sc1 is a fact about
-the procedure) and **E12 has no possible patient**, which is **T-41**.
+the procedure) and **E12 had no possible patient** until T-41 added one (D73).
 
 Every manifest fact that touches the bundles is cross-checked against the
 structured record through the port, so the ground truth cannot drift from the
@@ -1215,7 +1215,7 @@ end to end, carrying `VERIFIER_REJECTED`.
 
 ### `[ ] T-21` Expand the eval set to all of spec §6
 **Depends:** T-06, T-10, T-41 *(for the E12 row)* · **Gates:** A1, A3
-**Status:** **second on the critical path**, blocked only on T-41
+**Status:** **next on the critical path** — T-41 closed (D73), nothing blocks it
 **Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
 **This is the task that closes two stories.** US-4 and US-5 are built — every
@@ -1666,15 +1666,9 @@ rewriting the script and clearing `__pycache__` between runs, and did not reprod
 in five subsequent full-suite runs. The flake is unproven; **the brittleness is
 not** — it is visible by reading the line, and that alone is the defect.
 
-### `[ ] T-41` E12 has no patient, and the boundary case needs one
+### `[x] T-41` E12 has no patient, and the boundary case needs one
 **REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row · **Gates:** A1 ·
 **Discovered in:** T-06 *(D42)* · **Timebox:** two hours
-**Status:** **ready, and first on the critical path** — it is T-21's only blocker.
-**The one open task carrying real risk** *(D70)*: Synthea cannot be seeded to
-produce a BMI of exactly 35.0 on demand, so a seed search may not terminate
-usefully and the fallback is a decision about whether the population stays purely
-generated. If the box blows, working rule 8 applies — write the entry naming what
-broke, and T-21 lands the other twelve rows without E12.
 **Exit:** `python scripts/select_patients.py --verify` and
 `pytest tests/test_manifests.py` — a committed patient whose **structured**
 most-recent BMI is exactly 35.0 within the lookback window, recorded in the
@@ -1694,6 +1688,23 @@ mechanism under E12's name. The likely shapes are a seventh committed bundle
 found by seed search, or a documented synthetic observation appended under
 its own provenance record — which is a **decision** about whether the
 population stays purely generated, not a data edit.
+
+**Closed by D73, the second shape, with the seed search skipped by choice.**
+A seventh bundle from a second recorded Synthea run (seed 1002) carries one
+appended synthetic observation — a clone of the patient's own most-recent BMI
+observation with a new id, value exactly 35.0, dated 2026-08-15 — declared in
+the population manifest's `synthetic_observations` provenance block, which
+`select_patients.py --verify` now checks unconditionally: exactly one
+declaration, present in the declared bundle with the declared value and date,
+most-recent, in-window. The patient is **note-free** (`"note": false` in its
+eval manifest, with the rule enforced in both directions: a declared
+note-free patient with a note fails, a missing note without the declaration
+fails), so the task spent zero model calls. Mutation-tested seven ways, each
+caught. The risk the board named did not materialize, but a different one
+did: the base seed-1001 regeneration reproduced only five of six committed
+bundles byte-identical — Synthea is not byte-deterministic — so the drifted
+bundle was restored from git and the committed corpus stays pinned by hash,
+recorded in D73.
 
 ### `[x] T-39` A provisional constant must name an *open* question, not any question
 **REQ:** 39 · **Discovered in:** T-37 · **Timebox:** one hour

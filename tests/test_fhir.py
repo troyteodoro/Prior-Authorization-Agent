@@ -43,7 +43,7 @@ def store() -> LocalPatientStore:
 
 
 def test_every_patient_yields_bmi_observations_with_dates(store, manifest_records):
-    assert len(manifest_records) == 6
+    assert len(manifest_records) == 7  # six generated + the E12 patient (D73)
     for record in manifest_records:
         observations = store.get_observations(record["patient_id"])
         bmis = [o for o in observations if o.code == LOINC_BMI]
@@ -138,9 +138,22 @@ def test_notes_are_served_hash_verified_and_never_synthea_generated(
 ):
     """T-07 landed the corpus and the raise retired (D43). What must stay true
     is *which* notes are served: the manifest-driven ones, whose facts someone
-    declared, never Synthea's auto-generated prose (D39)."""
+    declared, never Synthea's auto-generated prose (D39). A patient whose
+    eval manifest declares `"note": false` (D73: E12 reads structured data
+    only) is the one legitimate empty answer, and only the declaration
+    exempts it."""
+    note_free = {
+        body["patient_id"]
+        for p in sorted((REPO_ROOT / "eval" / "manifests").glob("*.json"))
+        if (body := json.loads(p.read_text(encoding="utf-8"))).get("note") is False
+    }
     for record in manifest_records:
         documents = store.get_notes(record["patient_id"])
+        if record["patient_id"] in note_free:
+            assert documents == [], (
+                f"{record['filename']}: declared note-free yet a note is served"
+            )
+            continue
         assert documents, f"{record['filename']}: no note served"
         for document in documents:
             # Document's validator re-hashes on construction, so reaching here

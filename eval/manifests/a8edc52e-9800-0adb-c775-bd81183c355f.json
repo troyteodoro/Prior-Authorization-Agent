@@ -1,0 +1,13 @@
+{
+  "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
+  "bundle": "Avelina400_Huels583_a8edc52e-9800-0adb-c775-bd81183c355f.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "E12"
+  ],
+  "note": false,
+  "wm_programs": [],
+  "traps": [],
+  "program_assertions": [],
+  "rationale": "E12 is criterion (a)'s inclusive boundary: the structured most-recent BMI is exactly 35.0, inside the 12-month lookback, via the synthetic observation data/patients/manifest.json declares under synthetic_observations (T-41, D73). The case reads structured data only, so this patient carries no chart note and no extraction ever runs for it; 'note': false states that on purpose rather than leaving an absent note to look like a corpus gap."
+}

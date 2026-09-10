@@ -32,11 +32,12 @@ SNOMED_T2DM = "44054006"
 VALUE_SET_CODES = {"44054006", "59621000"}
 
 EXPECTED_CASES = {
-    "E1", "E2", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E10b", "E10c", "E11",
+    "E1", "E2", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E10b", "E10c",
+    "E11", "E12",
 }
-# E3 has no patient — sc1 is a fact about the procedure (D32). E12 has no
-# possible patient in the committed population and is T-41's (D42).
-DELIBERATELY_ABSENT = {"E3", "E12"}
+# E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
+# since T-41: the note-free patient whose synthetic observation D73 declares.
+DELIBERATELY_ABSENT = {"E3"}
 
 
 @pytest.fixture(scope="module")
@@ -289,6 +290,47 @@ def test_e8_asserts_completion_with_no_visits_behind_it(manifests):
     body = _by_case(manifests)["E8"]
     assert _encounters(body) == [], "zero wm_events is the whole point"
     assert body["program_assertions"], "and one assertion span is the other half"
+
+
+def test_e12_latest_structured_bmi_is_exactly_35_in_window(manifests, store):
+    """The boundary case, boundary inclusive: criterion (a) reads structured
+    data, so the case holds iff the *served* most-recent BMI is exactly 35.0
+    inside the lookback — and that observation is the synthetic one the
+    population manifest declares (T-41, D73), not a coincidence."""
+    body = _by_case(manifests)["E12"]
+    value, when = _latest_structured_bmi(store, body["patient_id"])
+    assert value == 35.0, "E12 is the inclusive boundary, exactly"
+    assert 0 <= _months_before_as_of(when) < LOOKBACK_MONTHS
+
+    declared = json.loads(POPULATION.read_text(encoding="utf-8"))[
+        "synthetic_observations"
+    ]
+    assert len(declared) == 1, "exactly one synthetic observation (D73)"
+    s = declared[0]
+    assert s["patient_id"] == body["patient_id"]
+    assert s["value"] == value
+    assert date.fromisoformat(s["effective_date"][:10]) == when, (
+        "the served latest observation must be the declared synthetic one"
+    )
+    # E2's shape must not bleed in: the boundary patient carries no active
+    # T2DM, so nothing about E12 can trip sc2's national exclusion.
+    active = {
+        c.code for c in store.get_conditions(body["patient_id"])
+        if c.clinical_status == "active"
+    }
+    assert SNOMED_T2DM not in active
+
+
+def test_a_note_free_manifest_declares_no_note_dependent_facts(manifests):
+    """`"note": false` (D73) is a claim about the whole manifest: a chart with
+    no note cannot carry encounters, traps, or assertions, because every one
+    of those is a fact extraction would need a note to find."""
+    note_free = [m for m in manifests.values() if m.get("note") is False]
+    assert note_free, "E12's manifest declares itself note-free"
+    for body in note_free:
+        assert body["wm_programs"] == []
+        assert body["traps"] == []
+        assert body["program_assertions"] == []
 
 
 def test_e10b_crosses_the_threshold(manifests, store):

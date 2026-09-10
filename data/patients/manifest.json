@@ -36,8 +36,55 @@
       "Washington"
     ]
   },
+  "synthea_e12": {
+    "task": "T-41",
+    "decision": "D73",
+    "seed": 1002,
+    "clinician_seed": 1002,
+    "reference_date": "20260901",
+    "population": 200,
+    "age_range": "30-60",
+    "state": "Washington",
+    "command": [
+      "java",
+      "-jar",
+      "/Users/troyteodoro/PersonalProjects/Prior-Authorization-Agent/Prior-Authorization-Agent/data/patients/work/synthea-with-dependencies.jar",
+      "-s",
+      "1002",
+      "-cs",
+      "1002",
+      "-r",
+      "20260901",
+      "-p",
+      "200",
+      "-a",
+      "30-60",
+      "--exporter.baseDirectory",
+      "/Users/troyteodoro/PersonalProjects/Prior-Authorization-Agent/Prior-Authorization-Agent/data/patients/work/output_e12",
+      "--exporter.fhir.export",
+      "true",
+      "--exporter.hospital.fhir.export",
+      "false",
+      "--exporter.practitioner.fhir.export",
+      "false",
+      "Washington"
+    ]
+  },
+  "synthetic_observations": [
+    {
+      "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
+      "resource_id": "a8edc52e-9800-0adb-f049-59b3542dcdb9-e12-synthetic",
+      "code": "39156-5",
+      "value": 35.0,
+      "effective_date": "2026-08-15T15:11:36-07:00",
+      "bundle": "Avelina400_Huels583_a8edc52e-9800-0adb-c775-bd81183c355f.json",
+      "task": "T-41",
+      "decision": "D73"
+    }
+  ],
   "selection_criteria": {
-    "bundle_count": 6,
+    "bundle_count": 7,
+    "base_bundle_count": 6,
     "bmi_range": [
       33.0,
       45.0
@@ -93,6 +140,14 @@
       "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
       "latest_bmi": 42.5,
       "latest_bmi_date": "2026-03-13T08:52:43-07:00",
+      "has_active_t2dm": false
+    },
+    {
+      "filename": "Avelina400_Huels583_a8edc52e-9800-0adb-c775-bd81183c355f.json",
+      "sha256": "1bda8ffb186367433ff5f6984c7d79691e644ef08e93a313c99be7a54ac8039c",
+      "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
+      "latest_bmi": 35.0,
+      "latest_bmi_date": "2026-08-15T15:11:36-07:00",
       "has_active_t2dm": false
     }
   ]

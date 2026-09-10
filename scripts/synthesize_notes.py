@@ -286,6 +286,11 @@ def generate() -> int:
     records = []
     for path in sorted(MANIFEST_DIR.glob("*.json")):
         manifest = json.loads(path.read_text(encoding="utf-8"))
+        if manifest.get("note") is False:
+            # A declared note-free chart (D73: E12 reads structured data
+            # only). Skipped before any per-patient work, so the other
+            # patients' notes are byte-stable across its addition.
+            continue
         patient_id = manifest["patient_id"]
         demo = _demographics(patient_id, manifest["bundle"])
         height_m = _height_m(store, patient_id)

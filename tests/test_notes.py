@@ -65,12 +65,27 @@ def manifests() -> dict[str, dict]:
     }
 
 
+def _note_free(manifest: dict) -> bool:
+    """D73's declaration: `"note": false` states the chart has no note on
+    purpose (E12 reads structured data only). Only the declaration exempts a
+    patient — a missing note without it is still a corpus defect."""
+    return manifest.get("note") is False
+
+
 @pytest.fixture(scope="module")
 def notes(store, manifests) -> dict[str, str]:
-    """patient_id -> note text, served through the port and hash-verified."""
+    """patient_id -> note text, served through the port and hash-verified.
+    Declared note-free patients are checked the other way — no note may
+    exist for them — and excluded from the dict."""
     text_by_patient = {}
-    for patient_id in manifests:
+    for patient_id, manifest in manifests.items():
         documents = store.get_notes(patient_id)
+        if _note_free(manifest):
+            assert documents == [], (
+                f"{patient_id}: declared note-free (D73) yet the store "
+                "serves a note for it"
+            )
+            continue
         assert len(documents) == 1, f"{patient_id}: expected one chart note"
         text_by_patient[patient_id] = documents[0].text
     return text_by_patient
@@ -137,10 +152,13 @@ def _block_for(text: str, iso_date: str) -> str:
 
 
 def test_one_hash_verified_note_per_manifest(notes, manifests):
-    assert set(notes) == set(manifests)
+    note_bearing = {
+        pid for pid, m in manifests.items() if not _note_free(m)
+    }
+    assert set(notes) == note_bearing
     recorded = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
     assert recorded["seed"] is not None, "the corpus records the seed that made it"
-    assert {r["patient_id"] for r in recorded["notes"]} == set(manifests)
+    assert {r["patient_id"] for r in recorded["notes"]} == note_bearing
 
 
 def test_every_note_wraps_like_an_ehr_export(notes):
@@ -167,6 +185,8 @@ def test_every_note_wraps_like_an_ehr_export(notes):
 
 def test_every_encounter_date_appears(notes, manifests):
     for patient_id, manifest in manifests.items():
+        if _note_free(manifest):
+            continue
         present = _dates_in(notes[patient_id])
         for program in manifest["wm_programs"]:
             for encounter in program["encounters"]:
@@ -177,6 +197,8 @@ def test_every_encounter_date_appears(notes, manifests):
 
 def test_every_trap_and_assertion_date_appears(notes, manifests):
     for patient_id, manifest in manifests.items():
+        if _note_free(manifest):
+            continue
         present = _dates_in(notes[patient_id])
         for trap in manifest["traps"]:
             assert trap["date"] in present, f"{patient_id}: trap {trap['date']} missing"
@@ -239,6 +261,8 @@ def test_the_assertion_note_makes_its_claim_in_prose(notes, manifests):
 def test_no_note_contains_a_date_the_manifest_does_not_declare(notes, manifests):
     """The assertion that makes this corpus usable as ground truth (D43)."""
     for patient_id, manifest in manifests.items():
+        if _note_free(manifest):
+            continue
         allowed = _declared_dates(manifest) | {_birth_date(manifest)}
         found = _dates_in(notes[patient_id])
         unaccounted = found - allowed

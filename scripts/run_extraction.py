@@ -96,6 +96,10 @@ def synthesized_cases() -> list[dict]:
     cases = []
     for path in sorted(MANIFEST_DIR.glob("*.json")):
         manifest = json.loads(path.read_text(encoding="utf-8"))
+        if manifest.get("note") is False:
+            # E12's chart is declared note-free (D73): nothing to extract,
+            # so the measurement never spends a call on it.
+            continue
         documents = store.get_notes(manifest["patient_id"])
         assert len(documents) == 1, manifest["patient_id"]
         document = documents[0]

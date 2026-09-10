@@ -94,7 +94,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 8 gates, ~12s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (535 tests, ~8s)
+./venv/bin/python -m pytest -q                  # the suite alone (537 tests, ~8s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -218,6 +218,13 @@ passing**, because the tests are written in terms of the thing that broke.
   turn one; `trace["metrics"]` is all of them. Summing the wrong one understated
   T-63's output tokens 12.1x and inverted the comparison's sign, using figures
   that were each individually real.
+- **`select_patients.py --generate` is not byte-stable, so a regeneration is
+  never adopted wholesale** *(D73)*. Synthea reproduced five of six bundles
+  byte-identical and one with different bytes under an identical command. The
+  committed corpus is pinned by the manifest's hashes; after any regeneration,
+  a base bundle whose hash drifts is restored from git. Adopting it instead
+  rewrites the manifest, and every gate then agrees with the new corpus —
+  while recorded spans still point into the old bytes.
 - **`pa_agent/model_pin.py` is the only tracked Python that may name a model**
   *(D20)*, test files included — that rule is what left the suite red in T-67.
 - **Spans are located by searching the model's verbatim quote**, exact first then
@@ -307,8 +314,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**44 of 58 tasks closed, 14 open. All 8 gates green** (`check_gates.py`, ~12s,
-535 tests across 25 files). IDs run to T-72, but numbering is not contiguous —
+**45 of 58 tasks closed, 13 open. All 8 gates green** (`check_gates.py`, ~12s,
+537 tests across 25 files). IDs run to T-72, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3**. `python -m pa_agent.cli --patient <uuid>
@@ -321,7 +328,7 @@ the aggregator and the gap list work and are pinned by unit tests; both stories
 close on eval-harness rows and `eval/cases.json` holds one case. That is
 **T-21**, and it is why the board's order starts where it does.
 
-Open, in order: **T-41 → T-21 → T-29/T-30 → T-17 → T-32 → T-72/T-22/T-28/T-23**,
+Open, in order: **T-21 → T-29/T-30 → T-17 → T-32 → T-72/T-22/T-28/T-23**,
 with T-27, T-42, T-70 and T-71 off the path. `docs/tasks.md` opens with `Path to
 v1`, which states this once with what each step gates — read it rather than this
 paragraph *(D70, D72)*.
@@ -389,7 +396,10 @@ data/policies/
   value_sets/        obesity_comorbidities.json (SNOMED)
   ncd_100_1_jf.json  the criteria tree, policy_version_id ncd-100.1-jf-v1
 data/patients/
-  bundles/           six Synthea v4.0.0 bundles + manifest.json
+  bundles/           seven Synthea v4.0.0 bundles + manifest.json — six from
+                     the base seed and one carrying the declared synthetic
+                     BMI-35.0 observation (T-41, D73); E12's patient is
+                     note-free by declaration
   notes/             six synthesized chart notes + manifest.json
   work/              gitignored: the Synthea jar and the full 200-patient run
 eval/
@@ -403,6 +413,6 @@ spike/spike_001/     notes/, results.json, run.py — five notes, no patient
 scripts/             check_gates, check_env, check_skeleton, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction
-tests/               25 files, 535 tests
+tests/               25 files, 537 tests
 docs/
 ```
