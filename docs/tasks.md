@@ -869,7 +869,7 @@ in week 2.
 
 ## `US-9` Withhold what the system couldn't compute
 
-### `[ ] T-26` `ERROR` state in the data contracts
+### `[x] T-26` `ERROR` state in the data contracts
 **REQ:** 18a, 23, 24, 26, 30 · **Depends:** T-09 · **Blocks:** T-29, T-30 ·
 **Gates:** A9
 **Exit:** `pytest tests/test_error_state.py` — `ERROR` on `CriterionVerdict`; an
