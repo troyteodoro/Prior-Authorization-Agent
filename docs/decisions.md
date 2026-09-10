@@ -3729,3 +3729,98 @@ on every case and every budget — at which point the interesting question moves
 where the model's *judgment* diverges, and the refused alternative above becomes
 worth its cost. Or: T-17's verifier lands and gives model judgment a place where
 it changes an outcome, making a separate adjudication path redundant.
+
+## D64 — T-61 result: model-directed retrieval is exactly as correct and 73× the cost
+
+The measurement D63 designed, run on 2026-09-09 against `gemini-3.5-flash-lite`
+on AI Studio. `eval/agentic/results.json`, six committed patients, extraction
+held constant on both sides so the only variable is which evidence reached the
+criteria.
+
+### The numbers
+
+| | agentic | oracle |
+|---|---|---|
+| outcomes agreeing | **6 / 6** | — |
+| criteria agreeing | **42 / 42** | — |
+| spans valid | **80 / 80** | — |
+| errors | **0** | — |
+| model calls | 28 | 6 |
+| input tokens | **463,124** | 6,311 |
+| output tokens | 6,186 | 4,530 |
+| wall time | 48.2s | — |
+
+**Input-token ratio 73.4×. Model-call ratio 4.7×.** Unsupported-outcome rate
+0.4048 on both sides, which makes it a property of the corpus rather than of
+either planner.
+
+Every bound held: no run hit `max_steps`, `max_llm_calls` or the timeout, and no
+planner invented a document id or returned an empty bundle.
+
+### What it means
+
+**The agentic path is correct and pointless on this corpus.** It reached
+identical answers with identical citations and spent seventy-three times the
+input tokens to do it. That is the finding, and it is more useful than a
+disagreement would have been: a divergence would have started an argument about
+which path was right, and this ends one.
+
+Reported as a *ratio* rather than as a token count because the absolute number is
+a property of six synthetic patients and the ratio is a property of the design.
+
+### Where the cost actually comes from, which is not where it looks
+
+The per-patient spread is 10× to **446×**, and the outlier is not a chatty model:
+
+| case | agentic in | oracle in | ratio | observations |
+|---|---|---|---|---|
+| E1+E11+E10c | 12,361 | 1,244 | 10× | 116 |
+| E4+E9 | 16,870 | 1,200 | 14× | 102 |
+| E8+E10b | 19,937 | 921 | 22× | 103 |
+| E6+E10 | 20,666 | 1,068 | 19× | 128 |
+| E5 | 32,180 | 1,068 | 30× | 244 |
+| **E2+E7** | **361,110** | 810 | **446×** | **3,780** |
+
+E2+E7's patient carries 3,780 observations — fifteen to thirty-seven times anyone
+else's. `get_patient_observations` returns all of them, that payload enters the
+context window, and `include_contents="default"` re-sends it on every subsequent
+turn. **Cost is tool-payload size × turns, and it scales with the patient's chart
+rather than with the question being asked.**
+
+The deterministic path reads the same 3,780 observations through the same port.
+They never enter a context window; `most_recent_bmi` picks one and the rest cost
+nothing. So the gap is not that the model is verbose — **it is that the model pays
+to look at data Python filters for free.**
+
+That generalizes past this project. Any agentic system whose tools return
+unbounded collections has this cost curve, and it is invisible on a small fixture
+and ruinous on a real chart. A production patient with twenty years of labs is
+E2+E7, not E1.
+
+### What this does not license
+
+**It does not say agentic retrieval is worthless.** It says it bought nothing
+*here*, on a corpus where every patient has exactly one note and the fixed planner
+already reads everything. The fixed planner is optimal when "everything" is small
+and knowable, which is precisely the condition a six-patient fixture guarantees
+and a real deployment does not. The honest scope of this result is one corpus, one
+model, one tier.
+
+**It does not close the question REQ-44 asks.** Nothing here measures model
+*judgment* — D63 deliberately built retrieval rather than adjudication, and the
+model never evaluated a criterion. A system where the model interprets evidence
+could diverge from the oracle in ways this measurement cannot see.
+
+### Discovered work
+
+**T-65** — bound what a tool may return. `get_patient_observations` returning
+3,780 rows is the whole of the 446× outlier, and the fix is a tool contract
+question rather than a model question: a filtered or paged view, or keeping
+structured facts out of the model's reach entirely the way REQ-53 already keeps
+them from the extractor. Registered rather than fixed, because T-61's deliverable
+is the measurement and changing the tool would invalidate the number just taken.
+
+**Reverses if:** a corpus arrives where the fixed planner cannot read everything —
+many notes per patient, or a chart large enough that "read it all" stops being an
+option. That is the condition under which model-directed retrieval has something
+to buy, and the ratio above becomes a price rather than a waste.

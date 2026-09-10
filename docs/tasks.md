@@ -752,6 +752,29 @@ provenance and different hashes, and a single namespace has to keep them
 distinguishable. **T-17's verifier will hit this first** — it receives a span and
 nothing else, so it has no patient id to call `get_notes` with.
 
+### `[ ] T-65` Bound what a tool may return
+**REQ:** 46 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
+**Exit:** `pytest tests/test_agentic_workflow.py` — no declared tool can return an
+unbounded collection: a patient with thousands of observations yields a bounded or
+paged response, and the agentic input-token ratio for E2+E7 drops from 446x toward
+the 10-30x the other five patients cost.
+
+D64 measured the whole of that outlier to one cause. `get_patient_observations`
+returns every row — 3,780 for E2+E7's patient — the payload enters the context
+window, and `include_contents="default"` re-sends it on every subsequent turn.
+Cost is tool-payload size times turns, and it scales with the patient's chart
+rather than with the question.
+
+**This is a tool-contract question, not a model question.** The deterministic path
+reads the same 3,780 observations through the same port and pays nothing for them,
+because they never enter a context window and `most_recent_bmi` picks one. The
+options are a filtered or paged view, or keeping structured facts out of the
+model's reach entirely — which is what REQ-53 already does for the extractor, for
+a correctness reason rather than a cost one.
+
+Registered rather than fixed inside T-61: changing the tool would invalidate the
+measurement that found this.
+
 ### `[ ] T-63` Measure the ADK runner against the direct runner
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
 **Exit:** `python scripts/run_adk_extraction.py` writes
@@ -772,7 +795,7 @@ Studio and evals on Vertex, so the tool-calling path runs a **different prompt**
 the two tiers, and a number from one is not a number for the other. *(D62)*
 
 
-### `[~] T-61` Agentic orchestration and model adjudication
+### `[x] T-61` Agentic orchestration and model adjudication
 
 **REQ:** 43, 45, 46, 48, 49, 50, 51  
 **Depends:** T-18, T-19, T-20, T-26, T-46, T-62
@@ -844,6 +867,20 @@ silently reconciled.
 *(Was "US-7 closes when". T-61 sits under US-5.5; US-7 is "Show me where the
 system stops being reliable" and closes on T-21, T-22, T-23 and T-28, none of
 which this task touches. Corrected by D63.)*
+
+**Closed by D64.** `pytest tests/test_agentic_workflow.py` returns zero (29
+tests, no model call) and `python eval/run_agentic_eval.py` returns zero against
+`eval/agentic/results.json`.
+
+The measurement: **6/6 outcomes and 42/42 criteria agreeing, 80/80 spans valid,
+zero errors, every bound respected — at 73.4x the input tokens and 4.7x the model
+calls.** The agentic path is exactly as correct as the oracle and pointless on
+this corpus, which is a more useful result than a disagreement would have been.
+
+The per-patient spread is 10x to 446x and the outlier has one cause: a patient
+with 3,780 observations, a tool that returns all of them, and a context that
+re-sends them every turn. **The model pays to look at data Python filters for
+free.** That is T-65.
 
 ---
 

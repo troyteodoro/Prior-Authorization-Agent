@@ -298,6 +298,13 @@ def measure(limit: int | None = None) -> int:
                 "document_ids": sorted(
                     {s.document_id for r in oracle.criterion_results for s in r.spans}
                 ),
+                # The oracle's cost, for the comparison that turned out to be the
+                # finding. Free to compute — its only model call is the replayed
+                # extraction — and recomputable by --rescore without spending.
+                "model_calls": oracle.model_calls,
+                "input_tokens": oracle.total_input_tokens,
+                "output_tokens": oracle.total_output_tokens,
+                "wall_time_ms": round(oracle.total_wall_time_ms, 1),
             },
         }
         try:
@@ -424,7 +431,32 @@ def aggregate(records: list[dict]) -> dict:
         "total_wall_time_ms": round(
             sum(r["agentic"]["wall_time_ms"] for r in scored), 1
         ),
+        # What the same answers cost the deterministic path. Reported beside the
+        # agentic figures because a comparison of outcomes alone would say the two
+        # paths are equivalent, and on cost they are not remotely (Art. X, A6).
+        "oracle_model_calls": sum(
+            r["oracle"].get("model_calls", 0) for r in scored
+        ),
+        "oracle_input_tokens": sum(
+            r["oracle"].get("input_tokens", 0) for r in scored
+        ),
+        "oracle_output_tokens": sum(
+            r["oracle"].get("output_tokens", 0) for r in scored
+        ),
+        "input_token_ratio": _ratio(
+            sum(r["agentic"]["input_tokens"] for r in scored),
+            sum(r["oracle"].get("input_tokens", 0) for r in scored),
+        ),
+        "model_call_ratio": _ratio(
+            sum(r["agentic"]["model_calls"] for r in scored),
+            sum(r["oracle"].get("model_calls", 0) for r in scored),
+        ),
     }
+
+
+def _ratio(agentic: int, oracle: int) -> float | None:
+    """Agentic cost as a multiple of the oracle's. `None` when nothing to divide."""
+    return round(agentic / oracle, 1) if oracle else None
 
 
 # --------------------------------------------------------------------------
@@ -490,6 +522,60 @@ def verify(report_only: bool = False) -> int:
     return EXIT_OK
 
 
+def rescore() -> int:
+    """Recompute the oracle half and the aggregate. **Spends nothing.**
+
+    The agentic side is what cost money and is left exactly as measured. The
+    oracle side replays the committed extraction recording, so it is free and
+    reproducible — which is what lets a figure be added to the artifact without
+    re-running the measurement it belongs to. `scripts/run_extraction.py`
+    established this shape and D18 established why: re-deriving what is free is
+    not the same act as re-measuring what is not.
+    """
+    if not OUT_PATH.exists():
+        print(f"no recording at {OUT_PATH.relative_to(REPO_ROOT)}", file=sys.stderr)
+        return EXIT_NO_MEASUREMENT
+
+    payload = json.loads(OUT_PATH.read_text(encoding="utf-8"))
+    policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
+    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    runner = RecordedExtractionRunner.from_records(
+        recording["notes"], model=recording["model"]
+    )
+
+    for row in payload["patients"]:
+        oracle = _run_one(
+            policy_store, patient_store, runner, FixedRetrievalPlanner(),
+            row["patient_id"],
+        )
+        row["oracle"].update(
+            {
+                "model_calls": oracle.model_calls,
+                "input_tokens": oracle.total_input_tokens,
+                "output_tokens": oracle.total_output_tokens,
+                "wall_time_ms": round(oracle.total_wall_time_ms, 1),
+            }
+        )
+        if row.get("agentic"):
+            # The differential is recomputed too, so a change to the oracle can
+            # never leave a stale comparison sitting beside a fresh cost figure.
+            row["disagreement"] = compare(
+                row["agentic"]["verdicts"], row["oracle"]["verdicts"]
+            )
+            row["outcome_agrees"] = (
+                row["agentic"]["outcome"] == row["oracle"]["outcome"]
+            )
+
+    payload["rescored_at"] = datetime.now(timezone.utc).isoformat()
+    payload["aggregate"] = aggregate(payload["patients"])
+    OUT_PATH.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"rescored {len(payload['patients'])} patients, no model call")
+    report(payload)
+    return EXIT_OK
+
+
 def report(payload: dict) -> None:
     print(
         f"\n  measured {payload.get('measured_at', '?')} · model "
@@ -530,11 +616,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--report", action="store_true", help="print the comparison and stop."
     )
+    parser.add_argument(
+        "--rescore",
+        action="store_true",
+        help="recompute the oracle side and the aggregate from the recording. "
+        "Spends nothing: the oracle's only model call is a replayed extraction.",
+    )
     parser.add_argument("--limit", type=int, default=None, help="first N patients only")
     args = parser.parse_args(argv)
 
     if args.measure:
         return measure(args.limit)
+    if args.rescore:
+        return rescore()
     return verify(report_only=args.report)
 
 
