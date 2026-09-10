@@ -1,7 +1,15 @@
 # CLAUDE.md
 
-Operating rules for this repository. Read this, then read `docs/` before doing
-any work.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
+
+Operating rules. Read this, then read `docs/` before doing any work.
+
+**What belongs in this file:** whatever a future session must not violate.
+*Why* a rule exists belongs in `docs/decisions.md`, which is append-only and
+numbered. This file used to carry a paragraph per closed task and had started
+contradicting itself; the narrative was moved out and the constraints kept, each
+with its D-number *(D70)*.
 
 ## Project
 
@@ -17,11 +25,11 @@ an instruction typed into a prompt.
 
 | File | What it is |
 |---|---|
-| `docs/constitution.md` | Ten articles. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-40 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
+| `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-33, each with a runnable exit condition. |
-| `docs/decisions.md` | D1–D15, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-69, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
+| `docs/decisions.md` | D1–D70, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -45,6 +53,11 @@ The articles most likely to be violated by accident:
 - **VIII** — no task closes without a command that returns zero. A grep for a
   string in a doc is not a check. *(See D10.)*
 - **IX** — the decision entry is written *before* the code it justifies.
+
+**Amendment 1 scopes model adjudication to the agentic path only.** Articles I
+and II bind everything else as written — `workflow.py`, `aggregate.py`,
+`criteria.py`, `reconcile.py`, `resolver.py` — which is the only reason the
+deterministic path is usable as a regression oracle *(D62)*.
 
 ## Working rules
 
@@ -71,8 +84,143 @@ The articles most likely to be violated by accident:
 8. **Timeboxes are real.** When a task blows its box, write a decisions entry
    naming what broke instead of grinding.
 9. **No infrastructure the project has not earned.** No GCP setup, no Terraform,
-   no containers, no CI, no vector search. (See D4 for why vector search is out.)
+   no containers, no CI, no vector search. (See D4 for why vector search is out,
+   and D70 for the measurement that would let it back in.)
 10. **Never write a real API key into a tracked file.** Placeholder only.
+
+## Commands
+
+`python` is not on PATH; the tracked venv is at `./venv/bin/python`.
+
+```bash
+./venv/bin/python scripts/check_gates.py        # all 8 gates, ~12s. Required at every close.
+./venv/bin/python -m pytest -q                  # the suite alone (532 tests, ~8s)
+./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
+./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
+```
+
+The eight gates, all zero-cost: `pytest`, then `check_env.py`,
+`check_skeleton.py`, `verify_sources.py --offline`, `select_patients.py
+--verify`, `spike/spike_001/run.py --verify`, `eval/run_eval.py`,
+`eval/run_agentic_eval.py`. **Membership is a rule, not a taste call** — a
+command is a gate iff some task's exit condition names it *and* it spends no
+model call and touches no network. Everything else tracked under `scripts/`,
+`eval/` and `spike/` sits in `EXCLUDED` with a stated reason, and
+`tests/test_check_gates.py` fails on a tracked script in neither list *(D69)*.
+
+Run the system:
+
+```bash
+./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775   # a real determination, zero model calls
+```
+
+CLI exit codes: `0` an answer, `1` a bad request (unknown patient), `2` an
+unbuilt path.
+
+Commands that **spend model calls** and are therefore in no gate:
+`scripts/run_extraction.py`, `scripts/run_adk_extraction.py`,
+`eval/run_agentic_eval.py --measure`. Each has a `--rescore` / replay path that
+re-derives every number from the committed recording for free — use it.
+
+There is no README yet; that is **T-23**.
+
+## Architecture
+
+Request in, determination out. `pa_agent/cli.py` is the one place a store is
+constructed (REQ-41); everything else receives ports.
+
+**Two short circuits, then a fixed graph.** `resolver.py` answers sc1 from
+procedure-set membership (`NotCovered` / `NoPolicyFound` / `ResolvedByContractor`
+/ `Resolved` — four types, never one type with a field). `determination.py`
+answers sc2, the national T2DM-with-BMI-under-35 exclusion. Both spend zero model
+calls. Anything surviving both enters `workflow.py`.
+
+**`workflow.py` is plain Python and deliberately not an ADK `Workflow`.** `STEPS`
+is a module-level tuple of seven named callables — gather, extract, criterion_a,
+reconcile, criterion_b, qualifying_run, criteria_c — and a driver walks it and
+records what it visited. An ADK `Workflow` would put `google.adk` on the import
+path of every deterministic test, and the three `sys.modules` assertions that
+would catch that are the ones that would have to be deleted to allow it. The
+graph has one conditional — whether a short circuit fired — and that is a
+`return`, not an edge *(D62)*.
+
+**Two ports at the model boundary, which is what makes the differential real.**
+
+- `ExtractionRunner` (`runners.py`, REQ-52) — *who reads the note*.
+  `DirectExtractionRunner` (raw `google-genai`, D45's measured configuration),
+  `AdkExtractionRunner` (`pa_agent/agent/`), `RecordedExtractionRunner` (replays
+  T-15's recording, spends nothing — this is why `pytest` and `eval/run_eval.py`
+  exercise the whole chain end to end for free).
+- `RetrievalPlanner` (`retrieval.py`, D63) — *who decides what to fetch*.
+  `FixedRetrievalPlanner` (three store reads in a fixed order) and
+  `AgenticRetrievalPlanner` (the model chooses). Everything downstream cannot
+  tell which planner ran, which is what makes D64's comparison a comparison.
+
+**`build_result()` is the trust boundary.** Every runner returns through it. ADK
+output is untrusted model output and there is no private route to a `WmEvent`.
+
+**Two storage ports, two planes** (`stores/policy.py`, `stores/patient.py`,
+REQ-41, Article VI). `stores/__init__.py` imports neither submodule on purpose —
+a package-level re-export would be the module that reaches both planes.
+Production is a second adapter, which is the whole reason the ports exist *(D25)*.
+
+**Adjudication is seven criteria.** (a) BMI and (b) comorbidity read structured
+FHIR (`criteria.py`); c1–c5 are pure predicates over extracted `wm_events`. c3
+computes the qualifying run **once** and c2, c4 and c5 scope to it. `reconcile.py`
+then runs REQ-34 across the structured and note BMIs. `aggregate.py` parses the
+policy's own `decision_expression` — parsed, never `eval()`'d and never
+hardcoded as `all(...)`.
+
+**Evidence is mechanical throughout.** `anchor.py` locates what the model quoted,
+`index.py` resolves an id to text and slices, `spans.py` validates or raises with
+a classified reason. A locator must not be able to launder its bugs through the
+validator, which is why anchoring and validation are separate modules.
+
+## Invariants a fresh session will break silently
+
+The dangerous set. Each of these can be violated while **every test keeps
+passing**, because the tests are written in terms of the thing that broke.
+
+- **Never give the extraction agent structured observations** *(D62)*. Hand it
+  the structured BMI while asking for the note's and T-33's two independent
+  readings stop being two. E10b would quietly start agreeing, and the tests —
+  which compare those two readings — would pass *because* the system broke.
+  `EXTRACTION_ALLOWLIST` is `("read_note",)`.
+- **The two tool allowlists are disjoint, not nested** *(D66)*. The extractor has
+  no route to a second document at all: not a bundle, not another patient's note.
+- **Never return `None` or `[]` from an unimplemented store half or planner**
+  *(D31, D39, D63)*. A policy store returning `None` reports `NO_POLICY_FOUND`
+  for all of Medicare; a patient store returning `[]` manufactures E7 for every
+  patient; a planner returning nothing makes every chart look empty. All three
+  are well-formed answers that every downstream test agrees with. Raise, and name
+  the task.
+- **The tool payload is never the evidence path** *(D66)*. `gather()` re-reads
+  observations, conditions and the value set from the port, which is what makes
+  `MAX_ROWS` truncation a cost control rather than a quiet second filter free to
+  disagree with criterion (a).
+- **`NOT_MET` / `INSUFFICIENT_EVIDENCE` / `ERROR` never collapse** (Article IV,
+  D7, D9). An abstention cites nothing and carries a `gap_reason`; a `MET` or
+  `NOT_MET` carries a span and no reason. Both directions are validators.
+- **Criteria trees never move into a store's write path** (Article VII, D25).
+  Git is the source of truth; a store may serve a deploy-time read-only
+  projection.
+- **A changed call configuration is a new measurement, never a re-run** *(D45)*.
+  A changed tool declaration is a changed prompt *(D64, D66)*. A changed SDK is a
+  changed measurement *(T-63)*. Nothing may quote D45's numbers for the ADK path.
+- **Never make a gate call a model** *(D45)*. Measurement scripts spend the
+  calls; `pytest` re-reads the recording, re-hashes every note, re-validates
+  every span and checks the recorded model is the pin.
+- **`pa_agent/model_pin.py` is the only tracked Python that may name a model**
+  *(D20)*, test files included — that rule is what left the suite red in T-67.
+- **Spans are located by searching the model's verbatim quote**, exact first then
+  whitespace-normalized, always recording raw offsets *(D18)*. The model's own
+  offsets are unusable: 0 of 80 in the spike, 0 of 171 in T-15.
+- **`BLOCKED` is not `FAIL`, and `skipped` is not `failed`** *(D27, D67)*.
+  "Answered wrongly" and "the component does not exist yet" have different next
+  actions and only one names a task.
+- **The eval gate is a baseline diff.** Drift in **either** direction fails, so a
+  case that starts passing is acknowledged with `--update-baseline` and a commit
+  *(D27)*.
 
 ## Verified environment facts
 
@@ -82,23 +230,28 @@ you.** Do not override these from prior knowledge.
 
 - `google-adk` installs at **2.8.0**. Pin exactly: `google-adk==2.8.0`.
 - **Python 3.12** is the target. `python3.12` is at `/opt/homebrew/bin/python3.12`.
-  The `venv/` in the working tree is **Python 3.12.14** and matches. Rebuilt in
-  T-03.
+  The `venv/` in the working tree is **Python 3.12.14** and matches.
+- `requirements.txt` is exact pins that follow the **installed** set, because
+  that is the environment every recorded number was produced by. Verified by
+  `scripts/check_env.py`, which parses every tracked `.py` with `ast` and fails
+  on an undeclared import, a stale pin, a range, or an import it cannot map. It
+  compares file to environment and **cannot tell you the environment is
+  correct** *(D49)*.
 - Top-level API surface: `Agent`, `Context`, `Event`, `Runner`, `Workflow`.
 - `Workflow` is a Pydantic model. Its `edges` field is a **static list of edges
   supplied at construction**. Other fields: `retry_config`, `max_concurrency`,
   `state_schema`, `input_schema`, `output_schema`, `timeout`.
 - `edges` is `list[EdgeItem]` where `EdgeItem = Edge | tuple[ChainElement, ...]`
   and a `RoutingMap` inside `ChainElement` carries conditional routing (*corrected
-  in D62; the earlier note said `dict[bool|int|str, ...]`*). **Keying a branch off
-  model output violates Article I. Never do this.** Branch keys come from
-  deterministic Python values only.
+  in D62*). **Keying a branch off model output violates Article I. Never do
+  this.** Branch keys come from deterministic Python values only.
 - `SequentialAgent`, `ParallelAgent` and `LoopAgent` are all **deprecated** in
   2.8.0 in favour of `Workflow`. `LlmAgent` is itself a `BaseNode`.
 - `output_schema` and `tools` work **together**, but natively only on Vertex:
   `models/_capabilities.py` gates `output_schema_and_tools` on the Vertex
   variant, so on AI Studio ADK injects a `SetModelResponseTool` and an extra
-  instruction instead. **The tier changes the prompt, not just the endpoint** (D62).
+  instruction instead. **The tier changes the prompt, not just the endpoint**
+  *(D62)*.
 - `LlmAgent(model=<BaseLlm instance>)` runs the whole flow — tool calls,
   `output_schema`, plugin hooks, `usage_metadata` — with **no network and no
   credential**. That is how `tests/test_adk_agent.py` tests ADK rather than a
@@ -111,682 +264,137 @@ you.** Do not override these from prior knowledge.
   `conformance`, `migrate`, `api_server`, `deploy`.
 - `adk create <name>` writes `__init__.py`, `agent.py`, `.env`, `.gitignore`
   directly into `<name>/`. It does not create an agent subfolder — the move into
-  `pa_agent/agent/` was manual. *(D16)*
+  `pa_agent/agent/` was manual *(D16)*.
 - `adk web [AGENTS_DIR]` treats each **subdirectory** of `AGENTS_DIR` as one app,
   so `adk web pa_agent` serves the app named `agent`.
 - `GET /` on `adk web` returns **307** to `/dev-ui/`, not 200. `GET /list-apps`
-  returns 200 with a JSON array of discovered app names. *(D16)*
+  returns 200 with a JSON array of discovered app names *(D16)*.
 
 Per D5: develop against the AI Studio free tier, run final evals and any demo
-through Vertex, because Vertex does not train on submitted data.
+through Vertex, because Vertex does not train on submitted data. **D19's and
+D45's numbers are AI Studio numbers**; a Vertex run of the same corpus is a new
+measurement, not a confirmation.
+
+## Method note: mutation testing
+
+Every close in this repo mutation-tests its own gate. Three things a harness gets
+wrong silently:
+
+- **Clear `__pycache__` after restoring.** A same-length mutation restored within
+  the same second leaves Python's bytecode cache looking valid, and a "passing"
+  suite can be running the mutant.
+- **Run pytest with `--color=no`.** With `-q`, an ANSI escape prefixes `FAILED`
+  lines, so a `^FAILED` scan reports every mutation as surviving — six false
+  survivors in T-68's close *(D68)*.
+- **A mutation that hangs is not a mutation that was caught.** Deleting T-69's
+  recursion guard made the suite spawn itself and the harness returned no exit
+  code at all, which is why that guard is asserted by parsing rather than by
+  spawning *(D69)*.
+
+Related: **when a behavioural test cannot catch a mutation, parse the AST
+instead.** A resolver that branches on an id's shape and *then* falls through to
+the record answers identically on every input the corpus can produce *(D65)*; a
+label check that falls through to the port answers identically on all eleven
+notes *(D67)*. Both are pinned by parsing.
+
+## Current state
+
+**43 of 55 tasks closed, 12 open. All 8 gates green** (`check_gates.py`, ~12s,
+532 tests across 25 files). IDs run to T-69, but numbering is not contiguous —
+the highest id is not the count.
+
+Delivered: **US-1, US-2, US-3**. `python -m pa_agent.cli --patient <uuid>
+--procedure 43775` prints a real determination — seven criterion verdicts, spans
+that slice back, a gap list and Article X's counters — for zero model calls,
+because the default extraction runner replays T-15's recording.
+
+**US-4 and US-5 are built and ungraded.** Every predicate, the reconciliation,
+the aggregator and the gap list work and are pinned by unit tests; both stories
+close on eval-harness rows and `eval/cases.json` holds one case. That is
+**T-21**, and it is why the board's order starts where it does.
+
+Open, in order: **T-41 → T-21 → T-29/T-30 → T-17 → T-32 → T-22/T-28/T-23**, with
+T-63, T-27 and T-42 off the path. `docs/tasks.md` opens with `Path to v1`, which
+states this once with what each step gates — read it rather than this paragraph
+*(D70)*.
+
+Two things worth knowing before a review: **Article V has no implementation**
+(that is T-17, one task), and **REQ-44/REQ-47 are unclaimed on purpose** —
+Amendment 1 reserves the entire decision procedure to Python, so there is no
+verdict a model could determine without doing something reserved. They are
+declared in spec §5's *Unclaimed in v1* table, which is what makes A7
+satisfiable *(D63, D70)*.
+
+### Domain facts that took work to establish
+
+- **The policy corpus is three documents and one jurisdiction** *(D21, D29)*:
+  `ncd_100_1` (national), `a53028` (Noridian, A/B MAC, **Jurisdiction F**), and
+  `r931cp` (CMS Pub. 100-04 Transmittal 931). **NCD 100.1 quantifies nothing** —
+  no months, no visit counts, no recency. Every constant in the criteria tree
+  comes from A53028, so this system determines coverage *as Noridian would*, and
+  a different MAC is a different tree over the same NCD. Say that plainly in a
+  review rather than calling the thresholds CMS's.
+- **`r931cp` is citable for code bindings only, never coverage claims** — its
+  coverage content predates the 2012 LSG delegation *(D29)*.
+- **A procedure code carries two citations of different classes** *(D28)*: "this
+  procedure is non-covered" and "this code denotes that procedure" are different
+  claims with different sources. Merging them into one `source` field is the move
+  D28 refused.
+- **43842, not 43775, is the non-covered case** *(D22, D28)*. The NCD non-covers
+  laparoscopic sleeve gastrectomy only *"prior to June 27, 2012"*, then delegates
+  to the MACs; 43775 is therefore contractor-determined and lands in a **covered**
+  case. 43842 (open vertical banded gastroplasty) is named non-covered for all
+  beneficiaries with no date qualifier.
+- **A53028's facility ICD-10-PCS lists are not lookup keys** *(D30)*. They
+  overlap across procedures in the source itself, so a facility code does not
+  denote one procedure. Marked `identity: false`. Do not promote them.
+- **c5 is a rate, not a count** *(D24)*. It carries c4's `documentation_rate`
+  from the same span.
+- **The note's current BMI is a different fact from `WmEvent.bmi`** *(D50)*.
+  Criterion (a) asks what the patient's BMI is now; c4 asks what each month
+  documented.
+- **Two constants are decisions, not spans**, recorded with a name and a date:
+  criterion (a)'s 12-month lookback *(D40)* and `discrepancy_tolerance` at 1.0
+  BMI points *(D51)*. The tree carries no provisional constant, and the count is
+  pinned at zero so a new one is a visible diff.
+- **The eval ground truth was authored by the agent building the system it
+  grades** *(D19, D42)*. Structural mitigations are in place and a perfect score
+  still means only that the approach does not obviously fail. Do not quote a
+  number from this repo without that caveat.
+- **The measured result so far** *(D64, D66)*: model-directed retrieval agrees
+  with the deterministic oracle on 6/6 outcomes and 42/42 criteria, 80/80 spans
+  valid, zero errors — at 13.9x the input tokens. Read the aggregate and the
+  spread, never one patient's ratio.
 
 ## Repo layout
 
 ```
-pa_agent/            package: resolver, criteria, spans, cli
-  agent/             adk create writes here
+pa_agent/            resolver, criteria, spans, index, anchor, workflow,
+                     retrieval, runners, extraction, reconcile, aggregate,
+                     determination, contracts, model_pin, cli
+  agent/             ADK: extraction_agent, retrieval_agent, patient_tools,
+                     policy_tools, tool_bounds, agent (adk web entry point)
+  stores/            policy.py and patient.py — the two ports and their
+                     file-backed adapters. __init__ imports neither.
 data/policies/
-  source/            T-02 lands here
-spike/
-  spike_001/         T-00: notes/, results.json, run.py
-scripts/
-tests/
+  source/            ncd_100_1, a53028, r931cp + sources.json, answers.json
+  value_sets/        obesity_comorbidities.json (SNOMED)
+  ncd_100_1_jf.json  the criteria tree, policy_version_id ncd-100.1-jf-v1
+data/patients/
+  bundles/           six Synthea v4.0.0 bundles + manifest.json
+  notes/             six synthesized chart notes + manifest.json
+  work/              gitignored: the Synthea jar and the full 200-patient run
 eval/
+  cases.json         the eval set (one case; T-21 expands it)
+  baseline.json      what run_eval.py diffs against
+  manifests/         T-06's ground truth — the system under test never reads it
+  extraction/        results.json — T-15's recording. T-63's two ADK recordings
+                     land here as adk_results_{inline,tool_fetch}.json (D68).
+  agentic/           results.json — T-61's recording
+spike/spike_001/     notes/, results.json, run.py — five notes, no patient
+scripts/             check_gates, check_env, check_skeleton, verify_sources,
+                     select_patients, synthesize_notes, run_extraction,
+                     run_adk_extraction
+tests/               25 files, 532 tests
 docs/
 ```
-
-## Current state
-
-**T-03, T-00, T-34, T-02, T-01 and T-37 are closed.** `python scripts/check_skeleton.py` returns zero:
-target layout present, `google-adk` at 2.8.0, `pa_agent.agent` imports with a
-reachable `root_agent`, and a spawned `adk web` answers 200 on `/list-apps`
-naming the agent before the script terminates it.
-`python spike/spike_001/run.py --verify` returns zero and spends no model call.
-`pytest tests/test_model_pin.py` and `python scripts/verify_sources.py` return
-zero. The latter hits the network; `--offline` skips the re-download and does not
-close T-02.
-
-**The policy corpus is three documents and one jurisdiction (D21, D29).**
-`data/policies/source/` holds `ncd_100_1` (national) and `a53028` (Noridian
-Healthcare Solutions, A/B MAC, **Jurisdiction F**), stored as extracted text —
-the MCD emits a fresh CSP nonce per response, so raw HTML has no reproducible
-hash. T-40 added `r931cp` (CMS Pub. 100-04 Transmittal 931, CR 5013, 2006), the
-claims-processing transmittal that binds procedure names to HCPCS codes — a
-static PDF, byte-stable, extracted with pinned `pypdf==6.18.0`. **`r931cp` is
-citable for code bindings only, never coverage claims**: its coverage content
-predates the 2012 LSG delegation (D29). NCD 100.1 quantifies **nothing**: no
-months, no visit counts, no recency.
-Every constant in the criteria tree comes from A53028, so this system determines
-coverage *as Noridian would*, and a different MAC is a different tree over the
-same NCD. Say that plainly in a review rather than calling the thresholds CMS's.
-
-Answered with spans in `answers.json`: c5 documentation is **monthly**; c2's
-window is **12 months**, and the same sentence fixes c3's run at **four
-consecutive months**.
-
-**The criteria tree exists (D23).** `data/policies/ncd_100_1_jf.json`,
-`policy_version_id` `ncd-100.1-jf-v1`. Every sourced constant carries a span the
-test slices out of the hashed corpus, and the tree records the corpus hashes so a
-moved document fails the gate. Sourced: BMI ≥ 35 inclusive, one comorbidity, c2
-12 months, c3 four consecutive months, c4 per-month BMI, c5 both diet and
-activity. **One constant is provisional and must not be defaulted by the task
-that consumes it** — `discrepancy_tolerance` (question 5, T-33). Criterion
-(a)'s lookback resolved to **12 months by Troy's decision** (D40, question 4
-closed), carried as a note and never a span.
-
-**c5 is a rate, not a count (D24).** A53028's `monthly` governs the whole
-three-item list in the sentence that quantifies c4 and c5, so c5 carries c4's
-`documentation_rate` — `every_month_of_run`, same span, sourced rather than
-provisional. `c5_min_documented_events` is gone and REQ-37 is rewritten to the
-per-month shape. A seven-month run documenting diet and activity in four months
-was `MET` under the count and is `NOT_MET` under the rate. c4 and c5 share the
-rate and differ in their predicate, so they stay separate criteria. **T-16 builds
-against the rate.**
-
-**43775 is not the non-covered case (D22), and T-35 has re-pointed E3 (D28).**
-NCD 100.1 non-covers laparoscopic sleeve gastrectomy only *"prior to June 27,
-2012"*; after that it is delegated to the MACs, and A53028 records this MAC
-covering it. **E3 and T-25 are now 43842, open vertical banded gastroplasty**,
-which the NCD names non-covered for all beneficiaries with no date qualifier and
-no delegation clause. 43775 belongs in a covered case; T-38 lands it in the
-contractor-determined set. **T-36 answered: it is a third sc1 outcome** (D33,
-REQ-42).
-
-**A procedure code carries two citations, and since T-40 both are sourced (D28,
-D29).** "This procedure is non-covered" and "this code denotes that procedure"
-remain different claims with different sources: E3's `coverage_claim` spans
-`ncd_100_1`, and its `code_binding` now spans `r931cp[15038:15092]` — "Open
-vertical banded gastroplasty ( HCPCS code 43842)" — with `in_corpus: true`.
-Open question 7 is closed. The two classes stay separate in every artifact;
-merging them into one `source` field is still the move D28 refused. If D29
-reverses (the PDF stops re-downloading to its hash, or a binding is disproved),
-the affected bindings fall back to `in_corpus: false` and the D28 posture.
-
-**One module names the model (D20).** `pa_agent/model_pin.py` pins
-`gemini-3.5-flash-lite` — the model D19 was measured on — and it is the only
-tracked Python file allowed to write a model identifier. Everything else imports
-`PINNED_MODEL`. T-34's test asserts a bare `python spike/spike_001/run.py` would
-measure on the model `results.json` records, and scans tracked Python for stray
-literals. **D19's numbers are AI Studio numbers**; a Vertex run of the same
-corpus is a new measurement, not a confirmation.
-
-**D2 survives first contact (D19).** Three complete runs of five hand-labeled
-notes on `gemini-3.5-flash-lite` at temperature 0: event precision 1.000, recall
-1.000, REQ-9 exclusion 51/51, identical event dates on every note across runs.
-Read D19's caveats before quoting any of that — 30 of the 51 traps are merely
-unrelated sections, so **21/21 is the honest number** against the kill criterion,
-and the corpus is five notes Troy wrote scored against labels Troy wrote.
-
-**The model cannot produce character offsets.** 0 of 80 emitted
-`char_start`/`char_end` pairs were usable, even compared modulo whitespace.
-Spans are located by searching for the model's verbatim quote — exact first,
-then whitespace-normalized, always recording raw offsets (D18). T-15 has to
-build this; it is not optional machinery, and D17's plan to take the model's
-offsets directly is dead.
-
-Outside the spike the skeleton is still empty scaffolding.
-`pa_agent/agent/agent.py` remains the `adk create` template — a generic
-assistant, not any part of the design, though it now reads the pin instead of a
-literal. No criteria tree, no schemas, no policy data, and the only test is
-T-34's.
-
-**The end state is a production deployment against two databases (D25)** — one
-holding insurance codes, one holding patient data. That target is now a
-constraint on code being written, not a someday: T-09 defines `PolicyStore` and
-`PatientStore` as two Protocols with file-backed local implementations, and
-REQ-41 forbids any module outside an adapter from opening a file path or holding
-a connection. Production becomes a second adapter. **Criteria trees do not move
-into a database write path** — Article VII wants a diff and a reviewer for every
-clinical rule change, so git stays the source of truth and a store may serve a
-deploy-time read-only projection. The database fixes lookup scaling and does not
-touch the real wall: c1–c5 are hand-written Python for one policy's shape, so
-policy #2 costs a developer. A predicate DSL is the answer to that and is
-deliberately not open.
-
-**T-38 is closed: the tree carries three procedure sets, and REQ-2 reads
-membership (D26, D30).** `covered_procedures` is gone from the spec. Members
-are procedures in D28's two-citation shape; ten identity bindings, all
-`in_corpus: true` (seven CPT from `r931cp`, 43775 and 0DV64CZ from `a53028`),
-pairwise disjoint across sets. **A53028's facility ICD-10-PCS lists are spanned
-transcriptions marked `identity: false` and are not lookup keys** — they
-overlap across procedures in the source itself (0D160ZB in two lists; 0DV64CZ
-and 0DB64Z3 inside the lap Roux-en-Y list while the article assigns them to
-LSG), so a facility code does not denote one procedure. Do not promote them.
-The contractor-determined set records a corpus fact; its resolver outcome is
-`ResolvedByContractor` since T-36 closed (D33). Mutation-tested eleven ways in
-the T-38 close.
-
-**T-09 is closed.** `pytest tests/test_schemas.py` returns zero.
-`pa_agent/contracts.py` holds the models; `pa_agent/stores/policy.py` and
-`pa_agent/stores/patient.py` hold the two ports and their file-backed adapters.
-`pa_agent/stores/__init__.py` imports neither submodule on purpose — a
-package-level re-export would be the module that reaches both planes. Three
-invariants are validators, not conventions: `Document` verifies its hash on
-construction, `EvidenceSpan` refuses reversed and negative offsets, and
-`CriterionResult` refuses a `MET`/`NOT_MET` without a span *and* an
-`INSUFFICIENT_EVIDENCE` with one. `Criterion.require()` raises on a provisional
-constant rather than returning `None`.
-
-**Both unimplemented halves raise and name their task.**
-`LocalPolicyStore.resolve` raises `NotImplementedError` citing T-38 — the tree
-has no procedure sets to read. Every `LocalPatientStore` method raises citing
-T-04. Do not "fix" either by returning `None` or `[]`: the first reports
-`NO_POLICY_FOUND` for all of Medicare, the second manufactures E7 for every
-patient, and in both cases the downstream tests agree with it.
-
-`CriterionVerdict` has two of Article IV's three states. **`ERROR` is T-26's**,
-and `tests/test_schemas.py` asserts its absence so adding it without the
-classifying enum and the determination validator fails loudly.
-
-**T-10 is closed, and the eval gate is a baseline diff (D27).**
-`python eval/run_eval.py` returns zero — it reports `BLOCKED` on E3 and matches
-`eval/baseline.json`. The exit code means *observed matches the baseline*, never
-*every case passed*: drift in **either** direction fails, so a case that starts
-passing has to be acknowledged with `--update-baseline` and a commit. That is
-what makes US-1's close a command rather than a table someone reads.
-
-Three case statuses, and **`BLOCKED` is not `FAIL`** — "answered wrongly" and
-"the component does not exist yet" have different next actions, and only one
-names a task. Blocking is *discovered* from the `NotImplementedError` the system
-raises, never declared on the case. The scorer runs seven self-checks before
-scoring anything, because every scoring branch is unreachable by a real case
-until T-25 produces a `Determination`; a self-check failure exits 2 and
-suppresses the report.
-
-**E3 now carries 43842 and reports `BLOCKED/NOT_IMPLEMENTED`** — it reaches
-`LocalPolicyStore.resolve` and gets the `NotImplementedError` citing T-38. That
-move was the first real exercise of D27's gate: the drift failed the run, and
-`--update-baseline` plus a commit is what recorded it. The eval set holds E3
-alone; the rest of spec §6 is **T-21**.
-
-**T-35 is closed.** `pytest tests/test_e3_code.py` and `python eval/run_eval.py`
-both return zero. Its exit condition was rewritten by D28 for two defects in its
-own text: it asked for a *code* spanned to `ncd_100_1`, which no document can
-supply, and it closed on `tests/test_resolver.py`, a file **T-24** creates — so
-T-35 could not close until the thing it blocks was built, which is the defect D26
-named in T-36. Ten mutations, each caught by the check that should catch it; the
-sharpest is citing 43775's own bullet, which slices back, is unique, and sits
-inside the non-covered list — only the date-qualifier assertion catches it.
-
-**T-43 is closed (D49), and the declared environment equals the installed one.**
-`requirements.txt` claimed pydantic 2.12.3 and pytest 8.4.2 while the venv held
-2.13.5 and 9.1.1, and `google-genai` — the SDK issuing every model call the
-project has measured — was undeclared, arriving transitively through
-`google-adk`. **The pins move up to the installed set**, because that is the
-environment every recorded number in this repo was produced by; the file is
-what drifted. `python scripts/check_env.py` returns zero: it parses every
-tracked `.py` with `ast`, maps third-party imports to distributions, and fails
-on an undeclared import, a stale pin, a range instead of an exact pin, or an
-import it cannot map. Mutation-tested five ways. It compares file to
-environment and **cannot tell you the environment is correct** — model
-provenance still rests on `PINNED_MODEL`.
-
-**T-60 is closed (D50), and the note's current BMI is a fact of its own.**
-Discovered in T-33: E10b's BMI sits in a standalone `Measured in clinic today`
-line, its patient has no encounters *by design* (it is also E8), and both sub-35
-patients in the population are deliberately encounter-free — so **no fixture
-could host the case** and nothing in the system could reach the value REQ-34
-needs. `Extraction` gained `current_bmi` and `current_bmi_quote`, anchored like
-any other claim and with no `prefer_near`, because it belongs to no encounter.
-A note-level BMI is a **different fact** from `WmEvent.bmi`: criterion (a) asks
-what the patient's BMI is now, c4 asks what each month of a run documented, and
-conflating them was the real modelling error.
-
-**The widened schema held every number** — a new measurement per D45's rule, not
-a re-run: precision 1.000, recall 1.000, REQ-9 exclusion 11/11, field agreement
-1.000, 171/171 spans anchored, 0 model offsets usable. Only E10b's note yields a
-value; the ten others record `None`, including every note carrying per-encounter
-BMIs, so nothing was borrowed upward. E8 still yields zero events. Mutation-tested
-four ways, and `--rescore` reproduces the aggregate exactly.
-
-**T-33 is closed (D51), open question 5 is answered, and the tree carries no
-provisional constant.** `discrepancy_tolerance` is **1.0 BMI points by Troy's
-decision** — recorded like D40's lookback, a judgment with a name and a date,
-never a span. The eval set does not constrain it: E10's gap is 5.77 and E10c's
-is 0.05, so 0.5, 1.0 and 2.0 all pass every case, and saying so is the point.
-
-`pa_agent/reconcile.py` implements REQ-34 and REQ-39 over **real committed
-data** — criterion (a) on the FHIR bundles, the note side from the recording.
-Opposite sides of 35.0 resolve `INSUFFICIENT_EVIDENCE`/`SOURCE_CONFLICT` with
-**no spans** (an abstention cites nothing) and magnitude is irrelevant there;
-same-side disagreements leave the verdict alone and record an advisory
-`Discrepancy` only at or beyond tolerance. E10b is a genuine **downgrade** —
-(a) alone answers `NOT_MET` — which is what makes it test REQ-34's second
-branch rather than an abstention that was going to happen anyway.
-
-`reconciled_facts` is now a typed `ReconciledFact` whose tolerance is a
-`PolicyConstant`, so `require()`-style guards reach it; the BMI selection is
-extracted to `criteria.most_recent_bmi` so reconciliation and criterion (a)
-cannot drift about which value is authoritative. **Two guards in
-`tests/test_criteria_tree.py` were retired deliberately** — they asserted a
-provisional constant and an open question still existed — and replaced by a
-count pinned at zero, so a new one is a visible diff. Mutation-tested six ways.
-Spec §6's BMI figures were corrected to the committed data (E10b 34.6, E10c
-37.65/37.6); they were illustrative numbers written in T-01 before any patient
-existed, and nothing read them.
-
-**T-46 is closed (D52), and the value set reaches criterion (b) through the
-port.** T-13 left "which port serves it at runtime" explicitly to T-18; until
-now the only readers were two test files, by path. `PolicyStore.get_value_set`
-returns a `frozenset[str]` of **SNOMED** codes — the system `Condition.code`
-actually carries — and the test proves it by intersecting the set with the
-committed bundles. An ICD-10 set would load cleanly, compare cleanly and match
-nobody, so criterion (b) would abstain for every patient and every downstream
-test would agree with it; the mutation that swaps them is caught. An unknown id
-raises rather than returning an empty set, and a file whose `value_set_id` no
-longer matches its path raises.
-
-Active task: **none. T-63 is next — it spends model calls and is in no gate.**
-
-**T-18, T-19, T-20, T-26 and T-62 are closed (D62). The system answers.**
-`python -m pa_agent.cli --patient <uuid> --procedure 43775` prints a real
-determination — seven criterion verdicts, spans that slice back, a gap list, and
-Article X's counters — for **zero model calls**, because the default extraction
-runner replays T-15's recording.
-
-**The seam is one port.** `pa_agent/runners.py` declares `ExtractionRunner`
-(REQ-52), and three things satisfy it: `DirectExtractionRunner` (raw
-`google-genai`, D45's measured configuration), `AdkExtractionRunner`
-(`google-adk` 2.8.0, in `pa_agent/agent/`), and `RecordedExtractionRunner`
-(replays `notes[].raw`, spends nothing). **Every one returns through
-`build_result()`, which is the trust boundary** — ADK output is untrusted model
-output and there is no private route to a `WmEvent`. The recorded runner is why
-`pytest` and `eval/run_eval.py` evaluate the whole chain end to end for free.
-
-**The graph is plain Python and deliberately not an ADK `Workflow`.**
-`pa_agent/workflow.py` holds `STEPS`, a module-level tuple of nine named
-callables, and a driver that walks it and records what it visited. An ADK
-`Workflow` would put `google.adk` on the import path of every deterministic
-test, and the three `sys.modules` assertions that would catch that are the ones
-that would have to be deleted to allow it. The graph has one conditional —
-whether a short circuit fired — and that is a `return`, not an edge.
-
-**Article I is asserted structurally, not promised.** The driver's body contains
-no branch on model output; every loop iterable is enumerated in the gate
-(`STEPS`, `tree.criteria`, `range(max_attempts)`, `state.notes`); the count of
-branches anywhere in `workflow.py` that read an extraction field is **pinned at
-one** — the note-level BMI merge, which routes nothing — so a second is a visible
-diff. On the agent side: `SingleFlow` (so `transfer_to_agent` is never injected),
-`include_contents="none"`, a literal tool list, and a `max_llm_calls` ceiling.
-
-**The extraction agent reaches exactly one document, and that is the sharpest
-decision in T-62, narrowed by T-66.** It is **not** given
-`get_patient_observations` — handing the model the structured BMI while asking it
-for the note's is how T-33's and T-60's two independent readings stop being two,
-and E10b would quietly start agreeing while every test kept passing. Since T-66 it
-is given no patient-plane tool at all: `EXTRACTION_ALLOWLIST` is `("read_note",)`,
-a reader built by `build_note_reader` and closed over the single id under review.
-The two allowlists are **disjoint**, not nested. `patient_tools.py` and
-`policy_tools.py` are separate modules and nothing imports both (Art. VI, REQ-53);
-`tool_bounds.py` is imported by both and reaches neither plane.
-
-**Nothing may quote D45's numbers for the ADK path.** It is a different SDK, and
-under `--tool-fetch` a different prompt. `scripts/run_adk_extraction.py` is the
-measurement and **T-63 is open**; it reuses `run_extraction.py`'s corpus and
-scorer by import, so the runner is the only difference.
-
-**Amendment 1 is what makes T-61 legal** — D62 restored Articles I and II after
-they had been rewritten in place, and kept the amendment appended and scoped
-instead, so the deterministic path stays bound by the articles and therefore stays
-an oracle.
-
-**T-65 and T-66 are closed (D66), batched, and re-measured once.** Both change a
-function declaration, a declaration change is a prompt change, and a prompt change
-is a new measurement — D45's rule, which is why D64 registered T-65 rather than
-fixing it inside T-61.
-
-**One sentence covers both: a tool's scope and size are the caller's to fix, never
-parsed out of an id and never left to the chart.**
-
-**T-65 — `MAX_ROWS` in `pa_agent/agent/tool_bounds.py`, one ceiling with two
-behaviours.** *Truncate* where the payload informs the model's plan — observations,
-conditions and the policy value set each return `total`, `returned` and
-`truncated`, most-recent-first. *Fault* where the payload is the model's action
-space: `get_patient_notes` raises, because every `document_id` the model may then
-ask for comes out of it and there is no page two. A single document is not a
-collection and is exempt. Paging was rejected (it bounds the payload, not the run);
-a summary was rejected (it forecloses REQ-44, still unclaimed).
-
-**Truncation is safe only because the tool payload is not the evidence path.**
-`gather()` re-reads observations, conditions and the value set from the port, so
-the model's copy reaches no criterion —
-`test_the_bundle_is_the_ports_full_read_and_never_the_models_view` pins that on the
-3,780-observation patient, and the mutation that assembles the bundle from the
-model's view fails it. **D39 is not reversed**: the adapter still reports
-everything; the cap is one layer above the port and is not a second filter free to
-disagree with criterion (a). **REQ-54 is new** and T-65 claims it — REQ-46's four
-bounds are about the shape of the run, and a bound on a single answer is a fifth
-thing, split rather than edited.
-
-**The measurement: E2+E7 went 446x → 20.3x, the aggregate 73.4x → 13.9x**, with
-6/6 outcomes, 42/42 criteria, 80/80 spans and zero errors unchanged. The spread
-collapsed from 10x–446x to 9.5x–20.3x. What remains is turn variance and it moves
-in both directions — E5 fell 30x→9.5x, E1+E11+E10c *rose* 10x→13.4x — so read the
-aggregate and the spread, never one patient's ratio. `prompt_version` is
-`t61-retrieval-v2`.
-
-**T-66 — scope supplied twice over, and never parsed.** The retrieval agent gets
-`get_patient_document(patient_id, document_id)`. The extraction agent gets
-`read_note`, closed over the one id under review. **T-66's own text had a defect**:
-"the model already holds the patient id" is true of the retrieval agent and false
-of the extractor, whose runner is `run(document_id, text)` and has no patient id to
-pass — so deleting `_patient_of` would have broken the `tool_fetch` variant T-63
-measures. `_patient_of` is gone and
-`test_no_tool_module_reads_structure_out_of_an_identifier` parses both tool modules
-to keep it gone (T-64's AST shape, for T-64's reason: a parse-then-fall-through
-mutation survives a behavioural test). Fifteen mutations across both tasks, all
-caught.
-
-**T-67 is closed (D67): the spike notes stay off the patient plane, and
-`--tool-fetch` measures six notes rather than eleven.** Spike 001's five notes have
-no patient — no bundle, no observation, nothing for REQ-34 to reconcile against —
-so the scoped reader's `PatientStore.get_document` cannot resolve their ids. **D67
-rejects giving them a manifest entry in writing**: it would put a measurement
-fixture in the data plane (D42's line), make `LocalPatientStore` serve documents
-`get_notes` returns for no patient, and void T-07's provenance claim on
-`data/patients/notes/manifest.json`. Extraction is the one thing here that needs no
-patient — `ExtractionRunner.run(document_id, text)` has no patient id — so the
-address is not missing, it was never coherent.
-
-`scripts/run_adk_extraction.py` now **asks the port** which notes a mode can reach
-(never `case["corpus"]`, and `test_the_split_reads_no_corpus_label` parses the two
-functions to keep it that way — a label check that falls through to the port
-answers identically on all eleven notes). A note the model was never asked about is
-**`skipped`, not `failed`** — D27's `BLOCKED`-is-not-`FAIL` at a third site — and
-`by_corpus` is reported in every mode. `--compare` **recomputes both columns over
-the notes both recordings scored** and names everything it dropped; an eleven-note
-column beside a six-note one is twelve rows that look like a comparison and are
-not one.
-
-**The gate found that the script had never run.** All three record sites read
-`case["labels"]`, a key neither corpus builder produces, so it raised `KeyError` on
-note one in *both* modes since T-62 wrote it. One `_record_base()` now, and
-`pytest tests/test_adk_measurement.py` drives `measure()` with a stub runner for
-zero model calls. **"In no gate" was read as "this file is not testable"** — the
-bookkeeping around a measurement is ordinary code, which is the split `--rescore`
-already made for `run_extraction.py`.
-
-**T-68 is closed (D68): one recording per mode, and the path is derived from the
-mode.** `adk_results_inline.json` and `adk_results_tool_fetch.json`, selected by
-`adk_path(tool_fetch)`, so no invocation of either mode can land on the other's
-file — an `--out` argument keeps one default and stays clobberable, and one file
-holding both runs needs read-modify-write and breaks the record-for-record diff
-against `results.json`. `--compare` takes the same flag, prints the path it read,
-labels the column from the payload's own `tool_fetch` key and **refuses (exit 2)
-when the two disagree** — louder than the model and tier mismatches beside it,
-which still print true numbers under a true caption.
-
-**The close found that T-67 had left the whole suite red.** `_recording()` wrote
-the model name as a literal, and `tests/test_model_pin.py` scans tracked Python
-with no exception for test files (D20). T-67's exit names
-`pytest tests/test_adk_measurement.py`, which passed — **a task's exit command is
-not a substitute for the suite**, and this is the second finding of that shape in
-two tasks (T-67's was a script no gate ran). **T-69 is the fix.**
-
-**T-69 is closed (D69), and the close ritual is one command.**
-`python scripts/check_gates.py` runs the eight zero-cost gates — `pytest` first,
-then `check_env`, `check_skeleton`, `verify_sources --offline`,
-`select_patients --verify`, `spike/spike_001/run.py --verify`, `run_eval` and
-`run_agentic_eval` — in about twelve seconds, and **working rule 4 now requires
-it at every close** alongside the task's own exit condition.
-
-**Membership is not a taste call:** a command is a gate iff some task's exit
-condition names it *and* it spends no model call and touches no network. Both
-halves are auditable against `docs/tasks.md`. The cost half alone would admit
-`run_extraction.py --rescore`, which is the bookkeeping half of a measurement
-rather than a check on the repo. Everything else tracked under `scripts/`,
-`eval/` and `spike/` sits in `EXCLUDED` **with its reason**, and
-`tests/test_check_gates.py` fails on a tracked script in neither — so a new
-script has to be classified rather than quietly falling outside the ritual.
-
-**The script refuses to run inside pytest**, because it runs the suite and the
-suite collects its test. The end-to-end test of that guard was written, and
-deleted: with the guard removed it is a fork bomb, and the mutation pass hung
-rather than reporting. The guard is asserted by parsing `main` instead — T-64's
-AST shape for a new reason, that the behavioural test would not *terminate*.
-
-**What it does not fix, in writing:** it makes "everything is green" one command;
-it cannot make anyone type it. A pre-commit hook was rejected (untracked, so it
-survives no clone and appears in no diff; bypassable; working rule 9) and CI is
-named in rule 9 itself.
-
-**US-4 and US-5 have not closed.** Their closing conditions are E4–E11 and E1/E8
-passing *in the harness*, and `eval/cases.json` still holds one case. That is
-**T-21**. A determination that works and an eval set that grades it are two
-deliverables and only the first landed.
-
-**US-2 and US-3 are delivered**, and c1–c5 now evaluate correctly on every edge
-case. **T-24 is closed (D31): facts in the store, judgment in
-`pa_agent/resolver.py`.** `resolve()` returns an extended `PolicyRef` (set
-membership + spanned claim) or `None`; `resolve_sc1` maps non-covered to
-`NotCovered`, absence to `NoPolicyFound`, and — since T-36 closed —
-contractor-determined to **`ResolvedByContractor`** (D33, REQ-42): distinct in
-type from `Resolved`, identical in flow, because this corpus's MAC exercised
-the delegation and covers the procedure. Downstream, both proceed-to-tree
-types raise citing T-19, and T-19's exit now obliges a contractor
-determination to cite the delegation *and* the MAC's exercise, never the NCD
-alone. The contracts carry typed procedure sets whose validators refuse an
-unsourced identity binding and a code bound in two sets.
-
-**T-25 is closed (D32), and with it US-1 — the first delivered story.**
-`python -m pa_agent.cli --patient X --procedure 43842` prints a `NOT_COVERED`
-determination citing its denial with spans, version id recorded, zero model
-calls; `python eval/run_eval.py` reports E3 `PASS` against the updated
-baseline. Three shapes D32 fixed: `Determination.patient_id` is `None` when no
-patient was consulted (refused alongside criterion results),
-`Determination.coverage_claim` carries the denial's citation (valid only with
-`NOT_COVERED`; sc2's citation shape is **T-14's**, not this field's), and
-`NO_POLICY_FOUND` is `NoPolicyResult`, deliberately not a `Determination`
-because REQ-4's version id cannot exist for it. `pa_agent/cli.py` is the one
-place a store is constructed (REQ-41). `tests/test_determination.py` exists
-and is the file **T-19's exit names** — T-19 extends it, and covered codes
-currently raise citing T-19. The harness scorer runs eight self-checks; the
-eighth pins that an ungoverned code under an outcome expectation is `FAIL`,
-never a coerced denial.
-**T-40 is closed** — `r931cp` is in the corpus and every binding T-38 writes
-can carry an in-corpus span; `python scripts/verify_sources.py` covers all three
-documents.
-
-**T-04 is closed (D35), and the patient corpus exists.** Six Synthea v4.0.0
-bundles (tagged release jar, pinned by version and measured sha256; seed 1001,
-200 patients, ages 30–60, Washington — inside Jurisdiction F) sit in
-`data/patients/bundles/` with `data/patients/manifest.json` recording
-provenance and per-bundle hashes. Most-recent BMIs span 34.26–42.5; the sub-35
-patient carries active T2DM, E2's shape. `python scripts/select_patients.py
---verify` re-reads the disk only — regeneration needs `--generate`, Java and
-network, and is never part of the gate. `LocalPatientStore` still raises, now
-citing **T-12**: the bundles exist but the FHIR reads do not, and the message
-deliberately no longer contains "T-04" (D31's stale-substring lesson).
-
-**T-05 is closed (D36), and the value set speaks SNOMED.**
-`data/policies/value_sets/obesity_comorbidities.json` holds two entries — T2DM
-(44054006 → E11.9) and essential hypertension (59621000 → I10) — each verified
-to appear as an active Condition in a committed bundle, each anchored by an
-in-corpus span into A53028's Group 1 naming code and condition together, and
-each admitting the SNOMED-to-ICD-10 hop is unsourced (`in_corpus: false`,
-D28's posture — the NLM map sits behind UMLS licensing). Growth happens as a
-reviewed diff when a manifest needs an entry, never as a predicate
-special-case. **Value sets live under `value_sets/`**: the policy store globs
-`data/policies/*.json` as criteria trees and errors on anything else.
-
-**T-08 is closed (D37), and the index is deliberately dumb.**
-`pa_agent/index.py` resolves `document_id` to text and slices `EvidenceSpan`s
-mechanically; REQ-7 is an exception there (rebinding an id to different
-content raises), and the module imports only the contracts — no store, no
-file, no model, asserted on its AST. It never judges a slice: fabricated and
-off-by-one rejection is T-11's. Both planes instantiate the same class and no
-instance holds both planes' documents.
-
-**T-11 is closed (D38), and rejection is a classified exception.**
-`pa_agent/spans.py` validates spans against a `DocumentIndex`: the verified
-raw slice, or `SpanValidationError` carrying `UNKNOWN_DOCUMENT`,
-`OUT_OF_RANGE` or `QUOTE_MISMATCH` — the closed reasons REQ-30's
-`SPAN_VALIDATION_FAILED` and T-29's fault injection will assert against. The
-quote predicate is D18's whitespace-collapsed exact equality; a similarity
-knob is refused in writing and by test. Mapping a rejection to a verdict is
-deliberately not this module's job.
-
-**T-12 is closed (D39), and the patient plane serves verified facts.**
-`LocalPatientStore` resolves patients through T-04's manifest, hash-verifies
-each bundle before parsing (REQ-7), and reports everything: all quantitative
-observations, all coded conditions with `clinical_status` carried on the
-widened `Condition` contract. Filtering is the predicates' judgment — an
-active-only or BMI-only read inside the adapter is refused by test.
-`get_notes` raises citing **T-07**; Synthea's auto-generated notes are not
-ground truth and must never be served as the note corpus.
-
-**T-13 is closed (D40), US-2 is delivered, and question 4 is answered.**
-The lookback is **12 months by Troy's decision** — analogy to the
-program-participation window, a note and never a span. `pa_agent/criteria.py`
-holds (a) and (b): boundary inclusive, stale BMI `NOT_MET` per REQ-16, empty
-chart abstains; (b) is `MET` or abstention, **never `NOT_MET`** — a chart
-cannot prove a comorbidity absent. Structured claims cite the bundle document
-itself: `PatientStore` grew `get_document`, the adapter computes each
-resource's exact extent in the raw text, and every produced span validates
-through T-11. `Observation`/`Condition` carry an optional `span`; the value
-set reaches (b) as a parameter, and which port serves it at runtime is
-T-18's wiring question, deliberately open.
-
-**T-14 is closed (D41), US-3 is delivered, and sc2 is a spanned exclusion.**
-The NCD body never states the T2DM/BMI<35 exclusion — the transmittal
-history's 04/2009 sentence does, and the tree's new `categorical_exclusions`
-spans it. Its `bmi_upper_bound` is the one numeric constant legitimately
-sourced to `ncd_100_1` (a national exclusion CMS quantified itself), gated
-separately from D21's Noridian rule. sc2 fires only on an in-window BMI
-(criterion (a)'s lookback, borrowed), only for the nationally covered set
-(the sentence predates the LSG delegation), and only when both sides are
-citable: `coverage_claim` carries the rule, the new
-`Determination.exclusion_evidence` spans the patient's BMI and T2DM in the
-bundle document. Spanless facts deny nobody. CLI exit 1 is now a bad request
-(unknown patient), distinct from 0 (answer) and 2 (unbuilt path).
-
-**T-06 is closed (D42): the ground truth exists, and it is self-authored.**
-`eval/manifests/` holds six manifests, `as_of` pinned to 2026-09-01, recording
-facts and **never expected verdicts** — labels are T-21's. They live in
-`eval/` because the system under test must never read them (D27's line).
-Case-to-patient assignment follows the committed structured data: Felipe is
-the only possible E1. Eleven §6 cases covered; E3 needs no patient, and
-**E12 has none possible — that is T-41**, which blocks A1 but not US-2, since
-the boundary is pinned at the criterion level today. Do **not** close T-41 by
-giving a patient a note BMI of 35.0: criterion (a) reads structured data, so
-that tests reconciliation under E12's name.
-
-**The ground truth was authored by the agent building the system it grades.**
-D19's caveat about the spike corpus applies here with a different author —
-structural mitigations (cross-checks against the bundles, T-07's honoring
-assertions, review of the diff) are in place, and a perfect score still means
-only that the approach does not obviously fail.
-
-**T-07 is closed (D43): the note corpus exists and no model wrote it.**
-`scripts/synthesize_notes.py` renders six charts from T-06's manifests by
-seeded templating — a model-written corpus would make T-15 measure
-model-to-model agreement. The **78-column wrap is load-bearing**, not
-cosmetic: D18's anchoring exists because quotes cross wrap points, and this
-corpus genuinely splits `BMI 42.7` across a line break (the gate had to
-normalize to see it). **No note contains a date the manifest does not
-declare** — that assertion is what makes the corpus ground truth, since an
-invented date would be scored as a model failure that was really a corpus
-defect. Traps never name their own type. `get_notes` serves the notes
-hash-verified and the T-07 raise is retired.
-
-**T-31 is closed (D44): an abstention must say what to go collect.**
-`GapReason` is a closed four-member enum, and a `CriterionResult` validator
-requires it on `INSUFFICIENT_EVIDENCE` and refuses it everywhere else — the
-mirror of REQ-5's span rule, so a result is either evidence or an explanation
-of its absence. It propagates onto `GapEntry` and survives serialization.
-Criteria (a) and (b) carry `NO_EVIDENCE_RETRIEVED`. **T-16, T-17, T-19 and
-T-33 must supply a reason at every abstention branch** — the validator makes
-that mechanical rather than remembered.
-
-**T-15 is closed (D45, D46, D47), and the model is in the system.**
-`pa_agent/extraction.py` is the one model leaf — a declared leaf that routes
-nothing (Art. I). It carries spike 001's prompt essentially verbatim so D19's
-result keeps meaning something, widened by REQ-38's per-field spans and the
-BMI as a value; that widening makes it **a new measurement, not D19's re-run**.
-Measured twice over 11 notes: precision 1.000, recall 1.000, REQ-9 exclusion
-11/11, field agreement 1.000, **0 model-emitted offsets usable**.
-
-**Two anchoring defects were found by running it, not by review.** Seven
-per-field spans cited the *wrong encounter* while passing T-11 — a repeated
-`BMI 37.6` anchoring to the first month — so `pa_agent/anchor.py` now
-disambiguates by proximity to the event, and T-15's exit gained the clause
-T-11 structurally cannot check. And the model double-escaped newlines on one
-run, which cost six encounters until the quote is unescaped before matching.
-**Both were verified by `--rescore` for zero model calls**; D18 built that
-path for exactly this.
-
-**Measurement and gate are separate:** `scripts/run_extraction.py` spends the
-calls, `pytest` re-reads the recording, re-hashes every note, re-validates
-every span through T-11, and checks the recorded model is the pin. Do not make
-the gate call a model. Both anchoring repairs also carry direct synthetic
-tests, because their triggers are intermittent and a recording may not
-exercise them.
-
-**T-16 is closed (D48): c1–c5 evaluate, and seven edge cases pass on real
-extracted events.** c3 computes the qualifying run once; c2, c4 and c5 scope
-to it (the tree's `scoped_to: "c3"`). A zero-event abstention reads
-`program_assertions` for its reason — with a claim it is
-`UNSUBSTANTIATED_ASSERTION` (E8), without one `NO_EVIDENCE_RETRIEVED` (E7),
-D12's rule at both c1 and c3. Every `NOT_MET` cites the evidence that fell
-short, never the absence.
-
-**Two open items discovered while building this pass.** **T-63** measures the
-ADK runner against the direct one (spends calls, in no gate). And three
-`sys.modules` guards in `test_schemas.py`,
-`test_reconciliation.py` and `test_error_state.py` were **order-dependent** — they
-asserted "nothing in this process loaded the ADK", not "this module does not" — and
-are now fresh-interpreter subprocess probes, the shape `test_resolver.py` had
-already written down (D62).
-
-**T-64 is closed (D65): the patient plane is one document namespace.**
-`PatientStore.get_document` resolves any id a patient-plane span can carry — a
-bundle filename or a note id — because a validated `EvidenceSpan` carries a
-`document_id` and nothing else, and **T-17's verifier is handed a span and
-deliberately no patient id**, so `get_notes` is not a route it has. The adapter
-resolves by looking the id up in the two manifests and **never by inspecting the
-id**: a `.json` suffix and a slash are facts about how T-04 and T-07 named things,
-not port guarantees. Uniqueness is enforced — two records claiming one id raise
-rather than letting whichever manifest loaded second win. `tests/test_determination.py`
-and `eval/run_agentic_eval.py` each lost their hand-rolled union of the two reads.
-
-**A `kind` field on `Document` was rejected**: no consumer reads it, and the facts
-that distinguish a note from a bundle already live in the manifests.
-
-**T-64 deliberately did not widen the `get_patient_document` tool; T-66 rescoped
-it instead.** The tool is *scoping*, not resolving. Pointed at the widened
-namespace it would let the extraction agent read a FHIR bundle by filename and so
-obtain the structured BMI T-62 withheld from it on purpose, and every test would
-keep passing because the tests compare the note reading to the structured one and
-would now find them equal.
-
-**One T-64 pin is structural rather than behavioural.** A resolver that branches
-on the id's shape and *then* falls through to the record answers identically on
-every input this corpus can produce, and the mutation written to catch it
-survived. `test_the_resolver_reads_no_structure_out_of_an_id` parses the adapter
-instead, refusing a path shape or a `startswith`/`endswith`/`split` inside the two
-resolving functions, docstrings exempt. Seven mutations, all caught.
-
-**T-42 is registered, not fixed:** REQ-14 picks the *longest* run and c2 then
-tests that run's recency, so a long stale run beats a short recent one and the
-patient reads stale. Implemented as written and pinned by
-`test_the_longest_run_wins_even_when_an_older_one_is_stale` — if that test
-starts passing differently, REQ-14's selection changed and it needs T-42's
-decision entry, not a quiet fix.
-
-*Method note:* when mutation-testing, three things a harness gets wrong silently.
-**Clear `__pycache__` after restoring** — a same-length mutation restored within
-the same second leaves Python's bytecode cache looking valid, and a "passing"
-suite can be running the mutant. **Run pytest with `--color=no`** — `-q` prefixes
-`FAILED` lines with an ANSI escape, so a `^FAILED` scan reports every mutation as
-surviving; six false survivors in T-68's close (D68). And **a mutation that hangs
-is not a mutation that was caught** — deleting T-69's recursion guard made the
-suite spawn itself and the harness returned no exit code at all, which is why
-that guard is asserted by parsing rather than by spawning (D69).
-
-**T-39 is closed (D34).** Spec §9 states each question's status by subsection
-— `### Still open` versus `### Resolved` — and `_question_statuses()` in
-`tests/test_criteria_tree.py` reads only that stated split, refusing a missing
-heading, a doubled number, or one floating under neither. A provisional
-constant citing a resolved question now fails the gate, so T-13 and T-33 can
-close questions 4 and 5 and be graded honestly. `~~` markup in the spec is
-styling, not status.
