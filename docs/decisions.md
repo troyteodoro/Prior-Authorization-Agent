@@ -3824,3 +3824,118 @@ is the measurement and changing the tool would invalidate the number just taken.
 many notes per patient, or a chart large enough that "read it all" stops being an
 option. That is the condition under which model-directed retrieval has something
 to buy, and the ratio above becomes a price rather than a waste.
+
+---
+
+## D65 — One document namespace per plane, resolved by record and not by id shape
+
+T-64's design, written before it. The wart is real and three files carry it:
+`tests/test_determination.py`, `eval/run_agentic_eval.py` and
+`pa_agent/agent/patient_tools.py` each hold their own answer to "which read
+serves this `document_id`", and no two of them are the same answer.
+
+### The problem, stated as a caller sees it
+
+A validated `EvidenceSpan` carries `(document_id, char_start, char_end)` and
+nothing else. That is Article III's whole point — a span is checkable by anyone
+holding the corpus, with no context from whoever produced it. On the policy plane
+that holds: `PolicyStore.get_document(document_id)` resolves anything a policy
+span can name.
+
+On the patient plane it does not. `get_document` resolves bundle filenames;
+notes arrive through `get_notes(patient_id)`. So a caller holding a span must
+already know which of the two reads produced it, and the only cue available is
+the shape of the id — bundle filenames end in `.json`, note ids contain a slash.
+**Branching on the shape of an identifier is a convention, and REQ-41's ports
+exist to remove conventions.** It is also silently wrong the first time a note is
+named anything else.
+
+**T-17 is why this is now rather than later.** The blind verifier receives a span
+and *deliberately* nothing else — no reasoning trace, no criterion, and therefore
+no patient id. It cannot call `get_notes`. A verifier that had to be handed a
+patient id would not be blind.
+
+### Chosen — `get_document` resolves the whole plane, by lookup in the manifests
+
+`PatientStore.get_document(document_id)` returns any patient-plane document: a
+bundle or a note. The adapter resolves it by looking the id up in the records it
+already loads — `manifest.json` for bundles, `notes/manifest.json` for notes —
+and never by inspecting the id.
+
+That distinction is the decision. A resolver that parsed the id would be the same
+convention moved one layer down, where it would be harder to see. A resolver that
+consults the record fails loudly on an id nobody recorded, which is the behaviour
+REQ-7 wants anyway.
+
+**Uniqueness is enforced, not assumed.** "One namespace" is a claim about the id
+space, so the adapter builds the map once and raises if two records claim the same
+id — across the two manifests or within either. Today the two id shapes cannot
+collide; the guard exists so that the day a note is named after a bundle, the
+system says so instead of serving whichever record loaded second.
+
+### Rejected — a `kind` or `provenance` field on `Document`
+
+T-64 asks how a single namespace keeps two provenances distinguishable, and the
+obvious answer is to tag them. Refused: no consumer needs the tag. A span is
+validated by slicing text, and the text is the same type either way. The
+distinguishing facts that *do* matter — different hashes, different records,
+different immutability guarantees — already live in the manifests, and the
+uniqueness guard is what keeps one id from meaning two of them. Adding a field to
+a frozen contract that both planes share, for a discriminator nobody reads, is
+vocabulary a later task would have to justify keeping.
+
+Reverses if a caller appears that must treat the two differently — a retention
+policy, or a production note store whose documents are mutable while bundles are
+not. Then the tag is a real requirement and not decoration.
+
+### Rejected — widening the `get_patient_document` **tool** to match the port
+
+This is the tempting half, and it is wrong. `_patient_of()` in
+`patient_tools.py` names T-64 as the task that deletes it, and T-64 does not
+delete it.
+
+The tool is not doing resolution, it is doing **scoping**: it answers only for
+notes, and only for the patient whose id the caller derived. Point it at the
+widened port and the extraction agent — whose allowlist is
+`get_patient_document` and `get_patient_notes` — can read a FHIR bundle by
+filename. That bundle contains the structured BMI. T-62's sharpest decision was
+withholding `get_patient_observations` from the extractor precisely so the note
+reading and the structured reading stay two independent readings (T-33, T-60,
+E10b). A widened tool hands the model the same data through a different door, and
+every existing test keeps passing, because the tests compare the two values and
+would now find them equal.
+
+So the port widens and the tool does not. `_patient_of` stays, its docstring
+corrected to name what actually removes it.
+
+**Registered as T-66**, not fixed here: the honest fix is
+`get_patient_document(patient_id, document_id)` — explicit scope, no id parsing,
+and no route to a bundle. That changes a tool's function declaration, which
+changes the prompt, which invalidates D64's measurement. D64 refused to change a
+tool for exactly that reason and registered T-65; this follows the same rule, and
+T-65 and T-66 should be batched so one re-measurement covers both.
+
+### The check
+
+`pytest tests/test_fhir.py`. What it has to prove:
+
+- every note `get_notes` serves is returned identically by `get_document`, and
+  every bundle filename still is;
+- resolution is by record: an id that matches no record raises, and the raise
+  names the plane rather than one manifest;
+- a colliding id — a notes manifest naming a bundle filename — raises at
+  resolution rather than silently preferring one;
+- a tampered note fails `get_document` the way a tampered bundle already does
+  (REQ-7 reaches both halves of the namespace, not just the half it started
+  with);
+- the adapter's import set is unchanged, so the plane is still clean (REQ-33).
+
+The two call sites that hand-rolled the union — `tests/test_determination.py` and
+`eval/run_agentic_eval.py` — collapse to one `get_document` per wanted id. That
+they get shorter is the point: the wart was theirs to carry.
+
+**Reverses if:** a production patient store cannot expose one id space over notes
+and structured records — two systems, two id schemes, no authority that owns
+both. D25 already flags stable document identity as the port's reversal
+condition; this is that condition read one level finer, and the answer would be
+a plane-qualified id, decided once in the adapter, never at the call sites.

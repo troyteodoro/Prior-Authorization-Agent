@@ -732,8 +732,9 @@ can disagree; E10b is the case where they disagree across 35.0. A model shown bo
 has no reason to disagree, and the system would keep passing every test it has
 because the tests compare the two values and would now find them equal. *(D62)*
 
-### `[ ] T-64` One document namespace over the patient plane
+### `[~] T-64` One document namespace over the patient plane
 **REQ:** 41 · **Depends:** T-12, T-13 · **Discovered in:** the T-19 build *(D62)*
+**Blocks:** T-17 · **Designed by:** D65
 **Exit:** `pytest tests/test_fhir.py` — `PatientStore.get_document` resolves any
 `document_id` a patient-plane span can carry: a bundle filename **and** a note id.
 A caller holding a validated span must not have to know which read served it.
@@ -751,6 +752,37 @@ question with a second answer worth writing down: notes and bundles have differe
 provenance and different hashes, and a single namespace has to keep them
 distinguishable. **T-17's verifier will hit this first** — it receives a span and
 nothing else, so it has no patient id to call `get_notes` with.
+
+**D65 answers the design question and narrows the exit.** The namespace is one per
+plane, and the adapter resolves an id by looking it up in the manifests it already
+loads — never by inspecting the id's shape, which would be the same convention
+moved one layer down. Uniqueness is enforced rather than assumed: two records
+claiming one id raise at resolution. A `kind` field on `Document` was rejected —
+no consumer reads it.
+
+**The `get_patient_document` tool is deliberately *not* widened, and `_patient_of`
+survives this task.** The tool is scoping, not resolving: point it at the widened
+port and the extraction agent, whose allowlist is exactly this tool plus
+`get_patient_notes`, can read a FHIR bundle by filename and get the structured BMI
+that T-62 withheld from it on purpose. That is **T-66**.
+
+### `[ ] T-66` The document tool scopes by argument, not by id shape
+**REQ:** 41, 53 · **Depends:** T-64 · **Discovered in:** the T-64 design *(D65)*
+**Exit:** `pytest tests/test_adk_agent.py tests/test_agentic_workflow.py` —
+`get_patient_document(patient_id, document_id)`, `_patient_of` deleted, and a test
+proving the tool refuses a bundle filename: the extraction agent must not be able
+to reach structured observations through the document tool (REQ-53, T-62's
+allowlist argument).
+
+Today the tool derives the owning patient from the id, which works only because
+T-07 names every note `<patient_id>/chart_note.txt`. The model already holds the
+patient id — it called `get_patient_notes` with it — so passing it is free and the
+convention buys nothing.
+
+**Changes a function declaration, therefore changes the prompt, therefore
+invalidates D64's measurement.** D64 refused to change a tool for that reason and
+registered T-65; this obeys the same rule. **Batch T-65 and T-66** so one
+re-measurement of the agentic path covers both.
 
 ### `[ ] T-65` Bound what a tool may return
 **REQ:** 46 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
