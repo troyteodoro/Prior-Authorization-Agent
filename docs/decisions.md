@@ -4352,3 +4352,164 @@ style manifest with bundles behind them — the split closes on its own, because
 addressability is asked of the port. If instead a future corpus is deliberately
 patient-less, this entry is the precedent: the corpus is not made to fit the
 plane, the measurement is made to say which corpus it covers.
+
+---
+
+## D68 — One recording per `tool_fetch` mode, and the path is derived from the mode rather than chosen by the caller
+
+T-68's design, written before the code.
+
+### The finding
+
+`scripts/run_adk_extraction.py` writes to `ADK_PATH`, a module constant. Both
+modes use it, so the second run of the pair overwrites the first:
+
+    python scripts/run_adk_extraction.py               -> eval/extraction/adk_results.json
+    python scripts/run_adk_extraction.py --tool-fetch  -> eval/extraction/adk_results.json
+
+T-63's exit condition asks for **both** modes' aggregates quoted beside
+`eval/extraction/results.json`'s, so T-63 cannot close over one file. Registered
+by D67 rather than folded into T-67 because "one recording per mode" is a
+question about how a measurement is stored and compared, and T-67's was about
+which notes each mode can reach.
+
+Nothing exists on disk yet — `eval/extraction/` holds only `results.json`, since
+T-63 has never run — and no document outside the script and its test names the
+file. The fix is therefore free of migration, which is the only reason renaming
+both files is on the table at all.
+
+### The choice: the mode determines the path
+
+    ADK_INLINE_PATH     = OUT_DIR / "adk_results_inline.json"
+    ADK_TOOL_FETCH_PATH = OUT_DIR / "adk_results_tool_fetch.json"
+
+    def adk_path(tool_fetch: bool) -> Path
+
+There is no invocation of either mode that can land on the other's recording.
+The overwrite stops being a thing a careful operator avoids and becomes a thing
+the program cannot do, which is the same posture T-65 took with `MAX_ROWS`: a
+bound the caller cannot forget to apply.
+
+**`--out` was rejected.** It moves the destination into the caller's hands while
+keeping one default, so the run that forgets the flag clobbers exactly as before —
+avoidable, not impossible. It also puts a measurement's identity in shell history
+instead of in the repo, and T-63's aggregates are quoted in a decisions entry that
+has to say which file each column came from.
+
+**One file holding both runs was rejected.** It needs read-modify-write on every
+run, so a crash between read and write leaves a file whose two halves were
+produced by different code; it carries two `measured_at` values in one payload;
+and it breaks the record-for-record diff against `results.json`, which is flat.
+The comparison this script exists to make is against the direct recording's
+shape, so the ADK recordings keep that shape.
+
+### Both names state their mode
+
+`adk_results_inline.json` and `adk_results_tool_fetch.json`. The alternative —
+keeping `adk_results.json` for the mode without the flag — leaves one file
+unmarked, and an unmarked file is one a reader has to open to identify. The
+payload's `tool_fetch` key would tell them, which is an argument for the name
+being redundant, not for it being absent: the redundancy is what lets a reader
+identify a recording from a directory listing or a `git log --stat`.
+
+`inline` names what the mode does — the note text travels inline in the message —
+rather than what it lacks. A file named for the absence of a flag (`no_tool_fetch`)
+describes the command that produced it instead of the measurement it holds.
+
+### `--compare` takes the same flag, and says what it read
+
+One flag names the mode in both verbs. `--compare` gains three things, and the
+third is the one T-68's exit is actually about:
+
+- it **prints the path** it read for each side;
+- the mode it labels the ADK column with comes from **the payload's own
+  `tool_fetch` key**, never from the flag. The label is a fact about the file, not
+  a restatement of the request — a label read off the request is true by
+  construction and therefore reports nothing;
+- it **refuses, exit 2**, when the payload's mode disagrees with the mode
+  requested.
+
+That last one is a harder response than the model and tier mismatches beside it,
+which print `!!` and carry on, and the difference is worth naming. A comparison of
+two tiers is still a true comparison of two recordings — loudly caveated, but the
+numbers printed are the numbers in the files. A recording whose mode contradicts
+the path it was loaded from means the output's own label is false, and this task's
+exit condition is that `--compare` names which recording it is reading. Printing a
+warning above a wrong label is not naming it.
+
+Only reachable by hand-copying a file today, which is the honest scope of it: it
+costs one comparison and it is the check that makes the exit condition true rather
+than approximately true.
+
+### The gate
+
+`pytest tests/test_adk_measurement.py`, extended, still spending nothing. The
+regression that matters is a single test that runs `measure()` in **both** modes
+against one directory and asserts the first file's bytes are unchanged after the
+second run — the defect stated as a test rather than as a filename assertion,
+since a filename assertion passes on a program that writes both files and then
+truncates one.
+
+The `measure()` walk is parametrized over both modes: inline reaches all eleven
+notes (10 scored, 1 failed, 0 skipped, with the stub failing note one to exercise
+the `failed` branch) and `--tool-fetch` stays at T-67's 5/1/5.
+
+Six mutations, each caught by the check that should catch it: `adk_path` ignoring
+its argument, the two constants naming one file, `measure()` writing a constant
+path (the original defect), `compare()` reading one recording whatever the mode,
+the mismatch guard deleted, and the missing-file message dropping `--tool-fetch`
+from the command it names.
+
+**A seventh survived, and it is worth writing down.** Reading the column label off
+`_mode(tool_fetch)` instead of off the payload changes no output at all — the
+mismatch guard has already established the two are equal by the time the label is
+built, so the flag and the payload cannot disagree at that line. The label source
+is therefore *not* what makes the caption honest; the guard is. Keeping the label
+on the payload is a claim about where the fact lives rather than a behaviour under
+test, and it becomes load-bearing the moment the guard is softened to a warning —
+which is the change this note exists to catch.
+
+The mutation harness needed `--color=no` before it told the truth: `pytest -q`
+writes `FAILED` lines prefixed with an ANSI escape, so a `^FAILED` scan reports
+every mutation as surviving. Six false survivors, all of them caught, is the same
+class of error as the stale `__pycache__` the method note in `CLAUDE.md` warns
+about — a mutation harness that cannot see failures says the suite is worthless
+when the suite is fine.
+
+### A defect this task found by running the whole suite: T-67 closed red
+
+`pytest` — the whole suite, not this task's file — fails at the commit before
+this one, and has since T-67 landed:
+
+    tests/test_adk_measurement.py:288  'gemini-3.5'
+    D20: model identifiers written as string literals outside pa_agent/model_pin.py
+
+`_recording()`, the helper T-67 added to build a fake payload for `--compare`,
+wrote the model name out as a literal. `tests/test_model_pin.py` scans **tracked
+Python**, and a test file is tracked Python — the scan makes no exception for a
+fixture, and should not: a stale identifier in a fake recording is exactly the
+shape of the defect D20 exists for, since the comparison it feeds asserts
+`direct["model"] != adk["model"]`.
+
+It went unnoticed because T-67's exit condition names
+`pytest tests/test_adk_measurement.py`, which passes. **A task's exit command is
+not a substitute for the suite**, and this is the second D67-shaped finding in two
+tasks — the first was a script no gate ran, this is a gate no close ran.
+
+Fixed here rather than registered, on D67's own precedent and for its reasons: it
+is one line, in a file this task is already rewriting, and it is the difference
+between "`pytest` returns zero" being true and being a claim nobody checked.
+`_recording()` imports `PINNED_MODEL` and `MEASURED_TIER` like every other module
+does. Recorded here so it is not silent.
+
+### Reversal condition
+
+A third mode, or a mode whose measurement is not one file, turns the two
+constants into a dict and `adk_path` into its lookup. That is a mechanical change
+and it is the shape this entry declines to build today: two modes exist, two
+constants name them, and a registry of one-per-mode paths with two entries is
+indirection bought before it is needed.
+
+If the spike notes ever acquire patients (D67's reversal condition), the two
+recordings converge on eleven notes each and `--compare`'s intersection logic
+closes the gap by itself. Neither the filenames nor this entry needs to change.

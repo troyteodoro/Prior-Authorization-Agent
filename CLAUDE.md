@@ -372,7 +372,7 @@ test would agree with it; the mutation that swaps them is caught. An unknown id
 raises rather than returning an empty set, and a file whose `value_set_id` no
 longer matches its path raises.
 
-Active task: **none. T-68 then T-63 are next — see below.**
+Active task: **none. T-63 is next — it spends model calls and is in no gate.**
 
 **T-18, T-19, T-20, T-26 and T-62 are closed (D62). The system answers.**
 `python -m pa_agent.cli --patient <uuid> --procedure 43775` prints a real
@@ -502,8 +502,22 @@ zero model calls. **"In no gate" was read as "this file is not testable"** — t
 bookkeeping around a measurement is ordinary code, which is the split `--rescore`
 already made for `run_extraction.py`.
 
-**T-68 is registered, not fixed:** `ADK_PATH` is a module constant, so
-`--tool-fetch` overwrites the plain run's recording and T-63's exit asks for both.
+**T-68 is closed (D68): one recording per mode, and the path is derived from the
+mode.** `adk_results_inline.json` and `adk_results_tool_fetch.json`, selected by
+`adk_path(tool_fetch)`, so no invocation of either mode can land on the other's
+file — an `--out` argument keeps one default and stays clobberable, and one file
+holding both runs needs read-modify-write and breaks the record-for-record diff
+against `results.json`. `--compare` takes the same flag, prints the path it read,
+labels the column from the payload's own `tool_fetch` key and **refuses (exit 2)
+when the two disagree** — louder than the model and tier mismatches beside it,
+which still print true numbers under a true caption.
+
+**The close found that T-67 had left the whole suite red.** `_recording()` wrote
+the model name as a literal, and `tests/test_model_pin.py` scans tracked Python
+with no exception for test files (D20). T-67's exit names
+`pytest tests/test_adk_measurement.py`, which passed — **a task's exit command is
+not a substitute for the suite**, and this is the second finding of that shape in
+two tasks (T-67's was a script no gate ran).
 
 **US-4 and US-5 have not closed.** Their closing conditions are E4–E11 and E1/E8
 passing *in the harness*, and `eval/cases.json` still holds one case. That is

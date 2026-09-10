@@ -925,7 +925,10 @@ them by asking the port and says so. Quote `by_corpus["synthesized"]` when
 comparing across modes — `--compare` recomputes over the notes both recordings
 scored, so the tool and no-tool columns are the same six notes.
 
-**Depends on T-68**: the two modes currently write one path.
+**One recording per mode** *(T-68, D68)*: `eval/extraction/adk_results_inline.json`
+and `eval/extraction/adk_results_tool_fetch.json`. `--compare` reads the mode its
+own `--tool-fetch` flag names and prints the path, so the two aggregates this exit
+asks for come from two `--compare` invocations and each says which file it read.
 
 **Spends model calls, so it is in no gate.** Nothing may claim D45's numbers for the
 ADK path until this runs: D45's rule is that a changed call configuration is a new
@@ -939,7 +942,7 @@ Studio and evals on Vertex, so the tool-calling path runs a **different prompt**
 the two tiers, and a number from one is not a number for the other. *(D62)*
 
 
-### `[ ] T-68` The two `tool_fetch` modes overwrite one recording
+### `[x] T-68` The two `tool_fetch` modes overwrite one recording
 **REQ:** 22 · **Depends:** T-67 · **Discovered in:** the T-67 build *(D67)*
 **Blocks:** T-63
 **Exit:** `python scripts/run_adk_extraction.py` and
@@ -957,6 +960,30 @@ question about how the measurement is stored and compared, and T-67's was about
 which notes each mode can reach. Small, but it has a real choice in it — a
 mode-suffixed filename, an `--out` argument, or one file holding both runs — and
 whichever is picked, `--compare` has to say what it is comparing.
+
+**Closed.** `pytest tests/test_adk_measurement.py` returns zero, 26 tests, six
+mutations caught. The path is **derived from the mode** —
+`adk_results_inline.json` and `adk_results_tool_fetch.json`, selected by
+`adk_path(tool_fetch)` — so no invocation of either mode can land on the other's
+file. `--out` was rejected for keeping one default (avoidable, not impossible);
+one file holding both runs was rejected for needing read-modify-write and for
+breaking the record-for-record diff against `results.json` *(D68)*.
+
+`--compare` takes the same flag, prints the path it read, labels the column from
+the payload's own `tool_fetch` key, and **refuses (exit 2) when the two disagree**
+— louder than the model and tier mismatches beside it, because those still print
+true numbers under a true caption and this one would not.
+
+The regression is a test that runs `measure()` in **both** modes against one
+directory and asserts the first file's bytes are unchanged after the second run;
+asserting two filenames differ passes on a program that writes both and truncates
+one.
+
+**The close also found T-67 had left the suite red.** `_recording()` wrote the
+model name as a literal and `tests/test_model_pin.py` scans tracked Python, test
+files included (D20). T-67's exit names `pytest tests/test_adk_measurement.py`,
+which passed. A task's exit command is not a substitute for the suite; fixed here
+on D67's precedent and recorded in D68 rather than registered.
 
 ### `[x] T-61` Agentic orchestration and model adjudication
 

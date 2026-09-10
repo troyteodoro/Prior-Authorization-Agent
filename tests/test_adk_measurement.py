@@ -22,6 +22,12 @@ Four claims:
 3. **A skipped note reaches no figure.** It is not a zero in the numerator.
 4. **`--compare` recomputes over the intersection** and refuses to print an
    eleven-note column beside a six-note one.
+
+T-68 adds a fifth, on the same file for the same reason — it is a decision about
+how the measurement is stored, not a number:
+
+5. **One recording per mode**, at a path derived from the mode, and `--compare`
+   names the file it read.
 """
 
 from __future__ import annotations
@@ -42,6 +48,7 @@ import pytest
 from test_adk_agent import _fake_llm
 
 from pa_agent.contracts import Document
+from pa_agent.model_pin import MEASURED_TIER, PINNED_MODEL
 from pa_agent.stores.patient import LocalPatientStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -285,8 +292,11 @@ def test_the_aggregate_reports_each_corpus_separately(script):
 
 def _recording(records: list[dict], **over) -> dict:
     payload = {
-        "model": "gemini-3.5-flash-lite",
-        "tier": "ai_studio",
+        # The pin, never a literal (D20). A second copy of a model identifier is
+        # how three of them came to disagree with the recorded measurement; a
+        # fake recording in a test is still tracked Python and still scanned.
+        "model": PINNED_MODEL,
+        "tier": MEASURED_TIER,
         "adk_version": "2.8.0",
         "tool_fetch": True,
         "aggregate": {},
@@ -296,12 +306,15 @@ def _recording(records: list[dict], **over) -> dict:
     return payload
 
 
-def _write_pair(tmp_path, monkeypatch, script, direct: dict, adk: dict) -> None:
-    direct_path, adk_path = tmp_path / "direct.json", tmp_path / "adk.json"
+def _write_pair(
+    tmp_path, monkeypatch, script, direct: dict, adk: dict, tool_fetch: bool = True
+) -> None:
+    """Both recordings on disk, the ADK one at the path its mode owns (T-68)."""
+    direct_path = tmp_path / "direct.json"
     direct_path.write_text(json.dumps(direct), encoding="utf-8")
-    adk_path.write_text(json.dumps(adk), encoding="utf-8")
     monkeypatch.setattr(script, "DIRECT_PATH", direct_path)
-    monkeypatch.setattr(script, "ADK_PATH", adk_path)
+    _patch_adk_paths(tmp_path, monkeypatch, script)
+    script.adk_path(tool_fetch).write_text(json.dumps(adk), encoding="utf-8")
 
 
 def test_compare_recomputes_over_the_intersection_and_never_pools(
@@ -323,7 +336,7 @@ def test_compare_recomputes_over_the_intersection_and_never_pools(
         ),
     )
 
-    assert script.compare() == 0
+    assert script.compare(tool_fetch=True) == 0
     out = capsys.readouterr().out
 
     assert "comparing 2 note(s)" in out
@@ -348,7 +361,7 @@ def test_compare_refuses_when_the_two_recordings_share_no_scored_note(
         direct=_recording([_record("n01", "spike_001", score=_score())]),
         adk=_recording([_record("n01", "spike_001", skipped="KeyError")]),
     )
-    assert script.compare() == 2
+    assert script.compare(tool_fetch=True) == 2
     assert "nothing to compare" in capsys.readouterr().err
 
 
@@ -365,7 +378,7 @@ def test_compare_breaks_the_figures_out_per_corpus(
         tmp_path, monkeypatch, script,
         direct=_recording(records), adk=_recording(records),
     )
-    assert script.compare() == 0
+    assert script.compare(tool_fetch=True) == 0
     out = capsys.readouterr().out
     assert "spike_001" in out and "synthesized" in out
 
@@ -459,14 +472,25 @@ def test_a_record_identifies_a_note_the_way_the_direct_recording_does(cases, scr
         assert shared <= set(record)
 
 
-def test_the_whole_measure_path_runs_without_a_model(
-    script, tmp_path, monkeypatch, capsys
-):
-    """`measure()` end to end for zero model calls: partition, three outcomes,
-    aggregate, file written. The only stub is the runner itself.
+def _patch_adk_paths(tmp_path, monkeypatch, script) -> None:
+    """Both modes' recordings under `tmp_path`.
 
-    This is the test that would have caught the `labels` KeyError, and it is the
-    closest a gate can get to T-63 without spending T-63's budget.
+    Both, always, even when a test writes one: a test that only redirected the
+    mode under test would let a defect in the *other* mode's path write into
+    `eval/extraction/` and be invisible until someone read `git status`.
+    """
+    monkeypatch.setattr(script, "ADK_INLINE_PATH", tmp_path / "adk_results_inline.json")
+    monkeypatch.setattr(
+        script, "ADK_TOOL_FETCH_PATH", tmp_path / "adk_results_tool_fetch.json"
+    )
+
+
+def _install_stub_runner(script, monkeypatch) -> list[str]:
+    """`measure()` with the model replaced and nothing else stubbed.
+
+    Returns the document ids the stub was asked for, accumulated across every
+    `measure()` call in the test. Each runner instance fails its own first note,
+    so a two-mode test exercises the `failed` branch twice rather than once.
     """
     import pa_agent.agent.extraction_agent as agent_module
 
@@ -474,17 +498,19 @@ def test_the_whole_measure_path_runs_without_a_model(
 
     recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
     payloads = {r["document_id"]: r["raw"] for r in recording["notes"]}
-    seen: list[str] = []
+    asked: list[str] = []
 
     class _StubRunner:
         def __init__(self, **kwargs) -> None:
             assert kwargs["client"] is None, "no credential was read"
             self.tool_fetch = kwargs["tool_fetch"]
+            self.seen: list[str] = []
 
         def run(self, document_id: str, text: str):
-            seen.append(document_id)
-            if len(seen) == 1:
-                # One failure, so the `failed` branch is exercised too.
+            self.seen.append(document_id)
+            asked.append(document_id)
+            if len(self.seen) == 1:
+                # One failure per run, so the `failed` branch is exercised too.
                 raise ExtractionOutputError(ExtractionFailure.NO_PAYLOAD, "stub")
             from pa_agent.extraction import build_result
 
@@ -492,13 +518,148 @@ def test_the_whole_measure_path_runs_without_a_model(
 
     monkeypatch.setattr(agent_module, "AdkExtractionRunner", _StubRunner)
     monkeypatch.setattr(script, "_client", lambda: None)
-    monkeypatch.setattr(script, "ADK_PATH", tmp_path / "adk_results.json")
+    return asked
 
+
+@pytest.mark.parametrize(
+    "tool_fetch, expected",
+    [(False, (10, 1, 0)), (True, (5, 1, 5))],
+    ids=["inline", "tool_fetch"],
+)
+def test_the_whole_measure_path_runs_without_a_model(
+    script, tmp_path, monkeypatch, capsys, tool_fetch, expected
+):
+    """`measure()` end to end for zero model calls: partition, three outcomes,
+    aggregate, file written. The only stub is the runner itself.
+
+    This is the test that would have caught the `labels` KeyError, and it is the
+    closest a gate can get to T-63 without spending T-63's budget.
+
+    Both modes, since T-68: inline reaches all eleven notes because the text
+    travels in the message, `--tool-fetch` reaches the six the port can address.
+    """
+    _install_stub_runner(script, monkeypatch)
+    _patch_adk_paths(tmp_path, monkeypatch, script)
+
+    assert script.measure(tool_fetch=tool_fetch) == 0
+
+    written = json.loads(script.adk_path(tool_fetch).read_text(encoding="utf-8"))
+    aggregate = written["aggregate"]
+    assert (aggregate["notes"], aggregate["failed"], aggregate["skipped"]) == expected
+    assert len(written["notes"]) == 11, "every note is recorded, whatever happened"
+    assert written["tool_fetch"] is tool_fetch
+
+    out = capsys.readouterr().out
+    if tool_fetch:
+        assert aggregate["by_corpus"]["spike_001"]["skipped"] == 5
+        assert "SKIP n01_clean_run" in out
+    else:
+        assert aggregate["by_corpus"]["spike_001"]["skipped"] == 0
+        assert "SKIP" not in out, "nothing is unaddressable when the text is inline"
+
+
+# --------------------------------------------------------------------------
+# 5. One recording per mode (T-68, D68)
+# --------------------------------------------------------------------------
+
+
+def test_the_two_modes_own_two_paths(script):
+    """Derived from the mode, so no invocation can land on the other's file."""
+    assert script.adk_path(False) == script.ADK_INLINE_PATH
+    assert script.adk_path(True) == script.ADK_TOOL_FETCH_PATH
+    assert script.ADK_INLINE_PATH != script.ADK_TOOL_FETCH_PATH
+    assert script.DIRECT_PATH not in (script.ADK_INLINE_PATH, script.ADK_TOOL_FETCH_PATH)
+
+
+def test_each_mode_writes_its_own_recording_and_the_pair_survives(
+    script, tmp_path, monkeypatch
+):
+    """T-68's defect, stated as the run that exposed it.
+
+    `ADK_PATH` was one module constant, so the second run of the pair overwrote
+    the first and T-63 — whose exit asks for both modes' aggregates — had one
+    file to quote from. Asserting the two filenames differ is not enough: a
+    program that writes both and then truncates one passes that.
+    """
+    _install_stub_runner(script, monkeypatch)
+    _patch_adk_paths(tmp_path, monkeypatch, script)
+    inline, tool_fetch = script.adk_path(False), script.adk_path(True)
+
+    assert script.measure(tool_fetch=False) == 0
+    after_first = inline.read_bytes()
     assert script.measure(tool_fetch=True) == 0
 
-    written = json.loads((tmp_path / "adk_results.json").read_text(encoding="utf-8"))
-    aggregate = written["aggregate"]
-    assert (aggregate["notes"], aggregate["failed"], aggregate["skipped"]) == (5, 1, 5)
-    assert len(written["notes"]) == 11, "every note is recorded, whatever happened"
-    assert aggregate["by_corpus"]["spike_001"]["skipped"] == 5
-    assert "SKIP n01_clean_run" in capsys.readouterr().out
+    assert inline.read_bytes() == after_first, (
+        "the --tool-fetch run overwrote the recording the plain run just made"
+    )
+    assert tool_fetch.exists()
+    for path, mode, reached in ((inline, False, 11), (tool_fetch, True, 6)):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        aggregate = payload["aggregate"]
+        assert payload["tool_fetch"] is mode, f"{path.name} records the other mode"
+        assert aggregate["notes"] + aggregate["failed"] == reached
+
+
+@pytest.mark.parametrize("tool_fetch", [False, True], ids=["inline", "tool_fetch"])
+def test_compare_names_the_recording_it_read(
+    script, tmp_path, monkeypatch, capsys, tool_fetch
+):
+    """T-68's exit condition. Two files exist; the output says which one is in
+    the column, by path and in the column's own heading."""
+    records = [_record("a", "synthesized", score=_score())]
+    _write_pair(
+        tmp_path,
+        monkeypatch,
+        script,
+        direct=_recording(records),
+        adk=_recording(records, tool_fetch=tool_fetch),
+        tool_fetch=tool_fetch,
+    )
+
+    assert script.compare(tool_fetch=tool_fetch) == 0
+    out = capsys.readouterr().out
+    assert script.adk_path(tool_fetch).name in out
+    assert script.adk_path(not tool_fetch).name not in out
+    assert f"adk·{'tool_fetch' if tool_fetch else 'inline'}" in out
+
+
+def test_compare_refuses_a_recording_whose_mode_contradicts_its_path(
+    script, tmp_path, monkeypatch, capsys
+):
+    """The label comes off the payload, not off the flag — and when the two
+    disagree the comparison is refused rather than captioned wrongly.
+
+    Louder than the model and tier mismatches beside it, which warn and carry on,
+    because those still print true numbers under a true caption. Here the
+    caption would be false, and naming the recording is what this task is (D68).
+    """
+    records = [_record("a", "synthesized", score=_score())]
+    _write_pair(
+        tmp_path,
+        monkeypatch,
+        script,
+        direct=_recording(records),
+        adk=_recording(records, tool_fetch=False),
+        tool_fetch=True,
+    )
+
+    assert script.compare(tool_fetch=True) == 2
+    err = capsys.readouterr().err
+    assert "tool_fetch=False" in err
+    assert "inline" in err and "tool_fetch was asked for" in err
+
+
+@pytest.mark.parametrize("tool_fetch", [False, True], ids=["inline", "tool_fetch"])
+def test_a_missing_recording_names_the_command_that_makes_it(
+    script, tmp_path, monkeypatch, capsys, tool_fetch
+):
+    """Two invocations make the two ADK recordings, so "run the script" is an
+    instruction to guess which one."""
+    monkeypatch.setattr(script, "DIRECT_PATH", tmp_path / "direct.json")
+    _patch_adk_paths(tmp_path, monkeypatch, script)
+
+    assert script.compare(tool_fetch=tool_fetch) == 2
+    err = capsys.readouterr().err
+    assert "python scripts/run_extraction.py" in err
+    assert script.adk_path(tool_fetch).name in err
+    assert ("--tool-fetch" in err) is tool_fetch

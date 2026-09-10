@@ -1,10 +1,18 @@
 """T-63 — measure the ADK extraction runner against the direct one (D62).
 
     python scripts/run_adk_extraction.py                  measure. Spends calls.
+                                     -> eval/extraction/adk_results_inline.json
     python scripts/run_adk_extraction.py --tool-fetch     ditto, model fetches
                                                           the note through its tool
-    python scripts/run_adk_extraction.py --compare        compare two recordings.
+                                     -> eval/extraction/adk_results_tool_fetch.json
+    python scripts/run_adk_extraction.py --compare        compare a recording with
+    python scripts/run_adk_extraction.py --compare --tool-fetch    the direct one.
                                                           Spends nothing.
+
+**One recording per mode (T-68, D68).** The path is derived from `--tool-fetch`
+rather than chosen by the caller, so no invocation of either mode can land on the
+other's file. `--compare` takes the same flag, prints the path it read, and
+refuses when a recording's own `tool_fetch` disagrees with the mode requested.
 
 **Spends model calls, so it is in no gate.** `pytest` and `eval/run_eval.py` read
 recordings; this is the thing that makes one.
@@ -83,7 +91,27 @@ from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 
 OUT_DIR = REPO_ROOT / "eval" / "extraction"
 DIRECT_PATH = OUT_DIR / "results.json"
-ADK_PATH = OUT_DIR / "adk_results.json"
+
+#: One recording per mode, and the mode names the file (T-68, D68). `inline` is
+#: what the mode does — the note text travels inline in the message — rather than
+#: what it lacks; a file named for the absence of a flag describes the command
+#: that produced it instead of the measurement it holds.
+ADK_INLINE_PATH = OUT_DIR / "adk_results_inline.json"
+ADK_TOOL_FETCH_PATH = OUT_DIR / "adk_results_tool_fetch.json"
+
+
+def adk_path(tool_fetch: bool) -> Path:
+    """The recording this mode writes and `--compare` reads.
+
+    Derived, never passed in. An `--out` argument would keep one default, so the
+    run that forgets it clobbers exactly as before — avoidable rather than
+    impossible — and it would put a measurement's identity in shell history
+    instead of in the repo (D68).
+
+    The globals are read at call time so a test can point either mode at a tmp
+    directory.
+    """
+    return ADK_TOOL_FETCH_PATH if tool_fetch else ADK_INLINE_PATH
 
 #: The headline figures the comparison reports, in the order a reader wants them.
 COMPARED = (
@@ -313,13 +341,14 @@ def measure(tool_fetch: bool, limit: int | None = None) -> int:
         "aggregate": _aggregate(records),
         "notes": sorted(records, key=lambda r: order[r["note_id"]]),
     }
-    ADK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    ADK_PATH.write_text(
+    out_path = adk_path(tool_fetch)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     print()
     print(json.dumps(payload["aggregate"], indent=2))
-    print(f"\nwrote {_display(ADK_PATH)}")
+    print(f"\nwrote {_display(out_path)}")
     return 0
 
 
@@ -447,17 +476,22 @@ def _uncovered(recording: dict) -> list[tuple[str, str]]:
     return out
 
 
-def _column(left: dict, right: dict, title: str) -> None:
+def _column(left: dict, right: dict, title: str, right_head: str = "adk") -> None:
     width = max(len(k) for k in COMPARED)
-    print(f"  {title:<{width}}  {'direct':>14}  {'adk':>14}")
+    print(f"  {title:<{width}}  {'direct':>14}  {right_head:>14}")
     for key in COMPARED:
         a, b = left.get(key), right.get(key)
         flag = "" if a == b else "   <- differs"
         print(f"  {key:<{width}}  {str(a):>14}  {str(b):>14}{flag}")
 
 
-def compare() -> int:
-    """Compare the two recordings over the notes both of them scored.
+def _mode(tool_fetch: bool) -> str:
+    """The name this mode goes by in output. Not a filename, and not the flag."""
+    return "tool_fetch" if tool_fetch else "inline"
+
+
+def compare(tool_fetch: bool = False) -> int:
+    """Compare one ADK recording with the direct one, over the notes both scored.
 
     **Recomputed, not read off.** Each file's own `aggregate` covers that file's
     corpus, and under `--tool-fetch` the ADK recording covers six notes where the
@@ -468,25 +502,61 @@ def compare() -> int:
     with the same `_aggregate` that produced the file-level figures, and everything
     dropped from either side is named.
 
+    **One mode per invocation (T-68, D68).** `--tool-fetch` selects which ADK
+    recording is read, the same flag that selected which one was written, and the
+    path is printed so the reader is never guessing which file a column came from.
+
     Spends nothing.
     """
-    missing = [p for p in (DIRECT_PATH, ADK_PATH) if not p.exists()]
+    adk_source = adk_path(tool_fetch)
+    wanted = (
+        (DIRECT_PATH, "python scripts/run_extraction.py"),
+        (
+            adk_source,
+            "python scripts/run_adk_extraction.py"
+            + (" --tool-fetch" if tool_fetch else ""),
+        ),
+    )
+    missing = [(path, command) for path, command in wanted if not path.exists()]
     if missing:
+        # The command is named per file, `--tool-fetch` included, because the two
+        # ADK recordings are made by two different invocations and telling a
+        # reader to "run the script" is telling them to guess which one.
         print(
-            "missing: "
-            + ", ".join(_display(p) for p in missing)
-            + "\nrun `python scripts/run_extraction.py` and "
-            "`python scripts/run_adk_extraction.py` (both spend model calls)",
+            "missing:\n"
+            + "\n".join(
+                f"  {_display(path)} — run `{command}` (spends model calls)"
+                for path, command in missing
+            ),
             file=sys.stderr,
         )
         return 2
 
     direct = json.loads(DIRECT_PATH.read_text(encoding="utf-8"))
-    adk = json.loads(ADK_PATH.read_text(encoding="utf-8"))
+    adk = json.loads(adk_source.read_text(encoding="utf-8"))
 
-    print(f"  direct : {direct['model']} · tier {direct.get('tier')} · google-genai")
+    # The mode is read off the payload, and the guard below is what makes that
+    # worth doing: without it a caption taken from the request would be true by
+    # construction and would report nothing. With it the two are provably equal
+    # by the time the caption is built — so the refusal is the load-bearing half,
+    # and the payload-sourced label is what keeps it that way (D68).
+    recorded_mode = _mode(bool(adk.get("tool_fetch")))
+    if recorded_mode != _mode(tool_fetch):
+        print(
+            f"  !! {_display(adk_source)} records tool_fetch="
+            f"{adk.get('tool_fetch')}, which is the {recorded_mode} mode, but "
+            f"{_mode(tool_fetch)} was asked for.\n"
+            "  Refusing: a comparison that mislabels its own column is not one "
+            "(D68).",
+            file=sys.stderr,
+        )
+        return 2
+
+    print(f"  direct : {_display(DIRECT_PATH)}")
+    print(f"           {direct['model']} · tier {direct.get('tier')} · google-genai")
+    print(f"  adk    : {_display(adk_source)}")
     print(
-        f"  adk    : {adk['model']} · tier {adk.get('tier')} · google-adk "
+        f"           {adk['model']} · tier {adk.get('tier')} · google-adk "
         f"{adk.get('adk_version')} · tool_fetch={adk.get('tool_fetch')}"
     )
     if direct["model"] != adk["model"]:
@@ -519,7 +589,8 @@ def compare() -> int:
             print(f"    - {side}: {note_id} excluded ({why})")
     print()
 
-    _column(_aggregate(left, nest=False), _aggregate(right, nest=False), "")
+    head = f"adk·{recorded_mode}"
+    _column(_aggregate(left, nest=False), _aggregate(right, nest=False), "", head)
 
     if len(corpora) > 1:
         # Per corpus as well as overall, because the two halves are different
@@ -531,6 +602,7 @@ def compare() -> int:
                 _aggregate([r for r in left if r["corpus"] == corpus], nest=False),
                 _aggregate([r for r in right if r["corpus"] == corpus], nest=False),
                 corpus,
+                head,
             )
 
     print(
@@ -547,12 +619,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--tool-fetch",
         action="store_true",
-        help="the model reads the note through its scoped read_note tool",
+        help=(
+            "the model reads the note through its scoped read_note tool; selects "
+            "the mode in both verbs, so it also picks which recording --compare "
+            "reads"
+        ),
     )
     parser.add_argument(
         "--compare",
         action="store_true",
-        help="compare the two recordings and spend nothing",
+        help="compare this mode's recording with the direct one; spends nothing",
     )
     parser.add_argument(
         "--limit", type=int, default=None, help="measure only the first N notes"
@@ -560,7 +636,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.compare:
-        return compare()
+        return compare(args.tool_fetch)
     return measure(args.tool_fetch, args.limit)
 
 
