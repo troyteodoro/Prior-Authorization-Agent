@@ -983,7 +983,42 @@ one.
 model name as a literal and `tests/test_model_pin.py` scans tracked Python, test
 files included (D20). T-67's exit names `pytest tests/test_adk_measurement.py`,
 which passed. A task's exit command is not a substitute for the suite; fixed here
-on D67's precedent and recorded in D68 rather than registered.
+on D67's precedent and recorded in D68 rather than registered. **T-69 registers
+the gap that let it happen.**
+
+### `[x] T-69` A task can close with the rest of the repo red
+**REQ:** none — this is a working rule, not a spec requirement
+**Depends:** none · **Discovered in:** the T-68 build *(D69)*
+**Exit:** `python scripts/check_gates.py` returns zero, running every zero-cost
+gate in the repo; `pytest tests/test_check_gates.py` returns zero and spends
+nothing, asserting that a failing gate fails the command, that every tracked
+script under `scripts/`, `eval/` and `spike/` is either a gate or an exclusion
+with a stated reason, and that the runner refuses to run inside pytest.
+Working rule 4 in `CLAUDE.md` names the second command.
+
+Two consecutive closes produced a finding of this shape — T-67's found a script
+no gate ran, T-68's found a gate no close ran. Both are one sentence read from
+two ends: the set of checks a task runs is smaller than the set the repo has, and
+nothing measured the difference.
+
+**Closed.** Eight gates, about twelve seconds, seven mutations caught. Membership
+is auditable rather than judged: a command is a gate iff some task's exit
+condition names it *and* it spends no model call and touches no network — the
+cost half alone would admit `run_extraction.py --rescore`, which is a
+measurement's bookkeeping and not a check on the repo. `EXCLUDED` carries a
+reason per script and the test fails on a tracked script in neither list, so the
+list cannot rot the way the unwritten rule did.
+
+**A test was deleted during the build and the deletion is the interesting part.**
+Spawning `check_gates.py` from inside pytest to assert the recursion guard is a
+fork bomb once the guard is removed: the child runs the suite, the suite reaches
+the test, and it spawns another child. The mutation pass hung for two minutes and
+returned no exit code — a hang is not a catch. The guard is asserted by parsing
+`main` instead (D69).
+
+**It cannot make anyone type the command.** A pre-commit hook was rejected —
+untracked, so it survives no clone and shows in no diff, and bypassable — and
+working rule 9 names CI explicitly.
 
 ### `[x] T-61` Agentic orchestration and model adjudication
 

@@ -4513,3 +4513,167 @@ indirection bought before it is needed.
 If the spike notes ever acquire patients (D67's reversal condition), the two
 recordings converge on eleven notes each and `--compare`'s intersection logic
 closes the gap by itself. Neither the filenames nor this entry needs to change.
+
+---
+
+## D69 — A task's exit condition is not the whole gate, so the close ritual becomes one command
+
+T-69's design, written before the code. Discovered in the T-68 build.
+
+### The finding, and where the incident is already recorded
+
+T-68's close found that **T-67 had closed with `pytest` red**, and had been red
+for a commit. The incident, its cause and its one-line repair are written up in
+D68 under *"A defect this task found by running the whole suite: T-67 closed
+red"* — `_recording()` wrote a model identifier as a string literal, and
+`tests/test_model_pin.py` scans tracked Python with no exception for test files
+(D20). This entry does not restate it; it fixes the gap it exposed.
+
+**The gap is the close ritual, not the defect.** Every task on the board closes
+on an exit condition naming one file or one script — T-67's was
+`pytest tests/test_adk_measurement.py`, which passed throughout — and nothing
+anywhere says the rest of the repo has to still be green when a task closes. So
+a task can break a gate two doors down and close honestly by its own terms.
+
+Two consecutive tasks have now produced a finding of this shape. T-67's close
+found `scripts/run_adk_extraction.py` had never run at all — a script in no gate.
+T-68's found a gate that no close ran. Both are the same sentence read from
+different ends: **the set of checks a task runs is smaller than the set of checks
+the repo has**, and nothing measures the difference.
+
+### The change: working rule 4 gains a second command
+
+> **Every task closes on a command that returns zero** — its own exit condition
+> **and** `python scripts/check_gates.py`.
+
+Amending a working rule is a design decision, which is why this entry exists
+before the script does (working rule 5). Article VIII is unchanged and does not
+need changing: it requires a task to close on a command that returns zero, and
+this adds a second such command rather than weakening the first.
+
+### Why a script and not just the rule
+
+A rule with no command behind it is what D10 already refused: *a grep for a string
+in a doc is not a check*. "Run everything before you close" is exactly that kind
+of rule — it depends on the closer remembering what *everything* currently is,
+which is the thing that drifts. The list belongs in a file that fails when it is
+wrong.
+
+Measured before writing this: the six script gates cost about four seconds
+together and `pytest` about eight, so the whole ritual is roughly twelve seconds.
+There is no cost argument for skipping it, which means there is no reason to
+design a partial version.
+
+**Working rule 9 was checked and does not bar this.** Its examples are external
+systems — GCP, Terraform, containers, CI, vector search — and the rule is about
+infrastructure the project has not earned. This is an eighty-line script that
+runs commands the repo already has, and two consecutive closes with something red
+or unrun is the earning.
+
+### The membership rule, and why it is not my judgment
+
+A command is in `GATES` iff **some task's exit condition names it** and it
+**spends no model call and touches no network**. Both halves are checkable
+against `docs/tasks.md` and neither is a taste call, so the list has an argument
+behind every entry and a reader can audit it against the board.
+
+That rule is what keeps plausible non-gates out. `scripts/run_extraction.py
+--rescore` spends nothing and re-scores a recording, so a "costs nothing" rule
+alone would admit it — but no task's exit names it, because it is the bookkeeping
+half of a measurement rather than a check on the repo. `scripts/synthesize_notes.py
+--verify` is the same shape: T-07 closes on `pytest tests/test_notes.py`, and the
+suite already covers the corpus.
+
+`pytest` bare is the first entry and subsumes the thirty-odd per-file `pytest`
+exits on the board. That subsumption is the whole point — the per-file exit stays
+the task's exit, and the suite is what the task is additionally answerable to.
+
+**Deliberately excluded, each with its reason in the file:**
+`scripts/verify_sources.py` without `--offline` (re-downloads; the `--offline`
+variant is in, and D-note: it does *not* close T-02), `spike/spike_001/run.py`
+bare, `scripts/run_extraction.py`, `scripts/run_adk_extraction.py` (all spend
+model calls), `scripts/select_patients.py --generate` (Java and network),
+`scripts/synthesize_notes.py` (regenerates a committed corpus),
+`scripts/check_req_coverage.py` (**named by an exit condition but not yet
+written** — A7's, unclaimed), `python -m pa_agent.cli` (T-25's exit takes a
+patient argument the board leaves as `X`; `tests/test_determination.py` covers it
+inside the suite), and `scripts/check_gates.py` itself.
+
+### Two structural details
+
+**The runner refuses to run inside pytest.** `check_gates` runs `pytest`, and
+`pytest` collects `tests/test_check_gates.py`. A test that drove the real runner
+end to end would recurse until something ran out. The guard reads
+`PYTEST_CURRENT_TEST` and exits non-zero naming why, which turns a footgun into a
+check the test asserts, and the test drives the runner with **stub commands**
+instead. That split — the expensive real thing on one side, the bookkeeping
+tested on the other — is D67's `--rescore` lesson arriving at a third site.
+
+**A new script has to be classified.** The test walks tracked `scripts/*.py`,
+`eval/*.py` and `spike/**/run.py` and asserts each is in `GATES` or in `EXCLUDED`
+with a reason. Adding a script and forgetting the list fails the suite, rather
+than silently shrinking the ritual — the same "adding a provider is one entry
+here" pattern `pa_agent/model_pin.py` uses for `_MODEL_FAMILIES`. Without it the
+list rots exactly the way the unwritten rule would have.
+
+### The test that had to be deleted: a check whose failure mode is a fork bomb
+
+The obvious test for the recursion guard is to spawn
+`python scripts/check_gates.py` from inside pytest and assert it exits 2. It was
+written, it passed, and the mutation pass then deleted the guard to see whether
+anything caught it. **Nothing caught it — the harness hung for two minutes and
+had to be killed.** With the guard gone the child ran the suite, the suite reached
+that test, and it spawned another child.
+
+Technically the mutation was "caught", in that the suite never finished. That is
+not a catch worth having: a check whose failure mode is an unbounded process tree
+is worse than the defect it looks for, and the mutation harness reported nothing
+at all because it never got an exit code.
+
+So the end-to-end spawn is gone and the guard is asserted by parsing `main` — the
+`PYTEST_CURRENT_TEST` read exists and its line precedes every `run_gates` call.
+That is T-64's AST shape used for a new reason: not "a behavioural test would pass
+over the mutation" but "a behavioural test would not terminate". The behavioural
+half still exists at the level that is safe — `main()` with `run_gates`
+monkeypatched to fail if it is ever reached.
+
+Seven mutations, each caught by the check that should catch it: a gate dropped
+from the list, a failing gate reported but not counted, `main()` exiting zero
+whatever the count, the guard deleted, the suite demoted from first, `--offline`
+dropped from `verify_sources.py`, and an exclusion emptied of its reason.
+
+### Rejected
+
+**A git pre-commit hook.** It is the only option here that could *enforce* rather
+than remind, and it is still wrong: `.git/hooks` is untracked, so the enforcement
+would not survive a clone and would not appear in any diff a reviewer reads; it
+is bypassable with `--no-verify`; and working rule 9 keeps the repo free of
+machinery a reader has to know about to trust it. A tracked hook plus an install
+step is CI with extra steps.
+
+**CI.** Working rule 9 names it explicitly.
+
+**Deriving the list by parsing `docs/tasks.md`.** Attractive, since the
+membership rule is stated in terms of the board — but a parser cannot tell that
+`verify_sources.py` needs `--offline` here and not there, that `pytest
+tests/x.py` is subsumed by `pytest`, or that `check_req_coverage.py` does not
+exist yet. Each of those is a judgment with a reason, and reasons are what the
+`EXCLUDED` mapping records. The classification test gets the drift protection
+without pretending the classification is mechanical.
+
+### What this does not fix, stated plainly
+
+It makes "everything is green" one command. **It cannot make anyone type it.**
+The residual is a habit, and the honest version of that sentence is that this
+lowers the cost of the habit to twelve seconds and removes the excuse of not
+knowing what to run. If a third close-time finding of this shape appears, the
+answer is not a longer rule — it is that the ritual needs enforcement the repo
+has so far declined to buy, and this entry is the record of that price being
+weighed once.
+
+### Reversal condition
+
+If the ritual grows past the point where a closer will run it — the plausible
+trigger is `pytest` itself getting slow, not the script list getting longer — the
+answer is to make the suite fast, not to split the gate. A `check_gates --fast`
+that runs a subset would recreate exactly the gap this entry closes.

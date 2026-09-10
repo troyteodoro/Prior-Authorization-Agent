@@ -54,8 +54,12 @@ The articles most likely to be violated by accident:
    rejected.
 3. **Push back when Troy is wrong**, including on plans given in an earlier
    session. Agreement that turns out to be wrong is worse than friction.
-4. **Every task closes on a command that returns zero.** "Looks right" is not an
-   exit condition. A task without a runnable check is not yet specified.
+4. **Every task closes on a command that returns zero** — its own exit condition
+   **and** `python scripts/check_gates.py`, which runs every zero-cost gate in
+   the repo (~12s). "Looks right" is not an exit condition. A task without a
+   runnable check is not yet specified. *(D69: T-67 closed with `pytest` red,
+   because its exit named only its own test file and nothing said the rest of
+   the repo had to still be green.)*
 5. **Log the decision in `docs/decisions.md` before writing the code.** Name the
    rejected alternative and the condition that would reverse the choice. This
    covers rewriting a task's exit condition — a weak exit condition is a design
@@ -517,7 +521,34 @@ the model name as a literal, and `tests/test_model_pin.py` scans tracked Python
 with no exception for test files (D20). T-67's exit names
 `pytest tests/test_adk_measurement.py`, which passed — **a task's exit command is
 not a substitute for the suite**, and this is the second finding of that shape in
-two tasks (T-67's was a script no gate ran).
+two tasks (T-67's was a script no gate ran). **T-69 is the fix.**
+
+**T-69 is closed (D69), and the close ritual is one command.**
+`python scripts/check_gates.py` runs the eight zero-cost gates — `pytest` first,
+then `check_env`, `check_skeleton`, `verify_sources --offline`,
+`select_patients --verify`, `spike/spike_001/run.py --verify`, `run_eval` and
+`run_agentic_eval` — in about twelve seconds, and **working rule 4 now requires
+it at every close** alongside the task's own exit condition.
+
+**Membership is not a taste call:** a command is a gate iff some task's exit
+condition names it *and* it spends no model call and touches no network. Both
+halves are auditable against `docs/tasks.md`. The cost half alone would admit
+`run_extraction.py --rescore`, which is the bookkeeping half of a measurement
+rather than a check on the repo. Everything else tracked under `scripts/`,
+`eval/` and `spike/` sits in `EXCLUDED` **with its reason**, and
+`tests/test_check_gates.py` fails on a tracked script in neither — so a new
+script has to be classified rather than quietly falling outside the ritual.
+
+**The script refuses to run inside pytest**, because it runs the suite and the
+suite collects its test. The end-to-end test of that guard was written, and
+deleted: with the guard removed it is a fork bomb, and the mutation pass hung
+rather than reporting. The guard is asserted by parsing `main` instead — T-64's
+AST shape for a new reason, that the behavioural test would not *terminate*.
+
+**What it does not fix, in writing:** it makes "everything is green" one command;
+it cannot make anyone type it. A pre-commit hook was rejected (untracked, so it
+survives no clone and appears in no diff; bypassable; working rule 9) and CI is
+named in rule 9 itself.
 
 **US-4 and US-5 have not closed.** Their closing conditions are E4–E11 and E1/E8
 passing *in the harness*, and `eval/cases.json` still holds one case. That is
@@ -742,9 +773,15 @@ patient reads stale. Implemented as written and pinned by
 starts passing differently, REQ-14's selection changed and it needs T-42's
 decision entry, not a quiet fix.
 
-*Method note:* when mutation-testing, **clear `__pycache__` after restoring** —
-a same-length mutation restored within the same second leaves Python's
-bytecode cache looking valid, and a "passing" suite can be running the mutant.
+*Method note:* when mutation-testing, three things a harness gets wrong silently.
+**Clear `__pycache__` after restoring** — a same-length mutation restored within
+the same second leaves Python's bytecode cache looking valid, and a "passing"
+suite can be running the mutant. **Run pytest with `--color=no`** — `-q` prefixes
+`FAILED` lines with an ANSI escape, so a `^FAILED` scan reports every mutation as
+surviving; six false survivors in T-68's close (D68). And **a mutation that hangs
+is not a mutation that was caught** — deleting T-69's recursion guard made the
+suite spawn itself and the harness returned no exit code at all, which is why
+that guard is asserted by parsing rather than by spawning (D69).
 
 **T-39 is closed (D34).** Spec §9 states each question's status by subsection
 — `### Still open` versus `### Resolved` — and `_question_statuses()` in
