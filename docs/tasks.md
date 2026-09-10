@@ -656,7 +656,7 @@ put `google.adk` on the import path of every deterministic test, and the three
 deleted to allow it. This graph has one conditional — whether a short circuit
 fired — and that is a `return`, not an edge. *(D62)*
 
-### `[ ] T-20` Cost and latency instrumentation
+### `[x] T-20` Cost and latency instrumentation
 **REQ:** 22 · **Depends:** T-15
 **Exit:** `python eval/run_eval.py` prints per-run token counts and wall time
 Lands with the first model call, not on day five. *(Article X)*
