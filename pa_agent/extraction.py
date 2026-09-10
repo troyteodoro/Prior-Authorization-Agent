@@ -28,7 +28,13 @@ from datetime import date
 from pydantic import BaseModel, Field
 
 from pa_agent.anchor import AnchoredSpan, anchor
-from pa_agent.contracts import CallMetrics, EvidenceSpan, ProgramAssertion, WmEvent
+from pa_agent.contracts import (
+    CallMetrics,
+    EvidenceSpan,
+    ProgramAssertion,
+    RunTrace,
+    WmEvent,
+)
 from pa_agent.model_pin import PINNED_MODEL
 
 EXTRACTION_TEMPERATURE = 0.0  # Art. II: the same note yields the same events
@@ -185,6 +191,11 @@ class ExtractionResult:
     dropped: list[dict] = field(default_factory=list)
     metrics: CallMetrics | None = None
     raw: dict | None = None
+    # T-62: how the runner reached this result — tool-call sequence, attempts,
+    # termination reason (REQ-49). Optional because a replay of a recorded
+    # payload made no calls to trace, and `None` says so rather than an empty
+    # trace implying a run that recorded nothing.
+    trace: RunTrace | None = None
 
 
 def _anchor_or_drop(

@@ -625,7 +625,7 @@ untouched in all three; no model call; tolerance read from the criteria tree
 Runs after extraction rather than inside T-13, because the note BMI does not
 exist until T-15 and US-2 makes no model call. *(D11)*
 
-### `[ ] T-18` Workflow graph
+### `[x] T-18` Workflow graph
 **REQ:** 1, 4, 19, 52 · **Depends:** T-13, T-16, T-46 · **Blocks:** T-19, T-61
 **Exit:** `pytest tests/test_workflow.py` —
 - the step sequence is a module-level constant, and a run visits exactly those
@@ -667,7 +667,7 @@ Lands with the first model call, not on day five. *(Article X)*
 
 ## `US-5` The gap list — day 4
 
-### `[ ] T-19` Aggregator and gap list
+### `[x] T-19` Aggregator and gap list
 **REQ:** 19, 20, 21, 31, 39, 42 · **Depends:** T-18, T-31 · **Blocks:** T-61
 **Exit:** `pytest tests/test_determination.py` —
 - the **policy's** `decision_expression` is parsed and evaluated in Python over
@@ -695,7 +695,7 @@ without those the aggregator could be a conjunction over verdicts nobody produce
 
 ## 'US-5.5' Orchestration
 
-### `[ ] T-62` ADK extraction runner and its declared tools
+### `[x] T-62` ADK extraction runner and its declared tools
 **REQ:** 22, 41, 52, 53 · **Depends:** T-12, T-15, T-46 · **Blocks:** T-61, T-63
 **Discovered in:** the T-18 build *(D62)*
 **Exit:** `pytest tests/test_adk_agent.py` — **zero model calls**, driven against a
