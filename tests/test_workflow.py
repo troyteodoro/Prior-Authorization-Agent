@@ -774,3 +774,77 @@ def test_the_workflow_reaches_data_only_through_the_two_ports() -> None:
             f"workflow.py contains {forbidden!r}; data reaches the graph through "
             "the ports and nowhere else (REQ-41)"
         )
+
+
+# --------------------------------------------------------------------------
+# Article X: every model turn is counted, not just the first
+# --------------------------------------------------------------------------
+
+
+class _TwoTurnRunner:
+    """A runner whose trace carries two model turns, as a tool call does.
+
+    Modelled on `AdkExtractionRunner` under `tool_fetch=True`: the model spends
+    one LLM call asking for the tool and another answering, so the note costs two
+    turns. Written as a local fake rather than driving the ADK, because the claim
+    under test is about what the *workflow* does with a trace it is handed.
+    """
+
+    name = "two-turn"
+
+    def __init__(self, inner) -> None:
+        self._inner = inner
+
+    def run(self, document_id: str, text: str):
+        from pa_agent.contracts import CallMetrics, RunTrace
+
+        result = self._inner.run(document_id, text)
+        turn = CallMetrics(
+            model="two-turn-model",
+            purpose="extraction",
+            input_tokens=100,
+            output_tokens=10,
+            wall_time_ms=5.0,
+        )
+        result.metrics = turn
+        result.trace = RunTrace(
+            runner_name=self.name,
+            document_id=document_id,
+            metrics=[turn, turn],
+        )
+        return result
+
+
+def test_every_model_turn_reaches_the_determination_not_just_the_first(
+    policy_store, patient_store, runner, ref, case_patients
+) -> None:
+    """A tool-calling extraction costs two LLM calls per note (ADK's
+    `max_llm_calls` counts calls, not tool invocations). `build_result` takes a
+    single `CallMetrics`, so reading only `result.metrics` would report half the
+    tokens the request actually spent — and it would look entirely plausible.
+
+    Article X says recorded from the first model call, and A6 asks for cost
+    reported from instrumentation. A number that is quietly half is worse than no
+    number, because nobody goes looking for it.
+    """
+    two_turn = _TwoTurnRunner(runner)
+    run = _run(policy_store, patient_store, two_turn, case_patients["E1"], ref)
+
+    assert run.determination.model_calls == 2, (
+        "only one turn reached the determination; a tool-calling run costs two "
+        "and the second was dropped at the workflow boundary"
+    )
+    assert run.determination.total_input_tokens == 200
+    assert run.determination.total_output_tokens == 20
+    assert run.traces[0].metrics == run.determination.metrics
+
+
+def test_a_runner_without_a_trace_still_reports_its_one_call(
+    policy_store, patient_store, runner, ref, case_patients
+) -> None:
+    """The fallback, so the fix above cannot silently zero the replay path — the
+    recorded runner carries no trace by design and its single recorded
+    measurement must still reach the determination."""
+    run = _run(policy_store, patient_store, runner, case_patients["E1"], ref)
+    assert run.determination.model_calls == 1
+    assert run.determination.total_input_tokens > 0

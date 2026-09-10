@@ -3525,6 +3525,44 @@ Recorded rather than quietly fixed because it is a check that was weaker than it
 looked for four tasks, and the next `sys.modules` assertion somebody writes should
 find this paragraph.
 
+### Found by reading an abandoned parallel attempt: cost was under-reported
+
+An uncommitted worktree (`update-google-genai-to-adk-logic`) held an earlier,
+unfinished pass at this same change, carrying its own **D53**. It replaced
+`extract()` in place rather than putting a port in front of it. Superseded, and
+one thing in it was right that this entry's implementation had got wrong.
+
+It summed `usage_metadata` across **every** event in the run. This
+implementation records one `CallMetrics` per model turn on the `RunTrace` and
+then attached only `trace.metrics[0]` to the `ExtractionResult`, because
+`build_result()` takes a single `CallMetrics`. On the no-tools path that is
+correct — one turn, one measurement. **Under `tool_fetch` it halves the reported
+cost**: a tool-calling extraction spends one LLM call requesting the tool and
+another answering, and the determination reported the first.
+
+Measured: 22 input tokens spent, 11 reported. `max_llm_calls` counts LLM calls
+rather than tool invocations for exactly this reason, and the boundary lost what
+the plugin had correctly recorded.
+
+Fixed at the workflow boundary — every turn on the trace reaches the
+determination, with a fallback to the single measurement for a runner that
+carries no trace, so the replay path is not zeroed. Pinned by
+`test_every_model_turn_reaches_the_determination_not_just_the_first`.
+
+Worth recording as more than a bug. A number that is quietly half is worse than
+no number, because nothing looks wrong and nobody goes checking — and A6 asks for
+cost *reported from instrumentation*, which is a claim about the number being
+real. This is the second time this pass that a check looked stronger than it was
+(the `sys.modules` guards were the first).
+
+**Rejected — D53's shape, for the record.** Replacing `extract()` deletes the
+configuration D45 measured, so T-63's comparison has nothing on the other side;
+its own "reverses if" names a regression in the recorded gate, which re-reads a
+recording and cannot observe one. It also drops the injected client, making the
+tier ambient when D5 has the caller choose it, and sets neither
+`include_contents` nor the transfer flags, so ADK selects `AutoFlow` and injects
+`transfer_to_agent` — a live Article I hole.
+
 **Reverses if:** the ADK runner measures materially worse than the direct one in
 T-63, in which case the port stays and the ADK runner stops being the default
 without anything above it changing — which is the point of putting a port there. Or:

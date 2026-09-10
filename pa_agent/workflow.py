@@ -377,15 +377,26 @@ def _extract_one(note: Document, ctx: _Context) -> tuple[object, RunTrace]:
             continue
 
         inner = getattr(result, "trace", None)
+        # **Every** model turn, not just the first. A tool-calling run costs two
+        # LLM calls per note — one to request the tool, one to answer — and
+        # `result.metrics` carries a single `CallMetrics` because that is what
+        # `build_result` takes. Reading only that halves the reported cost of the
+        # `tool_fetch` path, and Article X says measured rather than estimated
+        # (A6). A runner with no trace, like the replay, falls back to its one.
+        measured = (
+            list(inner.metrics)
+            if inner is not None and inner.metrics
+            else ([result.metrics] if result.metrics else [])
+        )
         trace = RunTrace(
             runner_name=getattr(ctx.runner, "name", type(ctx.runner).__name__),
-            model=(result.metrics.model if result.metrics else None),
+            model=(measured[0].model if measured else None),
             document_id=note.document_id,
             steps=["extract"],
             tool_calls=list(inner.tool_calls) if inner is not None else [],
             attempts=attempt,
             termination_reason="ok",
-            metrics=[result.metrics] if result.metrics else [],
+            metrics=measured,
         )
         return result, trace
 
