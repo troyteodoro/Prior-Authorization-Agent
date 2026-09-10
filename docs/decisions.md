@@ -3569,3 +3569,134 @@ without anything above it changing — which is the point of putting a port ther
 a second model leaf appears that genuinely needs to route (T-17's verifier does not;
 it is one call with a fixed input), at which case Article I gets a real amendment
 rather than this one's scoped path.
+
+## D63 — The agentic path is model-directed retrieval, and the graph gains a second port
+
+T-61's design, written before it. It narrows Amendment 1 the way D62 narrowed
+D61: the amendment *permits* model adjudication, and this task deliberately does
+not exercise that permission.
+
+### The tension that decided it
+
+T-61's prose says the model "evaluates criteria and determines criterion-level
+and overall outcomes". Amendment 1 — the thing that makes T-61 legal — reserves
+to Python, **on both paths**:
+
+> date arithmetic and window calculation; numeric comparisons; counting,
+> sorting, and set membership
+
+That reserved list is the entire decision procedure for all seven criteria.
+Criterion (a) is a numeric comparison. Criterion (b) is set membership. c1 is a
+count, c2 is a date window, c3 is the longest run of consecutive months, c4 and
+c5 are per-month counts over that run. **There is no criterion whose verdict the
+model could decide without doing something the amendment reserves.**
+
+So T-61 as written and the amendment it depends on disagree, and one of them had
+to give.
+
+### Chosen — the model directs retrieval; Python still adjudicates
+
+The model chooses which tools to call, in what order, how many times, and when it
+has gathered enough. It terminates its own run. Then the evidence it gathered
+goes through the *existing* deterministic criteria, unchanged.
+
+The measurable question becomes: **does model-directed retrieval find what fixed
+retrieval finds?** That is a real question with a real failure mode. A planner
+that skips a note leaves c3 measuring a shorter run. One that forgets the
+observations makes criterion (a) abstain. One that reads the same document four
+times costs four times as much for the same answer. Each of those produces a
+determination that is entirely well-formed and quietly wrong, which is the class
+of failure this project exists to catch.
+
+**Rejected — the model decides all seven verdicts and Python only validates
+spans.** It is what T-61's prose asks for and it is the fuller demonstration. It
+needs Amendment 2 to the reserved list, and that amendment would take the oracle
+with it: the deterministic implementation is only a regression oracle because it
+is constrained differently from the thing it grades. D62 fixed exactly that
+problem eight commits ago; re-creating it to make a task's prose come true is the
+wrong trade.
+
+**Rejected — the model proposes verdicts and Python overrides the reserved
+arithmetic.** Legal under the amendment, and it produces the sharper finding —
+where does model judgment diverge from arithmetic. Refused because a proposal
+that is always overridden on every criterion is not adjudication, it is a second
+opinion nobody acts on, and building the machinery to collect one is expensive
+theatre. If model judgment is wanted, T-17's blind verifier is the place it earns
+its keep: there the model's disagreement *changes an outcome*.
+
+### What this costs, stated plainly
+
+**REQ-44 is not exercised by T-61.** "The model may use tool results and verified
+evidence to evaluate criteria and determine criterion-level and overall outcomes"
+describes something this task does not build. It is dropped from T-61's REQ list
+rather than left there to be counted as covered — A7 maps every REQ to a passing
+check, and a requirement listed against a task that does not implement it is how
+that mapping starts lying.
+
+REQ-44 stays in the spec, unclaimed, which is the honest state: a permission the
+constitution grants and no task has yet taken up.
+
+### Chosen — a `RetrievalPlanner` port, symmetric with `ExtractionRunner`
+
+T-18's graph already has a port at its model half. It gains one at its retrieval
+half, the same shape:
+
+```
+RetrievalPlanner: gather(...) -> RetrievalResult
+    FixedRetrievalPlanner     the three load steps, verbatim
+    AgenticRetrievalPlanner   the model chooses; in pa_agent/agent/
+```
+
+Everything downstream — extraction, reconciliation, seven criteria, aggregation —
+is untouched and cannot tell which planner ran. That is what makes the comparison
+a comparison: one variable changes.
+
+`STEPS` loses `load_structured_facts`, `load_value_set` and `load_notes` and gains
+`gather`. T-18's gate is self-consistent about the step list, so this is a visible
+diff rather than a broken check, and the ordering assertions still hold.
+
+**Rejected — a separate agentic workflow module.** Two graphs that are supposed to
+differ in one step would drift in others, and every drift would show up in the
+differential as a finding about the model. The whole value of the measurement is
+that the paths are identical everywhere else.
+
+### Chosen — the gate is free to run, and the measurement is a recording
+
+T-61's exit as written is `python eval/run_agentic_eval.py`, which compares the two
+paths on the same cases — and therefore spends model calls on every invocation.
+
+Every gate in this repo is free and reproducible: `pytest` re-reads T-15's
+recording, `eval/run_eval.py` replays it, `spike/spike_001/run.py --verify` spends
+nothing. **A gate that costs money is a gate that gets skipped**, and a task whose
+exit condition nobody runs is a task with no exit condition (Art. VIII).
+
+So `run_agentic_eval.py` takes the shape `scripts/run_extraction.py` already has:
+a measuring mode that spends calls and writes `eval/agentic/results.json`, and a
+scoring mode that reads the recording and spends nothing. **The exit condition is
+the scoring mode.** Rewriting an exit condition is a design decision, which is why
+it is here (working rule 5, and the same move D62 made for T-18's grep).
+
+### Chosen — the comparison needs no labels, so T-21 does not block this
+
+REQ-50 compares the agentic path against the deterministic one, not against ground
+truth. Disagreement, unsupported-outcome rate, citation validity, error rate,
+tokens, latency, tool-call count and termination reason are all label-free. So the
+differential runs over the six committed patients directly and does not wait for
+T-21's labelled case set.
+
+Worth stating because the obvious reading of "completes the full evaluation set"
+is `eval/cases.json`, which holds one case and is T-21's to fill. A differential
+oracle needs the same *input* through both paths, not a label.
+
+### A defect in T-61's own text
+
+It ends **"US-7 closes when: the agentic path completes the full evaluation
+set…"**. T-61 sits under US-5.5 Orchestration; US-7 is "Show me where the system
+stops being reliable" and closes on T-21, T-22, T-23 and T-28. T-61 closes none of
+those. Corrected to name US-5.5.
+
+**Reverses if:** model-directed retrieval turns out to agree with fixed retrieval
+on every case and every budget — at which point the interesting question moves to
+where the model's *judgment* diverges, and the refused alternative above becomes
+worth its cost. Or: T-17's verifier lands and gives model judgment a place where
+it changes an outcome, making a separate adjudication path redundant.

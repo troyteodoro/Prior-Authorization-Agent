@@ -774,8 +774,18 @@ the two tiers, and a number from one is not a number for the other. *(D62)*
 
 ### `[ ] T-61` Agentic orchestration and model adjudication
 
-**REQ:** 43, 44, 45, 46, 47, 48, 49, 50, 51  
+**REQ:** 43, 45, 46, 48, 49, 50, 51  
 **Depends:** T-18, T-19, T-20, T-26, T-46, T-62
+
+**REQ-44 and REQ-47 are deliberately not claimed (D63).** They describe the model
+*evaluating criteria and determining outcomes*, and this task does not build that.
+Amendment 1 reserves date arithmetic, numeric comparisons, counting, sorting and
+set membership to Python **on both paths** — which is the entire decision procedure
+for all seven criteria — so there is no verdict the model could decide without
+doing something the amendment reserves. The model directs retrieval here and Python
+still adjudicates. Both requirements stay in the spec, unclaimed, which is the
+honest state: a permission the constitution grants and no task has yet taken up.
+Listing them here would make A7's "every REQ maps to a passing check" a lie.
 
 **T-26 and T-62 added to `Depends` by D62.** T-26 was missing and it is real: this
 task's exit requires malformed and contradictory output to resolve to `ERROR`, and
@@ -791,29 +801,49 @@ measured against the deterministic implementation — which is only an oracle be
 it is still bound by the articles as written.
 
 **Exit:** `pytest tests/test_agentic_workflow.py` and
-`python eval/run_agentic_eval.py`
+`python eval/run_agentic_eval.py` — **both spend zero model calls.**
 
 The tests must prove that:
 
-- the model can select only allowlisted tools;
-- tool calls are recorded in order;
-- the model can request additional evidence;
-- execution stops at the step, timeout, and retry limits;
-- model outcomes require mechanically verified spans;
-- malformed and contradictory outputs resolve to `ERROR`;
-- unsupported outcomes resolve to `INSUFFICIENT_EVIDENCE`;
-- policy artifacts cannot be modified by the model;
-- deterministic validation remains authoritative;
-- agentic and deterministic results are compared on identical cases.
+- the model can select only allowlisted tools, and a call to anything else is
+  refused rather than answered;
+- tool calls are recorded in order, with arguments digested rather than stored;
+- the model can request additional evidence — a second document, the structured
+  facts — and the run reflects what it asked for;
+- execution stops at the step, timeout and retry limits, and exhausting any of
+  them terminates with a named reason rather than a partial answer;
+- every document the model gathered is hash-verified and every span it produced
+  validates through T-11 before a criterion sees it;
+- malformed and contradictory model output resolves to `ERROR` with a classified
+  code, never to a verdict;
+- a planner that gathered nothing yields `INSUFFICIENT_EVIDENCE`, never `NOT_MET`
+  — "the model did not look" and "the chart does not say" are different answers;
+- policy artifacts cannot be modified by the model: the policy tools are
+  read-only and the criteria tree is never written;
+- deterministic validation remains authoritative — the same gathered evidence
+  produces the same verdicts as the fixed planner, because the criteria code is
+  the same code;
+- agentic and deterministic results are compared on identical inputs.
 
-`python eval/run_agentic_eval.py` must report criterion-level and overall
-differences between the agentic path and the deterministic oracle, including
-unsupported-outcome rate, citation validity, error rate, token usage, latency,
-tool-call count, and termination reason.
+`python eval/run_agentic_eval.py` scores a recording and reports criterion-level
+and overall differences against the deterministic oracle, plus unsupported-outcome
+rate, citation validity, error rate, token usage, latency, tool-call count and
+termination reason. `--measure` spends the calls and writes the recording.
 
-**US-7 closes when:** the agentic path completes the full evaluation set without
+*Exit condition rewritten by D63*, for two defects in its own text. It named
+`python eval/run_agentic_eval.py` as a gate while requiring live comparison, so
+every run would cost money — and **a gate that costs money is a gate that gets
+skipped** (Art. VIII). It also asked for model *outcomes* to carry verified spans,
+which describes a path this task does not build; the equivalent obligation, that
+gathered evidence is verified before a criterion sees it, replaces it.
+
+**US-5.5 closes when:** the agentic path completes the differential without
 violating its execution bounds, and every discrepancy is reported rather than
-silently hidden.
+silently reconciled.
+
+*(Was "US-7 closes when". T-61 sits under US-5.5; US-7 is "Show me where the
+system stops being reliable" and closes on T-21, T-22, T-23 and T-28, none of
+which this task touches. Corrected by D63.)*
 
 ---
 
