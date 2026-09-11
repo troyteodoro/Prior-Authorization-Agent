@@ -31,7 +31,12 @@ from pathlib import Path
 
 import pytest
 
-from pa_agent.contracts import CriterionVerdict, Document
+from pa_agent.contracts import (
+    CriterionVerdict,
+    DeterminationAborted,
+    Document,
+    ErrorCode,
+)
 from pa_agent.determination import determine
 from pa_agent.index import DocumentIndex
 from pa_agent.runners import (
@@ -43,6 +48,7 @@ from pa_agent.runners import (
 from pa_agent.spans import validate
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
+from conftest import AcceptAllVerifier
 from pa_agent.workflow import (
     DEFAULT_MAX_ATTEMPTS,
     STEP_NAMES,
@@ -110,6 +116,7 @@ def ref(policy_store):
 
 
 def _run(policy_store, patient_store, runner, patient_id, ref, **kwargs):
+    kwargs.setdefault("verifier", AcceptAllVerifier())
     return run_criteria_workflow(
         policy_store=policy_store,
         patient_store=patient_store,
@@ -216,6 +223,13 @@ class _TwoNoteStore:
         self.note_calls += 1
         return list(self._notes)
 
+    def get_document(self, document_id: str) -> Document:
+        # T-29's span pass resolves every cited document back through the port.
+        for note in self._notes:
+            if note.document_id == document_id:
+                return note
+        raise KeyError(document_id)
+
 
 class _CountingRunner:
     """Wraps a runner and records every `(document_id, text_sha)` it was asked
@@ -254,6 +268,7 @@ def test_n_notes_produce_n_extraction_calls_one_per_note(
         policy_ref=ref,
         patient_id="two-note-patient",
         as_of=AS_OF,
+        verifier=AcceptAllVerifier(),
     )
 
     assert store.note_calls == 1, "the note list is read once, not per criterion"
@@ -261,8 +276,9 @@ def test_n_notes_produce_n_extraction_calls_one_per_note(
         first.document_id,
         second.document_id,
     ]
-    assert len(run.traces) == 2
-    assert [t.document_id for t in run.traces] == [
+    extraction_traces = [t for t in run.traces if t.steps == ["extract"]]
+    assert len(extraction_traces) == 2
+    assert [t.document_id for t in extraction_traces] == [
         first.document_id,
         second.document_id,
     ]
@@ -292,6 +308,7 @@ def test_events_fan_in_across_notes_and_keep_the_span_of_their_own_note(
         policy_ref=ref,
         patient_id="two-note-patient",
         as_of=AS_OF,
+        verifier=AcceptAllVerifier(),
     )
 
     events = run.state.events
@@ -329,6 +346,7 @@ def test_merged_events_are_ordered_by_date_not_by_note(
         policy_ref=ref,
         patient_id="two-note-patient",
         as_of=AS_OF,
+        verifier=AcceptAllVerifier(),
     )
     dates = [e.event_date for e in run.state.events]
     assert dates == sorted(dates)
@@ -396,14 +414,20 @@ def test_exhausting_the_budget_raises_rather_than_returning_a_partial_result(
     finished reading.
     """
     failing = _AlwaysFailingRunner(ExtractionFailure.CALL_FAILED)
-    with pytest.raises(ExtractionOutputError) as caught:
+    with pytest.raises(DeterminationAborted) as caught:
         _run(
             policy_store, patient_store, failing, case_patients["E1"], ref,
             max_attempts=2,
         )
     assert failing.attempts == 2
-    assert caught.value.reason is ExtractionFailure.CALL_FAILED
-    assert "2 attempt(s)" in caught.value.message
+    assert caught.value.attempts == 2
+    # REQ-24: the underlying exception is surfaced, not swallowed — the raw
+    # fault rides the cause chain with its classified reason intact.
+    assert caught.value.__cause__.reason is ExtractionFailure.CALL_FAILED
+    assert "2 attempt(s)" in caught.value.__cause__.message
+    assert {r.error_code for r in caught.value.results} == {
+        ErrorCode.MODEL_CALL_FAILED
+    }
 
 
 def test_a_terminal_fault_is_not_retried(
@@ -413,11 +437,12 @@ def test_a_terminal_fault_is_not_retried(
     response, so retrying a schema violation spends money to reach the same
     answer. Only a transport failure could plausibly differ (D8)."""
     failing = _AlwaysFailingRunner(ExtractionFailure.SCHEMA_INVALID)
-    with pytest.raises(ExtractionOutputError):
+    with pytest.raises(DeterminationAborted) as caught:
         _run(
             policy_store, patient_store, failing, case_patients["E1"], ref,
             max_attempts=5,
         )
+    assert caught.value.attempts == 1
     assert failing.attempts == 1, (
         "a terminal fault consumed more than one attempt; the classifier is not "
         "being read"
@@ -461,8 +486,11 @@ def test_a_malformed_payload_raises_and_never_becomes_a_zero_event_extraction(
     contributes no false positives, so it scores perfect precision. A transport
     failure would read as flawless extraction."""
     failing = _AlwaysFailingRunner(ExtractionFailure.UNPARSEABLE)
-    with pytest.raises(ExtractionOutputError):
+    with pytest.raises(DeterminationAborted) as caught:
         _run(policy_store, patient_store, failing, case_patients["E1"], ref)
+    assert {r.error_code for r in caught.value.results} == {
+        ErrorCode.SCHEMA_INVALID
+    }
 
 
 def test_an_honestly_empty_extraction_is_an_answer_and_not_a_fault(
@@ -493,7 +521,7 @@ def test_a_recorded_payload_for_a_changed_note_refuses_to_anchor(
     note = patient_store.get_notes(case_patients["E1"])[0]
     edited = Document.from_text(note.document_id, note.text + "\n\nAddendum.\n")
     store = _TwoNoteStore("edited-patient", [edited])
-    with pytest.raises(ExtractionOutputError) as caught:
+    with pytest.raises(DeterminationAborted) as caught:
         run_criteria_workflow(
             policy_store=policy_store,
             patient_store=store,
@@ -501,8 +529,9 @@ def test_a_recorded_payload_for_a_changed_note_refuses_to_anchor(
             policy_ref=ref,
             patient_id="edited-patient",
             as_of=AS_OF,
+            verifier=AcceptAllVerifier(),
         )
-    assert caught.value.reason is ExtractionFailure.DOCUMENT_CHANGED
+    assert caught.value.__cause__.reason is ExtractionFailure.DOCUMENT_CHANGED
 
 
 # --------------------------------------------------------------------------
@@ -692,9 +721,15 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
     )
     assert iterables == [
         "STEPS",                          # the declared graph
+        "cited",                          # T-17: the cited verdicts, a filtered
+                                          # Python list — never model output
         "enumerate(tree.criteria)",       # the policy's own criterion order
         "range(1, ctx.max_attempts + 1)", # the retry budget, a Python constant
+        "range(1, ctx.max_attempts + 1)", # ...and the verifier's own (REQ-18a)
+        "result.spans",                   # T-29's span pass: validation only,
+        "result.spans",                   # ...and T-17's quote slicing (D78)
         "state.notes",                    # the fan-out: PatientStore's answer
+        "state.results",                  # ...it spends no model call (D76)
     ], f"workflow.py loops over {iterables}"
 
 
@@ -770,11 +805,14 @@ def test_the_workflow_reaches_data_only_through_the_two_ports() -> None:
         "pa_agent.aggregate",
         "pa_agent.contracts",
         "pa_agent.criteria",
+        "pa_agent.index",     # T-29: the span pass resolves cited documents
         "pa_agent.reconcile",
         "pa_agent.retrieval",
         "pa_agent.runners",
+        "pa_agent.spans",     # T-29: every cited span slices back, or nothing ships
         "pa_agent.stores.patient",
         "pa_agent.stores.policy",
+        "pa_agent.verifier",  # T-17: Article V's port; no path, no credential
     }, f"workflow.py imports {sorted(imported)}"
 
     source = (REPO_ROOT / "pa_agent" / "workflow.py").read_text(encoding="utf-8")

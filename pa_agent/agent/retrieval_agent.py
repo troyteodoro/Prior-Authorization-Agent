@@ -380,7 +380,15 @@ class AgenticRetrievalPlanner:
             steps=[call.name for call in tool_calls],
             tool_calls=tool_calls,
             attempts=1,
-            termination_reason=f"{termination} ({elapsed:.0f}ms)",
+            termination_reason=(
+                f"{termination}"
+                + (
+                    f"; recorder_failures: {recorder.failures}"
+                    if recorder.failures
+                    else ""
+                )
+                + f" ({elapsed:.0f}ms)"
+            ),
             metrics=list(recorder.metrics),
         )
 
@@ -443,8 +451,12 @@ class AgenticRetrievalPlanner:
                     app_name=self._app_name, user_id="pa", session_id=session_id
                 )
             )
-        except Exception:
-            return None
+        except Exception as exc:  # re-raised classified, never swallowed (REQ-27)
+            raise RetrievalError(
+                f"the session read for {OUTPUT_KEY!r} failed: "
+                f"{type(exc).__name__}: {exc}. Returning None here would "
+                "report a transport fault as a model that produced no plan."
+            ) from exc
         if session is None:
             return None
         value = session.state.get(OUTPUT_KEY)

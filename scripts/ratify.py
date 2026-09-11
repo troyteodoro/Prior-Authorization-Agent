@@ -1,4 +1,4 @@
-"""Record the owner's ratification statuses in ``docs/ratifications.json`` (T-74, D75).
+"""Record the owner's ratification statuses in ``docs/ratifications.json`` (T-74, D80).
 
 This tool is the owner's pen, not a check. Working rule 11 scopes who decides —
 an agent writes ``proposed`` and nothing else — and D74 rejected a git-author
@@ -7,7 +7,7 @@ tool is the owner's edit; the ``by`` field and the diff remain the record. **An
 agent never runs this tool**: its entire output is statuses an agent may not
 write.
 
-Explicit ids only, by design (D75): there is no tier-wide wildcard, so each
+Explicit ids only, by design (D80): there is no tier-wide wildcard, so each
 invocation names what was read. ``--pending`` prints the checklist view.
 Validation is borrowed from ``check_ownership.py`` — the same
 ``enumerate_ids`` supplies the id universe, so the pen and the gate cannot
@@ -33,7 +33,7 @@ sys.modules.setdefault("check_ownership", _co)
 _spec.loader.exec_module(_co)
 
 # One-directional on purpose: the seed state is T-73's, never re-written here,
-# and an agent-writable status has no business in a status-writing tool (D75).
+# and an agent-writable status has no business in a status-writing tool (D80).
 WRITABLE_STATUSES = ("ratified", "amended", "overruled")
 
 

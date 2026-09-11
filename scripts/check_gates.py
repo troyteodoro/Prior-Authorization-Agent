@@ -73,6 +73,7 @@ GATES: tuple[tuple[str, tuple[str, ...]], ...] = (
 EXCLUDED: dict[str, str] = {
     "scripts/run_extraction.py": "spends model calls (T-15's measurement)",
     "scripts/run_adk_extraction.py": "spends model calls (T-63's measurement)",
+    "scripts/run_verifier_measurement.py": "spends model calls (T-17's measurement)",
     "scripts/synthesize_notes.py": (
         "regenerates a committed corpus; T-07 closes on tests/test_notes.py, "
         "which the suite already runs"
@@ -83,7 +84,7 @@ EXCLUDED: dict[str, str] = {
     ),
     "scripts/ratify.py": (
         "writes ledger statuses at the owner's invocation and checks nothing; the "
-        "check is check_ownership.py (D75)"
+        "check is check_ownership.py (D80)"
     ),
 }
 

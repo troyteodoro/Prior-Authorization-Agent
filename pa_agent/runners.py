@@ -34,8 +34,11 @@ path rather than a convention (D16).
 from __future__ import annotations
 
 import hashlib
+import json
 from enum import Enum
 from typing import Protocol, runtime_checkable
+
+from pydantic import ValidationError
 
 from pa_agent.contracts import CallMetrics
 from pa_agent.extraction import ExtractionResult, build_result, extract
@@ -146,6 +149,21 @@ class DirectExtractionRunner:
             return extract(document_id, text, self._client, self._model)
         except ExtractionOutputError:
             raise
+        except json.JSONDecodeError as exc:
+            # T-29 (D76): before this clause, a response that did not parse
+            # fell into the catch-all below and was classified `CALL_FAILED` —
+            # retryable, though the same prompt returns the same invalid
+            # response (D8). Terminal, one attempt.
+            raise ExtractionOutputError(
+                ExtractionFailure.UNPARSEABLE,
+                f"{document_id}: response is not JSON: {exc}",
+            ) from exc
+        except ValidationError as exc:
+            # Parsed but not our schema — the same misclassification (T-29).
+            raise ExtractionOutputError(
+                ExtractionFailure.SCHEMA_INVALID,
+                f"{document_id}: response failed schema validation: {exc}",
+            ) from exc
         except Exception as exc:  # re-raised classified, never swallowed (REQ-27)
             raise ExtractionOutputError(
                 ExtractionFailure.CALL_FAILED,

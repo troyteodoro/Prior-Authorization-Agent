@@ -511,7 +511,7 @@ therefore rises with quote length — the mechanism penalizes exactly the quotes
 that carry the most context. Worse, it makes one signal mean two things: `-1`
 currently reads as "the model invented this," and a fabricated citation is the
 single worst failure available to this system. Conflating it with a formatting
-artifact deshumans the signal that matters.
+artifact destroys the signal that matters.
 
 The verification predicate stays exact string equality. Only the equivalence
 class changes, and whitespace-insensitivity has no tuning surface: two runs of
@@ -929,7 +929,7 @@ determination this system previously would have approved it now declines to.
 **Rejected — keep the count, and set it equal to the run length at evaluation
 time.** Arithmetically identical on the pass/fail bit, and worse everywhere else.
 It puts a computation in the policy file, where Article II wants it in code. It
-also deshumans the gap list: a rate knows *which* months are missing and can tell
+also destroys the gap list: a rate knows *which* months are missing and can tell
 Sam what to go collect, while a count that came up short knows only that it did.
 A count that must equal the run length is a rate wearing a disguise.
 
@@ -5372,7 +5372,453 @@ rather than hidden. Or ratification updates become rote enough that statuses
 stop being read, which is D27's baseline argument returning; then the ledger
 shrinks to the tiers whose ownership is load-bearing.
 
-## D75 — T-74's statuses are recorded through a tool the owner runs, not a hand-edited JSON
+## D75 — Case rows are criterion-scoped, share cached runs, and carry their own clock
+
+**Task:** T-21. The eval set grows from one row to fifteen, and the scorer
+grows from outcome-plus-budget to the full claim a §6 row actually makes. The
+shape of a case row is the design decision here; the rows themselves are
+transcription from spec §6 and T-06's manifests.
+
+**Row semantics.** `expect` gains two optional fields beside `outcome` and
+`max_model_calls`: `criteria` (criterion id → `{verdict, gap_reason?}`) and
+`discrepancies` (an exact count over `Determination.discrepancies[]`). This
+generalizes D72's E10 ruling — §6's rows are criterion-scoped claims, and a
+scorer that reads only the overall outcome grades E10 by E6's answer. Every
+row still pins `outcome`, criterion-scoped or not: the redundancy is cheap,
+and it is what makes two rows on one patient unable to drift apart silently —
+they are scored against the same determination, and a contradiction fails at
+least one of them. Criterion expectations are copied from §6 and the T-06
+manifests, never read off an observed run; spec §8's ordering (label first,
+system second) is the reason the observed run below is corroboration, not
+source.
+
+**One determination per `(patient_id, procedure_code, as_of)`, cached.**
+Rows sharing the key share the run and every row grades the same object.
+
+**Rows carry their own clock, and E2 is why.** Two facts established while
+labeling, both already in the record but never before load-bearing at once:
+sc2 runs only for the *nationally covered* set — the 04/2009 exclusion
+predates the LSG delegation, so a contractor-determined request skips it
+(D41, REQ-42) — and sc2 refuses stale evidence, because a categorical denial
+issued on a BMI the criteria path would not accept is confidence asymmetry in
+the wrong direction (D41). E2's patient carries BMI 34.26 observed 2024-03-15,
+deliberately stale at the harness's 2026-09-01 clock so that E7 can reach the
+criteria path on the same chart. E2 therefore runs as a **nationally covered
+code (43644, lap RYGB) at an in-window `as_of` (2024-12-01)** — both verified
+against the running system before this entry was written — and case rows gain
+an optional `as_of` defaulting to `EVAL_AS_OF`. T-06's manifest rationale
+anticipated exactly this: "fires sc2 at an in-window as_of."
+
+**`NO_POLICY_FOUND` becomes a labeled expectation, with a real row.** The
+scorer learns the shape (`expect.outcome: "NO_POLICY_FOUND"`, satisfied by a
+`NoPolicyResult`, zero calls) and one row outside §6 — `NP1`, an ungoverned
+code — exercises it. A1 reads §6's fourteen; NP1 says so in its own text.
+
+**A3 moves into the scorer.** Every cited verdict (`MET` and `NOT_MET` both —
+Article III does not scope to `MET`; A3's gate reads the `MET` subset) has
+each span validated through `pa_agent.spans.validate` against a
+`DocumentIndex` built from the two stores' `get_document` for exactly the
+document ids the spans name. New `ReasonClass` members: `WRONG_CRITERION`,
+`WRONG_GAP_REASON`, `WRONG_DISCREPANCIES`, `INVALID_SPAN`. Scoring order:
+outcome → named criteria → discrepancy count → span validity → call budget,
+extending the existing rule that the graver finding is the one reported.
+A duplicate case id fails the run outright — two rows under one id collapse
+silently in a dict keyed by case id, which is a gate that grades one of them
+and pretends it graded both.
+
+**Rejected:**
+
+- *Deriving criterion expectations from the observed run.* Spec §8 exists to
+  forbid it; a label transcribed from the system under test grades the system
+  against itself.
+- *Criteria-only rows with `outcome` optional.* A row that does not state
+  what its determination concluded overall is a row that cannot catch the
+  aggregator regressing while its one criterion stays right.
+- *`NO_POLICY_FOUND` covered by `self_check()` alone.* A scorer branch no
+  real row exercises is the branch that breaks unnoticed; the harness comment
+  at the old `RuntimeError` site named this task for a reason.
+- *Re-hosting E2 on a new patient with an in-window sub-35 BMI.* The corpus
+  is pinned (D73), and one patient serving E2 and E7 at two clocks is the
+  design T-06 chose deliberately.
+- *Grading E7 by invoking the workflow directly, bypassing sc2.* Grades a
+  path the shipped system would not take; the per-case clock makes it
+  unnecessary.
+
+**Reversal:** the criteria-row shape is revisited if a §6 case ever needs an
+expectation it cannot express (a per-criterion span assertion, say); the
+per-case `as_of` empties back to a single clock if the corpus ever gains a
+patient whose sc2 shape is in-window at `EVAL_AS_OF` — at which point E2
+moves to that patient and the field goes unused before it goes away.
+
+---
+
+## D76 — A fault becomes a criterion's `ERROR` at the workflow boundary, and the abort is an exception
+
+**Task:** T-29. T-26 built the vocabulary — `ErrorCode`, the shape validators,
+the `Determination` that refuses construction over an `ERROR` (REQ-26) — and
+deliberately left production of an `ERROR` to this task. This entry states who
+maps what, which criteria carry the result, and what the CLI does with it.
+
+**The `ExtractionFailure` → `ErrorCode` mapping lives in `workflow.py`.**
+`runners.py` refused to host it in writing ("only the criterion knows what that
+means for the criterion") and that refusal holds: the runner knows the response
+was malformed, the workflow knows which criteria were waiting on it. The table:
+
+| `ExtractionFailure` | `ErrorCode` | Class |
+|---|---|---|
+| `CALL_FAILED` | `MODEL_CALL_FAILED` | retryable |
+| `NO_PAYLOAD` | `SCHEMA_INVALID` | terminal |
+| `UNPARSEABLE` | `SCHEMA_INVALID` | terminal |
+| `SCHEMA_INVALID` | `SCHEMA_INVALID` | terminal |
+| `DOCUMENT_CHANGED` | `SCHEMA_INVALID` | terminal |
+| `NOT_RECORDED` | `SCHEMA_INVALID` | terminal |
+
+The last two are replay faults, and they are terminal by D8's own test: an
+identical second replay of the same recording against the same document cannot
+answer differently. `_RETRYABLE_FAILURES` stops being an independent tuple and
+is asserted consistent with the mapped codes' `retryable` flags, so
+retryability has one source of truth — REQ-30's classification.
+
+**Which criteria carry the `ERROR`.** An extraction failure resolves the
+extraction-consuming criteria — c1 through c5, named in a module constant that
+mirrors what `step_qualifying_run` and `step_criteria_c` actually evaluate — to
+`ERROR`; (a) and (b) read structured FHIR and never touched the model, and a
+fault they never saw is not theirs to report. A predicate raise carries exactly
+the criterion whose predicate raised (`PREDICATE_EXCEPTION`). A span that fails
+validation carries the criterion that cited it (`SPAN_VALIDATION_FAILED`).
+
+**The abort is an exception, `DeterminationAborted`, defined in
+`contracts.py`.** It carries the `ERROR` `CriterionResult`s and the attempt
+count, and is raised `from` the underlying exception, which is REQ-24's
+"surfaced, not swallowed" made literal — the traceback keeps the original
+fault. Rejected: a second return type from `run_criteria_workflow`. Every
+caller would grow a branch on which of two shapes came back, and the type
+system already picked the exception path — REQ-26 makes the `Determination`
+unconstructible, so the non-exception shape does not exist to return.
+
+**Span validation is wired into the workflow.** Before `assemble()`, every span
+on every `CriterionResult` is validated by `pa_agent.spans.validate` against a
+`DocumentIndex` built lazily through both ports — the scorer's own pattern
+(D75). Until now `spans.py` was imported by tests and the eval harness only; a
+runner conforming to the `ExtractionRunner` protocol could hand the workflow an
+out-of-range span and nothing in the production path would notice, because
+`anchor()` re-anchors by quote search and drops what it cannot find. Rejected:
+validating only extraction-derived spans — criterion (a) and (b) spans point
+into the structured plane and a bug there is the same laundering Article III
+exists to stop. The pass costs string slicing, no model call.
+
+**Unparseable JSON on the direct path stops masquerading as retryable.**
+`extract()` parses the response unguarded, so a `JSONDecodeError` fell into
+`DirectExtractionRunner`'s catch-all and was classified `CALL_FAILED` —
+retryable, two wasted calls per D8's own argument that the same prompt returns
+the same invalid response. The parse is now guarded and classified
+`UNPARSEABLE`.
+
+**The CLI contract (REQ-29).** Exit 3 is the abort: one stderr line per errored
+criterion carrying the criterion id, the `error_code` and the detail, nothing
+on stdout — a partial answer printed anyway is a determination emitted over an
+`ERROR` with extra steps. The existing `ExtractionOutputError` branch is
+subsumed; the module docstring's exit table becomes 0/1/2/3.
+
+**The audit (REQ-27) is parsed, not grepped** *(D72, on D65's and D67's
+precedent)*. Every `except` handler under `pa_agent/` is walked on the AST: a
+bare `except` fails outright; a handler catching `Exception` or `BaseException`
+must contain a `raise` or appear in a pinned allowlist of `(module, function)`
+entries, each with a stated reason, compared exactly in both directions — a
+stale entry fails the same as a missing one, which is what keeps the allowlist
+from absorbing whatever is convenient. Narrow exception types pass: catching
+`KeyError` to re-raise with context is classification, not swallowing. The
+allowlist as of this entry: the ADK budget loops that store the failure and
+re-raise classified at exhaustion, and the recorder hooks — which stop
+swallowing silently and now note their own failure on the recorder, surfaced
+through the trace's termination reason, but still do not raise, because a recording bug that kills the run it was
+observing inverts the point of observability.
+
+**Reversal:** D7's condition, inherited — if reviewers act usefully on partial
+determinations, the abort weakens to per-criterion `ERROR` without REQ-24's
+abort, and `DeterminationAborted` becomes a result carrier instead of an
+exception. The allowlist shrinks to empty if the ADK path ever gains a
+classified exception taxonomy narrow enough to name what its loops catch.
+
+## D77 — `ERROR` is the harness's fourth status, and the abstention rate never sees it
+
+**Task:** T-30. REQ-28 in one sentence: the eval harness counts `ERROR`
+separately, and `ERROR` is never folded into the abstention rate or into any
+`INSUFFICIENT_EVIDENCE` count. T-29 made the fault path real —
+`DeterminationAborted` now reaches `run_case()` — and today the broad handler
+classifies it `FAIL/UNEXPECTED_EXCEPTION`, which is "the system answered, and
+it was wrong" said about a system that did not answer.
+
+**`ERROR` is a fourth `CaseStatus`, not a `FAIL` reason class.** The harness's
+statuses already are Article IV one level up — the module docstring has said
+since T-10 that REQ-28 would force "the same distinction on this file" — and
+the distinction is status-level because the next actions differ: `FAIL` means
+re-read the label or the code that answered, `BLOCKED` names an unbuilt task,
+`ERROR` names a classified fault (`DeterminationAborted` carries the criterion
+ids and `error_code`s, and the case's reason text repeats them). Rejected:
+keeping three statuses and adding only a `ReasonClass.ERROR` under `FAIL` —
+REQ-28 says *counts* `ERROR` separately, and a count folded into the `FAIL`
+total is not counted separately; it is also the crashed/answered-wrongly
+collapse the article forbids one level down. The new status pairs with a new
+`ReasonClass.ERROR`, so the baseline diffs `("ERROR", "ERROR")` and a case
+that starts crashing drifts as loudly as one that starts failing.
+
+**The abstention rate is over answered cases only.** The harness gains the
+rate REQ-28 legislates about: abstentions (a determination whose outcome is
+`INSUFFICIENT_EVIDENCE`) over answered cases (a `Determination` or a
+`NoPolicyResult` came back and was scored — `PASS` and `FAIL` both count;
+what the rate measures is how often the system abstained, not how often it was
+right). An `ERROR` case enters neither the numerator nor the denominator.
+Rejected: excluding it from the numerator only — a seeded crash would then
+*lower* the reported abstention rate, which is REQ-28's folding with the sign
+flipped, caution misreported as confidence. The exit condition ("a seeded
+`ERROR` leaves the reported abstention rate unchanged") is satisfiable only by
+excluding both, which is the point of writing the exit that way. The account
+lives in a pure function (`abstention_account`) that `print_report` renders,
+so the test asserts the number the report prints rather than a private
+recomputation of it.
+
+**The outcome rides on `CaseResult`, outside the baseline key.** Computing the
+rate needs each case's determination outcome, which the scorer sees and then
+drops. `run_case()` now attaches it (`dataclasses.replace` after `score()`,
+`NO_POLICY_FOUND` for the REQ-1 shape, `None` where nothing answered) and
+`as_dict()` reports it. It stays out of `key` — the labels already pin every
+outcome through `PASS`/`FAIL`, so putting it in the baseline would widen the
+diff format without adding discriminating power.
+
+**Reversal:** if a labeled case ever legitimately *expects* an abort — say a
+deliberately corrupted recording committed as a fault-path case — the
+expectation shape grows an `ERROR` form and `PASS` becomes reachable over
+`DeterminationAborted`. That changes classification, not accounting: the rate
+still never sees an `ERROR`.
+
+## D78 — The verifier is a third runner port, a step in the graph, and a recording every gate replays
+
+**Task:** T-17, before the code (Article IX). Article V has had no
+implementation since ratification; this entry decides the three things the
+board flagged (D72): the shape, the zero-call story, and the measurement.
+
+**Shape: a `VerifierRunner` port in `pa_agent/verifier.py`, mirroring
+`ExtractionRunner`.** Three implementations. `LiveVerifierRunner` — raw
+`google-genai`, injected client, so nothing in the module names a tier and the
+caller chooses per D5. `RecordedVerifierRunner` — replays the committed
+recording at `eval/verifier/results.json`, keyed by **claim digest** (sha256
+over the canonical JSON of the payload), and raises on a miss: a claim the
+recording has never seen gets an exception naming the measurement script,
+never a default answer in either direction (D31's rule — an accept is a
+well-formed answer every downstream test agrees with, and a reject is a
+manufactured gap). `NullVerifierRunner` — raises on any call, the structural
+proof that a path was never reached (A4's pattern). The accept-all fake that
+unit tests of *other* components need lives under `tests/`, deliberately not
+importable from `pa_agent/`: an accept-all verifier in the package is the
+silent skip Article V would not survive.
+
+**Placement: a `("verify", step_verify)` entry appended to `workflow.STEPS`
+after `criteria_c`.** Verification is part of what a determination *is*, so it
+is a step the driver walks and the step trace records, not a wrapper around
+`assemble()` — outside `STEPS` it would be invisible to
+`tests/test_workflow.py`'s visited-list assertion and to Article X's
+accounting, and the first refactor to reorder the tail of the pipeline could
+silently drop it. It runs on the **final** cited verdicts: after `reconcile`
+has applied REQ-34's downgrade and after `criteria_c` has filled the tree, so
+what the verifier checks is what the determination will actually say.
+Verification applies to `MET` and `NOT_MET` only — an abstention or an
+`ERROR` cites nothing (REQ-5), so there is no claim to check, and a verifier
+asked to bless an absence would be theater.
+
+**Blindness is a property of the payload builder, not of the prompt.**
+`build_claim_payload()` is a pure function whose output is the whole model
+input: the criterion's id, label, and its constants' names, values and
+comparisons (the compiled criterion is the object Article VI already lets
+cross), the claimed verdict, and the quotes recovered by slicing each span
+from its source document through `DocumentIndex` — never taken from model
+output, which is D18's lesson applied forward. No reasoning trace, no other
+criterion, no chart context, no gap list, no constant's `note` or `source`
+(a note may name an eval case and its expected verdict — reasoning by
+another door), and — after a measured round trip recorded below — no
+`as_of`. The test asserts on the payload, so a second criterion leaking in
+is a failing test rather than a prompt review finding.
+
+**The verifier checks citation fidelity and never recomputes Article II's
+arithmetic.** The instruction says so explicitly: counting, thresholds and
+date arithmetic are code's job — already done deterministically and already
+validated — and a criterion that aggregates over several quotes (c4's
+every-month rate) shows the verifier instances, not arithmetic. Asking a
+blind model to re-derive "every month of the run" from four undated slices
+would manufacture rejections that are not mis-citations, and REQ-31 defines
+`VERIFIER_REJECTED` as "a span was found and did not support the verdict" —
+re-read the cited passage, not re-run the count. What it must catch: a quote
+about something else, a quote contradicting the verdict (a 32.4 BMI cited
+for `MET` at ≥ 35), a quote that cannot be evidence for the claim.
+
+**Rejection semantics are REQ-18 verbatim.** First rejection resolves the
+criterion to `INSUFFICIENT_EVIDENCE` with `gap_reason` `VERIFIER_REJECTED`,
+no retry, no `error_code`; the contract validators strip nothing by
+convention — the replaced `CriterionResult` carries no spans because the
+model validator refuses spans on an abstention. The verifier's stated reason
+rides in `detail`. The determination is still emitted with the criterion on
+the gap list; a rejection collapsing to `NOT_MET` is the Article IV violation
+this repo's validators exist to make unrepresentable. Call failures are
+REQ-18a's separate loop, reusing D76's boundary: a `VerifierFailure` enum
+mirrors `ExtractionFailure`; a retryable failure consumes attempts to the
+budget and exhausts to `ERROR`/`MODEL_CALL_FAILED`; an unparseable or
+schema-invalid response is terminal on first occurrence,
+`ERROR`/`SCHEMA_INVALID`; any `ERROR` aborts per REQ-24.
+
+**The zero-call story is T-15's, applied a second time.** A one-time
+measurement script, `scripts/run_verifier_measurement.py` (in
+`check_gates.EXCLUDED`: it spends model calls), enumerates every claim any
+gate can produce — the eval set's unique `(patient, procedure, as_of)`
+determinations and the agentic differential's six — by running them
+in-process with a collecting verifier, then spends one live call per unique
+digest on AI Studio and records payload, digest, answer, raw response, model,
+tier and `CallMetrics`. The CLI default and both eval gates construct
+`RecordedVerifierRunner` from the committed recording, so every gate keeps
+spending nothing while exercising the full chain, verification included.
+Replayed verifier calls carry their recorded metrics through — the
+extraction replay's rule: a replay that reported zero tokens would understate
+what the answer cost — so every criteria-path eval row's `max_model_calls`
+rises by its verified-claim count, and that diff is reviewed at close rather
+than absorbed.
+
+**The second pin.** `VERIFIER_MODEL` joins `PINNED_MODEL` in
+`pa_agent/model_pin.py`, exactly as D20's reversal clause anticipated. Its
+value is `gemini-3.5-flash-lite` — the same value, a separate constant
+(the owner, 2026-09-11): the family has nothing cheaper, D45/D19 measured this
+configuration, and blindness comes from the payload, not from model
+diversity. The pin is checked against the model the recording names, so the
+two move together or the suite fails.
+
+**A rejection in the measurement is a finding, not an answer** (the owner,
+2026-09-11). The mechanical validators already pass every committed span, so
+a live rejection means either a wrong label or a wrong verifier; the run
+stops, the claim and the verifier's output go to review, and nothing is
+committed until the disagreement is resolved. Committing whatever the
+verifier said would let a wrong rejection become ground truth in the same
+motion that records it.
+
+**Rejected.** Verifying inside each criterion evaluator — couples the check
+to the reasoning Article V forbids the verifier from seeing, and seven
+call sites replace one step. An ADK agent for the verifier — one call with a
+fixed input and no tools has nothing to route (D62's reversal note says as
+much), and a second framework surface is cost without a claim. Making the
+measurement script a gate — T-69's membership rule requires an exit condition
+to name it and this task's exit names `tests/test_verifier.py`; the recording
+integrity checks live in the suite. A confidence score on accept — nothing
+downstream reads one, and an unread number invites a threshold nobody
+measured (T-72 already litigates that).
+
+**Measured, and the prompt's one revision.** verifier-v1 ran once over the
+27 unique gate-reachable claims (2026-09-11, AI Studio, 17,651 in / 1,337 out
+tokens): 26 accepted, 1 rejected — and the rejection was the verifier's
+error, not the system's. E5's c2 `NOT_MET` cites a program visit dated
+2025-06-10 against an as-of of 2026-09-01: ~14.7 months, outside the
+12-month window, so the deterministic verdict is right; the model's stated
+reason claimed the visit was *within* the window — months-between arithmetic
+done backwards, or the date read as DD/MM. Exactly the failure mode the
+citation-fidelity paragraph predicted, insufficiently barred. verifier-v2
+adds the explicit rule: never reject on your own date arithmetic (code
+already computed the window from the full record), while a directly readable
+numeric contradiction — a BMI on the wrong side of a named threshold —
+remains rejectable, because v1 demonstrably handled those correctly and they
+are the mis-citations with the highest stakes. Per D45, v2 is a new
+measurement replacing v1's recording; per the review agreement above, the
+false rejection was resolved with the owner before anything was committed.
+
+**v2 measured 25/27, and the two rejections exposed the real structure.**
+(2026-09-11, 20,081 in / 1,241 out tokens.) Both rejections were false and
+both were shortfall-type `NOT_MET` claims: c2 again (the identical backwards
+months-between arithmetic, despite the explicit bar), and c3, whose stated
+reason is self-contradictory on its face — "the quotes document 3
+consecutive months … the requirement is for a minimum of 4 … meaning the
+criterion is actually MET." The lesson is not that the prompt was too weak;
+it is that the two verdicts are not symmetric under blindness. A `MET` claim
+— "this quote shows the criterion satisfied" — is judgeable from the quote.
+A shortfall `NOT_MET` cites the *best evidence found*, and judging it needs
+exactly what the verifier is denied: the arithmetic (Article II reserves it
+to code) and the rest of the chart (Article V forbids it). Asked an
+undecidable question, the model resolved it by re-doing arithmetic badly,
+twice, while across both runs it handled every directly readable check
+correctly — every `MET`, the a/`NOT_MET` threshold contradiction, c4's
+`NOT_MET`. verifier-v3 states the asymmetry outright: a `MET` is judged
+from its quotes; a `NOT_MET` is rejected only on a direct, arithmetic-free
+contradiction — a quote off-subject entirely, or a value on the satisfying
+side of a named threshold cited as evidence of a miss. Rejected — verifying
+`MET` only: it is the cleaner structural reading, but it narrows REQ-17's
+"each accepted verdict" (a spec change) and surrenders the `NOT_MET`
+direct-contradiction catch that v1 and v2 both demonstrably performed.
+Chosen with the owner, 2026-09-11. **v3 measured 27/27** (21,863 in / 1,169 out
+tokens).
+
+**The `as_of` field rode along from v1 to v3 and left with v4.** It was
+added before v1 because a recency verdict is a claim about a date and a
+verifier asked to judge one without the date can only guess — a real
+argument, and v1's c2 rejection seemed to confirm it. v3's asymmetry rule
+dissolved it: a verifier barred from date arithmetic has no use for a date,
+so the field's only remaining effect was to bind every claim digest to one
+as-of. Measured consequence, found by the suite the same day: the CLI
+defaults `--as-of` to today, so the flagship zero-call command missed every
+claim recorded at the harness clock and exited 3 with `NOT_RECORDED` over
+byte-identical verdicts and quotes. v4 drops the field — the claim key is
+(criterion, verdict, quotes), which is the natural replay semantic: the same
+claim gets the same answer at any request date, and a future date at which
+the verdicts or quotes genuinely differ produces a genuinely new claim,
+which misses the recording and raises naming the script. Rewriting v3's
+recorded payloads to strip the field was refused: the model that produced
+those answers saw it, and a recording that says otherwise is not a
+recording. v4 is the same instruction over the smaller payload — a changed
+model input is a new measurement (D45). **v4 measured 27/27 accepted**
+(20,864 in / 1,193 out tokens) and is the committed recording; four
+measurements were spent in total, and the three superseded ones survive only
+as the numbers quoted here.
+
+**Reverses if:** a measured rejection pattern suggests the extractor and
+verifier share blind spots — then `VERIFIER_MODEL` moves to a different model
+and the recording is re-measured, which the two-constant pin already
+supports. Or: a future case legitimately expects a `VERIFIER_REJECTED`
+abstention end to end, at which point the eval expectation shape grows the
+form and the recorded runner's miss rule stays exactly as strict.
+
+## D79 — Two sessions forked the ID space; the published side keeps its numbers
+
+**Context.** T-41's close was the last shared commit. From it, two sessions
+worked in parallel: one logged D74 (ownership ratification), registered
+T-73–T-76 and closed T-73, merging to `main` as PR #8; the other, on a
+checkout that never fetched, closed T-21, T-29, T-30 and T-17, spending
+D74–D77 on four different decisions and T-73 on the agentic planner's fault.
+Every id is load-bearing, the decisions log is append-only, and both sides'
+numbers were internally consistent — the collision existed only at push time.
+
+**Decision.** Published numbering wins. PR #8's D74 and T-73–T-76 keep their
+ids because they are on `main` and anything may already reference them; the
+unpushed side is renumbered mechanically — D74→D75, D75→D76, D76→D77,
+D77→D78, T-73→T-77 — token for token across trees and commit messages (the
+rewrite is a pure shift, verified by word-diff), and transplanted onto `main`
+with every intermediate commit passing all nine gates. The rejected
+alternative — renumbering the published side — would strand any reader of
+`main` between two meanings of D74, which is the failure the append-only rule
+exists to prevent.
+
+**The breach.** D74 re-sequenced the board so T-21 would close only after
+The owner's ratification (T-74/T-75), and rewrote T-21's exit to require an
+`adjudicated: {by, date}` record on every case and manifest with
+`check_ownership.py --require eval` returning zero. The forked session closed
+T-21 four hours after that decision merged, against the pre-D74 exit, without
+knowing the exit had changed. The owner's call on review of the fork: the close
+stands — the labeling work is real and all fifteen rows pass, so reverting it
+buys nothing — and the breach is logged rather than buried. The adjudication
+half of the rewritten exit is not discharged and does not vanish: it is
+re-homed as **T-78**, sequenced after T-74/T-75, and the report chain
+(T-22 → T-28 → T-23) now waits on it, because a report built on labels the owner
+may still amend would be rewritten — the same argument D74 made for T-21
+itself. D42's authorship caveat is retired at T-78, not at T-21.
+
+**Reverses if:** the adjudication pass (T-78) amends enough labels that "the
+close stands" was the wrong call — then T-21 reopens and this entry is the
+record of why the cheaper path was tried first. The renumbering does not
+reverse; a second fork would resolve the same way. The procedural fix is
+free: fetch before working.
+## D80 — T-74's statuses are recorded through a tool the owner runs, not a hand-edited JSON
 
 Agent proposal ratified by the owner's choice, 2026-09-11, scaffolding T-74 as its
 task text allows. The owner's reading pass covers 98 ids across the constitution,

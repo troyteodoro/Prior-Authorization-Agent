@@ -1,8 +1,64 @@
 {
-  "recorded_on": "2026-09-08",
+  "recorded_on": "2026-09-10",
   "note": "Observed status per case. Updated by --update-baseline; the change is meant to be read as a diff (D27).",
   "cases": {
+    "E1": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E10": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E10b": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E10c": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E11": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E12": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E2": {
+      "status": "PASS",
+      "reason_class": null
+    },
     "E3": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E4": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E5": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E6": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E7": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E8": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "E9": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "NP1": {
       "status": "PASS",
       "reason_class": null
     }

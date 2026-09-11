@@ -1,6 +1,6 @@
-"""The recording tool refuses what rule 11 and D75 say it must refuse.
+"""The recording tool refuses what rule 11 and D80 say it must refuse.
 
-``scripts/ratify.py`` is the owner's pen (D75): explicit ids only, one-directional
+``scripts/ratify.py`` is the owner's pen (D80): explicit ids only, one-directional
 statuses, task links checked at recording time. These tests drive a tmp copy
 of the ledger — the real ``docs/ratifications.json`` is never written.
 """
@@ -96,7 +96,7 @@ def test_an_amended_write_carries_its_task_and_validates(script, universe, tmp_l
 
 
 def test_no_tier_wildcard_exists(script):
-    # D75: each invocation names what was read. A --tier/--all flag is the
+    # D80: each invocation names what was read. A --tier/--all flag is the
     # rejected rubber stamp, so argparse must not know it.
     with pytest.raises(SystemExit) as exc:
         script.main(["--tier", "constitution"])

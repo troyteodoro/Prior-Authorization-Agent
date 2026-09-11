@@ -1,0 +1,1018 @@
+{
+  "task": "T-17",
+  "model": "gemini-3.5-flash-lite",
+  "tier": "ai_studio",
+  "prompt_version": "verifier-v4",
+  "measured_at": "2026-09-11T17:11:56.206026+00:00",
+  "claims": [
+    {
+      "digest": "5f1f38ba429de837d96e0089fff5ea37a074c79b755013bb62de268b916e408e",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Observation\",\n      \"id\": \"afdcee59-dfdd-4bc5-3d74-fcff09ad3449\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\" ]\n      },\n      \"status\": \"final\",\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital signs\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://loinc.org\",\n          \"code\": \"39156-5\",\n          \"display\": \"Body mass index (BMI) [Ratio]\"\n        } ],\n        \"text\": \"Body mass index (BMI) [Ratio]\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-37f1-cf7f909ede3d\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-6046-99ad1fca1eda\"\n      },\n      \"effectiveDateTime\": \"2025-10-21T19:35:08-07:00\",\n      \"issued\": \"2025-10-21T19:35:08.992-07:00\",\n      \"valueQuantity\": {\n        \"value\": 37.65,\n        \"unit\": \"kg/m2\",\n        \"system\": \"http://unitsofmeasure.org\",\n        \"code\": \"kg/m2\"\n      }\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is an observation for BMI with a value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is an observation for BMI with a value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 936,
+        "output_tokens": 52,
+        "wall_time_ms": 887.4368750257418
+      }
+    },
+    {
+      "digest": "7bf983d27f4fac682c0a1754173b1be883a53f89734439e5967a394ac29a57be",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "At least one co-morbidity related to obesity",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "obesity_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"afdcee59-dfdd-4bc5-9391-cf90f9f73ec0\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"59621000\",\n          \"display\": \"Essential hypertension (disorder)\"\n        } ],\n        \"text\": \"Essential hypertension (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-37f1-cf7f909ede3d\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-b4cd-8e4dbea338b7\"\n      },\n      \"onsetDateTime\": \"2015-08-25T19:35:08-07:00\",\n      \"recordedDate\": \"2015-08-25T19:35:08-07:00\"\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 977,
+        "output_tokens": 42,
+        "wall_time_ms": 860.0032919785008
+      }
+    },
+    {
+      "digest": "23c137a38d722258ae8dc824df7d2c53615871fbe7c1665171268c8d19a321c5",
+      "criterion_id": "c1",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c1",
+          "label": "A physician-supervised weight management program is documented",
+          "constants": {
+            "min_events": {
+              "value": 1
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "08/05/2024 - Monthly program visit completed. Weight 116.6 kg, BMI 39.1.\nDiscussed portion control and protein intake on the 1500 kcal plan. Reports 30\nminutes of brisk walking, five days per week.",
+          "09/02/2024 - Monthly program visit completed. Weight 115.7 kg, BMI 38.8.\nDiscussed portion control and protein intake on the 1400 kcal plan. Reports 15\nminutes of pool exercise three days per week.",
+          "03/10/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nActivity goal of 40 minutes daily met on three days this month.",
+          "04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Reports 40 minutes of\npool exercise five days per week.",
+          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1500 kcal plan. Continues\nsupervised exercise, 30 minutes, five days per week.",
+          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document multiple physician-supervised weight management program visits with regular attendance, exceeding the minimum requirement.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document multiple physician-supervised weight management program visits with regular attendance, exceeding the minimum requirement."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 853,
+        "output_tokens": 37,
+        "wall_time_ms": 855.424250010401
+      }
+    },
+    {
+      "digest": "3e96c3be94ffb44b9b3ca572bc574e12345d5972fa4769f78e4a0e9e5d8caae7",
+      "criterion_id": "c2",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c2",
+          "label": "The qualifying run is recent enough",
+          "constants": {
+            "recency_window_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote directly supports the recency criterion with a visit date of 06/09/2026.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote directly supports the recency criterion with a visit date of 06/09/2026."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 506,
+        "output_tokens": 42,
+        "wall_time_ms": 862.1627920074388
+      }
+    },
+    {
+      "digest": "047be73943623465e4dbf2eb5f6805323e1c83199986a14a1dfedc21c52ef6c7",
+      "criterion_id": "c3",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c3",
+          "label": "The program ran for a minimum number of consecutive months",
+          "constants": {
+            "min_consecutive_months": {
+              "value": 4
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/10/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nActivity goal of 40 minutes daily met on three days this month.",
+          "04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Reports 40 minutes of\npool exercise five days per week.",
+          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1500 kcal plan. Continues\nsupervised exercise, 30 minutes, five days per week.",
+          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes document monthly supervised program visits spanning four consecutive months from March to June 2026, directly supporting the MET verdict for the program duration criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes document monthly supervised program visits spanning four consecutive months from March to June 2026, directly supporting the MET verdict for the program duration criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 720,
+        "output_tokens": 49,
+        "wall_time_ms": 828.6049169837497
+      }
+    },
+    {
+      "digest": "54dc5dfdefedb485702630bab6c9ed931593bba2004b72898c3d02f4dcea7bee",
+      "criterion_id": "c4",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c4",
+          "label": "BMI documented in every month of the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "BMI 37.6",
+          "BMI 37.6",
+          "BMI 37.6",
+          "BMI 37.6"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document the required BMI values matching the criterion for satisfaction.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document the required BMI values matching the criterion for satisfaction."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 483,
+        "output_tokens": 30,
+        "wall_time_ms": 748.149833001662
+      }
+    },
+    {
+      "digest": "db1a3e7afcf186d532b8880744ef4832583bedbc809fc2fc2fc025c587f9416f",
+      "criterion_id": "c5",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c5",
+          "label": "Diet and activity documented across the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "pharmacological_management_alone_insufficient": {
+              "value": true
+            },
+            "requires_both_diet_and_activity": {
+              "value": true
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.",
+          "Activity goal of 40 minutes daily met on three days this month.",
+          "Food\ndiary reviewed; 1600 kcal plan continued without change.",
+          "Reports 40 minutes of\npool exercise five days per week.",
+          "Discussed portion control and protein intake on the 1500 kcal plan.",
+          "Continues\nsupervised exercise, 30 minutes, five days per week.",
+          "Dietary recall reviewed in detail against the 1500 kcal plan.",
+          "Continues\nsupervised exercise, 20 minutes, five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document both dietary plans and physical activity across the evaluation period, supporting the claimed verdict of MET.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document both dietary plans and physical activity across the evaluation period, supporting the claimed verdict of MET."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 643,
+        "output_tokens": 38,
+        "wall_time_ms": 775.4193340078928
+      }
+    },
+    {
+      "digest": "6d3099f060502ce9af89cf5489f7c721165dd4e5c394edaedac450f568d51a46",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Observation\",\n      \"id\": \"07a5f345-3e7c-da0f-6c86-d5a4d02acf9b\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\" ]\n      },\n      \"status\": \"final\",\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital signs\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://loinc.org\",\n          \"code\": \"39156-5\",\n          \"display\": \"Body mass index (BMI) [Ratio]\"\n        } ],\n        \"text\": \"Body mass index (BMI) [Ratio]\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:07a5f345-3e7c-da0f-da0b-87fa252a5bfd\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:07a5f345-3e7c-da0f-8ded-97a4f25671f4\"\n      },\n      \"effectiveDateTime\": \"2025-09-19T00:51:37-07:00\",\n      \"issued\": \"2025-09-19T00:51:37.759-07:00\",\n      \"valueQuantity\": {\n        \"value\": 35.89,\n        \"unit\": \"kg/m2\",\n        \"system\": \"http://unitsofmeasure.org\",\n        \"code\": \"kg/m2\"\n      }\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote shows a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote shows a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 957,
+        "output_tokens": 48,
+        "wall_time_ms": 1067.496084026061
+      }
+    },
+    {
+      "digest": "1280f265a74b6940c1ce3cb04f02bdc394a25c8840bab96d9960c64504e2b76a",
+      "criterion_id": "c1",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c1",
+          "label": "A physician-supervised weight management program is documented",
+          "constants": {
+            "min_events": {
+              "value": 1
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "01/13/2026 - Routine supervised program visit. Weight 84.9 kg, BMI 35.9. Food\ndiary reviewed; 1200 kcal plan continued without change. Exercise log shows 25\nminutes of stationary cycling, four days weekly.",
+          "02/10/2026 - Monthly program visit completed. Weight 84.7 kg, BMI 35.8.\nNutrition counseling provided; meal plan held at 1600 kcal. Reports 25 minutes\nof brisk walking, three days per week.",
+          "03/12/2026 - Scheduled program follow-up. No new complaints. Weight 84.4 kg,\nBMI 35.7. Discussed portion control and protein intake on the 1400 kcal plan.\nActivity goal of 20 minutes daily met on three days this month.",
+          "05/14/2026 - Routine supervised program visit. Weight 84.2 kg, BMI 35.6. Food\ndiary reviewed; 1500 kcal plan continued without change. Reports 30 minutes of\npool exercise three days per week.",
+          "06/11/2026 - Monthly program visit completed. Weight 84.2 kg, BMI 35.6.\nNutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 15 minutes, three days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "All quotes document attendance at a physician-supervised weight management program with matching dates and clinical details that satisfy the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "All quotes document attendance at a physician-supervised weight management program with matching dates and clinical details that satisfy the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 775,
+        "output_tokens": 39,
+        "wall_time_ms": 820.4170410172082
+      }
+    },
+    {
+      "digest": "19e85cd355e3a67880713c661bc3d2401cdd940fc9f948dbe007e127781811ab",
+      "criterion_id": "c3",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "c3",
+          "label": "The program ran for a minimum number of consecutive months",
+          "constants": {
+            "min_consecutive_months": {
+              "value": 4
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "01/13/2026 - Routine supervised program visit. Weight 84.9 kg, BMI 35.9. Food\ndiary reviewed; 1200 kcal plan continued without change. Exercise log shows 25\nminutes of stationary cycling, four days weekly.",
+          "02/10/2026 - Monthly program visit completed. Weight 84.7 kg, BMI 35.8.\nNutrition counseling provided; meal plan held at 1600 kcal. Reports 25 minutes\nof brisk walking, three days per week.",
+          "03/12/2026 - Scheduled program follow-up. No new complaints. Weight 84.4 kg,\nBMI 35.7. Discussed portion control and protein intake on the 1400 kcal plan.\nActivity goal of 20 minutes daily met on three days this month."
+        ]
+      },
+      "accept": true,
+      "reason": "The claimed verdict is NOT_MET for a duration criterion requiring 4 consecutive months, and the provided quotes span only 3 months, which does not directly and independently satisfy the threshold without code-level arithmetic.",
+      "raw": {
+        "accept": true,
+        "reason": "The claimed verdict is NOT_MET for a duration criterion requiring 4 consecutive months, and the provided quotes span only 3 months, which does not directly and independently satisfy the threshold without code-level arithmetic."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 648,
+        "output_tokens": 58,
+        "wall_time_ms": 939.8786249803379
+      }
+    },
+    {
+      "digest": "e87b3c00938ef42a3e0a864905ecbb9d99eaf56ec5b38c87804fe66d5d26de6e",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Observation\",\n      \"id\": \"05cc52df-48cb-961b-b5f3-ddf7a63f5703\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\" ]\n      },\n      \"status\": \"final\",\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital signs\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://loinc.org\",\n          \"code\": \"39156-5\",\n          \"display\": \"Body mass index (BMI) [Ratio]\"\n        } ],\n        \"text\": \"Body mass index (BMI) [Ratio]\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:05cc52df-48cb-961b-29e3-3fd4d1c8bc9f\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:05cc52df-48cb-961b-472e-d8b54b58c930\"\n      },\n      \"effectiveDateTime\": \"2026-03-13T08:52:43-07:00\",\n      \"issued\": \"2026-03-13T08:52:43.233-07:00\",\n      \"valueQuantity\": {\n        \"value\": 42.5,\n        \"unit\": \"kg/m2\",\n        \"system\": \"http://unitsofmeasure.org\",\n        \"code\": \"kg/m2\"\n      }\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote correctly identifies the BMI observation with a value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote correctly identifies the BMI observation with a value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 954,
+        "output_tokens": 51,
+        "wall_time_ms": 773.1333750416525
+      }
+    },
+    {
+      "digest": "d84ef950f1c4d6aa4376eb939f5f642d833618375e6797e05185052d498bd756",
+      "criterion_id": "c1",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c1",
+          "label": "A physician-supervised weight management program is documented",
+          "constants": {
+            "min_events": {
+              "value": 1
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/11/2025 - Scheduled program follow-up. No new complaints. Weight 124.7 kg,\nBMI 43.0. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nReports 40 minutes of brisk walking, four days per week.",
+          "04/08/2025 - Monthly program visit completed. Weight 124.1 kg, BMI 42.8.\nDiscussed portion control and protein intake on the 1800 kcal plan. Reports 30\nminutes of brisk walking, four days per week.",
+          "05/13/2025 - Program visit. Interval history reviewed. Weight 123.8 kg, BMI\n42.7. Nutrition counseling provided; meal plan held at 1500 kcal. Activity\ngoal of 15 minutes daily met on four days this month.",
+          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes explicitly document multiple physician-supervised weight management program visits with corresponding dates, weight, BMI, and dietary/exercise reviews, satisfying the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes explicitly document multiple physician-supervised weight management program visits with corresponding dates, weight, BMI, and dietary/exercise reviews, satisfying the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 715,
+        "output_tokens": 48,
+        "wall_time_ms": 1065.9369159839116
+      }
+    },
+    {
+      "digest": "b3b99768e4da4cdfcc233c70d402f3b68c0b7bbd35ecbf713c24f8541132eda1",
+      "criterion_id": "c2",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "c2",
+          "label": "The qualifying run is recent enough",
+          "constants": {
+            "recency_window_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote is relevant to the supervised program visit and supports the NOT_MET verdict without directly showing the recency window requirement as met.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote is relevant to the supervised program visit and supports the NOT_MET verdict without directly showing the recency window requirement as met."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 506,
+        "output_tokens": 43,
+        "wall_time_ms": 867.8327910020016
+      }
+    },
+    {
+      "digest": "2b6eca69f607ec835927fbc70cef4400ff0b3d7c5865ba892497f1b5702c65ce",
+      "criterion_id": "c3",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c3",
+          "label": "The program ran for a minimum number of consecutive months",
+          "constants": {
+            "min_consecutive_months": {
+              "value": 4
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/11/2025 - Scheduled program follow-up. No new complaints. Weight 124.7 kg,\nBMI 43.0. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nReports 40 minutes of brisk walking, four days per week.",
+          "04/08/2025 - Monthly program visit completed. Weight 124.1 kg, BMI 42.8.\nDiscussed portion control and protein intake on the 1800 kcal plan. Reports 30\nminutes of brisk walking, four days per week.",
+          "05/13/2025 - Program visit. Interval history reviewed. Weight 123.8 kg, BMI\n42.7. Nutrition counseling provided; meal plan held at 1500 kcal. Activity\ngoal of 15 minutes daily met on four days this month.",
+          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes explicitly document monthly program visits spanning from March to June 2025, which directly support the MET verdict for the minimum four consecutive months criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes explicitly document monthly program visits spanning from March to June 2025, which directly support the MET verdict for the minimum four consecutive months criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 719,
+        "output_tokens": 49,
+        "wall_time_ms": 884.6674580127001
+      }
+    },
+    {
+      "digest": "48f672cf5f0d716d5c6c2dff2ce0797e4447a450a284a1e0bde310d5b1615a9d",
+      "criterion_id": "c4",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c4",
+          "label": "BMI documented in every month of the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "BMI 43.0",
+          "BMI 42.8",
+          "BMI\n42.7",
+          "BMI 42.6"
+        ]
+      },
+      "accept": true,
+      "reason": "All provided quotes contain valid BMI measurements that are consistent with the criterion's requirement of documentation.",
+      "raw": {
+        "accept": true,
+        "reason": "All provided quotes contain valid BMI measurements that are consistent with the criterion's requirement of documentation."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 484,
+        "output_tokens": 35,
+        "wall_time_ms": 811.6962499916553
+      }
+    },
+    {
+      "digest": "2ede50a401a7624a8e4386098a7c9e0fc4003443e0cd7fb47ecf977ca4945ffd",
+      "criterion_id": "c5",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c5",
+          "label": "Diet and activity documented across the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "pharmacological_management_alone_insufficient": {
+              "value": true
+            },
+            "requires_both_diet_and_activity": {
+              "value": true
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.",
+          "Reports 40 minutes of brisk walking, four days per week.",
+          "Discussed portion control and protein intake on the 1800 kcal plan.",
+          "Reports 30\nminutes of brisk walking, four days per week.",
+          "Nutrition counseling provided; meal plan held at 1500 kcal.",
+          "Activity\ngoal of 15 minutes daily met on four days this month.",
+          "Dietary recall reviewed in detail against the 1800 kcal plan.",
+          "Reports 15\nminutes of pool exercise four days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document both dietary plans and physical activity levels across the qualifying run.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document both dietary plans and physical activity levels across the qualifying run."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 639,
+        "output_tokens": 32,
+        "wall_time_ms": 729.8885000054725
+      }
+    },
+    {
+      "digest": "62f6d518b44c063cf34107da52285336e93f6ba75b1bf7886173ce8948f6db6a",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Observation\",\n      \"id\": \"a2e49f37-80ef-906b-7d16-554cd7bdb618\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\" ]\n      },\n      \"status\": \"final\",\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital signs\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://loinc.org\",\n          \"code\": \"39156-5\",\n          \"display\": \"Body mass index (BMI) [Ratio]\"\n        } ],\n        \"text\": \"Body mass index (BMI) [Ratio]\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:a2e49f37-80ef-906b-5c85-b7b10e1179c1\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:a2e49f37-80ef-906b-4dee-688f325bda64\"\n      },\n      \"effectiveDateTime\": \"2026-04-26T13:49:23-07:00\",\n      \"issued\": \"2026-04-26T13:49:23.015-07:00\",\n      \"valueQuantity\": {\n        \"value\": 39.23,\n        \"unit\": \"kg/m2\",\n        \"system\": \"http://unitsofmeasure.org\",\n        \"code\": \"kg/m2\"\n      }\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is an official observation showing a BMI value of 39.23 kg/m2, which successfully meets the coverage threshold of 35.0 or greater.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is an official observation showing a BMI value of 39.23 kg/m2, which successfully meets the coverage threshold of 35.0 or greater."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 958,
+        "output_tokens": 54,
+        "wall_time_ms": 803.4837080049329
+      }
+    },
+    {
+      "digest": "f4b81c9abc2c9be82259d73267e32a9eda0a596dcc0ef26f2e41ddc52214252c",
+      "criterion_id": "c1",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c1",
+          "label": "A physician-supervised weight management program is documented",
+          "constants": {
+            "min_events": {
+              "value": 1
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/09/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1500 kcal.\nContinues supervised exercise, 40 minutes, three days per week.",
+          "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week.",
+          "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1600 kcal. Activity\ngoal of 30 minutes daily met on three days this month.",
+          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly document multiple physician-supervised weight management program visits meeting the minimum event requirement.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly document multiple physician-supervised weight management program visits meeting the minimum event requirement."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 717,
+        "output_tokens": 35,
+        "wall_time_ms": 1028.5709589952603
+      }
+    },
+    {
+      "digest": "bae009f36ef35c514130a0cb2e719dcd53a4cc60b7b194f998d39a7e0a5bf22f",
+      "criterion_id": "c2",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c2",
+          "label": "The qualifying run is recent enough",
+          "constants": {
+            "recency_window_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote provided is relevant to the criterion and does not contradict the recency or program requirement.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote provided is relevant to the criterion and does not contradict the recency or program requirement."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 505,
+        "output_tokens": 35,
+        "wall_time_ms": 844.3844580324367
+      }
+    },
+    {
+      "digest": "278250177b64605fff9092f21af04085c41c3fc2658a8b70ed2788872add01d3",
+      "criterion_id": "c3",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c3",
+          "label": "The program ran for a minimum number of consecutive months",
+          "constants": {
+            "min_consecutive_months": {
+              "value": 4
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/09/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1500 kcal.\nContinues supervised exercise, 40 minutes, three days per week.",
+          "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week.",
+          "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1600 kcal. Activity\ngoal of 30 minutes daily met on three days this month.",
+          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes consistently document participation across four separate months in 2026, directly supporting the MET verdict for the minimum consecutive months criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes consistently document participation across four separate months in 2026, directly supporting the MET verdict for the minimum consecutive months criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 721,
+        "output_tokens": 45,
+        "wall_time_ms": 795.1953330193646
+      }
+    },
+    {
+      "digest": "43046f7d9a2f9e6bc12792682759fd4e0caa03674173af7688be17538ca248b7",
+      "criterion_id": "c4",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "c4",
+          "label": "BMI documented in every month of the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week.",
+          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes provided are relevant to the visit records and support the verdict without directly contradicting it.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes provided are relevant to the visit records and support the verdict without directly contradicting it."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 581,
+        "output_tokens": 34,
+        "wall_time_ms": 745.384500012733
+      }
+    },
+    {
+      "digest": "a882ed7de02d1516dfd77647333856a47f74c2d70bc4cf43cda34d1d2e6a158a",
+      "criterion_id": "c5",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c5",
+          "label": "Diet and activity documented across the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "pharmacological_management_alone_insufficient": {
+              "value": true
+            },
+            "requires_both_diet_and_activity": {
+              "value": true
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Nutrition counseling provided; meal plan held at 1500 kcal.",
+          "Continues supervised exercise, 40 minutes, three days per week.",
+          "Nutrition counseling provided; meal plan held at\n1800 kcal.",
+          "Reports 30 minutes of pool exercise five days per week.",
+          "Nutrition counseling provided; meal plan held at 1600 kcal.",
+          "Activity\ngoal of 30 minutes daily met on three days this month.",
+          "Discussed portion control and protein intake on the\n1800 kcal plan.",
+          "Reports 30 minutes of pool exercise five days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document both diet and activity across the qualifying period.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document both diet and activity across the qualifying period."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 634,
+        "output_tokens": 29,
+        "wall_time_ms": 925.0222080154344
+      }
+    },
+    {
+      "digest": "ee31f45ac154660bd1b5d2d008065161eb7bf018d548f48609ec1ed62cdded99",
+      "criterion_id": "a",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Observation\",\n      \"id\": \"49092fd9-d5bf-24e2-bb0e-e2bc6f4d56ef\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\" ]\n      },\n      \"status\": \"final\",\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital signs\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://loinc.org\",\n          \"code\": \"39156-5\",\n          \"display\": \"Body mass index (BMI) [Ratio]\"\n        } ],\n        \"text\": \"Body mass index (BMI) [Ratio]\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:49092fd9-d5bf-24e2-474b-00041a279a47\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:49092fd9-d5bf-24e2-224b-e4be1cdf3735\"\n      },\n      \"effectiveDateTime\": \"2024-03-15T07:15:32-07:00\",\n      \"issued\": \"2024-03-15T07:15:32.752-07:00\",\n      \"valueQuantity\": {\n        \"value\": 34.26,\n        \"unit\": \"kg/m2\",\n        \"system\": \"http://unitsofmeasure.org\",\n        \"code\": \"kg/m2\"\n      }\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote correctly documents a BMI observation related to the criterion, and since the verdict is NOT_MET, we do not reject it as the quote shows a value of 34.26 which is below the threshold of 35.0.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote correctly documents a BMI observation related to the criterion, and since the verdict is NOT_MET, we do not reject it as the quote shows a value of 34.26 which is below the threshold of 35.0."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 957,
+        "output_tokens": 68,
+        "wall_time_ms": 834.6495000296272
+      }
+    },
+    {
+      "digest": "80669172f7ff8476305d3e2fd2beebd55d9039a62ab4bd2c35e9dba8fcdc3e9a",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "At least one co-morbidity related to obesity",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "obesity_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"49092fd9-d5bf-24e2-eae7-e28f2b02c70c\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"44054006\",\n          \"display\": \"Diabetes mellitus type 2 (disorder)\"\n        } ],\n        \"text\": \"Diabetes mellitus type 2 (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:49092fd9-d5bf-24e2-474b-00041a279a47\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:49092fd9-d5bf-24e2-14bc-dff6ef0f2e6f\"\n      },\n      \"onsetDateTime\": \"1992-12-25T06:15:32-08:00\",\n      \"recordedDate\": \"1992-12-25T06:15:32-08:00\"\n    }",
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"49092fd9-d5bf-24e2-895b-dc7c9169e518\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"59621000\",\n          \"display\": \"Essential hypertension (disorder)\"\n        } ],\n        \"text\": \"Essential hypertension (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:49092fd9-d5bf-24e2-474b-00041a279a47\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:49092fd9-d5bf-24e2-7d2a-6db0eb5b5027\"\n      },\n      \"onsetDateTime\": \"1997-01-17T06:15:32-08:00\",\n      \"recordedDate\": \"1997-01-17T06:15:32-08:00\"\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes document active confirmed conditions of Type 2 Diabetes and Essential hypertension, which are recognized obesity-related co-morbidities satisfying the requirement of at least one co-morbidity.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes document active confirmed conditions of Type 2 Diabetes and Essential hypertension, which are recognized obesity-related co-morbidities satisfying the requirement of at least one co-morbidity."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1533,
+        "output_tokens": 55,
+        "wall_time_ms": 1055.2674169884995
+      }
+    },
+    {
+      "digest": "00dbd817c62ef40a568c05f6684af16b224a0d362ce605307e5f919a9048d9f9",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "At least one co-morbidity related to obesity",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "obesity_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"bc6748d3-3a0f-9734-4318-2d0156959d88\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"59621000\",\n          \"display\": \"Essential hypertension (disorder)\"\n        } ],\n        \"text\": \"Essential hypertension (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:bc6748d3-3a0f-9734-7730-4518f5b268fb\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:bc6748d3-3a0f-9734-a87d-dcf88e9dc31f\"\n      },\n      \"onsetDateTime\": \"2020-03-20T04:38:35-07:00\",\n      \"recordedDate\": \"2020-03-20T04:38:35-07:00\"\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement of at least one such condition.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement of at least one such condition."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1000,
+        "output_tokens": 50,
+        "wall_time_ms": 799.2904999991879
+      }
+    },
+    {
+      "digest": "0ec0e14c04a6e18875efe6933bbdb46b51f6a32c3b78eacf5ce8d3106d1fd835",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Observation\", \"id\": \"a8edc52e-9800-0adb-f049-59b3542dcdb9-e12-synthetic\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\"]}, \"status\": \"final\", \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\", \"display\": \"Vital signs\"}]}], \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"39156-5\", \"display\": \"Body mass index (BMI) [Ratio]\"}], \"text\": \"Body mass index (BMI) [Ratio]\"}, \"subject\": {\"reference\": \"urn:uuid:a8edc52e-9800-0adb-c775-bd81183c355f\"}, \"encounter\": {\"reference\": \"urn:uuid:a8edc52e-9800-0adb-79ea-fcde1e6bcfda\"}, \"effectiveDateTime\": \"2026-08-15T15:11:36-07:00\", \"issued\": \"2026-08-15T15:11:36.284-07:00\", \"valueQuantity\": {\"value\": 35.0, \"unit\": \"kg/m2\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"kg/m2\"}}"
+        ]
+      },
+      "accept": true,
+      "reason": "The quoted observation provides a BMI value of 35.0, which satisfies the threshold of 35.0 or greater.",
+      "raw": {
+        "accept": true,
+        "reason": "The quoted observation provides a BMI value of 35.0, which satisfies the threshold of 35.0 or greater."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 860,
+        "output_tokens": 43,
+        "wall_time_ms": 788.4194159996696
+      }
+    },
+    {
+      "digest": "1c3d7076348d77ffa29774252962afcfc5334bb64ff8f6858b109552020b297c",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "At least one co-morbidity related to obesity",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "obesity_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"a8edc52e-9800-0adb-96d8-a4617016ab9a\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"59621000\", \"display\": \"Essential hypertension (disorder)\"}], \"text\": \"Essential hypertension (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:a8edc52e-9800-0adb-c775-bd81183c355f\"}, \"encounter\": {\"reference\": \"urn:uuid:a8edc52e-9800-0adb-5a06-718981281c0c\"}, \"onsetDateTime\": \"2009-06-11T15:11:36-07:00\", \"recordedDate\": \"2009-06-11T15:11:36-07:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement of at least one co-morbidity.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement of at least one co-morbidity."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 883,
+        "output_tokens": 52,
+        "wall_time_ms": 1130.2309170132503
+      }
+    }
+  ],
+  "aggregate": {
+    "claims": 27,
+    "accepted": 27,
+    "rejected": 0,
+    "model_calls": 27,
+    "input_tokens": 20864,
+    "output_tokens": 1193,
+    "wall_time_ms": 23528.0
+  }
+}
