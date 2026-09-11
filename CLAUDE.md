@@ -100,7 +100,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 9 gates, ~13s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (565 tests, ~9s)
+./venv/bin/python -m pytest -q                  # the suite alone (574 tests, ~9s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -322,11 +322,11 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**48 of 63 tasks closed, 15 open. All 9 gates green** (`check_gates.py`, ~13s,
-565 tests across 27 files). IDs run to T-77, but numbering is not contiguous —
+**49 of 63 tasks closed, 14 open. All 9 gates green** (`check_gates.py`, ~13s,
+574 tests across 28 files). IDs run to T-77, but numbering is not contiguous —
 the highest id is not the count.
 
-Delivered: **US-1, US-2, US-3, US-4, US-5**. `python -m pa_agent.cli --patient
+Delivered: **US-1, US-2, US-3, US-4, US-5, US-9**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
@@ -336,9 +336,13 @@ The eval set is full (T-21, D75): `eval/cases.json` holds fifteen labeled rows
 cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
 in-window evidence *(D41)*, so E2 runs 43644 at 2024-12-01 while E7 reads the
-same chart at the harness clock.
+same chart at the harness clock. US-9 closed with T-29 and T-30 (D76, D77):
+a fault is a criterion's `ERROR`, the abort is `DeterminationAborted`, and the
+eval harness classifies it as its fourth status — never `FAIL`, never an
+abstention; the reported abstention rate counts an `ERROR` in neither its
+numerator nor its denominator (REQ-28).
 
-Open, in order: **T-74 → T-75 → T-30 → T-17 → T-32 →
+Open, in order: **T-74 → T-75 → T-17 → T-32 →
 T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70, T-71 and T-77 off the
 path. The ratification tasks lead because D74 restores human ownership of
 every load-bearing ID — ledger `docs/ratifications.json`, gate

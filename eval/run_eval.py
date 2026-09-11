@@ -14,17 +14,19 @@ loudly as one that stops, and the baseline update is the commit that records the
 change. That is what makes US-1's close — "`run_eval.py` reports E3 passing" —
 a command rather than a table someone reads.
 
-Three statuses, and the third is the point:
+Four statuses, and the last two are the point:
 
     PASS      the system answered, and answered as labeled
     FAIL      the system answered, and it was wrong
     BLOCKED   the component that would answer does not exist yet
+    ERROR     the component exists and aborted with a classified fault
 
-`BLOCKED` never folds into `FAIL`. Both read as "not passing," which is exactly
-why they must stay apart — only one of them names a task. This is Article IV's
-argument one level above where the article states it, and REQ-28 will force the
-same distinction on this file at T-30, when an `ERROR` must not be counted as an
-abstention.
+`BLOCKED` never folds into `FAIL`, and `ERROR` folds into neither. All three
+read as "not passing," which is exactly why they must stay apart — each names a
+different next action, and only `BLOCKED` names a task. This is Article IV's
+argument one level above where the article states it, made accounting by REQ-28
+(T-30, D77): an `ERROR` is never counted as an abstention — it enters neither
+the numerator nor the denominator of the reported abstention rate.
 
 Blocking is **discovered, never declared**: the harness catches
 `NotImplementedError` and records the message, and those messages already name
@@ -42,7 +44,7 @@ import hashlib
 import json
 import sys
 import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -57,7 +59,9 @@ from pa_agent.contracts import (  # noqa: E402
     CriterionResult,
     CriterionVerdict,
     Determination,
+    DeterminationAborted,
     DeterminationOutcome,
+    ErrorCode,
     Document,
     EvidenceSpan,
     GapReason,
@@ -83,6 +87,9 @@ class CaseStatus(str, Enum):
     PASS = "PASS"
     FAIL = "FAIL"
     BLOCKED = "BLOCKED"
+    # T-30 (REQ-28, D77): the system aborted with a classified fault. Not FAIL,
+    # which means "answered wrongly" about a system that did not answer.
+    ERROR = "ERROR"
 
 
 class ReasonClass(str, Enum):
@@ -103,6 +110,7 @@ class ReasonClass(str, Enum):
     UNEXPECTED_EXCEPTION = "UNEXPECTED_EXCEPTION"
     CASE_UNSPECIFIED = "CASE_UNSPECIFIED"
     NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
+    ERROR = "ERROR"
 
 
 @dataclass(frozen=True)
@@ -117,6 +125,11 @@ class CaseResult:
     input_tokens: int | None = None
     output_tokens: int | None = None
     wall_time_ms: float | None = None
+    # T-30 (REQ-28, D77): what the system answered, for the abstention account.
+    # None where nothing answered (BLOCKED, ERROR, an unexpected exception).
+    # Outside `key` below: the labels already pin every outcome through
+    # PASS/FAIL, so the baseline would widen without discriminating more.
+    outcome: str | None = None
 
     @property
     def key(self) -> tuple[str, str | None]:
@@ -144,6 +157,7 @@ class CaseResult:
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
             "wall_time_ms": self.wall_time_ms,
+            "outcome": self.outcome,
         }
 
 
@@ -423,6 +437,11 @@ def run_case(
         return CaseResult(
             case_id, CaseStatus.BLOCKED, ReasonClass.NOT_IMPLEMENTED, str(exc)
         )
+    except DeterminationAborted as exc:
+        # T-29's abort under T-30's accounting (REQ-28, D77): the system did
+        # not answer, so this is neither FAIL nor an abstention. str(exc)
+        # already names each errored criterion and its `error_code`.
+        return CaseResult(case_id, CaseStatus.ERROR, ReasonClass.ERROR, str(exc))
     except Exception as exc:  # noqa: BLE001 — mapped to a named class, see above
         detail = "".join(
             traceback.format_exception_only(type(exc), exc)
@@ -431,7 +450,13 @@ def run_case(
             case_id, CaseStatus.FAIL, ReasonClass.UNEXPECTED_EXCEPTION, detail
         )
 
-    return score(case, result, resolve_document)
+    scored = score(case, result, resolve_document)
+    outcome = (
+        NO_POLICY_EXPECTATION
+        if isinstance(result, NoPolicyResult)
+        else result.outcome.value
+    )
+    return replace(scored, outcome=outcome)
 
 
 # --------------------------------------------------------------------------
@@ -532,6 +557,33 @@ def self_check() -> list[tuple[str, bool, str]]:
         run_case(_synthetic_case(), _RaisingStore(ValueError("boom"))),
         ("FAIL", "UNEXPECTED_EXCEPTION"),
     )
+
+    # ---- T-30's branch (REQ-28, D77): the abort's classification ----------
+
+    aborted = DeterminationAborted(
+        [
+            CriterionResult(
+                criterion_id="c1",
+                verdict=CriterionVerdict.ERROR,
+                error_code=ErrorCode.MODEL_CALL_FAILED,
+                error_detail="self-check",
+            )
+        ],
+        attempts=3,
+    )
+    abort_result = run_case(_synthetic_case(), _RaisingStore(aborted))
+    record(
+        "DeterminationAborted is ERROR/ERROR — neither FAIL nor an abstention",
+        abort_result,
+        ("ERROR", "ERROR"),
+    )
+    generic_extra: list[tuple[str, bool, str]] = [
+        (
+            "an ERROR case carries no outcome, so no rate can count it",
+            abort_result.outcome is None,
+            f"outcome={abort_result.outcome!r}",
+        )
+    ]
 
     class _UngoverningStore:
         """resolve() returns None: the port's documented answer for a code no
@@ -701,6 +753,7 @@ def self_check() -> list[tuple[str, bool, str]]:
         (label, observed == expected, f"expected {expected}, got {observed}")
         for label, observed, expected in checks
     ]
+    generic.extend(generic_extra)
 
     # T-20's own self-check, and it is not about a key.
     #
@@ -788,6 +841,36 @@ def baseline_from(results: list[CaseResult], note: str) -> dict[str, Any]:
 
 
 # --------------------------------------------------------------------------
+# The abstention account (T-30, REQ-28, D77)
+# --------------------------------------------------------------------------
+
+
+def abstention_account(results: list[CaseResult]) -> dict[str, Any]:
+    """REQ-28's arithmetic, in the one place the report reads it from.
+
+    An abstention is an answered case whose outcome is
+    `INSUFFICIENT_EVIDENCE`. The denominator is answered cases only — `PASS`
+    and `FAIL` both count, because the rate measures how often the system
+    abstained, not how often it was right. An `ERROR` enters neither side:
+    excluding it from the numerator alone would let a crash *lower* the rate,
+    caution misreported as confidence (D77).
+    """
+    answered = [r for r in results if r.outcome is not None]
+    abstained = [
+        r
+        for r in answered
+        if r.outcome == DeterminationOutcome.INSUFFICIENT_EVIDENCE.value
+    ]
+    errors = [r for r in results if r.status is CaseStatus.ERROR]
+    return {
+        "answered": len(answered),
+        "abstained": len(abstained),
+        "errors": len(errors),
+        "abstention_rate": len(abstained) / len(answered) if answered else None,
+    }
+
+
+# --------------------------------------------------------------------------
 # Report
 # --------------------------------------------------------------------------
 
@@ -813,8 +896,20 @@ def print_report(results: list[CaseResult], drift: list[str], baseline_path: Pat
     print()
     print(
         f"  {len(results)} case(s): {counts[CaseStatus.PASS]} PASS, "
-        f"{counts[CaseStatus.FAIL]} FAIL, {counts[CaseStatus.BLOCKED]} BLOCKED"
+        f"{counts[CaseStatus.FAIL]} FAIL, {counts[CaseStatus.BLOCKED]} BLOCKED, "
+        f"{counts[CaseStatus.ERROR]} ERROR"
     )
+    # T-30 / REQ-28. The ERROR exclusion is printed even at zero, because the
+    # rate is only readable next to what it deliberately does not count.
+    account = abstention_account(results)
+    if account["abstention_rate"] is None:
+        print("  abstention rate: n/a (no case answered)")
+    else:
+        print(
+            f"  abstention rate: {account['abstained']}/{account['answered']} "
+            f"answered = {account['abstention_rate']:.3f}"
+            f"  ·  {account['errors']} ERROR case(s) excluded (REQ-28)"
+        )
     # T-20 / Article X. Reported, never asserted: tokens and latency move between
     # runs of the same model on the same input, and folding them into the gate
     # would fail it on noise. A6 asks for cost and latency *reported* from

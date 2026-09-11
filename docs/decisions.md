@@ -5539,3 +5539,55 @@ determinations, the abort weakens to per-criterion `ERROR` without REQ-24's
 abort, and `DeterminationAborted` becomes a result carrier instead of an
 exception. The allowlist shrinks to empty if the ADK path ever gains a
 classified exception taxonomy narrow enough to name what its loops catch.
+
+## D77 — `ERROR` is the harness's fourth status, and the abstention rate never sees it
+
+**Task:** T-30. REQ-28 in one sentence: the eval harness counts `ERROR`
+separately, and `ERROR` is never folded into the abstention rate or into any
+`INSUFFICIENT_EVIDENCE` count. T-29 made the fault path real —
+`DeterminationAborted` now reaches `run_case()` — and today the broad handler
+classifies it `FAIL/UNEXPECTED_EXCEPTION`, which is "the system answered, and
+it was wrong" said about a system that did not answer.
+
+**`ERROR` is a fourth `CaseStatus`, not a `FAIL` reason class.** The harness's
+statuses already are Article IV one level up — the module docstring has said
+since T-10 that REQ-28 would force "the same distinction on this file" — and
+the distinction is status-level because the next actions differ: `FAIL` means
+re-read the label or the code that answered, `BLOCKED` names an unbuilt task,
+`ERROR` names a classified fault (`DeterminationAborted` carries the criterion
+ids and `error_code`s, and the case's reason text repeats them). Rejected:
+keeping three statuses and adding only a `ReasonClass.ERROR` under `FAIL` —
+REQ-28 says *counts* `ERROR` separately, and a count folded into the `FAIL`
+total is not counted separately; it is also the crashed/answered-wrongly
+collapse the article forbids one level down. The new status pairs with a new
+`ReasonClass.ERROR`, so the baseline diffs `("ERROR", "ERROR")` and a case
+that starts crashing drifts as loudly as one that starts failing.
+
+**The abstention rate is over answered cases only.** The harness gains the
+rate REQ-28 legislates about: abstentions (a determination whose outcome is
+`INSUFFICIENT_EVIDENCE`) over answered cases (a `Determination` or a
+`NoPolicyResult` came back and was scored — `PASS` and `FAIL` both count;
+what the rate measures is how often the system abstained, not how often it was
+right). An `ERROR` case enters neither the numerator nor the denominator.
+Rejected: excluding it from the numerator only — a seeded crash would then
+*lower* the reported abstention rate, which is REQ-28's folding with the sign
+flipped, caution misreported as confidence. The exit condition ("a seeded
+`ERROR` leaves the reported abstention rate unchanged") is satisfiable only by
+excluding both, which is the point of writing the exit that way. The account
+lives in a pure function (`abstention_account`) that `print_report` renders,
+so the test asserts the number the report prints rather than a private
+recomputation of it.
+
+**The outcome rides on `CaseResult`, outside the baseline key.** Computing the
+rate needs each case's determination outcome, which the scorer sees and then
+drops. `run_case()` now attaches it (`dataclasses.replace` after `score()`,
+`NO_POLICY_FOUND` for the REQ-1 shape, `None` where nothing answered) and
+`as_dict()` reports it. It stays out of `key` — the labels already pin every
+outcome through `PASS`/`FAIL`, so putting it in the baseline would widen the
+diff format without adding discriminating power.
+
+**Reversal:** if a labeled case ever legitimately *expects* an abort — say a
+deliberately corrupted recording committed as a fault-path case — the
+expectation shape grows an `ERROR` form and `PASS` becomes reachable over
+`DeterminationAborted`. That changes classification, not accounting: the rate
+still never sees an `ERROR`.

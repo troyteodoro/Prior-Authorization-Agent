@@ -17,8 +17,8 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-three tasks are on this board — IDs run to T-77 but numbering is not
-contiguous, so the highest id is not the count. **48 are closed and 15 are
-open.** Nine of the 15 sit on the critical path to the acceptance gates in
+contiguous, so the highest id is not the count. **49 are closed and 14 are
+open.** Eight of the 14 sit on the critical path to the acceptance gates in
 spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
 — ownership is ratified before the path resumes; T-21 closed out of that
 order in a forked session, reconciled by D79)*
@@ -29,7 +29,7 @@ order in a forked session, reconciled by D79)*
 | 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
 | 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
 | 4 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74/T-75; see D79 |
-| 5 | `T-29` → `T-30` | **closes US-9** · gates **A9** | T-29 closed (D76) |
+| 5 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
 | 6 | `T-17` | **closes US-6** · implements **Article V** | ready |
 | 7 | `T-32` | gates **Article VI** / REQ-33 | ready |
 | 8 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
@@ -1373,16 +1373,30 @@ handler is bare or catches `Exception` without re-raising or mapping to a named
 `error_code` (REQ-27) — parsed, not grepped. *(Was a grep; strengthened by D72
 on D65's and D67's precedent that substring scans are the gameable form.)*
 
-### `[ ] T-30` `ERROR` accounting in the eval harness
+### `[x] T-30` `ERROR` accounting in the eval harness
 **REQ:** 28 · **Depends:** T-10, T-26 · **Gates:** A9
-**Status:** **ready** — **next**; T-29 closed, so US-9 closes with this task
+**Status:** **closed** (D77). `ERROR` is the harness's fourth `CaseStatus` —
+`DeterminationAborted` classifies to `ERROR`/`ReasonClass.ERROR`, never to
+`FAIL` ("answered wrongly" said about a system that did not answer) and never
+to `BLOCKED` (which still means unbuilt). The abstention rate now exists and
+is computed in one pure function, `abstention_account`: abstentions
+(`INSUFFICIENT_EVIDENCE` outcomes) over answered cases, with an `ERROR` in
+neither the numerator nor the denominator — numerator-only exclusion would
+let a crash *lower* the rate. The outcome rides on `CaseResult` outside the
+baseline key, and the report prints the rate beside what it excludes. Seven
+mutations caught, including the abort falling through to
+`FAIL/UNEXPECTED_EXCEPTION`, the denominator folding `ERROR` in, and a
+report assertion that survived on a substring collision until it was pinned
+to the whole summary line (the T-70 lesson, met live).
 **Exit:** `pytest tests/test_metrics_error_accounting.py` — a seeded `ERROR`
 leaves the reported abstention rate unchanged
 An `ERROR` counted as an abstention would make T-22's curve report caution where
 there was a crash.
 
-**US-9 closes when:** A9 holds — no determination carrying an `ERROR` can be
-emitted, and a seeded `ERROR` leaves the abstention rate unchanged.
+**US-9 is closed** — A9 holds: REQ-26's validator makes a determination
+carrying an `ERROR` unconstructible (T-26), the workflow aborts instead of
+emitting one (T-29, D76), and a seeded `ERROR` leaves the abstention rate
+unchanged (T-30, D77).
 
 ---
 
