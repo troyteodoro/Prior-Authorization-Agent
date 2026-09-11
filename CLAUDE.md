@@ -315,11 +315,11 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**47 of 59 tasks closed, 12 open. All 8 gates green** (`check_gates.py`, ~12s,
-545 tests across 26 files). IDs run to T-73, but numbering is not contiguous —
+**48 of 59 tasks closed, 11 open. All 8 gates green** (`check_gates.py`, ~12s,
+554 tests across 27 files). IDs run to T-73, but numbering is not contiguous —
 the highest id is not the count.
 
-Delivered: **US-1, US-2, US-3, US-4, US-5**. `python -m pa_agent.cli --patient
+Delivered: **US-1, US-2, US-3, US-4, US-5, US-9**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
@@ -329,9 +329,13 @@ The eval set is full (T-21, D74): `eval/cases.json` holds fifteen labeled rows
 cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
 in-window evidence *(D41)*, so E2 runs 43644 at 2024-12-01 while E7 reads the
-same chart at the harness clock.
+same chart at the harness clock. US-9 closed with T-29 and T-30 (D75, D76):
+a fault is a criterion's `ERROR`, the abort is `DeterminationAborted`, and the
+eval harness classifies it as its fourth status — never `FAIL`, never an
+abstention; the reported abstention rate counts an `ERROR` in neither its
+numerator nor its denominator (REQ-28).
 
-Open, in order: **T-30 → T-17 → T-32 → T-72/T-22/T-28/T-23**,
+Open, in order: **T-17 → T-32 → T-72/T-22/T-28/T-23**,
 with T-27, T-42, T-70, T-71 and T-73 off the path. `docs/tasks.md` opens with `Path to
 v1`, which states this once with what each step gates — read it rather than this
 paragraph *(D70, D72)*.
