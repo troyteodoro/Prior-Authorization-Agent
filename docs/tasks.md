@@ -17,17 +17,18 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-two tasks are on this board — IDs run to T-76 but numbering is not
-contiguous, so the highest id is not the count. **46 are closed and 16 are
-open.** Eleven of the 16 sit on the critical path to the acceptance gates in
+contiguous, so the highest id is not the count. **47 are closed and 15 are
+open.** Ten of the 15 sit on the critical path to the acceptance gates in
 spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
-— ownership is ratified before the path resumes)*
+— ownership is ratified before the path resumes; T-21 closed out of that
+order in a forked session, reconciled by D79)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
 | 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
 | 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
 | 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
-| 4 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | after T-75 *(D74)* |
+| 4 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74/T-75; see D79 |
 | 5 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
 | 6 | `T-17` | **closes US-6** · implements **Article V** | ready |
 | 7 | `T-32` | gates **Article VI** / REQ-33 | ready |
@@ -48,14 +49,18 @@ truth is authored by the agent building the system it grades, and the docs the
 whole repo obeys were agent-drafted under direction. D74 converts that
 direction into recorded ownership — a ledger, a gate, and statuses only Troy
 may write — and the conversion is cheapest *before* T-21 authors the labels
-the acceptance gates will be scored against, not after.
+the acceptance gates will be scored against, not after. T-21 nonetheless
+closed first, in a session forked from the pre-D74 board; the close stands,
+the ratification pass now reviews authored labels instead of preceding them,
+and D79 records the breach with the adjudication half of T-21's rewritten
+exit re-homed as T-78.
 
-**Why T-21 is second and not later.** US-4 and US-5 are *built and ungraded* —
-every predicate, the reconciliation, the aggregator and the gap list work and are
-pinned by unit tests, but both stories close on eval-harness rows and
-`eval/cases.json` holds one case. T-21 converts two stories' worth of finished
-work into two closed stories for one task's cost. Nothing else on the board has
-that ratio, and working rule 7 is the reason it goes near the front.
+**Why T-21 did not wait.** US-4 and US-5 were *built and ungraded* — every
+predicate, the reconciliation, the aggregator and the gap list worked and were
+pinned by unit tests, but both stories closed on eval-harness rows and
+`eval/cases.json` held one case. T-21 converted two stories' worth of finished
+work into two closed stories for one task's cost. Nothing else on the board had
+that ratio, and working rule 7 is the reason it went near the front.
 
 **Why T-17 is on the path at all.** Article V — the verifier is blind — has zero
 implementation today. It is the largest constitutional hole in the repo and it is
@@ -718,6 +723,8 @@ fired — and that is a `return`, not an edge. *(D62)*
 Lands with the first model call, not on day five. *(Article X)*
 
 **US-4 closes when:** E4, E5, E6, E7, E9, E10, E10b, E10c and E11 all pass.
+**Closed by T-21 (D75):** all nine rows `PASS` in `eval/run_eval.py`, on the
+recorded extraction, for zero model calls.
 
 ---
 
@@ -746,6 +753,8 @@ expression-parsing requirement, REQ-20's propagation, and the two end-to-end row
 without those the aggregator could be a conjunction over verdicts nobody produced.
 
 **US-5 closes when:** E1 and E8 pass.
+**Closed by T-21 (D75):** both rows `PASS` in `eval/run_eval.py` — E1 with all
+seven criteria pinned `MET`, E8 abstaining with `UNSUBSTANTIATED_ASSERTION`.
 
 ---
 
@@ -1224,32 +1233,44 @@ end to end, carrying `VERIFIER_REJECTED`.
 
 ## `US-7` Where the system stops being reliable — day 5
 
-### `[ ] T-21` Expand the eval set to all of spec §6
-**Depends:** T-06, T-10, T-41 *(for the E12 row)*, T-73, T-75 *(D74)* ·
-**Gates:** A1, A3 · **Rewritten by:** D74
-**Status:** on the critical path, after T-75 — the labels this task authors are
-what the acceptance gates score against, so ownership is ratified first *(D74)*
-**Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled;
-every case in `eval/cases.json` and every manifest in `eval/manifests/` carries
-an `adjudicated: {by, date}` record, and `python scripts/check_ownership.py
---require eval` returns zero — closing flips `eval` into the ledger's
-`required_tiers` *(D74)*
+### `[x] T-21` Expand the eval set to all of spec §6
+**Depends:** T-06, T-10, T-41 *(for the E12 row)* · **Gates:** A1, A3 ·
+**Rewritten by:** D74; re-split by D79
+**Status:** **closed** (D75) — closed US-4 and US-5, against the pre-D74 exit
+below and before T-74/T-75 *(D79)*. D74's added requirement — an
+`adjudicated: {by, date}` record on every case and manifest, with
+`check_ownership.py --require eval` returning zero and `eval` flipped into
+`required_tiers` — is not discharged by this close; it is re-homed as `T-78`
+*(D79)*, after Troy's reading.
+**Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
-Agent-drafted labels land as proposals carrying reasoning and spans; Troy's
-adjudication records are what close them, and the adjudication of each
-patient's manifest happens in the same reading pass that labels its cases
-*(D74 — this is where D42's authorship caveat is retired for the eval set)*.
-
-**This is the task that closes two stories.** US-4 and US-5 are built — every
+**This is the task that closed two stories.** US-4 and US-5 were built — every
 predicate, the reconciliation, the aggregator and the gap list pass their unit
-tests — and both close on harness rows that do not exist, because
-`eval/cases.json` still holds one case. Their determinations already run end to
-end on recorded extractions for zero model calls, so this is labeling and
+tests — and both closed on harness rows that did not exist, because
+`eval/cases.json` held one case. Their determinations already ran end to
+end on recorded extractions for zero model calls, so this was labeling and
 baselining, not building *(D70)*.
 
-Expect the baseline diff to be the substance of the close: D27's gate fails on
-drift in **either** direction, so every case moving off `BLOCKED` is acknowledged
-in the commit rather than noticed in a table.
+**Closed by D75.** `eval/cases.json` holds fifteen rows — §6's fourteen (E3
+was already present) plus `NP1`, the `NO_POLICY_FOUND` row outside §6 — and
+all fifteen `PASS` on the recorded extraction for zero model calls. The scorer is criterion-scoped: `expect` gained optional
+`criteria` (verdict + `gap_reason` per criterion id) and `discrepancies`
+(exact count), every row also pins its overall outcome, one determination per
+`(patient, procedure, as_of)` is cached and shared across rows, and every
+span carried by a cited verdict is validated against the source documents in
+the scorer itself (A3, Art. III). Two labeling facts surfaced by running:
+sc2 names only the *nationally covered* set, so E2 runs code 43644, not
+43775 (D41, REQ-42); and E2's sub-35 BMI is deliberately stale at
+`EVAL_AS_OF` so that E7 reaches the criteria path on the same chart, so case
+rows carry an optional `as_of` and E2's is 2024-12-01. The baseline diff —
+one case to fifteen, E3 unchanged — is the substance of this close (D27).
+Mutation-tested: a relabeled criterion, a duplicate case id, dropped
+discrepancy scoring, a stale baseline, a tampered recorded quote, and a
+deleted span-validation branch all fail the gate. A recorded *offset* cannot
+reach the scorer invalid, and that is not a hole: spans are re-anchored from
+the model's verbatim quote (D18) and source documents are hash-guarded
+(REQ-7), so the recording's failure channel is the quote — which is the
+mutation that was run.
 
 ### `[ ] T-72` A5's curve names a threshold the system does not have
 **REQ:** none — reconciles acceptance gate A5 · **Blocks:** T-22 ·

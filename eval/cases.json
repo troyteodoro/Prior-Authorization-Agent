@@ -1,6 +1,6 @@
 {
   "eval_set_id": "us1-v1",
-  "note": "Labeled acceptance cases from docs/spec.md §6. T-21 appends the rest of the table to this file; it does not replace it. A case is labeled before the system that answers it exists (spec §8).",
+  "note": "Labeled acceptance cases: spec §6's fourteen plus NP1 (REQ-1, outside §6 per D75). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6 and the T-06 manifests, never from an observed run. Row semantics: D75.",
   "cases": [
     {
       "case_id": "E3",
@@ -43,6 +43,282 @@
       },
       "expect": {
         "outcome": "NOT_COVERED",
+        "max_model_calls": 0
+      }
+    },
+    {
+      "case_id": "E1",
+      "story": "US-5",
+      "spec_ref": "docs/spec.md §6, E1",
+      "description": "Clean approval, all criteria met",
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "'All criteria met' is E1's label, so all seven are pinned - the one row where that is transcription from §6 rather than labeling from the observed run (D75, spec §8).",
+      "expect": {
+        "outcome": "MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          },
+          "b": {
+            "verdict": "MET"
+          },
+          "c1": {
+            "verdict": "MET"
+          },
+          "c2": {
+            "verdict": "MET"
+          },
+          "c3": {
+            "verdict": "MET"
+          },
+          "c4": {
+            "verdict": "MET"
+          },
+          "c5": {
+            "verdict": "MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E2",
+      "story": "US-3",
+      "spec_ref": "docs/spec.md §6, E2",
+      "description": "BMI below 35 with active T2DM: the categorical exclusion (sc2)",
+      "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+      "procedure_code": "43644",
+      "procedure": "Laparoscopic Roux-en-Y gastric bypass",
+      "as_of": "2024-12-01",
+      "note": "Two deliberate choices (D75). A nationally covered code: sc2 names the nationally covered procedures and skips contractor-determined requests (D41, REQ-42), so 43775 cannot exercise it. An in-window as_of: the patient's BMI 34.26 is observed 2024-03-15, deliberately stale at EVAL_AS_OF so E7 can reach the criteria path on this same chart; sc2 refuses stale evidence (D41), so E2 runs where the measurement is current.",
+      "expect": {
+        "outcome": "NOT_COVERED",
+        "max_model_calls": 0
+      }
+    },
+    {
+      "case_id": "E4",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E4",
+      "description": "Program run of 3 consecutive months, gap in month 4",
+      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "expect": {
+        "outcome": "NOT_MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "c3": {
+            "verdict": "NOT_MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E5",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E5",
+      "description": "Program complete but ended 14 months ago",
+      "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "NOT_MET, never INSUFFICIENT_EVIDENCE: the evidence exists and falls outside the recency window (REQ-16, REQ-32, Art. IV).",
+      "expect": {
+        "outcome": "NOT_MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "c2": {
+            "verdict": "NOT_MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E6",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E6",
+      "description": "Weight recorded monthly, BMI recorded in 2 of 4 months",
+      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "expect": {
+        "outcome": "NOT_MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "c4": {
+            "verdict": "NOT_MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E7",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E7",
+      "description": "No weight-management documentation anywhere",
+      "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "Same chart as E2, at the harness clock: the BMI that fires sc2 in 2024 is stale here, so the criteria path runs and c1 abstains. The overall NOT_MET is criterion (a)'s - the stale BMI is outside its lookback (REQ-16) - and c1's abstention is the labeled claim.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "c1": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E8",
+      "story": "US-5",
+      "spec_ref": "docs/spec.md §6, E8",
+      "description": "Note asserts program completion; no visit detail",
+      "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "The refusal test: an assertion is never counted as an event (REQ-35), so zero wm_events reach c3 and the gap names what to collect - the visit notes behind the claim.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "max_model_calls": 1,
+        "criteria": {
+          "c3": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "UNSUBSTANTIATED_ASSERTION"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E9",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E9",
+      "description": "Missed-visit dates present in the gap month",
+      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "The honesty test: the trap dates in the gap month are non-encounters (REQ-9) and must not bridge the run. Shares E4's chart and run; the label is that c3 stays NOT_MET with the traps present.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "c3": {
+            "verdict": "NOT_MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E10",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E10",
+      "description": "Structured 39.23, note 45.0: beyond tolerance, same side of 35.0",
+      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "Criterion-scoped (D72): the structured value stands, criterion (a) is MET, and the disagreement is one discrepancies[] entry, never a gap. The overall NOT_MET is E6's - same patient, same run.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          }
+        },
+        "discrepancies": 1
+      }
+    },
+    {
+      "case_id": "E10b",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E10b",
+      "description": "Structured 34.6, note 36.2: disagreement crosses 35.0",
+      "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "max_model_calls": 1,
+        "criteria": {
+          "a": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "SOURCE_CONFLICT"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E10c",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E10c",
+      "description": "Structured 37.65, note 37.6: below tolerance",
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "expect": {
+        "outcome": "MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          }
+        },
+        "discrepancies": 0
+      }
+    },
+    {
+      "case_id": "E11",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E11",
+      "description": "Two supervised programs, one qualifying, one not",
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "MET on the qualifying run: the non-qualifying program on the same chart must not drag c3 down.",
+      "expect": {
+        "outcome": "MET",
+        "max_model_calls": 1,
+        "criteria": {
+          "c3": {
+            "verdict": "MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E12",
+      "story": "US-2",
+      "spec_ref": "docs/spec.md §6, E12",
+      "description": "BMI exactly 35.0: criterion (a) boundary inclusive",
+      "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "The structured most-recent BMI is exactly 35.0 via the declared synthetic observation (T-41, D73). The chart is note-free by declaration, so zero model calls and every notes criterion abstains - the overall INSUFFICIENT_EVIDENCE is theirs; (a)'s inclusive boundary is the labeled claim.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "max_model_calls": 0,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "NP1",
+      "story": "US-1",
+      "spec_ref": "REQ-1; outside §6 (D75)",
+      "description": "A code no bariatric policy governs",
+      "patient_id": null,
+      "procedure_code": "99213",
+      "procedure": "Office or other outpatient visit, established patient",
+      "note": "Outside §6, added by D75: REQ-1's answer is a NoPolicyResult, not a denial and not a determination (D32), and the scorer matches it by type. A1 reads §6's fourteen; this row is the fifteenth on purpose.",
+      "expect": {
+        "outcome": "NO_POLICY_FOUND",
         "max_model_calls": 0
       }
     }

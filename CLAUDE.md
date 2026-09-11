@@ -321,28 +321,31 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**46 of 62 tasks closed, 16 open. All 9 gates green** (`check_gates.py`, ~13s,
+**47 of 62 tasks closed, 15 open. All 9 gates green** (`check_gates.py`, ~13s,
 557 tests across 26 files). IDs run to T-76, but numbering is not contiguous —
 the highest id is not the count.
 
-Delivered: **US-1, US-2, US-3**. `python -m pa_agent.cli --patient <uuid>
---procedure 43775` prints a real determination — seven criterion verdicts, spans
-that slice back, a gap list and Article X's counters — for zero model calls,
-because the default extraction runner replays T-15's recording.
+Delivered: **US-1, US-2, US-3, US-4, US-5**. `python -m pa_agent.cli --patient
+<uuid> --procedure 43775` prints a real determination — seven criterion
+verdicts, spans that slice back, a gap list and Article X's counters — for zero
+model calls, because the default extraction runner replays T-15's recording.
+The eval set is full (T-21, D75): `eval/cases.json` holds fifteen labeled rows
+— spec §6's fourteen plus `NP1`, the
+`NO_POLICY_FOUND` row outside §6 — all `PASS`, criterion-scoped, with every
+cited span validated by the scorer (A3). Case rows may carry their own
+`as_of`, and E2's does: sc2 fires only for nationally covered codes on
+in-window evidence *(D41)*, so E2 runs 43644 at 2024-12-01 while E7 reads the
+same chart at the harness clock.
 
-**US-4 and US-5 are built and ungraded.** Every predicate, the reconciliation,
-the aggregator and the gap list work and are pinned by unit tests; both stories
-close on eval-harness rows and `eval/cases.json` holds one case. That is
-**T-21**, and it is why the board's order starts where it does.
-
-Open, in order: **T-74 → T-75 → T-21 → T-29/T-30 → T-17 → T-32 →
+Open, in order: **T-74 → T-75 → T-29/T-30 → T-17 → T-32 →
 T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70 and T-71 off the path. The
-ratification tasks come first because D74 restores human ownership of every
+ratification tasks lead because D74 restores human ownership of every
 load-bearing ID — ledger `docs/ratifications.json`, gate
-`scripts/check_ownership.py`, working rule 11 — before T-21 authors the labels
-the acceptance gates score against. `docs/tasks.md` opens with `Path to v1`,
-which states this once with what each step gates — read it rather than this
-paragraph *(D70, D72, D74)*.
+`scripts/check_ownership.py`, working rule 11 — and T-21 closed ahead of them
+in a forked session, so the ratification pass reviews its labels after the
+fact *(D79)*. `docs/tasks.md` opens with `Path to v1`, which states this once
+with what each step gates — read it rather than this paragraph *(D70, D72,
+D74)*.
 
 Two things worth knowing before a review: **Article V has no implementation**
 (that is T-17, one task), and **REQ-44/REQ-47 are unclaimed on purpose** —
@@ -414,7 +417,7 @@ data/patients/
   notes/             six synthesized chart notes + manifest.json
   work/              gitignored: the Synthea jar and the full 200-patient run
 eval/
-  cases.json         the eval set (one case; T-21 expands it)
+  cases.json         the eval set — 15 labeled rows (§6's 14 + NP1; D75)
   baseline.json      what run_eval.py diffs against
   manifests/         T-06's ground truth — the system under test never reads it
   extraction/        results.json (T-15) plus adk_results_inline.json and

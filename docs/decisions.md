@@ -5371,3 +5371,81 @@ ratification and the ledger's visible `proposed` count keeps the gap honest
 rather than hidden. Or ratification updates become rote enough that statuses
 stop being read, which is D27's baseline argument returning; then the ledger
 shrinks to the tiers whose ownership is load-bearing.
+
+## D75 — Case rows are criterion-scoped, share cached runs, and carry their own clock
+
+**Task:** T-21. The eval set grows from one row to fifteen, and the scorer
+grows from outcome-plus-budget to the full claim a §6 row actually makes. The
+shape of a case row is the design decision here; the rows themselves are
+transcription from spec §6 and T-06's manifests.
+
+**Row semantics.** `expect` gains two optional fields beside `outcome` and
+`max_model_calls`: `criteria` (criterion id → `{verdict, gap_reason?}`) and
+`discrepancies` (an exact count over `Determination.discrepancies[]`). This
+generalizes D72's E10 ruling — §6's rows are criterion-scoped claims, and a
+scorer that reads only the overall outcome grades E10 by E6's answer. Every
+row still pins `outcome`, criterion-scoped or not: the redundancy is cheap,
+and it is what makes two rows on one patient unable to drift apart silently —
+they are scored against the same determination, and a contradiction fails at
+least one of them. Criterion expectations are copied from §6 and the T-06
+manifests, never read off an observed run; spec §8's ordering (label first,
+system second) is the reason the observed run below is corroboration, not
+source.
+
+**One determination per `(patient_id, procedure_code, as_of)`, cached.**
+Rows sharing the key share the run and every row grades the same object.
+
+**Rows carry their own clock, and E2 is why.** Two facts established while
+labeling, both already in the record but never before load-bearing at once:
+sc2 runs only for the *nationally covered* set — the 04/2009 exclusion
+predates the LSG delegation, so a contractor-determined request skips it
+(D41, REQ-42) — and sc2 refuses stale evidence, because a categorical denial
+issued on a BMI the criteria path would not accept is confidence asymmetry in
+the wrong direction (D41). E2's patient carries BMI 34.26 observed 2024-03-15,
+deliberately stale at the harness's 2026-09-01 clock so that E7 can reach the
+criteria path on the same chart. E2 therefore runs as a **nationally covered
+code (43644, lap RYGB) at an in-window `as_of` (2024-12-01)** — both verified
+against the running system before this entry was written — and case rows gain
+an optional `as_of` defaulting to `EVAL_AS_OF`. T-06's manifest rationale
+anticipated exactly this: "fires sc2 at an in-window as_of."
+
+**`NO_POLICY_FOUND` becomes a labeled expectation, with a real row.** The
+scorer learns the shape (`expect.outcome: "NO_POLICY_FOUND"`, satisfied by a
+`NoPolicyResult`, zero calls) and one row outside §6 — `NP1`, an ungoverned
+code — exercises it. A1 reads §6's fourteen; NP1 says so in its own text.
+
+**A3 moves into the scorer.** Every cited verdict (`MET` and `NOT_MET` both —
+Article III does not scope to `MET`; A3's gate reads the `MET` subset) has
+each span validated through `pa_agent.spans.validate` against a
+`DocumentIndex` built from the two stores' `get_document` for exactly the
+document ids the spans name. New `ReasonClass` members: `WRONG_CRITERION`,
+`WRONG_GAP_REASON`, `WRONG_DISCREPANCIES`, `INVALID_SPAN`. Scoring order:
+outcome → named criteria → discrepancy count → span validity → call budget,
+extending the existing rule that the graver finding is the one reported.
+A duplicate case id fails the run outright — two rows under one id collapse
+silently in a dict keyed by case id, which is a gate that grades one of them
+and pretends it graded both.
+
+**Rejected:**
+
+- *Deriving criterion expectations from the observed run.* Spec §8 exists to
+  forbid it; a label transcribed from the system under test grades the system
+  against itself.
+- *Criteria-only rows with `outcome` optional.* A row that does not state
+  what its determination concluded overall is a row that cannot catch the
+  aggregator regressing while its one criterion stays right.
+- *`NO_POLICY_FOUND` covered by `self_check()` alone.* A scorer branch no
+  real row exercises is the branch that breaks unnoticed; the harness comment
+  at the old `RuntimeError` site named this task for a reason.
+- *Re-hosting E2 on a new patient with an in-window sub-35 BMI.* The corpus
+  is pinned (D73), and one patient serving E2 and E7 at two clocks is the
+  design T-06 chose deliberately.
+- *Grading E7 by invoking the workflow directly, bypassing sc2.* Grades a
+  path the shipped system would not take; the per-case clock makes it
+  unnecessary.
+
+**Reversal:** the criteria-row shape is revisited if a §6 case ever needs an
+expectation it cannot express (a per-criterion span assertion, say); the
+per-case `as_of` empties back to a single clock if the corpus ever gains a
+patient whose sc2 shape is in-window at `EVAL_AS_OF` — at which point E2
+moves to that patient and the field goes unused before it goes away.
