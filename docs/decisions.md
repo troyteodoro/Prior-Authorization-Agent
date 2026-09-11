@@ -5371,3 +5371,53 @@ ratification and the ledger's visible `proposed` count keeps the gap honest
 rather than hidden. Or ratification updates become rote enough that statuses
 stop being read, which is D27's baseline argument returning; then the ledger
 shrinks to the tiers whose ownership is load-bearing.
+
+## D75 — T-74's statuses are recorded through a tool Troy runs, not a hand-edited JSON
+
+Agent proposal ratified by Troy's choice, 2026-09-11, scaffolding T-74 as its
+task text allows. Troy's reading pass covers 98 ids across the constitution,
+spec and stories tiers, and T-75/T-76 add 128 more; every status is his edit
+under working rule 11. The question is the mechanism of the edit.
+
+**Chosen — `scripts/ratify.py`, a recording tool Troy invokes himself.** After
+reading a section he runs it with the ids he read; it stamps
+`{status, by, date}` (and `task` for `amended`/`overruled`) into
+`docs/ratifications.json`, defaulting `by` to `troy` and the date to today.
+`--pending` prints the checklist view — per-tier counts and the ids still
+`proposed`.
+
+**This does not breach working rule 11, for the reason D74 already gave.** D74
+rejected a git-author check because "the rule binds sessions instead" — the
+rule scopes who decides, not which mechanism records the decision. A tool Troy
+runs is Troy's edit; the `by` field and the diff remain the record, exactly as
+they would for a hand edit. The obligation on agents is unchanged: an agent
+never invokes this tool with any status, because its whole output is statuses
+an agent may not write.
+
+**Chosen — explicit ids only, no tier-wide wildcard.** A `--tier constitution
+--all` flag is one keystroke of rubber stamp, and D74's reversal clause names
+rote statuses as the failure that would shrink the ledger. Each invocation
+lists what was read; batching a section's ids after reading it is the intended
+grain. The tool also refuses `--status proposed` (it is one-directional — the
+seed state is written by T-73's machinery, not re-written by this) and
+refuses `amended`/`overruled` without a `--task` that resolves on the board,
+failing at recording time rather than at the gate (working rule 6, mirrored
+from `check_ownership.py`).
+
+**Rejected — hand-editing the ledger.** No new code, but 98 entries of
+repeated `{status, by, date}` editing invites the malformed-entry failures the
+gate exists to catch, and the same toil repeats at T-75 and T-76. The tool
+reuses `check_ownership.py`'s `enumerate_ids` so the two cannot disagree about
+what an id is.
+
+**Rejected — a tracked markdown checklist.** A second document restating
+ledger state is a drift surface; the ledger plus `--pending` is the checklist.
+
+**Cost.** One more tracked script, registered in `check_gates.py`'s `EXCLUDED`
+(it writes the ledger and checks nothing, so it is no gate), with guard-rail
+tests in `tests/test_ratify.py`.
+
+**Reverses if:** the tool makes ratification rote enough that statuses stop
+being read — D74's own reversal condition arriving through this door — then
+the tool is deleted and the deliberate hand edit returns as the recording
+form.

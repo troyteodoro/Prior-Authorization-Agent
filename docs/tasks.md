@@ -25,7 +25,7 @@ spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
 | # | Task | Closes / gates | State |
 |---|---|---|---|
 | 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
-| 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
+| 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | **in progress** — scaffold built (D75); Troy's reading |
 | 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
 | 4 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | after T-75 *(D74)* |
 | 5 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
@@ -1381,9 +1381,10 @@ run — the ratification tasks' exits use it before flipping the tier into
 `required_tiers`, after which the bare gate invocation enforces it forever.
 Statuses other than `proposed` are Troy's edits only (working rule 11, D74).
 
-### `[ ] T-74` Ratify the constitution, the spec and the stories
+### `[~] T-74` Ratify the constitution, the spec and the stories
 **Depends:** T-73 · **Discovered in:** D74 · **Timebox:** one session
-**Status:** second on the critical path; the reading is Troy's, not an agent's
+**Status:** in progress — the scaffold (`scripts/ratify.py`, D75) is built;
+the reading is Troy's, not an agent's
 **Exit:** `python scripts/check_ownership.py --require constitution --require
 spec --require stories` returns zero, and the close flips those three tiers
 into `required_tiers`
