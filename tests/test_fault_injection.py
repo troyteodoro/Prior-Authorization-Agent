@@ -44,6 +44,7 @@ from pa_agent.runners import (
 )
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
+from conftest import AcceptAllVerifier
 from pa_agent.workflow import (
     DEFAULT_MAX_ATTEMPTS,
     ERROR_CODE_FOR,
@@ -107,6 +108,7 @@ def e1_patient() -> str:
 
 
 def _run(policy_store, patient_store, runner, patient_id, ref, **kwargs):
+    kwargs.setdefault("verifier", AcceptAllVerifier())
     return run_criteria_workflow(
         policy_store=policy_store,
         patient_store=patient_store,

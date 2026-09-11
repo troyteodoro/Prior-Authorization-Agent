@@ -35,6 +35,17 @@ PINNED_MODEL = "gemini-3.5-flash-lite"
 # new measurement, not a confirmation of that one.
 MEASURED_TIER = "ai_studio"
 
+# The second pin D20's reversal clause anticipated: Article V's verifier
+# (T-17, D78). Same value as `PINNED_MODEL` on purpose — the family has
+# nothing cheaper, and blindness comes from the payload, not model diversity —
+# but a separate constant, so moving the verifier to a different model is one
+# visible edit checked against the artifact that records it
+# (`eval/verifier/results.json`).
+VERIFIER_MODEL = "gemini-3.5-flash-lite"
+
+# The tier the verifier recording was measured on (D5, D78).
+VERIFIER_MEASURED_TIER = "ai_studio"
+
 # Families this project could plausibly call. The scan looks for a family name
 # followed by a version suffix, so `gemini-2.5-flash-lite` matches and the bare
 # word "Gemini" in prose does not. Adding a provider is one entry here.

@@ -63,6 +63,7 @@ if str(REPO_ROOT) not in sys.path:
 from pa_agent.contracts import CriterionVerdict, Determination  # noqa: E402
 from pa_agent.retrieval import FixedRetrievalPlanner, RetrievalError  # noqa: E402
 from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
+from pa_agent.verifier import RecordedVerifierRunner  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 from pa_agent.stores.policy import LocalPolicyStore  # noqa: E402
 from pa_agent.workflow import run_criteria_workflow  # noqa: E402
@@ -70,6 +71,7 @@ from pa_agent.workflow import run_criteria_workflow  # noqa: E402
 OUT_DIR = REPO_ROOT / "eval" / "agentic"
 OUT_PATH = OUT_DIR / "results.json"
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
+VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
 NOTES_MANIFEST = REPO_ROOT / "data" / "patients" / "notes" / "manifest.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
 
@@ -236,7 +238,17 @@ def _load_env() -> None:
             os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
-def _run_one(policy_store, patient_store, runner, planner, patient_id) -> Determination:
+def _recorded_verifier():
+    """T-17's recording as a `VerifierRunner` (D78). Held constant on both
+    sides of the differential, like the extraction replay: the one variable is
+    which evidence reached the criteria."""
+    recording = json.loads(VERIFIER_RESULTS.read_text(encoding="utf-8"))
+    return RecordedVerifierRunner.from_records(
+        recording["claims"], model=recording.get("model")
+    )
+
+
+def _run_one(policy_store, patient_store, runner, planner, patient_id, verifier) -> Determination:
     return run_criteria_workflow(
         policy_store=policy_store,
         patient_store=patient_store,
@@ -245,6 +257,7 @@ def _run_one(policy_store, patient_store, runner, planner, patient_id) -> Determ
         patient_id=patient_id,
         as_of=AS_OF,
         planner=planner,
+        verifier=verifier,
     ).determination
 
 
@@ -269,6 +282,7 @@ def measure(limit: int | None = None) -> int:
     runner = RecordedExtractionRunner.from_records(
         recording["notes"], model=recording["model"]
     )
+    verifier = _recorded_verifier()
 
     patients = _patients()[: limit if limit is not None else None]
     print(
@@ -284,7 +298,8 @@ def measure(limit: int | None = None) -> int:
         print(f"  [{index}/{len(patients)}] {label}", flush=True)
 
         oracle = _run_one(
-            policy_store, patient_store, runner, FixedRetrievalPlanner(), patient_id
+            policy_store, patient_store, runner, FixedRetrievalPlanner(),
+            patient_id, verifier,
         )
         planner = AgenticRetrievalPlanner(client=client)
 
@@ -309,7 +324,7 @@ def measure(limit: int | None = None) -> int:
         }
         try:
             agentic = _run_one(
-                policy_store, patient_store, runner, planner, patient_id
+                policy_store, patient_store, runner, planner, patient_id, verifier
             )
         except RetrievalError as exc:
             # REQ-28: a fault is counted separately and never folded into a
@@ -542,11 +557,12 @@ def rescore() -> int:
     runner = RecordedExtractionRunner.from_records(
         recording["notes"], model=recording["model"]
     )
+    verifier = _recorded_verifier()
 
     for row in payload["patients"]:
         oracle = _run_one(
             policy_store, patient_store, runner, FixedRetrievalPlanner(),
-            row["patient_id"],
+            row["patient_id"], verifier,
         )
         row["oracle"].update(
             {

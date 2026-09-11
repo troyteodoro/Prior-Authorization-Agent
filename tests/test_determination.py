@@ -57,6 +57,7 @@ from pa_agent.contracts import (
     EvidenceSpan,
     GapReason,
 )
+from conftest import AcceptAllVerifier
 from pa_agent.determination import NoPolicyResult, determine
 from pa_agent.index import DocumentIndex
 from pa_agent.runners import RecordedExtractionRunner
@@ -492,7 +493,10 @@ def test_the_cli_answers_a_covered_code_end_to_end(e1_patient):
     assert printed["discrepancies"] == []
     # Art. X: recorded, not estimated. The default runner replays T-15's
     # recording, so the counters are that call's real measurements.
-    assert printed["model_calls"] == 1
+    # 1 replayed extraction + 7 replayed verifications (T-17, D78): every
+    # cited verdict is checked, and the replay carries the recorded metrics
+    # through — a zero here would understate what the answer cost (Art. X).
+    assert printed["model_calls"] == 8
     assert printed["total_input_tokens"] > 0
     assert printed["total_wall_time_ms"] > 0
     assert printed["coverage_claim"] is None, (
@@ -502,9 +506,14 @@ def test_the_cli_answers_a_covered_code_end_to_end(e1_patient):
 
 def test_the_cli_pins_its_answer_to_an_as_of(e1_patient):
     """Every recency verdict moves with the date, so a demo that does not pin it
-    is a demo whose output changes tomorrow. The flag exists for that, and this
-    asserts the two dates actually produce different answers rather than the flag
-    being decorative."""
+    is a demo whose output changes tomorrow. Before T-17 this test asserted the
+    stale date produced `NOT_MET`; the verifier narrowed the recorded path's
+    reach, deliberately (D78): four years on, the same chart's verdicts differ,
+    so its claims differ from every claim the measurement recorded, and the
+    recorded verifier refuses to bless a citation nobody measured rather than
+    emitting an unverified determination (Art. V, D31). The refusal names the
+    script that would measure it. Either way the date reached the criteria —
+    that is what changed the claims."""
     pinned = _run_cli(
         "--patient", e1_patient, "--procedure", CONTRACTOR_CODE,
         "--as-of", AS_OF.isoformat(),
@@ -513,21 +522,20 @@ def test_the_cli_pins_its_answer_to_an_as_of(e1_patient):
         "--patient", e1_patient, "--procedure", CONTRACTOR_CODE,
         "--as-of", "2030-01-01",
     )
-    assert pinned.returncode == 0 and stale.returncode == 0
+    assert pinned.returncode == 0
     assert json.loads(pinned.stdout)["outcome"] == "MET"
-    assert json.loads(stale.stdout)["outcome"] == "NOT_MET", (
-        "four years on, the same chart's program is stale (REQ-32) and its BMI is "
-        "outside the lookback (REQ-16); an answer that did not move would mean "
-        "--as-of is not reaching the criteria"
-    )
+    assert stale.returncode == 3
+    assert stale.stdout == ""
+    assert "not_recorded" in stale.stderr
+    assert "run_verifier_measurement" in stale.stderr
 
 
 def test_the_unbuilt_path_handler_still_maps_to_exit_two():
     """Exit 2 has no reachable route from the CLI today, and the handler stays.
 
-    T-17's verifier and T-29's fault mapping are unbuilt and will reach it again,
-    and a handler that exists is how the next unbuilt path reports itself instead
-    of crashing with a traceback. Asserted on `main()`'s source rather than by
+    T-17's verifier and T-29's fault mapping have both landed since; the handler
+    stays because it is how the next unbuilt path reports itself instead of
+    crashing with a traceback. Asserted on `main()`'s source rather than by
     subprocess, because there is currently no input that triggers it — which is
     the honest reason to test it this way and is stated so nobody later reads a
     green suite as evidence that exit 2 was exercised.
@@ -558,6 +566,7 @@ def _determine_case(store, patient_store, runner, patient_id, code=CONTRACTOR_CO
         patient_store=patient_store,
         as_of=AS_OF,
         extraction_runner=runner,
+        verifier=AcceptAllVerifier(),
     )
     assert isinstance(result, Determination)
     return result

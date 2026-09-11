@@ -39,6 +39,7 @@ from pa_agent.retrieval import (
 from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
+from conftest import AcceptAllVerifier
 from pa_agent.workflow import STEP_NAMES, run_criteria_workflow
 
 from pa_agent.agent.retrieval_agent import (
@@ -770,12 +771,13 @@ def test_the_same_gathered_evidence_yields_the_same_verdicts(
     fixed = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
         extraction_runner=runner, policy_ref=ref, patient_id=patient_id,
-        as_of=AS_OF, planner=FixedRetrievalPlanner(),
+        as_of=AS_OF, planner=FixedRetrievalPlanner(), verifier=AcceptAllVerifier(),
     ).determination
     agentic = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
         extraction_runner=runner, policy_ref=ref, patient_id=patient_id,
         as_of=AS_OF, planner=_planner(_full_run(patient_id, document_id)),
+        verifier=AcceptAllVerifier(),
     ).determination
 
     assert agentic.outcome is fixed.outcome
@@ -796,6 +798,7 @@ def test_the_agentic_path_walks_the_same_graph(
         extraction_runner=runner, policy_ref=policy_store.resolve(CONTRACTOR_CODE),
         patient_id=patient_id, as_of=AS_OF,
         planner=_planner(_full_run(patient_id, document_id)),
+        verifier=AcceptAllVerifier(),
     )
     assert run.steps == list(STEP_NAMES)
 
@@ -832,12 +835,12 @@ def test_a_planner_that_skips_a_note_changes_a_verdict_and_nothing_raises(
     correct = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
         extraction_runner=runner, policy_ref=ref, patient_id=e1_patient,
-        as_of=AS_OF, planner=FixedRetrievalPlanner(),
+        as_of=AS_OF, planner=FixedRetrievalPlanner(), verifier=AcceptAllVerifier(),
     ).determination
     crossed = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
         extraction_runner=runner, policy_ref=ref, patient_id=e1_patient,
-        as_of=AS_OF, planner=_CrossPlanner(),
+        as_of=AS_OF, planner=_CrossPlanner(), verifier=AcceptAllVerifier(),
     ).determination
 
     assert crossed.outcome is not correct.outcome, (

@@ -5591,3 +5591,190 @@ deliberately corrupted recording committed as a fault-path case — the
 expectation shape grows an `ERROR` form and `PASS` becomes reachable over
 `DeterminationAborted`. That changes classification, not accounting: the rate
 still never sees an `ERROR`.
+
+## D78 — The verifier is a third runner port, a step in the graph, and a recording every gate replays
+
+**Task:** T-17, before the code (Article IX). Article V has had no
+implementation since ratification; this entry decides the three things the
+board flagged (D72): the shape, the zero-call story, and the measurement.
+
+**Shape: a `VerifierRunner` port in `pa_agent/verifier.py`, mirroring
+`ExtractionRunner`.** Three implementations. `LiveVerifierRunner` — raw
+`google-genai`, injected client, so nothing in the module names a tier and the
+caller chooses per D5. `RecordedVerifierRunner` — replays the committed
+recording at `eval/verifier/results.json`, keyed by **claim digest** (sha256
+over the canonical JSON of the payload), and raises on a miss: a claim the
+recording has never seen gets an exception naming the measurement script,
+never a default answer in either direction (D31's rule — an accept is a
+well-formed answer every downstream test agrees with, and a reject is a
+manufactured gap). `NullVerifierRunner` — raises on any call, the structural
+proof that a path was never reached (A4's pattern). The accept-all fake that
+unit tests of *other* components need lives under `tests/`, deliberately not
+importable from `pa_agent/`: an accept-all verifier in the package is the
+silent skip Article V would not survive.
+
+**Placement: a `("verify", step_verify)` entry appended to `workflow.STEPS`
+after `criteria_c`.** Verification is part of what a determination *is*, so it
+is a step the driver walks and the step trace records, not a wrapper around
+`assemble()` — outside `STEPS` it would be invisible to
+`tests/test_workflow.py`'s visited-list assertion and to Article X's
+accounting, and the first refactor to reorder the tail of the pipeline could
+silently drop it. It runs on the **final** cited verdicts: after `reconcile`
+has applied REQ-34's downgrade and after `criteria_c` has filled the tree, so
+what the verifier checks is what the determination will actually say.
+Verification applies to `MET` and `NOT_MET` only — an abstention or an
+`ERROR` cites nothing (REQ-5), so there is no claim to check, and a verifier
+asked to bless an absence would be theater.
+
+**Blindness is a property of the payload builder, not of the prompt.**
+`build_claim_payload()` is a pure function whose output is the whole model
+input: the criterion's id, label, and its constants' names, values and
+comparisons (the compiled criterion is the object Article VI already lets
+cross), the claimed verdict, and the quotes recovered by slicing each span
+from its source document through `DocumentIndex` — never taken from model
+output, which is D18's lesson applied forward. No reasoning trace, no other
+criterion, no chart context, no gap list, no constant's `note` or `source`
+(a note may name an eval case and its expected verdict — reasoning by
+another door), and — after a measured round trip recorded below — no
+`as_of`. The test asserts on the payload, so a second criterion leaking in
+is a failing test rather than a prompt review finding.
+
+**The verifier checks citation fidelity and never recomputes Article II's
+arithmetic.** The instruction says so explicitly: counting, thresholds and
+date arithmetic are code's job — already done deterministically and already
+validated — and a criterion that aggregates over several quotes (c4's
+every-month rate) shows the verifier instances, not arithmetic. Asking a
+blind model to re-derive "every month of the run" from four undated slices
+would manufacture rejections that are not mis-citations, and REQ-31 defines
+`VERIFIER_REJECTED` as "a span was found and did not support the verdict" —
+re-read the cited passage, not re-run the count. What it must catch: a quote
+about something else, a quote contradicting the verdict (a 32.4 BMI cited
+for `MET` at ≥ 35), a quote that cannot be evidence for the claim.
+
+**Rejection semantics are REQ-18 verbatim.** First rejection resolves the
+criterion to `INSUFFICIENT_EVIDENCE` with `gap_reason` `VERIFIER_REJECTED`,
+no retry, no `error_code`; the contract validators strip nothing by
+convention — the replaced `CriterionResult` carries no spans because the
+model validator refuses spans on an abstention. The verifier's stated reason
+rides in `detail`. The determination is still emitted with the criterion on
+the gap list; a rejection collapsing to `NOT_MET` is the Article IV violation
+this repo's validators exist to make unrepresentable. Call failures are
+REQ-18a's separate loop, reusing D76's boundary: a `VerifierFailure` enum
+mirrors `ExtractionFailure`; a retryable failure consumes attempts to the
+budget and exhausts to `ERROR`/`MODEL_CALL_FAILED`; an unparseable or
+schema-invalid response is terminal on first occurrence,
+`ERROR`/`SCHEMA_INVALID`; any `ERROR` aborts per REQ-24.
+
+**The zero-call story is T-15's, applied a second time.** A one-time
+measurement script, `scripts/run_verifier_measurement.py` (in
+`check_gates.EXCLUDED`: it spends model calls), enumerates every claim any
+gate can produce — the eval set's unique `(patient, procedure, as_of)`
+determinations and the agentic differential's six — by running them
+in-process with a collecting verifier, then spends one live call per unique
+digest on AI Studio and records payload, digest, answer, raw response, model,
+tier and `CallMetrics`. The CLI default and both eval gates construct
+`RecordedVerifierRunner` from the committed recording, so every gate keeps
+spending nothing while exercising the full chain, verification included.
+Replayed verifier calls carry their recorded metrics through — the
+extraction replay's rule: a replay that reported zero tokens would understate
+what the answer cost — so every criteria-path eval row's `max_model_calls`
+rises by its verified-claim count, and that diff is reviewed at close rather
+than absorbed.
+
+**The second pin.** `VERIFIER_MODEL` joins `PINNED_MODEL` in
+`pa_agent/model_pin.py`, exactly as D20's reversal clause anticipated. Its
+value is `gemini-3.5-flash-lite` — the same value, a separate constant
+(Troy, 2026-09-11): the family has nothing cheaper, D45/D19 measured this
+configuration, and blindness comes from the payload, not from model
+diversity. The pin is checked against the model the recording names, so the
+two move together or the suite fails.
+
+**A rejection in the measurement is a finding, not an answer** (Troy,
+2026-09-11). The mechanical validators already pass every committed span, so
+a live rejection means either a wrong label or a wrong verifier; the run
+stops, the claim and the verifier's output go to review, and nothing is
+committed until the disagreement is resolved. Committing whatever the
+verifier said would let a wrong rejection become ground truth in the same
+motion that records it.
+
+**Rejected.** Verifying inside each criterion evaluator — couples the check
+to the reasoning Article V forbids the verifier from seeing, and seven
+call sites replace one step. An ADK agent for the verifier — one call with a
+fixed input and no tools has nothing to route (D62's reversal note says as
+much), and a second framework surface is cost without a claim. Making the
+measurement script a gate — T-69's membership rule requires an exit condition
+to name it and this task's exit names `tests/test_verifier.py`; the recording
+integrity checks live in the suite. A confidence score on accept — nothing
+downstream reads one, and an unread number invites a threshold nobody
+measured (T-72 already litigates that).
+
+**Measured, and the prompt's one revision.** verifier-v1 ran once over the
+27 unique gate-reachable claims (2026-09-11, AI Studio, 17,651 in / 1,337 out
+tokens): 26 accepted, 1 rejected — and the rejection was the verifier's
+error, not the system's. E5's c2 `NOT_MET` cites a program visit dated
+2025-06-10 against an as-of of 2026-09-01: ~14.7 months, outside the
+12-month window, so the deterministic verdict is right; the model's stated
+reason claimed the visit was *within* the window — months-between arithmetic
+done backwards, or the date read as DD/MM. Exactly the failure mode the
+citation-fidelity paragraph predicted, insufficiently barred. verifier-v2
+adds the explicit rule: never reject on your own date arithmetic (code
+already computed the window from the full record), while a directly readable
+numeric contradiction — a BMI on the wrong side of a named threshold —
+remains rejectable, because v1 demonstrably handled those correctly and they
+are the mis-citations with the highest stakes. Per D45, v2 is a new
+measurement replacing v1's recording; per the review agreement above, the
+false rejection was resolved with Troy before anything was committed.
+
+**v2 measured 25/27, and the two rejections exposed the real structure.**
+(2026-09-11, 20,081 in / 1,241 out tokens.) Both rejections were false and
+both were shortfall-type `NOT_MET` claims: c2 again (the identical backwards
+months-between arithmetic, despite the explicit bar), and c3, whose stated
+reason is self-contradictory on its face — "the quotes document 3
+consecutive months … the requirement is for a minimum of 4 … meaning the
+criterion is actually MET." The lesson is not that the prompt was too weak;
+it is that the two verdicts are not symmetric under blindness. A `MET` claim
+— "this quote shows the criterion satisfied" — is judgeable from the quote.
+A shortfall `NOT_MET` cites the *best evidence found*, and judging it needs
+exactly what the verifier is denied: the arithmetic (Article II reserves it
+to code) and the rest of the chart (Article V forbids it). Asked an
+undecidable question, the model resolved it by re-doing arithmetic badly,
+twice, while across both runs it handled every directly readable check
+correctly — every `MET`, the a/`NOT_MET` threshold contradiction, c4's
+`NOT_MET`. verifier-v3 states the asymmetry outright: a `MET` is judged
+from its quotes; a `NOT_MET` is rejected only on a direct, arithmetic-free
+contradiction — a quote off-subject entirely, or a value on the satisfying
+side of a named threshold cited as evidence of a miss. Rejected — verifying
+`MET` only: it is the cleaner structural reading, but it narrows REQ-17's
+"each accepted verdict" (a spec change) and surrenders the `NOT_MET`
+direct-contradiction catch that v1 and v2 both demonstrably performed.
+Chosen with Troy, 2026-09-11. **v3 measured 27/27** (21,863 in / 1,169 out
+tokens).
+
+**The `as_of` field rode along from v1 to v3 and left with v4.** It was
+added before v1 because a recency verdict is a claim about a date and a
+verifier asked to judge one without the date can only guess — a real
+argument, and v1's c2 rejection seemed to confirm it. v3's asymmetry rule
+dissolved it: a verifier barred from date arithmetic has no use for a date,
+so the field's only remaining effect was to bind every claim digest to one
+as-of. Measured consequence, found by the suite the same day: the CLI
+defaults `--as-of` to today, so the flagship zero-call command missed every
+claim recorded at the harness clock and exited 3 with `NOT_RECORDED` over
+byte-identical verdicts and quotes. v4 drops the field — the claim key is
+(criterion, verdict, quotes), which is the natural replay semantic: the same
+claim gets the same answer at any request date, and a future date at which
+the verdicts or quotes genuinely differ produces a genuinely new claim,
+which misses the recording and raises naming the script. Rewriting v3's
+recorded payloads to strip the field was refused: the model that produced
+those answers saw it, and a recording that says otherwise is not a
+recording. v4 is the same instruction over the smaller payload — a changed
+model input is a new measurement (D45). **v4 measured 27/27 accepted**
+(20,864 in / 1,193 out tokens) and is the committed recording; four
+measurements were spent in total, and the three superseded ones survive only
+as the numbers quoted here.
+
+**Reverses if:** a measured rejection pattern suggests the extractor and
+verifier share blind spots — then `VERIFIER_MODEL` moves to a different model
+and the recording is re-measured, which the two-constant pin already
+supports. Or: a future case legitimately expects a `VERIFIER_REJECTED`
+abstention end to end, at which point the eval expectation shape grows the
+form and the recorded runner's miss rule stays exactly as strict.

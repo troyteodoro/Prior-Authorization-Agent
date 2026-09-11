@@ -69,6 +69,7 @@ from pa_agent.contracts import (  # noqa: E402
 from pa_agent.determination import NoPolicyResult, determine  # noqa: E402
 from pa_agent.index import DocumentIndex  # noqa: E402
 from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
+from pa_agent.verifier import RecordedVerifierRunner  # noqa: E402
 from pa_agent.spans import SpanValidationError  # noqa: E402
 from pa_agent.spans import validate as validate_span  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
@@ -346,6 +347,22 @@ def score(
 EVAL_AS_OF = date(2026, 9, 1)
 
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
+VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
+
+
+def _recorded_verifier() -> Any:
+    """T-17's recording as a `VerifierRunner`. Spends nothing (D78).
+
+    `None` when the measurement has not been run — the workflow then raises at
+    the first cited verdict, which the harness reports as BLOCKED naming the
+    script, rather than this function inventing an answer (D31).
+    """
+    if not VERIFIER_RESULTS.exists():
+        return None
+    recording = json.loads(VERIFIER_RESULTS.read_text(encoding="utf-8"))
+    return RecordedVerifierRunner.from_records(
+        recording["claims"], model=recording.get("model")
+    )
 
 
 def _recorded_runner() -> Any:
@@ -370,6 +387,7 @@ def _determine(
     extraction_runner: Any = None,
     as_of: Any = None,
     cache: dict[tuple[Any, ...], Determination | NoPolicyResult] | None = None,
+    verifier: Any = None,
 ) -> Determination | NoPolicyResult:
     """The seam T-24 and T-25 filled: the system under test, end to end.
 
@@ -396,6 +414,7 @@ def _determine(
         patient_store=patient_store,
         as_of=as_of,
         extraction_runner=extraction_runner,
+        verifier=verifier,
     )
     if cache is not None:
         cache[key] = result
@@ -410,6 +429,7 @@ def run_case(
     as_of: Any = None,
     cache: dict[tuple[Any, ...], Determination | NoPolicyResult] | None = None,
     resolve_document: Any = None,
+    verifier: Any = None,
 ) -> CaseResult:
     """Run one labeled case and classify the result.
 
@@ -431,7 +451,8 @@ def run_case(
 
     try:
         result = _determine(
-            case, policy_store, patient_store, extraction_runner, as_of, cache
+            case, policy_store, patient_store, extraction_runner, as_of, cache,
+            verifier,
         )
     except NotImplementedError as exc:
         return CaseResult(
@@ -1027,6 +1048,7 @@ def main(argv: list[str] | None = None) -> int:
     # and the drift would be read as a regression in the system rather than a gap
     # in the harness.
     extraction_runner = _recorded_runner()
+    verifier = _recorded_verifier()
     cache: dict[tuple[Any, ...], Determination | NoPolicyResult] = {}
     results = [
         run_case(
@@ -1037,6 +1059,7 @@ def main(argv: list[str] | None = None) -> int:
             EVAL_AS_OF,
             cache,
             resolve_document,
+            verifier,
         )
         for case in cases
     ]

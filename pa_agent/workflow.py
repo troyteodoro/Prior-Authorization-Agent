@@ -44,6 +44,7 @@ from pa_agent.contracts import (
     DeterminationAborted,
     ErrorCode,
     EvidenceSpan,
+    GapReason,
     Document,
     Observation,
     ProgramAssertion,
@@ -76,6 +77,13 @@ from pa_agent.spans import SpanValidationError
 from pa_agent.spans import validate as validate_span
 from pa_agent.stores.patient import PatientStore
 from pa_agent.stores.policy import PolicyRef, PolicyStore
+from pa_agent.verifier import (
+    VerifierAnswer,
+    VerifierFailure,
+    VerifierOutputError,
+    VerifierRunner,
+    build_claim_payload,
+)
 
 #: How many times a retryable extraction fault is attempted. A Python constant
 #: read by the driver, never a decision the model participates in (REQ-46).
@@ -111,6 +119,24 @@ _RETRYABLE_FAILURES = tuple(
 #: these resolve to `ERROR`; (a) and (b) read structured FHIR and never touched
 #: the model, so a fault they never saw is not theirs to report (D76).
 EXTRACTION_CRITERIA = ("c1", "c2", "c3", "c4", "c5")
+
+#: T-17 (D78): what a verifier fault means for the criterion under check.
+#: Same shape as `ERROR_CODE_FOR` and the same D8 test for the replay faults:
+#: an identical second replay of the same recording cannot answer differently,
+#: so `NOT_RECORDED` and `RECORD_TAMPERED` are terminal.
+VERIFIER_ERROR_CODE_FOR: dict[VerifierFailure, ErrorCode] = {
+    VerifierFailure.CALL_FAILED: ErrorCode.MODEL_CALL_FAILED,
+    VerifierFailure.UNPARSEABLE: ErrorCode.SCHEMA_INVALID,
+    VerifierFailure.SCHEMA_INVALID: ErrorCode.SCHEMA_INVALID,
+    VerifierFailure.NOT_RECORDED: ErrorCode.SCHEMA_INVALID,
+    VerifierFailure.RECORD_TAMPERED: ErrorCode.SCHEMA_INVALID,
+}
+
+_RETRYABLE_VERIFIER_FAILURES = tuple(
+    failure.value
+    for failure, code in VERIFIER_ERROR_CODE_FOR.items()
+    if code.retryable
+)
 
 
 # --------------------------------------------------------------------------
@@ -367,6 +393,97 @@ def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
     state.results.sort(key=lambda r: _criterion_order(state.tree, r.criterion_id))
 
 
+def step_verify(state: WorkflowState, ctx: _Context) -> None:
+    """Article V (REQ-17, REQ-18; T-17, D78): every cited verdict is checked.
+
+    Runs on the **final** cited verdicts — after `reconcile` has applied
+    REQ-34's downgrade and `criteria_c` has filled the tree — so what the
+    verifier checks is what the determination will say. `MET` and `NOT_MET`
+    only: an abstention or an `ERROR` cites nothing (REQ-5), so there is no
+    claim to check, and a verifier asked to bless an absence would be theater.
+
+    Each claim's quotes are recovered by slicing the span from its source
+    document (`validate_span` returns the slice), never taken from anything a
+    model wrote — the payload the verifier sees is `build_claim_payload`'s
+    output and nothing else. A rejection resolves the criterion to
+    `INSUFFICIENT_EVIDENCE`/`VERIFIER_REJECTED` on the first occurrence — no
+    retry, no `error_code`, determination still emitted (REQ-18). A *fault* is
+    REQ-18a's separate loop and aborts like any other (REQ-24).
+    """
+    cited = [
+        (position, result)
+        for position, result in enumerate(state.results)
+        if result.verdict in (CriterionVerdict.MET, CriterionVerdict.NOT_MET)
+    ]
+    if not cited:
+        return
+    if ctx.verifier is None:
+        # D31's rule, `_criteria_determination`'s shape: a missing verifier
+        # that silently accepted everything would pass every citation forever,
+        # and every downstream test would agree with it.
+        raise NotImplementedError(
+            "this determination carries cited verdicts and Article V requires "
+            "a verifier (REQ-17, T-17). Pass RecordedVerifierRunner for a "
+            "replay of eval/verifier/results.json, LiveVerifierRunner to spend "
+            "a call, or NullVerifierRunner to prove a path verifies nothing. "
+            "Defaulting to accept-all would be the silent skip D78 refuses."
+        )
+
+    index = DocumentIndex()
+    for position, result in cited:
+        quotes: list[str] = []
+        try:
+            for span in result.spans:
+                if span.document_id not in index:
+                    index.add(_document_for(span.document_id, ctx))
+                quotes.append(validate_span(span, index))
+        except (SpanValidationError, KeyError) as exc:
+            # The same classification `_validate_result_spans` gives a broken
+            # span, raised here because this step reads the spans first.
+            error = CriterionResult(
+                criterion_id=result.criterion_id,
+                verdict=CriterionVerdict.ERROR,
+                error_code=ErrorCode.SPAN_VALIDATION_FAILED,
+                error_detail=f"{result.criterion_id}: {exc}",
+            )
+            raise DeterminationAborted([error], attempts=None) from exc
+
+        payload = build_claim_payload(
+            state.tree.criterion(result.criterion_id),
+            result.verdict.value,
+            quotes,
+        )
+        try:
+            answer, trace = _verify_one(result.criterion_id, payload, ctx)
+        except VerifierOutputError as exc:
+            attempts = (
+                ctx.max_attempts
+                if exc.reason.value in _RETRYABLE_VERIFIER_FAILURES
+                else 1
+            )
+            error = CriterionResult(
+                criterion_id=result.criterion_id,
+                verdict=CriterionVerdict.ERROR,
+                error_code=VERIFIER_ERROR_CODE_FOR[exc.reason],
+                error_detail=str(exc),
+            )
+            raise DeterminationAborted([error], attempts=attempts) from exc
+
+        state.traces.append(trace)
+        if not answer.accept:
+            # REQ-18 verbatim: first rejection, no retry. The contract
+            # validators force the abstention's shape — no spans, a
+            # `gap_reason` — so a rejection cannot collapse into `NOT_MET`
+            # or ship the citation it just refused (Art. IV).
+            state.results[position] = CriterionResult(
+                criterion_id=result.criterion_id,
+                verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+                gap_reason=GapReason.VERIFIER_REJECTED,
+                discrepancies=result.discrepancies,
+                detail=answer.reason or "the verifier rejected the citation",
+            )
+
+
 #: The graph. Order is the contract; the driver walks it and records what it
 #: visited, and `tests/test_workflow.py` asserts the visited list against this
 #: tuple rather than against a comment.
@@ -378,6 +495,7 @@ STEPS: tuple[tuple[str, object], ...] = (
     ("criterion_b", step_criterion_b),
     ("qualifying_run", step_qualifying_run),
     ("criteria_c", step_criteria_c),
+    ("verify", step_verify),
 )
 
 STEP_NAMES: tuple[str, ...] = tuple(name for name, _ in STEPS)
@@ -405,6 +523,9 @@ class _Context:
     runner: ExtractionRunner
     planner: RetrievalPlanner = field(default_factory=FixedRetrievalPlanner)
     max_attempts: int = DEFAULT_MAX_ATTEMPTS
+    # T-17 (D78): `None` is not accept-all — `step_verify` raises the moment a
+    # cited verdict has no verifier to check it, naming what to pass.
+    verifier: VerifierRunner | None = None
 
 
 def _criterion_order(tree: CriteriaTree, criterion_id: str) -> int:
@@ -472,6 +593,54 @@ def _extract_one(note: Document, ctx: _Context) -> tuple[object, RunTrace]:
         f"attempt(s), {elapsed:.0f}ms). A partial extraction presented as a "
         "complete one is indistinguishable from a shorter patient history, so "
         "this raises rather than returning what it has.",
+    )
+
+
+def _verify_one(
+    criterion_id: str, payload: dict, ctx: _Context
+) -> tuple[VerifierAnswer, RunTrace]:
+    """One claim, up to `max_attempts` times, with the attempts recorded.
+
+    `_extract_one`'s shape (REQ-18a, REQ-46): the classifier decides whether a
+    second attempt could plausibly differ, the model is never asked, and
+    exhaustion raises. A rejection is not a failure — it returns, because it
+    is an answer about the claim (REQ-18), and the caller applies it.
+    """
+    assert ctx.verifier is not None, "step_verify checks before calling"
+    started = time.perf_counter()
+    last: VerifierOutputError | None = None
+
+    for attempt in range(1, ctx.max_attempts + 1):
+        try:
+            answer = ctx.verifier.run(payload)
+        except VerifierOutputError as exc:
+            last = exc
+            if exc.reason.value not in _RETRYABLE_VERIFIER_FAILURES:
+                break
+            if attempt == ctx.max_attempts:
+                break
+            continue
+
+        trace = RunTrace(
+            runner_name=getattr(ctx.verifier, "name", type(ctx.verifier).__name__),
+            model=(answer.metrics.model if answer.metrics else None),
+            prompt_version=None,
+            document_id=None,
+            steps=[f"verify:{criterion_id}"],
+            attempts=attempt,
+            termination_reason="ok",
+            metrics=[answer.metrics] if answer.metrics else [],
+        )
+        return answer, trace
+
+    assert last is not None
+    elapsed = (time.perf_counter() - started) * 1000.0
+    raise VerifierOutputError(
+        last.reason,
+        f"criterion {criterion_id}: {last.message} (after {attempt} "
+        "attempt(s), "
+        f"{elapsed:.0f}ms). A claim that could not be checked is not a claim "
+        "that passed, so this raises rather than accepting by default.",
     )
 
 
@@ -568,6 +737,7 @@ def run_criteria_workflow(
     as_of: date,
     max_attempts: int = DEFAULT_MAX_ATTEMPTS,
     planner: RetrievalPlanner | None = None,
+    verifier: VerifierRunner | None = None,
 ) -> WorkflowRun:
     """Walk `STEPS` in order and assemble the determination (T-18, T-19).
 
@@ -591,6 +761,7 @@ def run_criteria_workflow(
         runner=extraction_runner,
         planner=planner if planner is not None else FixedRetrievalPlanner(),
         max_attempts=max_attempts,
+        verifier=verifier,
     )
 
     for name, step in STEPS:
