@@ -5778,3 +5778,43 @@ and the recording is re-measured, which the two-constant pin already
 supports. Or: a future case legitimately expects a `VERIFIER_REJECTED`
 abstention end to end, at which point the eval expectation shape grows the
 form and the recorded runner's miss rule stays exactly as strict.
+
+## D79 — Two sessions forked the ID space; the published side keeps its numbers
+
+**Context.** T-41's close was the last shared commit. From it, two sessions
+worked in parallel: one logged D74 (ownership ratification), registered
+T-73–T-76 and closed T-73, merging to `main` as PR #8; the other, on a
+checkout that never fetched, closed T-21, T-29, T-30 and T-17, spending
+D74–D77 on four different decisions and T-73 on the agentic planner's fault.
+Every id is load-bearing, the decisions log is append-only, and both sides'
+numbers were internally consistent — the collision existed only at push time.
+
+**Decision.** Published numbering wins. PR #8's D74 and T-73–T-76 keep their
+ids because they are on `main` and anything may already reference them; the
+unpushed side is renumbered mechanically — D74→D75, D75→D76, D76→D77,
+D77→D78, T-73→T-77 — token for token across trees and commit messages (the
+rewrite is a pure shift, verified by word-diff), and transplanted onto `main`
+with every intermediate commit passing all nine gates. The rejected
+alternative — renumbering the published side — would strand any reader of
+`main` between two meanings of D74, which is the failure the append-only rule
+exists to prevent.
+
+**The breach.** D74 re-sequenced the board so T-21 would close only after
+Troy's ratification (T-74/T-75), and rewrote T-21's exit to require an
+`adjudicated: {by, date}` record on every case and manifest with
+`check_ownership.py --require eval` returning zero. The forked session closed
+T-21 four hours after that decision merged, against the pre-D74 exit, without
+knowing the exit had changed. Troy's call on review of the fork: the close
+stands — the labeling work is real and all fifteen rows pass, so reverting it
+buys nothing — and the breach is logged rather than buried. The adjudication
+half of the rewritten exit is not discharged and does not vanish: it is
+re-homed as **T-78**, sequenced after T-74/T-75, and the report chain
+(T-22 → T-28 → T-23) now waits on it, because a report built on labels Troy
+may still amend would be rewritten — the same argument D74 made for T-21
+itself. D42's authorship caveat is retired at T-78, not at T-21.
+
+**Reverses if:** the adjudication pass (T-78) amends enough labels that "the
+close stands" was the wrong call — then T-21 reopens and this entry is the
+record of why the cheaper path was tried first. The renumbering does not
+reverse; a second fork would resolve the same way. The procedural fix is
+free: fetch before working.

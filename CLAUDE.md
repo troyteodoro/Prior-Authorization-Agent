@@ -343,8 +343,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**50 of 63 tasks closed, 13 open. All 9 gates green** (`check_gates.py`, ~13s,
-595 tests across 29 files). IDs run to T-77, but numbering is not contiguous —
+**50 of 64 tasks closed, 14 open. All 9 gates green** (`check_gates.py`, ~13s,
+595 tests across 29 files). IDs run to T-78, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3, US-4, US-5, US-6, US-9**. `python -m pa_agent.cli --patient
@@ -367,13 +367,13 @@ the committed 27-claim recording for zero calls, and the four-run measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
 27/27 twice — is D78's substance.
 
-Open, in order: **T-74 → T-75 → T-32 →
+Open, in order: **T-74 → T-75 → T-78 → T-32 →
 T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70, T-71 and T-77 off the
 path. The ratification tasks lead because D74 restores human ownership of
 every load-bearing ID — ledger `docs/ratifications.json`, gate
 `scripts/check_ownership.py`, working rule 11 — and T-21 closed ahead of them
 in a forked session, so the ratification pass reviews its labels after the
-fact *(D79)*. `docs/tasks.md` opens with `Path to v1`, which states this once
+fact as T-78 *(D79)*. `docs/tasks.md` opens with `Path to v1`, which states this once
 with what each step gates — read it rather than this paragraph *(D70, D72,
 D74)*.
 

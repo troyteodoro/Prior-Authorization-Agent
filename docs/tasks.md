@@ -16,9 +16,9 @@ answers the second question, once.
 
 ## Path to v1
 
-Sixty-three tasks are on this board — IDs run to T-77 but numbering is not
-contiguous, so the highest id is not the count. **50 are closed and 13 are
-open.** Seven of the 13 sit on the critical path to the acceptance gates in
+Sixty-four tasks are on this board — IDs run to T-78 but numbering is not
+contiguous, so the highest id is not the count. **50 are closed and 14 are
+open.** Eight of the 14 sit on the critical path to the acceptance gates in
 spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
 — ownership is ratified before the path resumes; T-21 closed out of that
 order in a forked session, reconciled by D79)*
@@ -28,11 +28,12 @@ order in a forked session, reconciled by D79)*
 | 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
 | 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
 | 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
-| 4 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74/T-75; see D79 |
-| 5 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
-| 6 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
-| 7 | `T-32` | gates **Article VI** / REQ-33 | ready |
-| 8 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
+| 4 | `T-78` | Troy adjudicates the eval labels; retires D42's caveat *(D79)* | after T-75; Troy's reading |
+| 5 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74/T-75; see D79 |
+| 6 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
+| 7 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
+| 8 | `T-32` | gates **Article VI** / REQ-33 | ready |
+| 9 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-78; T-72 any time |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -1482,6 +1483,22 @@ zero, and the close flips `decisions-all` into `required_tiers`
 D74's reversal clause applies here: if this stalls indefinitely, it shrinks to
 opportunistic ratification and the ledger's `proposed` count keeps the gap
 visible rather than hidden.
+
+### `[ ] T-78` Adjudicate the eval ground truth
+**Depends:** T-74, T-75 · **Discovered in:** D79 *(the adjudication half of
+T-21's D74-rewritten exit)* · **Blocks:** T-22, T-28, T-23 ·
+**Timebox:** one session — Troy's reading
+**Exit:** every case in `eval/cases.json` and every manifest in
+`eval/manifests/` carries an `adjudicated: {by, date}` record, and `python
+scripts/check_ownership.py --require eval` returns zero — closing flips
+`eval` into the ledger's `required_tiers` *(D74)*
+
+Agent-drafted labels stand as proposals carrying reasoning and spans; Troy's
+adjudication records are what close them, and the adjudication of each
+patient's manifest happens in the same reading pass that reviews its cases.
+This is where D42's authorship caveat is retired for the eval set — D74 put
+that pass before T-21 authored the labels, the fork closed T-21 first, and
+D79 re-homed the pass here rather than pretending it happened *(D79)*.
 
 ### `[ ] T-27` Planner recall against the oracle's evidence bundle
 **REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70
