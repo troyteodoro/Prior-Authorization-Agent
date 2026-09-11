@@ -528,7 +528,7 @@ provisional constants; 4 and 6 have since closed:
    neither governs the measurement. **T-13 must not invent a default.** A stale
    BMI is the difference between a real 36 and a 36 from four years and forty
    pounds ago.
-   **Answered: 12 months, by decision (T-13, D40).** Troy chose the analogy to
+   **Answered: 12 months, by decision (T-13, D40).** the owner chose the analogy to
    A53028's program-participation window — the measurement must be
    contemporaneous with the 12 months of evidence the determination examines.
    The constant carries a note naming D40 and no span, because no source text
@@ -562,7 +562,7 @@ Question 5 opened in T-01 and is the last provisional constant the tree carried:
 
 5. ~~What is `discrepancy_tolerance` for BMI?~~ **1.0 BMI points.** Decided, not
    sourced — no source text bounds it, so it is recorded as a judgment with a
-   name and a date the way D40's lookback was *(D51, Troy, 2026-09-08)*. A full
+   name and a date the way D40's lookback was *(D51, the owner, 2026-09-08)*. A full
    point is beyond rounding and beyond the variance of two measurements taken
    weeks apart, roughly six pounds. The eval set does **not** constrain it:
    measured on the committed bundles, E10's gap is 5.77 and E10c's is 0.05, so

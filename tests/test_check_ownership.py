@@ -86,7 +86,7 @@ def test_a_ledger_id_resolving_in_no_document_fails(script):
 def test_an_overrule_without_a_resolving_task_fails(script):
     ids = {"D1": ("decisions-all",), "T-01": ("tasks",)}
     entries = {
-        "D1": _entry(status="overruled", by="troy", task="T-999"),
+        "D1": _entry(status="overruled", by="human", task="T-999"),
         "T-01": _entry(),
     }
     with pytest.raises(script.CheckFailed, match="must link a task"):
@@ -96,7 +96,7 @@ def test_an_overrule_without_a_resolving_task_fails(script):
 def test_an_overrule_linking_a_board_task_passes(script):
     ids = {"D1": ("decisions-all",), "T-01": ("tasks",)}
     entries = {
-        "D1": _entry(status="overruled", by="troy", task="T-01"),
+        "D1": _entry(status="overruled", by="human", task="T-01"),
         "T-01": _entry(),
     }
     script.check_ledger({"entries": entries, "required_tiers": []}, ids, set())
@@ -130,9 +130,9 @@ def test_a_required_tier_passes_ratified_and_linked_statuses(script):
     (D74)."""
     ids = {"Article I": ("constitution",), "REQ-1": ("spec",), "T-01": ("tasks",)}
     entries = {
-        "Article I": _entry(status="ratified", by="troy"),
-        "REQ-1": _entry(status="amended", by="troy", task="T-01"),
-        "T-01": _entry(status="ratified", by="troy"),
+        "Article I": _entry(status="ratified", by="human"),
+        "REQ-1": _entry(status="amended", by="human", task="T-01"),
+        "T-01": _entry(status="ratified", by="human"),
     }
     ledger = {"entries": entries, "required_tiers": []}
     script.check_ledger(ledger, ids, {"constitution", "spec", "tasks"})
@@ -159,7 +159,7 @@ def test_an_unadjudicated_manifest_fails(script, tmp_path):
 def test_every_case_in_the_eval_set_needs_its_own_adjudication(script, tmp_path):
     (tmp_path / "eval").mkdir()
     cases = tmp_path / "eval" / "cases.json"
-    good = {"case_id": "E1", "adjudicated": {"by": "troy", "date": "2026-09-10"}}
+    good = {"case_id": "E1", "adjudicated": {"by": "human", "date": "2026-09-10"}}
     bare = {"case_id": "E2"}
     cases.write_text(json.dumps({"cases": [good, bare]}))
     with pytest.raises(script.CheckFailed, match="E2"):
@@ -170,7 +170,7 @@ def test_a_well_formed_adjudication_passes(script, tmp_path):
     (tmp_path / "eval" / "manifests").mkdir(parents=True)
     manifest = tmp_path / "eval" / "manifests" / "p1.json"
     manifest.write_text(
-        json.dumps({"patient_id": "p1", "adjudicated": {"by": "troy", "date": "2026-09-10"}})
+        json.dumps({"patient_id": "p1", "adjudicated": {"by": "human", "date": "2026-09-10"}})
     )
     script.check_adjudications(tmp_path, ["eval/manifests/p1.json"])
 

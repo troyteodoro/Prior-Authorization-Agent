@@ -1,9 +1,9 @@
-"""Record Troy's ratification statuses in ``docs/ratifications.json`` (T-74, D75).
+"""Record the owner's ratification statuses in ``docs/ratifications.json`` (T-74, D75).
 
-This tool is Troy's pen, not a check. Working rule 11 scopes who decides —
+This tool is the owner's pen, not a check. Working rule 11 scopes who decides —
 an agent writes ``proposed`` and nothing else — and D74 rejected a git-author
-check because the rule binds sessions, not mechanisms. Troy invoking this
-tool is Troy's edit; the ``by`` field and the diff remain the record. **An
+check because the rule binds sessions, not mechanisms. The owner invoking this
+tool is the owner's edit; the ``by`` field and the diff remain the record. **An
 agent never runs this tool**: its entire output is statuses an agent may not
 write.
 
@@ -107,7 +107,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("ids", nargs="*", metavar="ID", help="exact ids as the docs spell them")
     parser.add_argument("--status", choices=WRITABLE_STATUSES, default="ratified")
-    parser.add_argument("--by", default="troy")
+    parser.add_argument("--by", default="human")
     parser.add_argument("--task", default=None, metavar="T-nn",
                         help="board task an amended/overruled entry links (working rule 6)")
     parser.add_argument("--pending", action="store_true",

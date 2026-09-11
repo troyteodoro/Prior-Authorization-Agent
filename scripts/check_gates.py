@@ -82,7 +82,7 @@ EXCLUDED: dict[str, str] = {
         "refuses"
     ),
     "scripts/ratify.py": (
-        "writes ledger statuses at Troy's invocation and checks nothing; the "
+        "writes ledger statuses at the owner's invocation and checks nothing; the "
         "check is check_ownership.py (D75)"
     ),
 }

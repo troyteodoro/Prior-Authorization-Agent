@@ -511,7 +511,7 @@ therefore rises with quote length — the mechanism penalizes exactly the quotes
 that carry the most context. Worse, it makes one signal mean two things: `-1`
 currently reads as "the model invented this," and a fabricated citation is the
 single worst failure available to this system. Conflating it with a formatting
-artifact destroys the signal that matters.
+artifact deshumans the signal that matters.
 
 The verification predicate stays exact string equality. Only the equivalence
 class changes, and whitespace-insensitivity has no tuning surface: two runs of
@@ -618,8 +618,8 @@ directly — is dead. Quote anchoring is not optional machinery, it is the only
 reason this spike produced a number, and T-15 must build it. The model's own
 offsets are not worth carrying past this spike.
 
-**What this does not establish.** The corpus is five notes Troy wrote, scored
-against labels Troy wrote. A perfect score on it means the approach does not
+**What this does not establish.** The corpus is five notes the owner wrote, scored
+against labels the owner wrote. A perfect score on it means the approach does not
 obviously fail; it is not evidence that it works, and D10 conceded this before
 the measurement rather than after.
 
@@ -929,7 +929,7 @@ determination this system previously would have approved it now declines to.
 **Rejected — keep the count, and set it equal to the run length at evaluation
 time.** Arithmetically identical on the pass/fail bit, and worse everywhere else.
 It puts a computation in the policy file, where Article II wants it in code. It
-also destroys the gap list: a rate knows *which* months are missing and can tell
+also deshumans the gap list: a rate knows *which* months are missing and can tell
 Sam what to go collect, while a count that came up short knows only that it did.
 A count that must equal the run length is a rate wearing a disguise.
 
@@ -967,7 +967,7 @@ and the count returns, sourced this time rather than provisional.
 
 ## D25 — Storage is two ports defined before T-09, and git stays the source of truth for policy
 
-**Target set by Troy:** the end state is a production deployment reading a
+**Target set by the owner:** the end state is a production deployment reading a
 database of insurance codes and a separate database of patient data. This entry
 decides what that requires of the code being written now, and what it is not
 allowed to change.
@@ -1773,7 +1773,7 @@ every entry). Keeps §9's narrative order intact, which is its real advantage.
 But per-item markers go stale individually: a question whose answer lands in
 its body while its marker still reads `open` makes two statements, and the gate
 believes the marker. Subsection membership cannot disagree with itself — a
-question is where it is. This was put to Troy alongside the chosen shape and
+question is where it is. This was put to the owner alongside the chosen shape and
 the subsections were chosen.
 
 **Rejected — a structured sidecar file** (`docs/open_questions.json`). Easiest
@@ -2149,11 +2149,11 @@ synthesized notes as bundle `DocumentReference`s rather than sidecar files —
 
 T-13's design, in four parts. The first closes spec open question 4.
 
-### Chosen — `a.lookback_months` is 12, decided by Troy (2026-09-08), not sourced
+### Chosen — `a.lookback_months` is 12, decided by the owner (2026-09-08), not sourced
 
 Neither corpus document defines a BMI recency window; question 4 was opened so
 no task would invent one, and T-39 rebuilt the gate so resolving it here is
-checked. Troy chose **12 months by analogy to A53028's program-participation
+checked. The owner chose **12 months by analogy to A53028's program-participation
 window**: the measurement must be contemporaneous with the 12 months of
 evidence the rest of the determination examines. The constant carries a
 `note` naming this entry and no `source` — writing a span for it would
@@ -2360,8 +2360,8 @@ boundary.
 
 ### Recorded — the authorship caveat propagates
 
-D19 flagged that the spike corpus was five notes Troy wrote scored against
-labels Troy wrote. These manifests are authored by the agent that is
+D19 flagged that the spike corpus was five notes the owner wrote scored against
+labels the owner wrote. These manifests are authored by the agent that is
 building the system they will grade, which is the same epistemic position
 with a different author. The mitigations are structural — every manifest
 fact is mechanically cross-checked against the committed bundles where the
@@ -2398,7 +2398,7 @@ re-check hashes and T-15's regression cases cannot drift under a re-run.
 
 **Rejected — a model synthesizes the notes from the manifest.** Faster, more
 varied prose, and it forecloses the only measurement T-15 exists to make.
-**Rejected — hand-writing six more notes.** What Troy did for the spike; it
+**Rejected — hand-writing six more notes.** What the owner did for the spike; it
 does not scale to T-21's labeled set and puts the manifests and the prose in
 two places that drift.
 
@@ -2985,7 +2985,7 @@ it gets recorded rather than retried.
 **Reverses if:** the re-measurement shows event extraction degrading. Then the
 note-level BMI moves to a second, separate call over the same note rather than
 sharing the extraction prompt, at the cost of one more call per note.
-## D51 — The tolerance is 1.0 by Troy's decision, `reconciled_facts` becomes typed, and closing the last open question retires two guards on purpose
+## D51 — The tolerance is 1.0 by the owner's decision, `reconciled_facts` becomes typed, and closing the last open question retires two guards on purpose
 
 T-33's design. It closes open question 5, the last provisional constant in the
 tree, and that has consequences beyond the constant.
@@ -2993,7 +2993,7 @@ tree, and that has consequences beyond the constant.
 ### Chosen — `discrepancy_tolerance` is **1.0 BMI points**, decided rather than sourced
 
 No source text bounds it. Like D40's lookback it is recorded as a judgment with
-a name and a date attached, never as a span: **Troy, 2026-09-08.**
+a name and a date attached, never as a span: **the owner, 2026-09-08.**
 
 A full BMI point is beyond rounding and beyond the variance of two measurements
 taken weeks apart — roughly six pounds for an average-height adult — so a
@@ -3164,7 +3164,7 @@ number is moving the goalpost, and the entry that does it has to say so.
 
 ## Open questions
 
-Project and scope questions route to Troy *(D72)*.
+Project and scope questions route to the owner *(D72)*.
 
 1. Does the criteria-tree shape match how the team models coverage policy, or is
    there an existing internal representation this should conform to?
@@ -4763,7 +4763,7 @@ recall, and the second tripwire already exists: T-65 made `get_patient_notes`
 action space and there is no page two. A chart carrying more notes than
 `MAX_ROWS` raises `NoteListTooLarge` rather than quietly serving a shorter chart.
 
-**Rejected: building a vector-search tool now.** Troy raised it directly and it is
+**Rejected: building a vector-search tool now.** the owner raised it directly and it is
 the right question to raise; it is still over-engineering today, for four reasons
 that are worth having in writing so the next person does not re-derive them.
 
@@ -5147,8 +5147,8 @@ exists so the "one task" estimate for Article V is read with open eyes.
   is the Not-stories table's own criterion — so it gets a row in that table
   rather than a persona and acceptance criteria, and the board heading says so.
 - **A named individual appeared in two documents and is removed from both.**
-  Troy's rule: no third party is named in `docs/`, and any question about the
-  project routes to Troy. US-7's value line now reads "an external reviewer,"
+  the owner's rule: no third party is named in `docs/`, and any question about the
+  project routes to the owner. US-7's value line now reads "an external reviewer,"
   and this log's open-questions section is retitled to plain "Open questions"
   with the routing stated under it. The three questions it holds are unchanged
   — they are real open scope questions, and deleting them to remove a heading
@@ -5223,14 +5223,14 @@ manufactures a well-formed empty answer.
 
 **One rebuild command.** `--generate` now produces all seven bundles: the base
 run (seed 1001, six bundles, unchanged) plus the E12 run and the deterministic
-append, both commands recorded in the manifest. Troy chose this over a
+append, both commands recorded in the manifest. The owner chose this over a
 separate `--generate-e12` mode: one command is the whole story of how the
 committed population came to be, and a split rebuild is two stories that can
 drift.
 
 **Rejected:**
 
-- *The seed search for a natural 35.0.* Troy chose to skip it up front: it may
+- *The seed search for a natural 35.0.* the owner chose to skip it up front: it may
   not terminate usefully (T-41 is the board's one open task carrying real
   risk), and a bounded, declared synthetic observation beats an unbounded
   search for a coincidence.
@@ -5240,7 +5240,7 @@ drift.
   mechanism under E12's name.
 - *A fully hand-built bundle.* Loses generated realism; the sweeps would be
   exercising a chart no generator would emit.
-- *A separate `--generate-e12` mode.* See above — Troy chose the single
+- *A separate `--generate-e12` mode.* See above — the owner chose the single
   rebuild command.
 - *Inferring note-free from an empty manifest shape* (no programs, no traps,
   no assertions ⇒ no note required). A rule inferred rather than stated: a
@@ -5265,15 +5265,15 @@ was discarded exactly this way during this close.
 
 ---
 
-## D74 — Ownership is restored by ratification: a ledger, a gate, and statuses only Troy may write
+## D74 — Ownership is restored by ratification: a ledger, a gate, and statuses only the owner may write
 
-Troy's decision, 2026-09-10. D42 recorded that the eval ground truth is
+The owner's decision, 2026-09-10. D42 recorded that the eval ground truth is
 authored by the agent building the system it grades, and D19 that the spike
 corpus and its labels share one author; the caveat has since attached to every
 number this repo can quote. Beyond the eval artifacts, the constitution, the
 spec, the stories, the board and this log were themselves largely agent-drafted
-under Troy's direction, with only D40 and D51 recording a named human choice.
-Troy has decided to convert that direction into recorded ownership: every
+under the owner's direction, with only D40 and D51 recording a named human choice.
+The owner has decided to convert that direction into recorded ownership: every
 load-bearing ID in the repo gets a human ratification status, machine-checked,
 before the critical path resumes at T-21.
 
@@ -5287,7 +5287,7 @@ all-`proposed` (T-73). Tiers group the entries — `constitution`, `spec`,
 listed in the ledger's `required_tiers` fails the gate on any entry still
 `proposed`, so the gate hardens as ratification progresses without its
 invocation ever changing. `amended` and `overruled` pass a required tier:
-each carries Troy's judgment plus a linked task the gate separately verifies,
+each carries the owner's judgment plus a linked task the gate separately verifies,
 and failing them instead would hold every gate in the repo red until the
 linked task closed — a deadlock with working rule 4, since the fixing task's
 own close needs the gates green.
@@ -5303,10 +5303,10 @@ well-formed `adjudicated` record. It joins `GATES` under T-69's membership rule
 the moment T-73's exit names it.
 
 **Chosen — statuses are authorship-scoped by rule.** An agent may write
-`proposed` and nothing else; `ratified`, `amended` and `overruled` are Troy's
+`proposed` and nothing else; `ratified`, `amended` and `overruled` are the owner's
 edits. This becomes CLAUDE.md working rule 11, binding future sessions the way
 rule 10 binds them on keys. The gate proves **coverage, not comprehension** —
-it can show every ID carries Troy's status, never that the reading happened —
+it can show every ID carries the owner's status, never that the reading happened —
 and this entry records that limit rather than implying otherwise.
 
 **Chosen — ratification is tiered, and only part of it blocks the path.**
@@ -5321,14 +5321,14 @@ D30, D31, D39, D40, D42, D45, D50, D51, D62, D63, D64, D66, D67, D71, D73** —
 
 **Chosen — the existing ground truth is adjudicated inside T-21, not by a
 retro task.** Labeling every §6 case already requires reading each patient's
-manifest, notes and bundle against the policy; Troy adjudicates the manifest
+manifest, notes and bundle against the policy; the owner adjudicates the manifest
 facts in that same pass, and each case label and each manifest gains an
 `adjudicated: {by, date}` record. **T-21's exit is therefore rewritten**
 (working rule 5 — a weak exit condition is a design decision): it gains "every
 case in `eval/cases.json` and every manifest in `eval/manifests/` carries an
 `adjudicated` record, and `check_ownership.py` returns zero with the `eval`
 tier required." Agent-drafted labels land as proposals carrying reasoning and
-spans; Troy's adjudication is what closes them.
+spans; the owner's adjudication is what closes them.
 
 **Boundary — `check_req_coverage.py` (T-23) is a different claim and stays a
 different script.** Coverage says "REQ-n maps to a passing check"; ownership
@@ -5372,24 +5372,24 @@ rather than hidden. Or ratification updates become rote enough that statuses
 stop being read, which is D27's baseline argument returning; then the ledger
 shrinks to the tiers whose ownership is load-bearing.
 
-## D75 — T-74's statuses are recorded through a tool Troy runs, not a hand-edited JSON
+## D75 — T-74's statuses are recorded through a tool the owner runs, not a hand-edited JSON
 
-Agent proposal ratified by Troy's choice, 2026-09-11, scaffolding T-74 as its
-task text allows. Troy's reading pass covers 98 ids across the constitution,
+Agent proposal ratified by the owner's choice, 2026-09-11, scaffolding T-74 as its
+task text allows. The owner's reading pass covers 98 ids across the constitution,
 spec and stories tiers, and T-75/T-76 add 128 more; every status is his edit
 under working rule 11. The question is the mechanism of the edit.
 
-**Chosen — `scripts/ratify.py`, a recording tool Troy invokes himself.** After
+**Chosen — `scripts/ratify.py`, a recording tool the owner invokes himself.** After
 reading a section he runs it with the ids he read; it stamps
 `{status, by, date}` (and `task` for `amended`/`overruled`) into
-`docs/ratifications.json`, defaulting `by` to `troy` and the date to today.
+`docs/ratifications.json`, defaulting `by` to `human` and the date to today.
 `--pending` prints the checklist view — per-tier counts and the ids still
 `proposed`.
 
 **This does not breach working rule 11, for the reason D74 already gave.** D74
 rejected a git-author check because "the rule binds sessions instead" — the
-rule scopes who decides, not which mechanism records the decision. A tool Troy
-runs is Troy's edit; the `by` field and the diff remain the record, exactly as
+rule scopes who decides, not which mechanism records the decision. A tool the owner
+runs is the owner's edit; the `by` field and the diff remain the record, exactly as
 they would for a hand edit. The obligation on agents is unchanged: an agent
 never invokes this tool with any status, because its whole output is statuses
 an agent may not write.

@@ -1,6 +1,6 @@
 """The recording tool refuses what rule 11 and D75 say it must refuse.
 
-``scripts/ratify.py`` is Troy's pen (D75): explicit ids only, one-directional
+``scripts/ratify.py`` is the owner's pen (D75): explicit ids only, one-directional
 statuses, task links checked at recording time. These tests drive a tmp copy
 of the ledger — the real ``docs/ratifications.json`` is never written.
 """
@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import shutil
 import sys
 from pathlib import Path
 
@@ -38,12 +37,19 @@ def universe(script):
 
 @pytest.fixture()
 def tmp_ledger(tmp_path):
+    # A copy normalized to T-73's seed state, so these tests keep meaning the
+    # same thing as the owner's real ratifications accumulate in the live ledger.
     target = tmp_path / "ratifications.json"
-    shutil.copy(LEDGER, target)
+    ledger = json.loads(LEDGER.read_text())
+    ledger["required_tiers"] = []
+    for entry in ledger["entries"].values():
+        entry.clear()
+        entry.update(status="proposed", by="agent", date="2026-09-10")
+    target.write_text(json.dumps(ledger, indent=2) + "\n")
     return target
 
 
-def _record(script, universe, tmp_ledger, ids, status="ratified", by="troy", task=None):
+def _record(script, universe, tmp_ledger, ids, status="ratified", by="human", task=None):
     return script.record(ids, status, by, task, tmp_ledger, universe, TODAY)
 
 
@@ -77,14 +83,14 @@ def test_a_valid_write_passes_the_gate_validator(script, universe, tmp_ledger):
     entries = json.loads(tmp_ledger.read_text())["entries"]
     board = {i for i, tiers in universe.items() if tiers == ("tasks",)}
     for i in ("Article I", "US-4"):
-        assert entries[i] == {"status": "ratified", "by": "troy", "date": TODAY}
+        assert entries[i] == {"status": "ratified", "by": "human", "date": TODAY}
         script._co.check_entry(i, entries[i], board)
 
 
 def test_an_amended_write_carries_its_task_and_validates(script, universe, tmp_ledger):
     _record(script, universe, tmp_ledger, ["REQ-1"], status="amended", task="T-21")
     entry = json.loads(tmp_ledger.read_text())["entries"]["REQ-1"]
-    assert entry == {"status": "amended", "by": "troy", "date": TODAY, "task": "T-21"}
+    assert entry == {"status": "amended", "by": "human", "date": TODAY, "task": "T-21"}
     board = {i for i, tiers in universe.items() if tiers == ("tasks",)}
     script._co.check_entry("REQ-1", entry, board)
 
@@ -112,7 +118,7 @@ def test_pending_reports_tier_progress(script, universe, tmp_ledger):
 
 def test_the_real_ledger_was_not_touched_by_this_file(script):
     entries = json.loads(LEDGER.read_text())["entries"]
-    # Statuses beyond 'proposed' in the real ledger are Troy's edits (rule 11);
+    # Statuses beyond 'proposed' in the real ledger are the owner's edits (rule 11);
     # this suite must never be the thing that wrote one.
     assert all(
         e["status"] == "proposed" or e["by"] != "agent" for e in entries.values()

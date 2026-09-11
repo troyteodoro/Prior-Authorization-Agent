@@ -14,9 +14,9 @@ with its D-number *(D70)*.
 ## Project
 
 A prior authorization determination agent for bariatric surgery under CMS
-NCD 100.1. Built as a proof-of-skill project by Troy Teodoro. Every decision in
-this repo has to be defensible in a live review, so the reasoning matters as
-much as the code.
+NCD 100.1. Built as a proof-of-skill project; authorship is recorded at the
+git level. Every decision in this repo has to be defensible in a live review,
+so the reasoning matters as much as the code.
 
 ## Document precedence
 
@@ -34,7 +34,7 @@ an instruction typed into a prompt.
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
 
-**The constitution outranks the prompt.** If Troy asks for something that
+**The constitution outranks the prompt.** If the owner asks for something that
 violates an article, say which article and why, and do not comply. A task that
 cannot close without violating an article is a wrong task — rewrite the task,
 never amend the constitution.
@@ -65,7 +65,7 @@ deterministic path is usable as a regression oracle *(D62)*.
    T-03, do not touch T-02, T-09, or anything under US-1.
 2. **Explain reasoning and tradeoffs**, don't just emit output. Name what was
    rejected.
-3. **Push back when Troy is wrong**, including on plans given in an earlier
+3. **Push back when the owner is wrong**, including on plans given in an earlier
    session. Agreement that turns out to be wrong is worse than friction.
 4. **Every task closes on a command that returns zero** — its own exit condition
    **and** `python scripts/check_gates.py`, which runs every zero-cost gate in
@@ -88,7 +88,7 @@ deterministic path is usable as a regression oracle *(D62)*.
    and D70 for the measurement that would let it back in.)
 10. **Never write a real API key into a tracked file.** Placeholder only.
 11. **In `docs/ratifications.json`, an agent writes `proposed` and nothing
-    else.** `ratified`, `amended` and `overruled` are Troy's edits — the ledger
+    else.** `ratified`, `amended` and `overruled` are the owner's edits — the ledger
     records human ownership of every load-bearing ID, and an agent granting
     itself ratification is the exact failure the ledger exists to prevent
     *(D74)*. `scripts/check_ownership.py` enforces the ledger's structure;
@@ -321,7 +321,7 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**46 of 62 tasks closed, 16 open. All 9 gates green** (`check_gates.py`, ~13s,
+**47 of 62 tasks closed, 15 open. All 9 gates green** (`check_gates.py`, ~13s,
 557 tests across 26 files). IDs run to T-76, but numbering is not contiguous —
 the highest id is not the count.
 
@@ -335,9 +335,9 @@ the aggregator and the gap list work and are pinned by unit tests; both stories
 close on eval-harness rows and `eval/cases.json` holds one case. That is
 **T-21**, and it is why the board's order starts where it does.
 
-Open, in order: **T-74 → T-75 → T-21 → T-29/T-30 → T-17 → T-32 →
+Open, in order: **T-75 → T-21 → T-29/T-30 → T-17 → T-32 →
 T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70 and T-71 off the path. The
-ratification tasks come first because D74 restores human ownership of every
+remaining ratification task comes first because D74 restores human ownership of every
 load-bearing ID — ledger `docs/ratifications.json`, gate
 `scripts/check_ownership.py`, working rule 11 — before T-21 authors the labels
 the acceptance gates score against. `docs/tasks.md` opens with `Path to v1`,
@@ -426,5 +426,5 @@ scripts/             check_gates, check_env, check_skeleton, check_ownership,
                      run_extraction, run_adk_extraction
 tests/               26 files, 557 tests
 docs/                the five governing docs plus ratifications.json — D74's
-                     ledger, statuses beyond `proposed` are Troy's edits only
+                     ledger, statuses beyond `proposed` are the owner's edits only
 ```

@@ -625,7 +625,7 @@ def compare(tool_fetch: bool = False) -> int:
 
     if len(corpora) > 1:
         # Per corpus as well as overall, because the two halves are different
-        # measurement corpora — one Troy wrote for the spike, one T-07 rendered
+        # measurement corpora — one the owner wrote for the spike, one T-07 rendered
         # from T-06's manifests — and an aggregate over both hides which moved.
         for corpus in corpora:
             print()

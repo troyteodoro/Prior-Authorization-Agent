@@ -55,7 +55,7 @@
         "lookback_months": {
           "value": 12,
           "type": "integer_months",
-          "note": "Decided, not sourced (D40, Troy, 2026-09-08): 12 months by analogy to A53028's program-participation window — the measurement must be contemporaneous with the 12 months of evidence the determination examines. Neither source document defines a BMI recency window; a span here would fabricate a citation for a judgment. Closes open question 4."
+          "note": "Decided, not sourced (D40, owner, 2026-09-08): 12 months by analogy to A53028's program-participation window — the measurement must be contemporaneous with the 12 months of evidence the determination examines. Neither source document defines a BMI recency window; a span here would fabricate a citation for a judgment. Closes open question 4."
         }
       },
       "national_floor": {
@@ -214,7 +214,7 @@
         "type": "number_absolute",
         "provisional": false,
         "settled_question": 5,
-        "note": "Decided, not sourced (D51, Troy, 2026-09-08): 1.0 BMI points. No source text bounds it — it is a judgment about what wastes a reviewer's attention, not a coverage rule. A full point is beyond rounding and beyond the variance of two measurements taken weeks apart (roughly six pounds), so a disagreement at or above it is a documentation problem rather than noise. D14's two poles are both handled. The eval set does not decide this: E10 is a gap of 5.77 and E10c a gap of 0.05, so 0.5, 1.0 and 2.0 all pass — the choice is materiality, not a constraint the suite validates."
+        "note": "Decided, not sourced (D51, owner, 2026-09-08): 1.0 BMI points. No source text bounds it — it is a judgment about what wastes a reviewer's attention, not a coverage rule. A full point is beyond rounding and beyond the variance of two measurements taken weeks apart (roughly six pounds), so a disagreement at or above it is a documentation problem rather than noise. D14's two poles are both handled. The eval set does not decide this: E10 is a gap of 5.77 and E10c a gap of 0.05, so 0.5, 1.0 and 2.0 all pass — the choice is materiality, not a constraint the suite validates."
       },
       "note": "REQ-34: the structured value is authoritative and the disagreement is advisory, unless the two fall on opposite sides of bmi_threshold, in which case the criterion resolves INSUFFICIENT_EVIDENCE with gap_reason SOURCE_CONFLICT (D11)."
     }

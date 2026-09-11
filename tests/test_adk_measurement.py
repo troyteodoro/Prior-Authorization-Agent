@@ -368,7 +368,7 @@ def test_compare_refuses_when_the_two_recordings_share_no_scored_note(
 def test_compare_breaks_the_figures_out_per_corpus(
     script, tmp_path, monkeypatch, capsys
 ):
-    """Two measurement corpora — one Troy wrote for the spike, one T-07 rendered
+    """Two measurement corpora — one the owner wrote for the spike, one T-07 rendered
     from T-06's manifests — so an aggregate over both hides which one moved."""
     records = [
         _record("a", "synthesized", score=_score()),
