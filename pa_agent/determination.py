@@ -49,6 +49,7 @@ from pa_agent.resolver import (
     resolve_sc1,
 )
 from pa_agent.runners import ExtractionRunner
+from pa_agent.verifier import VerifierRunner
 from pa_agent.stores.patient import PatientStore
 from pa_agent.stores.policy import PolicyStore
 from pa_agent.workflow import run_criteria_workflow
@@ -73,6 +74,7 @@ def determine(
     patient_store: PatientStore | None = None,
     as_of: date | None = None,
     extraction_runner: ExtractionRunner | None = None,
+    verifier: VerifierRunner | None = None,
 ) -> Determination | NoPolicyResult:
     """Assemble the determination for a request.
 
@@ -115,6 +117,7 @@ def determine(
             patient_id,
             as_of,
             extraction_runner,
+            verifier,
         )
 
     assert isinstance(resolution, Resolved)
@@ -151,6 +154,7 @@ def determine(
         patient_id,
         as_of,
         extraction_runner,
+        verifier,
     )
 
 
@@ -161,6 +165,7 @@ def _criteria_determination(
     patient_id: str | None,
     as_of: date | None,
     extraction_runner: ExtractionRunner | None,
+    verifier: VerifierRunner | None,
 ) -> Determination:
     """Hand a covered request to T-18's graph, once its inputs are all present.
 
@@ -195,6 +200,9 @@ def _criteria_determination(
             "D39's lesson)."
         )
 
+    # `verifier` has no guard here on purpose: whether verification is
+    # needed depends on whether the chain produces a cited verdict, which only
+    # `step_verify` knows. It raises there, naming what to pass (T-17, D77).
     run = run_criteria_workflow(
         policy_store=store,
         patient_store=patient_store,
@@ -202,5 +210,6 @@ def _criteria_determination(
         policy_ref=policy_ref,
         patient_id=patient_id,
         as_of=as_of,
+        verifier=verifier,
     )
     return run.determination

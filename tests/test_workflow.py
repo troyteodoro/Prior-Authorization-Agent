@@ -48,6 +48,7 @@ from pa_agent.runners import (
 from pa_agent.spans import validate
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
+from conftest import AcceptAllVerifier
 from pa_agent.workflow import (
     DEFAULT_MAX_ATTEMPTS,
     STEP_NAMES,
@@ -115,6 +116,7 @@ def ref(policy_store):
 
 
 def _run(policy_store, patient_store, runner, patient_id, ref, **kwargs):
+    kwargs.setdefault("verifier", AcceptAllVerifier())
     return run_criteria_workflow(
         policy_store=policy_store,
         patient_store=patient_store,
@@ -266,6 +268,7 @@ def test_n_notes_produce_n_extraction_calls_one_per_note(
         policy_ref=ref,
         patient_id="two-note-patient",
         as_of=AS_OF,
+        verifier=AcceptAllVerifier(),
     )
 
     assert store.note_calls == 1, "the note list is read once, not per criterion"
@@ -273,8 +276,9 @@ def test_n_notes_produce_n_extraction_calls_one_per_note(
         first.document_id,
         second.document_id,
     ]
-    assert len(run.traces) == 2
-    assert [t.document_id for t in run.traces] == [
+    extraction_traces = [t for t in run.traces if t.steps == ["extract"]]
+    assert len(extraction_traces) == 2
+    assert [t.document_id for t in extraction_traces] == [
         first.document_id,
         second.document_id,
     ]
@@ -304,6 +308,7 @@ def test_events_fan_in_across_notes_and_keep_the_span_of_their_own_note(
         policy_ref=ref,
         patient_id="two-note-patient",
         as_of=AS_OF,
+        verifier=AcceptAllVerifier(),
     )
 
     events = run.state.events
@@ -341,6 +346,7 @@ def test_merged_events_are_ordered_by_date_not_by_note(
         policy_ref=ref,
         patient_id="two-note-patient",
         as_of=AS_OF,
+        verifier=AcceptAllVerifier(),
     )
     dates = [e.event_date for e in run.state.events]
     assert dates == sorted(dates)
@@ -523,6 +529,7 @@ def test_a_recorded_payload_for_a_changed_note_refuses_to_anchor(
             policy_ref=ref,
             patient_id="edited-patient",
             as_of=AS_OF,
+            verifier=AcceptAllVerifier(),
         )
     assert caught.value.__cause__.reason is ExtractionFailure.DOCUMENT_CHANGED
 
@@ -714,9 +721,13 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
     )
     assert iterables == [
         "STEPS",                          # the declared graph
+        "cited",                          # T-17: the cited verdicts, a filtered
+                                          # Python list — never model output
         "enumerate(tree.criteria)",       # the policy's own criterion order
         "range(1, ctx.max_attempts + 1)", # the retry budget, a Python constant
+        "range(1, ctx.max_attempts + 1)", # ...and the verifier's own (REQ-18a)
         "result.spans",                   # T-29's span pass: validation only,
+        "result.spans",                   # ...and T-17's quote slicing (D77)
         "state.notes",                    # the fan-out: PatientStore's answer
         "state.results",                  # ...it spends no model call (D75)
     ], f"workflow.py loops over {iterables}"
@@ -801,6 +812,7 @@ def test_the_workflow_reaches_data_only_through_the_two_ports() -> None:
         "pa_agent.spans",     # T-29: every cited span slices back, or nothing ships
         "pa_agent.stores.patient",
         "pa_agent.stores.policy",
+        "pa_agent.verifier",  # T-17: Article V's port; no path, no credential
     }, f"workflow.py imports {sorted(imported)}"
 
     source = (REPO_ROOT / "pa_agent" / "workflow.py").read_text(encoding="utf-8")

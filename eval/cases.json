@@ -57,7 +57,7 @@
       "note": "'All criteria met' is E1's label, so all seven are pinned - the one row where that is transcription from §6 rather than labeling from the observed run (D74, spec §8).",
       "expect": {
         "outcome": "MET",
-        "max_model_calls": 1,
+        "max_model_calls": 8,
         "criteria": {
           "a": {
             "verdict": "MET"
@@ -108,7 +108,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 1,
+        "max_model_calls": 4,
         "criteria": {
           "c3": {
             "verdict": "NOT_MET"
@@ -127,7 +127,7 @@
       "note": "NOT_MET, never INSUFFICIENT_EVIDENCE: the evidence exists and falls outside the recency window (REQ-16, REQ-32, Art. IV).",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 1,
+        "max_model_calls": 7,
         "criteria": {
           "c2": {
             "verdict": "NOT_MET"
@@ -145,7 +145,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 1,
+        "max_model_calls": 7,
         "criteria": {
           "c4": {
             "verdict": "NOT_MET"
@@ -164,7 +164,7 @@
       "note": "Same chart as E2, at the harness clock: the BMI that fires sc2 in 2024 is stale here, so the criteria path runs and c1 abstains. The overall NOT_MET is criterion (a)'s - the stale BMI is outside its lookback (REQ-16) - and c1's abstention is the labeled claim.",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 1,
+        "max_model_calls": 3,
         "criteria": {
           "c1": {
             "verdict": "INSUFFICIENT_EVIDENCE",
@@ -184,7 +184,7 @@
       "note": "The refusal test: an assertion is never counted as an event (REQ-35), so zero wm_events reach c3 and the gap names what to collect - the visit notes behind the claim.",
       "expect": {
         "outcome": "INSUFFICIENT_EVIDENCE",
-        "max_model_calls": 1,
+        "max_model_calls": 2,
         "criteria": {
           "c3": {
             "verdict": "INSUFFICIENT_EVIDENCE",
@@ -204,7 +204,7 @@
       "note": "The honesty test: the trap dates in the gap month are non-encounters (REQ-9) and must not bridge the run. Shares E4's chart and run; the label is that c3 stays NOT_MET with the traps present.",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 1,
+        "max_model_calls": 4,
         "criteria": {
           "c3": {
             "verdict": "NOT_MET"
@@ -223,7 +223,7 @@
       "note": "Criterion-scoped (D72): the structured value stands, criterion (a) is MET, and the disagreement is one discrepancies[] entry, never a gap. The overall NOT_MET is E6's - same patient, same run.",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 1,
+        "max_model_calls": 7,
         "criteria": {
           "a": {
             "verdict": "MET"
@@ -242,7 +242,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "INSUFFICIENT_EVIDENCE",
-        "max_model_calls": 1,
+        "max_model_calls": 2,
         "criteria": {
           "a": {
             "verdict": "INSUFFICIENT_EVIDENCE",
@@ -261,7 +261,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "MET",
-        "max_model_calls": 1,
+        "max_model_calls": 8,
         "criteria": {
           "a": {
             "verdict": "MET"
@@ -281,7 +281,7 @@
       "note": "MET on the qualifying run: the non-qualifying program on the same chart must not drag c3 down.",
       "expect": {
         "outcome": "MET",
-        "max_model_calls": 1,
+        "max_model_calls": 8,
         "criteria": {
           "c3": {
             "verdict": "MET"
@@ -300,7 +300,7 @@
       "note": "The structured most-recent BMI is exactly 35.0 via the declared synthetic observation (T-41, D73). The chart is note-free by declaration, so zero model calls and every notes criterion abstains - the overall INSUFFICIENT_EVIDENCE is theirs; (a)'s inclusive boundary is the labeled claim.",
       "expect": {
         "outcome": "INSUFFICIENT_EVIDENCE",
-        "max_model_calls": 0,
+        "max_model_calls": 2,
         "criteria": {
           "a": {
             "verdict": "MET"

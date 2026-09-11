@@ -120,8 +120,9 @@ criterion id and `error_code` go to stderr, nothing to stdout (REQ-29, D75).
 
 Commands that **spend model calls** and are therefore in no gate:
 `scripts/run_extraction.py`, `scripts/run_adk_extraction.py`,
-`eval/run_agentic_eval.py --measure`. Each has a `--rescore` / replay path that
-re-derives every number from the committed recording for free — use it.
+`scripts/run_verifier_measurement.py`, `eval/run_agentic_eval.py --measure`.
+Each has a `--rescore` / replay path that re-derives every number from the
+committed recording for free — use it.
 
 There is no README yet; that is **T-23**.
 
@@ -145,7 +146,8 @@ would catch that are the ones that would have to be deleted to allow it. The
 graph has one conditional — whether a short circuit fired — and that is a
 `return`, not an edge *(D62)*.
 
-**Two ports at the model boundary, which is what makes the differential real.**
+**Three ports at the model boundary; the first two are what make the
+differential real.**
 
 - `ExtractionRunner` (`runners.py`, REQ-52) — *who reads the note*.
   `DirectExtractionRunner` (raw `google-genai`, D45's measured configuration),
@@ -156,6 +158,13 @@ graph has one conditional — whether a short circuit fired — and that is a
   `FixedRetrievalPlanner` (three store reads in a fixed order) and
   `AgenticRetrievalPlanner` (the model chooses). Everything downstream cannot
   tell which planner ran, which is what makes D64's comparison a comparison.
+- `VerifierRunner` (`verifier.py`, Article V, D77) — *who checks the
+  citations*. `LiveVerifierRunner`, `RecordedVerifierRunner` (replays T-17's
+  recording at `eval/verifier/results.json`, keyed by claim digest — a miss
+  raises, never defaults), and a raising `NullVerifierRunner`. `("verify",
+  step_verify)` is the eighth `STEPS` entry: cited verdicts only, first
+  rejection → `INSUFFICIENT_EVIDENCE`/`VERIFIER_REJECTED`, no retry, and the
+  determination still emits (REQ-18).
 
 **`build_result()` is the trust boundary.** Every runner returns through it. ADK
 output is untrusted model output and there is no private route to a `WmEvent`.
@@ -189,6 +198,18 @@ passing**, because the tests are written in terms of the thing that broke.
   `EXTRACTION_ALLOWLIST` is `("read_note",)`.
 - **The two tool allowlists are disjoint, not nested** *(D66)*. The extractor has
   no route to a second document at all: not a bundle, not another patient's note.
+- **The accept-all verifier lives in `tests/conftest.py` and nowhere under
+  `pa_agent/`** *(D77)*. An accept-all implementation importable from the
+  package is Article V silently skipped, and every downstream test would agree
+  with it. `RecordedVerifierRunner` raises on an unrecorded claim for the same
+  reason (D31's shape).
+- **A verifier claim is (criterion, verdict, quotes) — no `as_of`, no dates
+  beyond what the quotes contain** *(D77)*. The field rode along for three
+  prompt versions and date-bound every claim digest, which broke the CLI
+  default (as-of today) against a recording measured at the harness clock.
+  The verifier is barred from date and count arithmetic outright: v1 and v2
+  measured false rejections on every shortfall-type `NOT_MET`, because the
+  shortfall is Article II's arithmetic over a chart Article V hides.
 - **Never return `None` or `[]` from an unimplemented store half or planner**
   *(D31, D39, D63)*. A policy store returning `None` reports `NO_POLICY_FOUND`
   for all of Medicare; a patient store returning `[]` manufactures E7 for every
@@ -315,11 +336,11 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**48 of 59 tasks closed, 11 open. All 8 gates green** (`check_gates.py`, ~12s,
-554 tests across 27 files). IDs run to T-73, but numbering is not contiguous —
+**49 of 59 tasks closed, 10 open. All 8 gates green** (`check_gates.py`, ~12s,
+575 tests across 28 files). IDs run to T-73, but numbering is not contiguous —
 the highest id is not the count.
 
-Delivered: **US-1, US-2, US-3, US-4, US-5, US-9**. `python -m pa_agent.cli --patient
+Delivered: **US-1, US-2, US-3, US-4, US-5, US-6, US-9**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
@@ -333,15 +354,18 @@ same chart at the harness clock. US-9 closed with T-29 and T-30 (D75, D76):
 a fault is a criterion's `ERROR`, the abort is `DeterminationAborted`, and the
 eval harness classifies it as its fourth status — never `FAIL`, never an
 abstention; the reported abstention rate counts an `ERROR` in neither its
-numerator nor its denominator (REQ-28).
+numerator nor its denominator (REQ-28). US-6 closed with T-17 (D77): every
+cited verdict passes through Article V's blind verifier, every gate replays
+the committed 27-claim recording for zero calls, and the four-run measurement
+history — two false-rejection rounds forcing the verdict-asymmetry rule, then
+27/27 twice — is D77's substance.
 
-Open, in order: **T-17 → T-32 → T-72/T-22/T-28/T-23**,
+Open, in order: **T-32 → T-72/T-22/T-28/T-23**,
 with T-27, T-42, T-70, T-71 and T-73 off the path. `docs/tasks.md` opens with `Path to
 v1`, which states this once with what each step gates — read it rather than this
 paragraph *(D70, D72)*.
 
-Two things worth knowing before a review: **Article V has no implementation**
-(that is T-17, one task), and **REQ-44/REQ-47 are unclaimed on purpose** —
+Worth knowing before a review: **REQ-44/REQ-47 are unclaimed on purpose** —
 Amendment 1 reserves the entire decision procedure to Python, so there is no
 verdict a model could determine without doing something reserved. They are
 declared in spec §5's *Unclaimed in v1* table, which is what makes A7
@@ -392,8 +416,8 @@ satisfiable *(D63, D70)*.
 
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
-                     retrieval, runners, extraction, reconcile, aggregate,
-                     determination, contracts, model_pin, cli
+                     retrieval, runners, extraction, verifier, reconcile,
+                     aggregate, determination, contracts, model_pin, cli
   agent/             ADK: extraction_agent, retrieval_agent, patient_tools,
                      policy_tools, tool_bounds, agent (adk web entry point)
   stores/            policy.py and patient.py — the two ports and their
@@ -416,10 +440,11 @@ eval/
   extraction/        results.json (T-15) plus adk_results_inline.json and
                      adk_results_tool_fetch.json — T-63's two, one per mode (D68).
   agentic/           results.json — T-61's recording
+  verifier/          results.json — T-17's 27-claim recording (D77)
 spike/spike_001/     notes/, results.json, run.py — five notes, no patient
 scripts/             check_gates, check_env, check_skeleton, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
-                     run_adk_extraction
-tests/               26 files, 545 tests
+                     run_adk_extraction, run_verifier_measurement
+tests/               28 files, 575 tests
 docs/
 ```

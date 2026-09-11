@@ -26,8 +26,8 @@ open.** Six of the 11 sit on the critical path to the acceptance gates in spec
 | 1 | `T-41` | unblocks T-21's E12 row · gates **A1** | **closed** (D73) |
 | 2 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D74) |
 | 3 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D75, D76) |
-| 4 | `T-17` | **closes US-6** · implements **Article V** | **next** |
-| 5 | `T-32` | gates **Article VI** / REQ-33 | ready |
+| 4 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D77) |
+| 5 | `T-32` | gates **Article VI** / REQ-33 | **next** |
 | 6 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
 
 Off the path. Real work, nothing waiting on it:
@@ -47,9 +47,9 @@ and were pinned by unit tests, but both stories closed on eval-harness rows and
 work into two closed stories for one task's cost. Nothing else on the board had
 that ratio, and working rule 7 is the reason it went near the front.
 
-**Why T-17 is on the path at all.** Article V — the verifier is blind — has zero
-implementation today. It is the largest constitutional hole in the repo and it is
-one task.
+**Why T-17 was on the path at all.** Article V — the verifier is blind — had
+zero implementation. It was the largest constitutional hole in the repo and it
+was one task; D77 closed it.
 
 **Why the report chain is last.** T-22, T-28 and T-23 all read the eval set
 beneath them. Built before T-21 they would be rewritten after it.
@@ -1193,26 +1193,49 @@ free.** That is T-65.
 
 ## `US-6` Trustworthy citations — day 4
 
-### `[ ] T-17` Blind verifier
+### `[x] T-17` Blind verifier
 **REQ:** 17, 18, 31 · **Depends:** T-15, T-31 · **Gates:** Article V
-**Status:** **ready** — both dependencies closed. Fourth on the critical path, and
-the only task implementing Article V, which has no implementation today *(D70)*.
+**Status:** **closed** (D77) — closed US-6
 **Exit:** `pytest tests/test_verifier.py` — mismatched span and verdict rejected;
 the verifier's input contains no reasoning trace and no other criterion; a
 rejection resolves the criterion to `INSUFFICIENT_EVIDENCE` with `gap_reason`
 `VERIFIER_REJECTED`, spends exactly one verifier call, and still emits a
 `Determination`
 
-Two design points the build must decide and log before the code *(working rule
-5, noted by D72)*: how the verifier keeps every gate and the default CLI path at
-zero model calls once it sits in the chain — spec §6 implies a stubbed verifier
-and the recorded-or-stubbed harness story is unwritten — and whether the live
-verifier gets its own measurement, since the repo's measure-then-replay pattern
-(T-63's shape) has no analogue for it and D20's reversal clause already
-anticipates the second pinned model.
+**Closed by D77.** A `VerifierRunner` port mirrors `ExtractionRunner` — live,
+recorded, and a raising null — and `("verify", step_verify)` is the eighth
+entry in `workflow.STEPS`, running on the final cited verdicts only;
+abstentions cite nothing and pass through. Blindness is a property of
+`build_claim_payload`, asserted on its exact key set: the criterion's id,
+label and constants (no `note`, no `source`, no `scoped_to`), the verdict,
+and quotes sliced mechanically from the hashed documents. `VERIFIER_MODEL`
+joined the pin module per D20's reversal clause, same value as the extraction
+pin. The two design points the board flagged both resolved as T-15's shape:
+`scripts/run_verifier_measurement.py` (excluded from gates; it spends) ran
+the live verifier over the 27 unique gate-reachable claims and every gate
+replays the committed recording at `eval/verifier/results.json`, keyed by
+claim digest — a miss raises naming the script (D31). **The measurement took
+four runs**, and the middle two are the interesting result: v1 26/27 and v2
+25/27, every rejection false and every one a shortfall-type `NOT_MET` —
+structurally unverifiable blind, because the shortfall is Article II's
+arithmetic over a chart Article V hides. v3 wrote the asymmetry into the
+instruction (a `MET` is judged from its quotes; a `NOT_MET` rejects only on
+a direct arithmetic-free contradiction) and measured 27/27; v4 dropped the
+payload's `as_of` — dead weight under v3's rule, and it date-bound every
+digest, breaking the CLI default at any date but the harness clock — and
+measured 27/27 (D45: each a new measurement). Rejection semantics are REQ-18
+verbatim and pinned: first rejection, no retry, `INSUFFICIENT_EVIDENCE` +
+`VERIFIER_REJECTED`, determination still emitted; faults are REQ-18a's
+separate loop through D75's boundary. Every criteria-path eval row's
+`max_model_calls` rose by its verified-claim count — the replay carries the
+recorded metrics, and a zero would understate cost (Art. X). Mutation-tested
+eight ways: a payload leaking a second criterion, a rejection collapsing to
+`NOT_MET`, an uncounted verifier call, pin drift, a byte flipped in a
+recorded quote, a recorded accept flipped to reject, a recorded miss
+answering accept, and the verify step deleted from `STEPS` — all caught.
 
-**US-6 closes when:** a verifier rejection resolves to `INSUFFICIENT_EVIDENCE`
-end to end, carrying `VERIFIER_REJECTED`.
+**US-6 closed:** a verifier rejection resolves to `INSUFFICIENT_EVIDENCE`
+end to end, carrying `VERIFIER_REJECTED` (`tests/test_verifier.py`).
 
 ---
 
