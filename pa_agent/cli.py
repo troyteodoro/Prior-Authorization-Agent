@@ -28,14 +28,17 @@ second implementation rather than a rewrite.
 
 Exit codes: 0 for an answer, 1 for a request the stores cannot resolve (an
 unknown patient), 2 for a path the system has not built yet — the
-`NotImplementedError` message, which names what is missing, goes to stderr.
+`NotImplementedError` message, which names what is missing, goes to stderr —
+and 3 for a determination aborted over a criterion in `ERROR` (REQ-24, T-29,
+D76): one stderr line per errored criterion carrying the criterion id and its
+`error_code` (REQ-29), and nothing on stdout.
 
 *Exit 2 currently has no reachable route from this entry point*, because T-18 and
 T-19 built the path it used to report and this module always supplies a runner.
-It is kept, because T-17's verifier and T-29's fault mapping are unbuilt and will
-reach it again, and because a handler that exists is how the next unbuilt path
-reports itself instead of crashing. `tests/test_determination.py` asserts the
-mapping directly rather than through a subprocess that can no longer trigger it.
+It is kept, because T-17's verifier is unbuilt and will reach it again, and
+because a handler that exists is how the next unbuilt path reports itself
+instead of crashing. `tests/test_determination.py` asserts the mapping directly
+rather than through a subprocess that can no longer trigger it.
 """
 
 from __future__ import annotations
@@ -48,9 +51,9 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from pa_agent.contracts import Determination
+from pa_agent.contracts import Determination, DeterminationAborted
 from pa_agent.determination import NoPolicyResult, determine
-from pa_agent.runners import ExtractionOutputError, RecordedExtractionRunner
+from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
 
@@ -187,11 +190,22 @@ def main(argv: list[str] | None = None) -> int:
         # The message names what is missing (D27's pattern).
         print(str(exc), file=sys.stderr)
         return 2
-    except ExtractionOutputError as exc:
-        # REQ-27: mapped to a named reason, never swallowed. Mapping it onto a
-        # criterion's `ERROR` verdict is T-29's; until then the request fails
-        # loudly rather than answering from a partial extraction.
-        print(f"extraction failed: {exc}", file=sys.stderr)
+    except DeterminationAborted as exc:
+        # REQ-29 (T-29, D76): the criterion id and its `error_code` go to
+        # stderr, one line per errored criterion, and nothing goes to stdout —
+        # a partial answer printed anyway would be a determination emitted
+        # over an `ERROR` with extra steps (REQ-24, REQ-26).
+        for errored in exc.results:
+            code = (
+                errored.error_code.value if errored.error_code else "UNCLASSIFIED"
+            )
+            print(
+                f"criterion {errored.criterion_id}: {code}: "
+                f"{errored.error_detail}",
+                file=sys.stderr,
+            )
+        if exc.attempts is not None:
+            print(f"attempts: {exc.attempts}", file=sys.stderr)
         return 3
     except KeyError as exc:
         # A request the stores cannot resolve — an unknown patient, most
