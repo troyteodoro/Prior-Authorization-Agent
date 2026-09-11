@@ -187,7 +187,11 @@ def build_trace_recorder():
     The class is defined inside the function so importing this module does not
     require ADK's plugin machinery, and **every hook body is wrapped**: ADK
     re-raises a plugin exception as a `RuntimeError` that aborts the whole run, so
-    an observability bug must not be able to kill a determination.
+    an observability bug must not be able to kill a determination. A hook that
+    fails is not silent about it (REQ-27, T-29): it notes itself on `failures`,
+    which the runner writes into the trace's termination reason — a recording
+    bug that killed the run it was observing would invert the point of
+    observability, but one that hid itself would be the audit's own target.
     """
     from google.adk.plugins.base_plugin import BasePlugin
 
@@ -196,16 +200,21 @@ def build_trace_recorder():
             super().__init__(name="pa_trace")
             self.metrics: list[CallMetrics] = []
             self.tool_calls: list[ToolCall] = []
+            self.failures: list[str] = []
             self.model_name: str | None = None
             self._model_started: float | None = None
             self._tool_started: dict[str, float] = {}
+
+        def _note(self, hook: str, exc: Exception) -> None:
+            """The mapped, named form REQ-27 asks for when raising is wrong."""
+            self.failures.append(f"{hook}: {type(exc).__name__}: {exc}")
 
         async def before_model_callback(self, *, callback_context, llm_request):
             try:
                 self._model_started = time.perf_counter()
                 self.model_name = getattr(llm_request, "model", None)
-            except Exception:  # pragma: no cover - never kill a run
-                pass
+            except Exception as exc:  # pragma: no cover - noted, never kills a run
+                self._note("before_model", exc)
             return None
 
         async def after_model_callback(self, *, callback_context, llm_response):
@@ -225,15 +234,15 @@ def build_trace_recorder():
                         wall_time_ms=max(elapsed, 0.0),
                     )
                 )
-            except Exception:  # pragma: no cover
-                pass
+            except Exception as exc:  # pragma: no cover - noted, never kills a run
+                self._note("after_model", exc)
             return None
 
         async def before_tool_callback(self, *, tool, tool_args, tool_context):
             try:
                 self._tool_started[tool.name] = time.perf_counter()
-            except Exception:  # pragma: no cover
-                pass
+            except Exception as exc:  # pragma: no cover - noted, never kills a run
+                self._note("before_tool", exc)
             return None
 
         async def after_tool_callback(self, *, tool, tool_args, tool_context, result):
@@ -252,8 +261,8 @@ def build_trace_recorder():
                         wall_time_ms=(time.perf_counter() - started) * 1000.0,
                     )
                 )
-            except Exception:  # pragma: no cover
-                pass
+            except Exception as exc:  # pragma: no cover - noted, never kills a run
+                self._note("after_tool", exc)
             return None
 
         async def on_tool_error_callback(
@@ -270,8 +279,8 @@ def build_trace_recorder():
                         detail=type(error).__name__,
                     )
                 )
-            except Exception:  # pragma: no cover
-                pass
+            except Exception as exc:  # pragma: no cover - noted, never kills a run
+                self._note("on_tool_error", exc)
             return None
 
     return Recorder()
@@ -415,6 +424,11 @@ class AdkExtractionRunner:
             termination = termination if error else "no_model_response"
 
         payload = self._payload(session_service, session_id)
+        if recorder.failures:
+            # T-29 (D75): a hook that failed says so in the trace it produced.
+            termination = (
+                f"{termination}; recorder_failures: {recorder.failures}"
+            )
         trace = RunTrace(
             runner_name=self.name,
             model=recorder.model_name or self._model_name,
@@ -490,8 +504,13 @@ class AdkExtractionRunner:
                     app_name=self._app_name, user_id="pa", session_id=session_id
                 )
             )
-        except Exception:
-            return None
+        except Exception as exc:  # re-raised classified, never swallowed (REQ-27)
+            raise ExtractionOutputError(
+                ExtractionFailure.NO_PAYLOAD,
+                f"the session read for {OUTPUT_KEY!r} failed: "
+                f"{type(exc).__name__}: {exc}. Returning None here would "
+                "report a transport fault as a model that produced nothing.",
+            ) from exc
         if session is None:
             return None
         value = session.state.get(OUTPUT_KEY)

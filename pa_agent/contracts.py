@@ -1123,3 +1123,41 @@ class Determination(BaseModel):
     def model_calls(self) -> int:
         """The counter E2 and E3 assert reads zero (A4)."""
         return len(self.metrics)
+
+
+# --------------------------------------------------------------------------
+# The abort (T-29, D75)
+# --------------------------------------------------------------------------
+
+
+class DeterminationAborted(Exception):
+    """REQ-24: an `ERROR` on any criterion aborts the determination.
+
+    An exception rather than a second return type, because REQ-26 already made
+    the alternative unconstructible — there is no errored `Determination` to
+    return, so a caller branching on shapes would be branching against a shape
+    that cannot exist. Raised `from` the underlying fault, which is how "the
+    underlying exception is surfaced, not swallowed" stays literally true in
+    the traceback.
+
+    `results` carries one `CriterionResult` per criterion resolved `ERROR`,
+    each self-validated by `CriterionResult`'s own shape rules: an `error_code`
+    from the closed enum, the exception text in `error_detail`, no spans, no
+    `gap_reason`. `attempts` records how many times the failing call was tried
+    (REQ-18a) — `None` for faults that never touched the model.
+    """
+
+    def __init__(
+        self, results: list[CriterionResult], attempts: int | None = None
+    ) -> None:
+        summary = "; ".join(
+            f"{r.criterion_id}={r.error_code.value if r.error_code else '?'}"
+            for r in results
+        )
+        super().__init__(f"determination aborted: {summary}")
+        self.results = results
+        self.attempts = attempts
+
+    @property
+    def criterion_ids(self) -> list[str]:
+        return [r.criterion_id for r in self.results]

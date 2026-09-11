@@ -16,16 +16,16 @@ answers the second question, once.
 
 ## Path to v1
 
-Fifty-eight tasks are on this board — IDs run to T-72 but numbering is not
-contiguous, so the highest id is not the count. **46 are closed and 12 are
-open.** Eight of the 12 sit on the critical path to the acceptance gates in spec
+Fifty-nine tasks are on this board — IDs run to T-73 but numbering is not
+contiguous, so the highest id is not the count. **47 are closed and 12 are
+open.** Seven of the 12 sit on the critical path to the acceptance gates in spec
 §7. This is that path, in order. *(D70, extended by D72)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
 | 1 | `T-41` | unblocks T-21's E12 row · gates **A1** | **closed** (D73) |
 | 2 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D74) |
-| 3 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready — **next** |
+| 3 | `T-29` → `T-30` | **closes US-9** · gates **A9** | T-29 closed (D75); **T-30 next** |
 | 4 | `T-17` | **closes US-6** · implements **Article V** | ready |
 | 5 | `T-32` | gates **Article VI** / REQ-33 | ready |
 | 6 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
@@ -38,6 +38,7 @@ Off the path. Real work, nothing waiting on it:
 | `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
 | `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
 | `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
+| `T-73` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
 
 **Why T-21 went second and not later.** US-4 and US-5 were *built and ungraded*
 — every predicate, the reconciliation, the aggregator and the gap list worked
@@ -1324,9 +1325,21 @@ to terminal
 The validator assertion is required — a determination constructible over an
 `ERROR` is the failure REQ-24 exists to prevent.
 
-### `[ ] T-29` Fault injection suite and no-silent-failure audit
+### `[x] T-29` Fault injection suite and no-silent-failure audit
 **REQ:** 23, 24, 27, 29 · **Depends:** T-11, T-15, T-26 · **Gates:** A9
-**Status:** **ready** — all three dependencies closed. Third on the critical path.
+**Status:** **closed** (D75). `ExtractionFailure` → `ErrorCode` maps in
+`workflow.py`; an extraction fault errors c1–c5 and raises
+`DeterminationAborted` (an exception, because REQ-26 already made the
+alternative unconstructible); a predicate raise errors exactly its criterion;
+`pa_agent.spans` is wired into the workflow as a pre-`assemble` pass over
+every cited span; the CLI exits 3 with one stderr line per errored criterion
+(REQ-29). The audit walks every `except` under `pa_agent/` on the AST: no
+bare handler, and a broad handler either raises or sits in an exact-match
+allowlist whose entries must also *do* something — the recorder hooks now
+note their own failures into the trace, and the two session reads raise
+classified instead of returning `None`. Seven mutations caught, including a
+recorder hook reverted to `pass` and a `Determination` assembled over an
+`ERROR`.
 **Exit:** `pytest tests/test_fault_injection.py` — four tests, one per failure
 point: the model call raises, the model returns unparseable JSON, span offsets
 point past the end of the document, a predicate raises. Each asserts `ERROR` with
@@ -1340,8 +1353,7 @@ on D65's and D67's precedent that substring scans are the gameable form.)*
 
 ### `[ ] T-30` `ERROR` accounting in the eval harness
 **REQ:** 28 · **Depends:** T-10, T-26 · **Gates:** A9
-**Status:** **ready** by its stated dependencies; sequenced after T-29 so US-9
-closes in one pass rather than half-closing
+**Status:** **ready** — **next**; T-29 closed, so US-9 closes with this task
 **Exit:** `pytest tests/test_metrics_error_accounting.py` — a seeded `ERROR`
 leaves the reported abstention rate unchanged
 An `ERROR` counted as an abstention would make T-22's curve report caution where
@@ -1387,6 +1399,23 @@ verdicts downstream of them.
 unfalsifiable since it was written, because nothing measured retrieval recall and
 nothing could. Vector search stays rejected on rule 9 and on a six-document
 corpus; this is what would let it back in on evidence *(D70)*.
+
+### `[ ] T-73` Map the agentic planner's fault onto the abort path
+**REQ:** 23, 24, 29 · **Depends:** T-29, T-61 · **Found by:** T-29
+**Status:** off the critical path; the deterministic default never raises it
+**Exit:** `pytest tests/test_fault_injection.py -k retrieval` — a
+`RetrievalPlanner` whose `gather` raises `RetrievalError` resolves to
+`DeterminationAborted` with a classified `error_code` and a non-zero CLI exit,
+rather than today's uncaught traceback.
+
+T-29 mapped every extraction fault, but `step_gather`'s port can raise too:
+`AgenticRetrievalPlanner` makes a model call, and its `RetrievalError`
+propagates uncaught through `determine()` to the CLI, which crashes with
+Python's exit 1 — indistinguishable from a bad request. The deterministic
+`FixedRetrievalPlanner` cannot raise it, which is why this blocks nothing on
+the critical path. The open design question is which criteria carry the
+`ERROR` when *nothing* was gathered — all of them is the honest answer, and
+the decision entry should say so or say why not.
 
 ### `[ ] T-32` Plane separation check
 **REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI

@@ -94,7 +94,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 8 gates, ~12s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (537 tests, ~8s)
+./venv/bin/python -m pytest -q                  # the suite alone (545 tests, ~9s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -115,7 +115,8 @@ Run the system:
 ```
 
 CLI exit codes: `0` an answer, `1` a bad request (unknown patient), `2` an
-unbuilt path.
+unbuilt path, `3` a determination aborted over a criterion in `ERROR` — the
+criterion id and `error_code` go to stderr, nothing to stdout (REQ-29, D75).
 
 Commands that **spend model calls** and are therefore in no gate:
 `scripts/run_extraction.py`, `scripts/run_adk_extraction.py`,
@@ -314,8 +315,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**46 of 58 tasks closed, 12 open. All 8 gates green** (`check_gates.py`, ~12s,
-537 tests across 25 files). IDs run to T-72, but numbering is not contiguous —
+**47 of 59 tasks closed, 12 open. All 8 gates green** (`check_gates.py`, ~12s,
+545 tests across 26 files). IDs run to T-73, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3, US-4, US-5**. `python -m pa_agent.cli --patient
@@ -330,8 +331,8 @@ cited span validated by the scorer (A3). Case rows may carry their own
 in-window evidence *(D41)*, so E2 runs 43644 at 2024-12-01 while E7 reads the
 same chart at the harness clock.
 
-Open, in order: **T-29/T-30 → T-17 → T-32 → T-72/T-22/T-28/T-23**,
-with T-27, T-42, T-70 and T-71 off the path. `docs/tasks.md` opens with `Path to
+Open, in order: **T-30 → T-17 → T-32 → T-72/T-22/T-28/T-23**,
+with T-27, T-42, T-70, T-71 and T-73 off the path. `docs/tasks.md` opens with `Path to
 v1`, which states this once with what each step gates — read it rather than this
 paragraph *(D70, D72)*.
 
@@ -415,6 +416,6 @@ spike/spike_001/     notes/, results.json, run.py — five notes, no patient
 scripts/             check_gates, check_env, check_skeleton, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction
-tests/               25 files, 537 tests
+tests/               26 files, 545 tests
 docs/
 ```

@@ -41,6 +41,8 @@ from pa_agent.contracts import (
     CriterionResult,
     CriterionVerdict,
     Determination,
+    DeterminationAborted,
+    ErrorCode,
     EvidenceSpan,
     Document,
     Observation,
@@ -59,12 +61,19 @@ from pa_agent.criteria import (
     evaluate_criterion_b,
     qualifying_run,
 )
+from pa_agent.index import DocumentIndex
 from pa_agent.reconcile import reconcile_bmi
 from pa_agent.retrieval import (
     FixedRetrievalPlanner,
     RetrievalPlanner,
 )
-from pa_agent.runners import ExtractionOutputError, ExtractionRunner
+from pa_agent.runners import (
+    ExtractionFailure,
+    ExtractionOutputError,
+    ExtractionRunner,
+)
+from pa_agent.spans import SpanValidationError
+from pa_agent.spans import validate as validate_span
 from pa_agent.stores.patient import PatientStore
 from pa_agent.stores.policy import PolicyRef, PolicyStore
 
@@ -72,13 +81,36 @@ from pa_agent.stores.policy import PolicyRef, PolicyStore
 #: read by the driver, never a decision the model participates in (REQ-46).
 DEFAULT_MAX_ATTEMPTS = 3
 
+#: T-29 (D75): what a runner's failure means for a criterion. `runners.py`
+#: refused to host this in writing — it knows the response was malformed; only
+#: this module knows which criteria were waiting on it. The replay faults
+#: (`DOCUMENT_CHANGED`, `NOT_RECORDED`) are terminal by D8's own test: an
+#: identical second replay of the same recording cannot answer differently.
+ERROR_CODE_FOR: dict[ExtractionFailure, ErrorCode] = {
+    ExtractionFailure.CALL_FAILED: ErrorCode.MODEL_CALL_FAILED,
+    ExtractionFailure.NO_PAYLOAD: ErrorCode.SCHEMA_INVALID,
+    ExtractionFailure.UNPARSEABLE: ErrorCode.SCHEMA_INVALID,
+    ExtractionFailure.SCHEMA_INVALID: ErrorCode.SCHEMA_INVALID,
+    ExtractionFailure.DOCUMENT_CHANGED: ErrorCode.SCHEMA_INVALID,
+    ExtractionFailure.NOT_RECORDED: ErrorCode.SCHEMA_INVALID,
+}
+
 #: Failure reasons an identical second call could plausibly answer differently.
-#: The classification is the spike's, which learned it from the AI Studio free
-#: tier returning 503 under load: without it the run measures the tier and not
-#: the model. A schema violation is not here, and that is the point — the same
-#: prompt will produce the same invalid response, so retrying spends money to
-#: reach the same answer (REQ-18a, D8).
-_RETRYABLE_FAILURES = ("CALL_FAILED",)
+#: The classification learned it from the AI Studio free tier returning 503
+#: under load: without it the run measures the tier and not the model. A schema
+#: violation is not here, and that is the point — the same prompt will produce
+#: the same invalid response, so retrying spends money to reach the same answer
+#: (REQ-18a, D8). **Derived from the mapping above**, so retryability has one
+#: source of truth: REQ-30's classification on the mapped `ErrorCode`.
+_RETRYABLE_FAILURES = tuple(
+    failure.value for failure, code in ERROR_CODE_FOR.items() if code.retryable
+)
+
+#: The criteria that consume extraction — what `step_qualifying_run` and
+#: `step_criteria_c` evaluate over `state.events`. On an extraction failure
+#: these resolve to `ERROR`; (a) and (b) read structured FHIR and never touched
+#: the model, so a fault they never saw is not theirs to report (D75).
+EXTRACTION_CRITERIA = ("c1", "c2", "c3", "c4", "c5")
 
 
 # --------------------------------------------------------------------------
@@ -204,9 +236,25 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
     through c5 adjudicate the patient's history, not a document's; each event
     keeps the span that cites the note it came from, so merging loses nothing an
     auditor needs (Art. III).
+
+    A failure surviving `_extract_one`'s budget resolves the extraction-consuming
+    criteria to `ERROR` and aborts (REQ-23, REQ-24; T-29, D75). The abort carries
+    the attempt count: a terminal fault was tried once, a retryable one exhausted
+    the budget — the same classification that drove the loop.
     """
     for note in state.notes:
-        result, trace = _extract_one(note, ctx)
+        try:
+            result, trace = _extract_one(note, ctx)
+        except ExtractionOutputError as exc:
+            attempts = (
+                ctx.max_attempts
+                if exc.reason.value in _RETRYABLE_FAILURES
+                else 1
+            )
+            raise DeterminationAborted(
+                _extraction_error_results(ERROR_CODE_FOR[exc.reason], str(exc)),
+                attempts=attempts,
+            ) from exc
         state.events.extend(result.events)
         state.assertions.extend(result.assertions)
         # T-60: the note's current BMI belongs to no encounter. First one wins,
@@ -223,8 +271,12 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
 def step_criterion_a(state: WorkflowState, ctx: _Context) -> None:
     """REQ-11: a numeric comparison. No model call, before or after (Art. II)."""
     state.results.append(
-        evaluate_criterion_a(
-            state.tree.criterion("a"), state.observations, state.as_of
+        _predicate(
+            "a",
+            evaluate_criterion_a,
+            state.tree.criterion("a"),
+            state.observations,
+            state.as_of,
         )
     )
 
@@ -245,7 +297,9 @@ def step_reconcile(state: WorkflowState, ctx: _Context) -> None:
     )
     if index is None:
         return
-    state.results[index] = reconcile_bmi(
+    state.results[index] = _predicate(
+        criterion_a.id,
+        reconcile_bmi,
         fact,
         criterion_a,
         state.results[index],
@@ -260,8 +314,12 @@ def step_criterion_b(state: WorkflowState, ctx: _Context) -> None:
     """REQ-12: set intersection. `MET` or abstention, never `NOT_MET` — a chart
     cannot prove a comorbidity absent (D40)."""
     state.results.append(
-        evaluate_criterion_b(
-            state.tree.criterion("b"), state.conditions, state.value_set
+        _predicate(
+            "b",
+            evaluate_criterion_b,
+            state.tree.criterion("b"),
+            state.conditions,
+            state.value_set,
         )
     )
 
@@ -275,7 +333,7 @@ def step_qualifying_run(state: WorkflowState, ctx: _Context) -> None:
     disagreement would surface as a verdict about a period no other criterion
     adjudicated.
     """
-    state.run = qualifying_run(state.events)
+    state.run = _predicate("c3", qualifying_run, state.events)
 
 
 def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
@@ -288,15 +346,20 @@ def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
     assert state.run is not None, "step_qualifying_run must precede this step"
     run = state.run
 
-    c1 = evaluate_c1(state.tree.criterion("c1"), state.events, state.assertions)
-    c3 = evaluate_c3(
-        state.tree.criterion("c3"), state.events, state.assertions, run
+    c1 = _predicate(
+        "c1", evaluate_c1, state.tree.criterion("c1"), state.events, state.assertions
+    )
+    c3 = _predicate(
+        "c3", evaluate_c3, state.tree.criterion("c3"), state.events,
+        state.assertions, run,
     )
     c3_met = c3.verdict is CriterionVerdict.MET
 
-    c2 = evaluate_c2(state.tree.criterion("c2"), run, state.as_of, c3_met)
-    c4 = evaluate_c4(state.tree.criterion("c4"), run, c3_met)
-    c5 = evaluate_c5(state.tree.criterion("c5"), run, c3_met)
+    c2 = _predicate(
+        "c2", evaluate_c2, state.tree.criterion("c2"), run, state.as_of, c3_met
+    )
+    c4 = _predicate("c4", evaluate_c4, state.tree.criterion("c4"), run, c3_met)
+    c5 = _predicate("c5", evaluate_c5, state.tree.criterion("c5"), run, c3_met)
 
     # Appended in the tree's own criterion order, so the gap list reads the way
     # the policy reads rather than the way this function happened to compute.
@@ -400,13 +463,100 @@ def _extract_one(note: Document, ctx: _Context) -> tuple[object, RunTrace]:
 
     assert last is not None
     elapsed = (time.perf_counter() - started) * 1000.0
+    # `attempt` holds the loop's last value: the budget for a retryable fault,
+    # 1 for a terminal one. Printing `ctx.max_attempts` here claimed three
+    # attempts for faults that were deliberately tried once (T-29).
     raise ExtractionOutputError(
         last.reason,
-        f"{note.document_id}: {last.message} (after {ctx.max_attempts} "
+        f"{note.document_id}: {last.message} (after {attempt} "
         f"attempt(s), {elapsed:.0f}ms). A partial extraction presented as a "
         "complete one is indistinguishable from a shorter patient history, so "
         "this raises rather than returning what it has.",
     )
+
+
+def _extraction_error_results(
+    code: ErrorCode, detail: str
+) -> list[CriterionResult]:
+    """One `ERROR` per extraction-consuming criterion (T-29, D75).
+
+    Each result self-validates: `CriterionResult`'s shape rules require the
+    code and the exception text and forbid spans and a `gap_reason`, so a
+    malformed `ERROR` cannot be built here or anywhere.
+    """
+    return [
+        CriterionResult(
+            criterion_id=criterion_id,
+            verdict=CriterionVerdict.ERROR,
+            error_code=code,
+            error_detail=detail,
+        )
+        for criterion_id in EXTRACTION_CRITERIA
+    ]
+
+
+def _predicate(criterion_id: str, fn, /, *args, **kwargs):
+    """REQ-23's fourth trigger: an unhandled exception in a predicate.
+
+    Runs one deterministic predicate and maps a raise onto that criterion's
+    `ERROR` with `PREDICATE_EXCEPTION` — terminal, first occurrence, because
+    the same inputs raise the same way (D8). The handler re-raises classified
+    (REQ-27); nothing is answered on a criterion whose code crashed, and
+    REQ-24 aborts the determination before `assemble` can run.
+    """
+    try:
+        return fn(*args, **kwargs)
+    except Exception as exc:  # mapped to PREDICATE_EXCEPTION and re-raised (REQ-27)
+        result = CriterionResult(
+            criterion_id=criterion_id,
+            verdict=CriterionVerdict.ERROR,
+            error_code=ErrorCode.PREDICATE_EXCEPTION,
+            error_detail=f"{type(exc).__name__}: {exc}",
+        )
+        raise DeterminationAborted([result], attempts=None) from exc
+
+
+def _document_for(document_id: str, ctx: _Context) -> Document:
+    """Either plane's document, for the span pass — the scorer's rule (D74):
+    criterion spans point into the patient's bundle and notes, coverage spans
+    into the corpus, so the check reads both ports or it cannot check."""
+    try:
+        return ctx.patient_store.get_document(document_id)
+    except KeyError:
+        return ctx.policy_store.get_document(document_id)
+
+
+def _validate_result_spans(state: WorkflowState, ctx: _Context) -> None:
+    """Article III at runtime: every cited span slices back, or nothing ships.
+
+    Until T-29 `pa_agent.spans` was imported by tests and the eval harness
+    only, so a runner conforming to the `ExtractionRunner` protocol could hand
+    the graph an out-of-range span and no production code would notice —
+    `anchor()` re-anchors by quote search and drops what it cannot find, which
+    is a different guarantee than validation (D18, D75). A span that fails
+    resolves its criterion to `ERROR`/`SPAN_VALIDATION_FAILED` and aborts
+    (REQ-23, REQ-24). The index is built lazily from exactly the documents the
+    spans name, through the ports; the pass costs string slicing and no model
+    call.
+    """
+    index = DocumentIndex()
+    for result in state.results:
+        for span in result.spans:
+            try:
+                if span.document_id not in index:
+                    index.add(_document_for(span.document_id, ctx))
+                validate_span(span, index)
+            except (SpanValidationError, KeyError) as exc:
+                error = CriterionResult(
+                    criterion_id=result.criterion_id,
+                    verdict=CriterionVerdict.ERROR,
+                    error_code=ErrorCode.SPAN_VALIDATION_FAILED,
+                    error_detail=(
+                        f"{span.document_id}[{span.char_start}:{span.char_end}]"
+                        f": {exc}"
+                    ),
+                )
+                raise DeterminationAborted([error], attempts=None) from exc
 
 
 def run_criteria_workflow(
@@ -446,6 +596,8 @@ def run_criteria_workflow(
     for name, step in STEPS:
         step(state, ctx)
         state.steps_visited.append(name)
+
+    _validate_result_spans(state, ctx)
 
     determination = assemble(
         patient_id=patient_id,

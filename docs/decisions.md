@@ -5340,3 +5340,93 @@ expectation it cannot express (a per-criterion span assertion, say); the
 per-case `as_of` empties back to a single clock if the corpus ever gains a
 patient whose sc2 shape is in-window at `EVAL_AS_OF` — at which point E2
 moves to that patient and the field goes unused before it goes away.
+
+---
+
+## D75 — A fault becomes a criterion's `ERROR` at the workflow boundary, and the abort is an exception
+
+**Task:** T-29. T-26 built the vocabulary — `ErrorCode`, the shape validators,
+the `Determination` that refuses construction over an `ERROR` (REQ-26) — and
+deliberately left production of an `ERROR` to this task. This entry states who
+maps what, which criteria carry the result, and what the CLI does with it.
+
+**The `ExtractionFailure` → `ErrorCode` mapping lives in `workflow.py`.**
+`runners.py` refused to host it in writing ("only the criterion knows what that
+means for the criterion") and that refusal holds: the runner knows the response
+was malformed, the workflow knows which criteria were waiting on it. The table:
+
+| `ExtractionFailure` | `ErrorCode` | Class |
+|---|---|---|
+| `CALL_FAILED` | `MODEL_CALL_FAILED` | retryable |
+| `NO_PAYLOAD` | `SCHEMA_INVALID` | terminal |
+| `UNPARSEABLE` | `SCHEMA_INVALID` | terminal |
+| `SCHEMA_INVALID` | `SCHEMA_INVALID` | terminal |
+| `DOCUMENT_CHANGED` | `SCHEMA_INVALID` | terminal |
+| `NOT_RECORDED` | `SCHEMA_INVALID` | terminal |
+
+The last two are replay faults, and they are terminal by D8's own test: an
+identical second replay of the same recording against the same document cannot
+answer differently. `_RETRYABLE_FAILURES` stops being an independent tuple and
+is asserted consistent with the mapped codes' `retryable` flags, so
+retryability has one source of truth — REQ-30's classification.
+
+**Which criteria carry the `ERROR`.** An extraction failure resolves the
+extraction-consuming criteria — c1 through c5, named in a module constant that
+mirrors what `step_qualifying_run` and `step_criteria_c` actually evaluate — to
+`ERROR`; (a) and (b) read structured FHIR and never touched the model, and a
+fault they never saw is not theirs to report. A predicate raise carries exactly
+the criterion whose predicate raised (`PREDICATE_EXCEPTION`). A span that fails
+validation carries the criterion that cited it (`SPAN_VALIDATION_FAILED`).
+
+**The abort is an exception, `DeterminationAborted`, defined in
+`contracts.py`.** It carries the `ERROR` `CriterionResult`s and the attempt
+count, and is raised `from` the underlying exception, which is REQ-24's
+"surfaced, not swallowed" made literal — the traceback keeps the original
+fault. Rejected: a second return type from `run_criteria_workflow`. Every
+caller would grow a branch on which of two shapes came back, and the type
+system already picked the exception path — REQ-26 makes the `Determination`
+unconstructible, so the non-exception shape does not exist to return.
+
+**Span validation is wired into the workflow.** Before `assemble()`, every span
+on every `CriterionResult` is validated by `pa_agent.spans.validate` against a
+`DocumentIndex` built lazily through both ports — the scorer's own pattern
+(D74). Until now `spans.py` was imported by tests and the eval harness only; a
+runner conforming to the `ExtractionRunner` protocol could hand the workflow an
+out-of-range span and nothing in the production path would notice, because
+`anchor()` re-anchors by quote search and drops what it cannot find. Rejected:
+validating only extraction-derived spans — criterion (a) and (b) spans point
+into the structured plane and a bug there is the same laundering Article III
+exists to stop. The pass costs string slicing, no model call.
+
+**Unparseable JSON on the direct path stops masquerading as retryable.**
+`extract()` parses the response unguarded, so a `JSONDecodeError` fell into
+`DirectExtractionRunner`'s catch-all and was classified `CALL_FAILED` —
+retryable, two wasted calls per D8's own argument that the same prompt returns
+the same invalid response. The parse is now guarded and classified
+`UNPARSEABLE`.
+
+**The CLI contract (REQ-29).** Exit 3 is the abort: one stderr line per errored
+criterion carrying the criterion id, the `error_code` and the detail, nothing
+on stdout — a partial answer printed anyway is a determination emitted over an
+`ERROR` with extra steps. The existing `ExtractionOutputError` branch is
+subsumed; the module docstring's exit table becomes 0/1/2/3.
+
+**The audit (REQ-27) is parsed, not grepped** *(D72, on D65's and D67's
+precedent)*. Every `except` handler under `pa_agent/` is walked on the AST: a
+bare `except` fails outright; a handler catching `Exception` or `BaseException`
+must contain a `raise` or appear in a pinned allowlist of `(module, function)`
+entries, each with a stated reason, compared exactly in both directions — a
+stale entry fails the same as a missing one, which is what keeps the allowlist
+from absorbing whatever is convenient. Narrow exception types pass: catching
+`KeyError` to re-raise with context is classification, not swallowing. The
+allowlist as of this entry: the ADK budget loops that store the failure and
+re-raise classified at exhaustion, and the recorder hooks — which stop
+swallowing silently and now note their own failure on the recorder, surfaced
+through the trace's termination reason, but still do not raise, because a recording bug that kills the run it was
+observing inverts the point of observability.
+
+**Reversal:** D7's condition, inherited — if reviewers act usefully on partial
+determinations, the abort weakens to per-criterion `ERROR` without REQ-24's
+abort, and `DeterminationAborted` becomes a result carrier instead of an
+exception. The allowlist shrinks to empty if the ADK path ever gains a
+classified exception taxonomy narrow enough to name what its loops catch.
