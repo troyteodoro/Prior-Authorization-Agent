@@ -28,14 +28,17 @@ second implementation rather than a rewrite.
 
 Exit codes: 0 for an answer, 1 for a request the stores cannot resolve (an
 unknown patient), 2 for a path the system has not built yet — the
-`NotImplementedError` message, which names what is missing, goes to stderr.
+`NotImplementedError` message, which names what is missing, goes to stderr —
+and 3 for a determination aborted over a criterion in `ERROR` (REQ-24, T-29,
+D76): one stderr line per errored criterion carrying the criterion id and its
+`error_code` (REQ-29), and nothing on stdout.
 
-*Exit 2 currently has no reachable route from this entry point*, because T-18 and
-T-19 built the path it used to report and this module always supplies a runner.
-It is kept, because T-17's verifier and T-29's fault mapping are unbuilt and will
-reach it again, and because a handler that exists is how the next unbuilt path
-reports itself instead of crashing. `tests/test_determination.py` asserts the
-mapping directly rather than through a subprocess that can no longer trigger it.
+*Exit 2 currently has no reachable route from this entry point*: T-18 and T-19
+built the criteria path, and T-17 built the verifier this module now always
+supplies beside the extraction runner. The handler is kept because it is how
+the next unbuilt path reports itself instead of crashing.
+`tests/test_determination.py` asserts the mapping directly rather than through
+a subprocess that can no longer trigger it.
 """
 
 from __future__ import annotations
@@ -48,14 +51,16 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from pa_agent.contracts import Determination
+from pa_agent.contracts import Determination, DeterminationAborted
 from pa_agent.determination import NoPolicyResult, determine
-from pa_agent.runners import ExtractionOutputError, RecordedExtractionRunner
+from pa_agent.runners import RecordedExtractionRunner
+from pa_agent.verifier import RecordedVerifierRunner
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_RECORDING = REPO_ROOT / "eval" / "extraction" / "results.json"
+DEFAULT_VERIFIER_RECORDING = REPO_ROOT / "eval" / "verifier" / "results.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
 
 
@@ -134,6 +139,35 @@ def _build_runner(mode: str, recording: Path, tool_fetch: bool, patient_store):
     )
 
 
+
+def _build_verifier(mode: str, recording: Path):
+    """Construct Article V's checker beside the model leaf (T-17, D78).
+
+    It follows `--extraction`: the recorded leaf gets the recorded verifier —
+    zero calls, same answer twice — and a live leaf gets a live verifier,
+    because live extraction produces claims no recording has seen and a replay
+    would refuse them (D31: a miss raises, never defaults).
+    """
+    if mode == "recorded":
+        if not recording.exists():
+            raise SystemExit(
+                f"no verifier recording at {recording}; run "
+                "`python scripts/run_verifier_measurement.py` (it spends model "
+                "calls) or pass --extraction direct"
+            )
+        payload = json.loads(recording.read_text(encoding="utf-8"))
+        return RecordedVerifierRunner.from_records(
+            payload["claims"], model=payload.get("model")
+        )
+
+    _load_env()
+    from google import genai
+
+    from pa_agent.verifier import LiveVerifierRunner
+
+    return LiveVerifierRunner(genai.Client(api_key=os.environ["GOOGLE_API_KEY"]))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m pa_agent.cli",
@@ -173,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
     runner = _build_runner(
         args.extraction, args.recording, args.tool_fetch, patient_store
     )
+    verifier = _build_verifier(args.extraction, DEFAULT_VERIFIER_RECORDING)
 
     try:
         result = determine(
@@ -182,16 +217,28 @@ def main(argv: list[str] | None = None) -> int:
             patient_store=patient_store,
             as_of=args.as_of or date.today(),
             extraction_runner=runner,
+            verifier=verifier,
         )
     except NotImplementedError as exc:
         # The message names what is missing (D27's pattern).
         print(str(exc), file=sys.stderr)
         return 2
-    except ExtractionOutputError as exc:
-        # REQ-27: mapped to a named reason, never swallowed. Mapping it onto a
-        # criterion's `ERROR` verdict is T-29's; until then the request fails
-        # loudly rather than answering from a partial extraction.
-        print(f"extraction failed: {exc}", file=sys.stderr)
+    except DeterminationAborted as exc:
+        # REQ-29 (T-29, D76): the criterion id and its `error_code` go to
+        # stderr, one line per errored criterion, and nothing goes to stdout —
+        # a partial answer printed anyway would be a determination emitted
+        # over an `ERROR` with extra steps (REQ-24, REQ-26).
+        for errored in exc.results:
+            code = (
+                errored.error_code.value if errored.error_code else "UNCLASSIFIED"
+            )
+            print(
+                f"criterion {errored.criterion_id}: {code}: "
+                f"{errored.error_detail}",
+                file=sys.stderr,
+            )
+        if exc.attempts is not None:
+            print(f"attempts: {exc.attempts}", file=sys.stderr)
         return 3
     except KeyError as exc:
         # A request the stores cannot resolve — an unknown patient, most

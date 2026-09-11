@@ -722,6 +722,16 @@
       "by": "agent",
       "date": "2026-09-10"
     },
+    "T-77": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
+    },
+    "T-78": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
+    },
     "T-27": {
       "status": "proposed",
       "by": "agent",
@@ -1131,6 +1141,31 @@
       "status": "proposed",
       "by": "agent",
       "date": "2026-09-10"
+    },
+    "D75": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
+    },
+    "D76": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
+    },
+    "D77": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
+    },
+    "D78": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
+    },
+    "D79": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
     },
     "eval/cases.json": {
       "status": "proposed",

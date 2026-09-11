@@ -16,22 +16,24 @@ answers the second question, once.
 
 ## Path to v1
 
-Sixty-two tasks are on this board — IDs run to T-76 but numbering is not
-contiguous, so the highest id is not the count. **46 are closed and 16 are
-open.** Eleven of the 16 sit on the critical path to the acceptance gates in
+Sixty-four tasks are on this board — IDs run to T-78 but numbering is not
+contiguous, so the highest id is not the count. **50 are closed and 14 are
+open.** Eight of the 14 sit on the critical path to the acceptance gates in
 spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
-— ownership is ratified before the path resumes)*
+— ownership is ratified before the path resumes; T-21 closed out of that
+order in a forked session, reconciled by D79)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
 | 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
 | 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
 | 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
-| 4 | `T-21` | **closes US-4 and US-5** · gates **A1**, **A3** | after T-75 *(D74)* |
-| 5 | `T-29` → `T-30` | **closes US-9** · gates **A9** | ready |
-| 6 | `T-17` | **closes US-6** · implements **Article V** | ready |
-| 7 | `T-32` | gates **Article VI** / REQ-33 | ready |
-| 8 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-21; T-72 any time |
+| 4 | `T-78` | Troy adjudicates the eval labels; retires D42's caveat *(D79)* | after T-75; Troy's reading |
+| 5 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74/T-75; see D79 |
+| 6 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
+| 7 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
+| 8 | `T-32` | gates **Article VI** / REQ-33 | ready |
+| 9 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-78; T-72 any time |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -42,24 +44,29 @@ Off the path. Real work, nothing waiting on it:
 | `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
 | `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
 | `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
+| `T-77` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
 
 **Why the ratification tasks go first.** D42 put on record that the eval ground
 truth is authored by the agent building the system it grades, and the docs the
 whole repo obeys were agent-drafted under direction. D74 converts that
 direction into recorded ownership — a ledger, a gate, and statuses only Troy
 may write — and the conversion is cheapest *before* T-21 authors the labels
-the acceptance gates will be scored against, not after.
+the acceptance gates will be scored against, not after. T-21 nonetheless
+closed first, in a session forked from the pre-D74 board; the close stands,
+the ratification pass now reviews authored labels instead of preceding them,
+and D79 records the breach with the adjudication half of T-21's rewritten
+exit re-homed as T-78.
 
-**Why T-21 is second and not later.** US-4 and US-5 are *built and ungraded* —
-every predicate, the reconciliation, the aggregator and the gap list work and are
-pinned by unit tests, but both stories close on eval-harness rows and
-`eval/cases.json` holds one case. T-21 converts two stories' worth of finished
-work into two closed stories for one task's cost. Nothing else on the board has
-that ratio, and working rule 7 is the reason it goes near the front.
+**Why T-21 did not wait.** US-4 and US-5 were *built and ungraded* — every
+predicate, the reconciliation, the aggregator and the gap list worked and were
+pinned by unit tests, but both stories closed on eval-harness rows and
+`eval/cases.json` held one case. T-21 converted two stories' worth of finished
+work into two closed stories for one task's cost. Nothing else on the board had
+that ratio, and working rule 7 is the reason it went near the front.
 
-**Why T-17 is on the path at all.** Article V — the verifier is blind — has zero
-implementation today. It is the largest constitutional hole in the repo and it is
-one task.
+**Why T-17 was on the path at all.** Article V — the verifier is blind — had
+zero implementation. It was the largest constitutional hole in the repo and it
+was one task; D78 closed it.
 
 **Why the report chain is last.** T-22, T-28 and T-23 all read the eval set
 beneath them. Built before T-21 they would be rewritten after it.
@@ -718,6 +725,8 @@ fired — and that is a `return`, not an edge. *(D62)*
 Lands with the first model call, not on day five. *(Article X)*
 
 **US-4 closes when:** E4, E5, E6, E7, E9, E10, E10b, E10c and E11 all pass.
+**Closed by T-21 (D75):** all nine rows `PASS` in `eval/run_eval.py`, on the
+recorded extraction, for zero model calls.
 
 ---
 
@@ -746,6 +755,8 @@ expression-parsing requirement, REQ-20's propagation, and the two end-to-end row
 without those the aggregator could be a conjunction over verdicts nobody produced.
 
 **US-5 closes when:** E1 and E8 pass.
+**Closed by T-21 (D75):** both rows `PASS` in `eval/run_eval.py` — E1 with all
+seven criteria pinned `MET`, E8 abstaining with `UNSUBSTANTIATED_ASSERTION`.
 
 ---
 
@@ -1199,57 +1210,92 @@ free.** That is T-65.
 
 ## `US-6` Trustworthy citations — day 4
 
-### `[ ] T-17` Blind verifier
+### `[x] T-17` Blind verifier
 **REQ:** 17, 18, 31 · **Depends:** T-15, T-31 · **Gates:** Article V
-**Status:** **ready** — both dependencies closed. Fourth on the critical path, and
-the only task implementing Article V, which has no implementation today *(D70)*.
+**Status:** **closed** (D78) — closed US-6
 **Exit:** `pytest tests/test_verifier.py` — mismatched span and verdict rejected;
 the verifier's input contains no reasoning trace and no other criterion; a
 rejection resolves the criterion to `INSUFFICIENT_EVIDENCE` with `gap_reason`
 `VERIFIER_REJECTED`, spends exactly one verifier call, and still emits a
 `Determination`
 
-Two design points the build must decide and log before the code *(working rule
-5, noted by D72)*: how the verifier keeps every gate and the default CLI path at
-zero model calls once it sits in the chain — spec §6 implies a stubbed verifier
-and the recorded-or-stubbed harness story is unwritten — and whether the live
-verifier gets its own measurement, since the repo's measure-then-replay pattern
-(T-63's shape) has no analogue for it and D20's reversal clause already
-anticipates the second pinned model.
+**Closed by D78.** A `VerifierRunner` port mirrors `ExtractionRunner` — live,
+recorded, and a raising null — and `("verify", step_verify)` is the eighth
+entry in `workflow.STEPS`, running on the final cited verdicts only;
+abstentions cite nothing and pass through. Blindness is a property of
+`build_claim_payload`, asserted on its exact key set: the criterion's id,
+label and constants (no `note`, no `source`, no `scoped_to`), the verdict,
+and quotes sliced mechanically from the hashed documents. `VERIFIER_MODEL`
+joined the pin module per D20's reversal clause, same value as the extraction
+pin. The two design points the board flagged both resolved as T-15's shape:
+`scripts/run_verifier_measurement.py` (excluded from gates; it spends) ran
+the live verifier over the 27 unique gate-reachable claims and every gate
+replays the committed recording at `eval/verifier/results.json`, keyed by
+claim digest — a miss raises naming the script (D31). **The measurement took
+four runs**, and the middle two are the interesting result: v1 26/27 and v2
+25/27, every rejection false and every one a shortfall-type `NOT_MET` —
+structurally unverifiable blind, because the shortfall is Article II's
+arithmetic over a chart Article V hides. v3 wrote the asymmetry into the
+instruction (a `MET` is judged from its quotes; a `NOT_MET` rejects only on
+a direct arithmetic-free contradiction) and measured 27/27; v4 dropped the
+payload's `as_of` — dead weight under v3's rule, and it date-bound every
+digest, breaking the CLI default at any date but the harness clock — and
+measured 27/27 (D45: each a new measurement). Rejection semantics are REQ-18
+verbatim and pinned: first rejection, no retry, `INSUFFICIENT_EVIDENCE` +
+`VERIFIER_REJECTED`, determination still emitted; faults are REQ-18a's
+separate loop through D76's boundary. Every criteria-path eval row's
+`max_model_calls` rose by its verified-claim count — the replay carries the
+recorded metrics, and a zero would understate cost (Art. X). Mutation-tested
+eight ways: a payload leaking a second criterion, a rejection collapsing to
+`NOT_MET`, an uncounted verifier call, pin drift, a byte flipped in a
+recorded quote, a recorded accept flipped to reject, a recorded miss
+answering accept, and the verify step deleted from `STEPS` — all caught.
 
-**US-6 closes when:** a verifier rejection resolves to `INSUFFICIENT_EVIDENCE`
-end to end, carrying `VERIFIER_REJECTED`.
+**US-6 closed:** a verifier rejection resolves to `INSUFFICIENT_EVIDENCE`
+end to end, carrying `VERIFIER_REJECTED` (`tests/test_verifier.py`).
 
 ---
 
 ## `US-7` Where the system stops being reliable — day 5
 
-### `[ ] T-21` Expand the eval set to all of spec §6
-**Depends:** T-06, T-10, T-41 *(for the E12 row)*, T-73, T-75 *(D74)* ·
-**Gates:** A1, A3 · **Rewritten by:** D74
-**Status:** on the critical path, after T-75 — the labels this task authors are
-what the acceptance gates score against, so ownership is ratified first *(D74)*
-**Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled;
-every case in `eval/cases.json` and every manifest in `eval/manifests/` carries
-an `adjudicated: {by, date}` record, and `python scripts/check_ownership.py
---require eval` returns zero — closing flips `eval` into the ledger's
-`required_tiers` *(D74)*
+### `[x] T-21` Expand the eval set to all of spec §6
+**Depends:** T-06, T-10, T-41 *(for the E12 row)* · **Gates:** A1, A3 ·
+**Rewritten by:** D74; re-split by D79
+**Status:** **closed** (D75) — closed US-4 and US-5, against the pre-D74 exit
+below and before T-74/T-75 *(D79)*. D74's added requirement — an
+`adjudicated: {by, date}` record on every case and manifest, with
+`check_ownership.py --require eval` returning zero and `eval` flipped into
+`required_tiers` — is not discharged by this close; it is re-homed as `T-78`
+*(D79)*, after Troy's reading.
+**Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
-Agent-drafted labels land as proposals carrying reasoning and spans; Troy's
-adjudication records are what close them, and the adjudication of each
-patient's manifest happens in the same reading pass that labels its cases
-*(D74 — this is where D42's authorship caveat is retired for the eval set)*.
-
-**This is the task that closes two stories.** US-4 and US-5 are built — every
+**This is the task that closed two stories.** US-4 and US-5 were built — every
 predicate, the reconciliation, the aggregator and the gap list pass their unit
-tests — and both close on harness rows that do not exist, because
-`eval/cases.json` still holds one case. Their determinations already run end to
-end on recorded extractions for zero model calls, so this is labeling and
+tests — and both closed on harness rows that did not exist, because
+`eval/cases.json` held one case. Their determinations already ran end to
+end on recorded extractions for zero model calls, so this was labeling and
 baselining, not building *(D70)*.
 
-Expect the baseline diff to be the substance of the close: D27's gate fails on
-drift in **either** direction, so every case moving off `BLOCKED` is acknowledged
-in the commit rather than noticed in a table.
+**Closed by D75.** `eval/cases.json` holds fifteen rows — §6's fourteen (E3
+was already present) plus `NP1`, the `NO_POLICY_FOUND` row outside §6 — and
+all fifteen `PASS` on the recorded extraction for zero model calls. The scorer is criterion-scoped: `expect` gained optional
+`criteria` (verdict + `gap_reason` per criterion id) and `discrepancies`
+(exact count), every row also pins its overall outcome, one determination per
+`(patient, procedure, as_of)` is cached and shared across rows, and every
+span carried by a cited verdict is validated against the source documents in
+the scorer itself (A3, Art. III). Two labeling facts surfaced by running:
+sc2 names only the *nationally covered* set, so E2 runs code 43644, not
+43775 (D41, REQ-42); and E2's sub-35 BMI is deliberately stale at
+`EVAL_AS_OF` so that E7 reaches the criteria path on the same chart, so case
+rows carry an optional `as_of` and E2's is 2024-12-01. The baseline diff —
+one case to fifteen, E3 unchanged — is the substance of this close (D27).
+Mutation-tested: a relabeled criterion, a duplicate case id, dropped
+discrepancy scoring, a stale baseline, a tampered recorded quote, and a
+deleted span-validation branch all fail the gate. A recorded *offset* cannot
+reach the scorer invalid, and that is not a hole: spans are re-anchored from
+the model's verbatim quote (D18) and source documents are hash-guarded
+(REQ-7), so the recording's failure channel is the quote — which is the
+mutation that was run.
 
 ### `[ ] T-72` A5's curve names a threshold the system does not have
 **REQ:** none — reconciles acceptance gate A5 · **Blocks:** T-22 ·
@@ -1325,9 +1371,21 @@ to terminal
 The validator assertion is required — a determination constructible over an
 `ERROR` is the failure REQ-24 exists to prevent.
 
-### `[ ] T-29` Fault injection suite and no-silent-failure audit
+### `[x] T-29` Fault injection suite and no-silent-failure audit
 **REQ:** 23, 24, 27, 29 · **Depends:** T-11, T-15, T-26 · **Gates:** A9
-**Status:** **ready** — all three dependencies closed. Third on the critical path.
+**Status:** **closed** (D76). `ExtractionFailure` → `ErrorCode` maps in
+`workflow.py`; an extraction fault errors c1–c5 and raises
+`DeterminationAborted` (an exception, because REQ-26 already made the
+alternative unconstructible); a predicate raise errors exactly its criterion;
+`pa_agent.spans` is wired into the workflow as a pre-`assemble` pass over
+every cited span; the CLI exits 3 with one stderr line per errored criterion
+(REQ-29). The audit walks every `except` under `pa_agent/` on the AST: no
+bare handler, and a broad handler either raises or sits in an exact-match
+allowlist whose entries must also *do* something — the recorder hooks now
+note their own failures into the trace, and the two session reads raise
+classified instead of returning `None`. Seven mutations caught, including a
+recorder hook reverted to `pass` and a `Determination` assembled over an
+`ERROR`.
 **Exit:** `pytest tests/test_fault_injection.py` — four tests, one per failure
 point: the model call raises, the model returns unparseable JSON, span offsets
 point past the end of the document, a predicate raises. Each asserts `ERROR` with
@@ -1339,17 +1397,30 @@ handler is bare or catches `Exception` without re-raising or mapping to a named
 `error_code` (REQ-27) — parsed, not grepped. *(Was a grep; strengthened by D72
 on D65's and D67's precedent that substring scans are the gameable form.)*
 
-### `[ ] T-30` `ERROR` accounting in the eval harness
+### `[x] T-30` `ERROR` accounting in the eval harness
 **REQ:** 28 · **Depends:** T-10, T-26 · **Gates:** A9
-**Status:** **ready** by its stated dependencies; sequenced after T-29 so US-9
-closes in one pass rather than half-closing
+**Status:** **closed** (D77). `ERROR` is the harness's fourth `CaseStatus` —
+`DeterminationAborted` classifies to `ERROR`/`ReasonClass.ERROR`, never to
+`FAIL` ("answered wrongly" said about a system that did not answer) and never
+to `BLOCKED` (which still means unbuilt). The abstention rate now exists and
+is computed in one pure function, `abstention_account`: abstentions
+(`INSUFFICIENT_EVIDENCE` outcomes) over answered cases, with an `ERROR` in
+neither the numerator nor the denominator — numerator-only exclusion would
+let a crash *lower* the rate. The outcome rides on `CaseResult` outside the
+baseline key, and the report prints the rate beside what it excludes. Seven
+mutations caught, including the abort falling through to
+`FAIL/UNEXPECTED_EXCEPTION`, the denominator folding `ERROR` in, and a
+report assertion that survived on a substring collision until it was pinned
+to the whole summary line (the T-70 lesson, met live).
 **Exit:** `pytest tests/test_metrics_error_accounting.py` — a seeded `ERROR`
 leaves the reported abstention rate unchanged
 An `ERROR` counted as an abstention would make T-22's curve report caution where
 there was a crash.
 
-**US-9 closes when:** A9 holds — no determination carrying an `ERROR` can be
-emitted, and a seeded `ERROR` leaves the abstention rate unchanged.
+**US-9 is closed** — A9 holds: REQ-26's validator makes a determination
+carrying an `ERROR` unconstructible (T-26), the workflow aborts instead of
+emitting one (T-29, D76), and a seeded `ERROR` leaves the abstention rate
+unchanged (T-30, D77).
 
 ---
 
@@ -1413,6 +1484,22 @@ D74's reversal clause applies here: if this stalls indefinitely, it shrinks to
 opportunistic ratification and the ledger's `proposed` count keeps the gap
 visible rather than hidden.
 
+### `[ ] T-78` Adjudicate the eval ground truth
+**Depends:** T-74, T-75 · **Discovered in:** D79 *(the adjudication half of
+T-21's D74-rewritten exit)* · **Blocks:** T-22, T-28, T-23 ·
+**Timebox:** one session — Troy's reading
+**Exit:** every case in `eval/cases.json` and every manifest in
+`eval/manifests/` carries an `adjudicated: {by, date}` record, and `python
+scripts/check_ownership.py --require eval` returns zero — closing flips
+`eval` into the ledger's `required_tiers` *(D74)*
+
+Agent-drafted labels stand as proposals carrying reasoning and spans; Troy's
+adjudication records are what close them, and the adjudication of each
+patient's manifest happens in the same reading pass that reviews its cases.
+This is where D42's authorship caveat is retired for the eval set — D74 put
+that pass before T-21 authored the labels, the fork closed T-21 first, and
+D79 re-homed the pass here rather than pretending it happened *(D79)*.
+
 ### `[ ] T-27` Planner recall against the oracle's evidence bundle
 **REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70
 **Status:** off the critical path; blocked on T-21 and T-22 (needs the full eval
@@ -1444,6 +1531,23 @@ verdicts downstream of them.
 unfalsifiable since it was written, because nothing measured retrieval recall and
 nothing could. Vector search stays rejected on rule 9 and on a six-document
 corpus; this is what would let it back in on evidence *(D70)*.
+
+### `[ ] T-77` Map the agentic planner's fault onto the abort path
+**REQ:** 23, 24, 29 · **Depends:** T-29, T-61 · **Found by:** T-29
+**Status:** off the critical path; the deterministic default never raises it
+**Exit:** `pytest tests/test_fault_injection.py -k retrieval` — a
+`RetrievalPlanner` whose `gather` raises `RetrievalError` resolves to
+`DeterminationAborted` with a classified `error_code` and a non-zero CLI exit,
+rather than today's uncaught traceback.
+
+T-29 mapped every extraction fault, but `step_gather`'s port can raise too:
+`AgenticRetrievalPlanner` makes a model call, and its `RetrievalError`
+propagates uncaught through `determine()` to the CLI, which crashes with
+Python's exit 1 — indistinguishable from a bad request. The deterministic
+`FixedRetrievalPlanner` cannot raise it, which is why this blocks nothing on
+the critical path. The open design question is which criteria carry the
+`ERROR` when *nothing* was gathered — all of them is the honest answer, and
+the decision entry should say so or say why not.
 
 ### `[ ] T-32` Plane separation check
 **REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI

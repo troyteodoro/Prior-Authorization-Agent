@@ -33,6 +33,7 @@ from pa_agent.contracts import (
     Observation,
 )
 from pa_agent.criteria import BMI_LOINC, evaluate_sc2
+from conftest import AcceptAllVerifier
 from pa_agent.determination import determine
 from pa_agent.index import DocumentIndex
 from pa_agent.spans import validate
@@ -184,6 +185,7 @@ def _expect_fall_through(
         patient_store=patient_store,
         as_of=as_of,
         extraction_runner=runner,
+        verifier=AcceptAllVerifier(),
     )
     assert isinstance(determination, Determination)
     assert determination.outcome is not DeterminationOutcome.NOT_COVERED, (
