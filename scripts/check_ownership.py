@@ -7,7 +7,7 @@ requirement maps to a passing check, which is ``check_req_coverage.py``'s
 claim (T-23) and a different one (D74, by D28's reasoning).
 
 Statuses: an agent may write ``proposed`` and nothing else; ``ratified``,
-``amended`` and ``overruled`` are Troy's edits (CLAUDE.md working rule 11).
+``amended`` and ``overruled`` are the owner's edits (CLAUDE.md working rule 11).
 An ``amended``/``overruled`` entry must link a task that resolves on the
 board. A tier listed in the ledger's ``required_tiers`` — or passed via
 ``--require`` — fails on any entry still ``proposed``; ``amended`` and

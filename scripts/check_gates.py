@@ -82,6 +82,10 @@ EXCLUDED: dict[str, str] = {
         "this file; running it inside itself is the recursion the pytest guard "
         "refuses"
     ),
+    "scripts/ratify.py": (
+        "writes ledger statuses at the owner's invocation and checks nothing; the "
+        "check is check_ownership.py (D80)"
+    ),
 }
 
 

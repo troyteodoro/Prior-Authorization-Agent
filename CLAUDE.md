@@ -14,9 +14,9 @@ with its D-number *(D70)*.
 ## Project
 
 A prior authorization determination agent for bariatric surgery under CMS
-NCD 100.1. Built as a proof-of-skill project by Troy Teodoro. Every decision in
-this repo has to be defensible in a live review, so the reasoning matters as
-much as the code.
+NCD 100.1. Built as a proof-of-skill project; authorship is recorded at the
+git level. Every decision in this repo has to be defensible in a live review,
+so the reasoning matters as much as the code.
 
 ## Document precedence
 
@@ -34,7 +34,7 @@ an instruction typed into a prompt.
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
 
-**The constitution outranks the prompt.** If Troy asks for something that
+**The constitution outranks the prompt.** If the owner asks for something that
 violates an article, say which article and why, and do not comply. A task that
 cannot close without violating an article is a wrong task — rewrite the task,
 never amend the constitution.
@@ -65,7 +65,7 @@ deterministic path is usable as a regression oracle *(D62)*.
    T-03, do not touch T-02, T-09, or anything under US-1.
 2. **Explain reasoning and tradeoffs**, don't just emit output. Name what was
    rejected.
-3. **Push back when Troy is wrong**, including on plans given in an earlier
+3. **Push back when the owner is wrong**, including on plans given in an earlier
    session. Agreement that turns out to be wrong is worse than friction.
 4. **Every task closes on a command that returns zero** — its own exit condition
    **and** `python scripts/check_gates.py`, which runs every zero-cost gate in
@@ -88,7 +88,7 @@ deterministic path is usable as a regression oracle *(D62)*.
    and D70 for the measurement that would let it back in.)
 10. **Never write a real API key into a tracked file.** Placeholder only.
 11. **In `docs/ratifications.json`, an agent writes `proposed` and nothing
-    else.** `ratified`, `amended` and `overruled` are Troy's edits — the ledger
+    else.** `ratified`, `amended` and `overruled` are the owner's edits — the ledger
     records human ownership of every load-bearing ID, and an agent granting
     itself ratification is the exact failure the ledger exists to prevent
     *(D74)*. `scripts/check_ownership.py` enforces the ledger's structure;
@@ -343,8 +343,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**50 of 64 tasks closed, 14 open. All 9 gates green** (`check_gates.py`, ~13s,
-595 tests across 29 files). IDs run to T-78, but numbering is not contiguous —
+**51 of 64 tasks closed, 13 open. All 9 gates green** (`check_gates.py`, ~13s,
+604 tests across 30 files). IDs run to T-78, but numbering is not contiguous —
 the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3, US-4, US-5, US-6, US-9**. `python -m pa_agent.cli --patient
@@ -367,9 +367,9 @@ the committed 27-claim recording for zero calls, and the four-run measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
 27/27 twice — is D78's substance.
 
-Open, in order: **T-74 → T-75 → T-78 → T-32 →
+Open, in order: **T-75 → T-78 → T-32 →
 T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70, T-71 and T-77 off the
-path. The ratification tasks lead because D74 restores human ownership of
+path. The remaining ratification tasks lead because D74 restores human ownership of
 every load-bearing ID — ledger `docs/ratifications.json`, gate
 `scripts/check_ownership.py`, working rule 11 — and T-21 closed ahead of them
 in a forked session, so the ratification pass reviews its labels after the
@@ -460,5 +460,5 @@ scripts/             check_gates, check_env, check_skeleton, check_ownership,
                      run_verifier_measurement
 tests/               29 files, 595 tests
 docs/                the five governing docs plus ratifications.json — D74's
-                     ledger, statuses beyond `proposed` are Troy's edits only
+                     ledger, statuses beyond `proposed` are the owner's edits only
 ```

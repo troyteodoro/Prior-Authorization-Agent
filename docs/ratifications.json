@@ -1,496 +1,500 @@
 {
-  "note": "D74's ratification ledger. Statuses other than 'proposed' are Troy's edits only (CLAUDE.md working rule 11). Tiers are computed by scripts/check_ownership.py from each id's kind; a tier in 'required_tiers' fails the gate on any entry still 'proposed'. Checked by scripts/check_ownership.py, a gate.",
-  "required_tiers": [],
+  "note": "D74's ratification ledger. Statuses other than 'proposed' are the human owner's edits only (CLAUDE.md working rule 11). Tiers are computed by scripts/check_ownership.py from each id's kind; a tier in 'required_tiers' fails the gate on any entry still 'proposed'. Checked by scripts/check_ownership.py, a gate.",
+  "required_tiers": [
+    "constitution",
+    "spec",
+    "stories"
+  ],
   "entries": {
     "Article I": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article II": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article III": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article IV": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article V": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article VI": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article VII": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article VIII": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article IX": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Article X": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "Amendment 1": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-1": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-2": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-3": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-4": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-42": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-33": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-41": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-5": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-6": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-7": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-8": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-9": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-10": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-35": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-38": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-52": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-53": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-43": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-44": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-45": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-46": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-47": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-48": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-49": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-50": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-51": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-54": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-11": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-12": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-13": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-36": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-32": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-14": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-40": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-37": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-15": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-16": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-34": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-17": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-18": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-18a": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-31": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-23": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-24": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-26": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-27": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-29": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-30": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-19": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-20": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-21": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-39": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-22": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-25": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "REQ-28": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E1": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E2": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E3": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E4": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E5": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E6": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E7": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E8": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E9": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E10": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E10b": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E10c": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E11": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "E12": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A1": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A2": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A3": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A4": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A5": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A6": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A7": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A8": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "A9": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-1": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-2": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-3": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-4": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-5": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-6": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-7": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-9": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "US-8": {
-      "status": "proposed",
-      "by": "agent",
-      "date": "2026-09-10"
+      "status": "ratified",
+      "by": "human",
+      "date": "2026-09-11"
     },
     "T-00": {
       "status": "proposed",
@@ -1163,6 +1167,11 @@
       "date": "2026-09-11"
     },
     "D79": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-11"
+    },
+    "D80": {
       "status": "proposed",
       "by": "agent",
       "date": "2026-09-11"

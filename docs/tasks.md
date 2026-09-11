@@ -17,8 +17,8 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-four tasks are on this board — IDs run to T-78 but numbering is not
-contiguous, so the highest id is not the count. **50 are closed and 14 are
-open.** Eight of the 14 sit on the critical path to the acceptance gates in
+contiguous, so the highest id is not the count. **51 are closed and 13 are
+open.** Seven of the 13 sit on the critical path to the acceptance gates in
 spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
 — ownership is ratified before the path resumes; T-21 closed out of that
 order in a forked session, reconciled by D79)*
@@ -26,9 +26,9 @@ order in a forked session, reconciled by D79)*
 | # | Task | Closes / gates | State |
 |---|---|---|---|
 | 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
-| 2 | `T-74` | Troy ratifies constitution, spec, stories *(D74)* | ready — **next**; Troy's reading |
-| 3 | `T-75` | Troy ratifies the load-bearing decisions and the board *(D74)* | after T-74; Troy's reading |
-| 4 | `T-78` | Troy adjudicates the eval labels; retires D42's caveat *(D79)* | after T-75; Troy's reading |
+| 2 | `T-74` | the owner ratifies constitution, spec, stories *(D74)* | **closed** |
+| 3 | `T-75` | the owner ratifies the load-bearing decisions and the board *(D74)* | ready — **next**; the owner's reading |
+| 4 | `T-78` | the owner adjudicates the eval labels; retires D42's caveat *(D79)* | after T-75; the owner's reading |
 | 5 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74/T-75; see D79 |
 | 6 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
 | 7 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
@@ -49,7 +49,7 @@ Off the path. Real work, nothing waiting on it:
 **Why the ratification tasks go first.** D42 put on record that the eval ground
 truth is authored by the agent building the system it grades, and the docs the
 whole repo obeys were agent-drafted under direction. D74 converts that
-direction into recorded ownership — a ledger, a gate, and statuses only Troy
+direction into recorded ownership — a ledger, a gate, and statuses only the owner
 may write — and the conversion is cheapest *before* T-21 authors the labels
 the acceptance gates will be scored against, not after. T-21 nonetheless
 closed first, in a session forked from the pre-D74 board; the close stands,
@@ -168,7 +168,7 @@ Closes before you sleep on day one.
 - a round trip: `get_document()` then slice at a T-02 answer's offsets returns
   that answer's quote — the storage port preserves Article III's guarantee
 
-**Scope changed by D25** *(was: the seven models alone)*. Troy's end state is a
+**Scope changed by D25** *(was: the seven models alone)*. The owner's end state is a
 production deployment against a code database and a patient database. The ports
 are the whole of what that costs the code written now; everything above an
 adapter is unchanged when the adapter becomes Postgres and FHIR. Defined here it
@@ -412,7 +412,7 @@ Closes open question 4, so T-39 comes first: until it does, unflagging the
 lookback is not checked by anything.
 
 **Closed by D40.** Open question 4 is answered — **12 months, decided by
-Troy**, by analogy to the program-participation window, carried as a `note`
+The owner**, by analogy to the program-participation window, carried as a `note`
 and never a span, unflagged under T-39's rebuilt gate on its first real
 exercise. `pa_agent/criteria.py` evaluates (a) and (b) over contracts alone
 (imports asserted on the AST): (a) reads threshold and window through
@@ -1266,7 +1266,7 @@ below and before T-74/T-75 *(D79)*. D74's added requirement — an
 `adjudicated: {by, date}` record on every case and manifest, with
 `check_ownership.py --require eval` returning zero and `eval` flipped into
 `required_tiers` — is not discharged by this close; it is re-homed as `T-78`
-*(D79)*, after Troy's reading.
+*(D79)*, after the owner's reading.
 **Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
 **This is the task that closed two stories.** US-4 and US-5 were built — every
@@ -1450,22 +1450,24 @@ once `eval` is required, a manifest or case in `eval/` without a well-formed
 `adjudicated` record. `--require <tier>` (repeatable) requires a tier for one
 run — the ratification tasks' exits use it before flipping the tier into
 `required_tiers`, after which the bare gate invocation enforces it forever.
-Statuses other than `proposed` are Troy's edits only (working rule 11, D74).
+Statuses other than `proposed` are the owner's edits only (working rule 11, D74).
 
-### `[ ] T-74` Ratify the constitution, the spec and the stories
+### `[x] T-74` Ratify the constitution, the spec and the stories
 **Depends:** T-73 · **Discovered in:** D74 · **Timebox:** one session
-**Status:** second on the critical path; the reading is Troy's, not an agent's
+**Status:** closed — 98 ids ratified by the owner through `scripts/ratify.py`
+(D80), the owner's own invocations recorded in the ledger; `constitution`, `spec` and
+`stories` are in `required_tiers`, so the bare gate now enforces them forever
 **Exit:** `python scripts/check_ownership.py --require constitution --require
 spec --require stories` returns zero, and the close flips those three tiers
 into `required_tiers`
 
-An agent may scaffold a checklist view; every status written is Troy's edit.
+An agent may scaffold a checklist view; every status written is the owner's edit.
 A disagreement is an `amended` or `overruled` status naming a new numbered
 task (working rule 6) — the gate refuses one that names nothing.
 
 ### `[ ] T-75` Ratify the load-bearing decisions and the whole board
 **Depends:** T-74 · **Discovered in:** D74 · **Timebox:** two sessions
-**Status:** third on the critical path; the reading is Troy's, not an agent's
+**Status:** **next** — T-74 closed; the reading is the owner's, not an agent's
 **Exit:** `python scripts/check_ownership.py --require decisions-core
 --require tasks` returns zero, and the close flips both tiers into
 `required_tiers`
@@ -1487,13 +1489,13 @@ visible rather than hidden.
 ### `[ ] T-78` Adjudicate the eval ground truth
 **Depends:** T-74, T-75 · **Discovered in:** D79 *(the adjudication half of
 T-21's D74-rewritten exit)* · **Blocks:** T-22, T-28, T-23 ·
-**Timebox:** one session — Troy's reading
+**Timebox:** one session — the owner's reading
 **Exit:** every case in `eval/cases.json` and every manifest in
 `eval/manifests/` carries an `adjudicated: {by, date}` record, and `python
 scripts/check_ownership.py --require eval` returns zero — closing flips
 `eval` into the ledger's `required_tiers` *(D74)*
 
-Agent-drafted labels stand as proposals carrying reasoning and spans; Troy's
+Agent-drafted labels stand as proposals carrying reasoning and spans; the owner's
 adjudication records are what close them, and the adjudication of each
 patient's manifest happens in the same reading pass that reviews its cases.
 This is where D42's authorship caveat is retired for the eval set — D74 put
