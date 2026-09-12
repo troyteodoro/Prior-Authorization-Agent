@@ -6041,3 +6041,96 @@ confidence rather than a verdict is the obvious candidate — and A5's original
 shape becomes buildable. Reverses partially if a verdict-moving sweep becomes
 free, which needs a verifier recording keyed by something other than the exact
 claim digest; that is a larger change to D78 than A5 is worth today.
+
+## D83 — Plane separation is asserted twice: downward from each root, and as an exact set of modules that reach both
+
+**Context.** Article VI and REQ-33 keep the policy corpus and patient data on
+two planes with two ports. Four tests already parse one module's AST for its own
+import restriction (`test_index.py`, `test_spans.py`, `test_criteria_ab.py`,
+`test_adk_agent.py`), and two more name T-32 where a combined handle would be
+caught (`test_schemas.py`, `test_resolver.py`). Every one of them is a
+per-module assertion a new module joins by someone remembering to add it.
+`test_resolver.py` is the sharpest example: it asserts the substring `"patient"`
+does not appear in `resolver.py`, which is a grep wearing a test's clothes and
+would pass a module importing the patient store under an alias.
+
+T-32 is the global walk. Three rulings have to be made before the test can be
+written, because the test cannot make them for itself.
+
+### Ruling 1 — the whitelist of both-planes modules is **five**, not four
+
+The board and the plan both expected four composition holders. The parsed graph
+says five: `cli`, `determination`, `workflow`, `agent.retrieval_agent` — and
+**`retrieval`**, which was not on anybody's list. It belongs there and the
+reason is D66's: `FixedRetrievalPlanner.gather()` re-reads observations and
+conditions from the patient port *and the comorbidity value set from the policy
+port* (T-46, REQ-46), because the tool payload is never the evidence path. A
+module that assembles the evidence bundle necessarily touches both planes.
+
+That is the whole argument for asserting this as a **set equality** rather than
+a subset. A whitelist checked as "these may reach both" hides the fifth member;
+checked as "exactly these do", the fifth had to be found, named and justified
+before the test could pass. Each entry carries its reason in the test's own
+table, and removing an entry fails immediately — so an entry cannot go stale
+either.
+
+### Ruling 2 — `contracts.py` is shared by design, and what "only `Criterion` crosses" targets
+
+Every module imports `contracts`, so a naive walk finds both planes connected
+through it and either fails on everything or gets relaxed until it asserts
+nothing. `contracts` is the shared vocabulary on purpose, and `EvidenceSpan`
+spans both planes' documents by construction — a span into a chart note and a
+span into the NCD are the same type, which is what makes Article III uniform.
+
+So the assertion targets **plane-specific** types and modules, not every symbol:
+`stores/policy.py` and `stores/patient.py` and what is reachable from each. The
+"only `Criterion` crosses" clause is already carried by
+`test_schemas.py`'s no-class-satisfies-both-Protocols pair, which this task
+keeps rather than duplicating.
+
+### Ruling 3 — `cli.py` is exempt from the D25 storage-location scan
+
+D25's second assertion: no module outside `pa_agent/stores/` opens a file path,
+holds a connection, or names a storage location. `cli.py` does all three, and
+legitimately — REQ-41 makes it the one place a store is constructed, and a
+composition root that cannot name a location cannot compose anything. It is the
+only exemption, and the scan over the rest of `pa_agent/` currently finds
+nothing, which is the point: the exemption is one module wide and the test says
+which.
+
+**The scan is scoped to `pa_agent/`, not the tree** *(D27)*. `tests/` opens
+fixtures and `eval/run_eval.py` opens its own labels and baseline; neither is
+the system under test. A tree-wide scan would fail on the grader and be relaxed
+until it stopped asserting anything — the exact decay D27 named.
+
+### Chosen — two assertions, in opposite directions
+
+1. **Downward from each plane's roots.** From `stores/policy`, `resolver` and
+   `agent/policy_tools`, the transitive import closure contains no patient
+   module; from `stores/patient` and `agent/patient_tools`, it contains no
+   policy module. This needs no whitelist, because a composition holder sits
+   *above* the roots and is never reached by following imports down from one.
+   This is Article VI's claim proper: a plane cannot reach across.
+2. **Both-planes reachability, as an exact set.** The modules whose closure
+   reaches both planes are exactly the five named above. This is what catches
+   the new module that quietly grows a second import — the failure mode the
+   per-module tests can only catch if someone remembers to write one.
+
+**Rejected — a single "no module imports both stores" rule.** It is the obvious
+form and it is wrong in both directions: it flags the four legitimate
+composition holders as violations, and it misses a policy module reaching the
+patient plane through two hops.
+
+**Rejected — leaving `test_resolver.py`'s substring form in place.** It is
+upgraded to the parsed form here, because it names this task and because a
+substring check over source is precisely what D65 and D67 already had to replace
+with AST parsing twice.
+
+**Cost.** One test file, and one ruling (`retrieval` in the whitelist) that has
+to be re-argued if the value set ever stops arriving through the policy port.
+
+**Reverses if:** the production target lands. Under two database connections
+rather than two package trees, an import-graph assertion passes a module that
+reaches the wrong database at runtime, and this test becomes necessary but no
+longer sufficient — the board already says so in T-32's text. The replacement is
+a connection-level assertion, not a wider import scan.

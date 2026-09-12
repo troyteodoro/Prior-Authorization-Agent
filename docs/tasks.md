@@ -17,8 +17,8 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-five tasks are on this board — IDs run to T-79 but numbering is not
-contiguous, so the highest id is not the count. **53 are closed, 9 are open,
-and 3 are deferred under review** *(D81)*. Four of the nine sit on the critical
+contiguous, so the highest id is not the count. **54 are closed, 8 are open,
+and 3 are deferred under review** *(D81)*. Three of the eight sit on the critical
 path to the acceptance gates in spec §7. This is that path, in order. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
 the ratification programme paused)*
@@ -32,8 +32,8 @@ the ratification programme paused)*
 | 5 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
 | 6 | `T-79` | the ratification programme pauses *(D81)* | **closed** |
 | 7 | `T-72` | A5 acquires a mechanism the system actually has *(D82)* | **closed** |
-| 8 | `T-32` | gates **Article VI** / REQ-33 | ready — **next** |
-| 9 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | ready |
+| 8 | `T-32` | gates **Article VI** / REQ-33 *(D83)* | **closed** |
+| 9 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | ready — **next** |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -1625,9 +1625,9 @@ the critical path. The open design question is which criteria carry the
 `ERROR` when *nothing* was gathered — all of them is the honest answer, and
 the decision entry should say so or say why not.
 
-### `[ ] T-32` Plane separation check
+### `[x] T-32` Plane separation check
 **REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
-**Status:** **ready** — all three dependencies closed. Fifth on the critical path.
+**Status:** **closed** (D83) — `tests/test_planes.py`, twelve assertions
 **Partly asserted already, and do not rebuild those.** `test_index.py`,
 `test_spans.py`, `test_criteria_ab.py` and `test_adk_agent.py` each parse one
 module's AST for its own import restriction, and `test_schemas.py:389` and
@@ -1647,6 +1647,36 @@ neither is the system under test — a scan over the whole tree would fail on th
 grader and get relaxed until it stopped asserting anything. Under the production target the planes are two connections rather
 than two package trees, and an assertion that only reads imports would pass a
 module that reaches the wrong database at runtime.
+
+**Closed by D83, and the walk found a fifth composition holder.** The board and
+the plan both expected four modules to touch both planes — `cli`,
+`determination`, `workflow`, `agent/retrieval_agent`. The parsed graph says
+five: **`retrieval`** belongs there too, because `gather()` re-reads
+observations and conditions from the patient port *and* the comorbidity value
+set from the policy port (T-46, REQ-46, D66). It was found because the whitelist
+is asserted as a **set equality** rather than a subset — a subset check would
+have passed in silence, which is the whole argument for the stricter form.
+
+Two assertions, in opposite directions. Downward from each plane's roots, the
+transitive closure contains nothing from the other plane — no whitelist needed,
+since a composition holder sits above the roots and is never reached by walking
+down from one. Then both-planes reachability as an exact set, which is what
+catches a new module quietly growing a second import; equality also means a
+stale entry cannot linger. D25's storage scan comes with it, scoped to
+`pa_agent/` with `cli.py` the one named exemption (REQ-41), plus two guards
+against the scan becoming vacuous — it asserts *absence* over a tree that is
+currently clean, so an emptied parser would pass identically.
+
+`tests/test_resolver.py`'s `"patient" not in source.lower()` is upgraded to the
+parsed form here, as the task asked: a substring check passes a module importing
+the patient store under an alias, and D65 and D67 already had to make this
+replacement twice.
+
+Mutation-tested: a policy→patient import in `resolver.py`, a scratch module
+reaching both planes, a whitelist entry removed, an emptied import parser (the
+blind-graph mutation — the walk asserts absence, and an empty graph reports
+absence for free), an emptied storage scanner, and a `pathlib` import added to
+`criteria.py` all fail.
 
 ### `[x] T-34` Pin the model a measurement runs against
 **Guards:** D19 · **Depends:** none · **Discovered in:** T-00

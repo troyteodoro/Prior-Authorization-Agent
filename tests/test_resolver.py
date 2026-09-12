@@ -22,6 +22,8 @@ imports, not by trust.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from pa_agent.contracts import CoverageStatus
@@ -211,12 +213,33 @@ def test_no_result_type_can_carry_call_metrics(store):
 
 
 def test_the_resolver_imports_nothing_from_the_patient_plane():
-    """REQ-33: resolution is policy-plane. One patient import here and the
-    import-graph assertion T-32 builds would have a counterexample already."""
+    """REQ-33: resolution is policy-plane.
+
+    Parsed, not grepped. This asserted `"patient" not in source.lower()` until
+    T-32, which is a grep wearing a test's clothes: it passes a module that
+    imports the patient store under an alias, and fails on the word appearing in
+    a comment. The global walk lives in `tests/test_planes.py`; this stays as the
+    per-module pin on the one module REQ-2 is about (D83).
+    """
+    import ast
+
     import pa_agent.resolver as resolver_module
 
-    source = open(resolver_module.__file__, encoding="utf-8").read()
-    assert "patient" not in source.lower()
+    tree = ast.parse(Path(resolver_module.__file__).read_text(encoding="utf-8"))
+    imported: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            imported.add(module)
+            imported.update(f"{module}.{alias.name}" for alias in node.names)
+
+    assert not any("patient" in name for name in imported), (
+        f"pa_agent/resolver.py imports {sorted(imported)}; resolution is "
+        "policy-plane and one patient import gives T-32's walk a counterexample "
+        "(REQ-33, Article VI)"
+    )
 
 
 # --------------------------------------------------------------------------
