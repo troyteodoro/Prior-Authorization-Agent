@@ -16,10 +16,10 @@ answers the second question, once.
 
 ## Path to v1
 
-Sixty-five tasks are on this board — IDs run to T-79 but numbering is not
-contiguous, so the highest id is not the count. **58 are closed, 5 are open,
-and 3 are deferred under review** *(D81)*. One of the five sits on the critical
-path to the acceptance gates in spec §7. This is that path, in order. *(D70,
+Sixty-six tasks are on this board — IDs run to T-80 but numbering is not
+contiguous, so the highest id is not the count. **59 are closed, 4 are open,
+and 3 are deferred under review** *(D81)*. **Nothing open sits on the critical
+path: acceptance gates A1–A9 all hold.** This is the path as it ran. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
 the ratification programme paused)*
 
@@ -34,7 +34,7 @@ the ratification programme paused)*
 | 7 | `T-72` | A5 acquires a mechanism the system actually has *(D82)* | **closed** |
 | 8 | `T-32` | gates **Article VI** / REQ-33 *(D83)* | **closed** |
 | 9 | `T-22` → `T-28` | gates **A2**, **A3**, **A5**, **A6** *(D85)* | **closed** |
-| 10 | `T-23` | **closes US-7** · gates **A7**, **A8** | ready — **next** |
+| 10 | `T-23` | **closed US-7** · gates **A7**, **A8** *(D87)* | **closed** |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -1465,9 +1465,11 @@ the extent it exceeds 0.611. A2's asymmetry argument is in the section's own
 text. The base rate reads the labels and not the system's output; that
 distinction survived a mutation pass and now has its own test.
 
-### `[ ] T-23` README
+### `[x] T-23` README
 **Depends:** T-22 · **Gates:** A7, A8
-**Status:** last on the critical path; blocked on T-22 alone *(D81)*
+**Status:** **closed** (D87) — `scripts/check_req_coverage.py` is the eleventh
+gate, and the README's *Where this system degrades* section is A8's deliverable.
+**US-7 closes with it: A1–A8 all hold.**
 **Exit:** `python scripts/check_req_coverage.py` — every REQ in spec §5 maps to a
 passing check **or** appears in §5's *Unclaimed in v1* list, and the script reads
 that list rather than assuming it empty. A REQ in neither fails. A REQ added to
@@ -1482,8 +1484,43 @@ is already referenced in `tests/test_check_gates.py` as a script that does not
 exist yet, so that reference flips rather than being added — and the
 classification test fails if it is left in neither list.
 
-**US-7 closes when:** A1, A2, A3, A5, A6, A7 and A8 all hold. A4 closes under
-US-1 and US-3, A9 under US-9.
+**Closed by D87.** 55 requirements: **53 mapped to a check that exists, 2
+declared unclaimed** with a reason, a claiming condition, and a decisions entry
+behind each. Four failures, and they are the whole gate: a REQ in neither
+mapping nor table; an unclaimed row with no entry naming it (A7's closing
+sentence, made enforceable); a mapping pointing at a file that does not exist,
+or at a script outside `tests/` that no gate runs; and a REQ claimed by *both*,
+because two answers to "is this claimed" is worse than none.
+
+**The mapping is written by hand, and that was a measurement rather than a
+preference.** Deriving it by searching test files for REQ numbers grades comment
+discipline instead of coverage — **seven requirements are checked by a file that
+never names them** (REQ-3, 10, 11, 12, 37, 40 and one more), and a search-based
+gate would have called them uncovered. A test asserts that set is non-empty, so
+the rejected alternative stays rejected on evidence.
+
+**A8's section did not exist and now does.** `README.md` gained *Where this
+system degrades*: single-jurisdiction thresholds that are Noridian's and not
+CMS's, extraction's paraphrase refusal losing evidence fail-closed, corpus size,
+self-graded ground truth with the ratification pass deferred rather than done,
+the verifier's blindness costing arithmetic checks, model adjudication
+deliberately unclaimed, retrieval recall measured as a bound, and every free
+number being a replay of one measured day. The status section now carries the
+A1–A9 table with the measured figures.
+
+**This gate audits the mapping; running the checks is `check_gates.py`'s job** —
+D28's distinction, since "this requirement is covered" and "this check passes"
+are different claims. `tests/test_check_gates.py`'s reference to a script that
+does not exist flipped rather than being deleted.
+
+Mutations: a REQ dropped from the mapping, an unclaimed row added with no
+decisions entry, a mapped check pointed at a missing file, the requirement
+parser emptied (the vacuous-gate mutation — every assertion here is about
+absence), and the unclaimed table assumed empty.
+
+**US-7 closed** with T-23 *(D87)*. A1, A2, A3, A5, A6, A7 and A8 all hold;
+A4 closed under US-1 and US-3, A9 under US-9. The measured figures are in
+`eval/report.md`, generated and gate-verified *(D85)*.
 
 ---
 

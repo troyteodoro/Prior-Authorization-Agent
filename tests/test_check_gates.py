@@ -204,9 +204,12 @@ def test_an_unclassified_script_is_caught(script, monkeypatch):
 
 
 def test_every_gate_names_a_file_that_exists(script):
-    """`scripts/check_req_coverage.py` is named by an exit condition on the board
-    and has never been written (A7, unclaimed). A gate list that can name a
-    missing file fails at close time with a `No such file` nobody expects."""
+    """A gate list that can name a missing file fails at close time with a
+    `No such file` nobody expects.
+
+    This used to name `scripts/check_req_coverage.py` as the script the board
+    referenced and nobody had written. T-23 wrote it and it is now the eleventh
+    gate, so the reference flipped rather than being deleted (D87)."""
     for _, argv in script.GATES:
         if argv[0] == "-m":
             assert argv[1] == "pytest", "the only module-form gate is the suite"

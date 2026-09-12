@@ -207,14 +207,18 @@ is in scope.
 `python` is not assumed on PATH; the tracked venv is Python 3.12.
 
 ```bash
-# All nine zero-cost gates (~13s). Required green at every task close.
+# All eleven zero-cost gates (~25s). Required green at every task close.
 ./venv/bin/python scripts/check_gates.py
 
-# The test suite alone (604 tests, ~9s)
+# The test suite alone (664 tests, ~18s)
 ./venv/bin/python -m pytest -q
 
 # A real determination, zero model calls
 ./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775
+
+# Regenerate the metrics report, or check it still matches its sources
+./venv/bin/python eval/build_report.py
+./venv/bin/python eval/build_report.py --verify
 ```
 
 CLI exit codes: `0` an answer (including honest abstentions — Article IV),
@@ -272,33 +276,135 @@ and a hung mutation being counted as caught.
 
 ---
 
+## Where this system degrades
+
+A8 asks for the point at which this stops being useful. That question has an
+answer, and it is not "when accuracy drops" — accuracy is 1.000 on `MET`
+precision over a fifteen-case set, which is a statement about a fifteen-case
+set. These are the things that actually break it, roughly in order of how
+likely they are to bite a real deployment.
+
+**One jurisdiction, and the thresholds are not CMS's.** NCD 100.1 quantifies
+nothing — no months, no visit counts, no recency window. Every constant in the
+criteria tree comes from A53028, a Noridian Jurisdiction F article. This system
+determines coverage *as Noridian would*. Point it at a patient in another MAC's
+territory and it will answer confidently and wrongly, because the tree is right
+and the jurisdiction is not. There is no code path that notices; the resolver
+returns one tree. A second jurisdiction is a second tree over the same NCD, and
+nothing in the design makes that a small change to operate — it makes it a
+small change to *build*.
+
+**Extraction refuses paraphrase, and that loses evidence.** Spans are located by
+searching the model's verbatim quote — exact, then whitespace-normalized —
+because the model's own character offsets were usable 0 times out of 80 in the
+spike and 0 out of 171 in T-15. The consequence is that a model which
+paraphrases instead of quoting produces a claim nobody can anchor, and the
+anchorer correctly drops it. T-63 lost a patient's program assertion exactly
+this way. **The determination that results is well-formed and says less than the
+chart does** — it abstains where it should have found evidence, so the failure
+is fail-closed rather than a wrong approval, and it is still a failure. The
+per-note record shows it; the headline aggregate did not, until T-71.
+
+**Six patients, three documents, fifteen cases.** Every rate in
+`eval/report.md` moves by large steps. One case is worth more than a percentage
+point in every table. A precision of 1.000 over eleven `MET` calls against a
+base rate of 0.611 is a real result and a small one; it says the approach does
+not obviously fail, and nothing more.
+
+**The ground truth is self-graded.** The eval labels and the fact manifests were
+authored by the agent building the system that they grade. The structural
+mitigations are real — manifests are written from the bundles *before* the notes
+are synthesized, the system under test never reads them, and every cited span is
+validated against the source rather than against a label. The ratification pass
+that would replace "structural mitigation" with "adjudicated" is **deferred, not
+done**: it is human reading work, and the board keeps it in a *Deferred — under
+review* section rather than pretending it happened. Do not quote a number from
+this repo without that sentence.
+
+**The verifier is blind on purpose, and that costs recall of a certain kind.**
+It sees one claim at a time — the requirement text, the verdict, and the
+mechanically sliced quote — and no reasoning. It is therefore barred from date
+and count arithmetic, because two measured rounds of false rejections showed it
+rejecting every shortfall-type `NOT_MET`: the shortfall is arithmetic over a
+chart the blindness deliberately hides. A verifier that cannot see the chart
+cannot check a claim *about* the chart's arithmetic, and that half of
+verification is done by Python instead.
+
+**Model adjudication is unclaimed, so the model's judgment is never on the
+hook.** REQ-44 and REQ-47 are declared *Unclaimed in v1*: Amendment 1 reserves
+date arithmetic, numeric comparison, counting, sorting and set membership to
+Python on both paths, and those are the entire decision procedure for all seven
+criteria. There is no verdict a model could determine without doing something
+reserved. That is a deliberate limit on what has been demonstrated, not an
+oversight — the agentic path is real and it decides *what to read*, not what the
+answer is.
+
+**Retrieval recall is measured as a bound, not directly.** The model-directed
+planner's recall against the deterministic oracle's evidence is 1.000 over 25
+citing cases — measured over the documents each run *cited*, because that is
+what the recording holds. A run cannot cite what it did not gather, so the
+figure bounds true recall from below and a measured 1.000 settles it. The moment
+that number drops below 1.000 it stops being interpretable without a second,
+model-spending measurement.
+
+**Everything free is a replay.** Every gate, the CLI's default path, and every
+number in the report run off committed recordings and spend zero model calls.
+That is what makes the checks something that gets run rather than skipped
+because it costs money — and it means the freely-reproducible figures describe
+the model as it behaved on one measured day, against one pinned model, on one
+tier. A changed call configuration, a changed tool declaration, a changed SDK,
+or a different tier is a **new measurement, never a re-run**.
+
+---
+
 ## Status and the road to v1
 
-**51 of 64 tasks closed; all nine gates green.** Delivered: US-1 through
-US-6 and US-9 — instant screening of non-covered procedures, cited structured
-criteria, the categorical exclusion, note-only criteria with two independent
-BMI readings, the gap list, the blind verifier, and full `ERROR`-state
-accounting.
+**58 of 66 tasks closed, 5 open, 3 deferred; all eleven gates green.**
+Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
+procedures, cited structured criteria, the categorical exclusion, note-only
+criteria with two independent BMI readings, the gap list, the blind verifier,
+the metrics report, and full `ERROR`-state accounting.
 
-Open, in order:
+**Acceptance gates A1–A9 all hold.** The measured figures live in
+`eval/report.md`, which is generated rather than written: `python
+eval/build_report.py --verify` recomputes every number from the committed
+recordings and fails on any that no longer matches, so a stale figure is a red
+gate rather than a plausible-looking table.
 
-1. **Ratification** — the human owner ratifies the load-bearing decisions,
-   the board, and (as a review-after-the-fact) the eval labels. This is what
-   retires the self-graded-ground-truth caveat above from "structural
-   mitigation" to "adjudicated."
-2. **Article VI enforcement as a gate** (plane separation, REQ-33).
-3. **The report chain** — cost/latency aggregation, `eval/report.md` with
-   per-criterion precision *next to its base rate and an always-`MET`
-   baseline*, and finally the REQ-coverage gate: a script proving every
-   requirement in the spec maps to a passing check or to an explicitly
-   declared *Unclaimed in v1* entry backed by a decision log entry. A
-   requirement in neither fails the build.
+| Gate | Result |
+|---|---|
+| A1 | 15 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.611** base rate and an always-`MET` baseline scoring exactly that |
+| A3 | **zero** `MET` verdicts with an invalid span, over 82 spans checked |
+| A4 | E2 and E3 complete with zero model calls |
+| A5 | abstention **0.200**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
+| A6 | 33 model calls / 27,175 in / 5,723 out / 36.1s across nine determinations, from instrumentation |
+| A7 | 55 requirements: 53 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A8 | the section above |
+| A9 | zero determinations presented with a criterion in `ERROR` |
+
+**A5 is not the gate it was originally written as.** It asked for a
+coverage/accuracy curve across "a range of fail-closed thresholds", naming the
+point where abstention reaches one. No such threshold exists in this system, and
+that was measured rather than argued: the one constant that can be swept for
+free moves the *disclosure* count and leaves abstention flat at every grid
+point, and the constant that would move verdicts cannot be swept without
+spending model calls. **No constant in this tree drives abstention to 1.** A5
+became the rate, the account of *why* per `gap_reason`, and the sweep with the
+flat column printed beside it so the claim stays falsifiable. Where the system
+becomes useless moved to A8, above, which is where it belonged.
+
+Still open, none of it on the path to the acceptance gates: an aggregate that
+hides a refused citation, a brittle substring assertion in one gate, the agentic
+planner's fault mapping, and a direct (model-spending) measurement of retrieval
+recall to replace the bound. Deferred under review: the remaining ratification
+tasks.
 
 Two requirements are **unclaimed on purpose**: model-performed adjudication
 (REQ-44/REQ-47) is reserved out of v1 because Amendment 1 keeps the entire
 decision procedure in Python — there is no verdict a model could determine
-without doing something reserved. Declaring that explicitly, rather than
-quietly not doing it, is what makes the coverage gate satisfiable.
+without doing something reserved. Declaring that explicitly, rather than quietly
+not doing it, is what makes the coverage gate satisfiable.
 
 ---
 
@@ -314,12 +420,12 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
 data/policies/       three source documents, the SNOMED value set, and the
                      criteria tree (policy_version_id ncd-100.1-jf-v1)
 data/patients/       seven Synthea bundles + six synthesized notes, hash-pinned
-eval/                cases.json, baseline.json, and the committed recordings
-                     (extraction, agentic, verifier) that make replay free
+eval/                cases.json, baseline.json, report.md (generated), and the
+                     committed recordings that make replay free
 spike/spike_001/     the throwaway span-anchoring spike that killed
                      model-reported offsets
 scripts/             the gates, the measurement scripts, and the corpus tooling
-tests/               the suite (604 tests), including the AST-level pins
+tests/               the suite (664 tests), including the AST-level pins
 docs/                constitution, spec, stories, tasks, decisions,
                      ratifications
 ```

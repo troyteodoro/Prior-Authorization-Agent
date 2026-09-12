@@ -68,6 +68,9 @@ GATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     # recomputes every figure from the committed recordings and diffs, so a
     # stale number is a red gate rather than a plausible-looking table.
     ("the metrics report", ("eval/build_report.py", "--verify")),  # T-22
+    # T-23 (D87). Audits the REQ -> check mapping for completeness; running the
+    # checks is this script's job, and those are different claims (D28).
+    ("the requirement coverage", ("scripts/check_req_coverage.py",)),  # T-23
 )
 
 #: Tracked scripts that are **not** gates, and why. `tests/test_check_gates.py`

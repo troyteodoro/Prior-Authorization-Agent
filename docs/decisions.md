@@ -6387,3 +6387,56 @@ reverses if the recall figure falls below 1.000 — at that point the bound stop
 being sufficient and T-80 becomes prerequisite to reading it, which is the
 condition under which D4's rejection of vector search would get re-argued on
 evidence rather than on rule 9.
+
+## D87 — The coverage gate audits a mapping, and the mapping names one check per REQ
+
+**Context.** A7: "Every REQ maps to a passing check, or appears in §5's
+*Unclaimed in v1* list with a stated reason and the condition that would claim
+it. The list does not grow without a decision entry." T-23 has named
+`scripts/check_req_coverage.py` since the board was written, and
+`tests/test_check_gates.py` already refers to it as a script that does not exist
+— a reference this task flips rather than adds.
+
+There are 55 requirements: REQ-1 through REQ-54 plus REQ-18a. Two — REQ-44 and
+REQ-47 — are unclaimed on purpose, because Amendment 1 reserves the entire
+decision procedure to Python and there is no verdict a model could determine
+without doing something reserved (D63, D70).
+
+### Chosen — the script holds an explicit REQ → check mapping and audits it for completeness
+
+Four failures, and they are the whole specification:
+
+1. A REQ that is neither mapped nor in the unclaimed table **fails**. This is
+   A7's claim.
+2. An unclaimed row with no `docs/decisions.md` entry naming that REQ **fails**.
+   A7's closing sentence — the list that absorbs whatever is inconvenient makes
+   the gate meaningless instead.
+3. A mapping that points at a file or gate command that does not exist **fails**.
+   A mapping is a claim about the repo, and a claim about a missing file is how a
+   coverage report reaches 100% while covering nothing.
+4. A REQ that appears in **both** the mapping and the unclaimed table **fails**.
+   Two answers to "is this claimed" is worse than none, and silently preferring
+   one is how the table becomes the place a broken check goes to retire.
+
+**Execution is not this gate's job.** `check_gates.py` runs the checks; this one
+audits whether each REQ is spoken for. That is D28's distinction applied here —
+"this requirement is covered" and "this check passes" are different claims with
+different evidence, and merging them into one script is the merge D28 refused.
+
+**Rejected — deriving the mapping by searching test files for REQ numbers.** No
+hand-maintained list, and it grades comment discipline rather than coverage: a
+REQ number in a docstring is not a check, a check can test a requirement without
+naming it, and the gate would be satisfiable by editing a comment. The explicit
+mapping is auditable precisely because someone had to write down which check
+they mean.
+
+**Rejected — requiring every REQ to map to a check that *specifically* asserts
+it.** Unenforceable without the search above, and it collapses into it.
+
+**Cost.** A tracked mapping of 53 entries that has to be updated when a
+requirement acquires or loses its check. That cost is the feature: a requirement
+whose check disappears fails the gate rather than silently becoming unclaimed.
+
+**Reverses if:** the mapping starts pointing whole groups of requirements at one
+catch-all file, which would make it pass while meaning less. The response is a
+per-entry review, not a looser gate.
