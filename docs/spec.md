@@ -254,13 +254,28 @@ recent BMI observation within its lookback window. No model call. *(Art. II)*
 excludes unsupervised attempts, so membership is the supervision claim. Zero
 events is `INSUFFICIENT_EVIDENCE`, never `NOT_MET`. *(D13)*
 
-**REQ-32** c2 is `MET` when the qualifying run identified by c3 ended within the
-recency window declared in the criteria tree. A run ending outside the window is
-`NOT_MET`. The window length is never hardcoded. *(Art. VII)*
+**REQ-32** c2 is `MET` when the qualifying run ended within the recency window
+declared in the criteria tree. A run ending outside the window is `NOT_MET`. The
+window length is never hardcoded. *(Art. VII)* The window is also an **input to
+selection**, not only a test applied after it — REQ-14 prefers a run that
+satisfies both length and recency, so c2 judges the run c3 measured and c4 and
+c5 scope to that same run. *(D84)*
 
-**REQ-14** c3 buckets event dates by calendar month and returns the longest run
-of consecutive populated months. A run of one to three months is `NOT_MET`;
-zero events is `INSUFFICIENT_EVIDENCE`. *(D12)*
+**REQ-14** c3 buckets event dates by calendar month and enumerates every
+maximal run of consecutive populated months. The **qualifying run** is selected
+jointly: among those runs, prefer one satisfying both c3's minimum length and
+c2's recency window; among those take the longest, ties to the more recent. When
+no run satisfies both, the longest overall is selected. A qualifying run of one
+to three months is `NOT_MET`; zero events is `INSUFFICIENT_EVIDENCE`. *(D12,
+D84)*
+
+Selection was "the longest run" until T-42. That rule produced a false `NOT_MET`
+from its own shape rather than from the evidence: a six-month run three years
+ago beat a four-month run last month, and a patient who completed four
+consecutive supervised months inside the window was reported stale. The
+selection function takes c3's minimum, c2's window and `as_of` as **required**
+arguments, so no caller can obtain the pre-T-42 behaviour by omitting one.
+*(D48, D84)*
 
 **REQ-40** c4 is `MET` when every month of the qualifying run contains an
 encounter with a documented BMI. A recorded weight with a height on file

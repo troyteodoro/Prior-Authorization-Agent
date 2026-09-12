@@ -359,7 +359,20 @@ def step_qualifying_run(state: WorkflowState, ctx: _Context) -> None:
     disagreement would surface as a verdict about a period no other criterion
     adjudicated.
     """
-    state.run = _predicate("c3", qualifying_run, state.events)
+    # D84: selection is joint, so it reads c3's length *and* c2's window and the
+    # clock. Both constants come from the tree and are never hardcoded (Art. VII).
+    state.run = _predicate(
+        "c3",
+        qualifying_run,
+        state.events,
+        min_consecutive_months=state.tree.criterion("c3").require(
+            "min_consecutive_months"
+        ),
+        recency_window_months=state.tree.criterion("c2").require(
+            "recency_window_months"
+        ),
+        as_of=state.as_of,
+    )
 
 
 def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:

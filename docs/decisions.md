@@ -6134,3 +6134,91 @@ rather than two package trees, an import-graph assertion passes a module that
 reaches the wrong database at runtime, and this test becomes necessary but no
 longer sufficient — the board already says so in T-32's text. The replacement is
 a connection-level assertion, not a wider import scan.
+
+## D84 — The qualifying run is selected jointly, and the selector cannot be called without the constants it selects on
+
+**Context.** REQ-14 returns the longest run of consecutive populated months;
+REQ-32 then asks whether *that* run ended inside c2's recency window. T-16
+implemented both as written and D48 recorded the consequence: a six-month run
+three years ago beats a four-month run last month, and a patient who completed
+four consecutive supervised months inside the window is reported stale. The
+behaviour was pinned by
+`test_the_longest_run_wins_even_when_an_older_one_is_stale` so that changing it
+would be a deliberate act rather than a quiet fix.
+
+It is a **false `NOT_MET`** — the cheaper direction under A2's asymmetry, an
+unnecessary chart review rather than a wrong denial — but it comes from the
+selection rule rather than from the evidence, which is the part that makes it a
+defect. Nothing on the board waits on it: no case in spec §6 distinguishes the
+two readings, because E5 has one run and E11's longest is also its most recent.
+
+### Chosen — joint selection, with longest as the fallback
+
+Among the maximal runs a chart contains, prefer one that satisfies **both**
+c3's length and c2's recency. Among those, take the longest; ties go to the more
+recent, as before. When no run satisfies both, fall back to the longest — which
+is today's answer exactly, so every chart that has only one run, or whose
+longest run already qualifies, is unaffected.
+
+**What it does to c4/c5 scoping, which is the real question.** c4 and c5 declare
+`scoped_to: "c3"` and read whatever run c3 identified. Under joint selection
+they scope to the run c2 judged, which is the same run c3 measured — one run,
+four criteria, one period. That property is preserved rather than created:
+`step_qualifying_run` already computes the run once precisely so that four
+independent computations cannot disagree (D48), and joint selection changes
+*which* run that is without touching the fact that there is one.
+
+### Rejected — keep longest, and let c2 consider every run
+
+The alternative reading: c3 still reports the longest run, and c2 asks whether
+*any* qualifying-length run ended inside the window. It kills the same false
+`NOT_MET` and it breaks the property above — c2 would answer about one run while
+c4 and c5 scope to another, and a determination could then report "the program
+was recent" and "the program's months were undocumented" about two different
+programs. The gap list would name months the recency verdict never looked at.
+That is a worse failure than the one being fixed, because it is invisible in the
+verdicts and only shows up in the evidence.
+
+### Chosen — the selector takes its constants as required keyword arguments
+
+`qualifying_run` today is `qualifying_run(events)`, and joint selection needs
+`min_consecutive_months`, `recency_window_months` and `as_of`. The obvious move
+is optional parameters defaulting to "no recency preference", and it is the one
+mistake this repo has made often enough to have a rule about: a well-formed
+answer for a case nobody supplied (D31, D39, D63). A `step_qualifying_run` that
+forgot to pass the window would keep returning the longest run, every test would
+agree with it, and the defect would be fixed in the function and unfixed in the
+system.
+
+So the constants are **required keyword-only arguments**, and run-finding is
+split out as `enumerate_runs(events)` — pure structure, every maximal run,
+ascending. Tests about run structure (empty input, order independence, gap
+splitting) call the enumerator; tests about selection call the selector with the
+tree's real constants. One selector, one answer, and no caller can obtain the
+unselected behaviour by omission.
+
+**Rejected — a second `select_run()` beside `qualifying_run()`.** Two functions
+that both answer "the qualifying run" are two things free to disagree, which is
+the exact hazard D48 named when it required the run be computed once.
+
+### What it changes on the committed corpus
+
+**Nothing**, and that was checked rather than assumed: no chart in the eval set
+carries two real programs, so every determination, every baseline row and every
+verifier claim digest is unchanged. That matters more than usual here —
+a changed verdict is a verifier claim the committed recording has never seen,
+and `RecordedVerifierRunner` raises rather than accepting by default (D78, and
+D82 hit exactly this while sweeping a constant). A selection change that moved a
+verdict would have made itself known by aborting every gate, not by drifting a
+number.
+
+**Cost.** REQ-14 and REQ-32 are rewritten, the pinned test is rewritten, and the
+selector's signature changes at fifteen call sites. The pin existed to make that
+diff visible; this entry is what it was waiting for.
+
+**Reverses if:** a real chart shows joint selection picking a short recent run
+over a long recent one in a way a reviewer calls wrong — the fallback ordering
+(longest among jointly-qualifying) is the knob, not the preference itself. Also
+reverses if A53028 is ever read as requiring the *longest* documented program
+rather than *a* qualifying one; that would be a sourcing finding, and it would
+restore the old rule with a citation behind it, which is more than it has today.

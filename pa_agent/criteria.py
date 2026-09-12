@@ -247,39 +247,94 @@ class QualifyingRun:
         return max(self.events, key=lambda e: e.event_date) if self.events else None
 
 
-def qualifying_run(events: list[WmEvent]) -> QualifyingRun:
-    """The longest run of consecutive calendar months holding events (REQ-14).
+def enumerate_runs(events: list[WmEvent]) -> tuple[QualifyingRun, ...]:
+    """Every maximal run of consecutive populated months, earliest first (D84).
 
-    Ties go to the **most recent** run: REQ-14 does not say which longest run,
-    and the recent one is the only reading that can help a patient under c2.
+    Pure structure and no policy: this answers *what runs does this chart
+    contain*, and `qualifying_run` answers *which one the criteria adjudicate*.
+    Splitting them is what lets the selector require the constants it selects on
+    without dragging them into tests that are about run-finding.
 
-    **Known defect, D48, tracked as T-42:** the longest run is not always the
-    one that qualifies. A six-month run three years ago beats a four-month run
-    last month, and c2 then reports the patient stale. REQ-14 says longest, so
-    longest is what this returns; changing the selection is T-42's to decide.
+    Empty input yields no runs — never one run of length zero, which is an
+    abstention everywhere (D12).
     """
     if not events:
-        return QualifyingRun(months=(), events=())
+        return ()
 
     months = sorted({_month(e.event_date) for e in events})
-    best: list[tuple[int, int]] = []
-    current: list[tuple[int, int]] = []
+    blocks: list[list[tuple[int, int]]] = []
     for month in months:
-        if current and _month_index(month) == _month_index(current[-1]) + 1:
-            current.append(month)
+        if blocks and _month_index(month) == _month_index(blocks[-1][-1]) + 1:
+            blocks[-1].append(month)
         else:
-            current = [month]
-        # `>=` breaks ties toward the later run, since months ascend.
-        if len(current) >= len(best):
-            best = list(current)
+            blocks.append([month])
 
-    in_run = tuple(
-        sorted(
-            (e for e in events if _month(e.event_date) in set(best)),
-            key=lambda e: e.event_date,
+    runs = []
+    for block in blocks:
+        member = set(block)
+        in_run = tuple(
+            sorted(
+                (e for e in events if _month(e.event_date) in member),
+                key=lambda e: e.event_date,
+            )
         )
+        runs.append(QualifyingRun(months=tuple(block), events=in_run))
+    return tuple(runs)
+
+
+def qualifying_run(
+    events: list[WmEvent],
+    *,
+    min_consecutive_months: int,
+    recency_window_months: int,
+    as_of: date,
+) -> QualifyingRun:
+    """The run the criteria adjudicate (REQ-14, REQ-32, D84).
+
+    **Joint selection.** Among the chart's maximal runs, prefer one satisfying
+    c3's length *and* c2's recency; among those take the longest, ties to the
+    more recent. With no such run, fall back to the longest overall — which is
+    T-16's original answer, so a chart with one run, or whose longest run
+    already qualifies, is unaffected.
+
+    D48's defect is what this replaces: a six-month run three years ago beat a
+    four-month run last month, and c2 then reported a patient stale who had
+    completed four consecutive supervised months inside the window. A false
+    `NOT_MET` produced by the selection rule rather than by the evidence.
+
+    **The constants are required, deliberately** (D84). An optional
+    `recency_window_months` defaulting to "no preference" is a well-formed
+    answer for a case nobody supplied — D31's and D63's rule — and a caller that
+    forgot it would get the old behaviour with every test agreeing.
+
+    c2, c4 and c5 all scope to whatever this returns (`scoped_to: "c3"`), so the
+    run c2 judges is the run c4 and c5 measure. One run, four criteria, one
+    period.
+    """
+    runs = enumerate_runs(events)
+    if not runs:
+        return QualifyingRun(months=(), events=())
+
+    def _recent(run: QualifyingRun) -> bool:
+        last = run.last_event
+        return (
+            last is not None
+            and _months_between(last.event_date, as_of) < recency_window_months
+        )
+
+    # Ascending months mean a later run appears later, so `>=` on length breaks
+    # ties toward the more recent run — the only reading that can help a patient.
+    def _best(candidates: tuple[QualifyingRun, ...]) -> QualifyingRun:
+        chosen = candidates[0]
+        for run in candidates[1:]:
+            if run.length >= chosen.length:
+                chosen = run
+        return chosen
+
+    jointly = tuple(
+        run for run in runs if run.length >= min_consecutive_months and _recent(run)
     )
-    return QualifyingRun(months=tuple(best), events=in_run)
+    return _best(jointly or runs)
 
 
 def _no_events_reason(assertions: list[ProgramAssertion]) -> GapReason:
@@ -328,7 +383,17 @@ def evaluate_c3(
     events is `INSUFFICIENT_EVIDENCE`, because nothing was documented at all,
     and collapsing the two is what D12 forbade."""
     required = criterion.require("min_consecutive_months")
-    run = run if run is not None else qualifying_run(events)
+    if run is None:
+        # D84: c3 cannot select its own run any more, because selection needs
+        # c2's window and the clock, neither of which a criterion-(c3)-shaped
+        # call has. `step_qualifying_run` computes it once and hands it here —
+        # the single-run property D48 required. Raising beats defaulting to the
+        # longest run: that default is the defect this task removed, and every
+        # test would agree with it (D31's shape).
+        raise ValueError(
+            "c3 requires the qualifying run selected by step_qualifying_run; "
+            "selection needs c2's recency window and `as_of` (REQ-32, D84)"
+        )
 
     if not events:
         return CriterionResult(

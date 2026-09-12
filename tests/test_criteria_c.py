@@ -24,6 +24,7 @@ from pa_agent.contracts import (
     WmEvent,
 )
 from pa_agent.criteria import (
+    enumerate_runs,
     evaluate_c1,
     evaluate_c2,
     evaluate_c3,
@@ -83,10 +84,25 @@ def extracted() -> dict[str, dict]:
     return by_case
 
 
+def _select(tree, events, as_of=AS_OF):
+    """Selection wired exactly as `step_qualifying_run` wires it (D84).
+
+    The constants are required arguments, so a test cannot accidentally measure
+    the pre-D84 longest-run behaviour — which is the point of making them
+    required. Reading them from the tree here keeps the wiring in one place.
+    """
+    return qualifying_run(
+        events,
+        min_consecutive_months=tree.criterion("c3").require("min_consecutive_months"),
+        recency_window_months=tree.criterion("c2").require("recency_window_months"),
+        as_of=as_of,
+    )
+
+
 def _evaluate_all(tree, events, assertions, as_of=AS_OF) -> dict[str, object]:
-    """The five predicates, wired the way T-18's graph will wire them: c3
-    identifies the run, and c2, c4, c5 scope to it (D48)."""
-    run = qualifying_run(events)
+    """The five predicates, wired the way T-18's graph wires them: c3
+    identifies the run, and c2, c4, c5 scope to it (D48, D84)."""
+    run = _select(tree, events, as_of)
     c3 = evaluate_c3(tree.criterion("c3"), events, assertions, run)
     c3_met = c3.verdict is CriterionVerdict.MET
     return {
@@ -239,7 +255,7 @@ def test_c1_is_met_on_a_single_event_and_abstains_on_zero(tree):
 @pytest.mark.parametrize("months", [1, 2, 3])
 def test_c3_is_not_met_on_a_short_run(tree, months):
     events = [_event(f"2026-0{m + 1}-10") for m in range(months)]
-    result = evaluate_c3(tree.criterion("c3"), events, [])
+    result = evaluate_c3(tree.criterion("c3"), events, [], _select(tree, events))
     assert result.verdict is CriterionVerdict.NOT_MET
     assert result.spans
 
@@ -247,22 +263,25 @@ def test_c3_is_not_met_on_a_short_run(tree, months):
 def test_c3_abstains_on_zero_events_which_is_not_a_short_run(tree):
     """D12: a run of zero is not a run of length below the minimum. The two
     read alike and send Sam to different places."""
-    result = evaluate_c3(tree.criterion("c3"), [], [])
+    result = evaluate_c3(tree.criterion("c3"), [], [], _select(tree, []))
     assert result.verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
     assert result.spans == []
 
 
 def test_c3_is_met_at_exactly_the_minimum(tree):
     events = [_event(f"2026-0{m}-10") for m in (3, 4, 5, 6)]
-    assert evaluate_c3(tree.criterion("c3"), events, []).verdict is CriterionVerdict.MET
+    assert (
+        evaluate_c3(tree.criterion("c3"), events, [], _select(tree, events)).verdict
+        is CriterionVerdict.MET
+    )
 
 
 def test_c2_reads_its_window_from_the_tree(tree):
     """REQ-32: the window is never hardcoded. Eleven months back is inside a
     12-month window and thirteen is outside it."""
     assert tree.criterion("c2").require("recency_window_months") == 12
-    recent = qualifying_run([_event(f"2026-0{m}-10") for m in (3, 4, 5, 6)])
-    stale = qualifying_run([_event(f"2025-0{m}-10") for m in (3, 4, 5, 6)])
+    recent = _select(tree, [_event(f"2026-0{m}-10") for m in (3, 4, 5, 6)])
+    stale = _select(tree, [_event(f"2025-0{m}-10") for m in (3, 4, 5, 6)])
     c2 = tree.criterion("c2")
     assert evaluate_c2(c2, recent, AS_OF, True).verdict is CriterionVerdict.MET
     assert evaluate_c2(c2, stale, AS_OF, True).verdict is CriterionVerdict.NOT_MET
@@ -272,7 +291,7 @@ def test_c4_and_c5_abstain_when_c3_fails(tree):
     """REQ-15: no qualifying period exists to scope to, so the question cannot
     be answered — not answered negatively."""
     short = [_event("2026-05-10", bmi=40.0, diet=True, activity=True)]
-    run = qualifying_run(short)
+    run = _select(tree, short)
     for name in ("c4", "c5"):
         evaluate = {"c4": evaluate_c4, "c5": evaluate_c5}[name]
         result = evaluate(tree.criterion(name), run, False)
@@ -288,7 +307,7 @@ def test_c5_is_a_rate_not_a_count(tree):
         _event(f"2026-0{m}-10", bmi=40.0, diet=m <= 4, activity=m <= 4)
         for m in range(1, 8)
     ]
-    run = qualifying_run(events)
+    run = _select(tree, events)
     assert run.length == 7
     result = evaluate_c5(tree.criterion("c5"), run, True)
     assert result.verdict is CriterionVerdict.NOT_MET
@@ -302,9 +321,9 @@ def test_c5_requires_both_diet_and_activity_in_the_same_month(tree):
     diet_only = [_event(f"2026-0{m}-10", diet=True, activity=(m != 5))
                  for m in (3, 4, 5, 6)]
     c5 = tree.criterion("c5")
-    assert evaluate_c5(c5, qualifying_run(both), True).verdict is CriterionVerdict.MET
+    assert evaluate_c5(c5, _select(tree, both), True).verdict is CriterionVerdict.MET
     assert (
-        evaluate_c5(c5, qualifying_run(diet_only), True).verdict
+        evaluate_c5(c5, _select(tree, diet_only), True).verdict
         is CriterionVerdict.NOT_MET
     )
 
@@ -315,7 +334,7 @@ def test_c4_never_derives_a_bmi_from_a_weight(tree):
     not acquire one."""
     events = [_event(f"2026-0{m}-10", bmi=40.0 if m != 5 else None)
               for m in (3, 4, 5, 6)]
-    result = evaluate_c4(tree.criterion("c4"), qualifying_run(events), True)
+    result = evaluate_c4(tree.criterion("c4"), _select(tree, events), True)
     assert result.verdict is CriterionVerdict.NOT_MET
     assert "2026-05" in result.detail
 
@@ -326,23 +345,27 @@ def test_c4_never_derives_a_bmi_from_a_weight(tree):
 
 
 def test_the_empty_list_yields_no_run(tree):
-    assert qualifying_run([]).length == 0
+    """No runs at all — never one run of length zero, which is an abstention
+    everywhere (D12). Asserted on the enumerator, since this is about run
+    structure and not about which run the criteria adjudicate (D84)."""
+    assert enumerate_runs([]) == ()
+    assert _select(tree, []).length == 0
 
 
 def test_events_out_of_order_produce_the_same_run(tree):
     ordered = [_event(f"2026-0{m}-10") for m in (3, 4, 5, 6)]
     shuffled = [ordered[2], ordered[0], ordered[3], ordered[1]]
-    assert qualifying_run(ordered).months == qualifying_run(shuffled).months
+    assert enumerate_runs(ordered) == enumerate_runs(shuffled)
 
 
 def test_several_events_in_one_month_are_one_month(tree):
     events = [_event("2026-03-02"), _event("2026-03-20"), _event("2026-04-10")]
-    assert qualifying_run(events).length == 2
+    assert [r.length for r in enumerate_runs(events)] == [2]
 
 
 def test_a_run_crossing_a_year_boundary_is_consecutive(tree):
     events = [_event(d) for d in ("2025-11-10", "2025-12-10", "2026-01-10", "2026-02-10")]
-    assert qualifying_run(events).length == 4
+    assert [r.length for r in enumerate_runs(events)] == [4]
 
 
 def test_ties_go_to_the_more_recent_run(tree):
@@ -350,25 +373,104 @@ def test_ties_go_to_the_more_recent_run(tree):
     only reading that can help a patient under c2."""
     events = [_event(d) for d in
               ("2024-01-10", "2024-02-10", "2026-05-10", "2026-06-10")]
-    run = qualifying_run(events)
+    assert [r.length for r in enumerate_runs(events)] == [2, 2]
+    run = _select(tree, events)
     assert run.length == 2
     assert run.months == ((2026, 5), (2026, 6))
 
 
-def test_the_longest_run_wins_even_when_an_older_one_is_stale(tree):
-    """D48's known defect, pinned so T-42 changes it deliberately rather than
-    by accident: REQ-14 selects the longest run, and c2 then asks whether
-    *that* run is recent. A six-month run three years ago beats a four-month
-    run last month, and the patient reads as stale."""
+def test_a_recent_qualifying_run_beats_a_longer_stale_one(tree):
+    """D48's defect, resolved by T-42 and D84. **This test was inverted, on
+    purpose** — it asserted `NOT_MET` and said "if this now passes, REQ-14's
+    selection changed; that is T-42". It did, and it is.
+
+    Selection is now joint: among the chart's maximal runs, prefer one
+    satisfying c3's length *and* c2's recency. The six-month run in 2023 is
+    longer; the four-month run inside the window is the one that qualifies, so
+    it is the one all four scoped criteria adjudicate.
+    """
     old = [_event(f"2023-0{m}-10") for m in (1, 2, 3, 4, 5, 6)]
     recent = [_event(f"2026-0{m}-10") for m in (3, 4, 5, 6)]
-    run = qualifying_run(old + recent)
-    assert run.length == 6 and run.months[0][0] == 2023
-    c2 = evaluate_c2(tree.criterion("c2"), run, AS_OF, True)
-    assert c2.verdict is CriterionVerdict.NOT_MET, (
-        "if this now passes, REQ-14's selection changed — that is T-42, and it "
-        "needs its own decision entry, not a quiet fix here"
+    events = old + recent
+
+    assert [r.length for r in enumerate_runs(events)] == [6, 4], (
+        "the chart still holds both runs; selection chooses between them and "
+        "does not discard one"
     )
+
+    run = qualifying_run(
+        events,
+        min_consecutive_months=tree.criterion("c3").require("min_consecutive_months"),
+        recency_window_months=tree.criterion("c2").require("recency_window_months"),
+        as_of=AS_OF,
+    )
+    assert run.length == 4 and run.months[0][0] == 2026
+
+    c3 = evaluate_c3(tree.criterion("c3"), events, [], run)
+    c2 = evaluate_c2(tree.criterion("c2"), run, AS_OF, True)
+    assert c3.verdict is CriterionVerdict.MET
+    assert c2.verdict is CriterionVerdict.MET, (
+        "the patient completed four consecutive supervised months inside the "
+        "window; reporting that stale was a false NOT_MET produced by the "
+        "selection rule rather than by the evidence (D84)"
+    )
+
+
+def test_the_longest_run_still_wins_when_no_run_qualifies_jointly(tree):
+    """The fallback, which is T-16's original answer and the reason joint
+    selection changes nothing on a chart with one program. Both runs here are
+    stale, so there is no jointly-qualifying candidate and length decides."""
+    old = [_event(f"2022-0{m}-10") for m in (1, 2, 3, 4, 5, 6)]
+    older_short = [_event(f"2020-0{m}-10") for m in (3, 4, 5, 6)]
+    events = older_short + old
+
+    run = qualifying_run(
+        events,
+        min_consecutive_months=tree.criterion("c3").require("min_consecutive_months"),
+        recency_window_months=tree.criterion("c2").require("recency_window_months"),
+        as_of=AS_OF,
+    )
+    assert run.length == 6 and run.months[0][0] == 2022
+    c2 = evaluate_c2(tree.criterion("c2"), run, AS_OF, True)
+    assert c2.verdict is CriterionVerdict.NOT_MET
+
+
+def test_c3_refuses_to_select_its_own_run(tree):
+    """D84: selection needs c2's window and the clock, which a c3-shaped call
+    does not have. Defaulting to the longest run would be the defect this task
+    removed, reinstated as a fallback nobody could see (D31's shape)."""
+    events = [_event(f"2026-0{m}-10") for m in (3, 4, 5, 6)]
+    with pytest.raises(ValueError, match="step_qualifying_run"):
+        evaluate_c3(tree.criterion("c3"), events, [], None)
+
+
+def test_the_scoped_criteria_all_read_the_run_c2_judged(tree):
+    """One run, four criteria, one period — preserved by joint selection rather
+    than created by it (D48's single-run property, D84's ruling on scoping).
+
+    The rejected alternative — keep longest for c3, let c2 consider every run —
+    would break exactly this: c2 answers about the recent program while c4 and
+    c5 measure the old one, and the gap list names months the recency verdict
+    never looked at.
+    """
+    old = [_event(f"2023-0{m}-10", bmi=40.0, diet=True, activity=True)
+           for m in (1, 2, 3, 4, 5, 6)]
+    recent = [_event(f"2026-0{m}-10", bmi=40.0, diet=True, activity=True)
+              for m in (3, 4, 5, 6)]
+    run = _select(tree, old + recent)
+
+    assert run.months[0][0] == 2026
+    for name in ("c4", "c5"):
+        result = {"c4": evaluate_c4, "c5": evaluate_c5}[name](
+            tree.criterion(name), run, True
+        )
+        assert result.verdict is CriterionVerdict.MET
+        assert "4 month" in result.detail, (
+            f"{name} reports {result.detail!r}; c2 judged a four-month run and "
+            "the scoped criteria must measure that one, not the six-month run "
+            "from 2023"
+        )
+        assert "6 month" not in result.detail
 
 
 # --------------------------------------------------------------------------

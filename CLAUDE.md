@@ -29,7 +29,7 @@ an instruction typed into a prompt.
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
 | `docs/tasks.md` | The board. Tasks T-00 through T-79, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
-| `docs/decisions.md` | D1–D83, kill criteria, open questions. Append-only. |
+| `docs/decisions.md` | D1–D84, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -347,8 +347,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**54 of 65 tasks closed, 8 open, 3 deferred under review. All 9 gates green**
-(`check_gates.py`, ~13s, 619 tests across 31 files). IDs run to T-79, but
+**55 of 65 tasks closed, 7 open, 3 deferred under review. All 9 gates green**
+(`check_gates.py`, ~13s, 624 tests across 31 files). IDs run to T-79, but
 numbering is not contiguous — the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3, US-4, US-5, US-6, US-9**. `python -m pa_agent.cli --patient
@@ -371,7 +371,7 @@ the committed 27-claim recording for zero calls, and the four-run measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
 27/27 twice — is D78's substance.
 
-Open, in order: **T-22 → T-28 → T-23**, with T-27, T-42, T-70,
+Open, in order: **T-22 → T-28 → T-23**, with T-27, T-70,
 T-71 and T-77 off the path. **The ratification programme is paused** *(T-79,
 D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
 suspended them pending a review of whether the programme continues, and they
@@ -416,6 +416,13 @@ satisfiable *(D63, D70)*.
   denote one procedure. Marked `identity: false`. Do not promote them.
 - **c5 is a rate, not a count** *(D24)*. It carries c4's `documentation_rate`
   from the same span.
+- **The qualifying run is selected jointly, and the selector's constants are
+  required arguments** *(D84)*. Among a chart's maximal runs, prefer one
+  satisfying c3's length *and* c2's recency; fall back to longest. `qualifying_run`
+  cannot be called without `min_consecutive_months`, `recency_window_months` and
+  `as_of` — an optional window defaulting to "no preference" would reinstate the
+  pre-T-42 false `NOT_MET` with every test agreeing. `evaluate_c3` raises rather
+  than selecting its own run.
 - **The note's current BMI is a different fact from `WmEvent.bmi`** *(D50)*.
   Criterion (a) asks what the patient's BMI is now; c4 asks what each month
   documented.
@@ -466,7 +473,7 @@ scripts/             check_gates, check_env, check_skeleton, check_ownership,
                      verify_sources, select_patients, synthesize_notes,
                      run_extraction, run_adk_extraction,
                      run_verifier_measurement
-tests/               31 files, 619 tests
+tests/               31 files, 624 tests
 docs/                the five governing docs plus ratifications.json — D74's
                      ledger, statuses beyond `proposed` are the owner's edits only
 ```

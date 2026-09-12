@@ -17,8 +17,8 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-five tasks are on this board — IDs run to T-79 but numbering is not
-contiguous, so the highest id is not the count. **54 are closed, 8 are open,
-and 3 are deferred under review** *(D81)*. Three of the eight sit on the critical
+contiguous, so the highest id is not the count. **55 are closed, 7 are open,
+and 3 are deferred under review** *(D81)*. Three of the seven sit on the critical
 path to the acceptance gates in spec §7. This is that path, in order. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
 the ratification programme paused)*
@@ -40,7 +40,6 @@ Off the path. Real work, nothing waiting on it:
 | Task | Why it is not sequenced | When |
 |---|---|---|
 | `T-27` | needs the report to write into | after T-22 |
-| `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
 | `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
 | `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
 | `T-77` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
@@ -1874,13 +1873,11 @@ each caught by the gate built for it — the sharpest being the VBG claim
 re-pointed at §D's delegation paragraph, which slices back perfectly and means
 the opposite, and only the containment gate catches it.
 
-### `[ ] T-42` The longest run is not always the qualifying run
+### `[x] T-42` The longest run is not always the qualifying run
 **REQ:** 14, 32 · **Depends:** T-16 · **Discovered in:** T-16 *(D48)* ·
 **Timebox:** two hours
-**Status:** **ready, off the critical path** — blocks nothing, since no §6 case
-distinguishes the two readings. Kept on the board rather than withdrawn: it is a
-real false `NOT_MET` produced by the selection rule, and the behaviour is pinned
-by a test that has to be changed deliberately *(D70)*.
+**Status:** **closed** (D84) — joint selection, the pin inverted deliberately,
+and zero drift on the committed corpus
 **Exit:** a decision entry resolving it, then `pytest tests/test_criteria_c.py`
 — a chart carrying a long stale run *and* a shorter run inside c2's window
 resolves c2 and c3 the way the entry says it should, and the case exists in
@@ -1906,6 +1903,41 @@ a requirement nobody agreed to *(working rule 5)*. No case in spec §6
 distinguishes the readings today — E5 has one run and E11's longest is also
 its most recent — so this blocks nothing until a chart with two real programs
 lands.
+
+**Closed by D84 — joint selection, with longest as the fallback.** Among the
+chart's maximal runs, prefer one satisfying c3's length *and* c2's recency;
+among those the longest, ties to the more recent; with no such run, the longest
+overall, which is T-16's answer exactly. The rejected reading — keep longest for
+c3 and let c2 consider every run — kills the same false `NOT_MET` and breaks
+worse: c2 would answer about one program while c4 and c5 measure another, and
+the gap list would name months the recency verdict never looked at.
+
+**The selector's constants are required keyword arguments.** Optional ones
+defaulting to "no recency preference" is a well-formed answer for a case nobody
+supplied (D31, D39, D63) — a caller that forgot the window would get the old
+behaviour with every test agreeing. Run-finding split out as `enumerate_runs`,
+so tests about structure do not have to carry policy constants. `evaluate_c3`
+now **raises** rather than selecting its own run: selection needs c2's window
+and the clock, which a c3-shaped call does not have.
+
+**Zero drift on the committed corpus, checked rather than assumed.** No chart
+carries two real programs, so every determination, baseline row and verifier
+claim digest is unchanged. That mattered more than usual: a changed verdict is a
+verifier claim the recording has never seen, and `RecordedVerifierRunner` raises
+rather than accepting by default (D78) — a selection change that moved a verdict
+would have aborted every gate, which is how D82 found the same edge.
+
+**The pinned test was inverted, on purpose.** It asserted `NOT_MET` and said "if
+this now passes, REQ-14's selection changed — that is T-42". It did.
+
+**A mutation survived the first pass and is why two workflow tests exist.**
+`step_qualifying_run` passing a wrong recency window is invisible to every test
+in `test_criteria_c.py` — they call the selector directly with the tree's real
+constants — and invisible to the eval gate, because no committed chart has two
+runs. The wiring is now pinned where it lives, on a two-run state built in the
+test. Mutations caught: selection reverted to longest, the fallback dropped, the
+recency test inverted, c3 silently recomputing, and a wrong window, wrong
+minimum or hardcoded `as_of` in the step.
 
 ### `[ ] T-71` A lost assertion reports as a flawless run
 **REQ:** 31, 35 · **Depends:** T-16, T-31 · **Discovered in:** the T-63

@@ -895,3 +895,100 @@ def test_a_runner_without_a_trace_still_reports_its_one_call(
     run = _run(policy_store, patient_store, runner, case_patients["E1"], ref)
     assert run.determination.model_calls == 1
     assert run.determination.total_input_tokens > 0
+
+
+# --------------------------------------------------------------------------
+# The selection step reads its constants from the tree (T-42, D84)
+#
+# The mutation this exists for: `step_qualifying_run` passing a wrong recency
+# window. Every test in tests/test_criteria_c.py calls the selector directly
+# with the tree's real constants, so none of them can see a workflow that wires
+# the wrong number through — and no chart in the committed corpus carries two
+# real programs, so the eval gate cannot see it either. Both survive the
+# mutation. This step is where the wiring lives, so this is where it is pinned.
+# --------------------------------------------------------------------------
+
+
+def _two_run_events():
+    """A long stale program and a short recent one — the chart D48 described
+    and no committed patient has."""
+    from pa_agent.contracts import EvidenceSpan, WmEvent
+
+    span = EvidenceSpan(document_id="note", char_start=0, char_end=4, quote="anyx")
+
+    def event(iso):
+        return WmEvent(
+            event_date=date.fromisoformat(iso),
+            span=span,
+            bmi=40.0,
+            bmi_span=span,
+            diet_documented=True,
+            diet_span=span,
+            activity_documented=True,
+            activity_span=span,
+        )
+
+    stale = [event(f"2023-0{m}-10") for m in (1, 2, 3, 4, 5, 6)]
+    recent = [event(f"2026-0{m}-10") for m in (3, 4, 5, 6)]
+    return stale + recent
+
+
+def test_the_selection_step_reads_c2s_window_from_the_tree():
+    """D84's joint selection only works if `step_qualifying_run` hands it c2's
+    real window. A hardcoded or wrong window silently reinstates the false
+    `NOT_MET` this task removed, and the whole corpus still passes."""
+    from pa_agent.stores.policy import LocalPolicyStore
+    from pa_agent.workflow import WorkflowState, step_qualifying_run
+
+    store = LocalPolicyStore()
+    tree = store.get_tree("ncd-100.1-jf-v1")
+    state = WorkflowState(
+        patient_id="p",
+        procedure_code="43775",
+        as_of=date(2026, 9, 1),
+        policy_ref=store.resolve("43775"),
+        tree=tree,
+        events=_two_run_events(),
+    )
+    step_qualifying_run(state, None)
+
+    assert state.run is not None
+    assert state.run.months[0][0] == 2026 and state.run.length == 4, (
+        f"selected the {state.run.length}-month run starting "
+        f"{state.run.months[0]}; with c2's 12-month window the four-month 2026 "
+        "run is the one that qualifies jointly (REQ-14, REQ-32, D84). A wrong "
+        "window here is invisible to every other test in the repo."
+    )
+
+
+def test_the_selection_step_reads_c3s_minimum_from_the_tree():
+    """The other half of the pair. Raising c3's minimum above the recent run's
+    length must make it stop qualifying jointly, which is only observable if the
+    step reads the minimum rather than assuming one."""
+    from pa_agent.stores.policy import LocalPolicyStore
+    from pa_agent.workflow import WorkflowState, step_qualifying_run
+
+    store = LocalPolicyStore()
+    tree = store.get_tree("ncd-100.1-jf-v1")
+    assert tree.criterion("c3").require("min_consecutive_months") == 4
+
+    state = WorkflowState(
+        patient_id="p",
+        procedure_code="43775",
+        as_of=date(2026, 9, 1),
+        policy_ref=store.resolve("43775"),
+        tree=tree,
+        # Recent run of three months: below c3's minimum, so it cannot qualify
+        # jointly and the long stale run is selected by the fallback.
+        events=[
+            e
+            for e in _two_run_events()
+            if not (e.event_date.year == 2026 and e.event_date.month == 3)
+        ],
+    )
+    step_qualifying_run(state, None)
+
+    assert state.run is not None and state.run.length == 6, (
+        "a recent run shorter than c3's minimum does not qualify jointly; the "
+        "fallback selects the longest run, which is T-16's original answer"
+    )
