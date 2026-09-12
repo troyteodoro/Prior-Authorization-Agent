@@ -28,8 +28,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-79, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
-| `docs/decisions.md` | D1–D85, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-80, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
+| `docs/decisions.md` | D1–D86, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -348,8 +348,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**57 of 65 tasks closed, 5 open, 3 deferred under review. All 10 gates green**
-(`check_gates.py`, ~22s, 642 tests across 32 files). IDs run to T-79, but
+**58 of 66 tasks closed, 5 open, 3 deferred under review. All 10 gates green**
+(`check_gates.py`, ~25s, 646 tests across 32 files). IDs run to T-80, but
 numbering is not contiguous — the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3, US-4, US-5, US-6, US-9**. `python -m pa_agent.cli --patient
@@ -379,7 +379,7 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 36.1s across nine determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open, in order: **T-23**, with T-27, T-70,
+Open, in order: **T-23**, with T-70,
 T-71 and T-77 off the path. **The ratification programme is paused** *(T-79,
 D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
 suspended them pending a review of whether the programme continues, and they
@@ -445,7 +445,11 @@ satisfiable *(D63, D70)*.
 - **The measured result so far** *(D64, D66)*: model-directed retrieval agrees
   with the deterministic oracle on 6/6 outcomes and 42/42 criteria, 80/80 spans
   valid, zero errors — at 13.9x the input tokens. Read the aggregate and the
-  spread, never one patient's ratio.
+  spread, never one patient's ratio. **Planner recall is 1.000 over 25 citing
+  cases** *(T-27, D86)*, measured over *cited* documents: a run cannot cite what
+  it did not gather, so the figure bounds gathered-document recall from below and
+  a measured 1.000 settles it. Below 1.000 it stops being sufficient, and T-80 is
+  the direct measurement.
 
 ## Repo layout
 
@@ -483,7 +487,7 @@ scripts/             check_gates, check_env, check_skeleton, check_ownership,
                      verify_sources, select_patients, synthesize_notes,
                      run_extraction, run_adk_extraction,
                      run_verifier_measurement
-tests/               32 files, 642 tests
+tests/               32 files, 646 tests
 docs/                the five governing docs plus ratifications.json — D74's
                      ledger, statuses beyond `proposed` are the owner's edits only
 ```

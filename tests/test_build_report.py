@@ -240,3 +240,95 @@ def test_the_report_carries_its_caveats(claim):
 
 def test_the_report_says_it_is_generated():
     assert "do not edit by hand" in REPORT.read_text(encoding="utf-8")
+
+
+# --------------------------------------------------------------------------
+# Planner recall (T-27, REQ-25, D86)
+# --------------------------------------------------------------------------
+
+
+def test_a_skipped_document_resolves_below_one(script, tmp_path, monkeypatch):
+    """T-27's exit condition, and the reason the section exists at all.
+
+    A recall figure that reads 1.000 whatever the planner did is the figure D70
+    already threw out once. This drops one document from one patient's agentic
+    side and requires the number to move — if it does not, the section is
+    measuring the oracle against itself.
+    """
+    recording = json.loads(
+        (REPO_ROOT / "eval" / "agentic" / "results.json").read_text(encoding="utf-8")
+    )
+    # **Partial**, not total. Emptying the list is caught by any reading of
+    # "contains", including a wrong one — an intersection test would fail it too
+    # and survive undetected. Dropping one of two documents separates them:
+    # containment fails, intersection still succeeds.
+    victim = next(
+        row for row in recording["patients"] if len(row["agentic"]["document_ids"]) > 1
+    )
+    kept = victim["agentic"]["document_ids"][:-1]
+    assert kept, "the fixture patient would cite nothing after the drop"
+    victim["agentic"]["document_ids"] = kept
+
+    stub = tmp_path / "agentic"
+    stub.mkdir()
+    (stub / "results.json").write_text(json.dumps(recording), encoding="utf-8")
+    monkeypatch.setattr(script, "EVAL_DIR", tmp_path)
+    # `cases.json` is read from EVAL_DIR too, so link the real one through.
+    (tmp_path / "cases.json").write_text(
+        (REPO_ROOT / "eval" / "cases.json").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+
+    from pa_agent.stores.policy import LocalPolicyStore
+
+    _results, cache = script._run(LocalPolicyStore())
+    text = "\n".join(script._recall_section(cache))
+    overall = text.split("| **all**")[1].split("\n")[0]
+    assert "1.000" not in overall, (
+        f"overall recall stayed at 1.000 ({overall.strip()}) after one of a "
+        "patient's two cited documents was dropped. The section cannot see a "
+        "skipped document, which is the whole of T-27's exit — and a recall "
+        "figure that is 1.000 by construction is what D70 already threw out."
+    )
+
+
+def test_recall_reads_the_agentic_side_not_the_oracles(script):
+    """The circularity guard. Comparing the oracle's cited documents against
+    themselves is 1.000 by construction — exactly what D70 rejected — and on
+    this corpus the two sides happen to be identical, so only a deliberate
+    substitution can tell the two implementations apart."""
+    source = SCRIPT.read_text(encoding="utf-8")
+    recall = source[source.index("def _recall_section") : source.index("def _cost_section")]
+    assert 'row["agentic"]["document_ids"]' in recall
+    assert 'row["oracle"]["document_ids"]' not in recall, (
+        "the recall section reads the oracle's own cited documents; that figure "
+        "is 1.000 by construction (D70, D86)"
+    )
+
+
+def test_recall_requires_every_cited_document_not_merely_one():
+    """Pinned by parsing, because no behaviour can distinguish the two today.
+
+    `cited <= gathered` and `bool(cited & gathered)` differ only when a criterion
+    cites two or more documents, and none currently does — criterion (a) cites
+    the bundle, the c-criteria cite the note, one document each. The weaker
+    reading is therefore an *equivalent* mutant on this corpus rather than a
+    surviving one, and it stops being equivalent the moment a criterion cites two
+    sources. That is a real possibility — reconciliation already reads two — so
+    the stricter semantics is pinned here rather than left to a future chart to
+    discover. Same move as D65 and D67: when a behavioural test cannot catch a
+    mutation, parse instead.
+    """
+    source = SCRIPT.read_text(encoding="utf-8")
+    recall = source[source.index("def _recall_section") : source.index("def _cost_section")]
+    assert "cited <= gathered" in recall, (
+        "recall must require *every* document the oracle cited to be present; an "
+        "intersection test passes a run that found one of two sources"
+    )
+
+
+def test_the_recall_section_names_what_it_bounds():
+    """D86: the figure is a lower bound on gathered-document recall, and a
+    reader who quotes it without that sentence is quoting something else."""
+    text = REPORT.read_text(encoding="utf-8")
+    assert "bounds true retrieval recall from below" in text
+    assert "D4's reversal condition now reads against a number" in text

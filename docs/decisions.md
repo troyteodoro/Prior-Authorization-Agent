@@ -6308,3 +6308,82 @@ runner in the default path is the way that happens. The response is to move that
 figure behind a recorded measurement, not to relax `--verify` into a tolerance
 comparison, which is how an exact gate becomes an approximate one and then a
 decorative one.
+
+## D86 — Planner recall is measured over cited documents, which bounds gathered documents from below and therefore settles D4
+
+**Context.** REQ-25 asked for retrieval recall and T-27 has been waiting for a
+mechanism to measure it against. The requirement was written before one existed:
+D4 rejected the ranked retriever the original "recall@k" phrasing presumed, the
+deterministic path serves whole notes and reads the port's full observation list,
+and the figure was 1.000 by construction — which D70 threw out.
+
+T-61 supplied the mechanism. `AgenticRetrievalPlanner` chooses what to gather,
+and D63's own docstring names the failure: a skipped note leaves c3 measuring a
+shorter run, forgotten observations make criterion (a) abstain, and each produces
+a determination that is well-formed and quietly wrong. D64's differential catches
+that only when it happens to change a verdict on these six patients.
+
+**D4's reversal condition has been unfalsifiable since it was written.** It reads
+"measured retrieval recall below 0.85 — a number, not a hunch", and nothing
+measured retrieval recall because nothing could.
+
+### What the recording actually holds, which changes the ruling
+
+`eval/agentic/results.json` records, per patient and per side,
+`document_ids` — and reading `run_agentic_eval.py` rather than assuming, that
+field is **the set of documents the run's spans point into**, not the bundle the
+planner gathered. The gathered bundle is not in the recording at all.
+
+The plan going in expected to choose between document-level containment (weak,
+free) and span-level containment (strong, needs an in-process re-run). Neither is
+the available choice. The available measurement is **cited** documents, and the
+question is whether that is worth reporting.
+
+### Chosen — per-criterion recall over cited documents, because cited bounds gathered
+
+For each criterion, over the cases where the fixed planner's run cited anything
+for it: the fraction where every document those spans name also appears in the
+agentic run's cited set. The oracle side is re-derived in-process (zero calls,
+recorded extraction); the agentic side is read from the recording.
+
+**A run cannot cite a document it did not gather**, so cited ⊆ gathered for each
+side. Therefore cited-recall ≤ gathered-recall, and a measured **1.000 on the
+weaker metric establishes 1.000 on the stronger one**. That is not a hedge; it
+is the direction that makes the cheap measurement sufficient. A figure *below*
+1.000 would need the stronger measurement to interpret — it could mean the
+planner skipped the document or gathered it and produced no citable span — and
+the report says so where it reports the number.
+
+**It also catches the truncation case**, which was the worry that made
+document-level containment look too coarse. If the agentic planner fetched a
+bundle but passed a truncated observation list, criterion (a) has no observation
+to cite, abstains, and cites nothing — so its document drops out of the cited set
+and recall falls. The measurement sees exactly the failure D63's docstring names.
+
+**Rejected — re-running the agentic planner to capture the gathered bundle.** The
+strongest form and it spends model calls, which no gate may do (D45). It is not
+merely expensive: a re-run against a different model state is a new measurement,
+not a confirmation of this one.
+
+**Rejected — reporting nothing until the stronger measurement exists.** T-27 has
+been open since before T-61, and the argument above means the available figure
+answers D4's question. A requirement kept open waiting for a better instrument,
+while a sufficient one sits unused, is how REQ-25 got to this point.
+
+### Registered, not silently absorbed — `T-80`
+
+The recording should carry what the planner *gathered* — document ids plus the
+observation and condition counts — beside what it cited. That turns this figure
+from a bound into a direct measurement and makes a below-1.000 result
+interpretable without a second run. It requires a new agentic measurement, so it
+spends model calls, and it becomes a numbered task rather than an addition to
+this one (working rule 6).
+
+**Cost.** One more section in a generated report, and one figure whose
+interpretation needs a sentence of explanation every time it is quoted.
+
+**Reverses if:** T-80 lands and the direct figure replaces the bound. Also
+reverses if the recall figure falls below 1.000 — at that point the bound stops
+being sufficient and T-80 becomes prerequisite to reading it, which is the
+condition under which D4's rejection of vector search would get re-argued on
+evidence rather than on rule 9.

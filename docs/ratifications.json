@@ -741,6 +741,11 @@
       "by": "agent",
       "date": "2026-09-12"
     },
+    "T-80": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-12"
+    },
     "T-27": {
       "status": "proposed",
       "by": "agent",
@@ -1202,6 +1207,11 @@
       "date": "2026-09-12"
     },
     "D85": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-12"
+    },
+    "D86": {
       "status": "proposed",
       "by": "agent",
       "date": "2026-09-12"

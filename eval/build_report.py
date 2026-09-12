@@ -496,6 +496,99 @@ def _sweep_section() -> list[str]:
     ]
 
 
+def _recall_section(cache: dict[Any, Any]) -> list[str]:
+    """T-27 / REQ-25: per-criterion planner recall, and what it bounds (D86).
+
+    For each criterion, over the cases where the fixed planner's run cited
+    anything for it: the fraction where every document those spans name also
+    appears in the agentic run's cited set.
+
+    `eval/agentic/results.json` records the documents each side's spans point
+    into, not the bundle the planner gathered. A run cannot cite a document it
+    did not gather, so cited ⊆ gathered and this figure bounds true retrieval
+    recall from below — a measured 1.000 here establishes 1.000 on the stronger
+    metric (D86). T-80 would make it direct.
+    """
+    recording_path = EVAL_DIR / "agentic" / "results.json"
+    if not recording_path.exists():
+        raise SystemExit(
+            "eval/agentic/results.json is missing; T-61's recording is committed "
+            "and the recall section reads it. This is a checkout problem."
+        )
+    recording = json.loads(recording_path.read_text(encoding="utf-8"))
+    agentic_by_patient = {
+        row["patient_id"]: set(row["agentic"]["document_ids"])
+        for row in recording["patients"]
+    }
+
+    # The oracle side, re-derived in-process from the same cache the rest of the
+    # report reads — zero calls, recorded extraction.
+    covered: dict[str, list[bool]] = {}
+    for (patient_id, procedure_code, as_of), determination in cache.items():
+        if not isinstance(determination, Determination):
+            continue
+        if patient_id not in agentic_by_patient:
+            continue
+        if procedure_code != recording["procedure_code"]:
+            continue
+        if as_of.isoformat() != recording["as_of"]:
+            continue
+        gathered = agentic_by_patient[patient_id]
+        for result in determination.criterion_results:
+            cited = {span.document_id for span in result.spans}
+            if not cited:
+                continue
+            covered.setdefault(result.criterion_id, []).append(cited <= gathered)
+
+    rows = []
+    hits = total = 0
+    for criterion_id in sorted(covered):
+        observed = covered[criterion_id]
+        hits += sum(observed)
+        total += len(observed)
+        rate = sum(observed) / len(observed)
+        rows.append(f"| `{criterion_id}` | {len(observed)} | {sum(observed)} | {rate:.3f} |")
+    overall = hits / total if total else None
+
+    return [
+        "## Planner recall against the oracle's evidence (REQ-25, D4, D86)",
+        "",
+        "`FixedRetrievalPlanner` reads three stores in a fixed order; "
+        "`AgenticRetrievalPlanner` lets the model choose what to fetch. "
+        "Everything downstream is identical and cannot tell which planner ran, "
+        "which is what makes the differential a comparison (D63). This section "
+        "asks the question the outcome comparison cannot: **did the model-directed "
+        "run have the evidence the deterministic one used?**",
+        "",
+        "| Criterion | Cases citing evidence | Covered by the agentic run | Recall |",
+        "|---|---|---|---|",
+        *rows,
+        f"| **all** | **{total}** | **{hits}** | **{_fmt(overall)}** |",
+        "",
+        "**What this figure is a bound on.** The recording holds the documents "
+        "each side's spans point into, not the bundle the planner gathered. A run "
+        "cannot cite a document it did not gather, so cited ⊆ gathered and this "
+        "**bounds true retrieval recall from below**: the measured "
+        f"**{_fmt(overall)}** therefore establishes {_fmt(overall)} on the "
+        "stronger metric too. A figure *below* 1.000 would need T-80's direct "
+        "measurement to interpret — it could mean the planner skipped the "
+        "document, or gathered it and produced no citable span.",
+        "",
+        "**It does catch the truncation case.** If the model fetched a bundle but "
+        "passed a truncated observation list, criterion (a) has nothing to cite, "
+        "abstains, and its document drops out of the cited set — the exact "
+        "failure `AgenticRetrievalPlanner`'s own docstring names (D63).",
+        "",
+        "**D4's reversal condition now reads against a number.** It was set as "
+        "\"measured retrieval recall below 0.85 — a number, not a hunch\" and has "
+        "been unfalsifiable since it was written, because nothing measured "
+        "retrieval recall and nothing could. Vector search stays rejected on "
+        "rule 9 and on a six-document corpus; this is the figure that would let "
+        "it back in on evidence.",
+        "",
+    ]
+
+
 def _cost_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
     """A6: reported from instrumentation, never asserted (D85)."""
     # Summed over **determinations**, not over case rows. Rows sharing a
@@ -602,6 +695,7 @@ def render() -> str:
         *_span_section(cache),
         *_abstention_section(results, cache),
         *_sweep_section(),
+        *_recall_section(cache),
         *_cost_section(results, cache),
         *_caveats_section(),
     ]

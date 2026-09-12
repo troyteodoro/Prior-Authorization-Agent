@@ -17,7 +17,7 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-five tasks are on this board — IDs run to T-79 but numbering is not
-contiguous, so the highest id is not the count. **57 are closed, 5 are open,
+contiguous, so the highest id is not the count. **58 are closed, 5 are open,
 and 3 are deferred under review** *(D81)*. One of the five sits on the critical
 path to the acceptance gates in spec §7. This is that path, in order. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
@@ -40,7 +40,7 @@ Off the path. Real work, nothing waiting on it:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
-| `T-27` | needs the report to write into | after T-22 |
+| `T-80` | spends model calls; T-27's figure is sufficient while it reads 1.000 | any time, blocks nothing *(D86)* |
 | `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
 | `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
 | `T-77` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
@@ -1564,6 +1564,26 @@ unchanged (T-30, D77).
 
 Real work with a runnable exit that delivers no user outcome.
 
+### `[ ] T-80` Record what the planner gathered, not only what it cited
+**REQ:** 25 · **Depends:** T-61, T-27 · **Discovered in:** D86 ·
+**Status:** off the critical path; **spends model calls**, so it is in no gate
+**Exit:** `eval/agentic/results.json` carries, per patient and per side, the
+document ids the planner *gathered* plus the observation and condition counts it
+passed downstream — beside what it cited — and `eval/report.md`'s recall section
+reports the direct figure rather than the bound, with `--verify` covering it.
+
+T-27 measures recall over **cited** documents because that is what T-61's
+recording holds. A run cannot cite a document it did not gather, so cited ⊆
+gathered and the figure bounds true recall from below — which is why a measured
+1.000 settles it today (D86). It stops being sufficient the moment the figure
+falls below 1.000: a miss could mean the planner skipped the document, or
+gathered it and produced no citable span, and those have different causes and
+different fixes.
+
+Requires a new agentic measurement against the pinned model, which is a model
+call — hence a task of its own rather than an addition to T-27 *(working rule 6,
+D45: a changed recording is a new measurement, never a re-run)*.
+
 ### `[x] T-79` Pause the ratification programme in a holding area
 **REQ:** none — board hygiene · **Discovered in:** the owner's instruction to
 skip the ratification section pending review · **Timebox:** one hour
@@ -1619,10 +1639,11 @@ An agent may scaffold a checklist view; every status written is the owner's edit
 A disagreement is an `amended` or `overruled` status naming a new numbered
 task (working rule 6) — the gate refuses one that names nothing.
 
-### `[ ] T-27` Planner recall against the oracle's evidence bundle
-**REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70
-**Status:** off the critical path; blocked on T-21 and T-22 (needs the full eval
-set and a report to write into)
+### `[x] T-27` Planner recall against the oracle's evidence bundle
+**REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70 ·
+**Closed by:** D86
+**Status:** **closed** (D86) — `eval/report.md` carries per-criterion recall,
+**1.000 over 25 citing cases**, and D4's reversal condition reads against it
 **Exit:** `eval/report.md` carries per-criterion planner recall — for each
 criterion, the fraction of cases where the evidence `AgenticRetrievalPlanner`
 gathered contains the span `FixedRetrievalPlanner` read for it — reported beside
@@ -1644,6 +1665,33 @@ catch that only when it happened to change a verdict on these six patients.
 The oracle supplies the denominator, which is what makes this cheap: the harness
 already holds both bundles on identical inputs and today compares only the
 verdicts downstream of them.
+
+**Closed by D86, and the recording does not hold what the task assumed.**
+`eval/agentic/results.json` records the documents each side's *spans point into*,
+not the bundle the planner gathered — read out of `run_agentic_eval.py` rather
+than assumed. So neither candidate in the plan was available. What is available
+is **cited** documents, and it is sufficient for the reason that makes the cheap
+measurement work: **a run cannot cite a document it did not gather**, so
+cited ⊆ gathered, cited-recall ≤ gathered-recall, and a measured 1.000 on the
+weaker metric establishes 1.000 on the stronger one. A figure *below* 1.000
+would need the direct measurement to interpret, which is **T-80**.
+
+It also catches the truncation case that made document-granularity look too
+coarse: a planner that fetched a bundle but passed a truncated observation list
+leaves criterion (a) with nothing to cite, so its document drops out of the cited
+set and recall falls — exactly the failure `AgenticRetrievalPlanner`'s own
+docstring names.
+
+**Measured: 1.000 across all seven criteria, 25 citing cases.** D4's reversal
+condition — "measured retrieval recall below 0.85, a number not a hunch" — has
+been unfalsifiable since it was written. It now reads against a figure.
+
+Mutations: the section reading the oracle's own documents (1.000 by
+construction — D70's rejected figure), the denominator widened to non-citing
+criteria (caught by `--verify`), and one of a patient's two cited documents
+dropped, which must move the number. A fourth — containment weakened to
+intersection — is an **equivalent mutant** on this corpus, since no criterion
+cites two documents today; it is pinned by parsing instead (D65, D67's move).
 
 **D4's reversal condition now reads against this number.** It was set as
 "measured retrieval recall below 0.85 — a number, not a hunch" and has been

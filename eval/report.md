@@ -105,6 +105,27 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 **No constant in this tree can drive abstention to 1.** Where the system stops being useful is answered under A8, in the README's failure-modes section, in the terms this system actually has.
 
+## Planner recall against the oracle's evidence (REQ-25, D4, D86)
+
+`FixedRetrievalPlanner` reads three stores in a fixed order; `AgenticRetrievalPlanner` lets the model choose what to fetch. Everything downstream is identical and cannot tell which planner ran, which is what makes the differential a comparison (D63). This section asks the question the outcome comparison cannot: **did the model-directed run have the evidence the deterministic one used?**
+
+| Criterion | Cases citing evidence | Covered by the agentic run | Recall |
+|---|---|---|---|
+| `a` | 5 | 5 | 1.000 |
+| `b` | 3 | 3 | 1.000 |
+| `c1` | 4 | 4 | 1.000 |
+| `c2` | 3 | 3 | 1.000 |
+| `c3` | 4 | 4 | 1.000 |
+| `c4` | 3 | 3 | 1.000 |
+| `c5` | 3 | 3 | 1.000 |
+| **all** | **25** | **25** | **1.000** |
+
+**What this figure is a bound on.** The recording holds the documents each side's spans point into, not the bundle the planner gathered. A run cannot cite a document it did not gather, so cited ⊆ gathered and this **bounds true retrieval recall from below**: the measured **1.000** therefore establishes 1.000 on the stronger metric too. A figure *below* 1.000 would need T-80's direct measurement to interpret — it could mean the planner skipped the document, or gathered it and produced no citable span.
+
+**It does catch the truncation case.** If the model fetched a bundle but passed a truncated observation list, criterion (a) has nothing to cite, abstains, and its document drops out of the cited set — the exact failure `AgenticRetrievalPlanner`'s own docstring names (D63).
+
+**D4's reversal condition now reads against a number.** It was set as "measured retrieval recall below 0.85 — a number, not a hunch" and has been unfalsifiable since it was written, because nothing measured retrieval recall and nothing could. Vector search stays rejected on rule 9 and on a six-document corpus; this is the figure that would let it back in on evidence.
+
 ## Cost and latency (A6, Article X)
 
 Measured from each determination's own `metrics`, never estimated. **Reported, never asserted**: tokens and latency move between runs of the same model on the same input, and folding them into a gate would fail it on noise.
