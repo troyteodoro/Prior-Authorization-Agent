@@ -49,6 +49,7 @@ from pa_agent.workflow import (
     DEFAULT_MAX_ATTEMPTS,
     ERROR_CODE_FOR,
     EXTRACTION_CRITERIA,
+    RETRIEVAL_CRITERIA,
     _RETRYABLE_FAILURES,
     run_criteria_workflow,
 )
@@ -483,4 +484,136 @@ def test_every_broad_handler_raises_or_is_allowlisted_with_a_reason() -> None:
     ]
     assert inert == [], (
         f"allowlisted handlers whose bodies do nothing at all: {inert}"
+    )
+
+
+# --------------------------------------------------------------------------
+# Failure point 5: the planner itself (T-77, D90)
+#
+# T-29 mapped every extraction fault and did not reach `step_gather`.
+# `AgenticRetrievalPlanner` makes a model call and its `RetrievalError`
+# propagated uncaught through `determine()` to the CLI, which crashed with
+# Python's exit 1 — the code for a bad request, which is the collapse REQ-29 and
+# Article IV forbid. The deterministic planner cannot raise it, which is exactly
+# why nothing caught it.
+# --------------------------------------------------------------------------
+
+
+class _RaisingPlanner:
+    """Fails the way `AgenticRetrievalPlanner` can, and counts the asks."""
+
+    def __init__(self, message: str = "the model returned no usable bundle") -> None:
+        self.message = message
+        self.attempts = 0
+
+    def gather(self, patient_id, tree, patient_store, policy_store):
+        from pa_agent.retrieval import RetrievalError
+
+        self.attempts += 1
+        raise RetrievalError(self.message)
+
+
+def test_retrieval_failure_errors_every_criterion_and_aborts(
+    policy_store, patient_store, runner, e1_patient, ref
+):
+    """D90's ruling, asserted: **all seven**, not the extraction-consuming five.
+
+    `step_gather` produces the entire evidentiary input. Criterion (a) has no
+    observations to compare, (b) no conditions and no value set, c1–c5 no notes.
+    Reporting the fault on five of seven would state that (a) and (b) were
+    evaluated, and they were not.
+    """
+    planner = _RaisingPlanner()
+    with pytest.raises(DeterminationAborted) as caught:
+        _run(
+            policy_store,
+            patient_store,
+            runner,
+            e1_patient,
+            ref,
+            planner=planner,
+        )
+
+    assert planner.attempts == 1, (
+        "step_gather has no retry loop and D90 did not add one: a second model "
+        "call nothing has measured is not a fix"
+    )
+    assert caught.value.attempts == 1
+    assert [r.criterion_id for r in caught.value.results] == list(
+        RETRIEVAL_CRITERIA
+    ), "nothing was gathered, so no criterion was evaluated (D90)"
+    assert list(RETRIEVAL_CRITERIA) == ["a", "b", "c1", "c2", "c3", "c4", "c5"]
+
+    for result in caught.value.results:
+        assert result.verdict is CriterionVerdict.ERROR
+        assert result.error_code is ErrorCode.SOURCE_UNAVAILABLE
+        assert planner.message in result.error_detail
+
+
+def test_a_retrieval_failure_is_an_error_and_never_an_abstention(
+    policy_store, patient_store, runner, e1_patient, ref
+):
+    """Article IV, at the one place it is most tempting to collapse.
+
+    `INSUFFICIENT_EVIDENCE` with `NO_EVIDENCE_RETRIEVED` would be a well-formed
+    answer that reads almost right, and it says *the chart does not say* when
+    what happened is *the system did not look*. `RetrievalError`'s own docstring
+    refuses the mirror of this — a planner returning an empty bundle instead of
+    raising — and answering it as an abstention downstream would undo that at
+    the other end of the same wire.
+    """
+    with pytest.raises(DeterminationAborted) as caught:
+        _run(
+            policy_store,
+            patient_store,
+            runner,
+            e1_patient,
+            ref,
+            planner=_RaisingPlanner(),
+        )
+
+    for result in caught.value.results:
+        assert result.verdict is not CriterionVerdict.INSUFFICIENT_EVIDENCE
+        assert result.gap_reason is None, (
+            "an ERROR carries a code and no gap_reason; a gap_reason would make "
+            "it read as an abstention (Article IV, D7, D9)"
+        )
+        assert result.spans == []
+
+
+def test_a_retrieval_failure_reaches_the_cli_as_exit_three(
+    monkeypatch, e1_patient, capsys
+):
+    """The defect, stated as it was found: before this the CLI crashed with
+    Python's exit 1, indistinguishable from an unknown patient (REQ-29)."""
+    from pa_agent import workflow as workflow_module
+
+    planner = _RaisingPlanner()
+    monkeypatch.setattr(workflow_module, "FixedRetrievalPlanner", lambda: planner)
+
+    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE])
+    out, err = capsys.readouterr()
+
+    assert rc == 3, "a fault is exit 3; exit 1 is a bad request (REQ-29, D76)"
+    assert out == "", "no Determination is emitted over an ERROR (REQ-24)"
+    assert "SOURCE_UNAVAILABLE" in err
+    for criterion_id in RETRIEVAL_CRITERIA:
+        assert f"criterion {criterion_id}" in err
+
+
+def test_the_two_fault_mappings_share_one_builder(script_source=None):
+    """D90: two independent fault-mapping sites are two things free to disagree
+    about what an abort looks like. Parsed, because a second builder that
+    happened to produce identical results would pass every test above."""
+    source = (REPO_ROOT / "pa_agent" / "workflow.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    builders = [
+        node.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef)
+        and node.name.endswith("_error_results")
+    ]
+    assert builders == ["_error_results"], (
+        f"{builders} build ERROR result lists; one builder, and which criteria "
+        "it covers is the caller's ruling (D76, D90)"
     )

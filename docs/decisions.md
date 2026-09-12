@@ -6541,3 +6541,65 @@ the next test.
 **Reverses if:** `_column`'s format changes, at which point the parser breaks
 loudly — which is the correct failure, since a changed rendering is a changed
 contract.
+
+## D90 — A retrieval fault errors every criterion, because nothing was gathered for any of them
+
+**Context.** T-29 mapped every extraction fault onto a criterion's `ERROR` at
+the workflow boundary and made the abort an exception (D76). It did not reach
+`step_gather`, and the board registered the gap as T-77: `AgenticRetrievalPlanner`
+makes a model call, and its `RetrievalError` propagates uncaught through
+`determine()` to the CLI, which crashes with Python's exit 1 —
+**indistinguishable from a bad request**, which is precisely the collapse
+Article IV and REQ-29 exist to prevent.
+
+The deterministic `FixedRetrievalPlanner` cannot raise it, which is why this
+blocked nothing. It is also why nothing caught it: the default path never
+exercises the failure.
+
+### Chosen — every criterion carries the `ERROR`, and the entry says why rather than assuming it
+
+The open question the board named: which criteria carry the `ERROR` when
+*nothing* was gathered. **All seven.** `step_gather` is the step that produces
+observations, conditions, the value set and the notes — the entire evidentiary
+input to the run. An extraction fault is narrower and D76 was right to scope it:
+(a) and (b) read structured FHIR and never touched the model, so a fault they
+never saw is not theirs to report, and `EXTRACTION_CRITERIA` is the five that
+consume `state.events`. A retrieval fault has no such subset. Criterion (a) has
+no observations to compare, (b) has no conditions and no value set, c1–c5 have
+no notes to extract from. Reporting a fault on five of seven would state that
+(a) and (b) were evaluated, and they were not.
+
+**Rejected — abstaining instead of erroring.** `INSUFFICIENT_EVIDENCE` with
+`NO_EVIDENCE_RETRIEVED` is the most tempting shape here and it is Article IV
+collapsed. That abstention means *the chart does not say*, and this is *the
+system did not look*. `RetrievalError`'s own docstring already refuses the
+mirror of this — a planner returning an empty bundle rather than raising — for
+exactly the reason that "the model did not look" and "the chart does not say"
+must never be confusable. Answering it as an abstention downstream would undo
+that at the other end of the same wire.
+
+**Rejected — a `RETRIEVAL_FAILED` error code.** `ErrorCode` is REQ-30's closed
+enum and a new member needs a distinct classification and a distinct next
+action. A planner that failed to fetch is `SOURCE_UNAVAILABLE` — *a store could
+not serve a document* — which is already there, already classified **retryable**,
+and already says what to do. A sixth member here would be a synonym.
+
+**Chosen — the mapping sits beside D76's, not in a second place.** Same shape,
+same module, same `DeterminationAborted`. Two independent fault-mapping sites
+would be two things free to disagree about what an abort looks like.
+
+**Attempts.** `SOURCE_UNAVAILABLE` is retryable by classification, but
+`step_gather` has no retry loop and this entry does not add one:
+`_extract_one`'s budget exists because a model call is flaky per-call, and the
+fixed planner's three store reads are not. The abort reports `attempts=1`,
+which is true. A retry loop around the agentic planner is a real question and a
+separate one — it would spend a second model call, and nothing measures whether
+that helps.
+
+**Cost.** One `try`/`except` in `step_gather` and a test that supplies a raising
+planner.
+
+**Reverses if:** a planner acquires a partial-success mode — some documents
+fetched, one unreachable — at which point "nothing was gathered" stops
+describing the fault and the all-seven rule needs re-deriving. Nothing in
+`RetrievalResult` expresses partial success today, deliberately.

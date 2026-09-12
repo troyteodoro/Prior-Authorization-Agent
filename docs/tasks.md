@@ -17,7 +17,7 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-six tasks are on this board — IDs run to T-80 but numbering is not
-contiguous, so the highest id is not the count. **61 are closed, 2 are open,
+contiguous, so the highest id is not the count. **62 are closed, 1 is open,
 and 3 are deferred under review** *(D81)*. **Nothing open sits on the critical
 path: acceptance gates A1–A9 all hold.** This is the path as it ran. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
@@ -41,7 +41,6 @@ Off the path. Real work, nothing waiting on it:
 | Task | Why it is not sequenced | When |
 |---|---|---|
 | `T-80` | spends model calls; T-27's figure is sufficient while it reads 1.000 | any time, blocks nothing *(D86)* |
-| `T-77` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
 
 **Why the ratification tasks are no longer here.** D74 converted D42's
 admission — the eval ground truth is authored by the agent building the system
@@ -1734,9 +1733,10 @@ unfalsifiable since it was written, because nothing measured retrieval recall an
 nothing could. Vector search stays rejected on rule 9 and on a six-document
 corpus; this is what would let it back in on evidence *(D70)*.
 
-### `[ ] T-77` Map the agentic planner's fault onto the abort path
+### `[x] T-77` Map the agentic planner's fault onto the abort path
 **REQ:** 23, 24, 29 · **Depends:** T-29, T-61 · **Found by:** T-29
-**Status:** off the critical path; the deterministic default never raises it
+**Status:** **closed** (D90) — every criterion carries the `ERROR`, and the CLI
+exits 3 instead of crashing with Python's 1
 **Exit:** `pytest tests/test_fault_injection.py -k retrieval` — a
 `RetrievalPlanner` whose `gather` raises `RetrievalError` resolves to
 `DeterminationAborted` with a classified `error_code` and a non-zero CLI exit,
@@ -1750,6 +1750,36 @@ Python's exit 1 — indistinguishable from a bad request. The deterministic
 the critical path. The open design question is which criteria carry the
 `ERROR` when *nothing* was gathered — all of them is the honest answer, and
 the decision entry should say so or say why not.
+
+**Closed by D90: all seven, and the entry says why rather than assuming it.**
+`step_gather` produces the entire evidentiary input — observations, conditions,
+the value set, the notes — so there is no subset that was evaluated. Criterion
+(a) has no observations to compare, (b) no conditions and no value set, c1–c5 no
+notes. Reporting the fault on the extraction-consuming five would state that (a)
+and (b) were evaluated, and they were not. That is the difference from D76,
+which scoped an extraction fault correctly: (a) and (b) never touched the model.
+
+**`SOURCE_UNAVAILABLE`, not a new enum member.** REQ-30's enum is closed, "a
+store could not serve a document" is what happened, and it is already classified
+retryable. A sixth member would be a synonym.
+
+**Rejected: abstaining.** `INSUFFICIENT_EVIDENCE`/`NO_EVIDENCE_RETRIEVED` is the
+tempting shape and it is Article IV collapsed — that abstention means *the chart
+does not say*, and this is *the system did not look*. `RetrievalError`'s
+docstring already refuses the mirror (a planner returning an empty bundle rather
+than raising); answering it as an abstention downstream would undo that at the
+other end of the same wire. A test asserts no result carries a `gap_reason`.
+
+**`attempts=1`, and no retry loop was added.** `_extract_one`'s budget exists
+because a model call is flaky per-call; the fixed planner's three store reads
+are not. A retry around the agentic planner spends a second model call nothing
+has measured, and that is a separate question.
+
+The two fault mappings share one builder — two independent sites are two things
+free to disagree about what an abort looks like — and that is pinned by parsing,
+since a second builder producing identical results would pass every behavioural
+test. Mutations: the mapping deleted, the criteria narrowed to five, the abort
+collapsed into an empty bundle, and a second builder added.
 
 ### `[x] T-32` Plane separation check
 **REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI

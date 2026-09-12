@@ -66,6 +66,7 @@ from pa_agent.index import DocumentIndex
 from pa_agent.reconcile import reconcile_bmi
 from pa_agent.retrieval import (
     FixedRetrievalPlanner,
+    RetrievalError,
     RetrievalPlanner,
 )
 from pa_agent.runners import (
@@ -119,6 +120,14 @@ _RETRYABLE_FAILURES = tuple(
 #: these resolve to `ERROR`; (a) and (b) read structured FHIR and never touched
 #: the model, so a fault they never saw is not theirs to report (D76).
 EXTRACTION_CRITERIA = ("c1", "c2", "c3", "c4", "c5")
+
+#: T-77 (D90): a retrieval fault errors **every** criterion. `step_gather`
+#: produces the entire evidentiary input — observations, conditions, the value
+#: set and the notes — so there is no subset that was evaluated. (a) has no
+#: observations to compare, (b) no conditions and no value set, c1–c5 no notes.
+#: Reporting a fault on five of seven would state that (a) and (b) were
+#: evaluated, and they were not.
+RETRIEVAL_CRITERIA = ("a", "b", *EXTRACTION_CRITERIA)
 
 #: T-17 (D78): what a verifier fault means for the criterion under check.
 #: Same shape as `ERROR_CODE_FOR` and the same D8 test for the replay faults:
@@ -239,9 +248,26 @@ def step_gather(state: WorkflowState, ctx: _Context) -> None:
     Fan-out width is still decided here rather than by the model mid-extraction —
     `len(state.notes)` is fixed the moment this step returns.
     """
-    plan = ctx.planner.gather(
-        state.patient_id, state.tree, ctx.patient_store, ctx.policy_store
-    )
+    try:
+        plan = ctx.planner.gather(
+            state.patient_id, state.tree, ctx.patient_store, ctx.policy_store
+        )
+    except RetrievalError as exc:
+        # T-77, D90. `AgenticRetrievalPlanner` makes a model call and can raise;
+        # before this the error reached the CLI as Python's exit 1, which is the
+        # code for a bad request — the collapse REQ-29 and Article IV forbid.
+        #
+        # `SOURCE_UNAVAILABLE` rather than a new enum member: REQ-30's enum is
+        # closed, "a store could not serve a document" is what happened, and a
+        # sixth member would be a synonym. `attempts=1` is true — `step_gather`
+        # has no retry loop, and adding one would spend a second model call
+        # nothing has measured (D90).
+        raise DeterminationAborted(
+            _error_results(
+                RETRIEVAL_CRITERIA, ErrorCode.SOURCE_UNAVAILABLE, str(exc)
+            ),
+            attempts=1,
+        ) from exc
     state.observations = plan.observations
     state.conditions = plan.conditions
     state.value_set = plan.value_set
@@ -278,7 +304,9 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
                 else 1
             )
             raise DeterminationAborted(
-                _extraction_error_results(ERROR_CODE_FOR[exc.reason], str(exc)),
+                _error_results(
+                    EXTRACTION_CRITERIA, ERROR_CODE_FOR[exc.reason], str(exc)
+                ),
                 attempts=attempts,
             ) from exc
         state.events.extend(result.events)
@@ -657,10 +685,16 @@ def _verify_one(
     )
 
 
-def _extraction_error_results(
-    code: ErrorCode, detail: str
+def _error_results(
+    criterion_ids: tuple[str, ...], code: ErrorCode, detail: str
 ) -> list[CriterionResult]:
-    """One `ERROR` per extraction-consuming criterion (T-29, D76).
+    """One `ERROR` per criterion the fault reached (T-29 / D76, T-77 / D90).
+
+    Which criteria those are is the caller's ruling and differs by fault:
+    `EXTRACTION_CRITERIA` for a model fault the structured criteria never saw,
+    `RETRIEVAL_CRITERIA` — all of them — when nothing was gathered at all. One
+    builder rather than two, because two independent fault-mapping sites are two
+    things free to disagree about what an abort looks like.
 
     Each result self-validates: `CriterionResult`'s shape rules require the
     code and the exception text and forbid spans and a `gap_reason`, so a
@@ -673,7 +707,7 @@ def _extraction_error_results(
             error_code=code,
             error_detail=detail,
         )
-        for criterion_id in EXTRACTION_CRITERIA
+        for criterion_id in criterion_ids
     ]
 
 

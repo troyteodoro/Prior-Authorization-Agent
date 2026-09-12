@@ -29,7 +29,7 @@ an instruction typed into a prompt.
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
 | `docs/tasks.md` | The board. Tasks T-00 through T-80, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
-| `docs/decisions.md` | D1–D89, kill criteria, open questions. Append-only. |
+| `docs/decisions.md` | D1–D90, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -104,7 +104,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 11 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (664 tests, ~18s)
+./venv/bin/python -m pytest -q                  # the suite alone (673 tests, ~18s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -236,7 +236,10 @@ passing**, because the tests are written in terms of the thing that broke.
   disagree with criterion (a).
 - **`NOT_MET` / `INSUFFICIENT_EVIDENCE` / `ERROR` never collapse** (Article IV,
   D7, D9). An abstention cites nothing and carries a `gap_reason`; a `MET` or
-  `NOT_MET` carries a span and no reason. Both directions are validators.
+  `NOT_MET` carries a span and no reason. Both directions are validators. **A
+  retrieval fault is an `ERROR` on every criterion, never an abstention** *(D90)*
+  — "the system did not look" and "the chart does not say" are the two things
+  `RetrievalError` exists to keep apart, at both ends of the wire.
 - **Criteria trees never move into a store's write path** (Article VII, D25).
   Git is the source of truth; a store may serve a deploy-time read-only
   projection.
@@ -350,8 +353,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**61 of 66 tasks closed, 2 open, 3 deferred under review. All 11 gates green**
-(`check_gates.py`, ~25s, 669 tests across 33 files). IDs run to T-80, but
+**62 of 66 tasks closed, 1 open, 3 deferred under review. All 11 gates green**
+(`check_gates.py`, ~25s, 673 tests across 33 files). IDs run to T-80, but
 numbering is not contiguous — the highest id is not the count.
 
 Delivered: **US-1 through US-7 and US-9**, and **acceptance gates A1–A9 all
@@ -382,8 +385,8 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 36.1s across nine determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **T-77 and T-80** — neither on the critical path, since **A1–A9 all
-hold**. **The ratification programme is paused** *(T-79,
+Open: **T-80 alone** — a direct measurement of retrieval recall that spends
+model calls, not on the critical path, since **A1–A9 all hold**. **The ratification programme is paused** *(T-79,
 D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
 suspended them pending a review of whether the programme continues, and they
 sit verbatim in the board's *Deferred — under review* section. What closed
@@ -491,7 +494,7 @@ scripts/             check_gates, check_env, check_skeleton, check_ownership,
                      check_req_coverage, ratify, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               33 files, 669 tests
+tests/               33 files, 673 tests
 docs/                the five governing docs plus ratifications.json — D74's
                      ledger, statuses beyond `proposed` are the owner's edits only
 ```
