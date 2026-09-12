@@ -736,6 +736,11 @@
       "by": "agent",
       "date": "2026-09-11"
     },
+    "T-79": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-12"
+    },
     "T-27": {
       "status": "proposed",
       "by": "agent",
@@ -1175,6 +1180,11 @@
       "status": "proposed",
       "by": "agent",
       "date": "2026-09-11"
+    },
+    "D81": {
+      "status": "proposed",
+      "by": "agent",
+      "date": "2026-09-12"
     },
     "eval/cases.json": {
       "status": "proposed",

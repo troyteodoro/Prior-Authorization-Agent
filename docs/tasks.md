@@ -16,46 +16,51 @@ answers the second question, once.
 
 ## Path to v1
 
-Sixty-four tasks are on this board — IDs run to T-78 but numbering is not
-contiguous, so the highest id is not the count. **51 are closed and 13 are
-open.** Seven of the 13 sit on the critical path to the acceptance gates in
-spec §7. This is that path, in order. *(D70, extended by D72; reordered by D74
-— ownership is ratified before the path resumes; T-21 closed out of that
-order in a forked session, reconciled by D79)*
+Sixty-five tasks are on this board — IDs run to T-79 but numbering is not
+contiguous, so the highest id is not the count. **52 are closed, 10 are open,
+and 3 are deferred under review** *(D81)*. Four of the ten sit on the critical
+path to the acceptance gates in spec §7. This is that path, in order. *(D70,
+extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
+the ratification programme paused)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
 | 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
 | 2 | `T-74` | the owner ratifies constitution, spec, stories *(D74)* | **closed** |
-| 3 | `T-75` | the owner ratifies the load-bearing decisions and the board *(D74)* | ready — **next**; the owner's reading |
-| 4 | `T-78` | the owner adjudicates the eval labels; retires D42's caveat *(D79)* | after T-75; the owner's reading |
-| 5 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74/T-75; see D79 |
-| 6 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
-| 7 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
+| 3 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74; see D79 |
+| 4 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
+| 5 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
+| 6 | `T-79` | the ratification programme pauses *(D81)* | **closed** |
+| 7 | `T-72` | A5 acquires a mechanism the system actually has | ready — **next** |
 | 8 | `T-32` | gates **Article VI** / REQ-33 | ready |
-| 9 | `T-72` → `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-78; T-72 any time |
+| 9 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-72 |
 
 Off the path. Real work, nothing waiting on it:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
-| `T-76` | ratifies the remaining decision entries; the load-bearing set is T-75's | after T-73, in batches, blocks nothing *(D74)* |
-| `T-27` | needs the full eval set and the report to write into | after T-21 and T-22 |
+| `T-27` | needs the report to write into | after T-22 |
 | `T-42` | a decision task; no §6 case distinguishes the two readings | any time, blocks nothing |
 | `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
 | `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
 | `T-77` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
 
-**Why the ratification tasks go first.** D42 put on record that the eval ground
-truth is authored by the agent building the system it grades, and the docs the
-whole repo obeys were agent-drafted under direction. D74 converts that
-direction into recorded ownership — a ledger, a gate, and statuses only the owner
-may write — and the conversion is cheapest *before* T-21 authors the labels
-the acceptance gates will be scored against, not after. T-21 nonetheless
-closed first, in a session forked from the pre-D74 board; the close stands,
-the ratification pass now reviews authored labels instead of preceding them,
-and D79 records the breach with the adjudication half of T-21's rewritten
-exit re-homed as T-78.
+**Why the ratification tasks are no longer here.** D74 converted D42's
+admission — the eval ground truth is authored by the agent building the system
+it grades, and the docs the whole repo obeys were agent-drafted under direction
+— into recorded ownership: a ledger, a gate, and statuses only the owner may
+write. T-73 and T-74 delivered it as far as 98 ratified ids across the
+constitution, spec and stories. The rest of the programme is reading only the
+owner can do, and the owner has suspended it pending a review of whether it
+continues *(D81)*. T-75, T-76 and T-78 sit in **Deferred — under review**
+below, verbatim, so resuming is a move rather than a reconstruction.
+
+**What that costs, stated once.** D79 made T-78 the point where D42's
+authorship caveat retires, and the report chain waited on it. Lifting that
+block is what lets T-22 → T-28 → T-23 proceed, and it leaves the caveat
+standing: every figure in `eval/report.md` and every claim in `README.md` is
+measured against labels this repo's own agent authored, and both documents say
+so in their own text *(D81)*.
 
 **Why T-21 did not wait.** US-4 and US-5 were *built and ungraded* — every
 predicate, the reconciliation, the aggregator and the gap list worked and were
@@ -70,6 +75,65 @@ was one task; D78 closed it.
 
 **Why the report chain is last.** T-22, T-28 and T-23 all read the eval set
 beneath them. Built before T-21 they would be rewritten after it.
+---
+
+## Deferred — under review
+
+Not open, not blocked, not withdrawn. The owner suspended the ratification
+programme where T-74 left it, pending a review of whether it continues at
+all *(D81)*. These three are its unfinished half and each is a reading only
+the owner can perform. They are preserved verbatim so that resuming is a
+move back onto the board rather than a reconstruction; the ledger
+(`docs/ratifications.json`) keeps its `required_tiers` frozen at what was
+actually ratified, and `scripts/check_ownership.py` stays the ninth gate
+asserting exactly that much.
+
+**Nothing else waits on them.** D79 had T-78 blocking T-22 → T-28 → T-23;
+D81 lifted that block and recorded what it costs — D42's authorship caveat
+stands unretired, and the report and README carry it in their own text.
+
+### `[ ] T-75` Ratify the load-bearing decisions and the whole board
+**Depends:** T-74 · **Discovered in:** D74 · **Timebox:** two sessions
+**Status:** **deferred under review** *(D81)* — the reading is the owner's,
+not an agent's, and the owner has suspended the programme
+**Exit:** `python scripts/check_ownership.py --require decisions-core
+--require tasks` returns zero, and the close flips both tiers into
+`required_tiers`
+
+`decisions-core` is the 27-entry set D74 froze — the decisions CLAUDE.md's
+invariants and domain-facts sections cite. A blown timebox gets a decisions
+entry naming what broke (working rule 8), not a silent grind.
+
+
+### `[ ] T-76` Ratify the remaining decision entries
+**Depends:** T-73 · **Discovered in:** D74
+**Status:** **deferred under review** *(D81)*; was off the critical path,
+proceeding in batches, blocking nothing
+**Exit:** `python scripts/check_ownership.py --require decisions-all` returns
+zero, and the close flips `decisions-all` into `required_tiers`
+
+D74's reversal clause applies here: if this stalls indefinitely, it shrinks to
+opportunistic ratification and the ledger's `proposed` count keeps the gap
+visible rather than hidden.
+
+
+### `[ ] T-78` Adjudicate the eval ground truth
+**Depends:** T-74, T-75 · **Discovered in:** D79 *(the adjudication half of
+T-21's D74-rewritten exit)* · **Blocked:** nothing — D79's block on T-22,
+T-28 and T-23 was lifted by D81 ·
+**Timebox:** one session — the owner's reading
+**Status:** **deferred under review** *(D81)*
+**Exit:** every case in `eval/cases.json` and every manifest in
+`eval/manifests/` carries an `adjudicated: {by, date}` record, and `python
+scripts/check_ownership.py --require eval` returns zero — closing flips
+`eval` into the ledger's `required_tiers` *(D74)*
+
+Agent-drafted labels stand as proposals carrying reasoning and spans; the owner's
+adjudication records are what close them, and the adjudication of each
+patient's manifest happens in the same reading pass that reviews its cases.
+This is where D42's authorship caveat is retired for the eval set — D74 put
+that pass before T-21 authored the labels, the fork closed T-21 first, and
+D79 re-homed the pass here rather than pretending it happened *(D79)*.
 
 ---
 
@@ -1318,20 +1382,21 @@ while building T-22 *(working rule 5; T-37's shape)*.
 
 ### `[ ] T-22` Metrics report
 **Depends:** T-20, T-21, T-72 *(D72)* · **Gates:** A2, A3, A5, A6
-**Status:** on the critical path; blocked on T-21 and T-72
+**Status:** on the critical path; T-21 is closed and D81 lifted T-78's block,
+so the one thing in front of it is T-72
 **Exit:** `eval/report.md` with per-criterion precision, span validity rate,
 abstention rate, the A5 measurement T-72 chooses, cost and latency
 
 ### `[ ] T-28` Baseline and base rate in the metrics report
 **Depends:** T-22 · **Gates:** A2
-**Status:** on the critical path; blocked on T-22
+**Status:** on the critical path; blocked on T-22 alone *(D81)*
 **Exit:** `eval/report.md` contains the `MET` base rate and an always-`MET`
 baseline score next to measured precision
 A2 requires it: a precision figure without its base rate does not satisfy the gate.
 
 ### `[ ] T-23` README
 **Depends:** T-22 · **Gates:** A7, A8
-**Status:** last on the critical path; blocked on T-22
+**Status:** last on the critical path; blocked on T-22 alone *(D81)*
 **Exit:** `python scripts/check_req_coverage.py` — every REQ in spec §5 maps to a
 passing check **or** appears in §5's *Unclaimed in v1* list, and the script reads
 that list rather than assuming it empty. A REQ in neither fails. A REQ added to
@@ -1428,6 +1493,24 @@ unchanged (T-30, D77).
 
 Real work with a runnable exit that delivers no user outcome.
 
+### `[x] T-79` Pause the ratification programme in a holding area
+**REQ:** none — board hygiene · **Discovered in:** the owner's instruction to
+skip the ratification section pending review · **Timebox:** one hour
+**Status:** closed — T-75, T-76 and T-78 moved to **Deferred — under review**
+verbatim; `required_tiers` frozen; T-78's block on the report chain lifted
+**Exit:** `python scripts/check_gates.py` returns zero with the ledger's
+required tiers unchanged, and no task in `Path to v1` names a deferred id
+
+**Closed by D81.** The three remaining ratification tasks are readings only the
+owner can perform, and the owner suspended the programme pending a review of
+whether it continues. Nothing closed was touched: T-73 and T-74 stand, D74 and
+D80 stand, `docs/ratifications.json` keeps its 98 ratified ids and its three
+required tiers, `scripts/check_ownership.py` stays the ninth gate, and working
+rule 11 still scopes who may write a status. What moved is the board's active
+surface. D79's block on T-22 → T-28 → T-23 is lifted, and D81 records the
+price in the one place it is load-bearing: D42's authorship caveat does not
+retire, so `eval/report.md` and `README.md` carry it in their own text.
+
 ### `[x] T-73` The ratification ledger and its gate
 **REQ:** none — implements D74's protocol · **Blocks:** T-74, T-75, T-76,
 T-21's rewritten exit · **Discovered in:** the D74 ownership review ·
@@ -1464,43 +1547,6 @@ into `required_tiers`
 An agent may scaffold a checklist view; every status written is the owner's edit.
 A disagreement is an `amended` or `overruled` status naming a new numbered
 task (working rule 6) — the gate refuses one that names nothing.
-
-### `[ ] T-75` Ratify the load-bearing decisions and the whole board
-**Depends:** T-74 · **Discovered in:** D74 · **Timebox:** two sessions
-**Status:** **next** — T-74 closed; the reading is the owner's, not an agent's
-**Exit:** `python scripts/check_ownership.py --require decisions-core
---require tasks` returns zero, and the close flips both tiers into
-`required_tiers`
-
-`decisions-core` is the 27-entry set D74 froze — the decisions CLAUDE.md's
-invariants and domain-facts sections cite. A blown timebox gets a decisions
-entry naming what broke (working rule 8), not a silent grind.
-
-### `[ ] T-76` Ratify the remaining decision entries
-**Depends:** T-73 · **Discovered in:** D74
-**Status:** off the critical path; proceeds in batches, blocks nothing
-**Exit:** `python scripts/check_ownership.py --require decisions-all` returns
-zero, and the close flips `decisions-all` into `required_tiers`
-
-D74's reversal clause applies here: if this stalls indefinitely, it shrinks to
-opportunistic ratification and the ledger's `proposed` count keeps the gap
-visible rather than hidden.
-
-### `[ ] T-78` Adjudicate the eval ground truth
-**Depends:** T-74, T-75 · **Discovered in:** D79 *(the adjudication half of
-T-21's D74-rewritten exit)* · **Blocks:** T-22, T-28, T-23 ·
-**Timebox:** one session — the owner's reading
-**Exit:** every case in `eval/cases.json` and every manifest in
-`eval/manifests/` carries an `adjudicated: {by, date}` record, and `python
-scripts/check_ownership.py --require eval` returns zero — closing flips
-`eval` into the ledger's `required_tiers` *(D74)*
-
-Agent-drafted labels stand as proposals carrying reasoning and spans; the owner's
-adjudication records are what close them, and the adjudication of each
-patient's manifest happens in the same reading pass that reviews its cases.
-This is where D42's authorship caveat is retired for the eval set — D74 put
-that pass before T-21 authored the labels, the fork closed T-21 first, and
-D79 re-homed the pass here rather than pretending it happened *(D79)*.
 
 ### `[ ] T-27` Planner recall against the oracle's evidence bundle
 **REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70

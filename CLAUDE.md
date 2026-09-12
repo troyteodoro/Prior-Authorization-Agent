@@ -28,8 +28,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-72, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
-| `docs/decisions.md` | D1–D72, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-79, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
+| `docs/decisions.md` | D1–D81, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -92,7 +92,11 @@ deterministic path is usable as a regression oracle *(D62)*.
     records human ownership of every load-bearing ID, and an agent granting
     itself ratification is the exact failure the ledger exists to prevent
     *(D74)*. `scripts/check_ownership.py` enforces the ledger's structure;
-    this rule is what scopes its statuses.
+    this rule is what scopes its statuses. **The programme is paused** — the
+    ledger's `required_tiers` is frozen at `constitution, spec, stories`, and
+    T-75/T-76/T-78 sit in the board's *Deferred — under review* section
+    *(D81)*. The rule still binds: a paused reading is not a licence to
+    write the statuses it would have produced.
 
 ## Commands
 
@@ -343,9 +347,9 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**51 of 64 tasks closed, 13 open. All 9 gates green** (`check_gates.py`, ~13s,
-604 tests across 30 files). IDs run to T-78, but numbering is not contiguous —
-the highest id is not the count.
+**52 of 65 tasks closed, 10 open, 3 deferred under review. All 9 gates green**
+(`check_gates.py`, ~13s, 607 tests across 30 files). IDs run to T-79, but
+numbering is not contiguous — the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3, US-4, US-5, US-6, US-9**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
@@ -367,15 +371,19 @@ the committed 27-claim recording for zero calls, and the four-run measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
 27/27 twice — is D78's substance.
 
-Open, in order: **T-75 → T-78 → T-32 →
-T-72/T-22/T-28/T-23**, with T-76, T-27, T-42, T-70, T-71 and T-77 off the
-path. The remaining ratification tasks lead because D74 restores human ownership of
-every load-bearing ID — ledger `docs/ratifications.json`, gate
-`scripts/check_ownership.py`, working rule 11 — and T-21 closed ahead of them
-in a forked session, so the ratification pass reviews its labels after the
-fact as T-78 *(D79)*. `docs/tasks.md` opens with `Path to v1`, which states this once
-with what each step gates — read it rather than this paragraph *(D70, D72,
-D74)*.
+Open, in order: **T-72 → T-32 → T-22 → T-28 → T-23**, with T-27, T-42, T-70,
+T-71 and T-77 off the path. **The ratification programme is paused** *(T-79,
+D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
+suspended them pending a review of whether the programme continues, and they
+sit verbatim in the board's *Deferred — under review* section. What closed
+stays closed — 98 ids ratified, `required_tiers` frozen at those three tiers,
+`check_ownership.py` still the ninth gate. What it costs is stated once and
+carried in the deliverables rather than a footnote: **D79's block on the report
+chain is lifted, so D42's authorship caveat does not retire**, and every figure
+`eval/report.md` and `README.md` quote is measured against labels this repo's
+own agent authored. `docs/tasks.md` opens with `Path to v1`, which states the
+sequence once with what each step gates — read it rather than this paragraph
+*(D70, D72, D74, D81)*.
 
 Worth knowing before a review: **REQ-44/REQ-47 are unclaimed on purpose** —
 Amendment 1 reserves the entire decision procedure to Python, so there is no

@@ -5867,3 +5867,71 @@ tests in `tests/test_ratify.py`.
 being read — D74's own reversal condition arriving through this door — then
 the tool is deleted and the deliberate hand edit returns as the recording
 form.
+
+## D81 — The ratification programme pauses where it stands, in a holding area rather than a grave
+
+**Context.** D74 restored human ownership of every load-bearing ID by
+ratification: a ledger (`docs/ratifications.json`), a gate
+(`scripts/check_ownership.py`), working rule 11, and four tasks. Two closed.
+T-73 built the ledger and seeded 243 ids `proposed`; T-74 carried the owner's
+reading of the constitution, spec and stories — 98 ids `ratified`, three tiers
+in `required_tiers`. Three remain open, and every one of them is a reading only
+the owner can perform: T-75 (64 tasks plus the 27-entry `decisions-core` set),
+T-76 (the remaining decision entries), T-78 (the eval ground truth, re-homed
+here by D79). `scripts/ratify.py`'s own docstring says an agent never runs it.
+
+D79 then made T-78 block the report chain — T-22 → T-28 → T-23 — on the
+argument that a report built on labels the owner may still amend would be
+rewritten. That argument is sound and it has a cost: the whole remaining
+critical path to the acceptance gates now sits behind a reading pass measured
+in sessions.
+
+**Decision — the owner suspends the programme at its current line, pending a
+review of whether it continues at all.** Recorded on the owner's instruction,
+2026-09-12. Three things follow, and the third is the one that matters:
+
+1. **T-75, T-76 and T-78 move to a `Deferred — under review` section in
+   `docs/tasks.md`.** They are not deleted, not rewritten, and not marked
+   `[!]` blocked. Their text is preserved verbatim so that resuming is a move
+   back rather than a reconstruction. The review that decides their fate —
+   continue, shrink, or delete the programme — is the owner's and is not
+   scheduled here.
+2. **`required_tiers` is frozen at `constitution, spec, stories`.** The gate
+   keeps asserting exactly what was actually ratified. It does not relax, it
+   does not grow, and it stays the ninth gate. T-73's and T-74's work is
+   closed work and this entry does not reach it; D74 and D80 stand as written.
+3. **T-78's block on T-22, T-28 and T-23 is lifted, and D42's authorship
+   caveat therefore stands unretired.** D79 named T-78 as the point where the
+   eval set's labels stop being agent-authored proposals. Deferring the pass
+   does not discharge it. The consequence is not administrative: every number
+   `eval/report.md` and `README.md` will carry is measured against ground
+   truth the agent building the system authored, and both documents say so in
+   their own text rather than in a footnote. A deferred obligation that stops
+   being visible is the failure D74 existed to prevent, so the ledger's
+   `proposed` count and the deferred section are what keep it in sight.
+
+**Rejected — delete the tasks, the ledger and the gate now.** It is the
+cheapest path and it destroys the record before the review that decides its
+worth. D74's reasoning would have to be re-derived from scratch if the answer
+came back "continue", and the 98 ratified ids — real human reading, already
+performed — would be discarded with it.
+
+**Rejected — leave the three tasks open on the path.** Honest about the state
+and it parks v1 indefinitely behind a reading the owner has chosen not to do
+now. Working rule 8's shape: when something blows its box, name what broke
+rather than grind.
+
+**Rejected — mark them `[!]` blocked.** Blocked means something will unblock
+it, and the board uses that state for real dependencies. Nothing blocks these
+but a pending decision about whether they should exist, which is a different
+fact and deserves a different section.
+
+**Cost.** The board reaches 61 of 64 rather than 64 of 64, and v1's claim is
+narrower by exactly one sentence: the acceptance gates hold against labels
+nobody outside this repo has adjudicated.
+
+**Reverses if:** the owner resumes the reading. The three tasks return to the
+board unchanged, `--require decisions-core`/`tasks`/`eval` come back, and this
+entry becomes the record of the pause. Reverses the other way if the review
+concludes the programme was scaffolding the project did not need — that is a
+deletion, and it gets its own entry naming what is being removed.

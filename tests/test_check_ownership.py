@@ -207,3 +207,60 @@ def test_a_missing_ledger_is_a_failure_not_a_pass(script, monkeypatch, capsys):
     monkeypatch.setattr(script, "LEDGER_PATH", REPO_ROOT / "docs" / "no_such_ledger.json")
     assert script.main([]) == 1
     assert "does not exist" in capsys.readouterr().out
+
+
+# -------------------------------------------------- the deferred section (D81)
+#
+# T-79's exit has two halves. `check_gates.py` returning zero is the first; these
+# are the second, and they exist because a prose section is exactly the kind of
+# claim that rots into decoration. A deferred task that quietly reappears on the
+# path, or a required tier added while the owner's reading is suspended, both
+# read as "the programme is running" while nobody is running it.
+
+TASKS = REPO_ROOT / "docs" / "tasks.md"
+DEFERRED_IDS = ("T-75", "T-76", "T-78")
+
+
+def _section(heading: str) -> str:
+    text = TASKS.read_text(encoding="utf-8")
+    start = text.index(f"\n## {heading}\n")
+    end = text.index("\n## ", start + 1)
+    return text[start:end]
+
+
+def test_the_deferred_tasks_live_in_the_deferred_section():
+    """Preserved verbatim, so resuming is a move back rather than a rewrite."""
+    section = _section("Deferred — under review")
+    for task_id in DEFERRED_IDS:
+        assert f"### `[ ] {task_id}`" in section, f"{task_id} is not in the section"
+
+
+def test_no_deferred_task_is_sequenced_on_the_path_to_v1():
+    """D81 took them off the active surface. The claim is about the *tables* —
+    the path's rows and the off-path list are what sequence work — not about the
+    prose, which points at the deferred section on purpose. Asserting over the
+    whole section instead would fail on that pointer and get relaxed until it
+    asserted nothing (D27's shape)."""
+    rows = [
+        line
+        for line in _section("Path to v1").splitlines()
+        if line.startswith("|") and not line.startswith("|---")
+    ]
+    assert rows, "the path has no table rows; the parser is reading the wrong thing"
+    for task_id in DEFERRED_IDS:
+        offending = [line for line in rows if task_id in line]
+        assert not offending, (
+            f"{task_id} is deferred under review (D81) but `Path to v1` "
+            f"sequences it: {offending[0]}"
+        )
+
+
+def test_the_required_tiers_stay_frozen_while_the_reading_is_suspended():
+    """D81 freezes the gate at what was actually ratified. Adding a tier here
+    would fail the gate on entries nobody is reading — or, worse, invite a
+    round of agent-written statuses to clear it (working rule 11)."""
+    ledger = json.loads((REPO_ROOT / "docs" / "ratifications.json").read_text())
+    assert ledger["required_tiers"] == ["constitution", "spec", "stories"], (
+        "required_tiers moved while T-75/T-76/T-78 are deferred (D81); "
+        "resuming the programme is what unfreezes it"
+    )
