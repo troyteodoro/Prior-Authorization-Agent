@@ -6494,3 +6494,50 @@ measurement.
 
 **Reverses if:** the aggregate grows past what anyone reads, at which point the
 answer is a smaller set of headline figures rather than a hidden one.
+
+## D89 — A gate asserts on a parsed cell, and the collision it feared is demonstrated rather than described
+
+**Context.** `test_compare_recomputes_over_the_intersection_and_never_pools`
+writes a sentinel of 99 into one runner's spike-note score and asserts
+`"99" not in out` over the entire rendered comparison. Any figure anywhere in
+that table containing those two digits fails it — and T-63's own corrected
+tool-fetch input total is **22,969**. The assertion is one substring collision
+away from failing for a reason unrelated to what it tests: D31's stale-substring
+lesson pointed at a gate instead of at a message.
+
+Honest note on how it surfaced, carried forward from the board: the test failed
+**once**, during a mutation pass that was rewriting the script and clearing
+`__pycache__` between runs, and did not reproduce in five subsequent full-suite
+runs. **The flake is unproven; the brittleness is not** — it is visible by
+reading the line, and that alone is the defect.
+
+### Chosen — parse the rendered table into cells, and assert on cells
+
+`_column` prints a fixed three-field row: the figure's name, the direct value,
+the other runner's value. The test parses those rows into
+`{key: (direct, other)}` and asserts the sentinel is absent from the **cell
+values**, plus the specific claim it always meant — `spans_emitted` reads `8`
+and `8`, not `107` and `8`.
+
+**And the collision is now demonstrated, not described.** One shared note is
+given a token count that puts `99` inside an unrelated total in the same table.
+The old assertion would fail on that rendering; the new one passes, and the
+pooling mutation still fails it. A brittleness argument that cannot be
+reproduced in the test that fixes it is a claim about a line of code; this makes
+it a property of the suite.
+
+**Rejected — having `compare()` return structured rows for the test to read.**
+Cleaner-looking and it changes production code to suit a test, adding a return
+value nothing else consumes. The rendering is the contract this test is about —
+a reader looks at that table — so parsing it is testing the right artifact.
+
+**Rejected — a rarer sentinel (`987654321`).** One character of work and it
+fixes this instance while leaving the shape: an assertion over a whole rendering
+still fails on any collision, and the next sentinel is chosen by whoever writes
+the next test.
+
+**Cost.** A five-line parser in the test file.
+
+**Reverses if:** `_column`'s format changes, at which point the parser breaks
+loudly — which is the correct failure, since a changed rendering is a changed
+contract.

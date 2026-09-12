@@ -17,7 +17,7 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-six tasks are on this board — IDs run to T-80 but numbering is not
-contiguous, so the highest id is not the count. **60 are closed, 3 are open,
+contiguous, so the highest id is not the count. **61 are closed, 2 are open,
 and 3 are deferred under review** *(D81)*. **Nothing open sits on the critical
 path: acceptance gates A1–A9 all hold.** This is the path as it ran. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
@@ -41,7 +41,6 @@ Off the path. Real work, nothing waiting on it:
 | Task | Why it is not sequenced | When |
 |---|---|---|
 | `T-80` | spends model calls; T-27's figure is sufficient while it reads 1.000 | any time, blocks nothing *(D86)* |
-| `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
 | `T-77` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
 
 **Why the ratification tasks are no longer here.** D74 converted D42's
@@ -2112,10 +2111,11 @@ today's figure as if it had been measured then *(D45)*.
 Mutations: the denominator widened to all scored notes, `assertion_required`
 ignored, the `None` collapsed to 1.0, and the key dropped.
 
-### `[ ] T-70` A comparison gate asserts on a substring
+### `[x] T-70` A comparison gate asserts on a substring
 **REQ:** none — a test-quality defect · **Discovered in:** the T-63 measurement
 *(D71)* · **Timebox:** one hour
-**Status:** ready, off the critical path
+**Status:** **closed** (D89) — the assertion reads parsed cells, and the
+collision is demonstrated rather than described
 **Exit:** `pytest tests/test_adk_measurement.py` —
 `test_compare_recomputes_over_the_intersection_and_never_pools` asserts that the
 sentinel value is absent **from the parsed column it belongs to**, not from the
@@ -2133,6 +2133,22 @@ on how it surfaced: the test failed **once**, during a mutation pass that was
 rewriting the script and clearing `__pycache__` between runs, and did not reproduce
 in five subsequent full-suite runs. The flake is unproven; **the brittleness is
 not** — it is visible by reading the line, and that alone is the defect.
+
+**Closed by D89.** The test parses `_column`'s fixed three-field rows into
+`{key: (direct, other)}` and asserts on cells: `spans_emitted` reads `8` and
+`8` — not `107` and `8` — and the sentinel is absent from every parsed cell,
+which is the claim the substring form was reaching for.
+
+**The collision is now demonstrated, not argued.** One shared note carries a
+token total of `990`, so the sentinel's digits appear in an unrelated figure in
+the same table. Verified both ways: restoring `"99" not in out` **fails** on
+this rendering, and the pooling mutation **still fails** the new form. A
+brittleness claim that the fixing test cannot reproduce is a claim about a line
+of code; this makes it a property of the suite.
+
+Rejected: having `compare()` return structured rows (changes production code to
+suit a test, and the rendering is the contract the test is about); a rarer
+sentinel (fixes the instance, keeps the shape).
 
 ### `[x] T-41` E12 has no patient, and the boundary case needs one
 **REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row · **Gates:** A1 ·

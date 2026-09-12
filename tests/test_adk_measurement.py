@@ -317,13 +317,37 @@ def _write_pair(
     script.adk_path(tool_fetch).write_text(json.dumps(adk), encoding="utf-8")
 
 
+def _parse_comparison(out: str, script) -> dict[str, tuple[str, str]]:
+    """`_column`'s rows, as cells (T-70, D89).
+
+    The rendering is `  <key>  <direct>  <other>` in fixed fields. Asserting over
+    the whole rendered string instead — which this test did until T-70 — fails on
+    any figure anywhere that happens to contain the sentinel's digits, and T-63's
+    own corrected tool-fetch input total is 22,969.
+    """
+    rows: dict[str, tuple[str, str]] = {}
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) >= 3 and parts[0] in script.COMPARED:
+            rows[parts[0]] = (parts[1], parts[2])
+    return rows
+
+
 def test_compare_recomputes_over_the_intersection_and_never_pools(
     script, tmp_path, monkeypatch, capsys
 ):
     """The failure this closes: an eleven-note column beside a six-note column is
     twelve rows of numbers that look like a comparison. The difference in every
     row would be five notes, not the runner."""
-    shared = [_record(n, "synthesized", score=_score()) for n in ("a", "b")]
+    # One shared note carries a token total containing the sentinel's digits.
+    # This is deliberate (D89): the old `"99" not in out` assertion fails on this
+    # rendering for a reason unrelated to pooling, and the cell-parsed form does
+    # not. The collision is demonstrated here rather than argued about.
+    collide = {"input_tokens": 990, "output_tokens": 1, "wall_time_ms": 1.0}
+    shared = [
+        _record("a", "synthesized", score=_score(), metrics=collide),
+        _record("b", "synthesized", score=_score()),
+    ]
     _write_pair(
         tmp_path,
         monkeypatch,
@@ -342,11 +366,24 @@ def test_compare_recomputes_over_the_intersection_and_never_pools(
     assert "comparing 2 note(s)" in out
     assert "n01 excluded (skipped:" in out
     assert "n01 excluded (scored here, not scored by the other runner)" in out
-    # 99 labeled events on the direct side's spike note. If either column pooled
-    # the corpora it would show up here, and it is the whole point of the test.
-    assert "99" not in out
-    spans = next(line for line in out.splitlines() if "spans_emitted" in line)
-    assert spans.split()[1:3] == ["8", "8"], spans
+
+    rows = _parse_comparison(out, script)
+    assert rows, "the comparison table did not parse; _column's format changed"
+
+    # 99 spans_emitted on the direct side's spike note. Pooling would put 107 in
+    # the direct column here, and this is the whole point of the test.
+    assert rows["spans_emitted"] == ("8", "8"), rows["spans_emitted"]
+
+    # The sentinel absent from **every parsed cell**, which is the claim the old
+    # substring assertion was reaching for (T-70, D89).
+    for key, (direct, other) in rows.items():
+        assert "99" not in (direct, other), (
+            f"the sentinel reached the {key} row as a value: {direct} / {other}"
+        )
+
+    # And the collision really is in the rendering, so this test would fail under
+    # the assertion it replaced. Without this the fix is untested.
+    assert "990" in out
 
 
 def test_compare_refuses_when_the_two_recordings_share_no_scored_note(

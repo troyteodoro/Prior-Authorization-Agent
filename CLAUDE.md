@@ -29,7 +29,7 @@ an instruction typed into a prompt.
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
 | `docs/tasks.md` | The board. Tasks T-00 through T-80, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
-| `docs/decisions.md` | D1–D88, kill criteria, open questions. Append-only. |
+| `docs/decisions.md` | D1–D89, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -350,7 +350,7 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**60 of 66 tasks closed, 3 open, 3 deferred under review. All 11 gates green**
+**61 of 66 tasks closed, 2 open, 3 deferred under review. All 11 gates green**
 (`check_gates.py`, ~25s, 669 tests across 33 files). IDs run to T-80, but
 numbering is not contiguous — the highest id is not the count.
 
@@ -382,9 +382,8 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 36.1s across nine determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **T-70, T-77, T-80** — none on the critical path, since
-**A1–A9 all hold**. With T-70,
-T-71 and T-77 off the path. **The ratification programme is paused** *(T-79,
+Open: **T-77 and T-80** — neither on the critical path, since **A1–A9 all
+hold**. **The ratification programme is paused** *(T-79,
 D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
 suspended them pending a review of whether the programme continues, and they
 sit verbatim in the board's *Deferred — under review* section. What closed
