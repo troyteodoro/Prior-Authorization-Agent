@@ -202,9 +202,12 @@ over its output.
   *A2, A3, A5*
 - **Given** reported precision **When** the report is produced **Then** the `MET`
   base rate and an always-`MET` baseline appear beside it · *A2*
-- **Given** a range of fail-closed thresholds **When** the harness runs **Then**
-  it produces a coverage/accuracy curve including the point where abstention
-  reaches one and the system is useless · *A5, A8*
+- **Given** the abstentions the labeled set produces **When** the report is
+  produced **Then** each is accounted for by its `gap_reason`, and the one
+  constant that can be swept for free — `discrepancy_tolerance` — is swept, with
+  the abstention rate printed at every grid point beside what the sweep actually
+  moves · *A5* · *(D82: no constant in this tree drives abstention to 1, and
+  where the system becomes useless is answered under A8 instead)*
 - **Given** any determination **When** it completes **Then** model, token counts,
   and wall time are recorded from instrumentation, not estimated · *REQ-22, A6,
   Article X*

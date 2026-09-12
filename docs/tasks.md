@@ -17,8 +17,8 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-five tasks are on this board — IDs run to T-79 but numbering is not
-contiguous, so the highest id is not the count. **52 are closed, 10 are open,
-and 3 are deferred under review** *(D81)*. Four of the ten sit on the critical
+contiguous, so the highest id is not the count. **53 are closed, 9 are open,
+and 3 are deferred under review** *(D81)*. Four of the nine sit on the critical
 path to the acceptance gates in spec §7. This is that path, in order. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
 the ratification programme paused)*
@@ -31,9 +31,9 @@ the ratification programme paused)*
 | 4 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
 | 5 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
 | 6 | `T-79` | the ratification programme pauses *(D81)* | **closed** |
-| 7 | `T-72` | A5 acquires a mechanism the system actually has | ready — **next** |
-| 8 | `T-32` | gates **Article VI** / REQ-33 | ready |
-| 9 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | after T-72 |
+| 7 | `T-72` | A5 acquires a mechanism the system actually has *(D82)* | **closed** |
+| 8 | `T-32` | gates **Article VI** / REQ-33 | ready — **next** |
+| 9 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | ready |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -1361,14 +1361,36 @@ the model's verbatim quote (D18) and source documents are hash-guarded
 (REQ-7), so the recording's failure channel is the quote — which is the
 mutation that was run.
 
-### `[ ] T-72` A5's curve names a threshold the system does not have
+### `[x] T-72` A5's curve names a threshold the system does not have
 **REQ:** none — reconciles acceptance gate A5 · **Blocks:** T-22 ·
 **Discovered in:** the D72 documentation review · **Timebox:** two hours
-**Status:** on the critical path — T-22 cannot be specified without it; runnable
-any time, since it depends on nothing open
+**Status:** **closed** (D82) — spec §7's A5, US-7's third bullet and T-22's exit
+all read the choice
 **Exit:** a decision entry choosing what A5's coverage/accuracy curve is a curve
 *over* — or replacing it — then spec §7's A5 and US-7's third bullet read the
 choice, and T-22's exit names the mechanism.
+
+**Closed by D82, and the entry is a measurement rather than a preference.** Both
+candidate readings were run before the entry was written. `discrepancy_tolerance`
+sweeps for free over the fifteen committed cases and moves the disclosure count
+4 / 2 / 1 / 1 / 1 / 1 / 0 across 0.0 … 50.0, with **abstention flat at 0.222 at
+every grid point** — tolerance gates whether a disagreement is *recorded*, while
+the abstention branch tests whether the two values straddle the coverage
+threshold, which is not what is being swept. `a.lookback_months` cannot be swept
+for free at all: a changed verdict is a verifier claim the committed recording
+has never seen, and `RecordedVerifierRunner` raises rather than accepting by
+default (D78, D31's shape), so the sweep aborts at the first grid point off the
+pin. And it would not produce abstentions regardless — REQ-16 routes
+out-of-window evidence to `NOT_MET` by design. **No constant in this tree drives
+abstention to 1**, so A5 became the rate, the account per `gap_reason`, and the
+free sweep with the flat abstention column printed beside it. Where the system
+becomes useless moved to A8.
+
+**On this task's exit.** It is docs-only, and no grep over a document is a check
+*(D10, Article VIII)*, so the runnable half is `check_gates.py` alone. What makes
+the mechanism real is one task later: T-22's `--verify` gate recomputes the
+account and the sweep from the committed recordings and fails on any figure that
+does not match, which a string search over spec §7 could never do.
 
 A5, US-7 and T-22's exit all ask for a curve across "a range of fail-closed
 thresholds," naming the threshold where abstention reaches one. No such
@@ -1382,10 +1404,16 @@ while building T-22 *(working rule 5; T-37's shape)*.
 
 ### `[ ] T-22` Metrics report
 **Depends:** T-20, T-21, T-72 *(D72)* · **Gates:** A2, A3, A5, A6
-**Status:** on the critical path; T-21 is closed and D81 lifted T-78's block,
-so the one thing in front of it is T-72
+**Status:** on the critical path; T-21 and T-72 are closed and D81 lifted
+T-78's block, so nothing is in front of it. **Next.**
 **Exit:** `eval/report.md` with per-criterion precision, span validity rate,
-abstention rate, the A5 measurement T-72 chooses, cost and latency
+abstention rate, cost and latency — and **A5's measurement as D82 defines it**:
+the abstention account per `gap_reason`, plus a `discrepancy_tolerance` sweep
+reporting the disclosure count it moves *and* the abstention rate at every grid
+point, so the flatness is measured rather than asserted. Generated, never
+hand-edited: the generator's `--verify` mode recomputes every figure and diffs
+it against the committed `report.md`, which is what lets it join `GATES` under
+T-69's membership rule.
 
 ### `[ ] T-28` Baseline and base rate in the metrics report
 **Depends:** T-22 · **Gates:** A2

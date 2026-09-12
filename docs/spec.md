@@ -428,7 +428,7 @@ v1 is done when all of the following hold on the labeled eval set.
 | A2 | Per-criterion precision ≥ 0.90 on `MET` verdicts, reported alongside the `MET` base rate and the precision of a trivial always-`MET` baseline |
 | A3 | Zero `MET` verdicts with an invalid span |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | Abstention rate reported, with the coverage/accuracy curve |
+| A5 | Abstention rate reported, accounted for per `gap_reason`, and swept against a real constant the tree carries *(D82)* |
 | A6 | Cost and latency per determination reported from instrumentation |
 | A7 | Every REQ maps to a passing check, or appears in §5's *Unclaimed in v1* list with a stated reason and the condition that would claim it. The list does not grow without a decision entry. |
 | A8 | Failure modes documented in the README, including where the system degrades |
@@ -441,6 +441,24 @@ worse, so precision on `MET` is gated and recall is only reported.
 A2 carries a baseline because 0.90 alone is not a result. On a set where 0.90 of
 cases are truly `MET`, a system answering `MET` unconditionally clears the gate
 while knowing nothing.
+
+A5 no longer asks for a curve across "a range of fail-closed thresholds". No
+such threshold exists: every verdict is a deterministic predicate over spans and
+constants (Articles I and II), and nothing in the system carries a confidence
+score to sweep. T-72 measured the two constants that *are* decisions rather than
+spans before rewriting this row. `discrepancy_tolerance` sweeps for free and
+moves the **disclosure count** — how much source disagreement reaches the
+reviewer — while leaving the abstention rate flat at every grid point;
+`a.lookback_months` cannot be swept for free at all, because a changed verdict
+is a verifier claim the committed recording has never seen and
+`RecordedVerifierRunner` raises rather than accepting by default (D78). And
+narrowing a window would not produce abstentions in any case: REQ-16 routes
+evidence that exists but is too old to `NOT_MET`, deliberately. **No constant in
+this tree can drive abstention to 1**, so the row asks for what the system has —
+the rate, the account of *why* per `gap_reason`, and the sweep with the flat
+abstention column printed beside it so the claim is a measurement rather than a
+sentence. Where the system becomes useless is answered under A8, in the terms it
+actually has. *(D82)*
 
 A7 admits a list because the alternative is worse. It read "every REQ mapped to a
 passing check" while REQ-44 and REQ-47 were unclaimed on purpose, which made the

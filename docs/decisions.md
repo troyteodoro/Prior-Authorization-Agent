@@ -5935,3 +5935,109 @@ board unchanged, `--require decisions-core`/`tasks`/`eval` come back, and this
 entry becomes the record of the pause. Reverses the other way if the review
 concludes the programme was scaffolding the project did not need — that is a
 deletion, and it gets its own entry naming what is being removed.
+
+## D82 — A5's curve is a disclosure curve over a real constant, plus an account of why no curve reaches abstention 1
+
+**Context.** A5, US-7's third bullet and T-22's exit all ask for a
+"coverage/accuracy curve across a range of fail-closed thresholds", including
+"the point where abstention reaches one and the system is useless". T-72 was
+registered because no such threshold exists: every verdict in this system is a
+deterministic predicate over spans and constants (Articles I and II), nothing
+carries a confidence score, and no entry ever defined the sweep variable. The
+sentence was written before the system was, and it describes a different
+architecture — one with a scored component and a dial on it.
+
+Two candidate readings were on the board: sweep a real constant the tree
+carries and report abstention against it, or replace the curve with an
+abstention account per `gap_reason`. **Both were measured before this entry was
+written**, because which one A5 should become depends on facts neither reading
+asserts.
+
+### What the measurement found
+
+Two constants in the tree are decisions rather than spans, and they are the
+only sweep candidates: `a.lookback_months` (12, D40) and
+`discrepancy_tolerance` (1.0, D51).
+
+**`discrepancy_tolerance` sweeps for free and moves exactly one thing.** Across
+0.0 / 0.25 / 0.5 / 1.0 / 2.0 / 5.0 / 50.0 over the fifteen committed cases, the
+recorded discrepancy count runs 4 / 2 / 1 / 1 / 1 / 1 / 0 — and **the abstention
+rate is 0.222 at every single grid point.** That is not an oversight in the
+sweep; it is `reconcile.py`'s structure. Tolerance gates whether a
+disagreement is *recorded as a `Discrepancy`*. The abstention branch is a
+different test entirely — the two values falling on opposite sides of the
+coverage threshold (REQ-34, `SOURCE_CONFLICT`) — and the threshold is not
+what is being swept.
+
+**`a.lookback_months` cannot be swept for free at all**, and the reason is
+structural rather than incidental. Changing it changes criterion (a)'s verdict;
+a changed verdict is a different verifier claim; `RecordedVerifierRunner` is
+keyed by claim digest and **raises** on a claim it has never seen rather than
+accepting by default (D78, D31's shape). The sweep aborts at the first grid
+point off the pin with `DeterminationAborted: a=SCHEMA_INVALID`. So a
+verdict-moving sweep is a *measurement that spends model calls*, which D45
+bars from any gate. This is the recording doing its job, not a defect.
+
+**And narrowing the lookback would not produce abstentions anyway.** REQ-16 and
+Article IV route evidence that exists but falls outside a required window to
+`NOT_MET`, deliberately, because "we looked and it is too old" and "we could not
+find it" tell the specialist to do different things. Shrinking the window to one
+month drives criterion (a) toward `NOT_MET`, not toward `INSUFFICIENT_EVIDENCE`.
+**No constant in this tree can drive abstention to 1.** The sentence A5 asks for
+describes a state this architecture cannot enter.
+
+### Chosen — A5 becomes three reported things, and the third is the honest half
+
+1. **An abstention account per `gap_reason`.** Abstentions here have named
+   causes, not a dial: `NO_EVIDENCE_RETRIEVED`, `UNSUBSTANTIATED_ASSERTION`,
+   `VERIFIER_REJECTED`, `SOURCE_CONFLICT` — a closed enum whose whole purpose
+   is that each member names a different next action (REQ-31, D44). The account
+   is what a reviewer asking "where does this system stop being reliable"
+   actually needs, and it is strictly more informative than a rate.
+2. **A `discrepancy_tolerance` sweep, reported against what it moves** — the
+   **disclosure count**: how much source disagreement between the structured
+   chart and the note reaches the reviewer. It is a real curve over a real
+   constant, computed from committed recordings at zero cost, and the pinned
+   1.0 sits on it as a visible choice rather than an unexamined default.
+3. **The abstention column printed at every grid point, flat, next to it.** The
+   claim "no constant in this tree moves abstention" is reported as a
+   *measurement* rather than asserted in prose. If a future change makes that
+   column move, the report says so without anyone remembering to check.
+
+### Rejected — a curve over a fabricated confidence score
+
+The shape A5 literally describes. It would require attaching a score to
+deterministic predicates so it could be thresholded, which is theater: the
+number would be invented to be swept, the curve would be a plot of the
+invention, and Article II's line between computation and judgment would be
+crossed to produce a chart. A5 exists so a reviewer can see where the system
+degrades; a fabricated axis tells them where a fabrication degrades.
+
+### Rejected — sweep `lookback_months` and spend the verifier calls
+
+Defensible and genuinely informative, and it is the reading this entry would
+have chosen if the verifier recording were not in the way. It costs a second
+verifier measurement per grid point, it puts a model call inside the thing A5
+gates, and what it would show is a *coverage* curve (approval rate against
+window width), not the abstention curve A5 asks for. Out of scope for v1.
+
+### Rejected — the account alone, with no curve
+
+Cheapest, and it drops A5's only quantitative half. The tolerance sweep costs
+nothing and produces a real number that a reviewer can argue with.
+
+### Rejected — the sweep alone
+
+Loses the causal account, which is the part that names next actions.
+
+**Cost.** A5 no longer promises the point where the system becomes useless in
+abstention terms, because the system cannot reach it. That question does not
+disappear — it moves to A8, where the README's failure-modes section answers it
+in the terms the system actually has: which criteria abstain, on what evidence,
+and what a reviewer must go collect.
+
+**Reverses if:** a scored component lands — a verifier that returns a
+confidence rather than a verdict is the obvious candidate — and A5's original
+shape becomes buildable. Reverses partially if a verdict-moving sweep becomes
+free, which needs a verifier recording keyed by something other than the exact
+claim digest; that is a larger change to D78 than A5 is worth today.
