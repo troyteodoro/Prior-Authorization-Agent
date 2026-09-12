@@ -29,7 +29,7 @@ an instruction typed into a prompt.
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
 | `docs/tasks.md` | The board. Tasks T-00 through T-79, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
-| `docs/decisions.md` | D1–D84, kill criteria, open questions. Append-only. |
+| `docs/decisions.md` | D1–D85, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -103,16 +103,17 @@ deterministic path is usable as a regression oracle *(D62)*.
 `python` is not on PATH; the tracked venv is at `./venv/bin/python`.
 
 ```bash
-./venv/bin/python scripts/check_gates.py        # all 9 gates, ~13s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (595 tests, ~9s)
+./venv/bin/python scripts/check_gates.py        # all 10 gates, ~22s. Required at every close.
+./venv/bin/python -m pytest -q                  # the suite alone (642 tests, ~17s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
 
-The nine gates, all zero-cost: `pytest`, then `check_env.py`,
+The ten gates, all zero-cost: `pytest`, then `check_env.py`,
 `check_skeleton.py`, `verify_sources.py --offline`, `select_patients.py
 --verify`, `spike/spike_001/run.py --verify`, `eval/run_eval.py`,
-`eval/run_agentic_eval.py`, `check_ownership.py` *(D74)*. **Membership is a
+`eval/run_agentic_eval.py`, `check_ownership.py` *(D74)*,
+`eval/build_report.py --verify` *(D85)*. **Membership is a
 rule, not a taste call** — a
 command is a gate iff some task's exit condition names it *and* it spends no
 model call and touches no network. Everything else tracked under `scripts/`,
@@ -347,8 +348,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**55 of 65 tasks closed, 7 open, 3 deferred under review. All 9 gates green**
-(`check_gates.py`, ~13s, 624 tests across 31 files). IDs run to T-79, but
+**57 of 65 tasks closed, 5 open, 3 deferred under review. All 10 gates green**
+(`check_gates.py`, ~22s, 642 tests across 32 files). IDs run to T-79, but
 numbering is not contiguous — the highest id is not the count.
 
 Delivered: **US-1, US-2, US-3, US-4, US-5, US-6, US-9**. `python -m pa_agent.cli --patient
@@ -369,9 +370,16 @@ numerator nor its denominator (REQ-28). US-6 closed with T-17 (D78): every
 cited verdict passes through Article V's blind verifier, every gate replays
 the committed 27-claim recording for zero calls, and the four-run measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
-27/27 twice — is D78's substance.
+27/27 twice — is D78's substance. US-7's measurements are in `eval/report.md`
+(T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
+against a 0.611 base rate** (the always-`MET` baseline scores exactly the base
+rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
+82 checked**, **A5 abstention 0.200** with the per-`gap_reason` account and
+D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
+36.1s across nine determinations** — replayed instrumentation, not the replay's
+own clock.
 
-Open, in order: **T-22 → T-28 → T-23**, with T-27, T-70,
+Open, in order: **T-23**, with T-27, T-70,
 T-71 and T-77 off the path. **The ratification programme is paused** *(T-79,
 D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
 suspended them pending a review of whether the programme continues, and they
@@ -463,6 +471,8 @@ data/patients/
 eval/
   cases.json         the eval set — 15 labeled rows (§6's 14 + NP1; D75)
   baseline.json      what run_eval.py diffs against
+  report.md          T-22/T-28's metrics report — generated, never hand-edited;
+                     build_report.py --verify is the tenth gate (D85)
   manifests/         T-06's ground truth — the system under test never reads it
   extraction/        results.json (T-15) plus adk_results_inline.json and
                      adk_results_tool_fetch.json — T-63's two, one per mode (D68).
@@ -473,7 +483,7 @@ scripts/             check_gates, check_env, check_skeleton, check_ownership,
                      verify_sources, select_patients, synthesize_notes,
                      run_extraction, run_adk_extraction,
                      run_verifier_measurement
-tests/               31 files, 624 tests
+tests/               32 files, 642 tests
 docs/                the five governing docs plus ratifications.json — D74's
                      ledger, statuses beyond `proposed` are the owner's edits only
 ```

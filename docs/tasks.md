@@ -17,8 +17,8 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-five tasks are on this board — IDs run to T-79 but numbering is not
-contiguous, so the highest id is not the count. **55 are closed, 7 are open,
-and 3 are deferred under review** *(D81)*. Three of the seven sit on the critical
+contiguous, so the highest id is not the count. **57 are closed, 5 are open,
+and 3 are deferred under review** *(D81)*. One of the five sits on the critical
 path to the acceptance gates in spec §7. This is that path, in order. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
 the ratification programme paused)*
@@ -33,7 +33,8 @@ the ratification programme paused)*
 | 6 | `T-79` | the ratification programme pauses *(D81)* | **closed** |
 | 7 | `T-72` | A5 acquires a mechanism the system actually has *(D82)* | **closed** |
 | 8 | `T-32` | gates **Article VI** / REQ-33 *(D83)* | **closed** |
-| 9 | `T-22` → `T-28` → `T-23` | **closes US-7** · gates **A2**, **A5**, **A6**, **A7**, **A8** | ready — **next** |
+| 9 | `T-22` → `T-28` | gates **A2**, **A3**, **A5**, **A6** *(D85)* | **closed** |
+| 10 | `T-23` | **closes US-7** · gates **A7**, **A8** | ready — **next** |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -1401,10 +1402,10 @@ it, or replace the curve with an abstention account per `gap_reason` — and the
 produce different reports, which is why this is a decision and not a patch made
 while building T-22 *(working rule 5; T-37's shape)*.
 
-### `[ ] T-22` Metrics report
+### `[x] T-22` Metrics report
 **Depends:** T-20, T-21, T-72 *(D72)* · **Gates:** A2, A3, A5, A6
-**Status:** on the critical path; T-21 and T-72 are closed and D81 lifted
-T-78's block, so nothing is in front of it. **Next.**
+**Status:** **closed** (D85) — `eval/build_report.py`, `eval/report.md`, and
+`--verify` as the tenth gate
 **Exit:** `eval/report.md` with per-criterion precision, span validity rate,
 abstention rate, cost and latency — and **A5's measurement as D82 defines it**:
 the abstention account per `gap_reason`, plus a `discrepancy_tolerance` sweep
@@ -1414,12 +1415,55 @@ hand-edited: the generator's `--verify` mode recomputes every figure and diffs
 it against the committed `report.md`, which is what lets it join `GATES` under
 T-69's membership rule.
 
-### `[ ] T-28` Baseline and base rate in the metrics report
+**Closed by D85.** Every figure derives from committed recordings — the
+harness's results in-process, T-15's extraction recording, T-17's verifier
+recording, and each determination's own `metrics`. `--verify` re-renders and
+diffs, so a stale number is a red gate rather than a plausible-looking table.
+An exact diff is only safe because the numbers are reproducible, which was
+checked: three consecutive harness runs report byte-identical tokens *and*
+wall time, because every metric is replayed rather than measured live.
+
+**Measured: A2 1.000 against a 0.611 base rate, A3 zero invalid `MET` spans,
+A5 0.200 abstention with the account and the sweep, A6 33 calls / 27,175 in /
+5,723 out / 36.1s over nine determinations.**
+
+**Two bugs the first draft shipped, both found by reading the output.** Span
+validity printed **0.000** — `validate()` takes a `DocumentIndex` and was handed
+a `Document`, and a broad `except Exception` turned that wiring bug into a
+plausible measurement. The handler is now narrowed to `SpanValidationError`, so
+a broken measurement raises instead of reporting a rate. And cost was summed
+over case rows rather than determinations, double-counting every run shared by
+two rows (D75's cache) — 62 calls where there are 33. That is D71's
+count-the-wrong-thing shape in a new place.
+
+**The sweep varies the constant through a store wrapper, never by writing the
+policy file.** A gate that patches `data/policies/ncd_100_1_jf.json` leaves the
+corpus wrong if interrupted, and `verify_sources.py` is downstream of exactly
+that file. A test asserts the file's bytes are unchanged after a sweep.
+
+**One mutation survived the first pass**: computing the `MET` base rate from the
+system's own verdicts rather than the labels. On this corpus the two readings
+coincide — every labeled `MET` is answered `MET` — so neither `--verify` nor any
+real case distinguishes them, which is why the test that catches it uses
+deliberately asymmetric synthetic pairs. Also caught: a hand-edited figure, the
+precision denominator widened to all labeled pairs, a deleted caveat, the sweep
+section dropped, and the sweep writing the tree file.
+
+### `[x] T-28` Baseline and base rate in the metrics report
 **Depends:** T-22 · **Gates:** A2
-**Status:** on the critical path; blocked on T-22 alone *(D81)*
+**Status:** **closed** (D85) — delivered with T-22, in the same generator and
+under the same `--verify`
 **Exit:** `eval/report.md` contains the `MET` base rate and an always-`MET`
 baseline score next to measured precision
 A2 requires it: a precision figure without its base rate does not satisfy the gate.
+
+**Closed by D85.** The base rate is 11/18 = **0.611** over labeled pairs, and a
+trivial always-`MET` baseline scores exactly that — its precision *is* the base
+rate, since a system answering `MET` everywhere is right as often as `MET` is
+the right answer. Measured precision is **1.000**, and it is a result only to
+the extent it exceeds 0.611. A2's asymmetry argument is in the section's own
+text. The base rate reads the labels and not the system's output; that
+distinction survived a mutation pass and now has its own test.
 
 ### `[ ] T-23` README
 **Depends:** T-22 · **Gates:** A7, A8

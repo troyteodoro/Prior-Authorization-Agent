@@ -64,6 +64,10 @@ GATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("the eval baseline", ("eval/run_eval.py",)),  # T-10
     ("the agentic differential", ("eval/run_agentic_eval.py",)),  # T-61
     ("the ratification ledger", ("scripts/check_ownership.py",)),  # T-73
+    # T-22/T-28 (D85). The report is generated, never hand-edited; --verify
+    # recomputes every figure from the committed recordings and diffs, so a
+    # stale number is a red gate rather than a plausible-looking table.
+    ("the metrics report", ("eval/build_report.py", "--verify")),  # T-22
 )
 
 #: Tracked scripts that are **not** gates, and why. `tests/test_check_gates.py`

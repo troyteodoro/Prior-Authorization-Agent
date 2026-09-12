@@ -6222,3 +6222,89 @@ over a long recent one in a way a reviewer calls wrong — the fallback ordering
 reverses if A53028 is ever read as requiring the *longest* documented program
 rather than *a* qualifying one; that would be a sourcing finding, and it would
 restore the old rule with a citation behind it, which is more than it has today.
+
+## D85 — The metrics report is generated, verified by recomputation, and swept through a store wrapper rather than a patched file
+
+**Context.** T-22 produces `eval/report.md`: per-criterion precision on `MET`,
+span validity rate, the abstention account, D82's sweep, and cost and latency.
+It is the document A2, A3, A5 and A6 are satisfied by, and the one an external
+reviewer actually reads.
+
+### Chosen — generated, never hand-edited, with `--verify` as the gate
+
+`eval/build_report.py` derives every figure from committed artifacts — the
+harness's own results in-process, `eval/extraction/results.json`,
+`eval/verifier/results.json`, `eval/agentic/results.json`, and each
+determination's own `metrics` (T-20, Article X). `--verify` re-renders and diffs
+against the committed `report.md`, exiting non-zero and naming the first
+divergence.
+
+That diff is the whole argument for the shape. A hand-maintained report drifts
+from the system the moment either changes, and the drift is invisible because a
+number in a markdown table looks equally authoritative whether it was computed
+this morning or typed last month. With `--verify`, a stale figure is a red gate.
+It joins `GATES` as the tenth under T-69's membership rule: T-22's exit names
+it, it spends no model call, it touches no network.
+
+**This is only possible because the numbers are reproducible**, which was
+checked and not assumed: three consecutive `eval/run_eval.py` runs report
+byte-identical tokens *and* wall time, because every metric is replayed from
+T-15's and T-17's recordings rather than measured live. An exact diff over
+numbers that moved between runs would fail on noise and teach a reader to
+re-render without looking — D27's failure mode, and the reason `CaseResult.key`
+deliberately excludes the T-20 figures from the *baseline*.
+
+**What the latency figure therefore means, said in the report itself.** These
+are the wall times measured when the recordings were made, against the pinned
+model on AI Studio — not the cost of the replay, which is microseconds and would
+be a meaningless number to publish. A6 asks for cost and latency "from
+instrumentation, not estimated", and replayed instrumentation is still
+instrumentation; a replay's own clock would not be.
+
+### Chosen — the sweep varies the tolerance through a store wrapper
+
+D82's sweep re-runs the pipeline at several `discrepancy_tolerance` values. The
+obvious implementation patches `data/policies/ncd_100_1_jf.json` and restores
+it, and that is refused: a gate that writes a tracked policy file leaves the
+corpus wrong if it is interrupted, and `verify_sources.py` and the tree tests
+are downstream of exactly that file. D73's lesson in a new place — a regenerated
+artifact is not adopted wholesale, and a gate has no business generating one at
+all.
+
+Instead the sweep wraps `LocalPolicyStore` and overrides `get_tree` to return a
+`model_copy` with one constant replaced. The tree is a frozen Pydantic model, so
+the copy is explicit and the original is untouched. The real `reconcile_bmi`
+runs on the real pipeline; only the constant differs.
+
+**Rejected — re-deriving the tolerance rule in the report generator.** Cheaper
+and it duplicates `reconcile.py`'s branch structure in a second place, where it
+is free to disagree with the first. The report would then measure the copy.
+
+### Chosen — precision is computed over labeled criterion verdicts only
+
+The system emits seven criterion verdicts per determination; `eval/cases.json`
+labels eighteen of them across twelve cases. Precision on `MET` is the fraction
+of *labeled* pairs where the system said `MET` and the label agrees. Scoring
+unlabeled verdicts would require a ground truth that does not exist, and
+inventing one from the system's own output is the circularity D42 already warns
+about — the report would measure agreement with itself.
+
+The report states both numbers a reader needs to judge that: how many criterion
+verdicts the system produced, and how many carry a label.
+
+### Rejected — a report that reports only what looks good
+
+Stated explicitly because it is the standing temptation. The report carries the
+D19/D42 authorship caveat, D81's note that the adjudication pass is deferred
+rather than done, and D21/D29's Noridian-not-CMS framing, in its own text rather
+than in a footnote or a companion document. A figure whose caveat lives
+elsewhere is a figure quoted without it.
+
+**Cost.** One generated document, one generator, one more gate (~2s: the sweep
+re-runs the pipeline once per grid point).
+
+**Reverses if:** a figure the report needs stops being reproducible — a live
+runner in the default path is the way that happens. The response is to move that
+figure behind a recorded measurement, not to relax `--verify` into a tolerance
+comparison, which is how an exact gate becomes an approximate one and then a
+decorative one.
