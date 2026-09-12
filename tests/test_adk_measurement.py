@@ -737,3 +737,125 @@ def test_a_record_with_no_trace_still_aggregates_its_metrics(script):
 
     assert aggregate["total_input_tokens"] == 900
     assert aggregate["total_output_tokens"] == 40
+
+
+# --------------------------------------------------------------------------
+# Assertion coverage (T-71, D88)
+#
+# T-63 lost E8's program_assertions[] span to a paraphrase the anchorer
+# correctly refused, and the aggregate reported precision 1.000, recall 1.000,
+# REQ-9 exclusion 1.000 and field agreement 1.000 — because a note with zero
+# labeled *events* contributes to no fidelity ratio. Spike 001's documented trap
+# wearing new clothes: a transport error scores as flawless precision.
+# --------------------------------------------------------------------------
+
+
+def test_a_lost_assertion_is_visible_from_the_aggregate_alone(script):
+    """T-71's exit. The whole point is *from the aggregate alone* — the per-note
+    record already said so exactly, and nobody opens per-note records."""
+    aggregate = script._aggregate(
+        [
+            _record(
+                "kept",
+                "synthesized",
+                score=_score(assertion_required=True, assertions=1),
+            ),
+            _record(
+                "lost",
+                "synthesized",
+                score=_score(assertion_required=True, assertions=0),
+            ),
+        ],
+        nest=False,
+    )
+    assert aggregate["assertion_notes"] == 2
+    assert aggregate["assertion_notes_covered"] == 1
+    assert aggregate["assertion_coverage"] == 0.5
+    # The figures that stayed at 1.000 while a required citation was lost, which
+    # is the reason this key had to be added rather than inferred from them.
+    assert aggregate["precision"] == 1.0
+    assert aggregate["recall"] == 1.0
+    assert aggregate["field_agreement"] == 1.0
+
+
+def test_the_denominator_is_notes_not_assertions(script):
+    """D88's rejected alternative. Counting assertions extracted over assertions
+    labeled averages a whole lost note away: three from one note and none from
+    another reads as 0.75 rather than as "one note produced nothing"."""
+    aggregate = script._aggregate(
+        [
+            _record(
+                "rich",
+                "synthesized",
+                score=_score(assertion_required=True, assertions=3),
+            ),
+            _record(
+                "lost",
+                "synthesized",
+                score=_score(assertion_required=True, assertions=0),
+            ),
+        ],
+        nest=False,
+    )
+    assert aggregate["assertion_coverage"] == 0.5, (
+        "an assertions-over-assertions ratio would report 0.75 here and hide "
+        "that one note lost its citation entirely (D88)"
+    )
+
+
+def test_a_note_that_requires_no_assertion_is_not_in_the_denominator(script):
+    """`assertion_required: false` is not a miss. Counting it would report the
+    runner failing on notes that asked for nothing."""
+    aggregate = script._aggregate(
+        [
+            _record(
+                "needs",
+                "synthesized",
+                score=_score(assertion_required=True, assertions=1),
+            ),
+            _record(
+                "does_not",
+                "synthesized",
+                score=_score(assertion_required=False, assertions=0),
+            ),
+        ],
+        nest=False,
+    )
+    assert aggregate["assertion_notes"] == 1
+    assert aggregate["assertion_coverage"] == 1.0
+
+
+def test_no_required_assertion_reports_none_rather_than_one(script):
+    """"Nothing required an assertion" and "everything required one and got it"
+    are different facts, and only the second is a result (D88). The same rule
+    every other ratio here follows."""
+    aggregate = script._aggregate(
+        [_record("plain", "synthesized", score=_score())], nest=False
+    )
+    assert aggregate["assertion_notes"] == 0
+    assert aggregate["assertion_coverage"] is None
+
+
+def test_the_committed_recordings_report_their_assertion_coverage(script):
+    """Recomputed over what is committed — no measurement, no model call. This
+    is the figure D71 could not see: the tool_fetch mode reports **1.000 recall
+    and 1.000 precision with an assertion it never anchored**."""
+    import json
+
+    covers = {}
+    for name in ("adk_results_inline", "adk_results_tool_fetch"):
+        path = REPO_ROOT / "eval" / "extraction" / f"{name}.json"
+        recording = json.loads(path.read_text(encoding="utf-8"))
+        aggregate = script._aggregate(recording["notes"])
+        covers[name] = (
+            aggregate["assertion_notes"],
+            aggregate["assertion_notes_covered"],
+            aggregate["assertion_coverage"],
+            aggregate["recall"],
+        )
+
+    assert covers["adk_results_inline"] == (2, 2, 1.0, 1.0)
+    assert covers["adk_results_tool_fetch"] == (1, 0, 0.0, 1.0), (
+        "the tool_fetch mode lost its one required assertion while reporting "
+        "recall 1.000 — D71's finding, now readable from the aggregate (T-71)"
+    )

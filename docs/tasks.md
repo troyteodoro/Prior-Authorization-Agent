@@ -17,7 +17,7 @@ answers the second question, once.
 ## Path to v1
 
 Sixty-six tasks are on this board — IDs run to T-80 but numbering is not
-contiguous, so the highest id is not the count. **59 are closed, 4 are open,
+contiguous, so the highest id is not the count. **60 are closed, 3 are open,
 and 3 are deferred under review** *(D81)*. **Nothing open sits on the critical
 path: acceptance gates A1–A9 all hold.** This is the path as it ran. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
@@ -41,7 +41,6 @@ Off the path. Real work, nothing waiting on it:
 | Task | Why it is not sequenced | When |
 |---|---|---|
 | `T-80` | spends model calls; T-27's figure is sufficient while it reads 1.000 | any time, blocks nothing *(D86)* |
-| `T-71` | an aggregate that hides a refused citation; found by T-63 | any time, blocks nothing |
 | `T-70` | a brittle substring assertion in a gate; found by T-63 | any time, blocks nothing |
 | `T-77` | the agentic planner's fault is unmapped; found by T-29 | any time, blocks nothing |
 
@@ -2068,10 +2067,11 @@ test. Mutations caught: selection reverted to longest, the fallback dropped, the
 recency test inverted, c3 silently recomputing, and a wrong window, wrong
 minimum or hardcoded `as_of` in the step.
 
-### `[ ] T-71` A lost assertion reports as a flawless run
+### `[x] T-71` A lost assertion reports as a flawless run
 **REQ:** 31, 35 · **Depends:** T-16, T-31 · **Discovered in:** the T-63
 measurement *(D71)* · **Timebox:** two hours
-**Status:** ready, off the critical path
+**Status:** **closed** (D88) — `assertion_coverage` in the aggregate, and the
+tool_fetch recording reads **0.0 beside recall 1.000**
 **Exit:** `pytest tests/test_adk_measurement.py` — the aggregate reports
 assertion coverage, and a recording in which a note carrying
 `assertion_required: true` yields zero assertions is distinguishable **from the
@@ -2092,6 +2092,25 @@ the determination tells Sam to collect, and no headline figure moves.
 Not folded into T-63: T-63's exit names the figures it must quote, and adding one
 inside it is a requirement changed by the task that implements it *(working rule
 5, and the reason T-37 and T-38 exist)*.
+
+**Closed by D88.** `_aggregate` gains `assertion_notes`,
+`assertion_notes_covered` and `assertion_coverage`. The denominator is **notes
+that require an assertion**, not assertions: an extracted-over-labeled ratio
+averages a whole lost note away — three from one note and none from another
+reads 0.75 rather than "one note produced nothing", which is the question the
+figure exists to answer. `None` when nothing required one, never 1.000, because
+"none was required" and "every one was produced" are different facts.
+
+**Recomputed over what is already committed, it immediately reads the failure.**
+`adk_results_tool_fetch` reports **assertion coverage 0.0 beside recall 1.000
+and precision 1.000** — D71's finding, previously visible only as
+`spans_emitted` sitting one above `spans_anchored`. `adk_results_inline` reads
+2/2. Nothing was re-measured: the recordings' stored `aggregate` blocks are a
+measured-day snapshot and stay as they were, since rewriting them would present
+today's figure as if it had been measured then *(D45)*.
+
+Mutations: the denominator widened to all scored notes, `assertion_required`
+ignored, the `None` collapsed to 1.0, and the key dropped.
 
 ### `[ ] T-70` A comparison gate asserts on a substring
 **REQ:** none — a test-quality defect · **Discovered in:** the T-63 measurement

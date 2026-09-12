@@ -414,6 +414,14 @@ def _aggregate(every: list[dict], nest: bool = True) -> dict:
     field_disagreements = sum(
         len(r["score"]["field_disagreements"]) for r in scored
     )
+    # T-71 / D88. A note carrying `assertion_required: true` that produced zero
+    # assertions contributes to no fidelity ratio — it has no labeled *events* —
+    # so T-63's lost E8 citation left every headline figure at 1.000. The
+    # denominator is **notes**, not assertions: the question is whether any note
+    # lost its assertion entirely, and an assertions-extracted/labeled ratio
+    # averages that away.
+    assertion_notes = [r for r in scored if r["score"].get("assertion_required")]
+    assertion_covered = [r for r in assertion_notes if r["score"].get("assertions")]
     metrics = _turn_metrics(scored)
     tool_calls = sum(
         len((r.get("trace") or {}).get("tool_calls") or []) for r in scored
@@ -439,6 +447,15 @@ def _aggregate(every: list[dict], nest: bool = True) -> dict:
         "spans_unescaped": total("spans_unescaped"),
         "spans_disambiguated": total("spans_disambiguated"),
         "model_offsets_usable": total("model_offsets_usable"),
+        "assertion_notes": len(assertion_notes),
+        "assertion_notes_covered": len(assertion_covered),
+        # `None`, never 1.000, when nothing required an assertion: "none was
+        # required" and "every one was produced" are different facts (D88).
+        "assertion_coverage": (
+            round(len(assertion_covered) / len(assertion_notes), 4)
+            if assertion_notes
+            else None
+        ),
         "field_total": field_total,
         "field_agreement": (
             round((field_total - field_disagreements) / field_total, 4)

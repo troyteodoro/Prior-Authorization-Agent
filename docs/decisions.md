@@ -6440,3 +6440,57 @@ whose check disappears fails the gate rather than silently becoming unclaimed.
 **Reverses if:** the mapping starts pointing whole groups of requirements at one
 catch-all file, which would make it pass while meaning less. The response is a
 per-entry review, not a looser gate.
+
+## D88 — Assertion coverage is an aggregate figure, and its denominator is the notes that require one
+
+**Context.** T-63's measurement lost E8's `program_assertions[]` span to a
+paraphrase the anchorer correctly refused. The per-note score says so exactly —
+`assertion_required: true`, `assertions: 0` — and the aggregate reported
+precision 1.000, recall 1.000, REQ-9 exclusion 1.000 and field agreement 1.000,
+because a note with zero labeled *events* contributes to no fidelity ratio. The
+only trace in the headline figures was `spans_emitted` sitting one above
+`spans_anchored`, which nobody reads as "a required citation was lost".
+
+That is spike 001's documented trap wearing new clothes: **a transport error
+scores as flawless precision.** Here a refused citation does. E8 is the refusal
+test and the whole argument for `gap_reason` (D12, D44) — losing its evidence
+changes what the determination tells the specialist to go collect, and no
+headline figure moved.
+
+### Chosen — `assertion_coverage`, over notes that require an assertion
+
+Numerator: notes with `assertion_required: true` that produced at least one
+assertion. Denominator: notes with `assertion_required: true`. Reported as
+`assertion_notes`, `assertion_notes_covered` and the ratio, in `_aggregate`
+alongside the fidelity figures, and `None` when no note requires one — never
+1.000, because "nothing required an assertion" and "everything required one and
+got it" are different facts and only the second is a result.
+
+**Rejected — assertions extracted ÷ assertions labeled.** The obvious
+event-style ratio, and it dilutes: one note with three assertions and one with
+none averages to 0.75 and hides that a whole note produced nothing. The question
+this figure exists to answer is *did any note lose its assertion entirely*, and
+the denominator has to be notes for that question to be askable.
+
+**Rejected — a boolean flag.** `assertions_lost: true` is smaller and stops
+scaling the moment two notes require assertions; a ratio reads the same at one
+note and at twenty.
+
+**Rejected — folding it into `recall`.** It would move the headline number,
+which is what the task asks for, and it would also make `recall` mean two things
+at once — event fidelity and citation survival — so a change in either becomes
+unreadable in the other's terms.
+
+### Chosen — computed in the aggregate, not stored in the recordings
+
+`_aggregate` runs over the committed records on every read, so the figure
+appears for the existing recordings without re-measuring anything. The
+recordings' own stored `aggregate` blocks are a measured-day snapshot and stay
+as they were: rewriting them would present a figure computed today as if it had
+been measured then, which is the line D45 draws between a re-run and a new
+measurement.
+
+**Cost.** One more key in a dict that already has twenty.
+
+**Reverses if:** the aggregate grows past what anyone reads, at which point the
+answer is a smaller set of headline figures rather than a hidden one.
