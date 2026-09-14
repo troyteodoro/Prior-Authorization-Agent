@@ -1633,6 +1633,29 @@ column reading the cited set; and containment weakened to intersection on each
 column. The last two and `--rescore`'s are pinned by parsing — no behaviour this
 corpus can produce distinguishes them (D65, D67's move).
 
+### `[x] T-83` Correct the repo layout and delete the superseded plan doc
+**REQ:** none — documentation accuracy · **Discovered in:** checking CLAUDE.md's
+repo-layout section against `git ls-files` rather than reading it · **Timebox:**
+one hour
+**Status:** closed — the layout matches the tracked tree, and
+`docs/v1_completion_general_plan.md` is deleted *(D93)*
+**Exit:** `python scripts/check_gates.py` returns zero, and every path named in
+CLAUDE.md's *Repo layout* resolves in `git ls-files`
+
+**Two real errors, not staleness.** The layout put `manifest.json` under
+`data/patients/bundles/`; it is at `data/patients/manifest.json`, which is what
+`select_patients.py --verify` reads — a session following the layout to find
+D73's corpus pin would look in the wrong directory. And `eval/run_eval.py` and
+`eval/run_agentic_eval.py` were absent entirely, so two of the ten gates had no
+entry. Also added: `spike/spike_001/labels.json`, and `notes/manifest.json`
+named as the *second* manifest rather than implied to be the only one.
+
+**The plan doc is deleted by D93.** It sequenced the last fourteen tasks to v1,
+all of which closed with their own board records and decision entries. It was
+not in the precedence table, so it governed nothing while reading as
+authoritative and contradicting the board — "44 of 58 tasks closed, all 8 gates
+green". Git remains the record of it.
+
 ### `[x] T-82` Delete the ratification programme
 **REQ:** none — board hygiene · **Discovered in:** the owner's decision that the
 programme was scaffolding the project did not need *(D92)* · **Timebox:** one

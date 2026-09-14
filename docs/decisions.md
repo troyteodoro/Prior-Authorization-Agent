@@ -6840,3 +6840,40 @@ ownership or label adjudication to be *checkable* rather than asserted. Then
 the answer is not this ledger rebuilt: it is adjudication of the eval labels
 alone, by someone who did not author them, which is the only tier that was
 ever load-bearing for a number this repo quotes.
+
+## D93 — The v1 completion plan is deleted; the board and this log are what it produced
+
+**The owner's decision, 2026-09-13.** `docs/v1_completion_general_plan.md` was
+the session plan that sequenced the last fourteen tasks to v1 — an overarching
+flow plus a per-task plan for T-41, T-21, T-29, T-30, T-17, T-32, T-72, T-22,
+T-28, T-23, T-71, T-70, T-27 and T-42. **All fourteen are closed**, each with
+its own board record and decision entry. The plan's output is the board and
+this log; the plan itself is now a second, worse copy of both.
+
+**Why it had to go rather than sit harmlessly.** It opened "44 of 58 tasks
+closed, all 8 gates green" and named an ordering the board no longer has. It
+was not in the precedence table, so it governed nothing — which is exactly the
+failure mode: a tracked document that looks authoritative, contradicts the
+board, and is bound by no rule that keeps it current. Discovered while
+correcting the repo-layout section against `git ls-files` (T-83), where listing
+it truthfully meant listing it as stale.
+
+It also carried a personal name in four places, against the standing rule that
+identity lives at the git level and attribution in tracked files is a role.
+That is a reason to delete it sooner, not the reason to delete it.
+
+**Rejected — keep it as a historical record.** Git already is that record; the
+file is recoverable at any commit before this one. A doc kept "for history" in
+the working tree is a doc future sessions read as current.
+
+**Rejected — scrub the name and update the counts.** That buys a maintained
+fifteenth document whose only content is a plan that already executed. The
+maintenance is real (D70's numbers moved four times since) and nothing reads it.
+
+**Cost.** The reasoning behind the *ordering* of those fourteen tasks now lives
+only in `Path to v1` and in D70/D72/D79, which state the sequence but not every
+per-task sketch that preceded it. That is the right resolution: a sketch of work
+that is finished is not a document, it is a draft.
+
+**Reverses if:** nothing. A future planning document is a new file for new work,
+not this one restored.

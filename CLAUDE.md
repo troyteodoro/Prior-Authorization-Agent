@@ -532,8 +532,8 @@ scripts/             check_gates, check_env, check_skeleton,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
 tests/               31 files, 653 tests
-docs/                constitution, spec, stories, tasks, decisions — the five
-                     of the precedence table — plus v1_completion_general_plan.md,
-                     a **stale** planning doc from when the board read 44 of 58
-                     with 8 gates. It governs nothing; the precedence table does
+docs/                constitution, spec, stories, tasks, decisions — exactly
+                     the five of the precedence table and nothing else (D93
+                     deleted the sixth, a plan doc that governed nothing and
+                     contradicted the board)
 ```
