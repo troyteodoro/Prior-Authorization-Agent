@@ -1,10 +1,13 @@
 # Prior Authorization Determination Agent
 
-A prior authorization determination system for bariatric surgery under CMS
-NCD 100.1, as Noridian Jurisdiction F implements it. Given a patient record and
-a requested procedure code, it produces a reviewable determination: a verdict
-for every criterion in the governing policy, a citation for every verdict, and
-a gap list naming exactly what the chart is missing.
+A prior authorization determination system built to work across doctors'
+practices. Given a patient record and a requested procedure code, it produces
+a reviewable determination: a verdict for every criterion in the governing
+policy, a citation for every verdict, and a gap list naming exactly what the
+chart is missing. The control case it is currently tested against is
+bariatric surgery under CMS NCD 100.1, as Noridian Jurisdiction F implements
+it — one policy chosen to exercise every part of the engine, not a boundary
+of the design.
 
 The system does not submit, does not decide, and does not adjudicate on a
 payer's behalf. It prepares a packet for a human specialist — and the primary
@@ -12,6 +15,29 @@ output is the **gap list**, not the verdict. The highest-value sentence the
 system produces is "criterion c3 is not supported by this chart," because that
 is actionable *before* submission. An overall approve/deny is a summary of the
 criterion verdicts and carries less information than they do.
+
+**The rules engine is dynamic — the policy is data, not code.** Nothing in
+the engine knows it is adjudicating bariatric surgery. The criteria tree
+lives in a reviewed JSON file, the aggregator parses the policy's own
+`decision_expression` rather than hardcoding one, and the resolver maps
+procedure codes to policies by set membership. A new specialty, payer policy,
+or jurisdiction is therefore a new policy file and value set over the same
+engine — a change to data under review, not a change to Python. The one tree
+currently loaded is the control; *Where this system degrades* below is
+explicit that a second jurisdiction is a second tree, and that the design
+makes adding one a small change to build.
+
+**And it is modular enough to sit inside a practice's back office.** The
+application is ports and adapters end to end: two storage ports keep the
+policy plane and the patient plane apart, three ports at the model boundary
+make every model call swappable and replayable, and the CLI is the single
+place an adapter is constructed — nothing else in the system knows where its
+data comes from. Patient records are standard FHIR bundles, so integrating
+with a production EHR or practice-management system is a second adapter
+behind the same ports, with no engine change. The output already matches the
+back-office workflow: the gap list tells staff what to chase down before a
+request goes out, and the packet gives the reviewing specialist
+criterion-level verdicts whose citations slice back into the chart.
 
 This is a proof-of-skill project. Every decision in it is logged, numbered, and
 meant to be defensible in a live review, so the reasoning is as much the
@@ -245,13 +271,25 @@ hand the graph to a framework whose edges can route on model output
 (Article I), and it would put `google.adk` on the import path of every
 deterministic test and every zero-model-call determination. The workflow is a
 plain Python tuple instead, and `sys.modules` assertions keep the model SDK off
-the deterministic path. Inside the ADK runner, the constitution is enforced by
-*configuration*, not prompting: one fresh context per note
-(`include_contents="none"`), agent transfer disabled so ADK never even injects
-its handoff tool, a literal tool allowlist, and a hard `max_llm_calls` ceiling
-in which one tool round trip counts as two calls. The ADK tests exercise the
-real framework — a stub model instance drives ADK's full flow with no network
-and no credential — rather than a mock of it.
+the deterministic path.
+
+**What ADK bought, concretely.** A leaf role is not a small role: both live
+implementations at the model boundary — the extraction agent and the agentic
+retrieval planner, the two halves of the project's central measurement — are
+ADK agents, and the framework earned its place three ways. First, the
+constitution is enforceable by *configuration*, not prompting:
+`include_contents="none"` gives each note a fresh context, two
+`disallow_transfer` flags select `SingleFlow` so the handoff tool is never
+even injected, the tool allowlist is a literal list, and `max_llm_calls` is a
+hard ceiling in which one tool round trip counts as two calls. A rule that
+lives in configuration can be asserted by a test; a rule that lives in a
+prompt cannot. Second, per-turn `usage_metadata` is where every cost figure
+in this README comes from — calls, input and output tokens for every turn,
+including the turn a tool response adds. Third, `LlmAgent` accepts a plain
+`BaseLlm` *instance* as its model, and that one seam is what made the
+framework cheap to test rather than expensive to trust — the suite drives
+the real ADK flow on every run, as described under *Testing the ADK path*
+below.
 
 **The measured result so far:** model-directed retrieval agrees with the
 deterministic oracle on **6/6 outcomes and 42/42 criterion verdicts, with
@@ -398,13 +436,27 @@ model calls each carry a free replay flag (below).
 ### Testing the ADK path
 
 ```bash
-./venv/bin/python -m pytest tests/test_adk_agent.py -q
+./venv/bin/python -m pytest tests/test_adk_agent.py tests/test_agentic_workflow.py -q
 ```
 
-These tests drive the **real** ADK framework — tool calls, output schema,
-usage metadata — by handing the agent a stub model instance, so the whole flow
-runs with no network and no credential. Testing ADK rather than a mock of it
-is the point.
+ADK was not just shipped here — it was tested against, constantly. `LlmAgent`
+accepts a `BaseLlm` *instance* as its model, so a scripted fake of about
+twenty lines drives the entire real flow: real `FunctionTool` declarations
+built from real signatures, real tool dispatch, the real `output_schema`
+handling, real plugin hooks, real session state, real `usage_metadata`. What
+is faked is the network, and nothing else. (ADK ships a `MockModel` for its
+own CLI conformance runner, but nothing in it is public API — the pattern was
+copied, not imported.)
+
+Ninety tests across these two files run that way, and they sit in the
+main suite rather than behind a marker — so every `pytest` run, and therefore
+every gate close, exercises the real framework for zero model calls and no
+credential. That is what keeps the structural rules honest: the tool
+allowlists, the `SingleFlow` selection, the fresh-context setting and the
+call ceiling are asserted on constructed ADK agents, not promised in
+docstrings. The skeleton gate goes one step further and boots a real
+backgrounded `adk web` server on every close, probing `/list-apps` to prove
+the installed framework still discovers the agent.
 
 ### The eval harness
 
@@ -442,6 +494,14 @@ free path that re-derives every number from the committed recording:
 Serves the ADK development UI over the agent package; the app is named
 `agent`. `GET /list-apps` returns the discovered apps, and `GET /` redirects
 (307) to `/dev-ui/`.
+
+The dev UI earned real mileage during development: watching the extraction
+and retrieval agents make their tool calls turn by turn is how prompt and
+tool-declaration changes were sanity-checked before spending a measured run —
+a changed tool declaration is a changed prompt, so seeing the turns beats
+guessing at them. The same server is what the skeleton gate boots and probes
+on every close, so the UI shown here is never drifting ahead of what the
+gates verify.
 
 ### Regenerating the metrics report
 
