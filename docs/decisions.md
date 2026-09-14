@@ -6946,3 +6946,41 @@ than a red suite. That is D92's own mechanism, extended one artifact further.
 
 **Reverses if:** an outside party needs the programme's task-level detail. This
 log has it, and git has the records at any commit before this one.
+
+---
+
+## D95 — A8's analysis moves to the spec as §10 "Problems to address"; the README keeps the named summary
+
+The README moves away from heavy document-referencing language: ids and
+analysis belong in the governed documents, and the README carries the system's
+own description. Three changes in one pass, this entry logged before any of
+them:
+
+1. The full degradation analysis moves from the README to `docs/spec.md` as a
+   new §10, *Problems to address*, each failure mode under a stable id
+   (**P1–P8**). Ids are load-bearing everywhere else in this repo; these get
+   the same property so a later version can say "P2 is solved" and be checked.
+2. The README keeps a one-line-per-mode summary that still **names** every
+   mode and the point at which the system becomes useless, and points to §10.
+3. The README's prose drops most inline D/REQ/T references — the spec and this
+   log are where ids belong — and "Running it" expands into a full usage
+   reference: every CLI flag, the measurement scripts with their free replay
+   flags, the ADK dev UI, and the ADK tests.
+
+A8 still holds as written — "failure modes documented in the README, including
+where the system degrades" — because the naming stayed; what moved is the
+analysis. The README also keeps stating in its own text that the eval ground
+truth is self-authored with no adjudication pass scheduled, which D92 made the
+README's job and this entry does not disturb.
+
+**Rejected — deleting the section from the README outright.** Breaks A8 as
+written and removes the failure modes from the one document that must name
+them.
+
+**Rejected — keeping the full analysis in both places.** Two copies of one
+argument are two sources of truth free to drift — the ground D93 and D94
+already stood on.
+
+**Reverses if:** a review needs the full analysis back in the README. Then the
+summary re-expands and §10 is deleted in the same commit, because the two must
+not coexist in full.

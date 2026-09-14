@@ -91,7 +91,7 @@ reconciled.
 | c5 | Diet and activity documented across the qualifying run | extracted note events |
 
 c3 computes the qualifying run **once**; c2, c4, and c5 scope to it. A
-reconciliation step (REQ-34) then cross-checks the structured BMI against the
+reconciliation step then cross-checks the structured BMI against the
 note's BMI — two independent readings, kept independent on purpose. The final
 verdict is produced by parsing the policy's own `decision_expression`
 (`a AND b AND c1 AND c2 AND c3 AND c4 AND c5`) — parsed, never `eval()`'d, and
@@ -105,11 +105,115 @@ false-rejecting every shortfall-type `NOT_MET`, because the shortfall is
 Article II's arithmetic over a chart the verifier deliberately cannot see.
 
 **Evidence is mechanical throughout.** Model-reported character offsets proved
-unusable (0 of 80 correct in the spike; 0 of 171 in the first full run), so
+unusable (0 of 80 correct in the spike; 0 of 171 in the first full-corpus run), so
 spans are located by searching for the model's verbatim quote — exact match
 first, then whitespace-normalized — always recording raw offsets. Locating
 (`anchor.py`), resolving (`index.py`), and validating (`spans.py`) are separate
 modules so a locator cannot launder its bugs through the validator.
+
+---
+
+## How the policy file drives the engine
+
+The criteria tree (`data/policies/ncd_100_1_jf.json`) is not configuration
+*about* the code — it is the policy itself, and the engine is deliberately
+split so that policy content is data while clinical logic is reviewed code.
+This is not a generic rules interpreter; it is a fixed vocabulary of
+deterministic predicates, parameterized and combined by the JSON.
+
+**What the JSON decides** (change the file, and behavior changes with no code
+change):
+
+- **Every quantified constant.** The BMI threshold (≥ 35.0), the four
+  consecutive months, the 12-month recency and lookback windows, the 1.0-point
+  discrepancy tolerance. The workflow pulls each one at runtime with
+  `criterion.require("min_consecutive_months")` — *required*, never defaulted,
+  so a tree missing a constant fails loudly instead of silently evaluating
+  with "no preference."
+- **The boolean rule.** `decision_expression`
+  (`a AND b AND c1 AND c2 AND c3 AND c4 AND c5`) is parsed by a real
+  recursive-descent parser — parentheses, `AND`-over-`OR` precedence,
+  three-valued truth tables in which `INSUFFICIENT_EVIDENCE` propagates rather
+  than collapsing to false. It is not hardcoded as `all(...)`, precisely
+  because a second jurisdiction's "one comorbidity *or* a documented attempt"
+  would be silently ignored by that shortcut while every existing test kept
+  passing.
+- **Procedure-set membership.** Which codes are nationally covered, nationally
+  non-covered, or contractor-determined is data in the tree; the store builds
+  a code→set index across every loaded tree and refuses a code bound twice.
+  That 43842 short-circuits to a denial and 43775 proceeds to the criteria is
+  the JSON's doing, not the code's.
+- **A citation for every constant**, so the tree is auditable line by line
+  against its source documents.
+
+**What stays in Python** (fixed, and auditable as code): the predicate
+implementations — what "consecutive months" or "documented" *means* — the
+workflow's step order, reconciliation, all date and count arithmetic
+(Article II), and span validation.
+
+**The envelope for a new jurisdiction.** A second MAC's tree — different
+constants, different code bindings, a different boolean structure including
+`OR`s — evaluates with zero code changes, as long as its criterion ids map to
+implemented predicates and its operators are `AND`/`OR`. An unknown criterion
+id or an unimplemented operator (`NOT`, `XOR`, …) raises rather than being
+approximated: the rule is applied as written or refused. A genuinely new *kind*
+of requirement — say, a psychological evaluation within six months — needs a
+new predicate in reviewed Python, and that is the design working as intended:
+a new piece of clinical logic should arrive as a diff a reviewer reads, not as
+an expression a generic engine improvises over.
+
+---
+
+## A full prior-auth form, mapped to these lanes
+
+A complete prior authorization request carries more than this build
+implements — this build is one procedure family, one jurisdiction, chart notes
+as the only unstructured evidence. But the architecture's rules assign *every*
+field of a full form to a lane mechanically, and the assignment is worth
+seeing whole, because it is what "applies to a different modality" actually
+means here. Four lanes:
+
+- **Input** — arrives with the request. Never trusted as evidence directly;
+  the workflow re-reads everything through the ports.
+- **Agentic (model leaf)** — a declared model call: turning unstructured text
+  into structured claims, planning retrieval, or blind-checking a citation.
+  Never control flow, never arithmetic.
+- **Dynamic (policy JSON)** — swappable per jurisdiction or modality:
+  constants, the boolean rule, code sets, value sets. A new modality is
+  chiefly a new file here.
+- **Python (deterministic)** — fixed, reviewed code: resolution, dates,
+  counting, set membership, aggregation, span validation.
+
+| Form field | Enters as | Agentic part | Dynamic (policy JSON) | Python (deterministic) | In this build |
+|---|---|---|---|---|---|
+| **Administrative** | | | | | |
+| Patient data | Input — a FHIR bundle | None — the extractor is *barred* from structured data, so the note reading stays independent | — | Structured observations and conditions read from the patient port | Live |
+| Requesting provider | Input | — | — | Identity pass-through and validation | Not in v1 |
+| Servicing provider | Input | — | — | Identity pass-through and validation | Not in v1 |
+| **Code alignment (code request)** | | | | | |
+| Diagnosis codes (ICD / SNOMED) | Input — inside the bundle | — | The comorbidity value set (543 codes) and the exclusion's condition binding | Set membership: criterion (b), and the national T2DM exclusion (sc2) | Live (SNOMED, per the corpus) |
+| CPT / HCPCS procedure code | Input — `--procedure` | — | The tree's three procedure sets: covered, non-covered, contractor-determined | sc1 resolution to one of four typed answers, zero model calls | Live |
+| Medication | Input | — | The tree already records "pharmacological management alone is insufficient" as policy — no predicate consumes it yet | Would be value-set membership, like (b) | Constant recorded; no predicate in v1 |
+| **Clinical justification & evidence** | | | | | |
+| Step-therapy / prior-treatment log | Inside the chart note | The model extracts treatment encounters (`wm_events`) with verbatim quotes | Months required, recency window — A53028's constants | Qualifying-run selection, consecutive-month counting, recency arithmetic (c1–c5) | **Live — the weight-management program history is exactly this shape** |
+| Disease severity markers | Structured observations *and* the note | The note's BMI reading is extracted by the model | The BMI threshold, the discrepancy tolerance | Criteria (a) and (b); reconciliation of the two independent BMI readings | Live |
+| Urgency indicator | Input flag | — | Could be a tree field (a different SLA, not a different rule) | Routing — Article I keeps prioritization out of the model | Not in v1 |
+| **Supporting documents** | | | | | |
+| Recent provider notes | Input documents | The model reads the note — its *only* tool | — | Quote anchoring, span validation, and the blind verifier's replay | Live (one note per patient; a second is the open task) |
+| Diagnostic imaging / lab reports | Input documents | Same extraction lane: unstructured → cited claims | Criteria naming them would be tree data | Identical span validation — the mechanism does not care what kind of document it slices | Not in v1 |
+| Letter of medical necessity (LOMN) | **Output**, not input | Drafting narrative prose would be a model leaf | — | Every claim in it would carry a validated span; the verdicts it summarizes stay Python's | Not in v1 — the emitted packet (seven verdicts + gap list + citations) is the deterministic equivalent |
+
+Two things the table is really saying. First, **the lane is decided by the
+field's nature, not by engineering taste**: anything quantified by policy goes
+in the JSON, anything computable goes in Python (Article II), and the model
+touches a field only where unstructured text has to become a structured,
+citable claim (Article I). Second, **a new modality mostly fills existing
+lanes rather than adding new ones** — an oncology drug PA swaps in a different
+tree (different value sets, different constants, a step-therapy expression
+with `OR`s) and different attached documents, while the resolver, the
+expression evaluator, the anchoring, and the verifier run unchanged. What it
+*cannot* do without a reviewed code change is introduce a new kind of
+predicate — which is the point.
 
 ---
 
@@ -131,6 +235,23 @@ Three ports meet at the model boundary:
 - **`VerifierRunner`** — *who checks the citations.* Live, recorded (replays a
   committed 27-claim recording keyed by claim digest — a miss raises, never
   defaults), and a deliberately raising null runner.
+
+**Where ADK sits: it is a leaf, never the skeleton.** `google-adk` is imported
+in exactly one package, `pa_agent/agent/`, which supplies one implementation
+each of the first two ports — the ADK extraction runner and the agentic
+retrieval planner — plus their tool allowlists. The natural design ADK invites,
+an ADK `Workflow` orchestrating the steps, was explicitly rejected: it would
+hand the graph to a framework whose edges can route on model output
+(Article I), and it would put `google.adk` on the import path of every
+deterministic test and every zero-model-call determination. The workflow is a
+plain Python tuple instead, and `sys.modules` assertions keep the model SDK off
+the deterministic path. Inside the ADK runner, the constitution is enforced by
+*configuration*, not prompting: one fresh context per note
+(`include_contents="none"`), agent transfer disabled so ADK never even injects
+its handoff tool, a literal tool allowlist, and a hard `max_llm_calls` ceiling
+in which one tool round trip counts as two calls. The ADK tests exercise the
+real framework — a stub model instance drives ADK's full flow with no network
+and no credential — rather than a mock of it.
 
 **The measured result so far:** model-directed retrieval agrees with the
 deterministic oracle on **6/6 outcomes and 42/42 criterion verdicts, with
@@ -208,164 +329,182 @@ is in scope.
 
 ---
 
-## Running it
+## What the spike taught, and where it landed
+
+Before anything was built, `spike/spike_001/` tested the assumption the whole
+design rests on: can a single model call read a chart note and return correct
+weight-management encounters, with citable spans, without counting the things
+the spec excludes — unsupervised attempts, missed visits, failed contact
+attempts? Five hand-written notes, three runs at temperature 0, scored entirely
+by Python. It is still alive: `--verify` is one of the gates, and the five
+notes are permanent regression cases.
+
+| The spike found | What shipped because of it |
+|---|---|
+| Extraction held: event precision and recall 1.000, 21/21 on the hard exclusion traps — on the *first* prompt formulation, no tuning spent | The prompt and schema were promoted **verbatim** to `pa_agent/extraction.py`. Rewriting a measured prompt would restart its history at zero. |
+| Model-emitted character offsets: **0 of 80 usable** — not one sliced back to its own quote | Quote anchoring became mandatory and its own module, `pa_agent/anchor.py`, kept separate from span *validation* so a locator bug cannot launder itself through the check meant to catch it |
+| Three real quotes failed exact matching only because the notes hard-wrap at ~76 columns, as EHR exports do | Anchoring is whitespace-normalized but still records raw offsets into the unmodified document. Fuzzy matching was rejected: a threshold generous enough to absorb a line wrap is generous enough to absorb a changed date. |
+| A gate that re-runs the model answers differently on every invocation and spends quota on every check | The measure / `--rescore` / `--verify` split — spend calls once, re-derive and re-check from the recording for free — which became the pattern behind **every** recording in the repo |
+| A shared ADK session carried note N−1 into note N's context | One fresh context per note, preserved in the ADK runner as `include_contents="none"` |
+| Three model-name literals sat in two files disagreeing with each other and with the recording, while every gate stayed green | `pa_agent/model_pin.py` — the only tracked Python file permitted to name a model, enforced by test |
+| Multi-occurrence quotes (a quote appearing twice, anchoring to the wrong place): measured **zero** | The one number the spike got wrong. Its hand-written notes gave the patient a different BMI every month; real charts plateau. The first real corpus measured 12 of 169, seven anchoring to the *wrong encounter* — spans true about the document and false about the claim. Fixed deterministically: per-field spans anchor to the occurrence nearest their own event. |
+
+The last row carries the method lesson the rest of the repo quotes: **a clean
+spike number can be a property of the spike's corpus, not of the mechanism** —
+which is why the spike's own caveats (owner-authored notes, owner-authored
+labels, small n) still travel with every 1.000 in this README.
+
+---
+
+## Using it
 
 `python` is not assumed on PATH; the tracked venv is Python 3.12.
 
+### A determination
+
 ```bash
-# All eleven zero-cost gates (~25s). Required green at every task close.
-./venv/bin/python scripts/check_gates.py
-
-# The test suite alone (664 tests, ~18s)
-./venv/bin/python -m pytest -q
-
-# A real determination, zero model calls
-./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775
-
-# Regenerate the metrics report, or check it still matches its sources
-./venv/bin/python eval/build_report.py
-./venv/bin/python eval/build_report.py --verify
+./venv/bin/python -m pa_agent.cli --patient 49092fd9-d5bf-24e2-474b-00041a279a47 --procedure 43775
 ```
 
-CLI exit codes: `0` an answer (including honest abstentions — Article IV),
-`1` a bad request, `2` an unbuilt path, `3` a determination aborted because a
+| Flag | Meaning |
+|---|---|
+| `--patient <id>` | required — the patient identifier |
+| `--procedure <code>` | required — the requested CPT/HCPCS code |
+| `--extraction recorded\|direct\|adk` | which model leaf reads the notes. Default `recorded` replays the committed extraction for **zero model calls**; `direct` (raw `google-genai`) and `adk` spend live calls |
+| `--recording <path>` | the recording replayed under `--extraction recorded` |
+| `--tool-fetch` | with `--extraction adk`: the agent fetches the note through its `read_note` tool instead of receiving it in the message |
+| `--as-of YYYY-MM-DD` | the date recency windows are measured from (default: today). Pin it to reproduce a determination |
+
+Exit codes: `0` an answer (honest abstentions included), `1` a bad request
+(unknown patient), `2` an unbuilt path, `3` a determination aborted because a
 criterion is in `ERROR` — the criterion id and error code go to stderr,
 nothing to stdout.
 
-**Nothing in the gates spends a model call or touches the network.** That is a
-membership rule, not a taste call: a command is a gate iff some task's exit
-condition names it *and* it costs nothing, and a test fails if a tracked
-script is in neither the gate list nor the exclusion list with a stated
-reason. The scripts that do spend model calls (extraction, agentic
-measurement, verifier measurement) each have a `--rescore`/replay path that
-re-derives every number from the committed recording for free.
+The live modes need a Gemini API key in `pa_agent/agent/.env` (gitignored — no
+real key ever appears in a tracked file).
 
-The eval harness (`eval/run_eval.py`) scores fifteen labeled cases — the
-spec's fourteen edge-case rows plus one `NO_POLICY_FOUND` row — with every
-cited span re-validated by the scorer. The gate is a **baseline diff**: drift
-in either direction fails, so a case that *starts* passing must be
-acknowledged with `--update-baseline` and a commit. Four statuses, never
-collapsed: `PASS`, `FAIL`, `BLOCKED` (the component does not exist yet — that
-names a task, not a bug), and `ERROR` (counted in neither the abstention
-rate's numerator nor its denominator).
+### Gates and tests
+
+```bash
+./venv/bin/python scripts/check_gates.py      # all ten zero-cost gates, ~25s
+./venv/bin/python -m pytest -q                # the suite alone (653 tests, ~18s)
+./venv/bin/python -m pytest tests/test_criteria_c.py -q         # one file
+./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
+```
+
+Nothing in the gates spends a model call or touches the network — that is a
+membership rule enforced by a test, not a habit. The commands that do spend
+model calls each carry a free replay flag (below).
+
+### Testing the ADK path
+
+```bash
+./venv/bin/python -m pytest tests/test_adk_agent.py -q
+```
+
+These tests drive the **real** ADK framework — tool calls, output schema,
+usage metadata — by handing the agent a stub model instance, so the whole flow
+runs with no network and no credential. Testing ADK rather than a mock of it
+is the point.
+
+### The eval harness
+
+```bash
+./venv/bin/python eval/run_eval.py                     # baseline diff — the gate
+./venv/bin/python eval/run_eval.py --update-baseline   # adopt drift, as a reviewed diff
+```
+
+Fifteen labeled cases, every cited span re-validated by the scorer. The gate
+fails on drift in **either** direction, so a case that *starts* passing is
+adopted explicitly with `--update-baseline` and a commit. Four result statuses
+stay distinct: `PASS`, `FAIL`, `BLOCKED` (the component does not exist yet —
+that names a task, not a bug), and `ERROR` (counted in neither side of the
+abstention rate). `--cases` and `--baseline` point at alternate files;
+`--json <path>` writes the results out.
+
+### Measurements, and their free replays
+
+Four commands spend model calls. Each records what it measured, and each has a
+free path that re-derives every number from the committed recording:
+
+| Spends model calls | Free replay |
+|---|---|
+| `scripts/run_extraction.py` — the direct extraction measurement | `--rescore` re-anchors the recorded payloads |
+| `scripts/run_adk_extraction.py [--tool-fetch] [--limit N]` — the ADK extraction measurement, in either mode | `--compare` diffs this mode's recording against the direct one |
+| `eval/run_agentic_eval.py --measure [--limit N]` — the fixed-vs-agentic differential | bare run is the gate; `--rescore` recomputes the oracle side; `--report` prints the comparison |
+| `scripts/run_verifier_measurement.py` — the blind-verifier measurement | `--rescore` re-checks the committed recording |
+
+### The ADK dev UI
+
+```bash
+./venv/bin/adk web pa_agent
+```
+
+Serves the ADK development UI over the agent package; the app is named
+`agent`. `GET /list-apps` returns the discovered apps, and `GET /` redirects
+(307) to `/dev-ui/`.
+
+### Regenerating the metrics report
+
+```bash
+./venv/bin/python eval/build_report.py           # regenerate eval/report.md
+./venv/bin/python eval/build_report.py --verify  # check it matches its sources (a gate)
+```
 
 ---
 
 ## How the project is governed
 
-The repo is run under a document hierarchy, strictest first, and all of it
-outranks any instruction typed into a prompt:
+The reasoning behind this project lives in five documents under `docs/`, not
+in this README. They are worth knowing about because every claim above traces
+back to one of them:
 
-| File | Role |
+| Read | To learn |
 |---|---|
-| `docs/constitution.md` | Ten articles plus Amendment 1. Never silently edited; amendments are appended with a date and reason. |
-| `docs/spec.md` | Numbered testable requirements (REQ-1…54), edge cases (E1–E12), acceptance criteria (A1–A9). |
-| `docs/stories.md` | User stories US-1…US-9, with personas. |
-| `docs/tasks.md` | The board. Every task has a runnable exit condition; `Path to v1` at the top states what to do next. |
-| `docs/decisions.md` | Append-only, numbered decision log. Every entry names the rejected alternative and its reversal condition. |
+| `docs/constitution.md` | The ten articles above in full, with Amendment 1 |
+| `docs/spec.md` | Numbered requirements, edge cases, acceptance criteria — and §10, the problems to address |
+| `docs/stories.md` | The user stories and personas |
+| `docs/tasks.md` | The board; `Path to v1` at the top says what happens next |
+| `docs/decisions.md` | Why everything is the way it is — every choice, the alternative it rejected, and the condition that would reverse it |
 
-Working rules that follow from it: one task in progress at a time, stories
-close vertically (four of five tasks done has delivered nothing), discovered
-work becomes a new numbered task, timebox overruns get a decision entry naming
-what broke, and no infrastructure the project has not earned — no cloud setup,
-no containers, no CI, no vector search until a measurement says retrieval
-precision demands it.
-
-**Every close mutation-tests its own gate.** When a behavioural test cannot
-catch a mutation — a resolver that branches on an id's shape and then falls
-through to the same answer, a guard whose deletion makes the suite hang rather
-than fail — the invariant is pinned by parsing the AST instead. The method
-notes also record the harness bugs found the hard way: stale `__pycache__`
-running the mutant after restore, ANSI color codes defeating `^FAILED` scans,
-and a hung mutation being counted as caught.
+Two habits from that system show up in the code: every task closes on a
+command that returns zero, and every gate is mutation-tested — where a
+behavioural test cannot catch a mutation, the invariant is pinned by parsing
+the AST instead.
 
 ---
 
 ## Where this system degrades
 
-A8 asks for the point at which this stops being useful. That question has an
-answer, and it is not "when accuracy drops" — accuracy is 1.000 on `MET`
-precision over a fifteen-case set, which is a statement about a fifteen-case
-set. These are the things that actually break it, roughly in order of how
-likely they are to bite a real deployment.
+Accuracy is not where this breaks — the measured rates are perfect on a set
+small enough that perfection mostly means "did not obviously fail." The real
+failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
+(*Problems to address*, P1–P8); the short version:
 
-**One jurisdiction, and the thresholds are not CMS's.** NCD 100.1 quantifies
-nothing — no months, no visit counts, no recency window. Every constant in the
-criteria tree comes from A53028, a Noridian Jurisdiction F article. This system
-determines coverage *as Noridian would*. Point it at a patient in another MAC's
-territory and it will answer confidently and wrongly, because the tree is right
-and the jurisdiction is not. There is no code path that notices; the resolver
-returns one tree. A second jurisdiction is a second tree over the same NCD, and
-nothing in the design makes that a small change to operate — it makes it a
-small change to *build*.
-
-**Extraction refuses paraphrase, and that loses evidence.** Spans are located by
-searching the model's verbatim quote — exact, then whitespace-normalized —
-because the model's own character offsets were usable 0 times out of 80 in the
-spike and 0 out of 171 in T-15. The consequence is that a model which
-paraphrases instead of quoting produces a claim nobody can anchor, and the
-anchorer correctly drops it. T-63 lost a patient's program assertion exactly
-this way. **The determination that results is well-formed and says less than the
-chart does** — it abstains where it should have found evidence, so the failure
-is fail-closed rather than a wrong approval, and it is still a failure. The
-per-note record shows it; the headline aggregate did not, until T-71.
-
-**Six patients, three documents, fifteen cases.** Every rate in
-`eval/report.md` moves by large steps. One case is worth more than a percentage
-point in every table. A precision of 1.000 over eleven `MET` calls against a
-base rate of 0.611 is a real result and a small one; it says the approach does
-not obviously fail, and nothing more.
-
-**The ground truth is self-graded.** The eval labels and the fact manifests were
-authored by the agent building the system that they grade. The structural
-mitigations are real — manifests are written from the bundles *before* the notes
-are synthesized, the system under test never reads them, and every cited span is
-validated against the source rather than against a label. The pass that would
-replace "structural mitigation" with "adjudicated" is **not scheduled**: it is
-human reading work by someone who did not author the labels, and the
-ratification programme that once had it on the board was deleted (D92). Saying
-so is what keeps the gap visible now that no counter tracks it. Do not quote a
-number from this repo without that sentence.
-
-**The verifier is blind on purpose, and that costs recall of a certain kind.**
-It sees one claim at a time — the requirement text, the verdict, and the
-mechanically sliced quote — and no reasoning. It is therefore barred from date
-and count arithmetic, because two measured rounds of false rejections showed it
-rejecting every shortfall-type `NOT_MET`: the shortfall is arithmetic over a
-chart the blindness deliberately hides. A verifier that cannot see the chart
-cannot check a claim *about* the chart's arithmetic, and that half of
-verification is done by Python instead.
-
-**Model adjudication is unclaimed, so the model's judgment is never on the
-hook.** REQ-44 and REQ-47 are declared *Unclaimed in v1*: Amendment 1 reserves
-date arithmetic, numeric comparison, counting, sorting and set membership to
-Python on both paths, and those are the entire decision procedure for all seven
-criteria. There is no verdict a model could determine without doing something
-reserved. That is a deliberate limit on what has been demonstrated, not an
-oversight — the agentic path is real and it decides *what to read*, not what the
-answer is.
-
-**Retrieval recall is measured directly, and on this corpus the direct figure
-cannot fall.** The recording carries both the documents each run *cited* and the
-bundle the planner *gathered*, and both read 1.000 over 25 citing cases. The
-gathered figure is the one REQ-25 asks for and it is 1.000 **by construction**:
-one note per patient, a planner that raises rather than returning an empty
-bundle, and structured facts re-read from the port rather than taken from the
-model's tool payload. A run that did not error gathered everything there was.
-So the *cited* figure beside it is the one still carrying information — and it
-did settle the question the bound could not: every patient gathered two
-documents and two of the six cite only one, which means those notes reached the
-criteria and yielded nothing to cite. Gathered and uncitable, never skipped. A
-second note per patient is what would let the direct figure fall, and it is on
-the board.
-
-**Everything free is a replay.** Every gate, the CLI's default path, and every
-number in the report run off committed recordings and spend zero model calls.
-That is what makes the checks something that gets run rather than skipped
-because it costs money — and it means the freely-reproducible figures describe
-the model as it behaved on one measured day, against one pinned model, on one
-tier. A changed call configuration, a changed tool declaration, a changed SDK,
-or a different tier is a **new measurement, never a re-run**.
+- **P1 — One jurisdiction.** Every threshold is Noridian Jurisdiction F's, not
+  CMS's. Pointed at another MAC's patient it answers confidently and wrongly,
+  and no code path notices.
+- **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
+  quoting produces a claim nobody can anchor, so the system abstains where
+  evidence existed. Fail-closed, and still a loss.
+- **P3 — Small everything.** Six patients, three documents, fifteen cases:
+  every rate moves in large steps, and one case outweighs a percentage point.
+- **P4 — Self-graded ground truth.** The eval labels were authored by the
+  agent that built the system they grade, and **no adjudication pass by an
+  independent reviewer is scheduled**. No number from this repo should be
+  quoted without that sentence.
+- **P5 — The blind verifier cannot check arithmetic.** It sees one claim and
+  one quote, so shortfall claims ("only three months") are checked by Python,
+  not by the verifier.
+- **P6 — The model's judgment is never on the hook.** Model adjudication is
+  deliberately unclaimed; the agentic path decides what to *read*, never what
+  the answer is.
+- **P7 — Retrieval recall cannot currently fall.** With one note per patient
+  the gathered-recall figure is 1.000 by construction; a second note per
+  patient — the one open task — is what would make it a real test.
+- **P8 — Every free number is a replay.** The reproducible figures describe
+  one measured day, one pinned model, one API tier. Any configuration change
+  is a new measurement, never a re-run.
 
 ---
 
@@ -392,19 +531,8 @@ gate rather than a plausible-looking table.
 | A5 | abstention **0.200**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
 | A6 | 33 model calls / 27,175 in / 5,723 out / 36.1s across nine determinations, from instrumentation |
 | A7 | 55 requirements: 53 mapped to a check, 2 declared unclaimed with a decision entry behind each |
-| A8 | the section above |
+| A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
-
-**A5 is not the gate it was originally written as.** It asked for a
-coverage/accuracy curve across "a range of fail-closed thresholds", naming the
-point where abstention reaches one. No such threshold exists in this system, and
-that was measured rather than argued: the one constant that can be swept for
-free moves the *disclosure* count and leaves abstention flat at every grid
-point, and the constant that would move verdicts cannot be swept without
-spending model calls. **No constant in this tree drives abstention to 1.** A5
-became the rate, the account of *why* per `gap_reason`, and the sweep with the
-flat column printed beside it so the claim stays falsifiable. Where the system
-becomes useless moved to A8, above, which is where it belonged.
 
 **One task is open, and it is not on the path to the acceptance gates:** a
 second note per patient, which is what would let the direct retrieval-recall
@@ -412,21 +540,16 @@ figure fall. It costs a new extraction recording and a new verifier recording �
 both are keyed by note content — and therefore most of the repo's committed
 numbers.
 
-**Nothing else is outstanding, and that includes the one thing a reader might
-assume is.** An earlier version of this board carried a ratification programme:
-a tracked ledger mapping every load-bearing ID to a human status, a gate
-enforcing it, and a task to adjudicate the eval labels. It was deleted (D92) —
-ownership of this work is a git-level fact that needed no ledger to assert it,
-and the record of the programme stays in the decision log rather than being
-erased. The part that did not survive the deletion is the part that matters
-here: **the adjudication pass is not deferred, it is unscheduled**, so the
-ground-truth caveat above is permanent unless someone who did not author the
-labels reviews them. A reader should treat every figure in the table as
-measured against self-authored ground truth, with no pending work that would
+**Nothing else is outstanding — including the one thing a reader might assume
+is.** An earlier board carried a programme to have the eval labels adjudicated
+by an independent reviewer; it was deleted, with the full record kept in the
+decision log. The consequence stands plainly: the adjudication pass is not
+deferred, it is **unscheduled**, so every figure in the table above is
+measured against self-authored ground truth with no pending work that would
 change that.
 
 Two requirements are **unclaimed on purpose**: model-performed adjudication
-(REQ-44/REQ-47) is reserved out of v1 because Amendment 1 keeps the entire
+is reserved out of v1 because Amendment 1 keeps the entire
 decision procedure in Python — there is no verdict a model could determine
 without doing something reserved. Declaring that explicitly, rather than quietly
 not doing it, is what makes the coverage gate satisfiable.
@@ -447,8 +570,8 @@ data/policies/       three source documents, the SNOMED value set, and the
 data/patients/       seven Synthea bundles + six synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free
-spike/spike_001/     the throwaway span-anchoring spike that killed
-                     model-reported offsets
+spike/spike_001/     the founding extraction spike — still a gate and a
+                     regression corpus; see "What the spike taught"
 scripts/             the gates, the measurement scripts, and the corpus tooling
 tests/               the suite (653 tests), including the AST-level pins
 docs/                constitution, spec, stories, tasks, decisions
@@ -458,5 +581,5 @@ docs/                constitution, spec, stories, tasks, decisions
 
 *Numbers in this README come from instrumentation (Article X) and carry the
 ground-truth caveat stated above. Authorship and ownership of this work are
-recorded at the git level, which is the only place they were ever asserted from
-(D92).*
+recorded at the git level, which is the only place they were ever asserted
+from.*

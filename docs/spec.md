@@ -613,3 +613,102 @@ NCD *(D21)*.
 Resolved earlier: structured-versus-note BMI disagreement *(D11)*, weight-only
 documentation for c4 *(D15)*, gap-list ranking *(out of scope for v1 — ranking
 needs a cost model for closing each gap type, and nothing in v1 measures that)*.
+
+---
+
+## 10. Problems to address
+
+v1's known limits, stated as problems a later version would address. This is
+A8's substance: the README names each mode in one line and points here; this
+section carries the analysis *(D95)*. Ids are stable — a solved problem keeps
+its number and records what solved it. Ordered roughly by how likely each is
+to bite a real deployment.
+
+### P1 — One jurisdiction, and the thresholds are not CMS's
+
+NCD 100.1 quantifies nothing — no months, no visit counts, no recency window.
+Every constant in the criteria tree comes from A53028, a Noridian Jurisdiction
+F article. This system determines coverage *as Noridian would*. Point it at a
+patient in another MAC's territory and it will answer confidently and wrongly,
+because the tree is right and the jurisdiction is not. There is no code path
+that notices; the resolver returns one tree. A second jurisdiction is a second
+tree over the same NCD, and nothing in the design makes that a small change to
+*operate* — it makes it a small change to *build*.
+
+### P2 — Extraction refuses paraphrase, and that loses evidence
+
+Spans are located by searching the model's verbatim quote — exact, then
+whitespace-normalized — because the model's own character offsets were usable
+0 times out of 80 in the spike and 0 out of 171 in T-15. The consequence is
+that a model which paraphrases instead of quoting produces a claim nobody can
+anchor, and the anchorer correctly drops it. T-63 lost a patient's program
+assertion exactly this way. The determination that results is well-formed and
+says less than the chart does — it abstains where it should have found
+evidence, so the failure is fail-closed rather than a wrong approval, and it
+is still a failure. The per-note record shows it; the headline aggregate did
+not, until T-71.
+
+### P3 — Six patients, three documents, fifteen cases
+
+Every rate in `eval/report.md` moves by large steps. One case is worth more
+than a percentage point in every table. A precision of 1.000 over eleven `MET`
+calls against a base rate of 0.611 is a real result and a small one; it says
+the approach does not obviously fail, and nothing more.
+
+### P4 — The ground truth is self-graded
+
+The eval labels and the fact manifests were authored by the agent building the
+system that they grade. The structural mitigations are real — manifests are
+written from the bundles *before* the notes are synthesized, the system under
+test never reads them, and every cited span is validated against the source
+rather than against a label. The pass that would replace "structural
+mitigation" with "adjudicated" is **not scheduled**: it is human reading work
+by someone who did not author the labels, and the ratification programme that
+once had it on the board was deleted (D92). Saying so — here and in the README
+— is what keeps the gap visible now that no counter tracks it. Do not quote a
+number from this repo without that sentence.
+
+### P5 — The verifier is blind on purpose, and that costs recall of a certain kind
+
+It sees one claim at a time — the requirement text, the verdict, and the
+mechanically sliced quote — and no reasoning. It is therefore barred from date
+and count arithmetic, because two measured rounds of false rejections showed
+it rejecting every shortfall-type `NOT_MET`: the shortfall is arithmetic over
+a chart the blindness deliberately hides. A verifier that cannot see the chart
+cannot check a claim *about* the chart's arithmetic, and that half of
+verification is done by Python instead.
+
+### P6 — Model adjudication is unclaimed, so the model's judgment is never on the hook
+
+REQ-44 and REQ-47 are declared *Unclaimed in v1*: Amendment 1 reserves date
+arithmetic, numeric comparison, counting, sorting and set membership to Python
+on both paths, and those are the entire decision procedure for all seven
+criteria. There is no verdict a model could determine without doing something
+reserved. That is a deliberate limit on what has been demonstrated, not an
+oversight — the agentic path is real and it decides *what to read*, not what
+the answer is.
+
+### P7 — Retrieval recall is measured directly, and on this corpus the direct figure cannot fall
+
+The recording carries both the documents each run *cited* and the bundle the
+planner *gathered*, and both read 1.000 over 25 citing cases. The gathered
+figure is the one REQ-25 asks for and it is 1.000 **by construction**: one
+note per patient, a planner that raises rather than returning an empty bundle,
+and structured facts re-read from the port rather than taken from the model's
+tool payload. A run that did not error gathered everything there was. So the
+*cited* figure beside it is the one still carrying information — and it did
+settle the question the bound could not: every patient gathered two documents
+and two of the six cite only one, which means those notes reached the criteria
+and yielded nothing to cite. Gathered and uncitable, never skipped. A second
+note per patient (T-81) is what would let the direct figure fall, and it is on
+the board.
+
+### P8 — Everything free is a replay
+
+Every gate, the CLI's default path, and every number in the report run off
+committed recordings and spend zero model calls. That is what makes the checks
+something that gets run rather than skipped because it costs money — and it
+means the freely-reproducible figures describe the model as it behaved on one
+measured day, against one pinned model, on one tier. A changed call
+configuration, a changed tool declaration, a changed SDK, or a different tier
+is a **new measurement, never a re-run**.
