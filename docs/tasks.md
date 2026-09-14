@@ -22,22 +22,22 @@ and it gates no acceptance criterion; it is corpus work that would let a
 measured figure get weaker and more honest, taken when there is budget for a
 re-measurement, not before.
 
-Sixty-five tasks are on this board — IDs run to T-82 but numbering is not
-contiguous, so the highest id is not the count. **64 are closed and 1 is
-open.** The table below is the path **as it ran**, which is not the path anyone
+Sixty-four tasks are on this board — IDs run to T-84 but numbering is not
+contiguous and D92 and D94 deleted six records between them, so the highest id
+is well above the count. **63 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
-D81, withdrawn by D92)*.
+D81, withdrawn by D92, records deleted by D94)*.
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
-| 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed**, later **withdrawn** *(D92)* |
-| 2 | `T-74` | the owner ratifies constitution, spec, stories *(D74)* | **closed**, later **withdrawn** *(D92)* |
+| 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed**, **withdrawn** *(D92)*, record deleted *(D94)* — this row is what remains |
+| 2 | `T-74` | the owner ratifies constitution, spec, stories *(D74)* | **closed**, **withdrawn** *(D92)*, record deleted *(D94)* — this row is what remains |
 | 3 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — ran before T-74; see D79 |
 | 4 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
 | 5 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
-| 6 | `T-79` | the ratification programme pauses *(D81)* | **closed**, later **withdrawn** *(D92)* |
+| 6 | `T-79` | the ratification programme pauses *(D81)* | **closed**, **withdrawn** *(D92)*, record deleted *(D94)* — this row is what remains |
 | 7 | `T-72` | A5 acquires a mechanism the system actually has *(D82)* | **closed** |
 | 8 | `T-32` | gates **Article VI** / REQ-33 *(D83)* | **closed** |
 | 9 | `T-22` → `T-28` | gates **A2**, **A3**, **A5**, **A6** *(D85)* | **closed** |
@@ -57,13 +57,14 @@ recorded ownership: a ledger, a gate, and statuses only the owner may write.
 T-73 built it, T-74 carried the owner's reading of the constitution, spec and
 stories (98 ids), D81 paused the unfinished half, and **D92 deleted the whole
 thing** — ownership of this work is a git-level fact a JSON ledger adds nothing
-to. T-75, T-76 and T-78 went with it. T-73, T-74 and T-79 stay below as closed
-records marked superseded, because ids are load-bearing and D74 names all
-three. **The lesson the board should keep is the sequencing one:** this
-programme was put *ahead of* the critical path at D74 and held the first two
-positions on it, and what survives is the record of it — four decision entries
-and three superseded task records, no running code. The cost of the detour is
-kept here rather than smoothed away.
+to. T-75, T-76 and T-78 went with it, and **D94 deleted the records of T-73,
+T-74 and T-79 too**: D92 had kept those three while deleting their siblings,
+which recorded one programme two ways at once. All six ids now resolve into
+`docs/decisions.md` and into the table above, and nowhere else. **The lesson
+the board should keep is the sequencing one:** this programme was put *ahead
+of* the critical path at D74 and held the first two positions on it, and what
+survives is the record of it — four decision entries and these rows, no
+running code. The cost of the detour is kept here rather than smoothed away.
 
 **What that costs, stated once.** T-78 was the point where D42's authorship
 caveat would have retired. Deleting it removes the plan, not the obligation,
@@ -1633,6 +1634,36 @@ column reading the cited set; and containment weakened to intersection on each
 column. The last two and `--rescore`'s are pinned by parsing — no behaviour this
 corpus can produce distinguishes them (D65, D67's move).
 
+### `[x] T-84` Delete the three superseded ratification records
+**REQ:** none — board accuracy · **Discovered in:** reading the board to answer
+"what tasks are open" and finding one programme recorded two ways at once ·
+**Decided by:** D94 · **Timebox:** one hour
+**Status:** **closed** (D94) — `T-73`, `T-74` and `T-79` are gone from this
+file; `Path to v1`'s rows 1, 2 and 6 and `docs/decisions.md` are the record
+**Exit:** `tests/test_check_gates.py::test_ratification_programme_is_gone`
+asserts no `T-73`/`T-74`/`T-79` header exists in `docs/tasks.md` alongside its
+three file assertions, and `python scripts/check_gates.py` returns zero.
+
+D92 deleted the ratification programme, deleted `T-75`, `T-76` and `T-78`
+outright, and **kept** `T-73`, `T-74` and `T-79` as closed records pointing at
+it — on the ground that ids are load-bearing and D74 names all three. But D74
+names all six, and the three it deleted resolve to nothing already. The split
+was an artifact of which tasks had closed before D81 paused the reading, not a
+distinction worth a reader reconstructing. D94 applies one rule to all six.
+
+**The append-only half of D92's rejection stands.** D92 refused "delete
+D74/D80/D81 and the three closed tasks too" as one bundle. The log entries are
+untouched and always were untouchable; only the board records go. Separating
+those two artifacts is the whole content of D94.
+
+**Why it needed a test and not a grep.** A doc deletion has no natural exit
+condition — a grep for an absent string is not a check (D10, Article VIII) —
+so restoring the records would otherwise be a quiet commit. The assertion lives
+beside D92's three file assertions in the same test, which is the mechanism
+that already made resurrecting `ratify.py` a red suite. Mutation-tested by
+restoring a header, confirming red, deleting it again, clearing `__pycache__`
+and re-running with `--color=no` (D68).
+
 ### `[x] T-83` Correct the repo layout and delete the superseded plan doc
 **REQ:** none — documentation accuracy · **Discovered in:** checking CLAUDE.md's
 repo-layout section against `git ls-files` rather than reading it · **Timebox:**
@@ -1687,70 +1718,6 @@ dropping the tree check (a resurrected `check_ownership.py` passes), dropping th
 `GATES` check (the gate returns to the tuple), and dropping the `EXCLUDED` check
 (`ratify.py` returns as an excluded script, which is how it would come back
 without failing `test_every_tracked_script_is_classified`).
-
-### `[x] T-79` Pause the ratification programme in a holding area
-**Superseded by D92** — the review this pause was waiting on concluded, and
-`T-82` deleted the programme. The *Deferred — under review* section this task
-built is gone with it.
-**REQ:** none — board hygiene · **Discovered in:** the owner's instruction to
-skip the ratification section pending review · **Timebox:** one hour
-**Status:** closed — T-75, T-76 and T-78 moved to **Deferred — under review**
-verbatim; `required_tiers` frozen; T-78's block on the report chain lifted
-**Exit:** `python scripts/check_gates.py` returns zero with the ledger's
-required tiers unchanged, and no task in `Path to v1` names a deferred id
-
-**Closed by D81.** The three remaining ratification tasks are readings only the
-owner can perform, and the owner suspended the programme pending a review of
-whether it continues. Nothing closed was touched: T-73 and T-74 stand, D74 and
-D80 stand, `docs/ratifications.json` keeps its 98 ratified ids and its three
-required tiers, `scripts/check_ownership.py` stays the ninth gate, and working
-rule 11 still scopes who may write a status. What moved is the board's active
-surface. D79's block on T-22 → T-28 → T-23 is lifted, and D81 records the
-price in the one place it is load-bearing: D42's authorship caveat does not
-retire, so `eval/report.md` and `README.md` carry it in their own text.
-
-### `[x] T-73` The ratification ledger and its gate
-**Superseded by D92** — the ledger, the gate and `ratify.py` were deleted by
-`T-82`, and `T-75`/`T-76` no longer resolve. This record stands because D74
-names it and closed work is not rewritten to look like it never ran.
-**REQ:** none — implements D74's protocol · **Blocks:** T-74, T-75, T-76,
-T-21's rewritten exit · **Discovered in:** the D74 ownership review ·
-**Timebox:** half a day
-**Status:** closed — 235 ids seeded `proposed`, the gate is ninth in `GATES`,
-20 tests in `tests/test_check_ownership.py`
-**Exit:** `python scripts/check_ownership.py` returns zero — and
-`python scripts/check_gates.py` green with the new gate in `GATES`, which
-T-69's membership test forces in the same commit
-
-`docs/ratifications.json` maps every load-bearing ID — Articles I–X and
-Amendment 1, every REQ in spec §5, §6's edge cases, §7's acceptance criteria,
-US-1–US-9, every task on this board, every decision entry — to
-`{status, by, date}`, seeded all-`proposed`, grouped into D74's seven tiers.
-The gate parses the five docs to enumerate the IDs and fails on: a doc ID the
-ledger is missing; a ledger ID resolving in no doc; an `overruled`/`amended`
-entry whose linked task does not resolve on this board; a malformed entry; a
-`proposed` entry in any tier the ledger's `required_tiers` names; and,
-once `eval` is required, a manifest or case in `eval/` without a well-formed
-`adjudicated` record. `--require <tier>` (repeatable) requires a tier for one
-run — the ratification tasks' exits use it before flipping the tier into
-`required_tiers`, after which the bare gate invocation enforces it forever.
-Statuses other than `proposed` are the owner's edits only (working rule 11, D74).
-
-### `[x] T-74` Ratify the constitution, the spec and the stories
-**Superseded by D92** — the ledger these 98 statuses were written into is
-deleted. The reading happened; what is gone is the file that recorded it and
-the gate that asserted it.
-**Depends:** T-73 · **Discovered in:** D74 · **Timebox:** one session
-**Status:** closed — 98 ids ratified by the owner through `scripts/ratify.py`
-(D80), the owner's own invocations recorded in the ledger; `constitution`, `spec` and
-`stories` are in `required_tiers`, so the bare gate now enforces them forever
-**Exit:** `python scripts/check_ownership.py --require constitution --require
-spec --require stories` returns zero, and the close flips those three tiers
-into `required_tiers`
-
-An agent may scaffold a checklist view; every status written is the owner's edit.
-A disagreement is an `amended` or `overruled` status naming a new numbered
-task (working rule 6) — the gate refuses one that names nothing.
 
 ### `[x] T-27` Planner recall against the oracle's evidence bundle
 **REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70 ·

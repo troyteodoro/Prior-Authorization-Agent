@@ -28,8 +28,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-82, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
-| `docs/decisions.md` | D1–D90, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-84, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
+| `docs/decisions.md` | D1–D94, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -87,12 +87,14 @@ deterministic path is usable as a regression oracle *(D62)*.
    no containers, no CI, no vector search. (See D4 for why vector search is out,
    and D70 for the measurement that would let it back in.)
 10. **Never write a real API key into a tracked file.** Placeholder only.
-11. **Ownership is asserted at the git level, not audited by a gate** *(D92)*.
-    The ratification ledger, its gate and its writer were deleted; D74, D80
-    and D81 stay in the log as the record of a programme that ran and was
-    withdrawn. Rebuilding any of it needs an entry reversing D92 —
+11. **Ownership is asserted at the git level, not audited by a gate** *(D92,
+    D94)*. The ratification ledger, its gate, its writer and all six of its
+    task records were deleted; D74, D80, D81 and D92 stay in the log as the
+    record of a programme that ran and was withdrawn. Rebuilding any of it
+    needs an entry reversing D92 —
     `tests/test_check_gates.py::test_ratification_programme_is_gone` is what
-    makes putting the files back a red suite rather than a quiet commit.
+    makes putting the files **or the board records** back a red suite rather
+    than a quiet commit.
 
 ## Commands
 
@@ -359,9 +361,10 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**64 of 65 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~25s, 653 tests across 31 files). IDs run to T-82, but
-numbering is not contiguous — the highest id is not the count.
+**63 of 64 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`, ~25s, 653 tests across 31 files). IDs run to T-84, but
+numbering is not contiguous and D92 and D94 deleted six records between them,
+so the highest id is well above the count.
 
 Delivered: **US-1 through US-7 and US-9**, and **acceptance gates A1–A9 all
 hold**. `python -m pa_agent.cli --patient
@@ -398,15 +401,17 @@ along with every figure downstream of them *(D91)*. `docs/tasks.md` opens with
 `Path to v1`, which states the sequence once with what each step gates — read
 it rather than this paragraph *(D70, D72)*.
 
-**The ratification programme is deleted** *(T-82, D92)*. Ownership of this work
-is a git-level fact and needed no ledger to assert it, so
-`docs/ratifications.json`, `check_ownership.py`, `ratify.py` and the three
-unfinished reading tasks are gone. D74, D80 and D81 stay in the log and T-73,
-T-74 and T-79 stay on the board marked superseded — the log is append-only, ids
-are load-bearing, and a programme that ran and was withdrawn is worth more as a
-record than as a gap.
+**The ratification programme is deleted** *(T-82, D92; finished by T-84, D94)*.
+Ownership of this work is a git-level fact and needed no ledger to assert it, so
+`docs/ratifications.json`, `check_ownership.py`, `ratify.py` and all six of its
+task records are gone. **D74, D80, D81 and D92 stay in the log** — it is
+append-only and a reversal is a new entry, never a deletion — and `Path to v1`'s
+rows 1, 2 and 6 are what the six ids now resolve into. D92 kept T-73, T-74 and
+T-79 as board records while deleting their three siblings; D94 ended that split,
+on the ground that one programme recorded two ways at once costs a reader more
+than it tells them.
 `tests/test_check_gates.py::test_ratification_programme_is_gone` makes putting
-any of it back a red suite rather than a quiet commit.
+any of it back — files or records — a red suite rather than a quiet commit.
 
 **What the deletion costs is the part to carry into a review.** T-78 was the
 pass that would have retired D42's authorship caveat, and deleting it removed

@@ -6877,3 +6877,72 @@ that is finished is not a document, it is a draft.
 
 **Reverses if:** nothing. A future planning document is a new file for new work,
 not this one restored.
+
+## D94 — The three superseded ratification task records are deleted; the path table and this log are the record
+
+**The owner's decision, 2026-09-13.** D92 deleted the ratification programme
+and kept `T-73`, `T-74` and `T-79` on the board as closed records with a
+pointer to it. That half is reversed here. The three records go; `Path to v1`'s
+rows 1, 2 and 6 stay, and this log stays, and together they are the record of
+the programme.
+
+**What is actually being reversed, stated precisely.** D92 rejected "delete
+D74/D80/D81 and the three closed tasks too" as a single bundle, on two grounds:
+it breaks the append-only rule, and it breaks every id that resolves into the
+entries. The first ground is decisive and untouched — **D74, D80, D81 and D92
+stay in this file unedited**, as does every id that resolves into them. The
+second ground is the one that does not survive contact with what D92 itself
+did: it deleted `T-75`, `T-76` and `T-78`, whose ids D74 also names, leaving
+them resolving to nothing. D92 bundled the log and the board together and
+rejected them together; they are two different artifacts with two different
+rules, and this entry separates them.
+
+**Why the split treatment is worse than either uniform one.** The programme is
+currently recorded two ways at once — three of its six tasks as full board
+records, three as ids that resolve nowhere — and nothing distinguishes the two
+sets except which ones happened to have closed before D81 paused the reading.
+A reader encountering `T-74` on the board and `T-75` absent has to reconstruct
+D92 to learn that the difference is not meaningful. One rule, applied to all
+six, is legible; the current arrangement is an artifact of when the pause
+landed.
+
+**What the three records contained that the table does not.** Little. T-73's
+record is the ledger's schema and gate, both deleted. T-74's is a count of ids
+read per tier. T-79's is the holding-area mechanics for tasks that no longer
+exist. Each already carries a superseded banner pointing here. The one thing
+worth keeping — that the programme was put *ahead of* the critical path and
+held its first two positions, which is the sequencing lesson — is in `Path to
+v1`'s prose, not in the records, and stays there.
+
+**What is knowingly accepted.** `T-73`, `T-74` and `T-79` join `T-75`, `T-76`
+and `T-78` as ids that appear in this log and in `Path to v1` but resolve to no
+board record. Six dangling ids instead of three. The board's task count falls
+by three again, in the same direction and for the same reason as D92's fall.
+The owner's reading recorded by T-74 still happened; deleting the record of the
+machinery is not a claim that it did not.
+
+**The claim this does not touch.** D42's authorship caveat. It had no route to
+retirement before this entry and has none after it — `eval/report.md` and
+`README.md` say so in their own text, and that text is still the only thing
+keeping the gap visible. Nothing here makes that better or worse.
+
+**Rejected — restore `T-75`, `T-76` and `T-78` as records instead,** making the
+treatment uniform the other way. That is rebuilding a withdrawn programme's
+paperwork to fix a consistency problem, and CLAUDE.md rule 11 puts any part of
+it coming back behind an entry reversing D92 outright. Uniformity is worth a
+deletion, not a resurrection.
+
+**Rejected — leave it alone as a cosmetic complaint.** It would be, if the
+board were not the artifact a reviewer reads to learn what this project did.
+Three records whose entire content is "this was withdrawn, see D92" cost a
+reader three detours to reach a sentence `Path to v1` already states.
+
+**Pinned, not trusted.** `tests/test_check_gates.py::test_ratification_programme_is_gone`
+gains an assertion that no `T-73`, `T-74` or `T-79` header exists in
+`docs/tasks.md`, alongside its three file assertions. Without it this deletion
+has no runnable exit condition — a grep in a doc is not a check (D10, Article
+VIII) — and a future session restoring the records is a quiet commit rather
+than a red suite. That is D92's own mechanism, extended one artifact further.
+
+**Reverses if:** an outside party needs the programme's task-level detail. This
+log has it, and git has the records at any commit before this one.

@@ -224,7 +224,14 @@ def test_ratification_programme_is_gone(script):
 
     The `EXCLUDED` half matters as much as the `GATES` half: `ratify.py` was
     never a gate, so the only way it comes back without failing
-    `test_every_tracked_script_is_classified` is as an excluded script."""
+    `test_every_tracked_script_is_classified` is as an excluded script.
+
+    D94 extends the same mechanism one artifact further. It deleted the board
+    records of `T-73`, `T-74` and `T-79`, which D92 had kept while deleting
+    their three siblings. A deleted doc section has no natural exit condition —
+    a grep for an absent string is not a check (D10) — so the absence is
+    asserted here, beside the files, rather than left to a future reader's
+    diligence."""
     removed = (
         "docs/ratifications.json",
         "scripts/check_ownership.py",
@@ -237,6 +244,20 @@ def test_ratification_programme_is_gone(script):
         )
     named = {argv[0] for _, argv in script.GATES} | set(script.EXCLUDED)
     assert not named & set(removed), "a removed script is still classified"
+
+    board = (REPO_ROOT / "docs" / "tasks.md").read_text(encoding="utf-8")
+    headers = {
+        line.split("`")[1].split()[-1]
+        for line in board.splitlines()
+        if line.startswith("### `[")
+    }
+    withdrawn = {"T-73", "T-74", "T-75", "T-76", "T-78", "T-79"}
+    back = sorted(headers & withdrawn)
+    assert not back, (
+        f"{back} is back on the board; the ratification programme's task "
+        "records were deleted by D92 and D94, and `Path to v1` plus "
+        "docs/decisions.md are the record"
+    )
 
 
 def test_the_suite_is_the_first_gate(script):
