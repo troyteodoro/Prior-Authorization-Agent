@@ -392,20 +392,31 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 own clock.
 
 Open: **T-81 alone** — a second note per patient, which is what would let the
-direct retrieval-recall figure fall; not on the critical path, since **A1–A9 all
-hold**, and it re-measures T-15's extraction and T-17's verifier recordings
-along with every figure downstream of them *(D91)*. **The ratification
-programme is deleted** *(T-82, D92)*: the owner's intellectual ownership of
-this work is a git-level fact and does not need a ledger to assert it, so the
-ledger, `check_ownership.py`, `ratify.py` and the three unfinished reading
-tasks are gone, while D74, D80 and D81 stay in the log as the record. What it
-costs is stated once and carried in the deliverables rather than a footnote:
-**T-78 was the pass that would have retired D42's authorship caveat, so the
-caveat now has no route to retirement inside this repo** — every figure
-`eval/report.md` and `README.md` quote is measured against labels this repo's
-own agent authored, permanently, and both documents say so in their own text.
-`docs/tasks.md` opens with `Path to v1`, which states the sequence once with
-what each step gates — read it rather than this paragraph *(D70, D72, D92)*.
+direct retrieval-recall figure fall; not on the critical path, since **A1–A9
+all hold**, and it re-measures T-15's extraction and T-17's verifier recordings
+along with every figure downstream of them *(D91)*. `docs/tasks.md` opens with
+`Path to v1`, which states the sequence once with what each step gates — read
+it rather than this paragraph *(D70, D72)*.
+
+**The ratification programme is deleted** *(T-82, D92)*. Ownership of this work
+is a git-level fact and needed no ledger to assert it, so
+`docs/ratifications.json`, `check_ownership.py`, `ratify.py` and the three
+unfinished reading tasks are gone. D74, D80 and D81 stay in the log and T-73,
+T-74 and T-79 stay on the board marked superseded — the log is append-only, ids
+are load-bearing, and a programme that ran and was withdrawn is worth more as a
+record than as a gap.
+`tests/test_check_gates.py::test_ratification_programme_is_gone` makes putting
+any of it back a red suite rather than a quiet commit.
+
+**What the deletion costs is the part to carry into a review.** T-78 was the
+pass that would have retired D42's authorship caveat, and deleting it removed
+the plan, not the obligation: **every figure `eval/report.md` and `README.md`
+quote is measured against labels this repo's own agent authored, with no
+adjudication pass scheduled.** Both documents say exactly that in their own
+text, which is now the only thing keeping the gap visible — the ledger's
+`proposed` count used to be. The fix, if an outside party ever needs this
+checkable, is adjudication of the eval labels by someone who did not write
+them; it is not this ledger rebuilt *(D92)*.
 
 Worth knowing before a review: **REQ-44/REQ-47 are unclaimed on purpose** —
 Amendment 1 reserves the entire decision procedure to Python, so there is no
