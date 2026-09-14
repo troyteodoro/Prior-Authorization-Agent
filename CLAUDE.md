@@ -500,29 +500,40 @@ data/policies/
   value_sets/        obesity_comorbidities.json (SNOMED)
   ncd_100_1_jf.json  the criteria tree, policy_version_id ncd-100.1-jf-v1
 data/patients/
-  bundles/           seven Synthea v4.0.0 bundles + manifest.json — six from
-                     the base seed and one carrying the declared synthetic
-                     BMI-35.0 observation (T-41, D73); E12's patient is
-                     note-free by declaration
-  notes/             six synthesized chart notes + manifest.json
+  manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
+                     not under bundles/**; select_patients.py --verify reads it
+  bundles/           seven Synthea v4.0.0 bundles — six from the base seed and
+                     one carrying the declared synthetic BMI-35.0 observation
+                     (T-41, D73); E12's patient is note-free by declaration
+  notes/             six chart notes, one per <patient_id>/chart_note.txt,
+                     plus notes/manifest.json — a second, separate manifest
   work/              gitignored: the Synthea jar and the full 200-patient run
 eval/
+  run_eval.py        the baseline diff (T-10). Drift in **either** direction
+                     fails; a case that starts passing is adopted with
+                     --update-baseline and a commit (D27)
+  run_agentic_eval.py  the fixed-vs-agentic differential (T-61). Bare is the
+                     gate; --measure spends model calls, --rescore re-derives
+                     the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
   cases.json         the eval set — 15 labeled rows (§6's 14 + NP1; D75)
   baseline.json      what run_eval.py diffs against
-  report.md          T-22/T-28's metrics report — generated, never hand-edited;
-                     build_report.py --verify is the ninth gate (D85)
+  report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it
   extraction/        results.json (T-15) plus adk_results_inline.json and
-                     adk_results_tool_fetch.json — T-63's two, one per mode (D68).
+                     adk_results_tool_fetch.json — T-63's two, one per mode (D68)
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91)
   verifier/          results.json — T-17's 27-claim recording (D78)
-spike/spike_001/     notes/, results.json, run.py — five notes, no patient
+spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
+                     no patient
 scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
 tests/               31 files, 653 tests
-docs/                the five governing docs
+docs/                constitution, spec, stories, tasks, decisions — the five
+                     of the precedence table — plus v1_completion_general_plan.md,
+                     a **stale** planning doc from when the board read 44 of 58
+                     with 8 gates. It governs nothing; the precedence table does
 ```
