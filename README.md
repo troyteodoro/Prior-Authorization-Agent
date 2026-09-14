@@ -406,10 +406,24 @@ became the rate, the account of *why* per `gap_reason`, and the sweep with the
 flat column printed beside it so the claim stays falsifiable. Where the system
 becomes useless moved to A8, above, which is where it belonged.
 
-Still open, and not on the path to the acceptance gates: **a second note per
-patient**, which is what would let the direct retrieval-recall figure fall. It
-costs a new extraction recording and a new verifier recording — both are keyed
-by note content — and therefore most of the repo's committed numbers.
+**One task is open, and it is not on the path to the acceptance gates:** a
+second note per patient, which is what would let the direct retrieval-recall
+figure fall. It costs a new extraction recording and a new verifier recording —
+both are keyed by note content — and therefore most of the repo's committed
+numbers.
+
+**Nothing else is outstanding, and that includes the one thing a reader might
+assume is.** An earlier version of this board carried a ratification programme:
+a tracked ledger mapping every load-bearing ID to a human status, a gate
+enforcing it, and a task to adjudicate the eval labels. It was deleted (D92) —
+ownership of this work is a git-level fact that needed no ledger to assert it,
+and the record of the programme stays in the decision log rather than being
+erased. The part that did not survive the deletion is the part that matters
+here: **the adjudication pass is not deferred, it is unscheduled**, so the
+ground-truth caveat above is permanent unless someone who did not author the
+labels reviews them. A reader should treat every figure in the table as
+measured against self-authored ground truth, with no pending work that would
+change that.
 
 Two requirements are **unclaimed on purpose**: model-performed adjudication
 (REQ-44/REQ-47) is reserved out of v1 because Amendment 1 keeps the entire
