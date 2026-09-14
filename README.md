@@ -43,11 +43,16 @@ This is a proof-of-skill project. Every decision in it is logged, numbered, and
 meant to be defensible in a live review, so the reasoning is as much the
 deliverable as the code.
 
+From a fresh clone, setup is two commands — Python 3.12, exact pins, no API
+key:
+
 ```bash
+python3.12 -m venv venv
+./venv/bin/pip install -r requirements.txt
 ./venv/bin/python -m pa_agent.cli --patient 49092fd9-d5bf-24e2-474b-00041a279a47 --procedure 43775
 ```
 
-That command prints a real determination — seven criterion verdicts, evidence
+The last command prints a real determination — seven criterion verdicts, evidence
 spans that slice back into the source note, a gap list, and per-run cost
 counters — for **zero model calls**, because the default extraction runner
 replays a committed recording.
