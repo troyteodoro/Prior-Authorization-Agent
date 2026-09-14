@@ -105,26 +105,30 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 **No constant in this tree can drive abstention to 1.** Where the system stops being useful is answered under A8, in the README's failure-modes section, in the terms this system actually has.
 
-## Planner recall against the oracle's evidence (REQ-25, D4, D86)
+## Planner recall against the oracle's evidence (REQ-25, D4, D86, D91)
 
 `FixedRetrievalPlanner` reads three stores in a fixed order; `AgenticRetrievalPlanner` lets the model choose what to fetch. Everything downstream is identical and cannot tell which planner ran, which is what makes the differential a comparison (D63). This section asks the question the outcome comparison cannot: **did the model-directed run have the evidence the deterministic one used?**
 
-| Criterion | Cases citing evidence | Covered by the agentic run | Recall |
-|---|---|---|---|
-| `a` | 5 | 5 | 1.000 |
-| `b` | 3 | 3 | 1.000 |
-| `c1` | 4 | 4 | 1.000 |
-| `c2` | 3 | 3 | 1.000 |
-| `c3` | 4 | 4 | 1.000 |
-| `c4` | 3 | 3 | 1.000 |
-| `c5` | 3 | 3 | 1.000 |
-| **all** | **25** | **25** | **1.000** |
+Two figures over one denominator. **Direct** is containment in the bundle the agentic planner *gathered* and handed downstream — what REQ-25 asks for, recorded by T-80. **Cited** is containment in the documents that run's spans *point into* — the bound D86 had to settle for. Read both; the next two paragraphs say which one is carrying information today, and it is not the stronger one.
 
-**What this figure is a bound on.** The recording holds the documents each side's spans point into, not the bundle the planner gathered. A run cannot cite a document it did not gather, so cited ⊆ gathered and this **bounds true retrieval recall from below**: the measured **1.000** therefore establishes 1.000 on the stronger metric too. A figure *below* 1.000 would need T-80's direct measurement to interpret — it could mean the planner skipped the document, or gathered it and produced no citable span.
+| Criterion | Cases citing evidence | Covered (gathered) | Covered (cited) | Recall (direct) | Recall (cited) |
+|---|---|---|---|---|---|
+| `a` | 5 | 5 | 5 | 1.000 | 1.000 |
+| `b` | 3 | 3 | 3 | 1.000 | 1.000 |
+| `c1` | 4 | 4 | 4 | 1.000 | 1.000 |
+| `c2` | 3 | 3 | 3 | 1.000 | 1.000 |
+| `c3` | 4 | 4 | 4 | 1.000 | 1.000 |
+| `c4` | 3 | 3 | 3 | 1.000 | 1.000 |
+| `c5` | 3 | 3 | 3 | 1.000 | 1.000 |
+| **all** | **25** | **25** | **25** | **1.000** | **1.000** |
 
-**It does catch the truncation case.** If the model fetched a bundle but passed a truncated observation list, criterion (a) has nothing to cite, abstains, and its document drops out of the cited set — the exact failure `AgenticRetrievalPlanner`'s own docstring names (D63).
+**The direct figure is 1.000 by construction on this corpus, and that sentence travels with it.** Three facts force it: `data/patients/notes/manifest.json` holds one note per patient; `AgenticRetrievalPlanner.gather` raises rather than returning an empty bundle or an id the store does not serve; and observations, conditions and the value set are re-read from the port, never taken from the tool payload (D66). A run that did not error gathered everything there was. The number is real and it cannot fall — which is the shape D70 already threw out once, so it is reported beside the cited figure rather than in place of it (D91). **T-81** is the corpus change — a second note per patient — that would let it fall.
 
-**D4's reversal condition now reads against a number.** It was set as "measured retrieval recall below 0.85 — a number, not a hunch" and has been unfalsifiable since it was written, because nothing measured retrieval recall and nothing could. Vector search stays rejected on rule 9 and on a six-document corpus; this is the figure that would let it back in on evidence.
+**What the direct figure did settle.** D86 could not tell a skipped document from a gathered one that produced no citable span, and said a below-1.000 result would need this measurement to interpret. It now reads: every patient gathered two documents, and two of the six cite only one. **Those notes reached the criteria and yielded nothing to cite** — gathered and uncitable, never skipped. That is why the cited figure is the one that can still move here.
+
+**Containment at whole-document granularity is containment of the span.** Gathered notes come back from the store by id and are hash-verified, so the bytes the agentic run held are the bytes the oracle sliced. REQ-25's *"contains the span"* is satisfied exactly, not by proxy — the in-process re-run D86 thought it would take is not needed at this granularity.
+
+**D4's reversal condition now reads against a number.** It was set as "measured retrieval recall below 0.85 — a number, not a hunch" and had been unfalsifiable since it was written, because nothing measured retrieval recall and nothing could. Vector search stays rejected on rule 9 and on a six-document corpus; this is the figure that would let it back in on evidence.
 
 ## Cost and latency (A6, Article X)
 

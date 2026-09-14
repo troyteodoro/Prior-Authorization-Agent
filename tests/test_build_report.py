@@ -243,31 +243,21 @@ def test_the_report_says_it_is_generated():
 
 
 # --------------------------------------------------------------------------
-# Planner recall (T-27, REQ-25, D86)
+# Planner recall (T-27, T-80, REQ-25, D86, D91)
 # --------------------------------------------------------------------------
 
 
-def test_a_skipped_document_resolves_below_one(script, tmp_path, monkeypatch):
-    """T-27's exit condition, and the reason the section exists at all.
+def _stubbed_recall(script, tmp_path, monkeypatch, mutate):
+    """Run `_recall_section` against a recording `mutate` has edited.
 
-    A recall figure that reads 1.000 whatever the planner did is the figure D70
-    already threw out once. This drops one document from one patient's agentic
-    side and requires the number to move — if it does not, the section is
-    measuring the oracle against itself.
+    The live corpus cannot produce a miss on either figure — one note per
+    patient, and `AgenticRetrievalPlanner` raises rather than returning less
+    (D91) — so the only way to show the section can see one is to build it.
     """
     recording = json.loads(
         (REPO_ROOT / "eval" / "agentic" / "results.json").read_text(encoding="utf-8")
     )
-    # **Partial**, not total. Emptying the list is caught by any reading of
-    # "contains", including a wrong one — an intersection test would fail it too
-    # and survive undetected. Dropping one of two documents separates them:
-    # containment fails, intersection still succeeds.
-    victim = next(
-        row for row in recording["patients"] if len(row["agentic"]["document_ids"]) > 1
-    )
-    kept = victim["agentic"]["document_ids"][:-1]
-    assert kept, "the fixture patient would cite nothing after the drop"
-    victim["agentic"]["document_ids"] = kept
+    mutate(recording)
 
     stub = tmp_path / "agentic"
     stub.mkdir()
@@ -282,12 +272,93 @@ def test_a_skipped_document_resolves_below_one(script, tmp_path, monkeypatch):
 
     _results, cache = script._run(LocalPolicyStore())
     text = "\n".join(script._recall_section(cache))
-    overall = text.split("| **all**")[1].split("\n")[0]
-    assert "1.000" not in overall, (
-        f"overall recall stayed at 1.000 ({overall.strip()}) after one of a "
+    return text.split("| **all**")[1].split("\n")[0]
+
+
+def test_a_skipped_document_resolves_below_one_on_the_cited_figure(
+    script, tmp_path, monkeypatch
+):
+    """T-27's exit condition, and the reason the section exists at all.
+
+    A recall figure that reads 1.000 whatever the planner did is the figure D70
+    already threw out once. This drops one document from one patient's cited
+    side and requires the number to move — if it does not, the section is
+    measuring the oracle against itself.
+    """
+
+    def mutate(recording):
+        # **Partial**, not total. Emptying the list is caught by any reading of
+        # "contains", including a wrong one — an intersection test would fail it
+        # too and survive undetected. Dropping one of two documents separates
+        # them: containment fails, intersection still succeeds.
+        victim = next(
+            row
+            for row in recording["patients"]
+            if len(row["agentic"]["document_ids"]) > 1
+        )
+        kept = victim["agentic"]["document_ids"][:-1]
+        assert kept, "the fixture patient would cite nothing after the drop"
+        victim["agentic"]["document_ids"] = kept
+
+    overall = _stubbed_recall(script, tmp_path, monkeypatch, mutate)
+    cited = overall.rsplit("|", 2)[1]
+    assert "1.000" not in cited, (
+        f"cited recall stayed at 1.000 ({overall.strip()}) after one of a "
         "patient's two cited documents was dropped. The section cannot see a "
         "skipped document, which is the whole of T-27's exit — and a recall "
         "figure that is 1.000 by construction is what D70 already threw out."
+    )
+
+
+def test_a_skipped_document_resolves_below_one_on_the_direct_figure(
+    script, tmp_path, monkeypatch
+):
+    """T-80's half of the same guard (D91).
+
+    The direct figure cannot fall on this corpus, so nothing a real run does
+    can exercise the comparison behind it. Without this, `_recall_section`
+    could compute the direct column as a constant and every gate would agree.
+    """
+
+    def mutate(recording):
+        victim = next(
+            row
+            for row in recording["patients"]
+            if len(row["agentic"]["gathered"]["document_ids"]) > 1
+        )
+        kept = victim["agentic"]["gathered"]["document_ids"][:-1]
+        assert kept, "the fixture patient would have gathered nothing after the drop"
+        victim["agentic"]["gathered"]["document_ids"] = kept
+
+    overall = _stubbed_recall(script, tmp_path, monkeypatch, mutate)
+    direct = overall.rsplit("|", 3)[1]
+    assert "1.000" not in direct, (
+        f"direct recall stayed at 1.000 ({overall.strip()}) after one of a "
+        "patient's two gathered documents was dropped. The column is then a "
+        "constant, not a measurement — D70's figure with T-80's label on it."
+    )
+
+
+def test_the_two_figures_are_not_the_same_computation(script, tmp_path, monkeypatch):
+    """They agree on this corpus, which is exactly why they could silently be
+    one column printed twice. Dropping a document from `gathered` alone must
+    move the direct figure and leave the cited one at 1.000."""
+
+    def mutate(recording):
+        victim = next(
+            row
+            for row in recording["patients"]
+            if len(row["agentic"]["gathered"]["document_ids"]) > 1
+        )
+        victim["agentic"]["gathered"]["document_ids"] = victim["agentic"][
+            "gathered"
+        ]["document_ids"][:-1]
+
+    overall = _stubbed_recall(script, tmp_path, monkeypatch, mutate)
+    direct, cited = overall.rsplit("|", 3)[1], overall.rsplit("|", 2)[1]
+    assert "1.000" not in direct and "1.000" in cited, (
+        f"the two columns moved together ({overall.strip()}) when only the "
+        "gathered set was touched. One of them is reading the other's data."
     )
 
 
@@ -299,36 +370,69 @@ def test_recall_reads_the_agentic_side_not_the_oracles(script):
     source = SCRIPT.read_text(encoding="utf-8")
     recall = source[source.index("def _recall_section") : source.index("def _cost_section")]
     assert 'row["agentic"]["document_ids"]' in recall
-    assert 'row["oracle"]["document_ids"]' not in recall, (
-        "the recall section reads the oracle's own cited documents; that figure "
-        "is 1.000 by construction (D70, D86)"
+    assert 'row["agentic"]["gathered"]["document_ids"]' in recall
+    assert 'row["oracle"]' not in recall, (
+        "the recall section reads the oracle's own recorded documents; that "
+        "figure is 1.000 by construction (D70, D86). The oracle side of the "
+        "denominator is re-derived in-process from the cache, not read back "
+        "out of the recording it is supposed to be compared against."
     )
 
 
 def test_recall_requires_every_cited_document_not_merely_one():
     """Pinned by parsing, because no behaviour can distinguish the two today.
 
-    `cited <= gathered` and `bool(cited & gathered)` differ only when a criterion
-    cites two or more documents, and none currently does — criterion (a) cites
-    the bundle, the c-criteria cite the note, one document each. The weaker
-    reading is therefore an *equivalent* mutant on this corpus rather than a
-    surviving one, and it stops being equivalent the moment a criterion cites two
-    sources. That is a real possibility — reconciliation already reads two — so
-    the stricter semantics is pinned here rather than left to a future chart to
-    discover. Same move as D65 and D67: when a behavioural test cannot catch a
-    mutation, parse instead.
+    `wanted <= gathered` and `bool(wanted & gathered)` differ only when a
+    criterion cites two or more documents, and none currently does — criterion
+    (a) cites the bundle, the c-criteria cite the note, one document each. The
+    weaker reading is therefore an *equivalent* mutant on this corpus rather
+    than a surviving one, and it stops being equivalent the moment a criterion
+    cites two sources. That is a real possibility — reconciliation already
+    reads two — so the stricter semantics is pinned here rather than left to a
+    future chart to discover. Same move as D65 and D67: when a behavioural test
+    cannot catch a mutation, parse instead.
+
+    Both columns are pinned, not just one. They are the same predicate over
+    different sets, and a weakened direct column is the one no corpus-driven
+    test could ever reach (D91).
     """
     source = SCRIPT.read_text(encoding="utf-8")
     recall = source[source.index("def _recall_section") : source.index("def _cost_section")]
-    assert "cited <= gathered" in recall, (
-        "recall must require *every* document the oracle cited to be present; an "
-        "intersection test passes a run that found one of two sources"
+    assert "wanted <= gathered" in recall, (
+        "the direct figure must require *every* document the oracle cited to "
+        "have been gathered; an intersection test passes a run that found one "
+        "of two sources"
+    )
+    assert "wanted <= cited" in recall, (
+        "the cited figure must require *every* document the oracle cited to be "
+        "present; an intersection test passes a run that found one of two"
     )
 
 
-def test_the_recall_section_names_what_it_bounds():
-    """D86: the figure is a lower bound on gathered-document recall, and a
-    reader who quotes it without that sentence is quoting something else."""
+def test_the_recall_section_names_what_the_direct_figure_cannot_do():
+    """D91, and D85's rule about where a caveat lives.
+
+    The direct figure is 1.000 by construction on this corpus. A reader who
+    quotes it without that sentence is quoting something else, and a caveat
+    that lives in a decisions entry is a caveat that does not travel.
+    """
     text = REPORT.read_text(encoding="utf-8")
-    assert "bounds true retrieval recall from below" in text
+    assert "1.000 by construction on this corpus" in text
+    assert "one note per patient" in text
+    assert "T-81" in text, (
+        "the report reports a figure that cannot fall without naming the task "
+        "that would let it"
+    )
     assert "D4's reversal condition now reads against a number" in text
+
+
+def test_the_recall_section_reports_both_figures():
+    """Reporting the direct figure alone replaces an informative number with an
+    uninformative one, which is the rewrite D91 made to T-80's exit."""
+    text = REPORT.read_text(encoding="utf-8")
+    # Scoped to the recall section: the precision table also opens `| Criterion |`.
+    section = text[text.index("## Planner recall") : text.index("## Cost and latency")]
+    header = next(
+        line for line in section.splitlines() if line.startswith("| Criterion |")
+    )
+    assert "Recall (direct)" in header and "Recall (cited)" in header

@@ -30,6 +30,21 @@ either.
 
 It also means `--measure` spends calls on the retrieval loop only.
 
+### What the recording holds, after T-80
+
+Per patient and per side: the outcome, the seven verdicts, the documents the
+spans **cited**, and — since T-80 — the bundle the planner **gathered** and
+handed downstream, with the note, observation, condition and value-set counts
+that went with it. The agentic side also carries the planner's tool calls in the
+order the store saw them.
+
+The two document sets are not the same question. Cited is what D86 had to settle
+for and it is the figure that can still fall on this corpus. Gathered is what
+REQ-25 actually asks for, and on a one-note-per-patient corpus it cannot fall at
+all — `AgenticRetrievalPlanner` raises rather than returning less, and the
+structured facts are re-read from the port (D66). `eval/report.md` reports both
+and says which one is carrying information (D91).
+
 ### What a disagreement means
 
 Nothing here is scored against ground truth (D63). REQ-50 compares the agentic
@@ -66,7 +81,7 @@ from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
 from pa_agent.verifier import RecordedVerifierRunner  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 from pa_agent.stores.policy import LocalPolicyStore  # noqa: E402
-from pa_agent.workflow import run_criteria_workflow  # noqa: E402
+from pa_agent.workflow import WorkflowRun, run_criteria_workflow  # noqa: E402
 
 OUT_DIR = REPO_ROOT / "eval" / "agentic"
 OUT_PATH = OUT_DIR / "results.json"
@@ -248,7 +263,13 @@ def _recorded_verifier():
     )
 
 
-def _run_one(policy_store, patient_store, runner, planner, patient_id, verifier) -> Determination:
+def _run_one(policy_store, patient_store, runner, planner, patient_id, verifier) -> WorkflowRun:
+    """The whole run, not just its determination (T-80, D91).
+
+    `WorkflowRun.state` is what carries the evidence the planner actually handed
+    downstream. A determination carries what was *cited*, which is the weaker
+    thing D86 had to settle for.
+    """
     return run_criteria_workflow(
         policy_store=policy_store,
         patient_store=patient_store,
@@ -258,7 +279,54 @@ def _run_one(policy_store, patient_store, runner, planner, patient_id, verifier)
         as_of=AS_OF,
         planner=planner,
         verifier=verifier,
-    ).determination
+    )
+
+
+def _gathered(run: WorkflowRun) -> dict:
+    """What the planner passed downstream, per side (T-80, REQ-25, D91).
+
+    The **union** of the notes' ids and the ids the gathered observations' and
+    conditions' spans name — not the notes alone. Criteria (a) and (b) cite the
+    FHIR bundle, which reaches them as `Observation` and `Condition` rows rather
+    than as a `Document`, so a notes-only set would report criterion (a)'s
+    document as un-gathered on both sides and the recall figure would read 0.
+
+    The counts are beside the ids because they are D66's invariant made
+    observable: both planners re-read observations, conditions and the value set
+    from the port, so these four numbers are identical on both sides of every
+    patient. That is what makes `MAX_ROWS` a cost control rather than a second
+    filter free to disagree with criterion (a), and until now only a unit test
+    said so.
+    """
+    state = run.state
+    return {
+        "document_ids": sorted(
+            {note.document_id for note in state.notes}
+            | {o.span.document_id for o in state.observations if o.span}
+            | {c.span.document_id for c in state.conditions if c.span}
+        ),
+        "notes": len(state.notes),
+        "observations": len(state.observations),
+        "conditions": len(state.conditions),
+        "value_set": len(state.value_set),
+    }
+
+
+def _planner_tool_calls(run: WorkflowRun, planner_name: str) -> list[str]:
+    """The store reads the planner made, in order (T-80, D91).
+
+    `[]` for the fixed planner is the truthful record rather than a gap: it
+    returns `trace=None` because it made no model-directed call at all. Filtering
+    by `runner_name` keeps the extraction traces out — those are the same on both
+    sides by construction and counting them here would make the oracle look like
+    it had planned something.
+    """
+    return [
+        call.name
+        for trace in run.traces
+        if trace.runner_name == planner_name
+        for call in trace.tool_calls
+    ]
 
 
 def measure(limit: int | None = None) -> int:
@@ -297,10 +365,11 @@ def measure(limit: int | None = None) -> int:
         label = "+".join(entry["cases"]) or patient_id[:8]
         print(f"  [{index}/{len(patients)}] {label}", flush=True)
 
-        oracle = _run_one(
-            policy_store, patient_store, runner, FixedRetrievalPlanner(),
-            patient_id, verifier,
+        fixed = FixedRetrievalPlanner()
+        oracle_run = _run_one(
+            policy_store, patient_store, runner, fixed, patient_id, verifier,
         )
+        oracle = oracle_run.determination
         planner = AgenticRetrievalPlanner(client=client)
 
         row: dict[str, Any] = {
@@ -313,6 +382,11 @@ def measure(limit: int | None = None) -> int:
                 "document_ids": sorted(
                     {s.document_id for r in oracle.criterion_results for s in r.spans}
                 ),
+                # What the planner handed downstream, beside what was cited.
+                # Free on this side — the oracle's only model call is a replayed
+                # extraction — so --rescore re-derives it without spending.
+                "gathered": _gathered(oracle_run),
+                "planner_tool_calls": _planner_tool_calls(oracle_run, fixed.name),
                 # The oracle's cost, for the comparison that turned out to be the
                 # finding. Free to compute — its only model call is the replayed
                 # extraction — and recomputable by --rescore without spending.
@@ -323,9 +397,10 @@ def measure(limit: int | None = None) -> int:
             },
         }
         try:
-            agentic = _run_one(
+            agentic_run = _run_one(
                 policy_store, patient_store, runner, planner, patient_id, verifier
             )
+            agentic = agentic_run.determination
         except RetrievalError as exc:
             # REQ-28: a fault is counted separately and never folded into a
             # finding. A run that errored has no verdicts to compare.
@@ -353,6 +428,11 @@ def measure(limit: int | None = None) -> int:
             "document_ids": sorted(
                 {s.document_id for r in agentic.criterion_results for s in r.spans}
             ),
+            # T-80's deliverable: what reached the criteria, not only what a span
+            # happened to point at. This is the half that cost model calls, so
+            # --rescore leaves it exactly as measured (D91).
+            "gathered": _gathered(agentic_run),
+            "planner_tool_calls": _planner_tool_calls(agentic_run, planner.name),
             "spans_valid": valid,
             "spans_total": total,
             "model_calls": agentic.model_calls,
@@ -525,6 +605,7 @@ def verify(report_only: bool = False) -> int:
                     f"{row['patient_id']}: {row['agentic']['spans_total'] - row['agentic']['spans_valid']} "
                     "span(s) did not slice back (Art. III)"
                 )
+        problems.extend(_gathered_problems(row))
 
     if problems:
         print("  recording is not usable as a measurement:")
@@ -533,8 +614,65 @@ def verify(report_only: bool = False) -> int:
         print()
         return EXIT_HARNESS_BROKEN
 
-    print("  measurement present, internally coherent, and every span slices back.\n")
+    print(
+        "  measurement present, internally coherent, every span slices back, and\n"
+        "  both sides record the bundle the planner gathered (T-80, D91).\n"
+    )
     return EXIT_OK
+
+
+def _gathered_problems(row: dict) -> list[str]:
+    """T-80's three checks on one patient's row (D91).
+
+    Split out of `verify` because each is a separate claim about the recording
+    and a reader should be able to see which one failed without reading a
+    conjunction.
+    """
+    patient_id = row["patient_id"]
+    problems: list[str] = []
+    oracle = (row.get("oracle") or {}).get("gathered")
+    agentic = (row.get("agentic") or {}).get("gathered") if row.get("agentic") else None
+
+    if not oracle or not oracle.get("document_ids"):
+        problems.append(
+            f"{patient_id}: the oracle side records no gathered bundle. REQ-25 is "
+            "about what the planner gathered, and a recording that only holds "
+            "what was cited is the recording D86 had to settle for."
+        )
+    if row.get("agentic") is None:
+        return problems
+    if not agentic or not agentic.get("document_ids"):
+        problems.append(
+            f"{patient_id}: the agentic side records no gathered bundle, but it "
+            "produced a determination — so something reached the criteria and "
+            "the recording does not say what."
+        )
+        return problems
+
+    # A run cannot cite what it did not gather. If this fails the instrument is
+    # wrong, not the model: `_gathered` has stopped seeing a document the spans
+    # point into, and the recall figure built on it would be understated.
+    uncited = set(row["agentic"]["document_ids"]) - set(agentic["document_ids"])
+    if uncited:
+        problems.append(
+            f"{patient_id}: cited {sorted(uncited)} without gathering it. "
+            "cited ⊆ gathered is the containment D86's whole argument rests on; "
+            "a violation is an instrumentation bug, not a finding."
+        )
+
+    # D66, recorded rather than asserted: both planners re-read observations,
+    # conditions and the value set from the port, so these are the same numbers.
+    # A divergence means the tool payload has become the evidence path.
+    for field_name in ("observations", "conditions", "value_set"):
+        if oracle and oracle.get(field_name) != agentic.get(field_name):
+            problems.append(
+                f"{patient_id}: {field_name} reached the criteria as "
+                f"{agentic.get(field_name)} on the agentic side and "
+                f"{oracle.get(field_name)} on the oracle's. Both planners read "
+                "that from the port; a difference means the model's tool payload "
+                "has become the evidence path (D66)."
+            )
+    return problems
 
 
 def rescore() -> int:
@@ -560,18 +698,27 @@ def rescore() -> int:
     verifier = _recorded_verifier()
 
     for row in payload["patients"]:
-        oracle = _run_one(
-            policy_store, patient_store, runner, FixedRetrievalPlanner(),
-            row["patient_id"], verifier,
+        fixed = FixedRetrievalPlanner()
+        oracle_run = _run_one(
+            policy_store, patient_store, runner, fixed, row["patient_id"], verifier,
         )
+        oracle = oracle_run.determination
         row["oracle"].update(
             {
                 "model_calls": oracle.model_calls,
                 "input_tokens": oracle.total_input_tokens,
                 "output_tokens": oracle.total_output_tokens,
                 "wall_time_ms": round(oracle.total_wall_time_ms, 1),
+                # Re-derived, not carried forward: the oracle side is free, so a
+                # stale `gathered` sitting beside a fresh cost figure is a shape
+                # this function exists to prevent.
+                "gathered": _gathered(oracle_run),
+                "planner_tool_calls": _planner_tool_calls(oracle_run, fixed.name),
             }
         )
+        # The agentic side is deliberately untouched. It is the half that spent
+        # model calls, and re-deriving it here would be a second measurement
+        # wearing a free run's clothes (D45, D91).
         if row.get("agentic"):
             # The differential is recomputed too, so a change to the oracle can
             # never leave a stale comparison sitting beside a fresh cost figure.
@@ -614,6 +761,25 @@ def report(payload: dict) -> None:
             f"{k}: {v['oracle']}->{v['agentic']}" for k, v in sorted(diffs.items())
         ) or "-"
         print(f"  {label:<{width}}  {oracle:<22}  {agentic:<22}  {detail}")
+
+    print()
+    print(f"  {'case':<{width}}  gathered (agentic)  cited  obs/cond  planner tool calls")
+    for row in payload["patients"]:
+        label = "+".join(row["cases"]) or row["patient_id"][:8]
+        if row.get("agentic") is None:
+            print(f"  {label:<{width}}  —")
+            continue
+        gathered = row["agentic"].get("gathered") or {}
+        calls = row["agentic"].get("planner_tool_calls") or []
+        # `?` rather than a crash on a pre-T-80 recording: this is the reporting
+        # half, and `verify` is where a missing bundle is an error with a name.
+        counts = f"{gathered.get('observations', '?')}/{gathered.get('conditions', '?')}"
+        print(
+            f"  {label:<{width}}  {len(gathered.get('document_ids', [])):<18}"
+            f"  {len(row['agentic']['document_ids']):<5}"
+            f"  {counts:<8}"
+            f"  {len(calls)}: {', '.join(calls)}"
+        )
 
     print()
     for key, value in (payload.get("aggregate") or {}).items():

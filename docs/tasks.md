@@ -16,8 +16,8 @@ answers the second question, once.
 
 ## Path to v1
 
-Sixty-six tasks are on this board — IDs run to T-80 but numbering is not
-contiguous, so the highest id is not the count. **62 are closed, 1 is open,
+Sixty-seven tasks are on this board — IDs run to T-81 but numbering is not
+contiguous, so the highest id is not the count. **63 are closed, 1 is open,
 and 3 are deferred under review** *(D81)*. **Nothing open sits on the critical
 path: acceptance gates A1–A9 all hold.** This is the path as it ran. *(D70,
 extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
@@ -40,7 +40,7 @@ Off the path. Real work, nothing waiting on it:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
-| `T-80` | spends model calls; T-27's figure is sufficient while it reads 1.000 | any time, blocks nothing *(D86)* |
+| `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | any time, blocks nothing *(D91)* |
 
 **Why the ratification tasks are no longer here.** D74 converted D42's
 admission — the eval ground truth is authored by the agent building the system
@@ -1598,25 +1598,84 @@ unchanged (T-30, D77).
 
 Real work with a runnable exit that delivers no user outcome.
 
-### `[ ] T-80` Record what the planner gathered, not only what it cited
+### `[ ] T-81` A second note per patient, so retrieval recall can fall
+**REQ:** 25 · **Depends:** T-80 · **Discovered in:** D91 ·
+**Status:** not sequenced; **spends model calls across most of the repo's
+recordings**, so it is in no gate
+**Exit:** every patient in `data/patients/notes/manifest.json` has at least two
+notes, and `eval/report.md`'s direct planner-recall figure is measured against a
+corpus where a skipped note is reachable — the construction caveat D91 put in
+the report comes out because it has stopped being true.
+
+**Why the direct figure needs this to mean anything.** D91 measured it and it
+reads 1.000 by construction: one note per patient, `AgenticRetrievalPlanner`
+raises rather than returning an empty bundle, and observations and conditions
+are re-read from the port (D66). A run that does not error gathered everything
+there was. The number is real and it cannot fall, which is the shape D70 threw
+out — so the *cited* figure beside it is the one carrying information today.
+
+**Why it is not folded into T-80, and what it actually costs.** Notes are keyed
+by content. A new note is a note `eval/extraction/results.json` has never seen,
+so `RecordedExtractionRunner` raises and T-15's recording must be re-measured;
+the new events move criterion verdicts, so the claim digests move and T-17's
+verifier recording must be re-measured too. `eval/cases.json`'s labels,
+`eval/baseline.json`, `eval/manifests/` and every figure in `eval/report.md`
+follow. That is most of the repo's committed numbers, on a new corpus — a task
+with its own budget *(working rule 6, D45)*.
+
+### `[x] T-80` Record what the planner gathered, not only what it cited
 **REQ:** 25 · **Depends:** T-61, T-27 · **Discovered in:** D86 ·
-**Status:** off the critical path; **spends model calls**, so it is in no gate
+**Rewritten and closed by:** D91
+**Status:** **closed** (D91) — the recording carries `gathered` on both sides,
+`eval/report.md` reports the direct figure beside the cited one, and the direct
+figure is **1.000 by construction** on this corpus, which the report says in its
+own text
 **Exit:** `eval/agentic/results.json` carries, per patient and per side, the
-document ids the planner *gathered* plus the observation and condition counts it
-passed downstream — beside what it cited — and `eval/report.md`'s recall section
-reports the direct figure rather than the bound, with `--verify` covering it.
+document ids the planner *gathered* plus the note, observation, condition and
+value-set counts it passed downstream — beside what it cited — and
+`eval/report.md`'s recall section reports the direct figure **beside** the
+bound, naming inline what the direct figure cannot do on this corpus, with
+`python eval/run_agentic_eval.py` and `python eval/build_report.py --verify`
+both returning zero over it.
+
+*Was "…reports the direct figure **rather than** the bound".* D91 rewrote it:
+reporting the direct figure alone replaces an informative number with an
+uninformative one, because on a one-note-per-patient corpus the direct figure
+cannot fall and the cited one can.
 
 T-27 measures recall over **cited** documents because that is what T-61's
 recording holds. A run cannot cite a document it did not gather, so cited ⊆
 gathered and the figure bounds true recall from below — which is why a measured
-1.000 settles it today (D86). It stops being sufficient the moment the figure
-falls below 1.000: a miss could mean the planner skipped the document, or
-gathered it and produced no citable span, and those have different causes and
-different fixes.
+1.000 settles it today (D86). D86 left one question open, and answering it is
+what this task delivered: a below-1.000 cited figure could mean the planner
+skipped the document, or gathered it and produced no citable span. **On this
+corpus it is always the second**, and the recording now shows it — two patients
+cite nothing from their note on either side, and the `gathered` object is what
+says the note reached the criteria anyway.
 
-Requires a new agentic measurement against the pinned model, which is a model
+Required a new agentic measurement against the pinned model, which is a model
 call — hence a task of its own rather than an addition to T-27 *(working rule 6,
-D45: a changed recording is a new measurement, never a re-run)*.
+D45: a changed recording is a new measurement, never a re-run)*. **T-81** is the
+corpus change that would let the direct figure fall.
+
+**The measurement also found a stale half.** `--rescore` had not been run since
+T-17 landed, so the recording's oracle cost figures described a path with no
+verifier in it and D64's 13.9x input-token ratio was against that denominator.
+Re-measured with Article V's verifier on both sides it reads **4.3x** — nothing
+about retrieval changed, the shared replayed cost grew. The delta is the figure
+that does not move: **24 model calls and 84,925 input tokens** the fixed planner
+never spent. D91 carries it, and README and CLAUDE.md quote the delta beside the
+ratio.
+
+Mutations, all caught: `_gathered` reduced to the notes alone (the document
+criterion (a) cites disappears, and recall would read 0 on a working system);
+each of `verify`'s three checks deleted in turn — the missing bundle, cited ⊄
+gathered, and the two sides disagreeing on what the port served; the planner log
+losing its `runner_name` filter so the extraction's tool calls leak in;
+`--rescore` re-deriving the agentic side it must never touch; the report's direct
+column reading the cited set; and containment weakened to intersection on each
+column. The last two and `--rescore`'s are pinned by parsing — no behaviour this
+corpus can produce distinguishes them (D65, D67's move).
 
 ### `[x] T-79` Pause the ratification programme in a holding area
 **REQ:** none — board hygiene · **Discovered in:** the owner's instruction to

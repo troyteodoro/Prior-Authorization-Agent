@@ -104,7 +104,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 11 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (673 tests, ~18s)
+./venv/bin/python -m pytest -q                  # the suite alone (683 tests, ~18s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -249,6 +249,16 @@ passing**, because the tests are written in terms of the thing that broke.
   the endpoint — on AI Studio `output_schema` + `tools` becomes an injected
   `SetModelResponseTool` *(D62, measured in D71)*. The ADK path has its own numbers
   now and D45's still may not be quoted for it.
+- **A recording's free half drifts, and only `--rescore` finds out** *(D91)*.
+  `eval/agentic/results.json`'s oracle columns are re-derivable for nothing, so
+  nothing re-derives them — they sat two tasks stale, describing a path with no
+  verifier in it, while every gate stayed green because `verify()` checks the
+  recording's internal coherence and not its agreement with today's code. The
+  visible symptom was a cost *ratio*: D64's 13.9x became 4.3x with no change to
+  retrieval, because Article V's verifier entered the shared denominator.
+  **Quote the delta beside the ratio** — 24 model calls and 84,925 input tokens
+  the fixed planner never spent — because the delta is the figure that does not
+  move when the denominator does.
 - **Never make a gate call a model** *(D45)*. Measurement scripts spend the
   calls; `pytest` re-reads the recording, re-hashes every note, re-validates
   every span and checks the recorded model is the pin.
@@ -353,8 +363,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**62 of 66 tasks closed, 1 open, 3 deferred under review. All 11 gates green**
-(`check_gates.py`, ~25s, 673 tests across 33 files). IDs run to T-80, but
+**63 of 67 tasks closed, 1 open, 3 deferred under review. All 11 gates green**
+(`check_gates.py`, ~25s, 683 tests across 33 files). IDs run to T-81, but
 numbering is not contiguous — the highest id is not the count.
 
 Delivered: **US-1 through US-7 and US-9**, and **acceptance gates A1–A9 all
@@ -385,8 +395,10 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 36.1s across nine determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **T-80 alone** — a direct measurement of retrieval recall that spends
-model calls, not on the critical path, since **A1–A9 all hold**. **The ratification programme is paused** *(T-79,
+Open: **T-81 alone** — a second note per patient, which is what would let the
+direct retrieval-recall figure fall; not on the critical path, since **A1–A9 all
+hold**, and it re-measures T-15's extraction and T-17's verifier recordings
+along with every figure downstream of them *(D91)*. **The ratification programme is paused** *(T-79,
 D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
 suspended them pending a review of whether the programme continues, and they
 sit verbatim in the board's *Deferred — under review* section. What closed
@@ -448,14 +460,23 @@ satisfiable *(D63, D70)*.
   grades** *(D19, D42)*. Structural mitigations are in place and a perfect score
   still means only that the approach does not obviously fail. Do not quote a
   number from this repo without that caveat.
-- **The measured result so far** *(D64, D66)*: model-directed retrieval agrees
-  with the deterministic oracle on 6/6 outcomes and 42/42 criteria, 80/80 spans
-  valid, zero errors — at 13.9x the input tokens. Read the aggregate and the
-  spread, never one patient's ratio. **Planner recall is 1.000 over 25 citing
-  cases** *(T-27, D86)*, measured over *cited* documents: a run cannot cite what
-  it did not gather, so the figure bounds gathered-document recall from below and
-  a measured 1.000 settles it. Below 1.000 it stops being sufficient, and T-80 is
-  the direct measurement.
+- **The measured result so far** *(D64, D66, re-measured in D91)*:
+  model-directed retrieval agrees with the deterministic oracle on 6/6 outcomes
+  and 42/42 criteria, 80/80 spans valid, zero errors — for **24 model calls and
+  84,925 input tokens** the fixed planner did not spend, 4.3x its end-to-end
+  input tokens. **Quote the delta beside the ratio**: the fixed planner makes no
+  model call, so the ratio's denominator is the replayed extraction-plus-verifier
+  cost shared by both sides, and it moved from D64's 13.9x to 4.3x when Article
+  V's verifier entered that denominator — the delta is the figure that does not
+  move *(D91)*. Read the aggregate and the spread, never one patient's ratio.
+- **Planner recall is 1.000 over 25 citing cases, on both the cited and the
+  gathered figure** *(T-27/T-80, D86/D91)*. The gathered figure is REQ-25's and
+  it is **1.000 by construction** — one note per patient, a planner that raises
+  rather than returning less, structured facts re-read from the port — so the
+  *cited* figure beside it is the one that can still move. It settled D86's open
+  question: every patient gathered two documents and two cite only one, so a
+  non-cited document here was **gathered and uncitable, never skipped**. T-81
+  (a second note per patient) is what would let the direct figure fall.
 
 ## Repo layout
 
@@ -487,14 +508,15 @@ eval/
   manifests/         T-06's ground truth — the system under test never reads it
   extraction/        results.json (T-15) plus adk_results_inline.json and
                      adk_results_tool_fetch.json — T-63's two, one per mode (D68).
-  agentic/           results.json — T-61's recording
+  agentic/           results.json — T-61's recording, carrying since T-80
+                     the bundle each side *gathered* beside what it cited (D91)
   verifier/          results.json — T-17's 27-claim recording (D78)
 spike/spike_001/     notes/, results.json, run.py — five notes, no patient
 scripts/             check_gates, check_env, check_skeleton, check_ownership,
                      check_req_coverage, ratify, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               33 files, 673 tests
+tests/               33 files, 683 tests
 docs/                the five governing docs plus ratifications.json — D74's
                      ledger, statuses beyond `proposed` are the owner's edits only
 ```

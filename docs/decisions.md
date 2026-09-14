@@ -6603,3 +6603,163 @@ planner.
 fetched, one unreachable — at which point "nothing was gathered" stops
 describing the fault and the all-seven rule needs re-deriving. Nothing in
 `RetrievalResult` expresses partial success today, deliberately.
+
+## D91 — The gathered bundle is recorded, and on a one-note corpus the direct figure cannot fall
+
+**Context.** REQ-25 asks for recall over the evidence the agentic planner
+*gathered*. D86 could not measure that — `eval/agentic/results.json` records the
+documents each side's spans point **into**, not the bundle handed downstream —
+so T-27 closed on cited documents, with the containment argument that makes the
+weak figure sufficient while it reads 1.000, and registered **T-80** to make the
+measurement direct.
+
+D86 also left a question open, and it is the reason T-80 exists: a below-1.000
+cited figure could mean the planner **skipped** the document, or **gathered it
+and produced no citable span**. Different causes, different fixes, and nothing
+in the repo could tell them apart.
+
+### The finding, which reshapes the task before any code
+
+**On this corpus the direct figure is 1.000 by construction** — the shape D70
+threw out. Three facts force it:
+
+1. `data/patients/notes/manifest.json` holds **one note per patient**: six
+   notes, six patients.
+2. `AgenticRetrievalPlanner.gather` raises `RetrievalError` on an empty note
+   list and on an id the store does not serve. A run that does not error
+   gathered exactly that one note — there is no third outcome.
+3. `gather()` re-reads observations, conditions and the value set **from the
+   port**, never from the tool payload (D66). Every `Observation` and
+   `Condition` carries a span naming the patient's FHIR bundle, so the bundle is
+   in the gathered set unconditionally, on both sides.
+
+Every oracle span in the recording points at one of exactly two documents: the
+patient's single chart note, or their bundle. Both are in the agentic run's
+gathered set for any non-errored run. Gathered-recall cannot fall, whatever the
+model does.
+
+T-80's exit sentence therefore promises a discriminating number the corpus
+cannot produce. Rewriting it is a design decision and this entry is where it is
+recorded (working rule 5).
+
+### What the instrumentation still delivers, which is why it is built anyway
+
+- **It answers D86's open question, permanently for this corpus.** A document
+  the agentic run failed to cite was *gathered and uncitable*, never skipped.
+  Two patients — `49092fd9` and `bc6748d3` — cite nothing from their note on
+  either side today; the recording is what shows the note reached the criteria
+  regardless.
+- **It records D66's invariant instead of asserting it.** The observation and
+  condition counts passed downstream are identical on both sides, in every
+  patient, because they are the same port read. That is the property that makes
+  `MAX_ROWS` a cost control rather than a quiet second filter, and until now
+  only unit tests said so.
+- **It upgrades REQ-25's "contains the span" from proxy to exact.** Gathered
+  notes are store-supplied and hash-verified, so containing the document *is*
+  containing the byte range. D86 called span-level containment the form that
+  "needs an in-process re-run"; at whole-document granularity it does not.
+
+### Chosen — record the gathered bundle per side, and report both figures
+
+`eval/agentic/results.json` gains, on each side of each patient, a `gathered`
+object: the document ids the planner passed downstream, plus the note,
+observation, condition and value-set counts. The agentic side also carries
+`planner_tool_calls`, the names in the order the store saw them — the oracle's
+is `[]`, which is the truthful record rather than a gap: `FixedRetrievalPlanner`
+returns `trace=None` because it made no call.
+
+The gathered document set is the **union** of the notes' ids and the ids the
+gathered observations' and conditions' spans name. Notes alone would be wrong:
+criteria (a) and (b) cite the bundle, which reaches them as observations and
+conditions rather than as a `Document`, so a notes-only set would make criterion
+(a)'s document read un-gathered on both sides.
+
+`eval/report.md` reports the direct figure **beside** the cited one, over the
+same denominator, and states inline that the direct figure cannot fall on this
+corpus and why. D85's rule: a figure whose caveat lives elsewhere is a figure
+quoted without it. The cited figure is the one carrying information today, and
+the report says that in its own text rather than leaving a reader to infer it
+from a column of 1.000s.
+
+**Rejected — reporting the direct figure alone.** It is what T-80's exit asked
+for and it would replace an informative number with an uninformative one. The
+cited figure can fall on this corpus — a note gathered but never cited drops out
+of the cited set — and the direct one cannot. Dropping it to report the
+"stronger" metric would be a regression dressed as an upgrade.
+
+**Rejected — shelving T-80 until the corpus can discriminate.** The
+instrumentation resolves D86's open question and records D66's invariant whether
+or not the number moves, and both of those are findings this repo did not have
+this morning. A task held open waiting for a better corpus, while the cheap part
+sits unbuilt, is how REQ-25 reached T-27 in the first place.
+
+**Rejected — deriving the agentic side's gathered set from the argument above
+rather than measuring it.** The three facts do prove the set, and D65 and D67
+both accept a parsed pin where no behaviour can discriminate. But the tool-call
+log is not derivable — how many fetches the model made, in what order, how many
+were redundant — and that is the half of the recording a future corpus change
+will read. The parse pin goes in beside the measurement, not instead of it.
+
+### This is a new measurement, not a re-run of D64's
+
+`--measure` rewrites `eval/agentic/results.json` end to end. Under D45 that
+makes it a **new measurement**: D64's and D86's numbers stand as the record of
+what was measured then, and every figure downstream of the recording —
+`eval/report.md`'s recall section, `README.md`'s differential paragraph,
+`CLAUDE.md`'s current-state paragraph — follows the new run wherever it lands. A
+free-tier tool loop is not reproducible at temperature 0, so agreement coming
+back below the previous run's is a result to report, not a failure to retry
+until it agrees.
+
+**Measured.** Six patients, the pinned model on AI Studio, extraction and
+verification replayed from their committed recordings so the one variable is
+still which evidence reached the criteria. Agreement held where D64 left it:
+**6/6 outcomes, 42/42 criterion verdicts, 80/80 spans valid, zero errors**. The
+rest of the figures live in `eval/agentic/results.json` and `eval/report.md`,
+which are generated and gated; this entry does not restate them, because a
+number written twice is a number free to disagree with itself (D85).
+
+**The cost ratio moved, and not because retrieval got cheaper.** D64 reported
+13.9x the input tokens. This run reports **4.3x**, and the whole of the
+difference is the denominator: T-61's recording predates T-17, so its oracle
+was a path with no verifier in it. Article V's blind verifier is now a replayed
+model call per cited verdict on *both* sides — 31 of the oracle's 31 calls, and
+31 of the agentic run's 55. Adding a constant to numerator and denominator
+shrinks a ratio without anything about retrieval changing.
+
+Nothing was wrong with 13.9x when it was measured; it described a system that
+no longer exists. But the lesson is a ratio's, not a recording's: **the figure
+that does not move with the denominator is the delta.** Model-directed
+retrieval cost **24 model calls and 84,925 input tokens** over six patients that
+the fixed planner spent nothing at all on — the fixed planner makes no model
+call, which is why a retrieval-only *ratio* would be a division by zero and the
+comparison has to be stated over whole determinations. Quote the delta beside
+the ratio, or quote neither.
+
+**Discovered on the way, and not silently absorbed:** `--rescore` had not been
+run since T-17 landed, so the committed recording's oracle figures were stale
+against the code for two tasks. No gate caught it, because `verify()` asserts
+the recording is internally coherent and the oracle half is the half it does
+not re-derive. T-80's `verify()` additions do not close that either — they
+check the gathered bundle, not the cost columns. The honest statement is that
+**a recording's free half can drift from the code that would produce it, and
+only `--rescore` finds out.** Making a gate run `--rescore` and diff would fix
+it and is not this task's; it is worth a numbered task the day a cost figure
+matters more than an agreement figure.
+
+### Registered, not silently absorbed — `T-81`
+
+The corpus change that gives the direct figure teeth is **a second note per
+patient**, so a planner can skip one and the number can fall. It is not folded
+in here because it is not cheap: notes are keyed by content, so new notes
+invalidate T-15's extraction recording and T-17's verifier recording, and
+re-measuring both re-measures most of the repo's committed numbers. That is a
+numbered task with its own budget (working rule 6), not an addition to this one.
+
+**Cost.** One object per side in the recording, one column pair in a generated
+table, and a sentence of explanation every time the direct figure is quoted —
+the same sentence D86 already owed for the bound, pointed the other way.
+
+**Reverses if:** T-81 lands. At that point the direct figure becomes the one to
+quote, the cited figure becomes the redundant bound, and the construction
+caveat comes out of the report because it stops being true.

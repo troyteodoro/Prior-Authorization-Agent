@@ -29,7 +29,14 @@ from pathlib import Path
 import pytest
 
 from pa_agent.agent.tool_bounds import MAX_ROWS
-from pa_agent.contracts import Condition, CriterionVerdict, Document, Observation
+from pa_agent.contracts import (
+    Condition,
+    CriterionVerdict,
+    Document,
+    Observation,
+    RunTrace,
+    ToolCall,
+)
 from pa_agent.retrieval import (
     FixedRetrievalPlanner,
     RetrievalError,
@@ -878,6 +885,235 @@ def test_the_differential_does_not_hide_a_disagreement_under_an_agreeing_outcome
         "a": {"agentic": "NOT_MET", "oracle": "MET"},
         "b": {"agentic": "MET", "oracle": "NOT_MET"},
     }
+
+
+# --------------------------------------------------------------------------
+# T-80 / REQ-25: the recording carries the bundle, not only the citations (D91)
+# --------------------------------------------------------------------------
+
+
+def test_the_gathered_set_includes_the_document_the_structured_facts_came_from(
+    patient_store, policy_store, case_patients
+):
+    """The union, and the reason it is a union.
+
+    Criteria (a) and (b) cite the FHIR bundle, which reaches them as
+    `Observation` and `Condition` rows rather than as a `Document`. A gathered
+    set built from `state.notes` alone would report criterion (a)'s document as
+    un-gathered on **both** sides, and the recall figure would read 0 while the
+    system was working perfectly (D91).
+    """
+    module = _eval_module()
+    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    runner = RecordedExtractionRunner.from_records(
+        recording["notes"], model=recording["model"]
+    )
+    patient_id = case_patients["E1"]
+
+    run = module._run_one(
+        policy_store, patient_store, runner, FixedRetrievalPlanner(),
+        patient_id, AcceptAllVerifier(),
+    )
+    gathered = module._gathered(run)
+
+    note_ids = {note.document_id for note in run.state.notes}
+    assert note_ids <= set(gathered["document_ids"])
+    beyond_the_notes = set(gathered["document_ids"]) - note_ids
+    assert beyond_the_notes, (
+        "the gathered set is the notes and nothing else, so the document "
+        "criterion (a) cites is missing from it"
+    )
+    assert gathered["observations"] == len(run.state.observations)
+    assert gathered["conditions"] == len(run.state.conditions)
+
+
+def test_every_cited_document_is_in_the_gathered_set(
+    patient_store, policy_store, case_patients
+):
+    """cited ⊆ gathered, on a real run. D86's whole argument rests on it, and
+    T-80's instrumentation is what makes it checkable rather than assumed."""
+    module = _eval_module()
+    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    runner = RecordedExtractionRunner.from_records(
+        recording["notes"], model=recording["model"]
+    )
+
+    for patient_id in sorted(set(case_patients.values())):
+        run = module._run_one(
+            policy_store, patient_store, runner, FixedRetrievalPlanner(),
+            patient_id, AcceptAllVerifier(),
+        )
+        cited = {
+            span.document_id
+            for result in run.determination.criterion_results
+            for span in result.spans
+        }
+        assert cited <= set(module._gathered(run)["document_ids"]), patient_id
+
+
+def test_the_fixed_planner_records_no_tool_calls_rather_than_none(
+    patient_store, policy_store, case_patients
+):
+    """`[]` is the truthful record: `FixedRetrievalPlanner` returns `trace=None`
+    because it made no model-directed call. Letting the extraction traces leak
+    in would make the oracle look like it had planned something."""
+    module = _eval_module()
+    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    runner = RecordedExtractionRunner.from_records(
+        recording["notes"], model=recording["model"]
+    )
+    fixed = FixedRetrievalPlanner()
+    run = module._run_one(
+        policy_store, patient_store, runner, fixed, case_patients["E1"],
+        AcceptAllVerifier(),
+    )
+    assert module._planner_tool_calls(run, fixed.name) == []
+    assert run.traces, "the run recorded no trace at all, so the filter proves nothing"
+
+
+class _FakeRun:
+    """Two traces under two runner names. A real oracle run cannot produce one —
+    `RecordedExtractionRunner` replays and calls no tool — so the filter can only
+    be exercised by construction."""
+
+    def __init__(self, traces):
+        self.traces = traces
+
+
+def test_the_planner_log_excludes_the_extractions_tool_calls():
+    """The extraction traces are the same on both sides by construction.
+    Counting them here would make the oracle look like it had planned
+    something, and every figure read off the log would be inflated (D91)."""
+    module = _eval_module()
+    call = ToolCall(
+        name="read_note", arguments_digest="0" * 16, ok=True, wall_time_ms=1.0
+    )
+    planner_call = ToolCall(
+        name="get_patient_notes", arguments_digest="1" * 16, ok=True, wall_time_ms=1.0
+    )
+    run = _FakeRun(
+        [
+            RunTrace(runner_name="recorded", tool_calls=[call]),
+            RunTrace(runner_name="agentic", tool_calls=[planner_call]),
+        ]
+    )
+    assert module._planner_tool_calls(run, "agentic") == ["get_patient_notes"]
+    assert module._planner_tool_calls(run, "fixed") == []
+
+
+def test_a_recording_without_the_gathered_bundle_is_not_a_measurement():
+    """The gate's T-80 check. A recording holding only citations is the one
+    D86 had to settle for, and `verify` must say so rather than pass.
+
+    The two sides are asserted **separately**. A single row missing both would
+    pass whichever check survived, so deleting either one would be invisible.
+    """
+    module = _eval_module()
+    whole = {
+        "document_ids": ["d1"],
+        "gathered": {
+            "document_ids": ["d1"],
+            "observations": 3,
+            "conditions": 2,
+            "value_set": 9,
+        },
+    }
+
+    both_missing = module._gathered_problems(
+        {"patient_id": "p1", "oracle": {"document_ids": ["d1"]},
+         "agentic": {"document_ids": ["d1"]}}
+    )
+    assert len(both_missing) == 2, both_missing
+
+    oracle_missing = module._gathered_problems(
+        {
+            "patient_id": "p1",
+            "oracle": {"document_ids": ["d1"]},
+            "agentic": json.loads(json.dumps(whole)),
+        }
+    )
+    assert any("oracle side records no gathered bundle" in p for p in oracle_missing)
+
+    agentic_missing = module._gathered_problems(
+        {
+            "patient_id": "p1",
+            "oracle": json.loads(json.dumps(whole)),
+            "agentic": {"document_ids": ["d1"]},
+        }
+    )
+    assert any("agentic side records no gathered bundle" in p for p in agentic_missing)
+
+
+def test_citing_a_document_that_was_never_gathered_is_an_instrument_bug():
+    """cited ⊄ gathered cannot happen to a working recorder, so if it appears
+    the recorder has stopped seeing a document — and the recall figure built on
+    it would be understated without anything failing."""
+    problems = _eval_module()._gathered_problems(
+        {
+            "patient_id": "p1",
+            "oracle": {"gathered": {"document_ids": ["d1", "d2"],
+                                    "observations": 3, "conditions": 2, "value_set": 9}},
+            "agentic": {
+                "document_ids": ["d1", "d9"],
+                "gathered": {"document_ids": ["d1"], "observations": 3,
+                             "conditions": 2, "value_set": 9},
+            },
+        }
+    )
+    assert any("without gathering it" in p for p in problems)
+
+
+def test_the_two_sides_must_agree_on_what_the_port_served():
+    """D66, recorded rather than asserted. Both planners re-read observations,
+    conditions and the value set from the port; a difference means the model's
+    tool payload has become the evidence path."""
+    module = _eval_module()
+    base = {
+        "patient_id": "p1",
+        "oracle": {"gathered": {"document_ids": ["d1"], "observations": 3780,
+                                "conditions": 190, "value_set": 9}},
+        "agentic": {
+            "document_ids": ["d1"],
+            "gathered": {"document_ids": ["d1"], "observations": 3780,
+                         "conditions": 190, "value_set": 9},
+        },
+    }
+    assert module._gathered_problems(base) == []
+
+    truncated = json.loads(json.dumps(base))
+    truncated["agentic"]["gathered"]["observations"] = MAX_ROWS
+    assert any(
+        "tool payload has become the evidence path" in p
+        for p in module._gathered_problems(truncated)
+    )
+
+
+def test_rescore_leaves_the_measured_half_alone():
+    """The oracle side is free to re-derive; the agentic side cost model calls.
+    Re-deriving it here would be a second measurement wearing a free run's
+    clothes (D45), and it is pinned by parsing because a test that let
+    `--rescore` run for real would need a live planner."""
+    source = (REPO_ROOT / "eval" / "run_agentic_eval.py").read_text(encoding="utf-8")
+    body = source[source.index("def rescore(") : source.index("def report(")]
+    tree = ast.parse(source)
+    rescore = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "rescore"
+    )
+    written = {
+        ast.unparse(node.func.value)
+        for node in ast.walk(rescore)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in {"update", "__setitem__"}
+        and isinstance(node.func.value, ast.Subscript)
+    }
+    # `ast.unparse` normalises the subscript's quotes, hence the single ones.
+    assert written == {"row['oracle']"}, (
+        f"--rescore writes {sorted(written)}; only the oracle side is free to "
+        "re-derive (D45, D91)"
+    )
+    assert 'row["agentic"]["gathered"]' not in body
 
 
 def test_the_evals_self_checks_all_pass():

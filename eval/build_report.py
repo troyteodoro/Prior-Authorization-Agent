@@ -497,17 +497,26 @@ def _sweep_section() -> list[str]:
 
 
 def _recall_section(cache: dict[Any, Any]) -> list[str]:
-    """T-27 / REQ-25: per-criterion planner recall, and what it bounds (D86).
+    """T-27 / T-80 / REQ-25: per-criterion planner recall, twice over (D86, D91).
 
     For each criterion, over the cases where the fixed planner's run cited
     anything for it: the fraction where every document those spans name also
-    appears in the agentic run's cited set.
+    appears in the agentic run's set. Two sets, so two figures over one
+    denominator —
 
-    `eval/agentic/results.json` records the documents each side's spans point
-    into, not the bundle the planner gathered. A run cannot cite a document it
-    did not gather, so cited ⊆ gathered and this figure bounds true retrieval
-    recall from below — a measured 1.000 here establishes 1.000 on the stronger
-    metric (D86). T-80 would make it direct.
+      direct  the bundle the agentic planner **gathered** and handed downstream.
+              What REQ-25 actually asks for. T-80 put it in the recording.
+      cited   the documents the agentic run's spans **point into**. The bound
+              D86 had to settle for, kept because on this corpus it is the one
+              that can still move.
+
+    The direct figure is **1.000 by construction here** and the section says so
+    in its own text: one note per patient, `AgenticRetrievalPlanner` raises
+    rather than returning an empty bundle, and observations and conditions are
+    re-read from the port (D66), so a run that did not error gathered everything
+    there was. Reporting it alone would replace an informative number with an
+    uninformative one, which is why both are here (D91). T-81 is the corpus
+    change that inverts which one carries information.
     """
     recording_path = EVAL_DIR / "agentic" / "results.json"
     if not recording_path.exists():
@@ -516,71 +525,106 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
             "and the recall section reads it. This is a checkout problem."
         )
     recording = json.loads(recording_path.read_text(encoding="utf-8"))
-    agentic_by_patient = {
+    gathered_by_patient = {
+        row["patient_id"]: set(row["agentic"]["gathered"]["document_ids"])
+        for row in recording["patients"]
+        if row.get("agentic")
+    }
+    cited_by_patient = {
         row["patient_id"]: set(row["agentic"]["document_ids"])
         for row in recording["patients"]
+        if row.get("agentic")
     }
 
     # The oracle side, re-derived in-process from the same cache the rest of the
     # report reads — zero calls, recorded extraction.
-    covered: dict[str, list[bool]] = {}
+    direct: dict[str, list[bool]] = {}
+    bound: dict[str, list[bool]] = {}
     for (patient_id, procedure_code, as_of), determination in cache.items():
         if not isinstance(determination, Determination):
             continue
-        if patient_id not in agentic_by_patient:
+        if patient_id not in gathered_by_patient:
             continue
         if procedure_code != recording["procedure_code"]:
             continue
         if as_of.isoformat() != recording["as_of"]:
             continue
-        gathered = agentic_by_patient[patient_id]
+        gathered = gathered_by_patient[patient_id]
+        cited = cited_by_patient[patient_id]
         for result in determination.criterion_results:
-            cited = {span.document_id for span in result.spans}
-            if not cited:
+            wanted = {span.document_id for span in result.spans}
+            if not wanted:
                 continue
-            covered.setdefault(result.criterion_id, []).append(cited <= gathered)
+            direct.setdefault(result.criterion_id, []).append(wanted <= gathered)
+            bound.setdefault(result.criterion_id, []).append(wanted <= cited)
 
     rows = []
-    hits = total = 0
-    for criterion_id in sorted(covered):
-        observed = covered[criterion_id]
-        hits += sum(observed)
-        total += len(observed)
-        rate = sum(observed) / len(observed)
-        rows.append(f"| `{criterion_id}` | {len(observed)} | {sum(observed)} | {rate:.3f} |")
-    overall = hits / total if total else None
+    direct_hits = bound_hits = total = 0
+    for criterion_id in sorted(direct):
+        d, b = direct[criterion_id], bound[criterion_id]
+        direct_hits += sum(d)
+        bound_hits += sum(b)
+        total += len(d)
+        rows.append(
+            f"| `{criterion_id}` | {len(d)} | {sum(d)} | {sum(b)} | "
+            f"{sum(d) / len(d):.3f} | {sum(b) / len(b):.3f} |"
+        )
+    direct_overall = direct_hits / total if total else None
+    bound_overall = bound_hits / total if total else None
 
     return [
-        "## Planner recall against the oracle's evidence (REQ-25, D4, D86)",
+        "## Planner recall against the oracle's evidence (REQ-25, D4, D86, D91)",
         "",
         "`FixedRetrievalPlanner` reads three stores in a fixed order; "
         "`AgenticRetrievalPlanner` lets the model choose what to fetch. "
         "Everything downstream is identical and cannot tell which planner ran, "
         "which is what makes the differential a comparison (D63). This section "
-        "asks the question the outcome comparison cannot: **did the model-directed "
-        "run have the evidence the deterministic one used?**",
+        "asks the question the outcome comparison cannot: **did the "
+        "model-directed run have the evidence the deterministic one used?**",
         "",
-        "| Criterion | Cases citing evidence | Covered by the agentic run | Recall |",
-        "|---|---|---|---|",
+        "Two figures over one denominator. **Direct** is containment in the "
+        "bundle the agentic planner *gathered* and handed downstream — what "
+        "REQ-25 asks for, recorded by T-80. **Cited** is containment in the "
+        "documents that run's spans *point into* — the bound D86 had to settle "
+        "for. Read both; the next two paragraphs say which one is carrying "
+        "information today, and it is not the stronger one.",
+        "",
+        "| Criterion | Cases citing evidence | Covered (gathered) | Covered (cited) "
+        "| Recall (direct) | Recall (cited) |",
+        "|---|---|---|---|---|---|",
         *rows,
-        f"| **all** | **{total}** | **{hits}** | **{_fmt(overall)}** |",
+        f"| **all** | **{total}** | **{direct_hits}** | **{bound_hits}** | "
+        f"**{_fmt(direct_overall)}** | **{_fmt(bound_overall)}** |",
         "",
-        "**What this figure is a bound on.** The recording holds the documents "
-        "each side's spans point into, not the bundle the planner gathered. A run "
-        "cannot cite a document it did not gather, so cited ⊆ gathered and this "
-        "**bounds true retrieval recall from below**: the measured "
-        f"**{_fmt(overall)}** therefore establishes {_fmt(overall)} on the "
-        "stronger metric too. A figure *below* 1.000 would need T-80's direct "
-        "measurement to interpret — it could mean the planner skipped the "
-        "document, or gathered it and produced no citable span.",
+        "**The direct figure is 1.000 by construction on this corpus, and that "
+        "sentence travels with it.** Three facts force it: "
+        "`data/patients/notes/manifest.json` holds one note per patient; "
+        "`AgenticRetrievalPlanner.gather` raises rather than returning an empty "
+        "bundle or an id the store does not serve; and observations, conditions "
+        "and the value set are re-read from the port, never taken from the tool "
+        "payload (D66). A run that did not error gathered everything there was. "
+        "The number is real and it cannot fall — which is the shape D70 already "
+        "threw out once, so it is reported beside the cited figure rather than "
+        "in place of it (D91). **T-81** is the corpus change — a second note per "
+        "patient — that would let it fall.",
         "",
-        "**It does catch the truncation case.** If the model fetched a bundle but "
-        "passed a truncated observation list, criterion (a) has nothing to cite, "
-        "abstains, and its document drops out of the cited set — the exact "
-        "failure `AgenticRetrievalPlanner`'s own docstring names (D63).",
+        "**What the direct figure did settle.** D86 could not tell a skipped "
+        "document from a gathered one that produced no citable span, and said a "
+        "below-1.000 result would need this measurement to interpret. It now "
+        "reads: every patient gathered two documents, and two of the six cite "
+        "only one. **Those notes reached the criteria and yielded nothing to "
+        "cite** — gathered and uncitable, never skipped. That is why the cited "
+        "figure is the one that can still move here.",
+        "",
+        "**Containment at whole-document granularity is containment of the "
+        "span.** Gathered notes come back from the store by id and are "
+        "hash-verified, so the bytes the agentic run held are the bytes the "
+        "oracle sliced. REQ-25's *\"contains the span\"* is satisfied exactly, "
+        "not by proxy — the in-process re-run D86 thought it would take is not "
+        "needed at this granularity.",
         "",
         "**D4's reversal condition now reads against a number.** It was set as "
-        "\"measured retrieval recall below 0.85 — a number, not a hunch\" and has "
+        "\"measured retrieval recall below 0.85 — a number, not a hunch\" and had "
         "been unfalsifiable since it was written, because nothing measured "
         "retrieval recall and nothing could. Vector search stays rejected on "
         "rule 9 and on a six-document corpus; this is the figure that would let "

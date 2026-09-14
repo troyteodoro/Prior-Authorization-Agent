@@ -235,9 +235,11 @@ and `scripts/check_req_coverage.py` (T-23) reads it rather than assuming it empt
 They stay in §5 rather than being deleted, because Amendment 1 genuinely grants
 these permissions and a spec that omitted them would describe a constitution this
 repo does not have. T-61 built the agentic path without claiming them and said so;
-this table is that statement made auditable. Note also that D64 measured the
-agentic path as producing identical answers at 13.9x the input tokens, so a task
-claiming these would buy a passing check rather than a capability.
+this table is that statement made auditable. Note also that the agentic path
+produces identical answers for real money — 24 model calls and 84,925 input
+tokens over six patients the fixed planner spent nothing on *(D64, re-measured
+in D91)* — so a task claiming these would buy a passing check rather than a
+capability.
 
 ### Adjudication
 

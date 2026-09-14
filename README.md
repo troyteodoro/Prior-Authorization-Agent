@@ -134,8 +134,14 @@ Three ports meet at the model boundary:
 
 **The measured result so far:** model-directed retrieval agrees with the
 deterministic oracle on **6/6 outcomes and 42/42 criterion verdicts, with
-80/80 spans valid and zero errors — at 13.9× the input tokens.** Read the
-aggregate and the spread, never one patient's ratio.
+80/80 spans valid and zero errors.** It cost **24 model calls and 84,925 input
+tokens** across six patients that the fixed planner spent nothing on — 4.3× the
+deterministic path's end-to-end input tokens, on a comparison where extraction
+and verification are the same replayed payload on both sides. Quote the delta
+beside the ratio: the fixed planner makes no model call, so the ratio's
+denominator is the shared replayed cost and it moves when that cost changes,
+while the delta does not. Read the aggregate and the spread, never one patient's
+ratio.
 
 > **Caveat that must travel with every number in this repo:** the eval ground
 > truth was authored by the agent that built the system it grades. Structural
@@ -339,13 +345,19 @@ reserved. That is a deliberate limit on what has been demonstrated, not an
 oversight — the agentic path is real and it decides *what to read*, not what the
 answer is.
 
-**Retrieval recall is measured as a bound, not directly.** The model-directed
-planner's recall against the deterministic oracle's evidence is 1.000 over 25
-citing cases — measured over the documents each run *cited*, because that is
-what the recording holds. A run cannot cite what it did not gather, so the
-figure bounds true recall from below and a measured 1.000 settles it. The moment
-that number drops below 1.000 it stops being interpretable without a second,
-model-spending measurement.
+**Retrieval recall is measured directly, and on this corpus the direct figure
+cannot fall.** The recording carries both the documents each run *cited* and the
+bundle the planner *gathered*, and both read 1.000 over 25 citing cases. The
+gathered figure is the one REQ-25 asks for and it is 1.000 **by construction**:
+one note per patient, a planner that raises rather than returning an empty
+bundle, and structured facts re-read from the port rather than taken from the
+model's tool payload. A run that did not error gathered everything there was.
+So the *cited* figure beside it is the one still carrying information — and it
+did settle the question the bound could not: every patient gathered two
+documents and two of the six cite only one, which means those notes reached the
+criteria and yielded nothing to cite. Gathered and uncitable, never skipped. A
+second note per patient is what would let the direct figure fall, and it is on
+the board.
 
 **Everything free is a replay.** Every gate, the CLI's default path, and every
 number in the report run off committed recordings and spend zero model calls.
@@ -359,7 +371,7 @@ or a different tier is a **new measurement, never a re-run**.
 
 ## Status and the road to v1
 
-**58 of 66 tasks closed, 5 open, 3 deferred; all eleven gates green.**
+**63 of 67 tasks closed, 1 open, 3 deferred; all eleven gates green.**
 Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
 procedures, cited structured criteria, the categorical exclusion, note-only
 criteria with two independent BMI readings, the gap list, the blind verifier,
@@ -394,11 +406,11 @@ became the rate, the account of *why* per `gap_reason`, and the sweep with the
 flat column printed beside it so the claim stays falsifiable. Where the system
 becomes useless moved to A8, above, which is where it belonged.
 
-Still open, none of it on the path to the acceptance gates: an aggregate that
-hides a refused citation, a brittle substring assertion in one gate, the agentic
-planner's fault mapping, and a direct (model-spending) measurement of retrieval
-recall to replace the bound. Deferred under review: the remaining ratification
-tasks.
+Still open, and not on the path to the acceptance gates: **a second note per
+patient**, which is what would let the direct retrieval-recall figure fall. It
+costs a new extraction recording and a new verifier recording — both are keyed
+by note content — and therefore most of the repo's committed numbers. Deferred
+under review: the remaining ratification tasks.
 
 Two requirements are **unclaimed on purpose**: model-performed adjudication
 (REQ-44/REQ-47) is reserved out of v1 because Amendment 1 keeps the entire
@@ -425,7 +437,7 @@ eval/                cases.json, baseline.json, report.md (generated), and the
 spike/spike_001/     the throwaway span-anchoring spike that killed
                      model-reported offsets
 scripts/             the gates, the measurement scripts, and the corpus tooling
-tests/               the suite (664 tests), including the AST-level pins
+tests/               the suite (683 tests), including the AST-level pins
 docs/                constitution, spec, stories, tasks, decisions,
                      ratifications
 ```
