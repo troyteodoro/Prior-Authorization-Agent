@@ -16,26 +16,33 @@ answers the second question, once.
 
 ## Path to v1
 
+**What to do next: nothing, on the path.** Acceptance gates A1–A9 all hold and
+US-1 through US-7 and US-9 are delivered. One task is open — `T-81`, below —
+and it gates no acceptance criterion; it is corpus work that would let a
+measured figure get weaker and more honest, taken when there is budget for a
+re-measurement, not before.
+
 Sixty-five tasks are on this board — IDs run to T-82 but numbering is not
 contiguous, so the highest id is not the count. **64 are closed and 1 is
-open.** **Nothing open sits on the critical path: acceptance gates A1–A9 all
-hold.** This is the path as it ran. *(D70, extended by D72; reordered by D74,
-reconciled by D79, re-opened by D81 when the ratification programme paused,
-and closed out by D92 when it was deleted)*
+open.** The table below is the path **as it ran**, which is not the path anyone
+would plan: four of its eleven steps were a ratification programme that was
+built, paused, and then deleted. They stay because the board records what
+happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
+D81, withdrawn by D92)*.
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
-| 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed** |
-| 2 | `T-74` | the owner ratifies constitution, spec, stories *(D74)* | **closed** |
-| 3 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — before T-74; see D79 |
+| 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed**, later **withdrawn** *(D92)* |
+| 2 | `T-74` | the owner ratifies constitution, spec, stories *(D74)* | **closed**, later **withdrawn** *(D92)* |
+| 3 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — ran before T-74; see D79 |
 | 4 | `T-29` → `T-30` | **closed US-9** · gates **A9** | **closed** (D76, D77) |
 | 5 | `T-17` | **closed US-6** · implements **Article V** | **closed** (D78) |
-| 6 | `T-79` | the ratification programme pauses *(D81)* | **closed** |
+| 6 | `T-79` | the ratification programme pauses *(D81)* | **closed**, later **withdrawn** *(D92)* |
 | 7 | `T-72` | A5 acquires a mechanism the system actually has *(D82)* | **closed** |
 | 8 | `T-32` | gates **Article VI** / REQ-33 *(D83)* | **closed** |
 | 9 | `T-22` → `T-28` | gates **A2**, **A3**, **A5**, **A6** *(D85)* | **closed** |
 | 10 | `T-23` | **closed US-7** · gates **A7**, **A8** *(D87)* | **closed** |
-| 11 | `T-82` | the ratification programme is deleted *(D92)* | **closed** |
+| 11 | `T-82` | the ratification programme is deleted *(D92)* | **closed** — this row is the withdrawal |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -43,16 +50,20 @@ Off the path. Real work, nothing waiting on it:
 |---|---|---|
 | `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | any time, blocks nothing *(D91)* |
 
-**Why the ratification tasks are no longer here.** D74 converted D42's
-admission — the eval ground truth is authored by the agent building the system
-it grades, and the docs the whole repo obeys were agent-drafted under direction
-— into recorded ownership: a ledger, a gate, and statuses only the owner may
-write. T-73 and T-74 delivered it as far as 98 ratified ids across the
-constitution, spec and stories; D81 paused the rest. **D92 deleted the
-programme**, on the owner's decision that intellectual ownership of this work
-is a git-level fact a JSON ledger adds nothing to. T-75, T-76 and T-78 are
-gone with it; T-73, T-74 and T-79 stay below as closed records, because ids
-are load-bearing and D74 names all three.
+**Why four of those rows delivered nothing.** D74 converted D42's admission —
+the eval ground truth is authored by the agent building the system it grades,
+and the docs the whole repo obeys were agent-drafted under direction — into
+recorded ownership: a ledger, a gate, and statuses only the owner may write.
+T-73 built it, T-74 carried the owner's reading of the constitution, spec and
+stories (98 ids), D81 paused the unfinished half, and **D92 deleted the whole
+thing** — ownership of this work is a git-level fact a JSON ledger adds nothing
+to. T-75, T-76 and T-78 went with it. T-73, T-74 and T-79 stay below as closed
+records marked superseded, because ids are load-bearing and D74 names all
+three. **The lesson the board should keep is the sequencing one:** this
+programme was put *ahead of* the critical path at D74 and held the first two
+positions on it, and what survives is the record of it — four decision entries
+and three superseded task records, no running code. The cost of the detour is
+kept here rather than smoothed away.
 
 **What that costs, stated once.** T-78 was the point where D42's authorship
 caveat would have retired. Deleting it removes the plan, not the obligation,
