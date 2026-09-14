@@ -223,7 +223,7 @@ def test_only_labeled_pairs_are_scored(script):
     "claim",
     [
         "authored by the agent building the system it grades",  # D19/D42
-        "deferred, not\ndone",                                   # D81
+        "No pass that would retire that caveat is scheduled",    # D92
         "as one contractor would",                               # D21/D29
         "six patients",                                          # corpus size
     ],

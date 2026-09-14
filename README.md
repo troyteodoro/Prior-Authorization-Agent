@@ -145,10 +145,10 @@ ratio.
 
 > **Caveat that must travel with every number in this repo:** the eval ground
 > truth was authored by the agent that built the system it grades. Structural
-> mitigations exist (spans validated mechanically by the scorer, an owner
-> ratification pass on the labels is on the board), but a perfect score means
-> only that the approach does not obviously fail. Do not quote these numbers
-> without this sentence.
+> mitigations exist (spans are validated mechanically by the scorer, not
+> against a label), **no human adjudication pass on the labels is scheduled**,
+> and a perfect score means only that the approach does not obviously fail. Do
+> not quote these numbers without this sentence.
 
 Guardrails that keep the differential honest:
 
@@ -263,7 +263,6 @@ outranks any instruction typed into a prompt:
 | `docs/stories.md` | User stories US-1…US-9, with personas. |
 | `docs/tasks.md` | The board. Every task has a runnable exit condition; `Path to v1` at the top states what to do next. |
 | `docs/decisions.md` | Append-only, numbered decision log. Every entry names the rejected alternative and its reversal condition. |
-| `docs/ratifications.json` | The ownership ledger: an agent may write `proposed` and nothing else; `ratified`/`amended`/`overruled` are the human owner's edits, enforced by a gate. |
 
 Working rules that follow from it: one task in progress at a time, stories
 close vertically (four of five tasks done has delivered nothing), discovered
@@ -321,11 +320,12 @@ not obviously fail, and nothing more.
 authored by the agent building the system that they grade. The structural
 mitigations are real — manifests are written from the bundles *before* the notes
 are synthesized, the system under test never reads them, and every cited span is
-validated against the source rather than against a label. The ratification pass
-that would replace "structural mitigation" with "adjudicated" is **deferred, not
-done**: it is human reading work, and the board keeps it in a *Deferred — under
-review* section rather than pretending it happened. Do not quote a number from
-this repo without that sentence.
+validated against the source rather than against a label. The pass that would
+replace "structural mitigation" with "adjudicated" is **not scheduled**: it is
+human reading work by someone who did not author the labels, and the
+ratification programme that once had it on the board was deleted (D92). Saying
+so is what keeps the gap visible now that no counter tracks it. Do not quote a
+number from this repo without that sentence.
 
 **The verifier is blind on purpose, and that costs recall of a certain kind.**
 It sees one claim at a time — the requirement text, the verdict, and the
@@ -371,7 +371,7 @@ or a different tier is a **new measurement, never a re-run**.
 
 ## Status and the road to v1
 
-**63 of 67 tasks closed, 1 open, 3 deferred; all eleven gates green.**
+**64 of 65 tasks closed, 1 open; all ten gates green.**
 Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
 procedures, cited structured criteria, the categorical exclusion, note-only
 criteria with two independent BMI readings, the gap list, the blind verifier,
@@ -409,8 +409,7 @@ becomes useless moved to A8, above, which is where it belonged.
 Still open, and not on the path to the acceptance gates: **a second note per
 patient**, which is what would let the direct retrieval-recall figure fall. It
 costs a new extraction recording and a new verifier recording — both are keyed
-by note content — and therefore most of the repo's committed numbers. Deferred
-under review: the remaining ratification tasks.
+by note content — and therefore most of the repo's committed numbers.
 
 Two requirements are **unclaimed on purpose**: model-performed adjudication
 (REQ-44/REQ-47) is reserved out of v1 because Amendment 1 keeps the entire
@@ -437,12 +436,13 @@ eval/                cases.json, baseline.json, report.md (generated), and the
 spike/spike_001/     the throwaway span-anchoring spike that killed
                      model-reported offsets
 scripts/             the gates, the measurement scripts, and the corpus tooling
-tests/               the suite (683 tests), including the AST-level pins
-docs/                constitution, spec, stories, tasks, decisions,
-                     ratifications
+tests/               the suite (653 tests), including the AST-level pins
+docs/                constitution, spec, stories, tasks, decisions
 ```
 
 ---
 
 *Numbers in this README come from instrumentation (Article X) and carry the
-ground-truth caveat stated above. Authorship is recorded at the git level.*
+ground-truth caveat stated above. Authorship and ownership of this work are
+recorded at the git level, which is the only place they were ever asserted from
+(D92).*

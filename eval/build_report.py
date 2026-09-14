@@ -695,11 +695,12 @@ def _caveats_section() -> list[str]:
         "synthesized, and the system under test never reads them — and a "
         "perfect score still means only that the approach does not obviously "
         "fail.",
-        "- **The pass that would have retired that caveat is deferred, not "
-        "done** (D79, D81). T-78 is the owner's adjudication of every label and "
-        "manifest; it sits in the board's *Deferred — under review* section, so "
-        "every figure here is measured against proposals rather than against "
-        "adjudicated ground truth.",
+        "- **No pass that would retire that caveat is scheduled** (D92). T-78 "
+        "was the owner's adjudication of every label and manifest; the "
+        "ratification programme it belonged to was deleted, so every figure "
+        "here is measured against labels the system's own author wrote, and "
+        "will stay that way unless someone who did not author them "
+        "adjudicates them.",
         "- **This system determines coverage as one contractor would.** NCD "
         "100.1 quantifies nothing — no months, no visit counts, no recency. "
         "Every constant in the criteria tree comes from A53028, a Noridian "

@@ -208,13 +208,35 @@ def test_every_gate_names_a_file_that_exists(script):
     `No such file` nobody expects.
 
     This used to name `scripts/check_req_coverage.py` as the script the board
-    referenced and nobody had written. T-23 wrote it and it is now the eleventh
+    referenced and nobody had written. T-23 wrote it and it is now the last
     gate, so the reference flipped rather than being deleted (D87)."""
     for _, argv in script.GATES:
         if argv[0] == "-m":
             assert argv[1] == "pytest", "the only module-form gate is the suite"
             continue
         assert (REPO_ROOT / argv[0]).exists(), f"{argv[0]} does not exist"
+
+
+def test_ratification_programme_is_gone(script):
+    """D92 deleted the ownership ledger, its gate and its writer. Nothing
+    behavioural distinguishes a repo that never had them from one where a
+    later session quietly put them back, so the deletion is pinned directly.
+
+    The `EXCLUDED` half matters as much as the `GATES` half: `ratify.py` was
+    never a gate, so the only way it comes back without failing
+    `test_every_tracked_script_is_classified` is as an excluded script."""
+    removed = (
+        "docs/ratifications.json",
+        "scripts/check_ownership.py",
+        "scripts/ratify.py",
+    )
+    for path in removed:
+        assert not (REPO_ROOT / path).exists(), (
+            f"{path} is back; resurrecting the ratification programme needs a "
+            "decision entry reversing D92, not a file"
+        )
+    named = {argv[0] for _, argv in script.GATES} | set(script.EXCLUDED)
+    assert not named & set(removed), "a removed script is still classified"
 
 
 def test_the_suite_is_the_first_gate(script):

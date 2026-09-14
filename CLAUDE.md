@@ -28,7 +28,7 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-80, each with a runnable exit condition. **`Path to v1` at the top states what to do next**, and **Deferred — under review** holds what is paused *(D81)*. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-82, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
 | `docs/decisions.md` | D1–D90, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
@@ -87,33 +87,29 @@ deterministic path is usable as a regression oracle *(D62)*.
    no containers, no CI, no vector search. (See D4 for why vector search is out,
    and D70 for the measurement that would let it back in.)
 10. **Never write a real API key into a tracked file.** Placeholder only.
-11. **In `docs/ratifications.json`, an agent writes `proposed` and nothing
-    else.** `ratified`, `amended` and `overruled` are the owner's edits — the ledger
-    records human ownership of every load-bearing ID, and an agent granting
-    itself ratification is the exact failure the ledger exists to prevent
-    *(D74)*. `scripts/check_ownership.py` enforces the ledger's structure;
-    this rule is what scopes its statuses. **The programme is paused** — the
-    ledger's `required_tiers` is frozen at `constitution, spec, stories`, and
-    T-75/T-76/T-78 sit in the board's *Deferred — under review* section
-    *(D81)*. The rule still binds: a paused reading is not a licence to
-    write the statuses it would have produced.
+11. **Ownership is asserted at the git level, not audited by a gate** *(D92)*.
+    The ratification ledger, its gate and its writer were deleted; D74, D80
+    and D81 stay in the log as the record of a programme that ran and was
+    withdrawn. Rebuilding any of it needs an entry reversing D92 —
+    `tests/test_check_gates.py::test_ratification_programme_is_gone` is what
+    makes putting the files back a red suite rather than a quiet commit.
 
 ## Commands
 
 `python` is not on PATH; the tracked venv is at `./venv/bin/python`.
 
 ```bash
-./venv/bin/python scripts/check_gates.py        # all 11 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (683 tests, ~18s)
+./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
+./venv/bin/python -m pytest -q                  # the suite alone (653 tests, ~18s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
 
-The eleven gates, all zero-cost: `pytest`, then `check_env.py`,
+The ten gates, all zero-cost: `pytest`, then `check_env.py`,
 `check_skeleton.py`, `verify_sources.py --offline`, `select_patients.py
 --verify`, `spike/spike_001/run.py --verify`, `eval/run_eval.py`,
-`eval/run_agentic_eval.py`, `check_ownership.py` *(D74)*,
-`eval/build_report.py --verify` *(D85)*, `check_req_coverage.py` *(D87)*. **Membership is a
+`eval/run_agentic_eval.py`, `eval/build_report.py --verify` *(D85)*,
+`check_req_coverage.py` *(D87)*. **Membership is a
 rule, not a taste call** — a
 command is a gate iff some task's exit condition names it *and* it spends no
 model call and touches no network. Everything else tracked under `scripts/`,
@@ -363,8 +359,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**63 of 67 tasks closed, 1 open, 3 deferred under review. All 11 gates green**
-(`check_gates.py`, ~25s, 683 tests across 33 files). IDs run to T-81, but
+**64 of 65 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`, ~25s, 653 tests across 31 files). IDs run to T-82, but
 numbering is not contiguous — the highest id is not the count.
 
 Delivered: **US-1 through US-7 and US-9**, and **acceptance gates A1–A9 all
@@ -398,18 +394,18 @@ own clock.
 Open: **T-81 alone** — a second note per patient, which is what would let the
 direct retrieval-recall figure fall; not on the critical path, since **A1–A9 all
 hold**, and it re-measures T-15's extraction and T-17's verifier recordings
-along with every figure downstream of them *(D91)*. **The ratification programme is paused** *(T-79,
-D81)*: T-75, T-76 and T-78 are readings only the owner can perform, the owner
-suspended them pending a review of whether the programme continues, and they
-sit verbatim in the board's *Deferred — under review* section. What closed
-stays closed — 98 ids ratified, `required_tiers` frozen at those three tiers,
-`check_ownership.py` still the ninth gate. What it costs is stated once and
-carried in the deliverables rather than a footnote: **D79's block on the report
-chain is lifted, so D42's authorship caveat does not retire**, and every figure
+along with every figure downstream of them *(D91)*. **The ratification
+programme is deleted** *(T-82, D92)*: the owner's intellectual ownership of
+this work is a git-level fact and does not need a ledger to assert it, so the
+ledger, `check_ownership.py`, `ratify.py` and the three unfinished reading
+tasks are gone, while D74, D80 and D81 stay in the log as the record. What it
+costs is stated once and carried in the deliverables rather than a footnote:
+**T-78 was the pass that would have retired D42's authorship caveat, so the
+caveat now has no route to retirement inside this repo** — every figure
 `eval/report.md` and `README.md` quote is measured against labels this repo's
-own agent authored. `docs/tasks.md` opens with `Path to v1`, which states the
-sequence once with what each step gates — read it rather than this paragraph
-*(D70, D72, D74, D81)*.
+own agent authored, permanently, and both documents say so in their own text.
+`docs/tasks.md` opens with `Path to v1`, which states the sequence once with
+what each step gates — read it rather than this paragraph *(D70, D72, D92)*.
 
 Worth knowing before a review: **REQ-44/REQ-47 are unclaimed on purpose** —
 Amendment 1 reserves the entire decision procedure to Python, so there is no
@@ -500,11 +496,11 @@ data/patients/
   notes/             six synthesized chart notes + manifest.json
   work/              gitignored: the Synthea jar and the full 200-patient run
 eval/
-  build_report.py    T-22/T-28/T-27's generator; --verify is the tenth gate (D85)
+  build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
   cases.json         the eval set — 15 labeled rows (§6's 14 + NP1; D75)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited;
-                     build_report.py --verify is the tenth gate (D85)
+                     build_report.py --verify is the ninth gate (D85)
   manifests/         T-06's ground truth — the system under test never reads it
   extraction/        results.json (T-15) plus adk_results_inline.json and
                      adk_results_tool_fetch.json — T-63's two, one per mode (D68).
@@ -512,11 +508,10 @@ eval/
                      the bundle each side *gathered* beside what it cited (D91)
   verifier/          results.json — T-17's 27-claim recording (D78)
 spike/spike_001/     notes/, results.json, run.py — five notes, no patient
-scripts/             check_gates, check_env, check_skeleton, check_ownership,
-                     check_req_coverage, ratify, verify_sources,
+scripts/             check_gates, check_env, check_skeleton,
+                     check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               33 files, 683 tests
-docs/                the five governing docs plus ratifications.json — D74's
-                     ledger, statuses beyond `proposed` are the owner's edits only
+tests/               31 files, 653 tests
+docs/                the five governing docs
 ```

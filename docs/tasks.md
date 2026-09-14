@@ -16,12 +16,12 @@ answers the second question, once.
 
 ## Path to v1
 
-Sixty-seven tasks are on this board — IDs run to T-81 but numbering is not
-contiguous, so the highest id is not the count. **63 are closed, 1 is open,
-and 3 are deferred under review** *(D81)*. **Nothing open sits on the critical
-path: acceptance gates A1–A9 all hold.** This is the path as it ran. *(D70,
-extended by D72; reordered by D74, reconciled by D79, and re-opened by D81 when
-the ratification programme paused)*
+Sixty-five tasks are on this board — IDs run to T-82 but numbering is not
+contiguous, so the highest id is not the count. **64 are closed and 1 is
+open.** **Nothing open sits on the critical path: acceptance gates A1–A9 all
+hold.** This is the path as it ran. *(D70, extended by D72; reordered by D74,
+reconciled by D79, re-opened by D81 when the ratification programme paused,
+and closed out by D92 when it was deleted)*
 
 | # | Task | Closes / gates | State |
 |---|---|---|---|
@@ -35,6 +35,7 @@ the ratification programme paused)*
 | 8 | `T-32` | gates **Article VI** / REQ-33 *(D83)* | **closed** |
 | 9 | `T-22` → `T-28` | gates **A2**, **A3**, **A5**, **A6** *(D85)* | **closed** |
 | 10 | `T-23` | **closed US-7** · gates **A7**, **A8** *(D87)* | **closed** |
+| 11 | `T-82` | the ratification programme is deleted *(D92)* | **closed** |
 
 Off the path. Real work, nothing waiting on it:
 
@@ -47,17 +48,19 @@ admission — the eval ground truth is authored by the agent building the system
 it grades, and the docs the whole repo obeys were agent-drafted under direction
 — into recorded ownership: a ledger, a gate, and statuses only the owner may
 write. T-73 and T-74 delivered it as far as 98 ratified ids across the
-constitution, spec and stories. The rest of the programme is reading only the
-owner can do, and the owner has suspended it pending a review of whether it
-continues *(D81)*. T-75, T-76 and T-78 sit in **Deferred — under review**
-below, verbatim, so resuming is a move rather than a reconstruction.
+constitution, spec and stories; D81 paused the rest. **D92 deleted the
+programme**, on the owner's decision that intellectual ownership of this work
+is a git-level fact a JSON ledger adds nothing to. T-75, T-76 and T-78 are
+gone with it; T-73, T-74 and T-79 stay below as closed records, because ids
+are load-bearing and D74 names all three.
 
-**What that costs, stated once.** D79 made T-78 the point where D42's
-authorship caveat retires, and the report chain waited on it. Lifting that
-block is what lets T-22 → T-28 → T-23 proceed, and it leaves the caveat
-standing: every figure in `eval/report.md` and every claim in `README.md` is
-measured against labels this repo's own agent authored, and both documents say
-so in their own text *(D81)*.
+**What that costs, stated once.** T-78 was the point where D42's authorship
+caveat would have retired. Deleting it removes the plan, not the obligation,
+so the caveat now has **no route to retirement inside this repo**: every
+figure in `eval/report.md` and every claim in `README.md` is measured against
+labels this repo's own agent authored, permanently, and both documents say so
+in their own text. Once the ledger's `proposed` count is gone, that text is
+the only thing keeping the gap visible *(D92)*.
 
 **Why T-21 did not wait.** US-4 and US-5 were *built and ungraded* — every
 predicate, the reconciliation, the aggregator and the gap list worked and were
@@ -72,66 +75,6 @@ was one task; D78 closed it.
 
 **Why the report chain is last.** T-22, T-28 and T-23 all read the eval set
 beneath them. Built before T-21 they would be rewritten after it.
----
-
-## Deferred — under review
-
-Not open, not blocked, not withdrawn. The owner suspended the ratification
-programme where T-74 left it, pending a review of whether it continues at
-all *(D81)*. These three are its unfinished half and each is a reading only
-the owner can perform. They are preserved verbatim so that resuming is a
-move back onto the board rather than a reconstruction; the ledger
-(`docs/ratifications.json`) keeps its `required_tiers` frozen at what was
-actually ratified, and `scripts/check_ownership.py` stays the ninth gate
-asserting exactly that much.
-
-**Nothing else waits on them.** D79 had T-78 blocking T-22 → T-28 → T-23;
-D81 lifted that block and recorded what it costs — D42's authorship caveat
-stands unretired, and the report and README carry it in their own text.
-
-### `[ ] T-75` Ratify the load-bearing decisions and the whole board
-**Depends:** T-74 · **Discovered in:** D74 · **Timebox:** two sessions
-**Status:** **deferred under review** *(D81)* — the reading is the owner's,
-not an agent's, and the owner has suspended the programme
-**Exit:** `python scripts/check_ownership.py --require decisions-core
---require tasks` returns zero, and the close flips both tiers into
-`required_tiers`
-
-`decisions-core` is the 27-entry set D74 froze — the decisions CLAUDE.md's
-invariants and domain-facts sections cite. A blown timebox gets a decisions
-entry naming what broke (working rule 8), not a silent grind.
-
-
-### `[ ] T-76` Ratify the remaining decision entries
-**Depends:** T-73 · **Discovered in:** D74
-**Status:** **deferred under review** *(D81)*; was off the critical path,
-proceeding in batches, blocking nothing
-**Exit:** `python scripts/check_ownership.py --require decisions-all` returns
-zero, and the close flips `decisions-all` into `required_tiers`
-
-D74's reversal clause applies here: if this stalls indefinitely, it shrinks to
-opportunistic ratification and the ledger's `proposed` count keeps the gap
-visible rather than hidden.
-
-
-### `[ ] T-78` Adjudicate the eval ground truth
-**Depends:** T-74, T-75 · **Discovered in:** D79 *(the adjudication half of
-T-21's D74-rewritten exit)* · **Blocked:** nothing — D79's block on T-22,
-T-28 and T-23 was lifted by D81 ·
-**Timebox:** one session — the owner's reading
-**Status:** **deferred under review** *(D81)*
-**Exit:** every case in `eval/cases.json` and every manifest in
-`eval/manifests/` carries an `adjudicated: {by, date}` record, and `python
-scripts/check_ownership.py --require eval` returns zero — closing flips
-`eval` into the ledger's `required_tiers` *(D74)*
-
-Agent-drafted labels stand as proposals carrying reasoning and spans; the owner's
-adjudication records are what close them, and the adjudication of each
-patient's manifest happens in the same reading pass that reviews its cases.
-This is where D42's authorship caveat is retired for the eval set — D74 put
-that pass before T-21 authored the labels, the fork closed T-21 first, and
-D79 re-homed the pass here rather than pretending it happened *(D79)*.
-
 ---
 
 ## Enablers — before any story
@@ -1326,8 +1269,10 @@ end to end, carrying `VERIFIER_REJECTED` (`tests/test_verifier.py`).
 below and before T-74/T-75 *(D79)*. D74's added requirement — an
 `adjudicated: {by, date}` record on every case and manifest, with
 `check_ownership.py --require eval` returning zero and `eval` flipped into
-`required_tiers` — is not discharged by this close; it is re-homed as `T-78`
-*(D79)*, after the owner's reading.
+`required_tiers` — is not discharged by this close; it was re-homed as `T-78`
+*(D79)*, which **D92 deleted along with the rest of the programme**. The
+requirement is therefore never discharged, and D42's caveat stands permanently
+in `README.md` and `eval/report.md`.
 **Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
 **This is the task that closed two stories.** US-4 and US-5 were built — every
@@ -1499,7 +1444,7 @@ the rejected alternative stays rejected on evidence.
 **A8's section did not exist and now does.** `README.md` gained *Where this
 system degrades*: single-jurisdiction thresholds that are Noridian's and not
 CMS's, extraction's paraphrase refusal losing evidence fail-closed, corpus size,
-self-graded ground truth with the ratification pass deferred rather than done,
+self-graded ground truth with no adjudication pass scheduled *(D92)*,
 the verifier's blindness costing arithmetic checks, model adjudication
 deliberately unclaimed, retrieval recall measured as a bound, and every free
 number being a replay of one measured day. The status section now carries the
@@ -1677,7 +1622,42 @@ column reading the cited set; and containment weakened to intersection on each
 column. The last two and `--rescore`'s are pinned by parsing — no behaviour this
 corpus can produce distinguishes them (D65, D67's move).
 
+### `[x] T-82` Delete the ratification programme
+**REQ:** none — board hygiene · **Discovered in:** the owner's decision that the
+programme was scaffolding the project did not need *(D92)* · **Timebox:** one
+session
+**Status:** closed — the ledger, both scripts, both test files, working rule 11
+and the three deferred tasks are gone; `GATES` is ten
+**Exit:** `python scripts/check_gates.py` returns zero with ten gates, and
+`tests/test_check_gates.py::test_ratification_programme_is_gone` passes —
+the ledger, `check_ownership.py` and `ratify.py` are absent from the tree and
+named by neither `GATES` nor `EXCLUDED`
+
+**Closed by D92**, which is the deletion record D81 required. What went and what
+stayed is listed there; the two facts worth repeating on the board are that
+**D74, D80 and D81 stay in the log unedited** (append-only; a reversal is a new
+entry) and that **T-73, T-74 and T-79 stay here as closed records**, because ids
+are load-bearing and D74 names all three. The programme ran, delivered 98
+ratified ids, and was withdrawn — that is the history, and a repo that looks
+like it never happened is worth less than one that says so.
+
+**What this costs, and it is not administrative.** T-78 was the pass that would
+have retired D42's authorship caveat on the eval labels. Deleting it removes the
+plan, not the obligation, so the caveat's wording in `README.md` and
+`eval/report.md` got **stronger**: it no longer says a ratification pass is
+deferred and on the board, it says no such pass is scheduled. Once the ledger's
+`proposed` count is gone, that text is the only thing keeping the gap visible.
+
+Mutations, all caught: the deletion test's three assertions weakened in turn —
+dropping the tree check (a resurrected `check_ownership.py` passes), dropping the
+`GATES` check (the gate returns to the tuple), and dropping the `EXCLUDED` check
+(`ratify.py` returns as an excluded script, which is how it would come back
+without failing `test_every_tracked_script_is_classified`).
+
 ### `[x] T-79` Pause the ratification programme in a holding area
+**Superseded by D92** — the review this pause was waiting on concluded, and
+`T-82` deleted the programme. The *Deferred — under review* section this task
+built is gone with it.
 **REQ:** none — board hygiene · **Discovered in:** the owner's instruction to
 skip the ratification section pending review · **Timebox:** one hour
 **Status:** closed — T-75, T-76 and T-78 moved to **Deferred — under review**
@@ -1696,6 +1676,9 @@ price in the one place it is load-bearing: D42's authorship caveat does not
 retire, so `eval/report.md` and `README.md` carry it in their own text.
 
 ### `[x] T-73` The ratification ledger and its gate
+**Superseded by D92** — the ledger, the gate and `ratify.py` were deleted by
+`T-82`, and `T-75`/`T-76` no longer resolve. This record stands because D74
+names it and closed work is not rewritten to look like it never ran.
 **REQ:** none — implements D74's protocol · **Blocks:** T-74, T-75, T-76,
 T-21's rewritten exit · **Discovered in:** the D74 ownership review ·
 **Timebox:** half a day
@@ -1720,6 +1703,9 @@ run — the ratification tasks' exits use it before flipping the tier into
 Statuses other than `proposed` are the owner's edits only (working rule 11, D74).
 
 ### `[x] T-74` Ratify the constitution, the spec and the stories
+**Superseded by D92** — the ledger these 98 statuses were written into is
+deleted. The reading happened; what is gone is the file that recorded it and
+the gate that asserted it.
 **Depends:** T-73 · **Discovered in:** D74 · **Timebox:** one session
 **Status:** closed — 98 ids ratified by the owner through `scripts/ratify.py`
 (D80), the owner's own invocations recorded in the ledger; `constitution`, `spec` and

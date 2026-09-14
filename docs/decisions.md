@@ -6763,3 +6763,80 @@ the same sentence D86 already owed for the bound, pointed the other way.
 **Reverses if:** T-81 lands. At that point the direct figure becomes the one to
 quote, the cited figure becomes the redundant bound, and the construction
 caveat comes out of the report because it stops being true.
+
+## D92 — The ratification programme is deleted; ownership is asserted at the git level, not audited by a gate
+
+**The owner's decision, 2026-09-13.** D81 paused the programme and named the
+two ways out: resume the reading, or conclude it was scaffolding the project
+did not need. The owner has taken the second, on the ground the ledger was
+built to establish — the owner is the intellectual owner of this work, and
+that fact does not need a JSON file to assert it. This entry is D81's
+required deletion record: what goes, what stays, and what the repo loses.
+
+**Removed.**
+
+- `docs/ratifications.json` — the 243-id ledger, 98 of them `ratified`.
+- `scripts/check_ownership.py` — the ninth gate. `GATES` drops to ten and
+  `check_req_coverage.py` becomes the tenth.
+- `scripts/ratify.py` and its `EXCLUDED` entry (D80's owner-run writer).
+- `tests/test_check_ownership.py` and `tests/test_ratify.py`.
+- **CLAUDE.md working rule 11.** The rule scoped a file that no longer
+  exists; leaving it would bind future sessions to a protocol with no
+  artifact.
+- `T-75`, `T-76` and `T-78`, and the board's *Deferred — under review*
+  section with them. They were readings, not builds; deleting the programme
+  deletes its unfinished half rather than orphaning it.
+
+**Kept, deliberately.** D74, D80 and D81 stay in this log unedited — it is
+append-only and a reversal is a new entry, never a deletion of the old one
+(this file's own preamble). `T-73`, `T-74` and `T-79` stay on the board as
+closed records with a pointer here, because ids are load-bearing and D74
+references all three. The work T-74 recorded was real human reading; what is
+being withdrawn is the *machinery*, not the claim that the reading happened.
+
+**The distinction the ledger blurred, kept apart here (D28's shape).** Two
+claims wore one mechanism:
+
+1. *Who owns this work.* Answered at the git level, where it always was, and
+   stated in `README.md`'s closing line. A ledger row adds nothing a commit
+   does not already carry, and `check_ownership.py` could only ever prove
+   coverage, not comprehension — D74 says so in its own text.
+2. *Whether the eval labels were adjudicated by a human.* **Not answered, and
+   now not scheduled.** T-78 was the pass that would have retired D42's
+   caveat. Deleting it does not discharge the obligation; it removes the plan
+   to discharge it.
+
+So the caveat gets **stronger** wording, not weaker: `README.md` and
+`eval/report.md` previously said the pass was deferred and on the board. It is
+now neither, and both documents say that instead. A deferred obligation that
+stops being visible is the exact failure D74 existed to prevent, and the text
+is what keeps it visible once the `proposed` count is gone.
+
+**Rejected — keep the ledger, drop only the gate.** A tracked record nothing
+checks drifts silently and reads as an assurance it no longer provides; D27's
+argument for the eval baseline, pointed at ownership. Half-removal is the
+worst of the three states.
+
+**Rejected — keep `check_ownership.py` narrowed to the three ratified tiers.**
+It is what D81 froze and it is coherent. But the gate asserts a human read the
+constitution, the spec and the stories in September 2026, which is history,
+not an invariant a future edit can violate in a way the gate would catch —
+it re-asserts a fixed fact on every run for ~1s and blocks nothing.
+
+**Rejected — delete D74/D80/D81 and the three closed tasks too.** That is the
+cheap reading of "remove all of it" and it breaks the append-only rule plus
+every id that resolves into them. The record of a programme that ran and was
+withdrawn is worth more than a repo that looks like it never happened.
+
+**Cost.** D42's authorship caveat now has no route to retirement inside this
+repo — every figure in `eval/report.md` is measured against labels this repo's
+own agent wrote, permanently, unless an outside reader adjudicates them. The
+board loses three tasks it will never close, so v1's task count falls rather
+than rises. And the repo's only machine-checked statement about human
+ownership is gone; what remains is git history and a sentence.
+
+**Reverses if:** an outside party — a reviewer, an auditor, a customer — needs
+ownership or label adjudication to be *checkable* rather than asserted. Then
+the answer is not this ledger rebuilt: it is adjudication of the eval labels
+alone, by someone who did not author them, which is the only tier that was
+ever load-bearing for a number this repo quotes.

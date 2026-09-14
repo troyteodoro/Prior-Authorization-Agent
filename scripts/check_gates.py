@@ -63,7 +63,6 @@ GATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("spike 001's recording", ("spike/spike_001/run.py", "--verify")),  # T-00
     ("the eval baseline", ("eval/run_eval.py",)),  # T-10
     ("the agentic differential", ("eval/run_agentic_eval.py",)),  # T-61
-    ("the ratification ledger", ("scripts/check_ownership.py",)),  # T-73
     # T-22/T-28 (D85). The report is generated, never hand-edited; --verify
     # recomputes every figure from the committed recordings and diffs, so a
     # stale number is a red gate rather than a plausible-looking table.
@@ -88,10 +87,6 @@ EXCLUDED: dict[str, str] = {
     "scripts/check_gates.py": (
         "this file; running it inside itself is the recursion the pytest guard "
         "refuses"
-    ),
-    "scripts/ratify.py": (
-        "writes ledger statuses at the owner's invocation and checks nothing; the "
-        "check is check_ownership.py (D80)"
     ),
 }
 
