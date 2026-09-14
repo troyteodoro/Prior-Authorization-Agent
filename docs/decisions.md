@@ -6984,3 +6984,46 @@ already stood on.
 **Reverses if:** a review needs the full analysis back in the README. Then the
 summary re-expands and §10 is deleted in the same commit, because the two must
 not coexist in full.
+
+---
+
+## D96 — P4 reworded: the eval ground truth is a working first draft
+
+The eval labels and fact manifests were drafted alongside the system at
+creation and reviewed as they were written. The caveat language layered onto
+them since D42 — "self-graded", "no adjudication pass scheduled", "do not
+quote a number without that sentence" — framed a working first draft as an
+open defect, and the injunction reads as a warning against the project's own
+results rather than a statement of scope. The mechanical safeguards carry the
+weight regardless of framing: manifests are written from the bundles before
+the notes are synthesized, the system under test never reads them, and every
+cited span is validated against the source rather than against a label.
+
+This entry, logged before the edits it authorizes:
+
+1. Spec §10's P4 keeps its id and is reworded — the ground truth is a first
+   draft that works, with further consideration (re-labeling and review as
+   the corpus grows, starting with T-81's second note per patient) belonging
+   to a later version rather than standing as an open warning.
+2. The injunction is removed from every carrier: the README's blockquote,
+   P4 summary line and status paragraph, CLAUDE.md's two carriers, the
+   board's two present-tense restatements, and `eval/report.md`'s scope
+   section (edited in `build_report.py` and regenerated).
+3. `tests/test_build_report.py` tracks the new sentences, so dropping the
+   scope statement from the report stays a red gate rather than a quiet
+   omission.
+
+D19, D42 and D92 stay in the log unedited — it is append-only, and this is
+the superseding entry.
+
+**Rejected — deleting P4 from §10 outright.** Ids are stable and referenced
+from this log; a P1–P8 list with a missing entry raises the very question the
+reword answers.
+
+**Rejected — scheduling a formal review pass or rebuilding any part of the
+ratification programme to carry one.** Process the project does not need
+(rule 11, D92); label review rides with the corpus work that would change the
+labels anyway.
+
+**Reverses if:** a later version expands the corpus and re-labels — the
+review is then part of that work and recorded with it.

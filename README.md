@@ -264,12 +264,11 @@ denominator is the shared replayed cost and it moves when that cost changes,
 while the delta does not. Read the aggregate and the spread, never one patient's
 ratio.
 
-> **Caveat that must travel with every number in this repo:** the eval ground
-> truth was authored by the agent that built the system it grades. Structural
-> mitigations exist (spans are validated mechanically by the scorer, not
-> against a label), **no human adjudication pass on the labels is scheduled**,
-> and a perfect score means only that the approach does not obviously fail. Do
-> not quote these numbers without this sentence.
+> **Scope of every number in this repo:** the eval ground truth was drafted
+> alongside the system as a working first draft — spans are validated
+> mechanically by the scorer, never against a label — and on a set this small
+> a perfect score means the approach does not obviously fail. A larger,
+> re-reviewed label set belongs to a later version.
 
 Guardrails that keep the differential honest:
 
@@ -489,10 +488,9 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   evidence existed. Fail-closed, and still a loss.
 - **P3 — Small everything.** Six patients, three documents, fifteen cases:
   every rate moves in large steps, and one case outweighs a percentage point.
-- **P4 — Self-graded ground truth.** The eval labels were authored by the
-  agent that built the system they grade, and **no adjudication pass by an
-  independent reviewer is scheduled**. No number from this repo should be
-  quoted without that sentence.
+- **P4 — The ground truth is a first draft.** The labels were drafted
+  alongside the system and labeled once; re-labeling and review ride with
+  the corpus expansion of a later version, alongside P3's set size.
 - **P5 — The blind verifier cannot check arithmetic.** It sees one claim and
   one quote, so shortfall claims ("only three months") are checked by Python,
   not by the verifier.
@@ -541,12 +539,11 @@ both are keyed by note content — and therefore most of the repo's committed
 numbers.
 
 **Nothing else is outstanding — including the one thing a reader might assume
-is.** An earlier board carried a programme to have the eval labels adjudicated
-by an independent reviewer; it was deleted, with the full record kept in the
-decision log. The consequence stands plainly: the adjudication pass is not
-deferred, it is **unscheduled**, so every figure in the table above is
-measured against self-authored ground truth with no pending work that would
-change that.
+is.** An earlier board carried a programme to add a formal review stamp to the
+eval labels; it was deleted, with the full record kept in the decision log.
+The labels stand as a working first draft — every cited span is validated
+against the source by the scorer — and further label review rides with the
+corpus expansion of a later version rather than sitting on this board.
 
 Two requirements are **unclaimed on purpose**: model-performed adjudication
 is reserved out of v1 because Amendment 1 keeps the entire

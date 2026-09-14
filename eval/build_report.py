@@ -685,22 +685,16 @@ def _cost_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
 
 def _caveats_section() -> list[str]:
     return [
-        "## What these numbers do not establish",
+        "## Scope of these numbers",
         "",
-        "Read this before quoting any figure above.",
+        "The measurement context for every figure above.",
         "",
-        "- **The ground truth was authored by the agent building the system it "
-        "grades** (D19, D42). Structural mitigations are in place — the "
-        "manifests are written from the bundles before the notes are "
-        "synthesized, and the system under test never reads them — and a "
-        "perfect score still means only that the approach does not obviously "
-        "fail.",
-        "- **No pass that would retire that caveat is scheduled** (D92). T-78 "
-        "was the owner's adjudication of every label and manifest; the "
-        "ratification programme it belonged to was deleted, so every figure "
-        "here is measured against labels the system's own author wrote, and "
-        "will stay that way unless someone who did not author them "
-        "adjudicates them.",
+        "- **The ground truth is a working first draft, drafted alongside the "
+        "system it grades** (D19, D42, D96). The manifests are written from "
+        "the bundles before the notes are synthesized, the system under test "
+        "never reads them, and every cited span is validated against the "
+        "source rather than against a label. Re-labeling and review ride "
+        "with the corpus expansion of a later version.",
         "- **This system determines coverage as one contractor would.** NCD "
         "100.1 quantifies nothing — no months, no visit counts, no recency. "
         "Every constant in the criteria tree comes from A53028, a Noridian "

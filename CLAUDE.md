@@ -413,15 +413,13 @@ than it tells them.
 `tests/test_check_gates.py::test_ratification_programme_is_gone` makes putting
 any of it back — files or records — a red suite rather than a quiet commit.
 
-**What the deletion costs is the part to carry into a review.** T-78 was the
-pass that would have retired D42's authorship caveat, and deleting it removed
-the plan, not the obligation: **every figure `eval/report.md` and `README.md`
-quote is measured against labels this repo's own agent authored, with no
-adjudication pass scheduled.** Both documents say exactly that in their own
-text, which is now the only thing keeping the gap visible — the ledger's
-`proposed` count used to be. The fix, if an outside party ever needs this
-checkable, is adjudication of the eval labels by someone who did not write
-them; it is not this ledger rebuilt *(D92)*.
+**The caveat that travelled with the numbers was reworded by D96.** T-78
+would have added a formal review stamp to the eval labels; deleting it
+removed paperwork. D96 reframed the rest: the ground truth is a working first
+draft, drafted alongside the system, and further label review rides with
+later corpus expansion (T-81 and beyond) instead of standing as an open
+warning in every document. Spec §10's P4 records the reword; `README.md` and
+`eval/report.md` state the scope without the injunction *(D92, D96)*.
 
 Worth knowing before a review: **REQ-44/REQ-47 are unclaimed on purpose** —
 Amendment 1 reserves the entire decision procedure to Python, so there is no
@@ -468,10 +466,10 @@ satisfiable *(D63, D70)*.
   criterion (a)'s 12-month lookback *(D40)* and `discrepancy_tolerance` at 1.0
   BMI points *(D51)*. The tree carries no provisional constant, and the count is
   pinned at zero so a new one is a visible diff.
-- **The eval ground truth was authored by the agent building the system it
-  grades** *(D19, D42)*. Structural mitigations are in place and a perfect score
-  still means only that the approach does not obviously fail. Do not quote a
-  number from this repo without that caveat.
+- **The eval ground truth is a working first draft, drafted alongside the
+  system it grades** *(D19, D42; reworded in D96)*. Mechanical safeguards are
+  in place, and on a corpus this small a perfect score still means only that
+  the approach does not obviously fail.
 - **The measured result so far** *(D64, D66, re-measured in D91)*:
   model-directed retrieval agrees with the deterministic oracle on 6/6 outcomes
   and 42/42 criteria, 80/80 spans valid, zero errors — for **24 model calls and

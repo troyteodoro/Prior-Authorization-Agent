@@ -222,8 +222,7 @@ def test_only_labeled_pairs_are_scored(script):
 @pytest.mark.parametrize(
     "claim",
     [
-        "authored by the agent building the system it grades",  # D19/D42
-        "No pass that would retire that caveat is scheduled",    # D92
+        "first draft, drafted alongside the system it grades",  # D19/D42/D96
         "as one contractor would",                               # D21/D29
         "six patients",                                          # corpus size
     ],

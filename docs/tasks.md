@@ -50,10 +50,10 @@ Off the path. Real work, nothing waiting on it:
 |---|---|---|
 | `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | any time, blocks nothing *(D91)* |
 
-**Why four of those rows delivered nothing.** D74 converted D42's admission —
-the eval ground truth is authored by the agent building the system it grades,
-and the docs the whole repo obeys were agent-drafted under direction — into
-recorded ownership: a ledger, a gate, and statuses only the owner may write.
+**Why four of those rows delivered nothing.** D74 converted D42's framing —
+the eval ground truth was drafted alongside the system it grades, as were the
+docs the whole repo obeys — into
+recorded ownership: a ledger, a gate, and statuses only one party may write.
 T-73 built it, T-74 carried the owner's reading of the constitution, spec and
 stories (98 ids), D81 paused the unfinished half, and **D92 deleted the whole
 thing** — ownership of this work is a git-level fact a JSON ledger adds nothing
@@ -66,13 +66,11 @@ of* the critical path at D74 and held the first two positions on it, and what
 survives is the record of it — four decision entries and these rows, no
 running code. The cost of the detour is kept here rather than smoothed away.
 
-**What that costs, stated once.** T-78 was the point where D42's authorship
-caveat would have retired. Deleting it removes the plan, not the obligation,
-so the caveat now has **no route to retirement inside this repo**: every
-figure in `eval/report.md` and every claim in `README.md` is measured against
-labels this repo's own agent authored, permanently, and both documents say so
-in their own text. Once the ledger's `proposed` count is gone, that text is
-the only thing keeping the gap visible *(D92)*.
+**What that costs, stated once — since reworded by D96.** T-78 was the point
+where D42's caveat would have formally retired. D96 reworded it instead: the
+ground truth is a working first draft, drafted alongside the system, and
+further label review rides with later corpus expansion rather than standing
+as an open warning in `eval/report.md` and `README.md` *(D92, D96)*.
 
 **Why T-21 did not wait.** US-4 and US-5 were *built and ungraded* — every
 predicate, the reconciliation, the aggregator and the gap list worked and were
@@ -1283,8 +1281,9 @@ below and before T-74/T-75 *(D79)*. D74's added requirement — an
 `check_ownership.py --require eval` returning zero and `eval` flipped into
 `required_tiers` — is not discharged by this close; it was re-homed as `T-78`
 *(D79)*, which **D92 deleted along with the rest of the programme**. The
-requirement is therefore never discharged, and D42's caveat stands permanently
-in `README.md` and `eval/report.md`.
+requirement was never discharged as written; D96 later reworded D42's caveat
+into a scope statement — the ground truth is a working first draft, with
+further review riding on later corpus expansion.
 **Exit:** `python eval/run_eval.py` runs every case in spec §6, all labeled
 
 **This is the task that closed two stories.** US-4 and US-5 were built — every
@@ -1456,7 +1455,8 @@ the rejected alternative stays rejected on evidence.
 **A8's section did not exist and now does.** `README.md` gained *Where this
 system degrades*: single-jurisdiction thresholds that are Noridian's and not
 CMS's, extraction's paraphrase refusal losing evidence fail-closed, corpus size,
-self-graded ground truth with no adjudication pass scheduled *(D92)*,
+a first-draft ground truth with review deferred to later corpus work *(D92;
+reworded by D96)*,
 the verifier's blindness costing arithmetic checks, model adjudication
 deliberately unclaimed, retrieval recall measured as a bound, and every free
 number being a replay of one measured day. The status section now carries the

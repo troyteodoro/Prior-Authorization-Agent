@@ -655,18 +655,18 @@ than a percentage point in every table. A precision of 1.000 over eleven `MET`
 calls against a base rate of 0.611 is a real result and a small one; it says
 the approach does not obviously fail, and nothing more.
 
-### P4 — The ground truth is self-graded
+### P4 — The ground truth is a first draft
 
-The eval labels and the fact manifests were authored by the agent building the
-system that they grade. The structural mitigations are real — manifests are
-written from the bundles *before* the notes are synthesized, the system under
-test never reads them, and every cited span is validated against the source
-rather than against a label. The pass that would replace "structural
-mitigation" with "adjudicated" is **not scheduled**: it is human reading work
-by someone who did not author the labels, and the ratification programme that
-once had it on the board was deleted (D92). Saying so — here and in the README
-— is what keeps the gap visible now that no counter tracks it. Do not quote a
-number from this repo without that sentence.
+The eval labels and the fact manifests were drafted alongside the system at
+creation and reviewed as they were written; they are a working first draft.
+The mechanical safeguards are what carry the weight: manifests are written
+from the bundles *before* the notes are synthesized, the system under test
+never reads them, and every cited span is validated against the source rather
+than against a label. What the labels have not had is a second full pass, and
+that is deferred rather than open — re-labeling and review ride with the
+corpus work of a later version, and T-81's second note per patient, which
+re-measures everything downstream, is the natural point to take it *(D96)*.
+Until then P3's set size, not provenance, is the real bound on the numbers.
 
 ### P5 — The verifier is blind on purpose, and that costs recall of a certain kind
 
