@@ -1,0 +1,40 @@
+CASCADE RHEUMATOLOGY ASSOCIATES
+Patient: Maddox, Corinne                MRN: 550217
+DOB: 1972-04-19                         Sex: F
+
+RHEUMATOLOGY FOLLOW-UP - CONSOLIDATED VISIT RECORD
+Attending rheumatologist: R. Osei, MD.
+Diagnosis: Seropositive rheumatoid arthritis, established 12/2025.
+
+01/13/2026 - Rheumatology follow-up. Methotrexate started at 15 mg orally
+once weekly with folic acid 1 mg daily. Joint exam: 9 tender, 6 swollen.
+Morning stiffness 90 minutes. Baseline CBC, CMP and hepatic panel reviewed;
+no abnormalities.
+
+02/10/2026 - Rheumatology follow-up. Methotrexate increased to 17.5 mg
+weekly. Joint exam: 8 tender, 5 swollen. Morning stiffness 75 minutes.
+CBC and hepatic panel reviewed; transaminases within normal limits.
+
+03/10/2026 - Rheumatology follow-up. Methotrexate increased to 20 mg weekly,
+tolerated without nausea. Joint exam: 7 tender, 5 swollen. Morning stiffness
+60 minutes. DAS28-CRP 4.9. Monitoring labs reviewed; unremarkable.
+
+04/14/2026 - Rheumatology follow-up. Methotrexate continued at 20 mg weekly.
+Joint exam: 7 tender, 4 swollen. Morning stiffness 60 minutes, unchanged.
+CBC and CMP reviewed; stable.
+
+05/12/2026 - Rheumatology follow-up. Methotrexate increased to 22.5 mg
+weekly given persistent synovitis. Joint exam: 7 tender, 4 swollen.
+DAS28-CRP 4.7. Hepatic panel reviewed; within normal limits.
+
+06/09/2026 - Rheumatology follow-up. Methotrexate at maximum tolerated oral
+dose of 25 mg weekly. Joint exam: 6 tender, 4 swollen. Morning stiffness
+55 minutes. DAS28-CRP 4.6, inadequate improvement on methotrexate
+monotherapy. CBC, CMP and hepatic panel reviewed; no abnormalities.
+Discussion begun regarding addition of a biologic agent.
+
+PAST SURGICAL HISTORY
+09/23/2014 - Appendectomy, uncomplicated.
+
+HEALTH MAINTENANCE
+10/08/2025 - Influenza vaccine administered.

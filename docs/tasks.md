@@ -16,7 +16,9 @@ answers the second question, once.
 
 ## Path to v1.5
 
-**What to do next: `T-85`, the spike.** v1.5 opened with D97 — a second
+**What to do next: `T-86`, the corpus admission.** The spike is closed: every
+v1.5 kill criterion cleared, precision 1.000, exclusion recall 54/54,
+anchoring drop 0.000 *(D100)*. v1.5 opened with D97 — a second
 specialty, rheumatology biologic step therapy, spike first, engine seams only
 where the real tree forces them. D98 pre-registered the Amendment 2 decision
 gate before any cross-specialty number exists; D99 chose the policy source
@@ -25,7 +27,7 @@ of `docs/decisions.md`, dated, set before any measurement.
 
 | # | Task | Closes / gates | Decision before it |
 |---|---|---|---|
-| 1 | `T-85` | spike 002: can medication-trial events extract with citable spans; its kill criteria gate everything below | D97, D98 — logged |
+| 1 | `T-85` | spike 002: can medication-trial events extract with citable spans; its kill criteria gate everything below — **closed** *(D100)* | D97, D98 — logged |
 | 2 | `T-86` | the rheum documents enter the corpus; every later span and code binding depends on it | D99 — logged |
 | 3 | `T-87` | seams I: tree-declared predicate dispatch · REQ-55, REQ-56, REQ-58 | at open |
 | 4 | `T-88` | seams II: second event contract, per-tree extraction schema · REQ-57 | at open |
@@ -62,8 +64,8 @@ before.
 
 Seventy-five tasks are on this board — IDs run to T-95 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **63 are closed and 12 are open** (T-81 plus v1.5's
-eleven). The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **64 are closed and 11 are open** (T-81 plus v1.5's
+ten remaining). The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -1596,10 +1598,13 @@ Feature F3, opened by D97. The order is `Path to v1.5` at the top of this
 file; every row below carries D97's regression bar in addition to its own
 exit.
 
-### `[ ] T-85` Spike 002: step-therapy extraction on hand-written rheum notes
+### `[x] T-85` Spike 002: step-therapy extraction on hand-written rheum notes
 **Type:** spike · **Informs:** US-10 · **Blocks:** T-86 through T-95
 **Timebox:** four hours · **Spends:** ~15 model calls, bounded by the v1.5
 kill criteria — the probe is the budget
+**Status:** **closed** (D100) — every kill criterion cleared: precision 1.000,
+recall 1.000, exclusion recall 54/54, anchoring drop 0.000, stable on all
+three runs, 15 calls spent
 **Exit:** `python spike/spike_002/run.py --verify` —
 - extraction runs over five hand-written, hand-labeled rheumatology notes
   (infusion-clinic and office styles), at least one carrying missed-infusion
@@ -1615,6 +1620,16 @@ kill criteria — the probe is the budget
 
 A spike answering "unreliable" is a successful spike: the kill criteria say
 what changes, and the path stops at one task's cost.
+
+**Closed by D100.** Three complete runs on the pinned model: event precision
+and recall 1.000 on every run, all 54 trap dates excluded across the five
+classes — including the dated hydroxychloroquine and sulfasalazine courses
+this spike existed to test — 72 of 72 quotes anchored (three only under D18
+normalization, so the wrap-crossing path ran), the assertion-only note
+yielding zero events and one trial_assertion every time. Mutation-tested four
+ways — a changed note byte, a hand-edited kill verdict, an errored note
+carrying a score, a shifted span — each caught by `--verify`, which joined
+`check_gates.GATES` as the eleventh gate.
 
 ### `[ ] T-86` Admit the rheumatology policy documents to the corpus
 **REQ:** 6, 7 · **Serves:** US-10 · **Depends:** T-85, D99 · **Timebox:** four hours

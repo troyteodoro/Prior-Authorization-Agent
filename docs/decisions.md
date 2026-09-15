@@ -7240,3 +7240,48 @@ match the tree prove nothing; Articles III and VII as theater.
 **Reverses if:** T-86 finds the pair retired, revised away from the language
 above, or unfetchable in a byte-stable form — or an active Noridian coverage
 LCD for a Part B biologic surfaces before T-86 closes.
+
+---
+
+## D100 — Spike 002 result: step-therapy extraction clears every v1.5 kill criterion
+
+The question D97 made everything wait on is answered. One model call per note
+over five hand-written rheumatology notes — infusion-monitoring and office
+styles, hard-wrapped as EHR exports are — extracts methotrexate-trial
+encounters with citable spans, three runs at temperature 0 on
+**gemini-3.5-flash-lite** (AI Studio, the D20 pin):
+
+- **Event precision 1.000, recall 1.000**, identical on all three runs
+  against a floor of 0.8. The event sets are byte-stable across runs on
+  every note.
+- **Exclusion recall 1.000 — 54 of 54 trap dates excluded** against a floor
+  of 0.9, covering all five trap classes: missed and cancelled visits inside
+  a gap month (E17's seed), unsuccessful contact attempts, dated
+  hydroxychloroquine and sulfasalazine courses (the drug-confusion class this
+  spike existed to test), unrelated-section dates, and a consultation at
+  which methotrexate was never managed.
+- **Anchoring drop rate 0.000 — 72 of 72 quotes located** against a ceiling
+  of 0.1; three anchored only under D18's whitespace normalization, so the
+  wrap-crossing path was exercised, not bypassed.
+- The assertion-only note (E16's seed) produced **zero events and one
+  trial_assertion** on every run — the model refused the bare "failed
+  methotrexate" recollection as an encounter without being told about E16.
+- 15 calls, 26,959 tokens, 32.0s wall — the ~15-call budget, spent exactly.
+
+**What this does and does not establish.** Five hand-written notes are a
+probe, not a corpus; a perfect score here means the approach does not
+obviously fail on rheumatology documentation, which is all a spike can say
+and exactly what D97 needed before opening any engine seam. The instruction's
+structure is spike 001's with step-therapy content — encounter definition, a
+never-return list, "return every course, choosing happens elsewhere" — and it
+transfers to T-88 as the `mtx_trial.v1` schema under D45's rule: promoted
+byte-for-byte, or re-measured.
+
+**The path proceeds to T-86.** The scoring and anchoring rules were reused
+from D17 and D18, not redecided; the only new methodological content this
+entry carries is the trap taxonomy above, and `spike/spike_002/run.py
+--verify` joins the gate list as T-85's exit.
+
+**Reverses if:** T-91's full-corpus measurement contradicts these rates on
+synthesized notes — then the spike overfit to its own five notes and the note
+style, not the extraction, is what T-90 revisits.

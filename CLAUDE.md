@@ -29,7 +29,7 @@ an instruction typed into a prompt.
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-11, with personas. |
 | `docs/tasks.md` | The board. Tasks T-00 through T-95, each with a runnable exit condition. **`Path to v1.5` at the top states what to do next.** |
-| `docs/decisions.md` | D1–D99, kill criteria, open questions. Append-only. |
+| `docs/decisions.md` | D1–D100, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -101,17 +101,17 @@ deterministic path is usable as a regression oracle *(D62)*.
 `python` is not on PATH; the tracked venv is at `./venv/bin/python`.
 
 ```bash
-./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
+./venv/bin/python scripts/check_gates.py        # all 11 gates, ~25s. Required at every close.
 ./venv/bin/python -m pytest -q                  # the suite alone (653 tests, ~18s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
 
-The ten gates, all zero-cost: `pytest`, then `check_env.py`,
+The eleven gates, all zero-cost: `pytest`, then `check_env.py`,
 `check_skeleton.py`, `verify_sources.py --offline`, `select_patients.py
---verify`, `spike/spike_001/run.py --verify`, `eval/run_eval.py`,
-`eval/run_agentic_eval.py`, `eval/build_report.py --verify` *(D85)*,
-`check_req_coverage.py` *(D87)*. **Membership is a
+--verify`, `spike/spike_001/run.py --verify`, `spike/spike_002/run.py
+--verify` *(D100)*, `eval/run_eval.py`, `eval/run_agentic_eval.py`,
+`eval/build_report.py --verify` *(D85)*, `check_req_coverage.py` *(D87)*. **Membership is a
 rule, not a taste call** — a
 command is a gate iff some task's exit condition names it *and* it spends no
 model call and touches no network. Everything else tracked under `scripts/`,
@@ -361,7 +361,7 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**63 of 75 tasks closed, 12 open. All 10 gates green**
+**64 of 75 tasks closed, 11 open. All 11 gates green**
 (`check_gates.py`, ~25s, 653 tests across 31 files). IDs run to T-95, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count. **v1.5 is open** *(D97)*: a second
@@ -398,7 +398,8 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 36.1s across nine determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **T-85 through T-95** — v1.5's path, stated once as `Path to v1.5` at
+Open: **T-86 through T-95** (T-85, the spike, closed with every kill
+criterion cleared — D100) — v1.5's path, stated once as `Path to v1.5` at
 the top of `docs/tasks.md` with what each step gates; read it rather than this
 paragraph *(D70, D97)*. Binding on every v1.5 task: the bariatric baseline
 diff stays clean with zero `--update-baseline` uses, every committed recording

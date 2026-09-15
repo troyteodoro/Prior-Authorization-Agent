@@ -61,6 +61,7 @@ GATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("the policy corpus hashes", ("scripts/verify_sources.py", "--offline")),  # T-02
     ("the patient bundles", ("scripts/select_patients.py", "--verify")),  # T-04
     ("spike 001's recording", ("spike/spike_001/run.py", "--verify")),  # T-00
+    ("spike 002's recording", ("spike/spike_002/run.py", "--verify")),  # T-85
     ("the eval baseline", ("eval/run_eval.py",)),  # T-10
     ("the agentic differential", ("eval/run_agentic_eval.py",)),  # T-61
     # T-22/T-28 (D85). The report is generated, never hand-edited; --verify

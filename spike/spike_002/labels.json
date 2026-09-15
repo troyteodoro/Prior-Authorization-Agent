@@ -1,0 +1,96 @@
+{
+  "_about": "Hand-written ground truth for spike 002 (T-85, D97). Scored per D17's rule: an event matches on ISO date. 'traps' are dates present in the note that must never become methotrexate events; excluding all of them is the exclusion count. 'hint' is a literal substring of the note, asserted to occur by run.py --verify so a typo here fails loudly instead of depressing the model's score.",
+  "_assertion_scoring": "trial_assertions are not scored for precision. The assertion label is required only where a claimed methotrexate trial stands with no encounter documentation behind it (E16's shape). Counts are recorded for every note as an observation.",
+  "notes": [
+    {
+      "note_id": "r01_clean_trial",
+      "file": "notes/r01_clean_trial.txt",
+      "shape": "Six consecutive monthly rheumatology visits on a titrated methotrexate course, fully documented. The baseline: if this one is wrong, nothing downstream is worth measuring.",
+      "trial_assertion_required": false,
+      "events": [
+        {"date": "2026-01-13", "hint": "01/13/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-02-10", "hint": "02/10/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-03-10", "hint": "03/10/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-04-14", "hint": "04/14/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-05-12", "hint": "05/12/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-06-09", "hint": "06/09/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true}
+      ],
+      "traps": [
+        {"date": "2014-09-23", "hint": "09/23/2014", "reason": "unrelated_section", "detail": "past surgical history"},
+        {"date": "2025-10-08", "hint": "10/08/2025", "reason": "unrelated_section", "detail": "immunization"}
+      ]
+    },
+    {
+      "note_id": "r02_gap_month_missed_visits",
+      "file": "notes/r02_gap_month_missed_visits.txt",
+      "shape": "E17's seed. Three monitoring visits, a May 2026 gap month holding two missed visits and one failed outreach call, then two more visits. Counting any May date as an event turns a longest run of 3 into a run of 6 and flips the trial-length criterion silently.",
+      "trial_assertion_required": false,
+      "events": [
+        {"date": "2026-02-12", "hint": "02/12/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-03-12", "hint": "03/12/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-04-09", "hint": "04/09/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-06-11", "hint": "06/11/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-07-09", "hint": "07/09/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true}
+      ],
+      "traps": [
+        {"date": "2026-05-07", "hint": "05/07/2026", "reason": "missed_visit", "detail": "no-show, in the gap month"},
+        {"date": "2026-05-21", "hint": "05/21/2026", "reason": "missed_visit", "detail": "cancelled by patient, in the gap month"},
+        {"date": "2026-05-28", "hint": "05/28/2026", "reason": "unsuccessful_contact", "detail": "outreach call, no answer, in the gap month"}
+      ]
+    },
+    {
+      "note_id": "r03_assertion_only",
+      "file": "notes/r03_assertion_only.txt",
+      "shape": "E16's seed, the refusal test. A reported prior methotrexate trial with no encounter documentation behind it. Correct extraction yields zero events and at least one trial assertion.",
+      "trial_assertion_required": true,
+      "events": [],
+      "traps": [
+        {"date": "2026-08-21", "hint": "08/21/2026", "reason": "non_mtx_encounter", "detail": "the consultation itself; methotrexate neither administered nor prescribed at it"},
+        {"date": "2022-06-30", "hint": "06/30/2022", "reason": "unrelated_section", "detail": "health maintenance, colonoscopy"},
+        {"date": "2025-10-12", "hint": "10/12/2025", "reason": "unrelated_section", "detail": "immunization"},
+        {"date": "2026-08-04", "hint": "08/04/2026", "reason": "unrelated_section", "detail": "administrative, referral received"},
+        {"date": "2026-08-18", "hint": "08/18/2026", "reason": "unrelated_section", "detail": "administrative, prior authorization inquiry"}
+      ]
+    },
+    {
+      "note_id": "r04_other_agents",
+      "file": "notes/r04_other_agents.txt",
+      "shape": "The drug-confusion test. Four genuine methotrexate visits alongside a dated hydroxychloroquine course, a dated sulfasalazine course, and one failed contact attempt. A prior-agent date extracted as a methotrexate event manufactures trial history that never happened.",
+      "trial_assertion_required": false,
+      "events": [
+        {"date": "2026-03-03", "hint": "03/03/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-04-07", "hint": "04/07/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-05-05", "hint": "05/05/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true},
+        {"date": "2026-06-02", "hint": "06/02/2026", "dose_documented": true, "response_assessed": true, "labs_reviewed": true}
+      ],
+      "traps": [
+        {"date": "2024-04-11", "hint": "04/11/2024", "reason": "other_agent", "detail": "hydroxychloroquine started"},
+        {"date": "2024-11-22", "hint": "11/22/2024", "reason": "other_agent", "detail": "hydroxychloroquine discontinued"},
+        {"date": "2025-01-20", "hint": "01/20/2025", "reason": "other_agent", "detail": "sulfasalazine started"},
+        {"date": "2025-03-17", "hint": "03/17/2025", "reason": "other_agent", "detail": "sulfasalazine discontinued"},
+        {"date": "2026-05-19", "hint": "05/19/2026", "reason": "unsuccessful_contact", "detail": "lab-draw call, no answer"}
+      ]
+    },
+    {
+      "note_id": "r05_two_courses_sparse_dose",
+      "file": "notes/r05_two_courses_sparse_dose.txt",
+      "shape": "Two methotrexate courses separated by a surgical hold, eight encounters total, with dose, response and labs documented in only some months. Extraction must emit all eight; choosing the qualifying run happens elsewhere, in Python.",
+      "trial_assertion_required": false,
+      "events": [
+        {"date": "2025-04-08", "hint": "04/08/2025", "dose_documented": true,  "response_assessed": true,  "labs_reviewed": true},
+        {"date": "2025-05-13", "hint": "05/13/2025", "dose_documented": false, "response_assessed": true,  "labs_reviewed": false},
+        {"date": "2025-06-10", "hint": "06/10/2025", "dose_documented": true,  "response_assessed": false, "labs_reviewed": true},
+        {"date": "2026-01-06", "hint": "01/06/2026", "dose_documented": true,  "response_assessed": true,  "labs_reviewed": true},
+        {"date": "2026-02-03", "hint": "02/03/2026", "dose_documented": false, "response_assessed": false, "labs_reviewed": false},
+        {"date": "2026-03-03", "hint": "03/03/2026", "dose_documented": true,  "response_assessed": true,  "labs_reviewed": true},
+        {"date": "2026-04-07", "hint": "04/07/2026", "dose_documented": true,  "response_assessed": true,  "labs_reviewed": false},
+        {"date": "2026-05-05", "hint": "05/05/2026", "dose_documented": true,  "response_assessed": true,  "labs_reviewed": true}
+      ],
+      "traps": [
+        {"date": "2025-07-22", "hint": "07/22/2025", "reason": "unrelated_section", "detail": "past surgical history, cholecystectomy"},
+        {"date": "1999-04-02", "hint": "04/02/1999", "reason": "unrelated_section", "detail": "family history"},
+        {"date": "2024-10-15", "hint": "10/15/2024", "reason": "unrelated_section", "detail": "immunization"}
+      ]
+    }
+  ]
+}

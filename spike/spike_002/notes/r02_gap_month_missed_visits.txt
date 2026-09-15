@@ -1,0 +1,41 @@
+HARBORVIEW ARTHRITIS AND RHEUMATISM CLINIC
+Patient: Delacroix, Emile               MRN: 771938
+DOB: 1969-08-02                         Sex: M
+
+METHOTREXATE MONITORING RECORD
+Attending rheumatologist: S. Whitfield, MD.
+Diagnosis: Seropositive rheumatoid arthritis.
+
+02/12/2026 - Monitoring visit. Methotrexate 20 mg orally once weekly,
+adherent. Joint exam: 6 tender, 3 swollen. Morning stiffness 45 minutes.
+CBC and hepatic panel reviewed; no abnormalities.
+
+03/12/2026 - Monitoring visit. Methotrexate continued at 20 mg weekly.
+Joint exam: 6 tender, 3 swollen. Reports fatigue the day after dosing.
+CBC and CMP reviewed; stable.
+
+04/09/2026 - Monitoring visit. Methotrexate increased to 22.5 mg weekly.
+Joint exam: 5 tender, 3 swollen. DAS28-CRP 4.4. Monitoring labs reviewed;
+transaminases within normal limits.
+
+05/07/2026 - Patient did not attend scheduled monitoring visit. Marked as
+no-show by front desk. No clinical encounter took place.
+
+05/21/2026 - Rescheduled monitoring visit cancelled by patient the morning
+of the appointment. Not seen.
+
+05/28/2026 - Outreach call placed to patient regarding missed visits and
+overdue laboratory draw. No answer; voicemail left. No clinical contact
+established.
+
+06/11/2026 - Monitoring visit. Methotrexate resumed at 22.5 mg weekly after
+self-reported lapse in dosing during May. Joint exam: 7 tender, 4 swollen.
+Morning stiffness 70 minutes. CBC and hepatic panel reviewed; unremarkable.
+
+07/09/2026 - Monitoring visit. Methotrexate continued at 22.5 mg weekly,
+adherent since resumption. Joint exam: 6 tender, 4 swollen. DAS28-CRP 4.5.
+Monitoring labs reviewed; stable.
+
+NOTE
+Attendance gap during May 2026. Methotrexate therapy otherwise ongoing
+since February 2026.

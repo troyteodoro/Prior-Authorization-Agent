@@ -1,0 +1,39 @@
+MERIDIAN RHEUMATOLOGY AND INFUSION CENTER
+Patient: Okafor, Benedict               MRN: 449021
+DOB: 1977-06-25                         Sex: M
+
+RHEUMATOLOGY VISIT RECORD
+Attending rheumatologist: L. Vasquez-Moro, MD.
+Diagnosis: Seropositive rheumatoid arthritis.
+
+PRIOR DISEASE-MODIFYING THERAPY
+04/11/2024 - Hydroxychloroquine 400 mg daily started by prior provider.
+11/22/2024 - Hydroxychloroquine discontinued for inadequate response after
+seven months; no ocular toxicity.
+01/20/2025 - Sulfasalazine started, titrated to 2 g daily.
+03/17/2025 - Sulfasalazine discontinued for gastrointestinal intolerance.
+
+CURRENT THERAPY - METHOTREXATE
+03/03/2026 - Office visit. Methotrexate started at 15 mg orally once weekly
+with folic acid. Joint exam: 8 tender, 6 swollen. Baseline CBC, CMP and
+hepatic panel reviewed; acceptable for methotrexate initiation.
+
+04/07/2026 - Office visit. Methotrexate increased to 20 mg weekly. Joint
+exam: 8 tender, 5 swollen. Morning stiffness 80 minutes. Monitoring labs
+reviewed; no abnormalities.
+
+05/05/2026 - Office visit. Methotrexate continued at 20 mg weekly. Joint
+exam: 7 tender, 5 swollen. DAS28-CRP 5.0. CBC and hepatic panel reviewed;
+stable.
+
+06/02/2026 - Office visit. Methotrexate increased to 25 mg weekly. Joint
+exam: 7 tender, 5 swollen. Morning stiffness 75 minutes, minimal change.
+Monitoring labs reviewed; transaminases within normal limits.
+
+05/19/2026 - Call placed to patient regarding an overdue laboratory draw.
+No answer; voicemail left. No clinical contact established.
+
+ASSESSMENT
+Active disease despite methotrexate through 06/2026 and two prior
+conventional agents. Candidate for addition of a biologic pending payer
+requirements.

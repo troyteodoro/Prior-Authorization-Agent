@@ -1,0 +1,35 @@
+PINEHURST RHEUMATOLOGY CONSULTANTS
+Patient: Aldana, Rosalind               MRN: 662405
+DOB: 1958-12-07                         Sex: F
+
+NEW PATIENT CONSULTATION
+Consulting rheumatologist: T. Braddock, MD.
+
+08/21/2026 - New patient consultation for management of seropositive
+rheumatoid arthritis, referred for consideration of biologic therapy.
+
+HISTORY OF PRESENT ILLNESS
+Ms. Aldana reports that she was treated with methotrexate by a rheumatologist
+in another state for approximately eight months, ending in early 2025. She
+states the medication "never really worked" and that her joints remained
+swollen throughout. She does not recall the dose and believes it was
+eventually stopped for lack of benefit. No treatment records from that
+practice are available at the time of this consultation; a records request
+has been initiated. She has taken no disease-modifying therapy since.
+
+Joint exam today: 10 tender, 7 swollen. Morning stiffness approximately two
+hours. Assessment: active seropositive rheumatoid arthritis, currently on no
+disease-modifying agent. The reported prior methotrexate course cannot be
+verified against any encounter documentation in hand.
+
+PLAN
+Await outside records before any determination regarding step therapy.
+
+HEALTH MAINTENANCE
+06/30/2022 - Screening colonoscopy, no polyps.
+10/12/2025 - Influenza vaccine administered.
+
+ADMINISTRATIVE
+08/04/2026 - Referral received from primary care.
+08/18/2026 - Insurance eligibility confirmed; prior authorization inquiry
+initiated for biologic therapy pending records.
