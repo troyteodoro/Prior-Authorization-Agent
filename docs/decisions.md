@@ -3160,6 +3160,41 @@ The 0.9 and 0.85 thresholds were set before any measurement existed, which is th
 only window in which a kill criterion is honest. Revising either after seeing a
 number is moving the goalpost, and the entry that does it has to say so.
 
+### v1.5 — set 2026-09-14, before any rheumatology measurement exists *(D97)*
+
+Spike 002:
+
+- Medication-trial event precision below 0.8 after two prompt strategies: the
+  decomposition changes — per-encounter events may be the wrong unit for
+  infusion and prescription documentation. Prompts do not get tuned a third
+  time.
+- Exclusion recall below 0.9 — missed infusions, pharmacy contact attempts,
+  and prior *biologic* mentions misread as methotrexate events: extraction
+  redesign before any corpus work. Held tighter than event recall because a
+  miscounted event flips the trial-length criterion silently, while a missed
+  event only costs an abstention.
+- Anchoring drop rate above 0.1 — claims whose quotes the anchorer cannot
+  locate: the note style is the problem, and the notes are redesigned before
+  the corpus is built.
+- The spike spends more than ~15 model calls: the probe is the budget; stop
+  and rethink.
+
+The rheumatology measurement:
+
+- Per-criterion precision on `MET` below 0.90 on the rheum set: A10 fails and
+  the close-out entry records that the engine did not generalize at v1's own
+  bar. The next move is diagnosis, never threshold revision.
+- Any mechanically invalid `MET` span: zero tolerance, A3's bar unchanged.
+- More than one verifier prompt-revision round provoked by rheumatology
+  claims: the claim shape is wrong, not the prompt (D78's precedent). A
+  `PROMPT_VERSION` change re-measures all 27 bariatric digests and is priced
+  as such before it is made.
+- Any bariatric drift after a seam task — a red gate, a baseline diff, or a
+  recording that fails replay: the seam is reverted. The baseline is never
+  updated to absorb a seam.
+- The full rheumatology vertical exceeding $2 or ~60 model calls: stop and
+  re-scope, matching the standing $2 criterion above.
+
 ---
 
 ## Open questions
@@ -7027,3 +7062,181 @@ labels anyway.
 
 **Reverses if:** a later version expands the corpus and re-labels — the
 review is then part of that work and recorded with it.
+
+---
+
+## D97 — v1.5 opens: a second specialty, spike first, seams only where a real tree forces them
+
+v1 closed with A1–A9 holding and one policy. The claim under test in v1.5 is
+spec §10 P1's: a second policy is "a small change to *build*." The specialty
+is rheumatology biologic step therapy, chosen because its hardest criterion —
+a failed or inadequate methotrexate trial sustained over consecutive months —
+has the same shape as the qualifying-run machinery this repo already measured
+and hardened (D84), exercised over a different tree, a different value set,
+and a different documentation style. The specialty after it, imaging or
+cardiology, is indication-driven rather than time-window-driven, and that
+choice does work now: nothing opened for rheumatology may assume time windows
+are the only criterion shape.
+
+**Chosen — in this order, one task at a time:**
+
+1. A spike in spike 001's exact shape — five hand-written rheumatology notes,
+   labels with substring hints, a self-contained runner, three modes — that
+   answers the only cheap question first: do medication-trial events extract
+   with citable spans from infusion-clinic documentation. The spike's kill
+   criteria (standing section, dated v1.5 subsection) gate everything below.
+2. The policy documents admitted to the corpus (D99) before any tree work,
+   because `CodeBinding` requires an in-corpus span naming each code.
+3. Only then the engine seams, and only the ones the real tree forces:
+   criterion→evaluator dispatch declared by the tree and resolved from a
+   closed registry; a reconcile step that tolerates a tree declaring no
+   reconciled facts; a second extracted-event contract beside `WmEvent`; a
+   per-tree extraction schema. Each seam gets its own entry before its code.
+4. Corpus, recordings, eval, differential, close-out — D42's order throughout:
+   manifests before notes, labels before recordings, recordings before
+   figures.
+
+**Rejected — a generalization framework built first.** A predicate registry,
+generic event shape and multi-schema extraction designed before any
+rheumatology artifact exists is working rule 9's exact shape: infrastructure
+the project has not earned, validated by nothing. The seams are the same
+either way; the order is what makes them honest.
+
+**Rejected — a parallel vertical fork.** Copying `criteria.py`, `workflow.py`
+and the extraction path into rheumatology-named modules isolates v1 perfectly
+and doubles the invariant surface that breaks silently — two tool allowlists,
+two reconcile guards, two accept-all-verifier bans — with no oracle between
+the two engines. The repo's hardest lessons are exactly the ones that would
+have to be relearned in the copy.
+
+**The regression bar, binding on every v1.5 task:** all pre-existing gates
+green; `eval/run_eval.py` clean against an unmodified `eval/baseline.json` —
+zero `--update-baseline` uses for the whole version; every committed recording
+replaying byte-identical; no bariatric criterion id, label or constant
+renamed; the extraction and verifier instruction bytes unchanged. A seam that
+cannot hold this bar is reverted, never accommodated.
+
+**Reverses if:** the rheumatology tree cannot be expressed as a tree over
+independently-checkable leaves. That is D1's reversal condition, pre-registered
+here as this version's falsification target — the entry that records it firing
+supersedes this one.
+
+---
+
+## D98 — Amendment 2 is a pre-registered decision gate, logged before any cross-specialty number exists
+
+The owner has asked whether Articles I and II should eventually admit model
+adjudication beyond Amendment 1's bounds, conditional on proof the system is
+hallucination-proof and that a model earns its place over the Python
+implementation. This entry converts that question into the only form this
+repo can answer honestly: evidence thresholds written down before the
+measurements that will be quoted against them exist. The kill-criteria rule
+applies in full — a threshold revised after seeing a number is a moved
+goalpost, and the entry that moves it has to say so.
+
+**Form, settled now:** an appended amendment, never an edit to the articles.
+The constitution's preamble requires it, and D62 already recorded the
+alternative being drafted and reverted. Amendment 1 anticipates exactly this
+gate: the deterministic path is the regression oracle "unless a later
+amendment says otherwise."
+
+**The thresholds.** The gate entry, written when v2 opens, quotes these
+verbatim beside the measured figures and either proposes Amendment 2 text to
+the owner or records why not — both outcomes close the question:
+
+1. **Agreement:** agentic-vs-oracle outcome agreement of 100% and
+   criterion-level agreement ≥ 0.98 over at least 30 labeled cases spanning
+   at least two specialties. The current record — 6/6 outcomes, 42/42
+   criteria, one specialty (D64, D91) — is real and too small to carry an
+   amendment.
+2. **Spans:** zero mechanically invalid spans across every agentic run at
+   that size.
+3. **Article IV integrity:** zero collapses among `NOT_MET`,
+   `INSUFFICIENT_EVIDENCE` and `ERROR` in agentic output.
+4. **A claim condition actually encountered:** at least one criterion in a
+   real policy document whose decision procedure falls outside Amendment 1's
+   reserved list. Absent that, REQ-44's unclaimed reasoning still holds and
+   an amendment would buy a passing check rather than a capability.
+5. **Cost:** the marginal spend quoted as a delta beside the ratio (D91's
+   rule), justified by a capability the deterministic path lacks — not parity
+   with it at higher cost.
+
+**What can and cannot be proven, stated in the gate's own terms.** Model
+arithmetic cannot be proven hallucination-proof; determinism is a property
+Python has by construction and a model has only as an empirical record over a
+finite corpus. The provable claim is bounded: over the measured cases, every
+model-determined outcome agreed with the deterministic oracle and carried
+mechanically verified spans. The differential architecture — oracle, blind
+verifier, mechanical spans — is precisely the apparatus that makes that
+bounded claim legible, which yields the one structural commitment this entry
+makes binding on any future amendment text: **Amendment 2 keeps the
+deterministic path as the regression oracle.** An amendment that deleted the
+oracle would delete the only instrument that could ever have justified it.
+
+**Rejected — deciding by argument when v2 opens, thresholds and evidence
+assembled in the same breath.** That is the goalpost problem by construction.
+
+**Rejected — declining the question outright.** Amendment 1 left the door
+open on purpose, and "the articles are permanent because they are articles"
+is not a position this log can defend; the articles are defended by the
+measurements they enable.
+
+**Reverses if:** the thresholds prove unmeasurable as stated — then the
+revising entry names itself as a revision and explains what it loosened.
+
+---
+
+## D99 — The rheumatology policy source is Palmetto GBA's LCD L35677 with billing article A56432
+
+**Chosen:** LCD **L35677** (*Infliximab*, Palmetto GBA, in effect as of its
+2024 revision) as the coverage-claim source, and its companion
+billing-and-coding article **A56432** as the code-binding source — D29's
+split, applied to a new pair: the LCD quantifies coverage and names no codes;
+the article prints the HCPCS codes (J1745 and biosimilar Q-codes) and makes
+`CodeBinding`'s in-corpus-quote requirement satisfiable. Both are public CMS
+MCD documents in the authority chain this corpus already models.
+
+**Why not Noridian, and what that costs.** The preference was to stay in
+A53028's family so the two trees would answer for one MAC. The catalogue
+search surfaced a Noridian billing article for infliximab (A52423) but no
+active Noridian coverage LCD for the drug, and an article-only source cannot
+span coverage constants. So the second tree answers *as Palmetto would*, and
+the corpus gains a second contractor: `document_id`s remain unique because
+the policies do not overlap in subject, and the resolver still selects a tree
+by procedure code, never by beneficiary jurisdiction — spec §10 P1 is
+unchanged by this entry and gains a second MAC as evidence when v1.5 closes.
+T-86's fetch is where the pair is verified against the live database; a
+retired or materially revised L35677 re-decides the source with a new entry.
+
+**The no-NCD authority chain, settled as modeling.** No NCD sits above
+L35677, so the delegation claim that `contractor_determined` carried for
+NCD 100.1 (D33, D41) is here the LCD's own statutory authority under
+§1862(a)(1)(A) reasonable-and-necessary determination. The J-code lands in
+`procedure_sets.contractor_determined` with the LCD's coverage sentence as
+the corroborating quote. This is a citation-content decision, not a fourth
+`CoverageStatus` — a fourth status would be D26's collapse run in reverse,
+and nothing in the resolver needs it.
+
+**What the document quantifies, recorded before the tree is compiled.** The
+RA section covers infliximab in combination with methotrexate, carries a
+documented cannot-tolerate-methotrexate branch, and requires all prior
+treatment regimens and responses in the record — and it does not quantify a
+trial length in months. Every constant the tree needs that the document does
+not supply becomes an owner decision recorded with a name and a date (D40's
+and D51's shape; the decided-constant pin in the tree test moves visibly). A
+criterion that resists the extract-flag-plus-Python-boolean decomposition —
+c5's shape, extraction structures and Python decides — would instead be
+REQ-44's pre-registered claim condition firing, recorded at compile time.
+The first attempt is always the decomposition.
+
+**Rejected — a commercial or PBM step-therapy policy.** Closer to where step
+therapy lives commercially, but no CMS authority chain, unstable or
+authenticated URLs against a corpus discipline built on byte-stable hashed
+retrieval (T-02), and redistribution questions a public repo does not need.
+
+**Rejected — a synthetic composite policy.** Spans into a document written to
+match the tree prove nothing; Articles III and VII as theater.
+
+**Reverses if:** T-86 finds the pair retired, revised away from the language
+above, or unfetchable in a byte-stable form — or an active Noridian coverage
+LCD for a Part B biologic surfaces before T-86 closes.

@@ -14,17 +14,56 @@ answers the second question, once.
 
 ---
 
+## Path to v1.5
+
+**What to do next: `T-85`, the spike.** v1.5 opened with D97 — a second
+specialty, rheumatology biologic step therapy, spike first, engine seams only
+where the real tree forces them. D98 pre-registered the Amendment 2 decision
+gate before any cross-specialty number exists; D99 chose the policy source
+(Palmetto GBA L35677 + A56432). The kill criteria are in the standing section
+of `docs/decisions.md`, dated, set before any measurement.
+
+| # | Task | Closes / gates | Decision before it |
+|---|---|---|---|
+| 1 | `T-85` | spike 002: can medication-trial events extract with citable spans; its kill criteria gate everything below | D97, D98 — logged |
+| 2 | `T-86` | the rheum documents enter the corpus; every later span and code binding depends on it | D99 — logged |
+| 3 | `T-87` | seams I: tree-declared predicate dispatch · REQ-55, REQ-56, REQ-58 | at open |
+| 4 | `T-88` | seams II: second event contract, per-tree extraction schema · REQ-57 | at open |
+| 5 | `T-89` | the rheumatology criteria tree and value sets — where D1's falsification would surface | at open, if constants are unquantified |
+| 6 | `T-90` | the rheum corpus: bundles, manifests, notes, labels — D42's order | at open |
+| 7 | `T-91` | rheum extraction recording *(spends ~6 calls)* | — |
+| 8 | `T-92` | rheum verifier recording *(spends ~20–30 calls; `PROMPT_VERSION` untouched)* | — |
+| 9 | `T-93` | the rheum eval goes live · gates **A10**, **A11** | — |
+| 10 | `T-94` | the agentic differential on the rheum corpus — D98's cross-specialty evidence | — |
+| 11 | `T-95` | close-out: kill criteria adjudicated, report, README, spec §10 · **closes US-10, US-11** | the close entry is the substance |
+
+The regression bar binding every row (D97): all pre-existing gates green, the
+bariatric baseline diff clean with zero `--update-baseline` uses for the whole
+version, every committed recording replaying byte-identical, the extraction
+and verifier instruction bytes unchanged. A seam that cannot hold the bar is
+reverted, never accommodated. Spec changes land with the task that makes them
+checkable — REQ-55–58 with their seams, E13–E19 with the eval set, A10/A11
+with T-93 — because a REQ without a check is a wish and the coverage gate
+reads §5.
+
+Off this path: `T-81` stays parked (below). The rheum corpus is a new corpus,
+not a bariatric expansion — D96's deferred label re-review is not triggered.
+
+---
+
 ## Path to v1
 
-**What to do next: nothing, on the path.** Acceptance gates A1–A9 all hold and
-US-1 through US-7 and US-9 are delivered. One task is open — `T-81`, below —
-and it gates no acceptance criterion; it is corpus work that would let a
-measured figure get weaker and more honest, taken when there is budget for a
-re-measurement, not before.
+**This path is closed; what to do next lives in `Path to v1.5`, above**
+*(D97)*. Acceptance gates A1–A9 all hold and US-1 through US-7 and US-9 are
+delivered. One v1-era task remains open — `T-81`, below — and it gates no
+acceptance criterion; it is corpus work that would let a measured figure get
+weaker and more honest, taken when there is budget for a re-measurement, not
+before.
 
-Sixty-four tasks are on this board — IDs run to T-84 but numbering is not
+Seventy-five tasks are on this board — IDs run to T-95 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **63 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **63 are closed and 12 are open** (T-81 plus v1.5's
+eleven). The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -1548,6 +1587,165 @@ there was a crash.
 carrying an `ERROR` unconstructible (T-26), the workflow aborts instead of
 emitting one (T-29, D76), and a seeded `ERROR` leaves the abstention rate
 unchanged (T-30, D77).
+
+---
+
+## `US-10` · `US-11` Rheumatology biologic step therapy — v1.5
+
+Feature F3, opened by D97. The order is `Path to v1.5` at the top of this
+file; every row below carries D97's regression bar in addition to its own
+exit.
+
+### `[ ] T-85` Spike 002: step-therapy extraction on hand-written rheum notes
+**Type:** spike · **Informs:** US-10 · **Blocks:** T-86 through T-95
+**Timebox:** four hours · **Spends:** ~15 model calls, bounded by the v1.5
+kill criteria — the probe is the budget
+**Exit:** `python spike/spike_002/run.py --verify` —
+- extraction runs over five hand-written, hand-labeled rheumatology notes
+  (infusion-clinic and office styles), at least one carrying missed-infusion
+  dates inside a gap month and one carrying a bare "failed methotrexate"
+  assertion with no encounter detail
+- writes `results.json` with per-note medication-trial event precision and
+  recall, the exclusion count, and the anchoring drop rate
+- every produced span slices non-empty; labels carry substring hints asserted
+  against the notes so a label typo fails loudly
+- self-contained in spike 001's shape: own prompt, own schema, own anchoring
+  and scorer, no `pa_agent` imports; modes bare / `--rescore` / `--verify`
+- `--verify` joins `check_gates.GATES`; the bare mode is what spends
+
+A spike answering "unreliable" is a successful spike: the kill criteria say
+what changes, and the path stops at one task's cost.
+
+### `[ ] T-86` Admit the rheumatology policy documents to the corpus
+**REQ:** 6, 7 · **Serves:** US-10 · **Depends:** T-85, D99 · **Timebox:** four hours
+**Exit:** `python scripts/verify_sources.py --offline` —
+- L35677 and A56432 appear in the `DOCUMENTS` declaration, are present as
+  extracted text under `data/policies/source/`, and hash to their recorded
+  sha256 and char counts
+- `sources.json` records retrieval date, extractor version, and — per D99 —
+  each document's citability scope: the LCD for coverage claims, the article
+  for code bindings (D29's split)
+- every pre-existing document hash is untouched
+
+### `[ ] T-87` Seams I: tree-declared predicate dispatch
+**REQ:** 55, 56, 58 · **Serves:** US-10 · **Depends:** T-85 · **Timebox:** two days
+**Decision at open:** the dispatch design entry, before any code.
+**Exit:** `python -m pytest -q` and `python scripts/check_gates.py` —
+- `Criterion` gains a `predicate` field naming an evaluator in a closed
+  registry (`pa_agent/predicates.py`); an unregistered name fails at tree
+  load, never at adjudication time (REQ-55)
+- `workflow.py` dispatches each phase through the registry; `step_reconcile`
+  iterates the tree's `reconciled_facts` and no-ops on an empty list;
+  `EXTRACTION_CRITERIA` is derived, not literal
+- every declared criterion appears in `decision_expression`, validated at
+  load (REQ-58)
+- `tests/test_criteria_tree.py` is parameterized over `data/policies/*.json`
+- the bariatric tree carries seven `predicate` keys with ids, labels and
+  constants byte-stable and `policy_version_id` unchanged — all 27 verifier
+  digests still resolve, and `eval/run_eval.py` passes against an unmodified
+  `eval/baseline.json`, which is the point of the task
+
+### `[ ] T-88` Seams II: second event contract and extraction-schema registry
+**REQ:** 57, 52 · **Serves:** US-10 · **Depends:** T-87 · **Timebox:** two days
+**Decisions at open:** the event-contract entry and the medication-evidence
+entry (notes-only; `PatientStore` grows no port), before any code.
+**Exit:** `python -m pytest -q` and `python scripts/check_gates.py` —
+- a second event model beside `WmEvent`, with the flag⇔span parity validator
+  extracted to a shared helper both models call; `WmEvent` behavior identical
+- the tree declares its extraction schema, resolved from a closed registry
+  (REQ-57); the bariatric entry is today's instruction and response schema
+  byte-for-byte, and the rheum entry is the spike prompt promoted
+- `RecordedExtractionRunner` unchanged; new tests drive the rheum
+  `build_result` with stub payloads for zero model calls
+- baseline unmodified
+
+### `[ ] T-89` Hand-compile the rheumatology criteria tree and value sets
+**REQ:** 55–58, 32 · **Serves:** US-10 · **Depends:** T-86, T-87, T-88 · **Timebox:** two days
+**Decision at open, if needed:** every constant the documents do not quantify
+becomes an owner decision with a name and a date (D99's ladder), logged
+before the tree compiles.
+**Exit:** `python -m pytest tests/test_criteria_tree.py -q` and `python scripts/check_gates.py` —
+- a second tree under `data/policies/` with its own `policy_version_id`;
+  every constant carries a span into T-86's documents or a decision reference
+- the biologic's HCPCS code binds in `procedure_sets.contractor_determined`
+  with an in-corpus quote from A56432; the coverage claim quotes L35677
+- a REQ-56 test: `python -m pa_agent.cli --procedure <J-code>` resolves the
+  rheum tree with zero CLI changes (resolution, not determination — the
+  corpus does not exist yet)
+- rheum evaluators registered as thin predicates reusing `qualifying_run`
+  verbatim
+
+This is the task where D1's reversal condition would surface, and the entry
+that records it firing would supersede D97.
+
+### `[ ] T-90` Rheumatology corpus: bundles, manifests, notes, labels
+**Serves:** US-10 · **Depends:** T-89 · **Timebox:** two days
+**Decision at open:** the corpus-method entry (selection axis, declared
+synthetic medication history per D73, D42's order), before any generation.
+**Exit:** `python scripts/select_patients.py --verify` (extended over both
+corpora) and `python scripts/check_gates.py` —
+- rheum bundles selected on an RA-shaped axis, pinned by manifest hashes;
+  every synthetic resource declared by name
+- fact manifests under `eval/manifests/` written before any note exists;
+  facts only, never verdicts
+- notes rendered by the deterministic seeded synthesizer — no model writes a
+  note (D43) — hashed into a notes manifest
+- `eval/rheum/cases.json` labels authored from the manifests now, before any
+  recording exists
+- bariatric bundles, manifests and notes byte-untouched
+
+### `[ ] T-91` Rheumatology extraction recording
+**Serves:** US-10 · **Depends:** T-90 · **Timebox:** one day ·
+**Spends:** one model call per rheum note; in no gate
+**Exit:** the recording's replay path re-derives every number from the
+committed file for zero calls and returns zero; `check_gates.py` green;
+raw payloads committed so `--rescore` stays free.
+
+### `[ ] T-92` Rheumatology verifier recording
+**Serves:** US-10 · **Depends:** T-91 · **Timebox:** one day ·
+**Spends:** one call per unique claim digest (order 20–30); in no gate
+**Exit:** replay returns zero; `check_gates.py` green —
+- a separate recording file beside T-17's, so the 27-claim bariatric
+  recording stays byte-stable; `RecordedVerifierRunner` reads both,
+  digest-keyed
+- `PROMPT_VERSION` unchanged — an edit re-measures every bariatric digest and
+  the kill criteria price it at one revision round, total
+
+### `[ ] T-93` The rheumatology eval goes live
+**Serves:** US-10 (closes it), US-11 · **Depends:** T-92 · **Timebox:** one day
+**Exit:** `python scripts/check_gates.py` — now including
+`eval/run_eval.py --cases eval/rheum/cases.json --baseline eval/rheum/baseline.json` —
+and `python eval/build_report.py --verify` —
+- the rheum baseline adopted; drift in either direction fails (D27's rule,
+  second instance)
+- `build_report.py` grows `--cases` and a per-specialty section; the
+  tolerance sweep runs only where a tree carries a sweepable constant
+- spec §6 gains E13–E19 and §7 gains A10/A11 in the same change, each now
+  backed by a running check
+- **A11 holds:** the bariatric baseline is clean with zero `--update-baseline`
+  uses across T-87 through T-93
+
+### `[ ] T-94` The agentic differential on the rheumatology corpus
+**Serves:** US-11 · **Depends:** T-93 · **Timebox:** one day ·
+**Spends:** one agentic retrieval loop per rheum patient under `--measure`;
+the bare mode is the gate and spends nothing
+**Exit:** `eval/run_agentic_eval.py` bare and `--rescore` return zero on both
+corpora; `check_gates.py` green —
+- the per-corpus configuration replaces the three module constants; a script
+  change, not a call-configuration change, so the bariatric numbers stand and
+  the rheum run is its own measurement (D45)
+- gathered recorded beside cited; the cost delta quoted beside the ratio (D91)
+
+### `[ ] T-95` v1.5 close-out
+**Serves:** US-11 (closes it) · **Depends:** T-94 · **Timebox:** one day
+**Exit:** `python scripts/check_gates.py` and
+`python scripts/check_req_coverage.py` —
+- the close entry quotes every measured figure against the v1.5 kill criteria
+  verbatim, pass or kill per criterion
+- `eval/report.md` regenerated with the per-specialty section; the README's
+  degradation section gains the rheum failure modes; spec §10 updates P1 with
+  what v1.5 demonstrated and adds the declared-synthetic-corpus problem entry
+- REQ-55 through REQ-58 each map to a passing check
 
 ---
 

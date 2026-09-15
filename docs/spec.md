@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent, v1
 
-**Status:** active — v1 in progress *(was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72)*
+**Status:** active — v1.5 in progress *(was "v1 in progress"; v1 closed with A1–A9 holding, and D97 opened v1.5 on 2026-09-14)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -37,6 +37,12 @@ carries less information than they do.
   Jurisdiction F implements it — A53028 supplies every quantified constant
   *(D21)*. No multi-MAC jurisdiction resolution. *(Was "National coverage
   only", which D21 disproved; corrected by D72.)*
+- **Added in v1.5:** a second policy in a second jurisdiction — biologic step
+  therapy for rheumatoid arthritis as Palmetto GBA implements it, LCD L35677
+  with billing article A56432 supplying spans *(D97, D99)*. A second criteria
+  tree over the same engine; still no multi-MAC resolution of one question —
+  the two policies do not overlap in subject, and the resolver selects a tree
+  by procedure code, never by beneficiary jurisdiction (§10 P1 stands).
 - Synthetic patients from Synthea plus manifest-driven synthesized notes.
 - Local execution. No deployment.
 - A deterministic reference implementation.
@@ -49,7 +55,9 @@ carries less information than they do.
 
 - The automated criteria compiler. The criteria tree is hand-written.
 - MCD bulk ingestion.
-- More than one policy, any payer-specific overlay, any LCD.
+- Any payer-specific overlay. *(Was "More than one policy, any payer-specific
+  overlay, any LCD"; D97 opened v1.5 with a second policy sourced from an
+  LCD — D99.)*
 - Vector search or embedding-based retrieval.
 - Any user interface.
 - Terraform, CI/CD, containers.

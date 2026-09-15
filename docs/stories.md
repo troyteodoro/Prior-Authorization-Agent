@@ -266,6 +266,69 @@ lands in week 2.
 
 ---
 
+## Feature F3 — Automated coverage determination for rheumatology biologic step therapy
+
+Opened by D97. The engine's second specialty: same spine, a different tree, a
+different value set, a different documentation style. F1's stories asked
+whether the system works; these ask whether it generalizes.
+
+### `US-10` Determine biologic step-therapy coverage from the chart
+
+> **As** Sam
+> **I want** the methotrexate-trial requirement evaluated from the narrative with citations
+> **So that** I stop counting trial months by hand across infusion and office notes
+
+**Value:** the generalization test with a user attached. If only bariatric
+charts work, v1 built a demo.
+
+- **Given** a chart documenting a methotrexate trial over consecutive months
+  **When** the trial-duration criterion is evaluated **Then** the qualifying
+  run is selected by the same joint selector the bariatric tree uses, with
+  every constant supplied by the rheumatology tree · *REQ-13, REQ-14, D84*
+- **Given** a note asserting "failed methotrexate" with no encounter detail
+  **When** the trial criterion is evaluated **Then** it returns
+  `INSUFFICIENT_EVIDENCE` with `gap_reason` `UNSUBSTANTIATED_ASSERTION` ·
+  *REQ-31, E16*
+- **Given** missed infusion appointments and pharmacy contact attempts inside
+  a gap month **When** extraction runs **Then** none of them appear as trial
+  events · *REQ-9's discipline, E17*
+- **Given** a request for the biologic's HCPCS code **When** the
+  determination runs **Then** the same CLI resolves the rheumatology tree
+  with zero CLI changes, and the bariatric path is untouched · *REQ-56, A11*
+- **Given** any cited verdict **When** verification runs **Then** the same
+  blind verifier checks it, unmodified · *Article V, D78*
+
+**Covers:** E13–E19 *(spec §6, added as the eval set lands)*
+**Ships:** the predicate registry, the second event contract, the second
+extraction schema, the second tree — every seam D97 authorizes, and no other.
+
+---
+
+### `US-11` Show me whether the engine generalizes
+
+> **As** Dr. Vance
+> **I want** accuracy, abstention, and cost for the second specialty reported beside the first
+> **So that** I can tell one engine from one demo before trusting it with a third practice
+
+- **Given** the rheumatology labeled set **When** the harness runs **Then**
+  per-criterion precision on `MET`, span validity, and abstention are
+  reported with the same machinery and the same bars as F1's · *A10, A2, A3,
+  A5*
+- **Given** both specialties measured **When** the report is produced **Then**
+  the figures appear side by side, each against its own base rate · *A10*
+- **Given** every v1.5 seam **When** the bariatric eval runs **Then** the
+  baseline diff is clean with zero baseline updates across the whole version ·
+  *A11*
+- **Given** the agentic differential on the rheumatology corpus **When** it is
+  measured **Then** gathered is recorded beside cited and the cost delta is
+  quoted beside the ratio · *D91, D98*
+
+**Covers:** A10, A11
+**Note:** the agentic-differential and close-out tasks ride here; this story
+is what D98's Amendment 2 gate reads when v2 opens.
+
+---
+
 ## Not stories
 
 Tracked as spikes or technical tasks.
@@ -273,6 +336,7 @@ Tracked as spikes or technical tasks.
 | Item | Type | Why not a story |
 |---|---|---|
 | Spike 001 | Spike | Answers a question, ships no behavior |
+| Spike 002 | Spike | Answers a question — do medication-trial events extract with citable spans — and ships no behavior *(D97)* |
 | Repo and environment setup | Task | Enabler |
 | Synthea generation | Task | Test data, not a user outcome |
 | Value set verification | Task | Enabler under US-2 |

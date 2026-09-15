@@ -27,9 +27,9 @@ an instruction typed into a prompt.
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-84, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
-| `docs/decisions.md` | D1–D94, kill criteria, open questions. Append-only. |
+| `docs/stories.md` | User stories US-1 through US-11, with personas. |
+| `docs/tasks.md` | The board. Tasks T-00 through T-95, each with a runnable exit condition. **`Path to v1.5` at the top states what to do next.** |
+| `docs/decisions.md` | D1–D99, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -361,10 +361,14 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**63 of 64 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~25s, 653 tests across 31 files). IDs run to T-84, but
+**63 of 75 tasks closed, 12 open. All 10 gates green**
+(`check_gates.py`, ~25s, 653 tests across 31 files). IDs run to T-95, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
-so the highest id is well above the count.
+so the highest id is well above the count. **v1.5 is open** *(D97)*: a second
+specialty — rheumatology biologic step therapy, Palmetto L35677/A56432 *(D99)*
+— spike first, engine seams only where the real tree forces them, with the
+Amendment 2 question pre-registered as an evidence gate *(D98)* and the v1.5
+kill criteria dated in the standing section before any measurement.
 
 Delivered: **US-1 through US-7 and US-9**, and **acceptance gates A1–A9 all
 hold**. `python -m pa_agent.cli --patient
@@ -394,12 +398,15 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 36.1s across nine determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **T-81 alone** — a second note per patient, which is what would let the
-direct retrieval-recall figure fall; not on the critical path, since **A1–A9
-all hold**, and it re-measures T-15's extraction and T-17's verifier recordings
-along with every figure downstream of them *(D91)*. `docs/tasks.md` opens with
-`Path to v1`, which states the sequence once with what each step gates — read
-it rather than this paragraph *(D70, D72)*.
+Open: **T-85 through T-95** — v1.5's path, stated once as `Path to v1.5` at
+the top of `docs/tasks.md` with what each step gates; read it rather than this
+paragraph *(D70, D97)*. Binding on every v1.5 task: the bariatric baseline
+diff stays clean with zero `--update-baseline` uses, every committed recording
+replays byte-identical, and the extraction and verifier instruction bytes do
+not change — a seam that cannot hold that bar is reverted, never accommodated.
+**T-81 stays parked** — a second bariatric note per patient; the rheum corpus
+is a new corpus, not an expansion, so it does not trigger D96's deferred label
+re-review *(D91, D97)*.
 
 **The ratification programme is deleted** *(T-82, D92; finished by T-84, D94)*.
 Ownership of this work is a git-level fact and needed no ledger to assert it, so
