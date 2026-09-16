@@ -7027,3 +7027,123 @@ labels anyway.
 
 **Reverses if:** a later version expands the corpus and re-labels — the
 review is then part of that work and recorded with it.
+
+---
+
+## D97 — §10's problems get one task each, in a fixed order
+
+**The owner's decision, 2026-09-15.** Spec §10 lists v1's eight known
+limits, P1–P8. They are to be addressed one at a time, each as its own
+numbered task with an entry here first, a runnable exit, and every gate
+green at close. This entry fixes the order and records the choices taken
+with the owner that shape the individual tasks; each task logs its own
+entry when it opens.
+
+**The order, and why.** Measurement rounds are the scarce resource, not
+dollars — T-15 cost 12,103 input tokens — and D45 forbids folding two
+changes into one measurement, because the delta then has no owner. So:
+free tasks first, the runner change before the corpus grows, the second
+tier last so it measures the final configuration.
+
+| # | Problem | Task | Model calls |
+|---|---|---|---|
+| 1 | P2, first half: the anchoring loss becomes a reported figure | T-85 | none |
+| 2 | P5: shortfall verdicts must re-derive from their own citations | T-86 | none |
+| 3 | P1, first half: jurisdiction resolution and a second tree | T-87 | none |
+| 4 | P1, second half: a second-jurisdiction patient and its eval row | T-88 | one verifier round |
+| 5 | P2, second half: a bounded verbatim retry in the runner | T-89 | T-15's and both T-63 recordings |
+| 6 | P7, P3, P4: a second note per patient | T-81 | T-15, T-17, T-61 |
+| 7 | P8: a second measured day, on Vertex | T-90 | everything, once |
+| 8 | P6: the v2 path for model adjudication | entry only | none |
+
+**Choices taken with the owner, binding on the tasks above.**
+
+1. P5, P6 and P8 are consequences of the constitution, not defects.
+   They are mitigated mechanically where a mechanism exists — a Python
+   cross-check for P5, a second measurement for P8 — and P6 stays
+   unclaimed with its v2 path written down. Rejected: claiming REQ-44
+   and REQ-47 now, which would buy a passing check rather than a
+   capability (D63, D70); relaxing Article V's blindness.
+2. P1's second document is real. **Palmetto GBA's L34576 and A56852**
+   (JJ/JM: AL, GA, TN, SC, VA, WV, NC), corrected from "Novitas" after
+   fetching the header: Novitas's own L35022 defers its thresholds to
+   the NCD and asks for a "diligent effort", which is judgment-shaped and
+   gives a deterministic tree nothing to compile. Palmetto's differs from
+   Noridian's in **shape**, not only constants — no run-length constant
+   for c3, and an added multidisciplinary-evaluation criterion the
+   pipeline has no extractor for. That criterion is declared unclaimed
+   and abstains; it is never omitted, because omitting it approves where
+   Palmetto would not, which is P1's failure mode rebuilt inside the fix.
+3. The second-jurisdiction patient is one existing bundle cloned with a
+   declared address change (D73's shape), its note byte-identical to the
+   source so extraction replays for free. Rejected: a fresh Synthea run
+   in another state, which is a new note and two new measurement rounds
+   for one patient.
+4. Corpus growth is T-81 alone — six patients, two notes each. More
+   patients is a separate decision taken after T-81's numbers land.
+   P4's second label pass rides with T-81, as D96 already said.
+5. Development measurements stay on AI Studio; P8's second measurement
+   runs on Vertex (D5).
+
+**Rejected — one task for all eight.** Rule 1 exists because a task that
+touches the resolver, the runner, the corpus and the report at once
+cannot name what broke when a gate goes red.
+
+**Rejected — measuring everything once at the end.** Cheaper in calls
+and worthless as evidence: the extraction change, the corpus change and
+the tier change would share one delta.
+
+**Reverses if:** a step's exit turns out to need a step after it. The
+order is then rewritten here, not silently reshuffled on the board.
+
+---
+
+## D98 — The anchoring loss is reported first; the retry is a task of its own
+
+**Context.** P2 says a model that paraphrases produces a claim nobody can
+anchor, that T-63 lost a program assertion this way, and that the headline
+aggregate did not show it until T-71. Re-reading the three committed
+extraction recordings for this entry: T-15's direct run anchored 171 of
+171 spans and T-63's ADK inline run 165 of 165, both with zero drops. The
+loss is in the ADK tool-fetch run alone, on E8: 75 of 76, one
+`assertion_quote_unanchorable`. The model wrote *completed a six-month
+medically supervised weight-loss program last year* where the note says
+*completing* — one word, a tense change on the first token, and 62
+verbatim characters after it. Effect: E8's `UNSUBSTANTIATED_ASSERTION`
+gap became `NO_EVIDENCE_RETRIEVED`, a different instruction to the
+specialist (D12). D88 made the loss visible in the measurement's
+aggregate; `eval/report.md`, the document a reviewer reads, has no
+extraction section at all.
+
+**Chosen — T-85 puts the anchoring account in the report, and the fix is
+T-89.** The report gains a section per extraction recording: spans
+emitted, anchored, dropped by reason, D88's assertion coverage, and the
+dropped claim named with its note. Recomputed from the per-note scores,
+not read from the stored `aggregate` blocks, because those are a
+measured-day snapshot and the tool-fetch one predates D88 (T-71's rule).
+Zero model calls; `--verify` covers it.
+
+**Rejected — a longest-common-substring fallback in `anchor.py`.** D18's
+sentence applies verbatim: a match generous enough to absorb
+*completed/completing* is generous enough to absorb *not*. And it cannot
+be built without laundering: `spans.validate` requires the slice to equal
+the quote, so the locator would have to rewrite the quote to the overlap
+it found — the locator passing its own result through the validator D45
+separated from it for exactly this reason. On this instance the dropped
+word is harmless; in general the dropped word is the claim.
+
+**Rejected — a prompt asking for a short verbatim anchor phrase beside a
+free-text statement.** The thing that failed here *was* a short phrase,
+and the `claim` field already is the free-text statement. A new prompt is
+a new measurement of every extraction recording (D45) for a mechanism
+that does not address the failure.
+
+**Rejected — the retry first.** A bounded re-ask for the verbatim text of
+an unanchorable claim is the one fix consistent with D18 and Article III,
+and it is T-89: it changes the call configuration, so it cannot close
+without re-measuring T-15's and both T-63 recordings, and it should not
+be measured before the figure it is meant to move is on the record.
+
+**Reverses if:** a later measurement shows a drop on an *event* quote
+rather than an assertion. An event drop changes c3's run, and T-89 then
+moves ahead of everything downstream of extraction.

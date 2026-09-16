@@ -369,6 +369,156 @@ def _span_section(cache: dict[Any, Any]) -> list[str]:
     ]
 
 
+#: The three committed extraction recordings, in measurement order (T-15,
+#: then T-63's two modes — D68 split them). Each is read for its per-note
+#: scores; the stored `aggregate` blocks are a measured-day snapshot and are
+#: not consulted (T-71, D88).
+EXTRACTION_RECORDINGS: tuple[str, ...] = (
+    "results.json",
+    "adk_results_inline.json",
+    "adk_results_tool_fetch.json",
+)
+
+
+def _recording_label(payload: dict[str, Any]) -> str:
+    task = payload.get("task", "?")
+    if payload.get("runner") == "adk":
+        mode = "ADK tool-fetch" if payload.get("tool_fetch") else "ADK inline"
+    else:
+        mode = "direct"
+    return f"{task} {mode}"
+
+
+def _anchoring_rows(recordings: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """One row per recording, recomputed from the per-note `score` blocks.
+
+    A note with no `score` was skipped by that run — the tool-fetch mode has
+    no address for the spike notes (T-67) — and contributes nothing, not a
+    zero. Assertion coverage follows D88: the denominator is the notes that
+    *require* an assertion, and it is `None` rather than 1.000 when no note
+    does, because "none was required" and "every one was produced" are
+    different facts.
+    """
+    rows = []
+    for filename, payload in recordings.items():
+        scored = [n for n in payload["notes"] if n.get("score")]
+        emitted = sum(n["score"]["spans_emitted"] for n in scored)
+        anchored = sum(n["score"]["spans_anchored"] for n in scored)
+        dropped = [
+            {
+                "note_id": n["note_id"],
+                "reason": d["reason"],
+                "quote": " ".join(str(d.get("quote", "")).split()),
+            }
+            for n in scored
+            for d in n["score"].get("dropped") or []
+        ]
+        required = [n for n in scored if n["score"].get("assertion_required")]
+        covered = [n for n in required if n["score"].get("assertions")]
+        rows.append(
+            {
+                "file": filename,
+                "label": _recording_label(payload),
+                "notes_scored": len(scored),
+                "notes_skipped": len(payload["notes"]) - len(scored),
+                "spans_emitted": emitted,
+                "spans_anchored": anchored,
+                "spans_not_anchored": emitted - anchored,
+                "dropped": dropped,
+                "assertion_notes": len(required),
+                "assertion_notes_covered": len(covered),
+                "assertion_coverage": (
+                    round(len(covered) / len(required), 4) if required else None
+                ),
+            }
+        )
+    return rows
+
+
+def _anchoring_section() -> list[str]:
+    """P2 / T-85: what the model quoted that Python could not locate (D98).
+
+    Spans are located by searching the model's verbatim quote (D18); a quote
+    that does not occur in the note is dropped and the determination says
+    less than the chart does. The scorer records every drop per note, and
+    D88 put assertion coverage in the measurement aggregate — but this
+    report, the document a reviewer reads, carried none of it. The account
+    is recomputed here from the per-note scores of every committed
+    extraction recording, for zero model calls.
+    """
+    recordings: dict[str, dict[str, Any]] = {}
+    for filename in EXTRACTION_RECORDINGS:
+        path = EVAL_DIR / "extraction" / filename
+        if not path.exists():
+            raise SystemExit(
+                f"eval/extraction/{filename} is missing; the extraction "
+                "recordings are committed and the anchoring section reads "
+                "all of them. This is a checkout problem."
+            )
+        recordings[filename] = json.loads(path.read_text(encoding="utf-8"))
+    rows = _anchoring_rows(recordings)
+
+    lines = [
+        "## Anchoring (Article III, D18, D88)",
+        "",
+        "Every span a model emits is located by searching its verbatim quote "
+        "in the note — exact first, then whitespace-normalized — and a quote "
+        "that does not occur is dropped rather than approximated (D18). A "
+        "dropped claim is evidence the chart holds and the determination does "
+        "not cite: fail-closed, and still a loss. Recomputed from the per-note "
+        "scores of each committed extraction recording; the recordings' own "
+        "`aggregate` blocks are a measured-day snapshot and are not read "
+        "(T-71).",
+        "",
+        "| Recording | Notes scored | Spans emitted | Anchored | Not anchored "
+        "| Assertion coverage (D88) |",
+        "|---|---|---|---|---|---|",
+    ]
+    for row in rows:
+        coverage = (
+            "n/a — no note required one"
+            if row["assertion_coverage"] is None
+            else f"{row['assertion_notes_covered']}/{row['assertion_notes']} = "
+            f"**{_fmt(row['assertion_coverage'])}**"
+        )
+        skipped = f" ({row['notes_skipped']} skipped)" if row["notes_skipped"] else ""
+        lines.append(
+            f"| {row['label']} (`{row['file']}`) | {row['notes_scored']}{skipped} "
+            f"| {row['spans_emitted']} | {row['spans_anchored']} "
+            f"| **{row['spans_not_anchored']}** | {coverage} |"
+        )
+    lines.append("")
+
+    drops = [(row, d) for row in rows for d in row["dropped"]]
+    if drops:
+        lines.append("**Dropped claims, named.** Each is a quote the model "
+                     "emitted that does not occur in its note.")
+        lines.append("")
+        for row, d in drops:
+            quote = d["quote"]
+            shown = quote if len(quote) <= 80 else quote[:77] + "…"
+            lines.append(
+                f"- {row['label']}, note `{d['note_id']}`: `{d['reason']}` — "
+                f"*{shown}*"
+            )
+        lines.append("")
+    else:
+        lines.append("**No claim was dropped in any recording.**")
+        lines.append("")
+
+    lines += [
+        "**What a drop costs.** The determination that results is well-formed "
+        "and says less than the chart does — it abstains, or names a weaker "
+        "gap, where evidence existed. The failure is fail-closed rather than a "
+        "wrong approval, and it is still a failure (spec §10, P2). A "
+        "similarity fallback is not the fix: a match generous enough to absorb "
+        "a tense change is generous enough to absorb a negation (D18). The "
+        "bounded re-ask for the verbatim text is T-89 (D98).",
+        "",
+    ]
+    return lines
+
+
 def _abstention_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
     """A5's first half (D82): the account per `gap_reason`, not a rate alone."""
     account = harness.abstention_account(results)
@@ -732,6 +882,7 @@ def render() -> str:
         *_outcomes_section(results),
         *_precision_section(results, cache, pairs),
         *_span_section(cache),
+        *_anchoring_section(),
         *_abstention_section(results, cache),
         *_sweep_section(),
         *_recall_section(cache),

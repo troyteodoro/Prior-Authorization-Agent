@@ -361,8 +361,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**63 of 64 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~25s, 653 tests across 31 files). IDs run to T-84, but
+**64 of 65 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`, ~25s, 659 tests across 31 files). IDs run to T-85, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -394,12 +394,13 @@ D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
 36.1s across nine determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **T-81 alone** — a second note per patient, which is what would let the
-direct retrieval-recall figure fall; not on the critical path, since **A1–A9
-all hold**, and it re-measures T-15's extraction and T-17's verifier recordings
-along with every figure downstream of them *(D91)*. `docs/tasks.md` opens with
-`Path to v1`, which states the sequence once with what each step gates — read
-it rather than this paragraph *(D70, D72)*.
+Open: **T-81 alone**. v1 is complete — **A1–A9 all
+hold** — and what remains is spec §10's list of known limits, P1–P8, which
+**D97 sequenced into one task each**: T-85 through T-90 plus T-81, in
+`docs/tasks.md`'s `Path to v2` table. T-85 closed first (D98): `eval/report.md`
+now carries the anchoring account for every extraction recording. Free tasks first, the runner change
+(T-89) before the corpus grows (T-81), the Vertex measurement (T-90) last.
+Read the table rather than this paragraph *(D70, D72, D97)*.
 
 **The ratification programme is deleted** *(T-82, D92; finished by T-84, D94)*.
 Ownership of this work is a git-level fact and needed no ledger to assert it, so

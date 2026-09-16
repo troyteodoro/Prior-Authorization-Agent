@@ -646,7 +646,11 @@ assertion exactly this way. The determination that results is well-formed and
 says less than the chart does — it abstains where it should have found
 evidence, so the failure is fail-closed rather than a wrong approval, and it
 is still a failure. The per-note record shows it; the headline aggregate did
-not, until T-71.
+not, until T-71. The instance is one word — *completed* for *completing*, in
+the ADK tool-fetch run on E8, with 62 verbatim characters after it — and
+`eval/report.md` carries the anchoring account for every extraction
+recording since T-85 *(D98)*. The mechanism that would recover it, a bounded
+re-ask for the verbatim text, is T-89.
 
 ### P3 — Six patients, three documents, fifteen cases
 

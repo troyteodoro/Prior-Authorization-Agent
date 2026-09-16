@@ -67,6 +67,22 @@ Every span carried by a criterion verdict, re-sliced from its source document an
 
 The model's own character offsets are not used and never were: 0 of 80 were usable in the spike and 0 of 171 in T-15. Spans are located by searching the model's verbatim quote, exact first then whitespace-normalized, always recording raw offsets (D18).
 
+## Anchoring (Article III, D18, D88)
+
+Every span a model emits is located by searching its verbatim quote in the note — exact first, then whitespace-normalized — and a quote that does not occur is dropped rather than approximated (D18). A dropped claim is evidence the chart holds and the determination does not cite: fail-closed, and still a loss. Recomputed from the per-note scores of each committed extraction recording; the recordings' own `aggregate` blocks are a measured-day snapshot and are not read (T-71).
+
+| Recording | Notes scored | Spans emitted | Anchored | Not anchored | Assertion coverage (D88) |
+|---|---|---|---|---|---|
+| T-15 direct (`results.json`) | 11 | 171 | 171 | **0** | 2/2 = **1.000** |
+| T-63 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** | 2/2 = **1.000** |
+| T-63 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) | 76 | 75 | **1** | 0/1 = **0.000** |
+
+**Dropped claims, named.** Each is a quote the model emitted that does not occur in its note.
+
+- T-63 ADK tool-fetch, note `E8+E10b`: `assertion_quote_unanchorable` — *completed a six-month medically supervised weight-loss program last year*
+
+**What a drop costs.** The determination that results is well-formed and says less than the chart does — it abstains, or names a weaker gap, where evidence existed. The failure is fail-closed rather than a wrong approval, and it is still a failure (spec §10, P2). A similarity fallback is not the fix: a match generous enough to absorb a tense change is generous enough to absorb a negation (D18). The bounded re-ask for the verbatim text is T-89 (D98).
+
 ## Abstention (A5, REQ-28, REQ-31)
 
 **Abstention rate: 3/15 answered = 0.200**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.

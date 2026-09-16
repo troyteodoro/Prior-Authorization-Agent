@@ -435,3 +435,132 @@ def test_the_recall_section_reports_both_figures():
         line for line in section.splitlines() if line.startswith("| Criterion |")
     )
     assert "Recall (direct)" in header and "Recall (cited)" in header
+
+
+# --------------------------------------------------------------------------
+# Anchoring (T-85, P2, D18, D88, D98)
+# --------------------------------------------------------------------------
+
+
+def _recording(*notes, task="T-63", runner="adk", tool_fetch=False):
+    """A synthetic extraction recording in the shape the scorer writes."""
+    payload = {"task": task, "notes": list(notes)}
+    if runner:
+        payload["runner"] = runner
+        payload["tool_fetch"] = tool_fetch
+    return payload
+
+
+def _note(note_id, emitted, anchored, *, dropped=(), required=False, assertions=0):
+    return {
+        "note_id": note_id,
+        "score": {
+            "spans_emitted": emitted,
+            "spans_anchored": anchored,
+            "dropped": list(dropped),
+            "assertion_required": required,
+            "assertions": assertions,
+        },
+    }
+
+
+def test_anchoring_reads_every_committed_recording(script):
+    """The figures the section exists to carry, pinned to the recordings as
+    committed: T-15 and T-63 inline anchored everything; T-63 tool-fetch lost
+    one assertion quote on E8 (D71, D88, D98)."""
+    text = "\n".join(script._anchoring_section())
+    assert "| T-15 direct (`results.json`) | 11 | 171 | 171 | **0** | 2/2 = **1.000** |" in text
+    assert (
+        "| T-63 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** "
+        "| 2/2 = **1.000** |"
+    ) in text
+    assert (
+        "| T-63 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) "
+        "| 76 | 75 | **1** | 0/1 = **0.000** |"
+    ) in text
+    assert "note `E8+E10b`: `assertion_quote_unanchorable`" in text
+    assert "completed a six-month medically supervised" in text
+
+
+def test_anchoring_is_in_the_committed_report():
+    text = REPORT.read_text(encoding="utf-8")
+    assert "## Anchoring (Article III, D18, D88)" in text
+    assert "assertion_quote_unanchorable" in text
+
+
+def test_anchoring_names_a_dropped_claim_beside_its_note(script):
+    """The per-note record always showed the drop; the point of the section
+    is that the *report* names it. A synthetic drop must surface with its
+    note id, its reason, and the quote flattened to one line."""
+    rows = script._anchoring_rows(
+        {
+            "x.json": _recording(
+                _note("clean", 4, 4),
+                _note(
+                    "lossy",
+                    5,
+                    4,
+                    dropped=[{"reason": "event_quote_unanchorable", "quote": "BMI\n 41.2"}],
+                ),
+            )
+        }
+    )
+    (row,) = rows
+    assert row["spans_emitted"] == 9 and row["spans_anchored"] == 8
+    assert row["spans_not_anchored"] == 1
+    assert row["dropped"] == [
+        {"note_id": "lossy", "reason": "event_quote_unanchorable", "quote": "BMI 41.2"}
+    ]
+
+
+def test_anchoring_excludes_a_skipped_note_rather_than_counting_it_as_zero(script):
+    """The tool-fetch mode has no address for the spike notes (T-67), so those
+    records carry no `score`. They are absent from every figure, not present
+    as a note that emitted and anchored nothing — the D31 shape."""
+    rows = script._anchoring_rows(
+        {
+            "x.json": _recording(
+                _note("scored", 3, 3),
+                {"note_id": "spike", "skipped": "no address on the patient plane"},
+            )
+        }
+    )
+    (row,) = rows
+    assert row["notes_scored"] == 1 and row["notes_skipped"] == 1
+    assert row["spans_emitted"] == 3
+
+
+def test_anchoring_assertion_coverage_follows_d88(script):
+    """Denominator is notes that require an assertion; `None`, never 1.000,
+    when no note does."""
+    rows = script._anchoring_rows(
+        {
+            "a.json": _recording(
+                _note("needs", 2, 2, required=True, assertions=0),
+                _note("has", 2, 2, required=True, assertions=1),
+                _note("free", 2, 2, required=False, assertions=0),
+            ),
+            "b.json": _recording(_note("free", 2, 2, required=False, assertions=3)),
+        }
+    )
+    by_file = {row["file"]: row for row in rows}
+    assert by_file["a.json"]["assertion_notes"] == 2
+    assert by_file["a.json"]["assertion_notes_covered"] == 1
+    assert by_file["a.json"]["assertion_coverage"] == 0.5
+    assert by_file["b.json"]["assertion_notes"] == 0
+    assert by_file["b.json"]["assertion_coverage"] is None
+
+
+def test_anchoring_labels_each_recording_by_its_own_header(script):
+    assert script._recording_label(_recording(task="T-15", runner=None)) == "T-15 direct"
+    assert script._recording_label(_recording(tool_fetch=False)) == "T-63 ADK inline"
+    assert script._recording_label(_recording(tool_fetch=True)) == "T-63 ADK tool-fetch"
+
+
+def test_anchoring_refuses_a_missing_recording(script, tmp_path, monkeypatch):
+    """Three recordings are committed and the section reads all of them. A
+    missing one is a broken checkout, never a shorter table."""
+    (tmp_path / "extraction").mkdir()
+    monkeypatch.setattr(script, "EVAL_DIR", tmp_path)
+    with pytest.raises(SystemExit, match="results.json is missing"):
+        script._anchoring_section()

@@ -16,15 +16,15 @@ answers the second question, once.
 
 ## Path to v1
 
-**What to do next: nothing, on the path.** Acceptance gates A1–A9 all hold and
-US-1 through US-7 and US-9 are delivered. One task is open — `T-81`, below —
-and it gates no acceptance criterion; it is corpus work that would let a
-measured figure get weaker and more honest, taken when there is budget for a
-re-measurement, not before.
+**What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
+and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
+spec §10's list of known limits, P1–P8, which D97 sequenced into one task
+each — `T-85` closed first and `T-86` is next; `T-81` is row 6 of that
+sequence.
 
-Sixty-four tasks are on this board — IDs run to T-84 but numbering is not
+Sixty-five tasks are on this board — IDs run to T-85 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **63 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **64 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -48,7 +48,24 @@ Off the path. Real work, nothing waiting on it:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
-| `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | any time, blocks nothing *(D91)* |
+| `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | row 6 of `Path to v2` *(D91, D97)* |
+
+### Path to v2 — spec §10's problems, one task each *(D97)*
+
+Free tasks first, the runner change before the corpus grows, the second tier
+last so it measures the final configuration. A task record is written when its
+row opens; the exit named here is the one D97 fixed.
+
+| # | Problem | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | P2, first half | `T-85` | **closed** (D98) | `eval/report.md` carries the anchoring account per extraction recording; `build_report.py --verify` green |
+| 2 | P5 | `T-86` | **next** | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
+| 3 | P1, first half | `T-87` | pending | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
+| 4 | P1, second half | `T-88` | pending | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
+| 5 | P2, second half | `T-89` | pending | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
+| 6 | P7, P3, P4 | `T-81` | pending | two notes per patient, labels re-read, every recording re-measured |
+| 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
+| 8 | P6 | entry only | pending | the v2 path for REQ-44/47 logged; the unclaimed set unchanged |
 
 **Why four of those rows delivered nothing.** D74 converted D42's framing —
 the eval ground truth was drafted alongside the system it grades, as were the
@@ -1554,6 +1571,42 @@ unchanged (T-30, D77).
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[x] T-85` The anchoring loss becomes a reported figure
+**REQ:** 7, 35 · **Depends:** T-22, T-71 · **Discovered in:** spec §10 P2
+*(D97)* · **Decided by:** D98 · **Timebox:** half a day
+**Status:** **closed** (D98) — row 1 of `Path to v2`; `eval/report.md` gained
+its *Anchoring* section, seven tests, and the exit ran green
+**Exit:**
+```
+./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python -m pytest tests/test_build_report.py -q --color=no -k anchoring \
+ && ./venv/bin/python scripts/check_gates.py
+```
+`eval/report.md` carries, for each of the three committed extraction
+recordings, spans emitted, anchored and not anchored, claims dropped by
+reason with the dropped claim named beside its note, and D88's assertion
+coverage — recomputed from the per-note scores, never read from the stored
+`aggregate` blocks, which are a measured-day snapshot *(T-71)*.
+
+**Why this is the first half of P2 and not the fix.** The loss on record is
+one word in one recording: T-63's tool-fetch run wrote *completed* where
+E8's note says *completing*, and the anchorer correctly refused it. The
+report a reviewer reads had no extraction section at all, so the figure lived
+only inside a measurement artifact. Making it visible costs no model call and
+closes on a gate; the mechanism that would recover it — a bounded re-ask for
+the verbatim text — is a changed call configuration and therefore a new
+measurement, which is T-89 *(D45, D98)*.
+
+**Closed by D98.** The section recomputes from the per-note `score` blocks —
+T-15 direct 171/171, T-63 ADK inline 165/165, T-63 ADK tool-fetch 75/76 with
+5 spike notes skipped for having no address on the patient plane (T-67) —
+and names the one dropped claim beside its note and reason. Assertion
+coverage reads 2/2, 2/2 and 0/1, D88's figures, recomputed rather than read
+from a stored aggregate that predates D88. Mutations caught: the section
+dropped from `render` (`--verify` drifts), the coverage denominator widened
+to all scored notes, `None` collapsed to 1.0, the dropped list emptied, a
+skipped note counted as a zero row, and the not-anchored figure zeroed.
 
 ### `[ ] T-81` A second note per patient, so retrieval recall can fall
 **REQ:** 25 · **Depends:** T-80 · **Discovered in:** D91 ·
