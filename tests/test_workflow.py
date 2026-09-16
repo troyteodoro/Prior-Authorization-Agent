@@ -36,6 +36,7 @@ from pa_agent.contracts import (
     DeterminationAborted,
     Document,
     ErrorCode,
+    GapReason,
 )
 from pa_agent.determination import determine
 from pa_agent.index import DocumentIndex
@@ -110,7 +111,7 @@ def case_patients() -> dict[str, str]:
 
 @pytest.fixture(scope="module")
 def ref(policy_store):
-    resolved = policy_store.resolve(CONTRACTOR_CODE)
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "WA")
     assert resolved is not None
     return resolved
 
@@ -182,6 +183,9 @@ def test_the_facts_are_loaded_before_the_criteria_that_read_them() -> None:
     # run before the verifier sees them — an insufficient citation is never
     # sent to Article V at all.
     assert order.index("criteria_c") < order.index("sufficiency") < order.index("verify")
+    # T-87 (D101): unclaimed criteria are appended after the predicates and
+    # before the sufficiency pass, which walks the finished verdict list.
+    assert order.index("criteria_c") < order.index("unclaimed") < order.index("sufficiency")
     assert order.index("gather") < order.index("criterion_b")
     assert order.index("qualifying_run") < order.index("criteria_c")
 
@@ -556,6 +560,7 @@ def test_a_non_covered_code_answers_with_a_runner_that_cannot_be_called(
         patient_store=patient_store,
         as_of=AS_OF,
         extraction_runner=NullExtractionRunner("E3 is sc1"),
+        state="WA",
     )
     assert determination.outcome.value == "NOT_COVERED"
     assert determination.model_calls == 0
@@ -571,6 +576,7 @@ def test_an_ungoverned_code_answers_with_a_runner_that_cannot_be_called(
         patient_store=patient_store,
         as_of=AS_OF,
         extraction_runner=NullExtractionRunner("no policy governs this code"),
+        state="WA",
     )
     assert type(result).__name__ == "NoPolicyResult"
 
@@ -736,6 +742,10 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
         "state.results",                  # ...it spends no model call (D76)
         "state.results",                  # T-86: the sufficiency pass over the
                                           # deterministic verdicts (D99)
+        "state.tree.criteria",            # T-87: the unclaimed criteria the
+                                          # tree declares — policy data (D101)
+        "tree.criteria",                  # T-87: `_declared`, which reads what
+                                          # the tree declares for each step
     ], f"workflow.py loops over {iterables}"
 
 
@@ -952,7 +962,7 @@ def test_the_selection_step_reads_c2s_window_from_the_tree():
         patient_id="p",
         procedure_code="43775",
         as_of=date(2026, 9, 1),
-        policy_ref=store.resolve("43775"),
+        policy_ref=store.resolve("43775", "WA"),
         tree=tree,
         events=_two_run_events(),
     )
@@ -982,7 +992,7 @@ def test_the_selection_step_reads_c3s_minimum_from_the_tree():
         patient_id="p",
         procedure_code="43775",
         as_of=date(2026, 9, 1),
-        policy_ref=store.resolve("43775"),
+        policy_ref=store.resolve("43775", "WA"),
         tree=tree,
         # Recent run of three months: below c3's minimum, so it cannot qualify
         # jointly and the long stale run is selected by the fallback.
@@ -998,3 +1008,101 @@ def test_the_selection_step_reads_c3s_minimum_from_the_tree():
         "a recent run shorter than c3's minimum does not qualify jointly; the "
         "fallback selects the longest run, which is T-16's original answer"
     )
+
+
+# --------------------------------------------------------------------------
+# T-87 (D100, D101): the same chart under the second jurisdiction's tree
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def palmetto_ref(policy_store):
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "AL")
+    assert resolved is not None
+    assert resolved.policy_version_id == "ncd-100.1-jjm-v1"
+    return resolved
+
+
+def test_the_graph_is_the_same_graph_under_the_second_tree(
+    policy_store, patient_store, runner, palmetto_ref, case_patients
+) -> None:
+    """Article I: the tree changed what the steps evaluate, not which steps
+    run or in what order."""
+    run = _run(policy_store, patient_store, runner, case_patients["E1"], palmetto_ref)
+    assert run.steps == list(STEP_NAMES)
+
+
+def test_palmetto_evaluates_what_it_declares_and_abstains_on_the_rest(
+    policy_store, patient_store, runner, palmetto_ref, case_patients
+) -> None:
+    """D101: no c3, and c4 and d declared unclaimed — abstained on with the
+    fifth gap reason, never omitted, never ERROR. E1 is MET on everything the
+    tree can evaluate and still cannot be approved under it."""
+    run = _run(policy_store, patient_store, runner, case_patients["E1"], palmetto_ref)
+    d = run.determination
+    assert d.policy_version_id == "ncd-100.1-jjm-v1"
+    assert [r.criterion_id for r in d.criterion_results] == ["a", "b", "c1", "c2", "c4", "c5", "d"]
+    by_id = {r.criterion_id: r for r in d.criterion_results}
+    for cid in ("a", "b", "c1", "c2", "c5"):
+        assert by_id[cid].verdict is CriterionVerdict.MET, cid
+    for cid in ("c4", "d"):
+        assert by_id[cid].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE, cid
+        assert by_id[cid].gap_reason is GapReason.NOT_EVALUATED_BY_THIS_SYSTEM, cid
+        assert by_id[cid].spans == [], "an abstention cites nothing (REQ-5)"
+    assert d.outcome.value == "INSUFFICIENT_EVIDENCE"
+    assert {g.criterion_id for g in d.gap_list} == {"c4", "d"}
+
+
+def test_the_same_chart_is_approved_under_one_tree_and_not_the_other(
+    policy_store, patient_store, runner, ref, palmetto_ref, case_patients
+) -> None:
+    """P1's substance, demonstrated rather than described: one chart, two
+    jurisdictions, two honest answers."""
+    noridian = _run(policy_store, patient_store, runner, case_patients["E1"], ref).determination
+    palmetto = _run(policy_store, patient_store, runner, case_patients["E1"], palmetto_ref).determination
+    assert noridian.outcome.value == "MET"
+    assert palmetto.outcome.value == "INSUFFICIENT_EVIDENCE"
+    assert noridian.policy_version_id != palmetto.policy_version_id
+
+
+def test_without_a_run_length_the_run_is_established_by_having_events(
+    policy_store, patient_store, runner, palmetto_ref, case_patients
+) -> None:
+    """E4's three-month run is NOT_MET on Noridian's c3, so c2, c4 and c5
+    abstain there (REQ-15). Palmetto states no length, so c2 and c5 are
+    evaluated over the same run (D101). E8 has no events under either tree
+    and everything run-scoped abstains."""
+    e4 = _run(policy_store, patient_store, runner, case_patients["E4"], palmetto_ref).determination
+    by_id = {r.criterion_id: r for r in e4.criterion_results}
+    assert by_id["c2"].verdict in (CriterionVerdict.MET, CriterionVerdict.NOT_MET)
+    assert by_id["c5"].verdict in (CriterionVerdict.MET, CriterionVerdict.NOT_MET)
+
+    e8 = _run(policy_store, patient_store, runner, case_patients["E8"], palmetto_ref).determination
+    by_id = {r.criterion_id: r for r in e8.criterion_results}
+    assert by_id["c2"].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
+    assert by_id["c2"].gap_reason is GapReason.NO_EVIDENCE_RETRIEVED
+    assert by_id["c5"].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
+
+
+def test_the_unclaimed_step_produces_nothing_under_noridians_tree(
+    policy_store, patient_store, runner, ref, case_patients
+) -> None:
+    run = _run(policy_store, patient_store, runner, case_patients["E1"], ref)
+    reasons = {r.gap_reason for r in run.determination.criterion_results}
+    assert GapReason.NOT_EVALUATED_BY_THIS_SYSTEM not in reasons
+    assert len(run.determination.criterion_results) == 7
+
+
+def test_under_noridians_tree_a_short_run_still_gates_the_scoped_criteria(
+    policy_store, patient_store, runner, ref, case_patients
+) -> None:
+    """REQ-15 under D101's generalization: the gate is read from `scoped_to`,
+    so Noridian's c2, c4 and c5 still abstain when c3 is NOT_MET on E4's
+    three-month run — a gate that read only "has events" would evaluate
+    them over a run the policy says is too short."""
+    e4 = _run(policy_store, patient_store, runner, case_patients["E4"], ref).determination
+    by_id = {r.criterion_id: r for r in e4.criterion_results}
+    assert by_id["c3"].verdict is CriterionVerdict.NOT_MET
+    for cid in ("c2", "c4", "c5"):
+        assert by_id[cid].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE, cid
+        assert by_id[cid].gap_reason is GapReason.NO_EVIDENCE_RETRIEVED, cid

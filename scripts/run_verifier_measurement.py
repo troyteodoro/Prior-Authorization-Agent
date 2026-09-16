@@ -126,7 +126,7 @@ def enumerate_claims() -> dict[str, dict]:
             if case.get("as_of")
             else DEFAULT_AS_OF
         )
-        key = (case.get("patient_id"), case["procedure_code"], as_of)
+        key = (case.get("patient_id"), case["procedure_code"], as_of, case.get("state"))
         if key in seen:
             continue
         seen.add(key)
@@ -138,6 +138,7 @@ def enumerate_claims() -> dict[str, dict]:
             as_of=as_of,
             extraction_runner=runner,
             verifier=collector,
+            state=case.get("state"),
         )
     return collector.claims
 

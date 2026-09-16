@@ -40,6 +40,31 @@
       "pdf_sha256": "4d2814b625f66a22ea08eacf4c4619800fdb68500dcb6da3b408db9c66e24cee",
       "sha256": "13a7afb909f4d4e91023564ec38049e36f772b06827c05958862ba5143e1de10",
       "char_count": 29090
+    },
+    {
+      "document_id": "l34576",
+      "title": "LCD L34576 - Laparoscopic Sleeve Gastrectomy for Severe Obesity",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=34576",
+      "authority": "mac_jurisdiction_jj_jm",
+      "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+      "filename": "l34576.txt",
+      "retrieved_at": "2026-09-16T07:56:22.992051+00:00",
+      "extractor_version": 1,
+      "sha256": "4ed16150475b6e93219d21ec720e25be2cb6f600cfab75d1c2e431668eabc113",
+      "char_count": 31587
+    },
+    {
+      "document_id": "a56852",
+      "title": "Article A56852 - Billing and Coding: Laparoscopic Sleeve Gastrectomy for Severe Obesity",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=56852",
+      "authority": "mac_jurisdiction_jj_jm",
+      "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+      "filename": "a56852.txt",
+      "note": "extracted text carries no CPT codes; see D101",
+      "retrieved_at": "2026-09-16T07:56:23.453666+00:00",
+      "extractor_version": 1,
+      "sha256": "a339bb3c6e7478e2d8095dc608c24f37f6785e8f9086734f7163f3160db804d1",
+      "char_count": 64339
     }
   ]
 }

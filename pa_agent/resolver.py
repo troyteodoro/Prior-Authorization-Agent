@@ -17,6 +17,9 @@ sets (D31). This module owns the judgment REQ-1, REQ-2 and REQ-42 describe:
   code as covered.
 - bound nowhere → `NoPolicyFound`. No bariatric policy governs the code, which
   is a different answer from a policy saying no (D26).
+- no tree for the state → `NoJurisdictionTree` (REQ-55, D100). Resolution is
+  by procedure code *and* state since T-87; a state the store does not serve
+  is a fifth answer, never `None` and never a bad request.
 
 The results are distinct types rather than one type with a status string, so
 "a policy says no", "no policy says anything" and "delegated, and the MAC
@@ -33,7 +36,7 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from pa_agent.contracts import CoverageClaim, CoverageStatus
-from pa_agent.stores.policy import PolicyRef, PolicyStore
+from pa_agent.stores.policy import PolicyRef, PolicyStore, UnknownJurisdiction
 
 
 class NotCovered(BaseModel):
@@ -82,11 +85,32 @@ class NoPolicyFound(BaseModel):
     procedure_code: str = Field(min_length=1)
 
 
+class NoJurisdictionTree(BaseModel):
+    """REQ-55 (T-87, D100): no tree in the store governs the request's state.
+
+    The fifth answer, and a different one from `NoPolicyFound`: that one says
+    the governing tree binds the code nowhere; this one says there is no
+    governing tree to ask. Neither is a denial. It carries the states the
+    store does serve, so the answer names what it can do.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    procedure_code: str = Field(min_length=1)
+    state: str = Field(min_length=1)
+    known_states: list[str] = Field(default_factory=list)
+
+
 def resolve_sc1(
-    store: PolicyStore, procedure_code: str
-) -> NotCovered | Resolved | ResolvedByContractor | NoPolicyFound:
-    """Resolve a code through the policy port and apply short-circuit sc1."""
-    ref = store.resolve(procedure_code)
+    store: PolicyStore, procedure_code: str, state: str
+) -> NotCovered | Resolved | ResolvedByContractor | NoPolicyFound | NoJurisdictionTree:
+    """Resolve a code under a state's tree and apply short-circuit sc1."""
+    try:
+        ref = store.resolve(procedure_code, state)
+    except UnknownJurisdiction as exc:
+        return NoJurisdictionTree(
+            procedure_code=procedure_code, state=exc.state, known_states=exc.known_states
+        )
     if ref is None:
         return NoPolicyFound(procedure_code=procedure_code)
 

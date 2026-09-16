@@ -33,6 +33,7 @@ from pa_agent.contracts import (
     ErrorCode,
     EvidenceSpan,
     GapReason,
+    Jurisdiction,
     Observation,
     PolicyConstant,
     ProcedureEntry,
@@ -525,10 +526,10 @@ def test_resolve_reports_membership_facts(policy_store: LocalPolicyStore) -> Non
     parenthetical. D31 records the miss; the replacement asserts behavior, not
     message substrings. The sc1 judgment tests live in `tests/test_resolver.py`.
     """
-    ref = policy_store.resolve("43842")
+    ref = policy_store.resolve("43842", "WA")
     assert ref is not None and ref.coverage.value == "nationally_non_covered"
     assert ref.policy_version_id == TREE_VERSION
-    assert policy_store.resolve("99213") is None, (
+    assert policy_store.resolve("99213", "WA") is None, (
         "a code no tree binds resolves to None — NO_POLICY_FOUND, which is not "
         "a denial (D26)"
     )
@@ -625,3 +626,49 @@ def test_a_shortfall_on_any_other_verdict_is_refused(verdict, extra) -> None:
 def test_a_shortfall_names_its_unit() -> None:
     with pytest.raises(ValidationError):
         Shortfall(observed=3, required=4, unit="")
+
+
+# --------------------------------------------------------------------------
+# T-87 (D100, D101): a jurisdiction names its states; a criterion says how it
+# is evaluated
+# --------------------------------------------------------------------------
+
+
+def test_a_mac_jurisdiction_must_name_at_least_one_state() -> None:
+    with pytest.raises(ValidationError, match="names no states"):
+        Jurisdiction(authority="mac_jurisdiction_x", states=[])
+
+
+def test_a_national_jurisdiction_may_name_none() -> None:
+    assert Jurisdiction(authority="national").states == []
+
+
+@pytest.mark.parametrize("bad", ["Washington", "wa", "W", "W1"])
+def test_a_state_is_a_two_letter_usps_code(bad) -> None:
+    with pytest.raises(ValidationError, match="two-letter"):
+        Jurisdiction(authority="mac_jurisdiction_x", states=[bad])
+
+
+def test_a_jurisdiction_does_not_repeat_a_state() -> None:
+    with pytest.raises(ValidationError, match="repeats"):
+        Jurisdiction(authority="mac_jurisdiction_x", states=["AL", "AL"])
+
+
+def test_a_criterion_is_deterministic_or_unclaimed_and_nothing_else() -> None:
+    with pytest.raises(ValidationError, match="nothing else"):
+        Criterion(id="z", label="z", evaluation="model")
+
+
+def test_an_unclaimed_criterion_says_why() -> None:
+    with pytest.raises(ValidationError, match="without a note"):
+        Criterion(id="d", label="d", evaluation="unclaimed")
+    assert Criterion(id="d", label="d", evaluation="unclaimed", note="no extractor").note
+
+
+def test_a_shortfall_free_abstention_may_carry_the_fifth_reason() -> None:
+    result = CriterionResult(
+        criterion_id="d",
+        verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+        gap_reason=GapReason.NOT_EVALUATED_BY_THIS_SYSTEM,
+    )
+    assert result.spans == [] and result.shortfall is None

@@ -404,7 +404,7 @@ def _determine(
     """
     if case.get("as_of") is not None:
         as_of = date.fromisoformat(case["as_of"])
-    key = (case.get("patient_id"), case["procedure_code"], as_of)
+    key = (case.get("patient_id"), case["procedure_code"], as_of, case.get("state"))
     if cache is not None and key in cache:
         return cache[key]
     result = determine(
@@ -415,6 +415,9 @@ def _determine(
         as_of=as_of,
         extraction_runner=extraction_runner,
         verifier=verifier,
+        # T-87 (D100): a row names its state, or the patient's bundle does. A
+        # patientless row (E3, NP1) carries one explicitly.
+        state=case.get("state"),
     )
     if cache is not None:
         cache[key] = result
@@ -489,6 +492,9 @@ def _synthetic_case(**overrides: Any) -> dict[str, Any]:
     case = {
         "case_id": "SELF",
         "procedure_code": "00000",
+        # T-87 (D100): every request names a state; the self-check's fakes
+        # accept any and the harness passes it through like a real row's.
+        "state": "WA",
         "expect": {"outcome": "NOT_COVERED", "max_model_calls": 0},
     }
     case.update(overrides)
@@ -529,7 +535,7 @@ def self_check() -> list[tuple[str, bool, str]]:
         def __init__(self, exc: Exception) -> None:
             self._exc = exc
 
-        def resolve(self, procedure_code: str) -> None:
+        def resolve(self, procedure_code: str, state: str) -> None:
             raise self._exc
 
     checks: list[tuple[str, tuple[str, str | None], tuple[str, str | None]]] = []
@@ -610,7 +616,7 @@ def self_check() -> list[tuple[str, bool, str]]:
         """resolve() returns None: the port's documented answer for a code no
         policy governs, which `resolve_sc1` maps to `NoPolicyFound` (REQ-1)."""
 
-        def resolve(self, procedure_code: str) -> None:
+        def resolve(self, procedure_code: str, state: str) -> None:
             return None
 
     # ---- D75's branches: REQ-1's shape, criterion-scoped rows, A3 ----------

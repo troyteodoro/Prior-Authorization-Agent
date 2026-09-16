@@ -151,8 +151,9 @@ calls. Anything surviving both enters `workflow.py`.
 
 **`workflow.py` is plain Python and deliberately not an ADK `Workflow`.** `STEPS`
 is a module-level tuple of named callables — gather, extract, criterion_a,
-reconcile, criterion_b, qualifying_run, criteria_c — and a driver walks it and
-records what it visited. An ADK `Workflow` would put `google.adk` on the import
+reconcile, criterion_b, qualifying_run, criteria_c, unclaimed, sufficiency,
+verify — and a driver walks it and records what it visited. Every criteria
+step evaluates what the **tree declares**, not Noridian's seven (D101). An ADK `Workflow` would put `google.adk` on the import
 path of every deterministic test, and the three `sys.modules` assertions that
 would catch that are the ones that would have to be deleted to allow it. The
 graph has one conditional — whether a short circuit fired — and that is a
@@ -361,8 +362,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**65 of 66 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~25s, 678 tests across 31 files). IDs run to T-86, but
+**66 of 67 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`, ~25s, 766 tests across 31 files). IDs run to T-87, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -401,7 +402,10 @@ hold** — and what remains is spec §10's list of known limits, P1–P8, which
 `eval/report.md`; T-86 (D99) made every `NOT_MET` carry a structured
 `shortfall` and added the `sufficiency` step — the ninth `STEPS` entry, between
 `criteria_c` and `verify` — which re-runs the predicate over only the cited
-evidence and maps a mismatch to `ERROR`, never an abstention. T-87 is next. Free tasks first, the runner change
+evidence and maps a mismatch to `ERROR`, never an abstention. T-87 (D100,
+D101) added the second jurisdiction: `resolve(code, state)`, Palmetto GBA's
+tree `ncd-100.1-jjm-v1`, the fifth resolver type `NoJurisdictionTree`, and
+the graph generalized to what a tree declares. T-88 is next. Free tasks first, the runner change
 (T-89) before the corpus grows (T-81), the Vertex measurement (T-90) last.
 Read the table rather than this paragraph *(D70, D72, D97)*.
 
@@ -433,13 +437,24 @@ satisfiable *(D63, D70)*.
 
 ### Domain facts that took work to establish
 
-- **The policy corpus is three documents and one jurisdiction** *(D21, D29)*:
-  `ncd_100_1` (national), `a53028` (Noridian, A/B MAC, **Jurisdiction F**), and
-  `r931cp` (CMS Pub. 100-04 Transmittal 931). **NCD 100.1 quantifies nothing** —
-  no months, no visit counts, no recency. Every constant in the criteria tree
-  comes from A53028, so this system determines coverage *as Noridian would*, and
-  a different MAC is a different tree over the same NCD. Say that plainly in a
-  review rather than calling the thresholds CMS's.
+- **The policy corpus is five documents and two jurisdictions** *(D21, D29,
+  D100, D101)*: `ncd_100_1` (national), `a53028` (Noridian, A/B MAC,
+  **Jurisdiction F**), `r931cp` (CMS Pub. 100-04 Transmittal 931), and since
+  T-87 `l34576` and `a56852` (Palmetto GBA, **Jurisdictions J and M**). **NCD
+  100.1 quantifies nothing** — no months, no visit counts, no recency. Every
+  constant in a tree comes from its MAC's document, so this system determines
+  coverage *as that MAC would*, and a request resolves by procedure code
+  **and state** — a state neither tree serves is `NO_JURISDICTION_TREE`
+  (REQ-55), never a default. Say that plainly in a review rather than calling
+  the thresholds CMS's.
+- **The two trees differ in shape, not only in constants** *(D101)*. Palmetto's
+  L34576 states no run length (no `c3`), requires *weight* rather than BMI
+  monthly, and adds a multidisciplinary evaluation; `c4` and `d` are declared
+  `evaluation: "unclaimed"` and the graph abstains on them with
+  `NOT_EVALUATED_BY_THIS_SYSTEM` — never omits them. `qualifying_run` admits an
+  explicit `None` run length only because the tree declares none; the argument
+  stays required. The 43775 binding cites A53028 because A56852's CPT table
+  sits behind the AMA licence modal and the extracted text names no code.
 - **`r931cp` is citable for code bindings only, never coverage claims** — its
   coverage content predates the 2012 LSG delegation *(D29)*.
 - **A procedure code carries two citations of different classes** *(D28)*: "this
@@ -503,9 +518,11 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   stores/            policy.py and patient.py — the two ports and their
                      file-backed adapters. __init__ imports neither.
 data/policies/
-  source/            ncd_100_1, a53028, r931cp + sources.json, answers.json
+  source/            ncd_100_1, a53028, r931cp, l34576, a56852 + sources.json,
+                     answers.json (q1–q6)
   value_sets/        obesity_comorbidities.json (SNOMED)
-  ncd_100_1_jf.json  the criteria tree, policy_version_id ncd-100.1-jf-v1
+  ncd_100_1_jf.json  Noridian JF's tree, policy_version_id ncd-100.1-jf-v1
+  ncd_100_1_jjm.json Palmetto JJ/JM's tree, ncd-100.1-jjm-v1 (T-87, D101)
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it

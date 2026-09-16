@@ -46,6 +46,7 @@ MAPPING: dict[str, str] = {
     "REQ-3": "tests/test_short_circuits.py",
     "REQ-4": "tests/test_determination.py",
     "REQ-42": "tests/test_resolver.py",
+    "REQ-55": "tests/test_resolver.py",
     "REQ-33": "tests/test_planes.py",
     "REQ-41": "tests/test_planes.py",
     # Evidence and citation

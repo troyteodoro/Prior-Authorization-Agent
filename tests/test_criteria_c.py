@@ -655,3 +655,30 @@ def test_restricted_run_re_derives_its_months_from_the_kept_events(tree):
     narrowed = restricted_run(run, [events[1].span, events[3].span])
     assert narrowed.months == ((2026, 6), (2026, 8))
     assert [e.span for e in narrowed.events] == [events[1].span, events[3].span]
+
+
+# --------------------------------------------------------------------------
+# T-87 (D101): a tree with no run-length criterion passes None, explicitly
+# --------------------------------------------------------------------------
+
+
+def test_the_run_length_argument_stays_required():
+    """D84: an argument a caller can forget is a default nobody chose. `None`
+    is admitted only when spelled out."""
+    with pytest.raises(TypeError):
+        qualifying_run([], recency_window_months=12, as_of=AS_OF)
+
+
+def test_with_no_length_requirement_selection_prefers_recency_alone(tree):
+    """Palmetto's shape: a one-month run last month beats a three-month run
+    two years ago, because nothing says a run must be long and something says
+    it must be recent (D101). Under Noridian's four-month floor neither run
+    qualifies jointly and the longer, stale one wins (D84's fallback)."""
+    stale = [_event_at(f"2024-0{m}-05", m, bmi=40.0) for m in range(3, 6)]
+    recent = [_event_at("2026-08-05", 9, bmi=40.0)]
+    events = stale + recent
+    window = tree.criterion("c2").require("recency_window_months")
+    palmetto = qualifying_run(events, min_consecutive_months=None, recency_window_months=window, as_of=AS_OF)
+    noridian = qualifying_run(events, min_consecutive_months=4, recency_window_months=window, as_of=AS_OF)
+    assert palmetto.months == ((2026, 8),)
+    assert noridian.months == ((2024, 3), (2024, 4), (2024, 5))

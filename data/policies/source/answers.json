@@ -1,6 +1,6 @@
 {
   "resolves": "spec section 9 open questions 1 and 2, and T-25's coverage assumption for 43775",
-  "answered_at": "2026-09-08T19:39:07.224517+00:00",
+  "answered_at": "2026-09-16T07:56:23.489847+00:00",
   "answers": [
     {
       "question_id": "q1",
@@ -40,6 +40,39 @@
       },
       "char_start": 7426,
       "char_end": 7737
+    },
+    {
+      "question_id": "q4",
+      "question": "Does L34576 state a minimum run length for the weight-management program, and what recency window does it state?",
+      "feeds": "Palmetto c2 recency window; the absence of a Palmetto c3",
+      "answer": "12 months; no run length is stated anywhere in the document",
+      "document_id": "l34576",
+      "quote": "Active participation within the last 12 months prior to bariatric surgery in a weight-management program that is supervised by a physician or other health care professionals.",
+      "note": "The sentence A53028 continues with 'for a minimum of four consecutive months' ends here. The word 'consecutive' does not occur in L34576, so the Palmetto tree declares no c3 (D101).",
+      "char_start": 8289,
+      "char_end": 8463
+    },
+    {
+      "question_id": "q5",
+      "question": "What must L34576's program document monthly?",
+      "feeds": "Palmetto c4 and c5 documentation_rate; c4 is unclaimed",
+      "answer": "weight, current dietary regimen and physical activity, monthly",
+      "document_id": "l34576",
+      "quote": "The weight-management program must include monthly documentation of ALL of the following components:\n\nweight\n\ncurrent dietary regimen\n\nphysical activity (e.g., exercise program)",
+      "note": "Weight, not BMI: A53028 says 'weight and BMI'. The extractor reads a documented BMI and has no weight field, which is why the Palmetto c4 is declared unclaimed rather than evaluated on a proxy (D101).",
+      "char_start": 8464,
+      "char_end": 8641
+    },
+    {
+      "question_id": "q6",
+      "question": "Does L34576 require an evaluation the pipeline has no extractor for?",
+      "feeds": "Palmetto d, declared unclaimed",
+      "answer": "yes - a multidisciplinary evaluation within the previous 6 months",
+      "document_id": "l34576",
+      "quote": "A thorough multidisciplinary evaluation within the previous 6 months which includes ALL of the following:",
+      "note": "Four named components follow (surgeon, primary care referral, mental health, nutrition). Declared in the tree with its window spanned and abstained on with NOT_EVALUATED_BY_THIS_SYSTEM (D101).",
+      "char_start": 8772,
+      "char_end": 8877
     }
   ]
 }

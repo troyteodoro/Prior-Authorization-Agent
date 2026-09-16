@@ -157,7 +157,9 @@ def _determination_for(case: dict[str, Any], cache: dict[Any, Any]) -> Any:
         if case.get("as_of") is not None
         else harness.EVAL_AS_OF
     )
-    return cache.get((case.get("patient_id"), case["procedure_code"], as_of))
+    return cache.get(
+        (case.get("patient_id"), case["procedure_code"], as_of, case.get("state"))
+    )
 
 
 # --------------------------------------------------------------------------
@@ -701,7 +703,7 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
     # report reads — zero calls, recorded extraction.
     direct: dict[str, list[bool]] = {}
     bound: dict[str, list[bool]] = {}
-    for (patient_id, procedure_code, as_of), determination in cache.items():
+    for (patient_id, procedure_code, as_of, _state), determination in cache.items():
         if not isinstance(determination, Determination):
             continue
         if patient_id not in gathered_by_patient:
@@ -861,9 +863,12 @@ def _caveats_section() -> list[str]:
         "Every constant in the criteria tree comes from A53028, a Noridian "
         "Jurisdiction F article. A different MAC is a different tree over the "
         "same NCD (D21, D29). These are not CMS's thresholds.",
-        "- **The corpus is six patients and three policy documents.** Rates over "
-        "a set this size move by large steps; one case is worth more than a "
-        "percentage point in every table above.",
+        "- **The corpus is six patients and five policy documents, and every "
+        "case here runs under one of the two trees.** Rates over a set this "
+        "size move by large steps; one case is worth more than a percentage "
+        "point in every table above. Palmetto's tree is loaded and resolved "
+        "by state (T-87) and reaches no eval row until T-88 adds a patient in "
+        "its territory.",
         "",
     ]
 

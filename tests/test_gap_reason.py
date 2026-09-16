@@ -51,14 +51,18 @@ def manifests() -> dict[str, dict]:
 # --------------------------------------------------------------------------
 
 
-def test_the_enum_holds_exactly_the_four_reasons():
+def test_the_enum_holds_exactly_the_five_reasons():
     """Closed on purpose: REQ-31 says two values producing the same next
-    action are one value, so a fifth member has to name a fifth action."""
+    action are one value, so a member has to name an action no other does.
+    The fifth arrived with the second jurisdiction (T-87, D101): a criterion
+    the tree declares unclaimed is a reviewer's to evaluate, which none of
+    the first four says."""
     assert {r.value for r in GapReason} == {
         "NO_EVIDENCE_RETRIEVED",
         "UNSUBSTANTIATED_ASSERTION",
         "VERIFIER_REJECTED",
         "SOURCE_CONFLICT",
+        "NOT_EVALUATED_BY_THIS_SYSTEM",
     }
 
 

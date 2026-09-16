@@ -35,6 +35,25 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_POLICY_ROOT = REPO_ROOT / "data" / "policies"
 
 
+class UnknownJurisdiction(LookupError):
+    """No tree in this store governs the state a request named (T-87, D100).
+
+    Typed, and carrying what the store knows, because the two ways to get it
+    wrong are both quiet: `None` would read as REQ-1's "no policy binds the
+    code" (D26 rebuilt), and a bare `KeyError` would reach the CLI as a bad
+    request beside an unknown patient. `pa_agent.resolver` maps it to its own
+    result type.
+    """
+
+    def __init__(self, state: str, known_states: list[str]) -> None:
+        super().__init__(
+            f"no criteria tree governs state {state!r}; this store serves "
+            f"{known_states}"
+        )
+        self.state = state
+        self.known_states = known_states
+
+
 class PolicyRef(BaseModel):
     """What a procedure code resolves to: a policy, at a version (REQ-1, REQ-4).
 
@@ -58,13 +77,16 @@ class PolicyRef(BaseModel):
 class PolicyStore(Protocol):
     """Everything the system reads from the policy plane."""
 
-    def resolve(self, procedure_code: str) -> PolicyRef | None:
-        """The governing policy for a code, or `None` for `NO_POLICY_FOUND`.
+    def resolve(self, procedure_code: str, state: str) -> PolicyRef | None:
+        """The governing policy for a code in a state, or `None` for `NO_POLICY_FOUND`.
 
-        `None` means no policy in this store governs the code. It does **not**
-        mean not covered — REQ-2's `NOT_COVERED` is a policy saying no, which is
-        a different answer from no policy saying anything, and D26 is about what
-        happens when those two get expressed as the same absence.
+        `None` means the tree governing `state` binds the code in none of its
+        sets. It does **not** mean not covered — REQ-2's `NOT_COVERED` is a
+        policy saying no, which is a different answer from no policy saying
+        anything, and D26 is about what happens when those two get expressed
+        as the same absence. A state no tree governs is a third thing again
+        and raises `UnknownJurisdiction` (T-87, D100): "no policy binds the
+        code" and "no tree covers this state" must never share an answer.
         """
         ...
 
@@ -95,7 +117,10 @@ class LocalPolicyStore:
         self._source_dir = self._root / "source"
         self._manifest_path = self._source_dir / "sources.json"
         self._trees: dict[str, CriteriaTree] = {}
-        self._binding_cache: dict[str, tuple[CriteriaTree, CoverageStatus, Any]] | None = None
+        self._binding_cache: (
+            dict[tuple[str, str], tuple[CriteriaTree, CoverageStatus, Any]] | None
+        ) = None
+        self._state_cache: dict[str, CriteriaTree] | None = None
         self._documents: dict[str, Document] = {}
         self._manifest: dict[str, dict] | None = None
         self._value_set_dir = self._root / "value_sets"
@@ -103,21 +128,24 @@ class LocalPolicyStore:
 
     # -- policy resolution -------------------------------------------------
 
-    def resolve(self, procedure_code: str) -> PolicyRef | None:
-        """The membership fact for a code, or `None` for no governing policy.
+    def resolve(self, procedure_code: str, state: str) -> PolicyRef | None:
+        """The membership fact for a code under the state's tree, or `None`.
 
-        `None` means no policy in this store binds the code as an identity. It
-        does **not** mean not covered — REQ-2's `NOT_COVERED` is a policy
-        saying no, a different answer from no policy saying anything (D26).
-        The mapping from membership to an outcome lives in
-        `pa_agent.resolver`, not here: an adapter reports what the tree
-        records, contractor-determined included, and makes no judgment (D31).
+        `None` means the tree governing `state` binds the code as an identity
+        in none of its sets. It does **not** mean not covered — REQ-2's
+        `NOT_COVERED` is a policy saying no, a different answer from no policy
+        saying anything (D26). A state no tree governs raises
+        `UnknownJurisdiction` rather than returning anything (D100). The
+        mapping from membership to an outcome lives in `pa_agent.resolver`,
+        not here: an adapter reports what the tree records,
+        contractor-determined included, and makes no judgment (D31).
 
         Facility code lists are not consulted. They overlap across procedures
         in the source itself, which is why they are not identities (D30).
         """
+        self.tree_for_state(state)  # raises UnknownJurisdiction
         index = self._binding_index()
-        hit = index.get(procedure_code)
+        hit = index.get((state, procedure_code))
         if hit is None:
             return None
         tree, status, entry = hit
@@ -129,28 +157,81 @@ class LocalPolicyStore:
             coverage_claim=entry.coverage_claim,
         )
 
-    def _binding_index(self) -> dict[str, tuple[CriteriaTree, CoverageStatus, Any]]:
-        """`{code -> (tree, set, entry)}` over identity bindings, built once.
+    def tree_for_state(self, state: str) -> CriteriaTree:
+        """The one tree whose jurisdiction names `state` (T-87, D100)."""
+        index = self._state_index()
+        try:
+            return index[state]
+        except KeyError:
+            raise UnknownJurisdiction(state, sorted(index)) from None
+
+    def _state_index(self) -> dict[str, CriteriaTree]:
+        """`{state -> tree}`, built once; two trees claiming one state raise.
+
+        The mirror of the code collision below. A national tree names no
+        states and is reachable by no request — every tree this store serves
+        is a MAC's reading of the NCD (D21), and a request is always for a
+        patient somewhere.
+        """
+        if self._state_cache is None:
+            index: dict[str, CriteriaTree] = {}
+            for tree in self._load_trees().values():
+                for state in tree.jurisdiction.states:
+                    if state in index:
+                        raise ValueError(
+                            f"state {state} is claimed by "
+                            f"{index[state].policy_version_id} and "
+                            f"{tree.policy_version_id}; resolution would depend "
+                            "on load order"
+                        )
+                    index[state] = tree
+            self._state_cache = index
+        return self._state_cache
+
+    def _binding_index(
+        self,
+    ) -> dict[tuple[str, str], tuple[CriteriaTree, CoverageStatus, Any]]:
+        """`{(state, code) -> (tree, set, entry)}` over identity bindings, built once.
 
         `ProcedureSets`' validator already refuses a code bound twice within
-        one tree; this refuses a code bound by two trees, which no validator
-        can see because no object holds both trees.
+        one tree. Two rules live here because no object holds two trees:
+
+        - a code bound by two trees **for one state** raises, since resolution
+          would depend on load order (T-24's rule, scoped by D100);
+        - a code in a **national** set must carry the same status in every
+          tree that binds it, because those sets transcribe one NCD — two
+          MAC trees disagreeing about what CMS said is a transcription error,
+          not a jurisdictional difference. `contractor_determined` may differ
+          between trees; that is the divergence D33 anticipated.
         """
         if self._binding_cache is None:
-            index: dict[str, tuple[CriteriaTree, CoverageStatus, Any]] = {}
+            index: dict[tuple[str, str], tuple[CriteriaTree, CoverageStatus, Any]] = {}
+            national: dict[str, tuple[CoverageStatus, str]] = {}
             for tree in self._load_trees().values():
                 if tree.procedure_sets is None:
                     continue
                 for status, entry in tree.procedure_sets.entries():
                     for binding in entry.codes:
-                        if binding.code in index:
-                            other = index[binding.code][0].policy_version_id
-                            raise ValueError(
-                                f"{binding.code} is bound by {other} and "
-                                f"{tree.policy_version_id}; resolution would "
-                                "depend on load order"
-                            )
-                        index[binding.code] = (tree, status, entry)
+                        if status is not CoverageStatus.CONTRACTOR_DETERMINED:
+                            seen = national.get(binding.code)
+                            if seen is not None and seen[0] is not status:
+                                raise ValueError(
+                                    f"{binding.code} is {seen[0].value} in {seen[1]} "
+                                    f"and {status.value} in {tree.policy_version_id}; "
+                                    "the national sets transcribe one NCD and "
+                                    "cannot disagree"
+                                )
+                            national[binding.code] = (status, tree.policy_version_id)
+                        for state in tree.jurisdiction.states:
+                            key = (state, binding.code)
+                            if key in index:
+                                other = index[key][0].policy_version_id
+                                raise ValueError(
+                                    f"{binding.code} is bound for {state} by {other} "
+                                    f"and {tree.policy_version_id}; resolution would "
+                                    "depend on load order"
+                                )
+                            index[key] = (tree, status, entry)
             self._binding_cache = index
         return self._binding_cache
 

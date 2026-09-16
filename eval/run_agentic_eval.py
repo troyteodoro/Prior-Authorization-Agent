@@ -274,7 +274,11 @@ def _run_one(policy_store, patient_store, runner, planner, patient_id, verifier)
         policy_store=policy_store,
         patient_store=patient_store,
         extraction_runner=runner,
-        policy_ref=policy_store.resolve(PROCEDURE),
+        # T-87 (D100): resolved under the patient's own state, read from the
+        # bundle — the tool surface the planner sees is unchanged.
+        policy_ref=policy_store.resolve(
+            PROCEDURE, patient_store.get_jurisdiction_state(patient_id)
+        ),
         patient_id=patient_id,
         as_of=AS_OF,
         planner=planner,

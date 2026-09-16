@@ -51,6 +51,17 @@ class PatientStore(Protocol):
         which is why these arrive as hash-verified `Document`s (Art. III)."""
         ...
 
+    def get_jurisdiction_state(self, patient_id: str) -> str:
+        """The two-letter state the patient's MAC is resolved by (T-87, D100).
+
+        Read from the bundle's `Patient.address`, and the one patient-plane
+        fact that crosses to the policy plane — as a scalar, never as a
+        handle. Raises `KeyError` naming the patient when the bundle carries
+        no state; a default would be P1's confident wrong answer with one
+        more layer (D31, D39).
+        """
+        ...
+
     def get_document(self, document_id: str) -> Document:
         """Any patient-plane source document, content-verified, for spans to be
         checked against — the symmetry D25's reversal note anticipated when it
@@ -252,6 +263,28 @@ class LocalPatientStore:
                 )
             )
         return conditions
+
+    def get_jurisdiction_state(self, patient_id: str) -> str:
+        """`Patient.address[0].state` from the bundle, verified on read (D100).
+
+        Synthea emits USPS codes. A bundle with no `Patient`, no address or no
+        state raises rather than resolving to a tree nobody chose.
+        """
+        bundle = self._bundle(patient_id)
+        patients = list(self._resources(bundle, "Patient"))
+        if len(patients) != 1:
+            raise KeyError(
+                f"patient {patient_id!r}: bundle carries {len(patients)} Patient "
+                "resource(s); one is needed to read a jurisdiction state from"
+            )
+        addresses = patients[0].get("address") or []
+        state = (addresses[0] if addresses else {}).get("state")
+        if not isinstance(state, str) or not state.strip():
+            raise KeyError(
+                f"patient {patient_id!r}: Patient.address carries no state, so no "
+                "MAC tree can be resolved for this request (D100)"
+            )
+        return state.strip()
 
     def get_notes(self, patient_id: str) -> list[Document]:
         """The manifest-driven note corpus T-07 synthesized (D43).

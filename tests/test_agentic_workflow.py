@@ -773,7 +773,7 @@ def test_the_same_gathered_evidence_yields_the_same_verdicts(
     gathers what the fixed one gathers, the criteria cannot tell them apart —
     because it is the same criteria code reading the same bundle."""
     patient_id, document_id = e1
-    ref = policy_store.resolve(CONTRACTOR_CODE)
+    ref = policy_store.resolve(CONTRACTOR_CODE, "WA")
 
     fixed = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
@@ -802,7 +802,7 @@ def test_the_agentic_path_walks_the_same_graph(
     patient_id, document_id = e1
     run = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
-        extraction_runner=runner, policy_ref=policy_store.resolve(CONTRACTOR_CODE),
+        extraction_runner=runner, policy_ref=policy_store.resolve(CONTRACTOR_CODE, "WA"),
         patient_id=patient_id, as_of=AS_OF,
         planner=_planner(_full_run(patient_id, document_id)),
         verifier=AcceptAllVerifier(),
@@ -838,7 +838,7 @@ def test_a_planner_that_skips_a_note_changes_a_verdict_and_nothing_raises(
                 notes=patient_store.get_notes(case_patients["E5"]),
             )
 
-    ref = policy_store.resolve(CONTRACTOR_CODE)
+    ref = policy_store.resolve(CONTRACTOR_CODE, "WA")
     correct = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
         extraction_runner=runner, policy_ref=ref, patient_id=e1_patient,

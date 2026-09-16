@@ -44,7 +44,8 @@
       "expect": {
         "outcome": "NOT_COVERED",
         "max_model_calls": 0
-      }
+      },
+      "state": "WA"
     },
     {
       "case_id": "E1",
@@ -320,7 +321,8 @@
       "expect": {
         "outcome": "NO_POLICY_FOUND",
         "max_model_calls": 0
-      }
+      },
+      "state": "WA"
     }
   ]
 }

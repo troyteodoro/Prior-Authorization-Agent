@@ -202,10 +202,32 @@ class Criterion(BaseModel):
 
     id: str = Field(min_length=1)
     label: str
+    #: `"deterministic"` is evaluated by a predicate in `criteria.py`.
+    #: `"unclaimed"` is declared by the tree and abstained on by the graph with
+    #: `NOT_EVALUATED_BY_THIS_SYSTEM` — the policy requires it, the system says
+    #: so, and never omits it (T-87, D101).
     evaluation: str = "deterministic"
     constants: dict[str, PolicyConstant] = Field(default_factory=dict)
     scoped_to: str | None = None
     national_floor: EvidenceSpan | None = None
+    # Why a criterion is what it is — in practice, why it is unclaimed. Read by
+    # a reviewer of the tree, never carried into a tool payload (D101).
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def _evaluation_is_one_of_two_things(self) -> Criterion:
+        if self.evaluation not in ("deterministic", "unclaimed"):
+            raise ValueError(
+                f"criterion {self.id}: evaluation {self.evaluation!r}; a tree "
+                "declares 'deterministic' or 'unclaimed' and nothing else (D101)"
+            )
+        if self.evaluation == "unclaimed" and not (self.note or "").strip():
+            raise ValueError(
+                f"criterion {self.id}: unclaimed without a note saying why; a "
+                "criterion the system will not evaluate has to say so where a "
+                "reviewer reads the tree (D101)"
+            )
+        return self
 
     def constant(self, name: str) -> PolicyConstant:
         try:
@@ -251,6 +273,26 @@ class Jurisdiction(BaseModel):
     contractor: str | None = None
     states: list[str] = Field(default_factory=list)
     note: str | None = None
+
+    @model_validator(mode="after")
+    def _a_mac_names_the_states_it_governs(self) -> Jurisdiction:
+        """T-87 (D100): resolution is by state, so a MAC tree that names none
+        is a tree no request can reach, and a state named twice is a tree that
+        would bind a request two ways."""
+        if self.authority != "national" and not self.states:
+            raise ValueError(
+                f"jurisdiction {self.authority!r} names no states; a MAC tree is "
+                "resolved by the patient's state and this one can never be"
+            )
+        for state in self.states:
+            if len(state) != 2 or not state.isalpha() or not state.isupper():
+                raise ValueError(
+                    f"jurisdiction {self.authority!r}: {state!r} is not a two-letter "
+                    "USPS state code, which is what a bundle's Patient.address carries"
+                )
+        if len(set(self.states)) != len(self.states):
+            raise ValueError(f"jurisdiction {self.authority!r} repeats a state")
+        return self
 
 
 class CoverageStatus(str, Enum):
@@ -602,12 +644,18 @@ class GapReason(str, Enum):
     | `UNSUBSTANTIATED_ASSERTION` | A claim was found, no encounter behind it | Find the visit notes behind the claim |
     | `VERIFIER_REJECTED` | A span was found and did not support the verdict | Re-read the cited passage |
     | `SOURCE_CONFLICT` | Two sources disagreed across a threshold | Reconcile the two values |
+    | `NOT_EVALUATED_BY_THIS_SYSTEM` | The policy requires it; the tree declares no evaluator | A reviewer evaluates this criterion against the chart |
+
+    The fifth member arrived with the second jurisdiction (T-87, D101): a
+    criterion a tree declares `unclaimed` is abstained on, never omitted,
+    and its next action is one none of the first four names.
     """
 
     NO_EVIDENCE_RETRIEVED = "NO_EVIDENCE_RETRIEVED"
     UNSUBSTANTIATED_ASSERTION = "UNSUBSTANTIATED_ASSERTION"
     VERIFIER_REJECTED = "VERIFIER_REJECTED"
     SOURCE_CONFLICT = "SOURCE_CONFLICT"
+    NOT_EVALUATED_BY_THIS_SYSTEM = "NOT_EVALUATED_BY_THIS_SYSTEM"
 
 
 class CriterionVerdict(str, Enum):

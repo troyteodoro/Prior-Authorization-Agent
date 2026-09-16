@@ -9,6 +9,7 @@ than one implementation agreeing with itself.
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import shutil
 from datetime import date
@@ -354,3 +355,43 @@ def test_the_patient_module_imports_no_policy_and_no_model():
         f"pa_agent/stores/patient.py imports {sorted(imported)}; no policy "
         "module, no index over the corpus, no model (REQ-33, D39)"
     )
+
+
+# --------------------------------------------------------------------------
+# T-87 (D100): the jurisdiction state is read from the bundle, never defaulted
+# --------------------------------------------------------------------------
+
+
+def test_every_patient_carries_a_two_letter_state(store, manifest_records):
+    """Synthea's population is Washington's (D35); the clone T-88 adds is the
+    first exception and is asserted there."""
+    for record in manifest_records:
+        state = store.get_jurisdiction_state(record["patient_id"])
+        assert len(state) == 2 and state.isupper()
+
+
+def test_an_unknown_patient_has_no_state(store):
+    with pytest.raises(KeyError, match="no patient"):
+        store.get_jurisdiction_state("nobody")
+
+
+def test_a_bundle_without_a_state_raises_rather_than_defaulting(tmp_path, manifest_records):
+    """D31's shape: a default here would resolve the request under a tree
+    nobody chose, and every downstream test would agree with it."""
+    root = _mirror(tmp_path, manifest_records)
+    record = manifest_records[0]
+    path = root / "bundles" / record["filename"]
+    bundle = json.loads(path.read_text(encoding="utf-8"))
+    for entry in bundle["entry"]:
+        if entry["resource"]["resourceType"] == "Patient":
+            entry["resource"]["address"][0].pop("state")
+    raw = json.dumps(bundle).encode("utf-8")
+    path.write_bytes(raw)
+    manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+    for row in manifest["bundles"]:
+        if row["patient_id"] == record["patient_id"]:
+            row["sha256"] = hashlib.sha256(raw).hexdigest()
+    (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    mirrored = LocalPatientStore(root)
+    with pytest.raises(KeyError, match="carries no state"):
+        mirrored.get_jurisdiction_state(record["patient_id"])

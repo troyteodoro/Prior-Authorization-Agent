@@ -63,7 +63,7 @@ def _seeded_error(case_id: str = "SEED"):
     not a hand-built `CaseResult` that could drift from the real path."""
 
     class _AbortingStore:
-        def resolve(self, procedure_code: str):
+        def resolve(self, procedure_code: str, state: str):
             raise DeterminationAborted(
                 [
                     CriterionResult(
@@ -79,6 +79,7 @@ def _seeded_error(case_id: str = "SEED"):
     case = {
         "case_id": case_id,
         "procedure_code": "00000",
+        "state": "WA",  # T-87 (D100): every request names a state
         "expect": {"outcome": "NOT_COVERED"},
     }
     return HARNESS.run_case(case, _AbortingStore())
@@ -148,12 +149,13 @@ def test_determination_aborted_classifies_as_error_with_the_codes_in_the_reason(
 
 def test_blocked_still_means_unbuilt_and_never_absorbs_the_abort():
     class _UnbuiltStore:
-        def resolve(self, procedure_code: str):
+        def resolve(self, procedure_code: str, state: str):
             raise NotImplementedError("T-99")
 
     case = {
         "case_id": "B1",
         "procedure_code": "00000",
+        "state": "WA",  # T-87 (D100): every request names a state
         "expect": {"outcome": "NOT_COVERED"},
     }
     result = HARNESS.run_case(case, _UnbuiltStore())
@@ -209,12 +211,13 @@ def test_self_check_covers_the_abort_classification_and_passes():
 
 def test_run_case_attaches_the_outcome_on_the_no_policy_path():
     class _UngoverningStore:
-        def resolve(self, procedure_code: str):
+        def resolve(self, procedure_code: str, state: str):
             return None
 
     case = {
         "case_id": "N1",
         "procedure_code": "00000",
+        "state": "WA",  # T-87 (D100): every request names a state
         "expect": {"outcome": "NO_POLICY_FOUND"},
     }
     result = HARNESS.run_case(case, _UngoverningStore())
@@ -232,6 +235,7 @@ def test_run_case_attaches_the_determination_outcome(monkeypatch):
     case = {
         "case_id": "D1",
         "procedure_code": "00000",
+        "state": "WA",  # T-87 (D100): every request names a state
         "expect": {"outcome": "INSUFFICIENT_EVIDENCE"},
     }
     result = HARNESS.run_case(case, object())

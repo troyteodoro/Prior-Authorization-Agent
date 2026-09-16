@@ -22,25 +22,51 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TREE_PATH = REPO_ROOT / "data" / "policies" / "ncd_100_1_jf.json"
+#: T-87 (D100, D101): every tree in the store is held to the same checks. A
+#: tree is asserted, not discovered — a file dropped into the directory must
+#: also be named here, so a third jurisdiction is a visible diff.
+TREE_PATHS = {
+    "ncd-100.1-jf-v1": TREE_PATH,
+    "ncd-100.1-jjm-v1": REPO_ROOT / "data" / "policies" / "ncd_100_1_jjm.json",
+}
 SOURCE_DIR = REPO_ROOT / "data" / "policies" / "source"
 MANIFEST_PATH = SOURCE_DIR / "sources.json"
 SPEC_PATH = REPO_ROOT / "docs" / "spec.md"
 
-# The criteria NCD 100.1 decomposes into (D1). Renaming one breaks every
-# reference to it, so the set is asserted rather than discovered.
-EXPECTED_CRITERIA = ["a", "b", "c1", "c2", "c3", "c4", "c5"]
+# The criteria each tree decomposes its NCD reading into (D1, D101). Renaming
+# one breaks every reference to it, so the set is asserted rather than
+# discovered. Palmetto's tree has no c3 and adds d (D101).
+EXPECTED_CRITERIA_BY_TREE = {
+    "ncd-100.1-jf-v1": ["a", "b", "c1", "c2", "c3", "c4", "c5"],
+    "ncd-100.1-jjm-v1": ["a", "b", "c1", "c2", "c4", "c5", "d"],
+}
+EXPECTED_CRITERIA = EXPECTED_CRITERIA_BY_TREE["ncd-100.1-jf-v1"]
 
 # Constants the exit condition names explicitly, as (criterion_id, constant_name).
-REQUIRED_CONSTANTS = [
-    ("a", "bmi_threshold"),
-    ("a", "lookback_months"),
-    ("b", "min_comorbidity_count"),
-    ("c1", "min_events"),
-    ("c2", "recency_window_months"),
-    ("c3", "min_consecutive_months"),
-    ("c4", "documentation_rate"),
-    ("c5", "documentation_rate"),
-]
+REQUIRED_CONSTANTS_BY_TREE = {
+    "ncd-100.1-jf-v1": [
+        ("a", "bmi_threshold"),
+        ("a", "lookback_months"),
+        ("b", "min_comorbidity_count"),
+        ("c1", "min_events"),
+        ("c2", "recency_window_months"),
+        ("c3", "min_consecutive_months"),
+        ("c4", "documentation_rate"),
+        ("c5", "documentation_rate"),
+    ],
+    "ncd-100.1-jjm-v1": [
+        ("a", "bmi_threshold"),
+        ("a", "lookback_months"),
+        ("b", "min_comorbidity_count"),
+        ("c1", "min_events"),
+        ("c2", "recency_window_months"),
+        ("c4", "documentation_rate"),
+        ("c4", "documented_measure"),
+        ("c5", "documentation_rate"),
+        ("d", "evaluation_window_months"),
+    ],
+}
+REQUIRED_CONSTANTS = sorted({pair for pairs in REQUIRED_CONSTANTS_BY_TREE.values() for pair in pairs})
 
 # The rate vocabulary the tree speaks, decoded here so T-37's seven-month case can
 # be evaluated before T-16 exists to evaluate it properly. This is deliberately
@@ -61,9 +87,19 @@ TYPE_CHECKS = {
 }
 
 
-@pytest.fixture(scope="module")
-def tree() -> dict:
-    return json.loads(TREE_PATH.read_text(encoding="utf-8"))
+@pytest.fixture(scope="module", params=sorted(TREE_PATHS), ids=sorted(TREE_PATHS))
+def tree(request) -> dict:
+    """Every test below runs once per tree (T-87). A check that only
+    Noridian's tree passes is a check the second jurisdiction escaped."""
+    loaded = json.loads(TREE_PATHS[request.param].read_text(encoding="utf-8"))
+    assert loaded["policy_version_id"] == request.param, "file and id disagree"
+    return loaded
+
+
+def test_every_tree_file_in_the_directory_is_asserted():
+    """A dropped-in tree would be loaded by the store and checked by nothing."""
+    on_disk = sorted(p.name for p in (REPO_ROOT / "data" / "policies").glob("*.json"))
+    assert on_disk == sorted(p.name for p in TREE_PATHS.values())
 
 
 @pytest.fixture(scope="module")
@@ -104,14 +140,16 @@ def test_the_tree_parses_and_declares_a_policy_version(tree):
 
 
 def test_every_criterion_is_present_exactly_once(tree, criteria):
-    assert list(criteria) == EXPECTED_CRITERIA
-    assert len(tree["criteria"]) == len(EXPECTED_CRITERIA), "a criterion id is duplicated"
+    expected = EXPECTED_CRITERIA_BY_TREE[tree["policy_version_id"]]
+    assert list(criteria) == expected
+    assert len(tree["criteria"]) == len(expected), "a criterion id is duplicated"
 
 
 def test_the_decision_expression_covers_every_criterion_and_nothing_else(tree, criteria):
     """REQ-19 evaluates this expression in Python. A criterion missing from it is
-    a criterion that cannot affect the outcome, which is the quiet failure."""
-    named = set(re.findall(r"\b(?:a|b|c[1-5])\b", tree["decision_expression"]))
+    a criterion that cannot affect the outcome, which is the quiet failure —
+    and an unclaimed criterion left out of it is the omission D101 refused."""
+    named = set(re.findall(r"\b(?:a|b|c[1-5]|d)\b", tree["decision_expression"]))
     assert named == set(criteria), (
         f"decision_expression names {sorted(named)}, criteria are {sorted(criteria)}"
     )
@@ -135,7 +173,9 @@ def test_the_tree_is_bound_to_the_hashed_corpus(tree):
 
 
 @pytest.mark.parametrize("criterion_id,constant", REQUIRED_CONSTANTS)
-def test_required_constant_is_present(criteria, criterion_id, constant):
+def test_required_constant_is_present(tree, criteria, criterion_id, constant):
+    if (criterion_id, constant) not in REQUIRED_CONSTANTS_BY_TREE[tree["policy_version_id"]]:
+        pytest.skip(f"{tree['policy_version_id']} declares no {criterion_id}.{constant} (D101)")
     assert constant in criteria[criterion_id].get("constants", {}), (
         f"{criterion_id} declares no {constant}"
     )
@@ -492,10 +532,14 @@ def test_quantified_constants_come_from_the_mac_article(tree):
             continue
         if isinstance(body["value"], bool):
             continue
-        assert source["document_id"] == "a53028", (
-            f"{name}: numeric constant sourced to {source['document_id']}. Only the "
-            "BMI threshold appears in both documents, and it is cited to A53028 "
-            "because that is the text this tree operationalizes."
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        authority = {d["document_id"]: d["authority"] for d in manifest["documents"]}
+        assert authority[source["document_id"]] == tree["jurisdiction"]["authority"], (
+            f"{name}: numeric constant sourced to {source['document_id']}, whose "
+            f"authority is {authority[source['document_id']]}, not this tree's "
+            f"{tree['jurisdiction']['authority']}. Only the BMI threshold appears "
+            "in both the NCD and the MAC's text, and it is cited to the MAC "
+            "because that is the text this tree operationalizes (D21, D101)."
         )
 
 

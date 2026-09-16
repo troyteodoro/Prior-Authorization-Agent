@@ -58,7 +58,7 @@ from pa_agent.contracts import (
     GapReason,
 )
 from conftest import AcceptAllVerifier
-from pa_agent.determination import NoPolicyResult, determine
+from pa_agent.determination import NoJurisdictionResult, NoPolicyResult, determine
 from pa_agent.index import DocumentIndex
 from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.spans import validate
@@ -134,7 +134,7 @@ def e8_patient(case_patients) -> str:
 
 @pytest.fixture(scope="module")
 def e3_determination(store) -> Determination:
-    result = determine(store, E3_CODE, patient_id=None)
+    result = determine(store, E3_CODE, patient_id=None, state="WA")
     assert isinstance(result, Determination)
     return result
 
@@ -187,7 +187,7 @@ def test_e3_carries_no_patient_when_none_was_consulted(e3_determination):
 
 
 def test_an_ungoverned_code_yields_no_policy_result(store):
-    result = determine(store, FOREIGN_CODE)
+    result = determine(store, FOREIGN_CODE, state="WA")
     assert isinstance(result, NoPolicyResult)
     assert not isinstance(result, Determination)
     assert result.procedure_code == FOREIGN_CODE
@@ -212,9 +212,9 @@ def test_a_covered_code_refuses_to_answer_without_a_patient(store):
     patient is adjudicating nobody, which D32 already refused at the contract
     level; refusing it here means the request never gets that far."""
     with pytest.raises(NotImplementedError, match="needs a patient"):
-        determine(store, COVERED_CODE)
+        determine(store, COVERED_CODE, state="WA")
     with pytest.raises(NotImplementedError, match="needs a patient"):
-        determine(store, CONTRACTOR_CODE)
+        determine(store, CONTRACTOR_CODE, state="WA")
 
 
 def test_a_covered_code_refuses_to_answer_without_an_extraction_runner(
@@ -450,7 +450,7 @@ def _run_cli(*args: str) -> subprocess.CompletedProcess:
 
 
 def test_the_cli_prints_e3s_determination_and_exits_zero():
-    proc = _run_cli("--patient", "X", "--procedure", E3_CODE)
+    proc = _run_cli("--patient", "X", "--procedure", E3_CODE, "--state", "WA")
     assert proc.returncode == 0, proc.stderr
     printed = json.loads(proc.stdout)
     assert printed["outcome"] == "NOT_COVERED"
@@ -462,7 +462,7 @@ def test_the_cli_prints_e3s_determination_and_exits_zero():
 
 
 def test_the_cli_reports_no_policy_found_without_denying():
-    proc = _run_cli("--patient", "X", "--procedure", FOREIGN_CODE)
+    proc = _run_cli("--patient", "X", "--procedure", FOREIGN_CODE, "--state", "WA")
     assert proc.returncode == 0, proc.stderr
     printed = json.loads(proc.stdout)
     assert printed["result"] == "NO_POLICY_FOUND"
@@ -702,7 +702,7 @@ def test_a_contractor_determination_cites_the_delegation_and_the_exercise(store)
     document that declines to decide, and the MAC's exercise of the delegation is
     the other half of the answer. Both quotes, and they are not the same quote.
     """
-    ref = store.resolve(CONTRACTOR_CODE)
+    ref = store.resolve(CONTRACTOR_CODE, "WA")
     assert ref is not None
     citations = contractor_citations(ref.coverage_claim)
     assert len(citations) == 2, (
@@ -723,7 +723,7 @@ def test_a_contractor_determination_cites_the_delegation_and_the_exercise(store)
 
 def test_the_contractor_citations_slice_back_out_of_the_corpus(store):
     """Article III: both halves are spans into hashed documents, not prose."""
-    ref = store.resolve(CONTRACTOR_CODE)
+    ref = store.resolve(CONTRACTOR_CODE, "WA")
     assert ref is not None
     index = DocumentIndex()
     for document_id in ("ncd_100_1", "a53028"):
@@ -753,3 +753,40 @@ def test_the_aggregator_reaches_no_store_and_no_model():
         f"aggregate.py imports {sorted(imported)}; the aggregator sees every "
         "verdict and must reach neither a store nor a model"
     )
+
+
+# --------------------------------------------------------------------------
+# T-87 (REQ-55, D100): a request names a state, or is refused
+# --------------------------------------------------------------------------
+
+
+def test_a_request_with_neither_state_nor_patient_is_refused_not_defaulted(store):
+    """The mutation D100 names: a missing state silently resolved under
+    Jurisdiction F is P1's confident wrong answer with one more layer."""
+    with pytest.raises(NotImplementedError, match="state"):
+        determine(store, E3_CODE)
+    with pytest.raises(NotImplementedError, match="state"):
+        determine(store, FOREIGN_CODE)
+
+
+def test_an_unserved_state_is_its_own_result_and_not_a_determination(store):
+    result = determine(store, E3_CODE, state="TX")
+    assert isinstance(result, NoJurisdictionResult)
+    assert not isinstance(result, (Determination, NoPolicyResult))
+    assert result.state == "TX" and "WA" in result.known_states
+
+
+def test_the_cli_answers_an_unserved_state_with_exit_zero():
+    proc = _run_cli("--patient", "X", "--procedure", E3_CODE, "--state", "TX")
+    assert proc.returncode == 0, proc.stderr
+    printed = json.loads(proc.stdout)
+    assert printed["result"] == "NO_JURISDICTION_TREE"
+    assert "outcome" not in printed and "AL" in printed["known_states"]
+
+
+def test_the_cli_refuses_an_unknown_patient_without_a_state_as_a_bad_request():
+    """Exit 1, not 0 and not 2: the state cannot be read from a bundle that
+    does not exist, and nothing defaults it (D100)."""
+    proc = _run_cli("--patient", "X", "--procedure", E3_CODE)
+    assert proc.returncode == 1, proc.stdout
+    assert "no patient" in proc.stderr

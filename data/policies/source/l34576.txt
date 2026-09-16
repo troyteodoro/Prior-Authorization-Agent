@@ -1,0 +1,761 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Palmetto GBA
+
+A and B MAC
+
+10111 - MAC A
+
+J - J
+
+Alabama
+
+Palmetto GBA
+
+A and B MAC
+
+10112 - MAC B
+
+J - J
+
+Alabama
+
+Palmetto GBA
+
+A and B MAC
+
+10211 - MAC A
+
+J - J
+
+Georgia
+
+Palmetto GBA
+
+A and B MAC
+
+10212 - MAC B
+
+J - J
+
+Georgia
+
+Palmetto GBA
+
+A and B MAC
+
+10311 - MAC A
+
+J - J
+
+Tennessee
+
+Palmetto GBA
+
+A and B MAC
+
+10312 - MAC B
+
+J - J
+
+Tennessee
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11201 - MAC A
+
+J - M
+
+South Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11202 - MAC B
+
+J - M
+
+South Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11301 - MAC A
+
+J - M
+
+Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11302 - MAC B
+
+J - M
+
+Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11401 - MAC A
+
+J - M
+
+West Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11402 - MAC B
+
+J - M
+
+West Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11501 - MAC A
+
+J - M
+
+North Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11502 - MAC B
+
+J - M
+
+North Carolina
+
+LCD Information
+
+Document Information
+
+Source LCD ID
+
+N/A
+
+LCD ID
+
+L34576
+
+Original ICD-9 LCD ID
+
+Not Applicable
+
+LCD Title
+
+Laparoscopic Sleeve Gastrectomy for Severe Obesity
+
+Proposed LCD in Comment Period
+
+N/A
+
+Source Proposed LCD
+
+N/A
+
+Original Effective Date
+
+For services performed on or after 10/01/2015
+
+Revision Effective Date
+
+For services performed on or after 07/10/2025
+
+Revision Ending Date
+
+N/A
+
+Retirement Date
+
+N/A
+
+Notice Period Start Date
+
+N/A
+
+Notice Period End Date
+
+N/A
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+Issue
+
+Issue Description
+
+This LCD outlines limited coverage for this service with specific details under Coverage Indications, Limitations and/or Medical Necessity.
+
+Issue - Explanation of Change Between Proposed LCD and Final LCD
+
+CMS National Coverage Policy
+
+Title XVIII of the Social Security Act, §1862(a)(1)(A) allows coverage and payment for only those services that are considered to be reasonable and necessary for the diagnoses or treatment of illness or injury or to improve the functioning of a malformed body member.
+
+CMS Internet-Only Manual, Pub. 100-03, Medicare National Coverage Determinations Manual, Chapter 1, Part 2, §100.1 Bariatric Surgery for Treatment of Co-Morbid Conditions Related to Morbid Obesity
+
+Decision Memo (CAG-00250R2) for Bariatric Surgery for the Treatment of Morbid Obesity, June 27, 2012, Medicare Administrative Contractors (MACs) acting within their respective jurisdictions may determine coverage of stand-alone laparoscopic sleeve gastrectomy (LSG) for the treatment of co-morbid conditions related to obesity in Medicare beneficiaries only when all of the following conditions A-C are satisfied.
+A. The beneficiary has a body-mass index (BMI) ≥ 35 kg/m2,
+B. The beneficiary has at least 1 co-morbidity related to obesity, and
+C. The beneficiary has been previously unsuccessful with medical treatment for obesity.
+
+Coverage Guidance
+
+Coverage Indications, Limitations, and/or Medical Necessity
+
+The sleeve gastrectomy (SG) is a surgical procedure performed in either an open or laparoscopic manner. The surgery involves excision of the lateral aspect of the stomach, leaving a much reduced, tubular stomach. When performed laparoscopically, the term laparoscopic sleeve gastrectomy (LSG) is used. Presently, LSG is being used as a stand-alone approach to bariatric surgery. By reducing gastric capacity, there is both short- and long-term weight loss. A stand-alone SG is sometimes referred to as an isolated SG. There are variations in the detail and technique for the SG procedure itself. LSG has been gaining popularity over the last few years with increased experience among surgeons and the procedure has taken its place among other bariatric surgical procedures for extreme obesity. Unlike some bariatric surgical procedures, this technique is irreversible.
+
+Obesity, defined as a body mass index (BMI) ≥ 30kg/m2, is recognized as an important risk factor for morbidity and mortality associated with a number of chronic diseases, such as heart disease and diabetes (Flegal, 2010). The Centers for Disease Control and Prevention (CDC) reported that obesity rates in the United States have increased dramatically over the last 30 years, and obesity is now epidemic in the United States (Kahn, 2009). For adults 60 years and older, the prevalence of obesity is about 37% among men and 34% among women (NHANES - National Health and Nutrition Examination Survey). Obesity may be further classified according to the National Institutes of Health (NIH):
+
+Class I Obesity = BMI 30.0-34.9 kg/m²
+
+Class II Obesity = BMI 35.0-39.9 kg/m²
+
+Class III (Extreme) Obesity = BMI ≥ 40.0 kg/m²
+
+The Centers for Medicare and Medicaid Services (CMS) has recognized the importance of screening and treating obesity and recently provided Medicare coverage for intensive behavioral therapy for obesity. CMS also has allowed national coverage for some bariatric surgical procedures for Class II and Class III obesity:
+
+Open and laparoscopic Roux-en-Y gastric bypass (RYGBP)
+
+Laparoscopic adjustable gastric banding (LAGB) and
+
+Open and laparoscopic biliopancreatic diversion with duodenal switch (BPD/DS) or gastric reduction duodenal switch (BPD/GRDS).
+
+LSG was specifically not approved under past National Coverage Determinations (NCDs). Recently, under a national coverage analysis (Decision Memo for Bariatric Surgery for the Treatment of Morbid Obesity CAG-00250R2) CMS has made the decision to allow discretion for stand-alone LSG coverage to be at the local contractor level. Open SG is specifically not covered in the CMS NCD.
+
+This A/B MAC is concerned that there are no randomized controlled trials (RCTs) that specifically evaluated adults ≥ 61 years, few large-scale trials on stand-alone LSG and few, if any, long-term trials. This A/B MAC's medical directors have also discussed the surgery with subject matter experts in our jurisdiction. Given the strengths and limitations of the evidence, This A/B MAC will cover LSG only when ALL of the following criteria are met:
+
+Patient has a BMI ≥ 35.0 kg/m² (Class II or Class III obesity)
+
+Patient has at least 1 co-morbidity related to obesity, and,
+
+Active participation within the last 12 months prior to bariatric surgery in a weight-management program that is supervised by a physician or other health care professionals. The weight-management program must include monthly documentation of ALL of the following components:
+
+weight
+
+current dietary regimen
+
+physical activity (e.g., exercise program)
+
+Physician-supervised programs consisting exclusively of pharmacological management are not sufficient to meet this requirement.
+
+A thorough multidisciplinary evaluation within the previous 6 months which includes ALL of the following:
+
+an evaluation by a bariatric surgeon recommending surgical treatment, including a description of the proposed procedure(s)
+
+a primary care provider referral
+
+evaluation for bariatric surgery by a mental health provider including a statement regarding motivation and ability to follow post-surgical requirements
+
+a nutritional evaluation by a physician or registered dietician
+
+For dates of service prior to September 24, 2013, LSG shall be furnished in a CMS approved bariatric facility.
+
+For dates of service on or after September 24, 2013, facility certification shall no longer be required for coverage of covered bariatric procedures.
+
+For a patient with age greater than 61 years: In recognition of both the need to provide obesity treatment and the potential for increased risk and decreased benefit in older patients, this A/B MAC will cover LSG if, in addition to the criteria established above, the following are met:
+
+1. In addition to the nutritional and psychological evaluation previously outlined in this local coverage determination (LCD), there must be evidence documented in the patient's medical record that the patient is able to personally understand the nature and potential complications of surgery and has the capacity to follow the postoperative care and nutritional requirements, and the patient must sign the informed consent personally.
+
+2. Indications for surgery in this age group will include at least 1 of the following serious comorbidities:
+
+Diabetes Mellitus
+
+Hypertension not well controlled with a single medication
+
+Hyperlipidemia requiring more than 1 medication to manage
+
+Joint disease requiring surgical intervention
+
+Gastroesophageal Reflux Disease (GERD) refractory to a 2-month trial of appropriate treatment and medications
+
+Obstructive Sleep Apnea requiring continuous positive airway pressure (CPAP), OR
+
+Potential organ transplant candidacy at a United Network for Organ Sharing (UNOS)-certified center whereby a BMI ≥ 35 is required.
+
+3. Contraindications include:
+
+Dementia to the extent that self-care is precluded (including exercise and nutritional care)
+
+Requirement for home oxygen therapy
+
+Organ failure unless the patient is a transplant candidate to replace the failing organ at an UNOS-certified center.
+
+The information above must be documented in the patient's medical record and available on request.
+
+Summary of Evidence
+
+N/A
+
+Analysis of Evidence (Rationale for Determination)
+
+N/A
+
+Proposed Process Information
+
+Synopsis of Changes
+
+Changes
+Fields Changed
+
+N/A
+
+Associated Information
+
+Sources of Information
+
+Bibliography
+
+Open Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+Contractor Advisory Committee (CAC) Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+MAC Meeting Information URLs
+
+N/A
+
+Proposed LCD Posting Date
+
+Comment Period Start Date
+
+Comment Period End Date
+
+Reason for Proposed LCD
+
+Requestor Information
+
+This request was MAC initiated.
+
+Requestor Name
+Requestor Letter
+
+View Letter
+
+N/A
+
+Contact for Comments on Proposed LCD
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+
+General Information
+
+Associated Information
+
+Documentation Requirements
+
+Documentation in the patient's medical record must support that all NCD requirements for bariatric surgery are met, as well as the additional requirements in this LCD.
+
+Supportive documentation evidencing the condition and treatment listed in Coverage Indications, Limitations and/or Medical Necessity is expected to be documented in the medical record and be available to the A/B MAC upon request.
+
+When the documentation does not meet the criteria for service rendered, or the documentation does not establish the medical necessity for the service, such service will be denied as not reasonable and necessary under Title XVIII of the Social Security Act, §1862(a)(1)(A).
+
+Sources of Information
+
+N/A
+
+Bibliography
+
+Surgery For Obesity and Related Diseases Web site. American Society for Metabolic and Bariatric Surgery updated position statement on sleeve gastrectomy as a bariatric procedure. Updated July 2024. Accessed 6/3/25.
+
+Bayham B, Greenway F, Bellanger D. Outcomes of the laparoscopic sleeve gastrectomy in the Medicare population. Obes Surg. 2012;22(11):1785.
+
+Flegal KM, Carroll MD, Ogden CL, Curtin LR. Prevalence and trends in obesity among US adults, 1999-2008. JAMA. 2010;303(3):235-241.
+
+Kahn LK, Sobush K, Keener D, et al. Recommended community strategies and measurements to prevent obesity in the United States. Accessed 6/3/25.
+
+Hazzan D, Chin EH, Steinhagen E, et al. Laparoscopic bariatric surgery can be safe for treatment of morbid obesity in patients older than 60 years. Surgery for Obesity and Related Diseases. 2006;2(6):613-616.
+
+Klarenbach S, Padwal R, Wiebe N, et al. Bariatric surgery for severe obesity: Systematic review and economic evaluation. Ottawa: Canadian Agency for Drugs and Technologies in Health; 2010.
+
+Leivonen MK, Juuti A, Jaser N, Mustonen H. Laparoscopic sleeve gastrectomy in patients over 59 years: Early recovery and 12-Month follow-up. Obes Surg. 2011;21(8):1180-7.
+
+NHANES-National Center for Health Statistics National Health and Nutrition Examination Survey. Accessed 6/3/25.
+
+O'Keefe KL, Kemmeter PR, Kemmeter KD. Bariatric surgery outcomes in patients aged 65 years and older at an American society for metabolic and bariatric surgery center of excellence. Obes Surg. 2010;20(9):1199-1205.
+
+Walsh J. Sleeve gastrectomy as a stand alone bariatric procedure for obesity: A technology assessment. California Technology Assessment Forum. October 2010.
+
+Wittgrove AC, Martinez T. Laparoscopic gastric bypass in patients 60 years and older: Early postoperative morbidity and resolution of comorbidities. Obes Surg. 2009;19(11):1472-6.
+
+VA/DoD clinical practice guideline for screening and management of overweight and obesity Washington (DC): US Department of Veterans Affairs; 2014. Version 20.
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+Reasons for Change
+
+07/10/2025
+
+R24
+
+Under Bibliography corrected broken hyperlink for source #8 and removed broken hyperlink from source #12. Formatting was corrected and acronyms were inserted where appropriate throughout the LCD.
+
+Provider Education/Guidance
+
+01/11/2024
+
+R23
+
+Under Bibliography corrected broken hyperlink for source #1.
+
+Provider Education/Guidance
+
+09/08/2022
+
+R22
+
+Under Bibliography removed broken hyperlink for source #6 and changes were made to citations to reflect AMA citation guidelines.
+
+Provider Education/Guidance
+
+05/12/2022
+
+R21
+
+Under Associated Contract Numbers, deleted contract number 11004 and added contract numbers 10111, 10112, 10211, 10212, 10311, 10312, 11201, 11202, 11301, 11302, 11401, 11402, 11501 and 11502, as 11004 was inadvertently added and the other contract numbers were inadvertently deleted with revision #20. This LCD was never applicable for HHH services. This revision is retroactive effective for dates of service on or after 5/12/22.
+
+Provider Education/Guidance
+
+05/12/2022
+
+R20
+
+Under Bibliography revised the hyperlink for Source #8 and changes were made to citations to reflect AMA citation guidelines. Formatting, punctuation and typographical errors were corrected throughout the LCD.
+
+Provider Education/Guidance
+
+12/10/2020
+
+R19
+
+Formatting, punctuation and typographical errors were corrected throughout the LCD. Acronyms were inserted and defined where appropriate throughout the LCD.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+
+10/10/2019
+
+R18
+
+This LCD is being revised in order to adhere to CMS requirements per chapter 13, section 13.5.1 of the Program Integrity Manual, to remove all coding from LCDs. There has been no change in coverage with this LCD revision. Regulations regarding billing and coding were removed from the CMS National Coverage Policy section of this LCD and placed in the related Billing and Coding: Laparoscopic Sleeve Gastrectomy for Severe Obesity A56852 article.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+
+08/15/2019
+
+R17
+
+All coding located in the Coding Information section has been moved into the related Billing and Coding: Laparoscopic Sleeve Gastrectomy for Severe Obesity A56852 article and removed from the LCD.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+
+07/04/2019
+
+R16
+
+Under Bibliography changes were made to citations to reflect AMA citation guidelines. Formatting, punctuation and typographical errors were corrected throughout the LCD. Acronyms were inserted where appropriate throughout the LCD.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+
+10/01/2018
+
+R15
+
+Under ICD-10 Codes That Support Medical Necessity: Group 2 the code description was revised for ICD-10 code Z68.43. This revision is due to the Annual ICD-10 Code Update and becomes effective October 1, 2018.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Revisions Due To ICD-10-CM Code Changes
+
+06/07/2018
+
+R14
+
+Under CMS National Coverage Policy deleted the word “medically” and changed the word “and” to “or” in the first regulation. Under Coverage Indications, Limitations and/or Medical Necessity added the word “an” after the word “either” in the first sentence of the first paragraph. The bulleted sentences after the second paragraph were italicized. The word “OR” was removed from the end of each bulleted sentence below the paragraph numbered 2, with the exception of the next to last sentence. Under Bibliography changes were made to citations to reflect AMA citation guidelines. Formatting and punctuation errors were corrected throughout the policy.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+Typographical Error
+
+02/26/2018
+
+R13
+
+The Jurisdiction "J" Part B Contracts for Alabama (10112), Georgia (10212) and Tennessee (10312) are now being serviced by Palmetto GBA. The notice period for this LCD begins on 12/14/17 and ends on 02/25/18. Effective 02/26/18, these three contract numbers are being added to this LCD. No coverage, coding or other substantive changes (beyond the addition of the 3 Part B contract numbers) have been completed in this revision.
+
+Change in Affiliated Contract Numbers
+
+01/29/2018
+
+R12
+
+The Jurisdiction "J" Part A Contracts for Alabama (10111), Georgia (10211) and Tennessee (10311) are now being serviced by Palmetto GBA. The notice period for this LCD begins on 12/14/17 and ends on 01/28/18. Effective 01/29/18, these three contract numbers are being added to this LCD. No coverage, coding or other substantive changes (beyond the addition of the 3 Part A contract numbers) have been completed in this revision.
+
+Change in Affiliated Contract Numbers
+
+10/01/2017
+
+R11
+
+Under ICD-10 Codes That Support Medical Necessity Group 3: Codes deleted ICD-10 code I27.2 and added I27.21 and I27.29. The code description was revised for I50.1, I83.811, I83.812, I83.891 and I83.892. This revision is due to the 2017 Annual ICD-10 Updates.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy
+
+Provider Education/Guidance
+Revisions Due To ICD-10-CM Code Changes
+
+07/01/2017
+
+R10
+
+Under Coverage Indications, Limitations and/or Medical Necessity- revised verbiage to second paragraph, first sentence to read. “Obesity, defined as a body mass index (BMI) ≥ 30 kg/m2 , is recognized as an important risk factor for morbidity and mortality associated with a number of chronic diseases such as heart disease and diabetes (Flegal, 2010).” Under ICD-10 Codes that Support Medical Necessity- deleted unspecified eye codes, E08.3219, E08.3299, E08.3319, E08.3399, E08.3419, E08.3499, E08.3519, E08.3529, E08.3539, E08.3549, E08.3559, E08.3599, E08.37X9, E09.3219, E09.3299, E09.3319, E09.3399, E09.3419, E09.3499, E09.3519, E09.3529, E09.3539, E09.3549, E09.3559, E09.3599, E09.37X9, E10.3219, E10.3299, E10.3319, E10.3399, E10.3419, E10.3499, E10.3519, E10.3529, E10.3539, E10.3549, E10.3559, E10.3599, E10.37X9, E11.3219, E11.3299, E11.3319, E11.3399, E11.3419, E11.3499, E11.3519, E11.3529, E11.3539, E11.3549, E11.3559, E11.3599, E11.37X9, E13.3219, E13.3299, E13.3319, E13.3399, E13.3419, E13.3499, E13.3519, E13.3529, E13.3539, E13.3549, E13.3559, E13.3599 and E13.37X9.
+
+Provider Education/Guidance
+Typographical Error
+
+10/01/2016
+
+R9
+
+Under ICD-10 Codes That Support Medical Necessity: Group 3 added E08.3211, E08.3212, E08.3213, E08.3219, E08.3291, E08.3292, E08.3293, E08.3299, E08.3311, E08.3312, E08.3313, E08.3319, E08.3391, E08.3392, E08.3393, E08.3399, E08.3411, E08.3412, E08.3413, E08.3419, E08.3491, E08.3492, E08.3493, E08.3499, E08.3511, E08.3512, E08.3513, E08.3519, E08.3521, E08.3522, E08.3523, E08.3529, E08.3531, E08.3532, E08.3533, E08.3539, E08.3541, E08.3542, E08.3543, E08.3549, E08.3551, E08.3552, E08.3553, E08.3559, E08.3591, E08.3592, E08.3593, E08.3599, E08.37X1, E08.37X2, E08.37X3, E08.37X9,E09.3211, E09.3212, E09.3213, E09.3219, E09.3291, E09.3292, E09.3293, E09.3299, E09.3311, E09.3312, E09.3313, E09.3319, E09.3391, E09.3392, E09.3393, E09.3399, E09.3411, E09.3412, E09.3413, E09.3419, E09.3491, E09.3492, E09.3493, E09.3499, E09.3511, E09.3512, E09.3513, E09.3519, E09.3521, E09.3522, E09.3523, E09.3529, E09.3531, E09.3532, E09.3533, E09.3539, E09.3541, E09.3542, E09.3543, E09.3549, E09.3551, E09.3552, E09.3553, E09.3559, E09.3591, E09.3592, E09.3593, E09.3599, E09.37X1, E09.37X2, E09.37X3, E09.37X9, E10.3211, E10.3212, E10.3213, E10.3219, E10.3291, E10.3292, E10.3293, E10.3299, E10.3311, E10.3312, E10.3313, E10.3319, E10.3391, E10.3392, E10.3393, E10.3399, E10.3411, E10.3412, E10.3413, E10.3419, E10.3491, E10.3492, E10.3493, E10.3499, E10.3511, E10.3512, E10.3513, E10.3519, E10.3521, E10.3522, E10.3523, E10.3529, E10.3531, E10.3532, E10.3533, E10.3539, E10.3541, E10.3542, E10.3543, E10.3549, E10.3551, E10.3552, E10.3553, E10.3559, E10.3591, E10.3592, E10.3593, E10.3599, E10.37X1, E10.37X2, E10.37X3, E10.37X9, E11.3211, E11.3212, E11.3213, E11.3219, E11.3291, E11.3292, E11.3293, E11.3299, E11.3311, E11.3312, E11.3313, E11.3319, E11.3391, E11.3392, E11.3393, E11.3399, E11.3411, E11.3412, E11.3413, E11.3419, E11.3491, E11.3492, E11.3493, E11.3499, E11.3511, E11.3512, E11.3513, E11.3519, E11.3521, E11.3522, E11.3523, E11.3529, E11.3531, E11.3532, E11.3533, E11.3539, E11.3541, E11.3542, E11.3543, E11.3549, E11.3551, E11.3552, E11.3553, E11.3559, E11.3591, E11.3592, E11.3593, E11.3599, E11.37X1, E11.37X2, E11.37X3, E11.37X9, E13.3211, E13.3212, E13.3213, E13.3219, E13.3291, E13.3292, E13.3293, E13.3299, E13.3311, E13.3312, E13.3313, E13.3319, E13.3391, E13.3392, E13.3393, E13.3399, E13.3411, E13.3412, E13.3413, E13.3419, E13.3491, E13.3492, E13.3493, E13.3499, E13.3511, E13.3512, E13.3513, E13.3519, E13.3521, E13.3522, E13.3523, E13.3529, E13.3531, E13.3532, E13.3533, E13.3539, E13.3541, E13.3542, E13.3543, E13.3549, E13.3551, E13.3552, E13.3553, E13.3559, E13.3591, E13.3592, E13.3593, E13.3599, E13.37X1, E13.37X2, E13.37X3, E13.37X9, I16.0, I16.1 and I16.9. Under ICD-10 Codes That Support Medical Necessity: Group 3 deleted E10.321, E10.329, E10.331, E10.339, E10.341, E10.349 , E10.351, E10.359, E11.321, E11.329, E11.331, E11.339, E11.341, E11.349, E11.351, E11.359, E13.321, E13.329, E13.331, E13.339, E13.341, E13.349, E13.351 and E13.359. This revision is due to the Annual ICD-10 Code Update and becomes effective 10/1/16.
+
+Provider Education/Guidance
+Revisions Due To ICD-10-CM Code Changes
+
+07/28/2016
+
+R8
+
+Under CMS National Coverage Policy the verbiage “for the diagnoses and treatment of illness or injury or to improve the functioning of a malformed body member” was added to the Title XVIII of the Social Security Act, §1862(a)(1)(A). The title “Billing Requirements for Special Services” was added to the CMS Internet-Only Manual, Pub 100-04. The section symbol “§” was added to the Title XVIII of the Social Security Act, §1862(a)(1)(A) and Title XVIII of the Social Security Act, §1833(e). Under Sources of Information and Basis for Decision volume, issue and page numbers were added. Sources were removed and updated. Punctuation was corrected throughout the LCD.
+
+Provider Education/Guidance
+Typographical Error
+Other (Updated source information)
+
+10/01/2015
+
+R7
+
+This LCD is being reactivated for Part A effective 10/01/2015 due to the implementation of Change Request 9252, Transmittal 1537, One-Time Notification related to NCD 100.1.
+
+Provider Education/Guidance
+Other (CR9252 T1537)
+
+10/01/2015
+
+R6
+
+Under CMS National Coverage Policy deleted the title for the following: CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 32, §§150.1, 150.2, 150.3, 150.4, 150.5, 150.5.1, 150.6, 150.7 and 150.8. Under Coverage Indications, Limitations and/or Medical Necessity italicized the text in the second paragraph as CMS National Coverage Policy Language quoted from the Centers for Medicare and Medicaid Services (CMS) National Coverage Determinations (NCDs) and coverage provisions in interpretive manuals is italicized throughout the policy. Under Sources of Information and Basis for Decision revised the access dates for multiple cited sources.
+
+Provider Education/Guidance
+
+10/01/2015
+
+R5
+
+Under Sources of Information and Basis for Decision corrected the hyperlink for the following: NHANES-National Center for Health Statistics National Health and Nutrition Examination Survey.
+
+Provider Education/Guidance
+Other (Corrected hyperlink)
+
+10/01/2015
+
+R4
+
+Under Sources of Information and Basis for Decision the hyperlinks were corrected for the following cited references: Walsh J. Sleeve gastrectomy as a stand alone bariatric procedure for obesity. California Technology Assessment Forum. October 13, 2010. Accessed 05/18/15 and NHANES - National Center for Health Statistics National Health and Nutrition Examination Survey. Accessed 05/18/15.
+
+Other (Corrected hyperlinks)
+
+10/01/2015
+
+R3
+
+This LCD is being retired for Part A only due to Change Request 8691 and the implementation of the local shared system NCD edit 100.1. The J11 Part B LCDs L32975/L34576 will remain active. Under Associated Contractor Numbers deleted contractor numbers 11201, 11301, 11401, and 11501 for Part A. Under Bill Type Codes deleted bill type 011X. Under Revenue Codes deleted 0360. Under CPT/HCPCS Codes deleted the “Note” related to Part A services.
+
+Other (Due to Change Request 8691 and the implementation of the local shared system NCD edit 100.1. )
+
+10/01/2015
+
+R2
+
+Under CPT/HCPCS Codes added the NOTE, “For Part A services only, the provider should bill the appropriate procedure code on the UB-04 for 11X bill type.” This revision becomes effective 10/01/2015.
+
+Provider Education/Guidance
+Other (Clarification for Part A 11X bill type)
+
+10/01/2015
+
+R1
+
+Under CMS National Coverage Policy the title was corrected for the cited Decision Memo to now read, “…for Bariatric Surgery for the Treatment of Morbid Obesity…” Under Coverage Indications, Limitations and/or Medical Necessity corrected “LGS” to read “LSG” x2. Under Coverage Indications, Limitations and/or Medical Necessity added “and” to the second bullet under criteria required for coverage of laparoscopic sleeve gastrectomy. Under Coverage Indications, Limitations and/or Medical Necessity #3 added “the” to the third bullet. Under ICD-10 Codes That Support Medical Necessity-Group 3 effective 06/29/2014, the following invalid code was deleted due to the 2014 & 2015 Annual ICD-10 Code Update: M51.07. Under Sources of Information and Basis for Decision several “url’s’ were updated, including the access dates and supplement numbers were added to the 3rd citation. This LCD was made into an A/B MAC LCD. This revision becomes effective 10/01/2015.
+
+Provider Education/Guidance
+Creation of Uniform LCDs Within a MAC Jurisdiction
+Typographical Error
+Other
+Revisions Due To ICD-10-CM Code Changes
+
+N/A
+
+Associated Documents
+
+Attachments
+
+N/A
+
+Related Local Coverage Documents
+
+Articles
+A56852 - Billing and Coding: Laparoscopic Sleeve Gastrectomy for Severe Obesity (Future)
+
+Related National Coverage Documents
+
+NCDs
+100.1 - Bariatric Surgery for Treatment of Co-Morbid Conditions Related to Morbid Obesity
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+07/03/2025
+07/10/2025 - N/A
+Currently in Effect
+
+You are here
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+Laparoscopy Sleeve Gastrectomy for Severe Obesity
+
+Sleeve Gastrectomy
+
+LSG

@@ -198,8 +198,8 @@ an expression a generic engine improvises over.
 ## A full prior-auth form, mapped to these lanes
 
 A complete prior authorization request carries more than this build
-implements — this build is one procedure family, one jurisdiction, chart notes
-as the only unstructured evidence. But the architecture's rules assign *every*
+implements — this build is one procedure family, two jurisdictions, chart
+notes as the only unstructured evidence. But the architecture's rules assign *every*
 field of a full form to a lane mechanically, and the assignment is worth
 seeing whole, because it is what "applies to a different modality" actually
 means here. Four lanes:
@@ -335,13 +335,23 @@ Guardrails that keep the differential honest:
 
 ## The policy corpus, and what it took to get right
 
-Three documents, one jurisdiction:
+Five documents, two jurisdictions:
 
 | Document | What it is | What it may be cited for |
 |---|---|---|
 | `ncd_100_1` | CMS NCD 100.1, bariatric surgery | National coverage and non-coverage |
-| `a53028` | Noridian A/B MAC billing & coding article, Jurisdiction F | **Every quantified constant** in the criteria tree |
+| `a53028` | Noridian A/B MAC billing & coding article, Jurisdiction F | **Every quantified constant** in Noridian's tree, and the one corpus sentence binding CPT 43775 to its procedure |
 | `r931cp` | CMS Pub. 100-04 Transmittal 931 | Code bindings **only** — its coverage content predates the 2012 delegation to the MACs |
+| `l34576` | Palmetto GBA LCD, Jurisdictions J and M | **Every quantified constant** in Palmetto's tree |
+| `a56852` | Palmetto GBA billing & coding article | Nothing yet — its CPT table sits behind the AMA licence modal and the extracted text names no code |
+
+A request resolves by procedure code **and the patient's state**: Washington
+reaches Noridian's tree, Alabama reaches Palmetto's, and Texas — in neither —
+is answered `NO_JURISDICTION_TREE`, never a default. The two trees differ in
+shape, not only in numbers: Palmetto states no run length, requires weight
+rather than BMI monthly, and adds a multidisciplinary evaluation, so two of
+its criteria are declared unclaimed and abstained on rather than evaluated
+on a proxy.
 
 Domain facts that took real work to establish, and that a reviewer should hear
 stated plainly:
@@ -545,13 +555,15 @@ small enough that perfection mostly means "did not obviously fail." The real
 failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
 (*Problems to address*, P1–P8); the short version:
 
-- **P1 — One jurisdiction.** Every threshold is Noridian Jurisdiction F's, not
-  CMS's. Pointed at another MAC's patient it answers confidently and wrongly,
-  and no code path notices.
+- **P1 — Two jurisdictions, and the thresholds are still not CMS's.** A
+  request resolves by procedure code and state: Noridian's tree for its ten
+  states, Palmetto's for its seven, and `NO_JURISDICTION_TREE` for the rest —
+  every other MAC is a tree nobody has compiled, and Palmetto's showed that
+  MACs differ in shape as much as number.
 - **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
   quoting produces a claim nobody can anchor, so the system abstains where
   evidence existed. Fail-closed, and still a loss.
-- **P3 — Small everything.** Six patients, three documents, fifteen cases:
+- **P3 — Small everything.** Six patients, five documents, fifteen cases:
   every rate moves in large steps, and one case outweighs a percentage point.
 - **P4 — The ground truth is a first draft.** The labels were drafted
   alongside the system and labeled once; re-labeling and review ride with

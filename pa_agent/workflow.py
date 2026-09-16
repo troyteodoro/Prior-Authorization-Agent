@@ -38,6 +38,7 @@ from pa_agent.contracts import (
     CallMetrics,
     Condition,
     CriteriaTree,
+    Criterion,
     CriterionResult,
     CriterionVerdict,
     Determination,
@@ -129,6 +130,42 @@ EXTRACTION_CRITERIA = ("c1", "c2", "c3", "c4", "c5")
 #: Reporting a fault on five of seven would state that (a) and (b) were
 #: evaluated, and they were not.
 RETRIEVAL_CRITERIA = ("a", "b", *EXTRACTION_CRITERIA)
+
+
+def _declared(tree: CriteriaTree, criterion_id: str) -> Criterion | None:
+    """The criterion if the tree declares it for deterministic evaluation.
+
+    T-87 (D101): a second tree declares a different set — Palmetto's has no
+    `c3` and declares `c4` and `d` unclaimed — so every step reads what the
+    tree says rather than assuming Noridian's seven. This is tree data, a
+    deterministic product of the policy plane, and never model output.
+    """
+    for criterion in tree.criteria:
+        if criterion.id == criterion_id and criterion.evaluation == "deterministic":
+            return criterion
+    return None
+
+
+def _extraction_criteria(tree: CriteriaTree) -> tuple[str, ...]:
+    """`EXTRACTION_CRITERIA` restricted to what this tree declares."""
+    return tuple(cid for cid in EXTRACTION_CRITERIA if _declared(tree, cid) is not None)
+
+
+def _all_criteria(tree: CriteriaTree) -> tuple[str, ...]:
+    """Every criterion the tree declares, unclaimed ones included (D90)."""
+    return tuple(criterion.id for criterion in tree.criteria)
+
+
+def _run_established(criterion: Criterion, c3_met: bool, run: QualifyingRun) -> bool:
+    """REQ-15's gate for a run-scoped criterion, read from its own `scoped_to`.
+
+    Under Noridian's tree c2, c4 and c5 scope to `c3` and abstain unless c3 is
+    met. Under a tree with no run-length criterion the run is established by
+    having events at all (D101).
+    """
+    if criterion.scoped_to == "c3":
+        return c3_met
+    return run.length > 0
 
 #: T-17 (D78): what a verifier fault means for the criterion under check.
 #: Same shape as `ERROR_CODE_FOR` and the same D8 test for the replay faults:
@@ -265,7 +302,7 @@ def step_gather(state: WorkflowState, ctx: _Context) -> None:
         # nothing has measured (D90).
         raise DeterminationAborted(
             _error_results(
-                RETRIEVAL_CRITERIA, ErrorCode.SOURCE_UNAVAILABLE, str(exc)
+                _all_criteria(state.tree), ErrorCode.SOURCE_UNAVAILABLE, str(exc)
             ),
             attempts=1,
         ) from exc
@@ -306,7 +343,7 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
             )
             raise DeterminationAborted(
                 _error_results(
-                    EXTRACTION_CRITERIA, ERROR_CODE_FOR[exc.reason], str(exc)
+                    _extraction_criteria(state.tree), ERROR_CODE_FOR[exc.reason], str(exc)
                 ),
                 attempts=attempts,
             ) from exc
@@ -390,12 +427,15 @@ def step_qualifying_run(state: WorkflowState, ctx: _Context) -> None:
     """
     # D84: selection is joint, so it reads c3's length *and* c2's window and the
     # clock. Both constants come from the tree and are never hardcoded (Art. VII).
+    # T-87 (D101): a tree with no c3 declares no run length, and passes
+    # `None` explicitly — the data decides, the argument stays required.
+    c3 = _declared(state.tree, "c3")
     state.run = _predicate(
-        "c3",
+        "c3" if c3 is not None else "c2",
         qualifying_run,
         state.events,
-        min_consecutive_months=state.tree.criterion("c3").require(
-            "min_consecutive_months"
+        min_consecutive_months=(
+            c3.require("min_consecutive_months") if c3 is not None else None
         ),
         recency_window_months=state.tree.criterion("c2").require(
             "recency_window_months"
@@ -413,25 +453,76 @@ def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
     """
     assert state.run is not None, "step_qualifying_run must precede this step"
     run = state.run
+    tree = state.tree
+    produced: list[CriterionResult] = []
 
-    c1 = _predicate(
-        "c1", evaluate_c1, state.tree.criterion("c1"), state.events, state.assertions
-    )
-    c3 = _predicate(
-        "c3", evaluate_c3, state.tree.criterion("c3"), state.events,
-        state.assertions, run,
-    )
-    c3_met = c3.verdict is CriterionVerdict.MET
+    # T-87 (D101): each predicate runs iff the tree declares its criterion for
+    # deterministic evaluation. Every branch below reads tree data.
+    c1 = _declared(tree, "c1")
+    if c1 is not None:
+        produced.append(
+            _predicate("c1", evaluate_c1, c1, state.events, state.assertions)
+        )
 
-    c2 = _predicate(
-        "c2", evaluate_c2, state.tree.criterion("c2"), run, state.as_of, c3_met
-    )
-    c4 = _predicate("c4", evaluate_c4, state.tree.criterion("c4"), run, c3_met)
-    c5 = _predicate("c5", evaluate_c5, state.tree.criterion("c5"), run, c3_met)
+    c3 = _declared(tree, "c3")
+    c3_met = False
+    if c3 is not None:
+        c3_result = _predicate(
+            "c3", evaluate_c3, c3, state.events, state.assertions, run
+        )
+        c3_met = c3_result.verdict is CriterionVerdict.MET
+        produced.append(c3_result)
+
+    c2 = _declared(tree, "c2")
+    if c2 is not None:
+        produced.append(
+            _predicate(
+                "c2", evaluate_c2, c2, run, state.as_of,
+                _run_established(c2, c3_met, run),
+            )
+        )
+    c4 = _declared(tree, "c4")
+    if c4 is not None:
+        produced.append(
+            _predicate("c4", evaluate_c4, c4, run, _run_established(c4, c3_met, run))
+        )
+    c5 = _declared(tree, "c5")
+    if c5 is not None:
+        produced.append(
+            _predicate("c5", evaluate_c5, c5, run, _run_established(c5, c3_met, run))
+        )
 
     # Appended in the tree's own criterion order, so the gap list reads the way
     # the policy reads rather than the way this function happened to compute.
-    state.results.extend([c1, c2, c3, c4, c5])
+    state.results.extend(produced)
+    state.results.sort(key=lambda r: _criterion_order(state.tree, r.criterion_id))
+
+
+def step_unclaimed(state: WorkflowState, ctx: _Context) -> None:
+    """T-87 (D101): a criterion the tree declares `unclaimed` is abstained on.
+
+    The policy requires it and the system has no evaluator for it, so the
+    determination says so — `INSUFFICIENT_EVIDENCE` with
+    `NOT_EVALUATED_BY_THIS_SYSTEM`, whose next action is a reviewer's — and
+    never omits it, because omitting a criterion approves where the policy
+    would not. Not an `ERROR`: a declared limit is not a fault (D90). Reads
+    tree data only; under Noridian's tree it produces nothing.
+    """
+    for criterion in state.tree.criteria:
+        if criterion.evaluation != "unclaimed":
+            continue
+        state.results.append(
+            CriterionResult(
+                criterion_id=criterion.id,
+                verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+                gap_reason=GapReason.NOT_EVALUATED_BY_THIS_SYSTEM,
+                detail=(
+                    f"{criterion.label}: declared unclaimed by "
+                    f"{state.tree.policy_version_id}; a reviewer evaluates it "
+                    "against the chart"
+                ),
+            )
+        )
     state.results.sort(key=lambda r: _criterion_order(state.tree, r.criterion_id))
 
 
@@ -457,15 +548,16 @@ def step_sufficiency(state: WorkflowState, ctx: _Context) -> None:
     for result in state.results:
         if result.verdict is not CriterionVerdict.NOT_MET:
             continue
+        criterion = state.tree.criterion(result.criterion_id)
         _predicate(
             result.criterion_id,
             check_citation_sufficiency,
-            state.tree.criterion(result.criterion_id),
+            criterion,
             result,
             observations=state.observations,
             run=state.run,
             as_of=state.as_of,
-            c3_met=c3_met,
+            c3_met=_run_established(criterion, c3_met, state.run),
         )
 
 
@@ -571,6 +663,7 @@ STEPS: tuple[tuple[str, object], ...] = (
     ("criterion_b", step_criterion_b),
     ("qualifying_run", step_qualifying_run),
     ("criteria_c", step_criteria_c),
+    ("unclaimed", step_unclaimed),
     ("sufficiency", step_sufficiency),
     ("verify", step_verify),
 )

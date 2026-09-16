@@ -294,7 +294,7 @@ def enumerate_runs(events: list[WmEvent]) -> tuple[QualifyingRun, ...]:
 def qualifying_run(
     events: list[WmEvent],
     *,
-    min_consecutive_months: int,
+    min_consecutive_months: int | None,
     recency_window_months: int,
     as_of: date,
 ) -> QualifyingRun:
@@ -319,6 +319,12 @@ def qualifying_run(
     c2, c4 and c5 all scope to whatever this returns (`scoped_to: "c3"`), so the
     run c2 judges is the run c4 and c5 measure. One run, four criteria, one
     period.
+
+    `min_consecutive_months=None` is admitted **explicitly** and means the tree
+    declares no run-length criterion — Palmetto's L34576 states none (T-87,
+    D101). The argument stays required: the graph passes `None` only when the
+    tree has no `c3`, so the data decides and a caller still cannot forget.
+    With no length to prefer, joint selection prefers recency alone.
     """
     runs = enumerate_runs(events)
     if not runs:
@@ -341,7 +347,10 @@ def qualifying_run(
         return chosen
 
     jointly = tuple(
-        run for run in runs if run.length >= min_consecutive_months and _recent(run)
+        run
+        for run in runs
+        if (min_consecutive_months is None or run.length >= min_consecutive_months)
+        and _recent(run)
     )
     return _best(jointly or runs)
 

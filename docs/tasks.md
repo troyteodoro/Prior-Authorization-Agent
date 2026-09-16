@@ -19,12 +19,12 @@ answers the second question, once.
 **What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
 and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
 spec §10's list of known limits, P1–P8, which D97 sequenced into one task
-each — `T-85` and `T-86` are closed and `T-87` is next; `T-81` is row 6 of
-that sequence.
+each — `T-85`, `T-86` and `T-87` are closed and `T-88` is next; `T-81` is
+row 6 of that sequence.
 
-Sixty-six tasks are on this board — IDs run to T-86 but numbering is not
+Sixty-seven tasks are on this board — IDs run to T-87 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **65 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **66 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -60,8 +60,8 @@ row opens; the exit named here is the one D97 fixed.
 |---|---|---|---|---|
 | 1 | P2, first half | `T-85` | **closed** (D98) | `eval/report.md` carries the anchoring account per extraction recording; `build_report.py --verify` green |
 | 2 | P5 | `T-86` | **closed** (D99) | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
-| 3 | P1, first half | `T-87` | **next** | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
-| 4 | P1, second half | `T-88` | pending | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
+| 3 | P1, first half | `T-87` | **closed** (D100, D101) | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
+| 4 | P1, second half | `T-88` | **next** | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
 | 5 | P2, second half | `T-89` | pending | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | pending | two notes per patient, labels re-read, every recording re-measured |
 | 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
@@ -1571,6 +1571,65 @@ unchanged (T-30, D77).
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[x] T-87` Jurisdiction resolution, and a second tree from a second MAC
+**REQ:** 1, 2, 4, 42, 55 · **Depends:** T-24, T-38, T-86 · **Discovered in:**
+spec §10 P1 *(D97)* · **Decided by:** D100, D101 · **Timebox:** two days
+**Status:** **closed** (D100, D101) — row 3 of `Path to v2`; the exit ran
+green and every gate with it
+**Exit:**
+```
+./venv/bin/python scripts/verify_sources.py --offline \
+ && ./venv/bin/python -m pytest tests/test_resolver.py tests/test_criteria_tree.py tests/test_determination.py tests/test_planes.py -q --color=no \
+ && ./venv/bin/python -m pa_agent.cli --patient afdcee59-dfdd-4bc5-37f1-cf7f909ede3d --procedure 43775 | python3 -c "import json,sys; assert json.load(sys.stdin)['policy_version_id']=='ncd-100.1-jf-v1'" \
+ && ./venv/bin/python -m pa_agent.cli --patient afdcee59-dfdd-4bc5-37f1-cf7f909ede3d --procedure 43775 --state TX | python3 -c "import json,sys; assert json.load(sys.stdin)['result']=='NO_JURISDICTION_TREE'" \
+ && ./venv/bin/python -m pa_agent.cli --patient afdcee59-dfdd-4bc5-37f1-cf7f909ede3d --procedure 43775 --state AL | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['policy_version_id']=='ncd-100.1-jjm-v1'" \
+ && ./venv/bin/python scripts/check_gates.py
+```
+A WA patient still resolves to Noridian's tree with no argument added; the
+same patient with `--state TX` gets `NO_JURISDICTION_TREE` and exit 0, since
+no tree serves Texas; with `--state AL` the same chart is adjudicated under
+Palmetto's tree and the determination records that version.
+
+**What it delivers.** `PolicyStore.resolve(code, state)` over a
+`(state, code)` index; `PatientStore.get_jurisdiction_state`; a fifth
+resolver type `NoJurisdictionTree` and its determination sibling; `--state`
+on the CLI; the Palmetto GBA tree `ncd-100.1-jjm-v1` compiled from L34576 and
+A56852, fetched and hashed into the corpus; and the graph generalized to the
+criteria a tree declares — no `c3` when the source states no run length, and
+a criterion declared `unclaimed` abstaining with a new `gap_reason` rather
+than being omitted *(D101)*. The second-jurisdiction *patient* and its eval
+row are T-88.
+
+**Closed by D100 and D101.** Two things the plan did not know until the
+documents were fetched. L34576 is Palmetto's, not Novitas's, and it differs
+from A53028 in **shape**: no run length, *weight* rather than BMI monthly, and
+a multidisciplinary evaluation within six months — so the tree declares no
+`c3`, and `c4` and `d` carry `evaluation: "unclaimed"` with their constants
+spanned and a note saying why. And neither Palmetto page exposes CPT 43775
+through the extractor (the AMA licence modal), so the code binding cites the
+one corpus sentence naming the code, in A53028, with the coverage claim
+corroborated by L34576 — D28's two classes kept apart. `verify_sources.py`
+gained `--fetch --only`, because a re-download of the committed three would
+be a re-measurement of every span into them. Three answers (q4–q6) were
+read from L34576 and are located by the fetch like q1–q3.
+
+**What the same chart says under each tree.** E1's patient, adjudicated as
+a Washington request, is `MET` on all seven Noridian criteria; the same
+chart with `--state AL` is `MET` on a, b, c1, c2 and c5, abstains on c4 and
+d with `NOT_EVALUATED_BY_THIS_SYSTEM`, and cannot be approved — which is the
+honest answer, not a defect. c1, c2 and c5's verifier claims replayed for
+free: their labels, constants and quotes are byte-identical to Noridian's,
+so the claim digests coincide (T-17's recording answered them). `--state TX`
+is `NO_JURISDICTION_TREE`, exit 0, naming the seventeen states served.
+
+Mutations caught: an unknown state resolving to `None`; an unknown state
+falling back to the first tree; the state-collision and national-set
+validators removed; `_declared` ignoring the evaluation flag; the unclaimed
+step removed from `STEPS`; a missing state defaulting to WA; an explicit
+state losing to the patient's; a stateless bundle defaulting; and the run
+gate ignoring `scoped_to`. The last two of those survived the first pass and
+each got the test it was missing.
 
 ### `[x] T-86` A shortfall verdict must re-derive from its own citations
 **REQ:** 5, 23, 24 · **Depends:** T-16, T-29 · **Discovered in:** spec §10 P5

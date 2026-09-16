@@ -93,7 +93,7 @@ def runner(recording) -> RecordedExtractionRunner:
 
 @pytest.fixture(scope="module")
 def ref(policy_store):
-    resolved = policy_store.resolve(CONTRACTOR_CODE)
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "WA")
     assert resolved is not None
     return resolved
 
@@ -679,3 +679,40 @@ def test_the_honest_citation_on_the_same_patient_passes(
     assert c4.verdict is CriterionVerdict.NOT_MET
     assert c4.shortfall is not None and c4.shortfall.observed == 2
     assert "sufficiency" in run.steps
+
+
+# --------------------------------------------------------------------------
+# T-87 (D100, D101): faults under the second tree name what that tree declares
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def palmetto_ref(policy_store):
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "AL")
+    assert resolved is not None and resolved.policy_version_id == "ncd-100.1-jjm-v1"
+    return resolved
+
+
+def test_a_retrieval_failure_under_palmetto_errors_every_declared_criterion(
+    policy_store, patient_store, runner, e1_patient, palmetto_ref
+):
+    """D90 under D101: all seven of *this* tree's criteria, `d` included —
+    the unclaimed criterion was not evaluated either, and nothing was."""
+    planner = _RaisingPlanner()
+    with pytest.raises(DeterminationAborted) as caught:
+        _run(policy_store, patient_store, runner, e1_patient, palmetto_ref, planner=planner)
+    assert [r.criterion_id for r in caught.value.results] == ["a", "b", "c1", "c2", "c4", "c5", "d"]
+    assert {r.error_code for r in caught.value.results} == {ErrorCode.SOURCE_UNAVAILABLE}
+
+
+def test_an_extraction_failure_under_palmetto_errors_only_the_criteria_that_read_the_note(
+    policy_store, patient_store, e1_patient, palmetto_ref
+):
+    """D76 under D101: the extraction-consuming criteria the tree declares
+    for deterministic evaluation — c1, c2 and c5. Not c3, which this tree
+    has no such criterion as; not c4 or d, which were never going to read
+    the model's output; not (a) or (b), which read structured FHIR."""
+    raising = _RaisingRunner(ExtractionFailure.UNPARSEABLE)
+    with pytest.raises(DeterminationAborted) as caught:
+        _run(policy_store, patient_store, raising, e1_patient, palmetto_ref)
+    assert [r.criterion_id for r in caught.value.results] == ["c1", "c2", "c5"]

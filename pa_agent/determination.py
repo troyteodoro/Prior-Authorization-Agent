@@ -42,6 +42,7 @@ from datetime import date
 from pa_agent.contracts import Determination, DeterminationOutcome
 from pa_agent.criteria import evaluate_sc2
 from pa_agent.resolver import (
+    NoJurisdictionTree,
     NoPolicyFound,
     NotCovered,
     Resolved,
@@ -67,6 +68,39 @@ class NoPolicyResult(BaseModel):
     procedure_code: str = Field(min_length=1)
 
 
+class NoJurisdictionResult(BaseModel):
+    """REQ-55 (T-87, D100): no tree governs the request's state.
+
+    `NoPolicyResult`'s sibling and, like it, not a `Determination`: there is
+    no `policy_version_id` to record because no policy was consulted. Carries
+    the states the store does serve, so a caller can see what it asked for
+    against what exists.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    procedure_code: str = Field(min_length=1)
+    state: str = Field(min_length=1)
+    known_states: list[str] = Field(default_factory=list)
+
+
+def resolve_state(
+    state: str | None, patient_id: str | None, patient_store: PatientStore | None
+) -> str:
+    """The state a request is resolved under (D100): explicit wins, else the
+    patient's, else a refusal naming what to pass. Never a default."""
+    if state is not None:
+        return state
+    if patient_id is not None and patient_store is not None:
+        return patient_store.get_jurisdiction_state(patient_id)
+    raise NotImplementedError(
+        "a request resolves by procedure code and state (REQ-1, REQ-55); pass "
+        "`state`, or a patient_id and patient_store the state can be read "
+        "from. Defaulting it would answer under a jurisdiction nobody chose "
+        "(D100)."
+    )
+
+
 def determine(
     store: PolicyStore,
     procedure_code: str,
@@ -75,7 +109,8 @@ def determine(
     as_of: date | None = None,
     extraction_runner: ExtractionRunner | None = None,
     verifier: VerifierRunner | None = None,
-) -> Determination | NoPolicyResult:
+    state: str | None = None,
+) -> Determination | NoPolicyResult | NoJurisdictionResult:
     """Assemble the determination for a request.
 
     sc1 needs only the policy store. sc2 (REQ-3, D41) additionally needs the
@@ -84,12 +119,25 @@ def determine(
     c1 through c5 adjudicate what the notes say (REQ-52, T-18).
 
     Every argument after `procedure_code` stays optional, and that is not
-    laziness: sc1's two answers are facts about the *procedure*, reachable with no
-    patient and no model, and a signature that demanded a patient to learn that
-    43842 is non-covered would make E3 impossible to ask. What is refused is
-    answering a criteria request without them — see `_criteria_determination`.
+    laziness: sc1's answers are facts about the *procedure under a
+    jurisdiction*, reachable with no model, and a signature that demanded a
+    chart to learn that 43842 is non-covered would make E3 impossible to ask.
+    Since T-87 a jurisdiction is named on every request — `state`, or a
+    patient it can be read from (D100) — because a `NOT_COVERED` records a
+    `policy_version_id` and a version is one MAC's tree. What is refused is
+    answering a criteria request without a chart — see
+    `_criteria_determination`.
     """
-    resolution = resolve_sc1(store, procedure_code)
+    resolution = resolve_sc1(
+        store, procedure_code, resolve_state(state, patient_id, patient_store)
+    )
+
+    if isinstance(resolution, NoJurisdictionTree):
+        return NoJurisdictionResult(
+            procedure_code=resolution.procedure_code,
+            state=resolution.state,
+            known_states=resolution.known_states,
+        )
 
     if isinstance(resolution, NotCovered):
         return Determination(

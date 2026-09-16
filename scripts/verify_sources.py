@@ -92,6 +92,32 @@ DOCUMENTS: list[dict[str, str]] = [
         # delegation and are stale. A coverage claim spanned here is a defect.
         "scope": "code_bindings_only",
     },
+    {
+        "document_id": "l34576",
+        "title": "LCD L34576 - Laparoscopic Sleeve Gastrectomy for Severe Obesity",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=34576",
+        # The second jurisdiction (T-87, D97, D101). Every quantified constant
+        # in the Palmetto tree comes from here; a different MAC is a different
+        # tree over the same NCD (D21).
+        "authority": "mac_jurisdiction_jj_jm",
+        "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+        "filename": "l34576.txt",
+    },
+    {
+        "document_id": "a56852",
+        "title": "Article A56852 - Billing and Coding: Laparoscopic Sleeve "
+                 "Gastrectomy for Severe Obesity",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=56852",
+        "authority": "mac_jurisdiction_jj_jm",
+        "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+        "filename": "a56852.txt",
+        # The CPT table sits behind the AMA licence modal, outside the
+        # `document-view-section` containers this extractor reads, so the
+        # extracted text names no code. Hashed and kept so an extractor that
+        # reads the licensed table can cite it later; the Palmetto tree's code
+        # bindings cite the corpus sentence that names the code (D28, D101).
+        "note": "extracted text carries no CPT codes; see D101",
+    },
 ]
 
 
@@ -152,6 +178,47 @@ ANSWERS: list[dict[str, Any]] = [
             "quote": "This article is revised to include contractor determined coverage "
                      "for laparoscopic sleeve gastrectomy (43775).",
         },
+    },
+    # T-87 (D101): the Palmetto tree's constants, read from L34576 the way
+    # q1-q3 were read from A53028.
+    {
+        "question_id": "q4",
+        "question": "Does L34576 state a minimum run length for the weight-management "
+                    "program, and what recency window does it state?",
+        "feeds": "Palmetto c2 recency window; the absence of a Palmetto c3",
+        "answer": "12 months; no run length is stated anywhere in the document",
+        "document_id": "l34576",
+        "quote": "Active participation within the last 12 months prior to bariatric "
+                 "surgery in a weight-management program that is supervised by a "
+                 "physician or other health care professionals.",
+        "note": "The sentence A53028 continues with 'for a minimum of four consecutive "
+                "months' ends here. The word 'consecutive' does not occur in L34576, "
+                "so the Palmetto tree declares no c3 (D101).",
+    },
+    {
+        "question_id": "q5",
+        "question": "What must L34576's program document monthly?",
+        "feeds": "Palmetto c4 and c5 documentation_rate; c4 is unclaimed",
+        "answer": "weight, current dietary regimen and physical activity, monthly",
+        "document_id": "l34576",
+        "quote": "The weight-management program must include monthly documentation of "
+                 "ALL of the following components:\n\nweight\n\ncurrent dietary "
+                 "regimen\n\nphysical activity (e.g., exercise program)",
+        "note": "Weight, not BMI: A53028 says 'weight and BMI'. The extractor reads a "
+                "documented BMI and has no weight field, which is why the Palmetto "
+                "c4 is declared unclaimed rather than evaluated on a proxy (D101).",
+    },
+    {
+        "question_id": "q6",
+        "question": "Does L34576 require an evaluation the pipeline has no extractor for?",
+        "feeds": "Palmetto d, declared unclaimed",
+        "answer": "yes - a multidisciplinary evaluation within the previous 6 months",
+        "document_id": "l34576",
+        "quote": "A thorough multidisciplinary evaluation within the previous 6 months "
+                 "which includes ALL of the following:",
+        "note": "Four named components follow (surgeon, primary care referral, mental "
+                "health, nutrition). Declared in the tree with its window spanned and "
+                "abstained on with NOT_EVALUATED_BY_THIS_SYSTEM (D101).",
     },
 ]
 
@@ -285,12 +352,46 @@ def locate(text: str, quote: str, where: str) -> tuple[int, int]:
     return start, start + len(quote)
 
 
-def fetch() -> int:
+def fetch(only: set[str] | None = None) -> int:
+    """Download and extract the corpus, or with `only` just the named documents.
+
+    `--only` exists because a re-download of a document already in the corpus
+    is a re-measurement of every span into it: the MCD revises articles, and a
+    changed extraction would re-anchor T-01's tree, T-15's recording and every
+    committed citation at once. Adding a document must not risk that, so the
+    documents not named are kept as committed — their text is read from disk
+    and their manifest record carried forward unchanged (T-87, D101).
+    """
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
     texts: dict[str, str] = {}
     records: list[dict[str, Any]] = []
+    existing: dict[str, dict[str, Any]] = {}
+    if only is not None:
+        unknown = only - {d["document_id"] for d in DOCUMENTS}
+        if unknown:
+            print(f"FAIL  --only names documents not in DOCUMENTS: {sorted(unknown)}",
+                  file=sys.stderr)
+            return 1
+        if not MANIFEST_PATH.is_file():
+            print("FAIL  --only needs an existing manifest to carry the others forward",
+                  file=sys.stderr)
+            return 1
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        existing = {d["document_id"]: d for d in manifest["documents"]}
 
     for doc in DOCUMENTS:
+        if only is not None and doc["document_id"] not in only:
+            record = existing.get(doc["document_id"])
+            path = SOURCE_DIR / doc["filename"]
+            if record is None or not path.is_file():
+                print(f"FAIL  {doc['document_id']} is not in the committed corpus; "
+                      "name it in --only or run a full --fetch", file=sys.stderr)
+                return 1
+            texts[doc["document_id"]] = path.read_text(encoding="utf-8")
+            records.append(record)
+            print(f"  keeping  {doc['document_id']} as committed, sha256 "
+                  f"{record['sha256'][:12]}")
+            continue
         print(f"  fetching {doc['document_id']} ... ", end="", flush=True)
         try:
             raw = download_bytes(doc["url"])
@@ -498,12 +599,21 @@ def main() -> int:
         "--fetch", action="store_true", help="download, extract and write the artifacts"
     )
     parser.add_argument(
+        "--only",
+        default=None,
+        help="with --fetch: comma-separated document ids to download; every other "
+             "document is carried forward as committed (T-87)",
+    )
+    parser.add_argument(
         "--offline",
         action="store_true",
         help="skip the re-download check. Does not close T-02.",
     )
     args = parser.parse_args()
-    return fetch() if args.fetch else verify(args.offline)
+    if args.only and not args.fetch:
+        parser.error("--only only means something with --fetch")
+    only = {d.strip() for d in args.only.split(",") if d.strip()} if args.only else None
+    return fetch(only) if args.fetch else verify(args.offline)
 
 
 if __name__ == "__main__":

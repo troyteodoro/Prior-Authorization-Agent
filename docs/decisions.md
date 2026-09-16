@@ -7223,3 +7223,165 @@ does not move — a moved row is the check being wrong.
 **Reverses if:** a criterion is added whose `NOT_MET` legitimately rests
 on evidence it cannot cite. The property is then stated per criterion in
 the tree rather than assumed for all, and this entry names the exception.
+
+---
+
+## D100 — A request resolves by procedure code and state, and an unserved state is its own answer
+
+**Context.** P1: every constant in the tree is Noridian Jurisdiction F's,
+the resolver returns one tree, and a patient in another MAC's territory is
+answered confidently and wrongly with no code path noticing. D97 chose a
+real second document (Palmetto GBA, JJ/JM) and one re-addressed patient.
+Before either can land, resolution has to take the jurisdiction into
+account — today `PolicyStore.resolve(procedure_code)` indexes every tree's
+identity codes into one map and *raises* when two trees bind the same code,
+which a second MAC tree transcribing the NCD's national sets must do.
+
+**Chosen.**
+
+1. **The state comes from the patient plane and crosses as a scalar.**
+   `PatientStore` gains `get_jurisdiction_state(patient_id) -> str`, read
+   from the bundle's `Patient.address[0].state`, raising `KeyError` naming
+   the patient when it is absent — never a default (D31, D39). `determine`
+   gains `state: str | None`: an explicit state wins, else it is derived
+   from the patient, else the refusal names what to pass. Only the
+   two-letter string reaches the policy plane; `stores/policy.py` still
+   imports nothing from the patient plane (Article VI, REQ-33).
+2. **`PolicyStore.resolve(procedure_code, state)`.** The binding index is
+   keyed `(state, code)` and built from each tree's `jurisdiction.states`.
+   The collision rule survives, scoped to one state: two trees binding one
+   code *for the same state* raise at load, since resolution would depend
+   on load order. Two trees binding the same code for different states is
+   the expected shape — every MAC tree carries the NCD's national sets.
+   `None` keeps exactly its D26 meaning: a tree governs this state and
+   binds the code in no set.
+3. **An unserved state is a fifth resolver type, not `None` and not a
+   raise that reaches the CLI as a bad request.** The store raises a typed
+   `UnknownJurisdiction` carrying the state and the states it knows;
+   `resolve_sc1` maps it to `NoJurisdictionTree(procedure_code, state,
+   known_states)`; `determine` maps that to `NoJurisdictionResult`, a
+   sibling of `NoPolicyResult` and deliberately not a `Determination`,
+   because there is no `policy_version_id` to record (REQ-4). The CLI
+   prints `NO_JURISDICTION_TREE` with the known states and exits 0 — a
+   deterministic answer is not an error (D32). Rejected: returning `None`
+   ("no policy binds the code" and "no tree covers this state" would become
+   one absence — D26 rebuilt); a bare `KeyError` (exit 1 would collapse an
+   unknown patient with an unserved state); defaulting an unknown state to
+   Jurisdiction F (P1's failure with one more layer).
+4. **Load-time validation grows two rules.** Two trees claiming one state
+   raise, the mirror of the code collision; and every identity code in a
+   *national* set must carry the same status in every tree that binds it,
+   because those sets transcribe one NCD — `contractor_determined` may
+   differ, which is the divergence D33 anticipated. `Jurisdiction` itself
+   validates that a non-national authority names at least one state, each
+   a two-letter code, none repeated.
+5. **Every request now names a state, including E3's.** A `NOT_COVERED`
+   for 43842 carries a `policy_version_id` and a version is a jurisdiction,
+   so the patientless E3 request gains `"state"` in its eval row and the
+   CLI gains `--state`, derived from `--patient` when absent. The eval
+   harness, the verifier measurement and the agentic differential pass it
+   the same way. **The agentic planner's tool surface does not change**:
+   the state is bound where the tools are constructed, never exposed to
+   the model as an argument, because a changed tool declaration is a
+   changed prompt and T-61's recording would have to be re-measured (D64,
+   D66).
+
+**Rejected — auto-detecting the tree from the code alone.** With two trees
+binding 43775 there is nothing to detect from; the answer would depend on
+file order.
+
+**Rejected — a national tree with MAC overlays.** Cleaner in principle, and
+a rewrite of the artifact, the resolver, the tests that read it and D21's
+framing, for a benefit no task on the board needs. Reopened if a third
+tree makes the national sets' triplication a maintenance cost.
+
+**Reverses if:** a request is ever legitimately stateless. REQ-4 would then
+have to stop requiring a version on `NOT_COVERED`, and that is a spec
+change with its own entry.
+
+---
+
+## D101 — The Palmetto tree declares what it cannot evaluate instead of omitting it
+
+**Context.** D97 chose Palmetto GBA's L34576 (LCD, *Laparoscopic Sleeve
+Gastrectomy for Severe Obesity*, revision effective 2025-07-10) and A56852
+(its billing and coding article) as the second jurisdiction's sources.
+Fetched through T-02's extractor for this entry, the LCD's coverage
+paragraph reads, verbatim: BMI ≥ 35.0; at least one co-morbidity; *"Active
+participation within the last 12 months prior to bariatric surgery in a
+weight-management program that is supervised by a physician or other health
+care professionals. The weight-management program must include monthly
+documentation of ALL of the following components:"* weight, current
+dietary regimen, physical activity; pharmacological-only programs
+insufficient; and *"A thorough multidisciplinary evaluation within the
+previous 6 months"* with four named components. Three things differ from
+A53028 in **shape**, not value:
+
+1. **No run length.** A53028 says *"for a minimum of four consecutive
+   months"*; L34576 says nothing about consecutive months at all. The word
+   does not occur in the document.
+2. **Weight, not BMI.** A53028 requires monthly *"weight and BMI"*; L34576
+   requires monthly *weight*. The extractor reads a documented BMI and has
+   no weight field (D15, T-15's schema).
+3. **A criterion the pipeline has no extractor for**: the multidisciplinary
+   evaluation within six months.
+
+And the CPT table in A56852 sits behind the AMA licence modal, outside the
+`document-view-section` containers the extractor reads: neither Palmetto
+document's extracted text contains `43775`.
+
+**Chosen — the tree `ncd-100.1-jjm-v1`.**
+
+- `a`, `b`, `c1`, `c2`, `c5` as in Noridian's tree, every constant spanned
+  into L34576; `a.lookback_months` stays D40's decided constant with its
+  note; the national floor and the categorical exclusion cite the NCD as
+  before; the national procedure sets are transcribed from the same NCD
+  and r931cp spans, byte for byte.
+- **No `c3`.** The source states no run length, so the tree declares none.
+  `qualifying_run`'s `min_consecutive_months` stays a required argument
+  and now admits an explicit `None` meaning *the tree declares no length
+  criterion*; the graph passes `None` only when the tree has no `c3`. That
+  is data deciding, not a default — D84's objection was to an argument a
+  caller could forget. Criteria that scope to the run (`c2`, `c5`) gate on
+  the run being non-empty where Noridian's gate on `c3` being met, read
+  from each criterion's own `scoped_to`.
+- **`c4` and `d` are declared with `evaluation: "unclaimed"`**, their
+  constants spanned and their `note` saying why, and both stay in the
+  decision expression. A new fixed step abstains on every unclaimed
+  criterion with a new `gap_reason`, `NOT_EVALUATED_BY_THIS_SYSTEM`, whose
+  next action — *a reviewer evaluates this criterion against the chart* —
+  none of REQ-31's four names, which is the enum's own test for a fifth
+  member. A Palmetto determination therefore cannot come out `MET`
+  overall, and says which criteria a human still owes. `c4` is unclaimed
+  because a BMI proxy would be sound and incomplete — a documented BMI
+  implies a documented weight, a documented weight without a BMI would
+  read `NOT_MET` — and a false `NOT_MET` is still a wrong verdict.
+- **The 43775 binding cites A53028.** A code's denotation is the AMA's,
+  not a contractor's, and D28 keeps the code-binding class of citation
+  apart from the coverage-claim class. The coverage claim cites the NCD's
+  delegation and is corroborated by L34576's *"This A/B MAC will cover LSG
+  only when ALL of the following criteria are met:"*; the binding cites
+  the one corpus sentence that names the code. A56852 stays in the corpus,
+  hashed and noted, so an extractor that reads the licensed table can
+  claim it later.
+- `Criterion` gains an optional `note`, so a tree can say why a criterion
+  is unclaimed where a reviewer reads it; the policy tool's payload does
+  not carry it, so Noridian's tool surface is byte-identical (D64, D66).
+
+**Rejected — inventing `min_consecutive_months: 1`.** A number with no
+span, and `test_a_constant_is_either_sourced_or_provisional` exists to
+refuse exactly that.
+
+**Rejected — omitting `c4` or `d`.** Approves where Palmetto would not: P1's
+failure rebuilt inside the fix.
+
+**Rejected — `ERROR` for an unclaimed criterion.** A declared limit is not a
+fault; D90's distinction is about a component that exists and failed.
+
+**Rejected — evaluating `c4` on the BMI proxy.** Sound, incomplete, and a
+reading of the policy nobody wrote down.
+
+**Reverses if:** the extractor gains a `weight` field (a new measurement,
+D45) — `c4` is then claimed; or an evaluator for the multidisciplinary
+evaluation is built under Amendment 1 — that is REQ-44's territory and
+P6's v2 path; or Palmetto revises the LCD to quantify a run length.

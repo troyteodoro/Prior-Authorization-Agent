@@ -47,8 +47,8 @@ def test_the_parser_finds_every_requirement(script, spec_text):
     """The universe, pinned. An emptied parser makes every check below vacuous
     and the gate green — which is the failure mode of asserting absence."""
     requirements = script.spec_requirements(spec_text)
-    assert len(requirements) == 55, f"parsed {len(requirements)}; §5 declares 55"
-    assert "REQ-1" in requirements and "REQ-54" in requirements
+    assert len(requirements) == 56, f"parsed {len(requirements)}; §5 declares 56"
+    assert "REQ-1" in requirements and "REQ-55" in requirements
     assert "REQ-18a" in requirements, "the lettered id is load-bearing and parses"
 
 

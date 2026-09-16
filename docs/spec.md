@@ -33,10 +33,12 @@ carries less information than they do.
 
 **In scope for v1**
 
-- One policy, one jurisdiction: NCD 100.1, bariatric surgery, as Noridian
-  Jurisdiction F implements it — A53028 supplies every quantified constant
-  *(D21)*. No multi-MAC jurisdiction resolution. *(Was "National coverage
-  only", which D21 disproved; corrected by D72.)*
+- One policy, two jurisdictions: NCD 100.1, bariatric surgery, as Noridian
+  Jurisdiction F implements it (A53028 supplies every quantified constant,
+  *D21*) and as Palmetto GBA's Jurisdictions J and M implement it (L34576,
+  *D101*). A request resolves by procedure code and state; a state no tree
+  serves is its own answer *(REQ-55, D100)*. *(Was "National coverage only",
+  which D21 disproved; corrected by D72; extended to a second MAC by T-87.)*
 - Synthetic patients from Synthea plus manifest-driven synthesized notes.
 - Local execution. No deployment.
 - A deterministic reference implementation.
@@ -69,9 +71,10 @@ carries less information than they do.
 
 ### Policy resolution
 
-**REQ-1** Given a procedure code, the resolver returns the governing criteria
-tree and its `policy_version_id`, or `NO_POLICY_FOUND`. A code bound as an
-identity in none of the tree's three procedure sets is `NO_POLICY_FOUND` — no
+**REQ-1** Given a procedure code and a state, the resolver returns the
+governing criteria tree and its `policy_version_id`, or `NO_POLICY_FOUND`. The
+tree is the one whose jurisdiction names the state *(D100)*; a code bound as an
+identity in none of that tree's three procedure sets is `NO_POLICY_FOUND` — no
 bariatric policy governs it, which is a different answer from a policy saying
 no. Deterministic.
 
@@ -214,6 +217,13 @@ permitted only where the payload informs the model's plan; where the payload is 
 set of things the model may then ask for, exceeding the ceiling is a fault. *(REQ-46,
 Art. X, D66)*
 
+**REQ-55** A state no criteria tree governs resolves to its own answer,
+`NO_JURISDICTION_TREE`, carrying the states the store does serve. It is never
+`NO_POLICY_FOUND`, never a default tree, and never a bad request: "no tree
+covers this state" and "the governing tree binds this code nowhere" are
+different facts with different next actions. Every request names a state —
+explicitly, or through the patient's bundle. Deterministic. *(T-87, D100)*
+
 Because cost is tool-payload size times turns, an unbounded tool scales with the
 chart rather than with the question — D64 measured one patient's 3,780 observations
 as 446x the deterministic path's input tokens for an identical answer. Bounding the
@@ -329,6 +339,7 @@ could not substantiate a claim; a call failure means it could not evaluate.
 | `UNSUBSTANTIATED_ASSERTION` | A claim was found, no encounter behind it | Find the visit notes behind the claim | E8 |
 | `VERIFIER_REJECTED` | A span was found and did not support the verdict | Re-read the cited passage | — |
 | `SOURCE_CONFLICT` | Two sources disagreed across a threshold | Reconcile the two values | E10b |
+| `NOT_EVALUATED_BY_THIS_SYSTEM` | The policy requires the criterion and the tree declares no evaluator for it | A reviewer evaluates this criterion against the chart | — *(T-87, D101)* |
 
 The enum exists to say what to go collect. Two values producing the same action
 are one value. *(D9, D11, D12)*
@@ -635,6 +646,18 @@ that notices; the resolver returns one tree. A second jurisdiction is a second
 tree over the same NCD, and nothing in the design makes that a small change to
 *operate* — it makes it a small change to *build*.
 
+Since T-87 there is a second tree and the resolver reads the state
+*(D100, D101)*: `ncd-100.1-jjm-v1`, compiled from Palmetto GBA's L34576 for
+Jurisdictions J and M, and a request resolves by procedure code and the
+patient's state, with a state no tree serves answered as
+`NO_JURISDICTION_TREE` *(REQ-55)*. What the second tree showed is that the
+difference between MACs is one of **shape** as much as value — Palmetto states
+no run length, requires weight rather than BMI monthly, and adds a
+multidisciplinary evaluation — so two of its criteria are declared unclaimed
+and abstained on rather than evaluated on a proxy. The thresholds are still
+not CMS's; there are now two contractors' worth of them, and every other MAC
+is still a tree nobody has compiled.
+
 ### P2 — Extraction refuses paraphrase, and that loses evidence
 
 Spans are located by searching the model's verbatim quote — exact, then
@@ -652,7 +675,7 @@ the ADK tool-fetch run on E8, with 62 verbatim characters after it — and
 recording since T-85 *(D98)*. The mechanism that would recover it, a bounded
 re-ask for the verbatim text, is T-89.
 
-### P3 — Six patients, three documents, fifteen cases
+### P3 — Six patients, five documents, fifteen cases
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
 than a percentage point in every table. A precision of 1.000 over eleven `MET`

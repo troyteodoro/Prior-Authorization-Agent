@@ -52,7 +52,7 @@ from datetime import date
 from pathlib import Path
 
 from pa_agent.contracts import Determination, DeterminationAborted
-from pa_agent.determination import NoPolicyResult, determine
+from pa_agent.determination import NoJurisdictionResult, NoPolicyResult, determine
 from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.verifier import RecordedVerifierRunner
 from pa_agent.stores.patient import LocalPatientStore
@@ -64,7 +64,16 @@ DEFAULT_VERIFIER_RECORDING = REPO_ROOT / "eval" / "verifier" / "results.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
 
 
-def _render(result: Determination | NoPolicyResult) -> dict:
+def _render(result: Determination | NoPolicyResult | NoJurisdictionResult) -> dict:
+    if isinstance(result, NoJurisdictionResult):
+        return {
+            "result": "NO_JURISDICTION_TREE",
+            "procedure_code": result.procedure_code,
+            "state": result.state,
+            "known_states": list(result.known_states),
+            "note": "no criteria tree in the store governs this state; this is "
+                    "not a denial and not a bad request (REQ-55, D100)",
+        }
     if isinstance(result, NoPolicyResult):
         return {
             "result": "NO_POLICY_FOUND",
@@ -194,6 +203,13 @@ def main(argv: list[str] | None = None) -> int:
              "declared tool instead of receiving it in the message",
     )
     parser.add_argument(
+        "--state",
+        default=None,
+        help="two-letter state the request is resolved under (REQ-55). Default: "
+             "read from the patient's bundle. An explicit value wins, so the same "
+             "chart can be adjudicated under another MAC's tree (D100).",
+    )
+    parser.add_argument(
         "--as-of",
         type=date.fromisoformat,
         default=None,
@@ -218,6 +234,7 @@ def main(argv: list[str] | None = None) -> int:
             as_of=args.as_of or date.today(),
             extraction_runner=runner,
             verifier=verifier,
+            state=args.state,
         )
     except NotImplementedError as exc:
         # The message names what is missing (D27's pattern).
