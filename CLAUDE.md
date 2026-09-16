@@ -102,7 +102,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (653 tests, ~18s)
+./venv/bin/python -m pytest -q                  # the suite alone (773 tests, ~21s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -362,8 +362,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**66 of 67 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~25s, 766 tests across 31 files). IDs run to T-87, but
+**67 of 68 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`, ~25s, 773 tests across 31 files). IDs run to T-88, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -372,10 +372,10 @@ hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
-The eval set is full (T-21, D75): `eval/cases.json` holds fifteen labeled rows
-— spec §6's fourteen plus `NP1`, the
-`NO_POLICY_FOUND` row outside §6 — all `PASS`, criterion-scoped, with every
-cited span validated by the scorer (A3). Case rows may carry their own
+The eval set is full (T-21, D75): `eval/cases.json` holds sixteen labeled rows
+— spec §6's fourteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6, and
+`J1`, the second-jurisdiction row *(D102)* — all `PASS`, criterion-scoped,
+with every cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
 in-window evidence *(D41)*, so E2 runs 43644 at 2024-12-01 while E7 reads the
 same chart at the harness clock. US-9 closed with T-29 and T-30 (D76, D77):
@@ -384,15 +384,16 @@ eval harness classifies it as its fourth status — never `FAIL`, never an
 abstention; the reported abstention rate counts an `ERROR` in neither its
 numerator nor its denominator (REQ-28). US-6 closed with T-17 (D78): every
 cited verdict passes through Article V's blind verifier, every gate replays
-the committed 27-claim recording for zero calls, and the four-run measurement
+the committed 30-claim recording for zero calls, and the measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
-27/27 twice — is D78's substance. US-7's measurements are in `eval/report.md`
+27/27 twice, then 30/30 when T-88's three new claims joined *(D102)* — is
+D78's substance. US-7's measurements are in `eval/report.md`
 (T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
-against a 0.611 base rate** (the always-`MET` baseline scores exactly the base
+against a 0.591 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
-82 checked**, **A5 abstention 0.200** with the per-`gap_reason` account and
-D82's tolerance sweep, and **A6 33 model calls / 27,175 input / 5,723 output /
-36.1s across nine determinations** — replayed instrumentation, not the replay's
+95 checked**, **A5 abstention 0.250** with the per-`gap_reason` account and
+D82's tolerance sweep, and **A6 38 model calls / 31,124 input / 6,992 output /
+40.2s across ten determinations** — replayed instrumentation, not the replay's
 own clock.
 
 Open: **T-81 alone**. v1 is complete — **A1–A9 all
@@ -405,7 +406,13 @@ hold** — and what remains is spec §10's list of known limits, P1–P8, which
 evidence and maps a mismatch to `ERROR`, never an abstention. T-87 (D100,
 D101) added the second jurisdiction: `resolve(code, state)`, Palmetto GBA's
 tree `ncd-100.1-jjm-v1`, the fifth resolver type `NoJurisdictionTree`, and
-the graph generalized to what a tree declares. T-88 is next. Free tasks first, the runner change
+the graph generalized to what a tree declares. T-88 (D102) put a patient in
+Palmetto's territory: a declared clone of E4's chart, computed by
+`select_patients.py --clone` and recomputed by `--verify`, whose note is
+byte-identical to its source's so T-15's recording replays it by content —
+`RecordedExtractionRunner` is keyed by sha256 first — and whose eval row
+`J1` pins that the three-month run is a `c3` shortfall in Washington and not
+a criterion in Alabama. **T-89 is next.** Free tasks first, the runner change
 (T-89) before the corpus grows (T-81), the Vertex measurement (T-90) last.
 Read the table rather than this paragraph *(D70, D72, D97)*.
 
@@ -526,11 +533,14 @@ data/policies/
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it
-  bundles/           seven Synthea v4.0.0 bundles — six from the base seed and
+  bundles/           eight Synthea v4.0.0 bundles — six from the base seed,
                      one carrying the declared synthetic BMI-35.0 observation
-                     (T-41, D73); E12's patient is note-free by declaration
-  notes/             six chart notes, one per <patient_id>/chart_note.txt,
-                     plus notes/manifest.json — a second, separate manifest
+                     (T-41, D73; E12's patient is note-free by declaration),
+                     and one declared clone of E4's chart re-addressed into
+                     Alabama (T-88, D102), recomputed by --verify
+  notes/             seven chart notes, one per <patient_id>/chart_note.txt,
+                     the clone's byte-identical to its source's; plus
+                     notes/manifest.json — a second, separate manifest
   work/              gitignored: the Synthea jar and the full 200-patient run
 eval/
   run_eval.py        the baseline diff (T-10). Drift in **either** direction
@@ -555,7 +565,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               31 files, 653 tests
+tests/               31 files, 773 tests
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

@@ -5,9 +5,9 @@ practices. Given a patient record and a requested procedure code, it produces
 a reviewable determination: a verdict for every criterion in the governing
 policy, a citation for every verdict, and a gap list naming exactly what the
 chart is missing. The control case it is currently tested against is
-bariatric surgery under CMS NCD 100.1, as Noridian Jurisdiction F implements
-it — one policy chosen to exercise every part of the engine, not a boundary
-of the design.
+bariatric surgery under CMS NCD 100.1, as two MACs implement it — Noridian
+Jurisdiction F and Palmetto GBA — one policy chosen to exercise every part of
+the engine, not a boundary of the design.
 
 The system does not submit, does not decide, and does not adjudicate on a
 payer's behalf. It prepares a packet for a human specialist — and the primary
@@ -374,10 +374,11 @@ stated plainly:
   recorded with a name and date in the decision log. The count is pinned at
   zero provisional constants, so a new one is a visible diff.
 
-Patient data is entirely synthetic: seven Synthea v4.0.0 FHIR bundles
-(pinned by manifest hashes, one carrying a declared synthetic observation) and
-six synthesized chart notes. No real or de-identified patient data of any kind
-is in scope.
+Patient data is entirely synthetic: eight Synthea v4.0.0 FHIR bundles
+(pinned by manifest hashes; one carries a declared synthetic observation and
+one is a declared clone re-addressed into Palmetto's territory) and seven
+synthesized chart notes, the clone's byte-identical to its source's by
+declaration. No real or de-identified patient data of any kind is in scope.
 
 ---
 
@@ -559,11 +560,14 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   request resolves by procedure code and state: Noridian's tree for its ten
   states, Palmetto's for its seven, and `NO_JURISDICTION_TREE` for the rest —
   every other MAC is a tree nobody has compiled, and Palmetto's showed that
-  MACs differ in shape as much as number.
+  MACs differ in shape as much as number. One eval row runs under it: `J1`,
+  E4's chart cloned into Alabama, where the three-month run that is a
+  shortfall in Washington is not a criterion at all.
 - **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
   quoting produces a claim nobody can anchor, so the system abstains where
   evidence existed. Fail-closed, and still a loss.
-- **P3 — Small everything.** Six patients, five documents, fifteen cases:
+- **P3 — Small everything.** Eight patients (one a declared clone), five
+  documents, sixteen cases:
   every rate moves in large steps, and one case outweighs a percentage point.
 - **P4 — The ground truth is a first draft.** The labels were drafted
   alongside the system and labeled once; re-labeling and review ride with
@@ -599,12 +603,12 @@ gate rather than a plausible-looking table.
 
 | Gate | Result |
 |---|---|
-| A1 | 15 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.611** base rate and an always-`MET` baseline scoring exactly that |
-| A3 | **zero** `MET` verdicts with an invalid span, over 82 spans checked |
+| A1 | 16 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.591** base rate and an always-`MET` baseline scoring exactly that |
+| A3 | **zero** `MET` verdicts with an invalid span, over 95 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.200**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
-| A6 | 33 model calls / 27,175 in / 5,723 out / 36.1s across nine determinations, from instrumentation |
+| A5 | abstention **0.250**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
+| A6 | 38 model calls / 31,124 in / 6,992 out / 40.2s across ten determinations, from instrumentation |
 | A7 | 55 requirements: 53 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
@@ -639,9 +643,9 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   agent/             ADK path: extraction_agent, retrieval_agent, tools, bounds
   stores/            policy.py and patient.py — two ports, two planes;
                      __init__.py imports neither, on purpose
-data/policies/       three source documents, the SNOMED value set, and the
-                     criteria tree (policy_version_id ncd-100.1-jf-v1)
-data/patients/       seven Synthea bundles + six synthesized notes, hash-pinned
+data/policies/       five source documents, the SNOMED value set, and two
+                     criteria trees (ncd-100.1-jf-v1, ncd-100.1-jjm-v1)
+data/patients/       eight Synthea bundles + seven synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free
 spike/spike_001/     the founding extraction spike — still a gate and a

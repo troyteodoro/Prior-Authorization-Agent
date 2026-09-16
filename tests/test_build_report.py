@@ -224,7 +224,8 @@ def test_only_labeled_pairs_are_scored(script):
     [
         "first draft, drafted alongside the system it grades",  # D19/D42/D96
         "as one contractor would",                               # D21/D29
-        "six patients",                                          # corpus size
+        "eight patients",                                        # corpus size (D102)
+        "declared clone",                                        # J1's provenance
     ],
 )
 def test_the_report_carries_its_caveats(claim):

@@ -542,6 +542,38 @@ def test_a_recorded_payload_for_a_changed_note_refuses_to_anchor(
     assert caught.value.__cause__.reason is ExtractionFailure.DOCUMENT_CHANGED
 
 
+def test_a_recorded_payload_replays_for_identical_bytes_under_another_id(
+    policy_store, patient_store, runner, ref, case_patients
+) -> None:
+    """T-88 (D102). A payload is a claim about bytes, so the same bytes under a
+    second document id replay for zero calls — and the spans point into the
+    *requesting* document, which is what lets a declared clone's evidence
+    validate through its own store record."""
+    note = patient_store.get_notes(case_patients["E4"])[0]
+    twin = Document.from_text("twin-patient/chart_note.txt", note.text)
+    assert twin.sha256 == note.sha256 and twin.document_id != note.document_id
+    replayed = runner.run(twin.document_id, twin.text)
+    original = runner.run(note.document_id, note.text)
+    assert replayed.events and len(replayed.events) == len(original.events)
+    cited = {e.span.document_id for e in replayed.events} | {
+        s.document_id
+        for e in replayed.events
+        for s in (e.bmi_span, e.diet_span, e.activity_span)
+        if s is not None
+    }
+    assert cited == {twin.document_id}
+    assert replayed.metrics == original.metrics
+
+
+def test_a_recorded_runner_never_answers_bytes_it_did_not_measure(runner) -> None:
+    """The content route is a second key, not a looser one: unknown bytes
+    under an unknown id are still NOT_RECORDED, and unknown bytes under a
+    recorded id are still DOCUMENT_CHANGED (D18)."""
+    with pytest.raises(ExtractionOutputError) as caught:
+        runner.run("nobody/chart_note.txt", "A note nobody measured.\n")
+    assert caught.value.reason is ExtractionFailure.NOT_RECORDED
+
+
 # --------------------------------------------------------------------------
 # Zero model calls, proved rather than counted
 # --------------------------------------------------------------------------

@@ -189,6 +189,15 @@ class RecordedExtractionRunner:
     against a document it never came from scores the model against text it never
     saw, and the quote will usually still be found somewhere, which is what makes
     it dangerous rather than merely wrong.
+
+    **Keyed by content first, then by id** (T-88, D102). A payload is a claim
+    about bytes, so a note whose sha256 matches a recorded one replays under
+    whatever `document_id` the caller asks for — that is how a declared clone's
+    byte-identical note answers for zero calls, with its spans pointing into
+    its own document. The `document_id` route survives for payloads recorded
+    without a hash, and a recorded id whose bytes moved is still
+    `DOCUMENT_CHANGED`: the two routes never produce a payload the other
+    would refuse.
     """
 
     name = "recorded"
@@ -204,6 +213,8 @@ class RecordedExtractionRunner:
         self._hashes = dict(note_hashes or {})
         self._model = model
         self._metrics = dict(metrics or {})
+        # sha256 -> the recorded document_id that carries the payload.
+        self._by_hash = {digest: document_id for document_id, digest in self._hashes.items()}
 
     @classmethod
     def from_records(cls, records: list[dict], model: str | None = None):
@@ -238,32 +249,38 @@ class RecordedExtractionRunner:
         return document_id in self._payloads
 
     def run(self, document_id: str, text: str) -> ExtractionResult:
-        if document_id not in self._payloads:
-            raise ExtractionOutputError(
-                ExtractionFailure.NOT_RECORDED,
-                f"no recorded payload for {document_id!r}; run "
-                "`python scripts/run_extraction.py` (it spends model calls) or "
-                "pass a live runner",
-            )
-
-        recorded_hash = self._hashes.get(document_id)
-        if recorded_hash is not None:
-            actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
-            if actual != recorded_hash:
+        actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        if actual in self._by_hash:
+            # The bytes were measured, under this id or another (D102).
+            recorded_id = self._by_hash[actual]
+        elif document_id in self._payloads:
+            recorded_hash = self._hashes.get(document_id)
+            if recorded_hash is not None:
+                # A recorded id, and the bytes are not the recorded bytes.
                 raise ExtractionOutputError(
                     ExtractionFailure.DOCUMENT_CHANGED,
                     f"{document_id} hashes to {actual[:12]} and the payload was "
                     f"recorded against {recorded_hash[:12]}. Re-anchoring would "
                     "score a quote against a document it never came from (D18).",
                 )
+            recorded_id = document_id
+        else:
+            raise ExtractionOutputError(
+                ExtractionFailure.NOT_RECORDED,
+                f"no recorded payload for {document_id!r} (sha256 {actual[:12]}); "
+                "run `python scripts/run_extraction.py` (it spends model calls) "
+                "or pass a live runner",
+            )
 
         try:
             # The recorded metrics are carried through unchanged: they measure the
             # call that produced this payload, and no call happens here. A replay
             # that reported zero tokens would understate what the answer cost.
+            # The result is built under the *requesting* id, so spans point into
+            # the document the caller handed in.
             return build_result(
-                document_id, text, self._payloads[document_id],
-                self._metrics.get(document_id),
+                document_id, text, self._payloads[recorded_id],
+                self._metrics.get(recorded_id),
             )
         except ExtractionOutputError:
             raise

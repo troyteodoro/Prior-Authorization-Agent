@@ -8,11 +8,11 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Outcomes against the labels
 
-15 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
+16 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
 
 | Status | Cases | Meaning |
 |---|---|---|
-| `PASS` | 15 | matched the label on every checked dimension |
+| `PASS` | 16 | matched the label on every checked dimension |
 | `FAIL` | 0 | answered, and answered wrongly |
 | `BLOCKED` | 0 | the component under test does not exist yet |
 | `ERROR` | 0 | a classified fault; the system did not answer (REQ-28) |
@@ -21,18 +21,19 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Per-criterion precision on `MET` (A2, A3)
 
-The system emitted **49** criterion verdicts across 9 determinations. The eval set labels **18** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
+The system emitted **56** criterion verdicts across 10 determinations. The eval set labels **22** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
 
 | Criterion | Labeled pairs | System said `MET` | Correct | Precision |
 |---|---|---|---|---|
 | `a` | 5 | 4 | 4 | 1.000 |
 | `b` | 1 | 1 | 1 | 1.000 |
 | `c1` | 2 | 1 | 1 | 1.000 |
-| `c2` | 2 | 1 | 1 | 1.000 |
+| `c2` | 3 | 2 | 2 | 1.000 |
 | `c3` | 5 | 2 | 2 | 1.000 |
-| `c4` | 2 | 1 | 1 | 1.000 |
-| `c5` | 1 | 1 | 1 | 1.000 |
-| **all** | **18** | **11** | **11** | **1.000** |
+| `c4` | 3 | 1 | 1 | 1.000 |
+| `c5` | 2 | 2 | 2 | 1.000 |
+| `d` | 1 | 0 | 0 | n/a |
+| **all** | **22** | **13** | **13** | **1.000** |
 
 **A2's threshold is 0.90 on `MET`.** Measured: **1.000**.
 
@@ -42,8 +43,8 @@ A precision figure without its denominators is not a result. On a set where most
 
 | Figure | Value |
 |---|---|
-| `MET` base rate (labeled pairs that are `MET`) | 11/18 = **0.611** |
-| Precision of a trivial always-`MET` baseline | **0.611** |
+| `MET` base rate (labeled pairs that are `MET`) | 13/22 = **0.591** |
+| Precision of a trivial always-`MET` baseline | **0.591** |
 | Precision measured | **1.000** |
 
 The baseline's precision *is* the base rate, by construction: a system that answers `MET` everywhere is correct exactly as often as `MET` is the right answer. The measured figure is only a result to the extent it exceeds that number.
@@ -56,13 +57,13 @@ Every span carried by a criterion verdict, re-sliced from its source document an
 
 | Figure | Value |
 |---|---|
-| Spans checked | 82 |
-| Spans that slice back | 82 |
+| Spans checked | 95 |
+| Spans that slice back | 95 |
 | Span validity rate | **1.000** |
 | `NOT_MET` verdicts | 4 |
 | …of those, re-derived from their own citations (T-86, D99) | 4 |
-| Spans on `MET` verdicts | 75 |
-| …of those, valid | 75 |
+| Spans on `MET` verdicts | 88 |
+| …of those, valid | 88 |
 | **A3: `MET` verdicts with an invalid span** | **0** |
 
 **A3 requires zero.** Measured: 0 (rate 1.000).
@@ -87,17 +88,18 @@ Every span a model emits is located by searching its verbatim quote in the note 
 
 ## Abstention (A5, REQ-28, REQ-31)
 
-**Abstention rate: 3/15 answered = 0.200**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
+**Abstention rate: 4/16 answered = 0.250**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
 
 An `ERROR` entering the numerator alone would let a crash *lower* the abstention rate — caution misreported as confidence (D77).
 
 ### The account, per `gap_reason` (D82)
 
-22 criterion verdicts abstained. Abstentions here have named causes rather than a dial, and the enum is closed precisely so that each member names a different next action (REQ-31, D44). This account is what A5 asks for in this system's terms.
+25 criterion verdicts abstained. Abstentions here have named causes rather than a dial, and the enum is closed precisely so that each member names a different next action (REQ-31, D44). This account is what A5 asks for in this system's terms.
 
 | `gap_reason` | Criterion verdicts | What it tells the specialist to collect |
 |---|---|---|
-| `NO_EVIDENCE_RETRIEVED` | 19 | Find documentation of a program |
+| `NO_EVIDENCE_RETRIEVED` | 20 | Find documentation of a program |
+| `NOT_EVALUATED_BY_THIS_SYSTEM` | 2 | — |
 | `UNSUBSTANTIATED_ASSERTION` | 2 | Find the visit notes behind the claim |
 | `SOURCE_CONFLICT` | 1 | Reconcile the two values |
 
@@ -109,13 +111,13 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 | `discrepancy_tolerance` | Discrepancies disclosed | Abstention rate |
 |---|---|---|
-| 0 | 4 | 0.200 |
-| 0.25 | 2 | 0.200 |
-| 0.5 | 1 | 0.200 |
-| 1 ← pinned (D51) | 1 | 0.200 |
-| 2 | 1 | 0.200 |
-| 5 | 1 | 0.200 |
-| 50 | 0 | 0.200 |
+| 0 | 5 | 0.250 |
+| 0.25 | 3 | 0.250 |
+| 0.5 | 1 | 0.250 |
+| 1 ← pinned (D51) | 1 | 0.250 |
+| 2 | 1 | 0.250 |
+| 5 | 1 | 0.250 |
+| 50 | 0 | 0.250 |
 
 **Why abstention does not move.** Tolerance gates whether a disagreement is *recorded*. The abstention branch is a different test — the two values falling on opposite sides of the coverage threshold (REQ-34, `SOURCE_CONFLICT`) — and the threshold is not what is being swept.
 
@@ -154,11 +156,11 @@ Measured from each determination's own `metrics`, never estimated. **Reported, n
 
 | Figure | Total | Per determination |
 |---|---|---|
-| Determinations | 9 | — |
-| Model calls | 33 | 3.7 |
-| Input tokens | 27175 | 3019 |
-| Output tokens | 5723 | 636 |
-| Wall time (ms) | 36095.4 | 4010.6 |
+| Determinations | 10 | — |
+| Model calls | 38 | 3.8 |
+| Input tokens | 31124 | 3112 |
+| Output tokens | 6992 | 699 |
+| Wall time (ms) | 40243.9 | 4024.4 |
 
 **What the latency figure means.** These are the wall times measured *when the recordings were made*, against the pinned model on AI Studio (T-15's extraction recording and T-17's verifier recording). They are not the cost of the replay, which is microseconds and would be a meaningless number to publish. A6 asks for cost and latency from instrumentation rather than estimated; replayed instrumentation is still instrumentation, and a replay's own clock would not be.
 
@@ -171,5 +173,5 @@ Every gate in this repo, this report included, spends **zero** model calls and t
 The measurement context for every figure above.
 
 - **The ground truth is a working first draft, drafted alongside the system it grades** (D19, D42, D96). The manifests are written from the bundles before the notes are synthesized, the system under test never reads them, and every cited span is validated against the source rather than against a label. Re-labeling and review ride with the corpus expansion of a later version.
-- **This system determines coverage as one contractor would.** NCD 100.1 quantifies nothing — no months, no visit counts, no recency. Every constant in the criteria tree comes from A53028, a Noridian Jurisdiction F article. A different MAC is a different tree over the same NCD (D21, D29). These are not CMS's thresholds.
-- **The corpus is six patients and five policy documents, and every case here runs under one of the two trees.** Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above. Palmetto's tree is loaded and resolved by state (T-87) and reaches no eval row until T-88 adds a patient in its territory.
+- **This system determines coverage as one contractor would, for each of two contractors.** NCD 100.1 quantifies nothing — no months, no visit counts, no recency. Every constant in a criteria tree comes from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J and M — and a request resolves by procedure code and state (D21, D29, D100). These are not CMS's thresholds; they are two contractors' worth of them.
+- **The corpus is eight patients and five policy documents.** Six bundles from the base seed, E12's with its declared observation (D73), and one declared clone of E4's chart re-addressed into Palmetto's territory (T-88, D102) — the one row, `J1`, that runs under the second tree, and it shares its note's bytes with E4. Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above.

@@ -19,12 +19,12 @@ answers the second question, once.
 **What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
 and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
 spec §10's list of known limits, P1–P8, which D97 sequenced into one task
-each — `T-85`, `T-86` and `T-87` are closed and `T-88` is next; `T-81` is
-row 6 of that sequence.
+each — `T-85` through `T-88` are closed and `T-89` is next; `T-81` is row
+6 of that sequence.
 
-Sixty-seven tasks are on this board — IDs run to T-87 but numbering is not
+Sixty-eight tasks are on this board — IDs run to T-88 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **66 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **67 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -61,7 +61,7 @@ row opens; the exit named here is the one D97 fixed.
 | 1 | P2, first half | `T-85` | **closed** (D98) | `eval/report.md` carries the anchoring account per extraction recording; `build_report.py --verify` green |
 | 2 | P5 | `T-86` | **closed** (D99) | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
 | 3 | P1, first half | `T-87` | **closed** (D100, D101) | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
-| 4 | P1, second half | `T-88` | **next** | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
+| 4 | P1, second half | `T-88` | **closed** (D102) | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
 | 5 | P2, second half | `T-89` | pending | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | pending | two notes per patient, labels re-read, every recording re-measured |
 | 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
@@ -1571,6 +1571,77 @@ unchanged (T-30, D77).
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[x] T-88` The second-jurisdiction patient and the `J1` case
+**REQ:** 1, 4, 25, 42, 55 · **Depends:** T-87, T-41, T-17 · **Discovered in:**
+spec §10 P1 *(D97)* · **Decided by:** D102 · **Timebox:** one day plus one
+verifier round
+**Status:** **closed** (D102) — row 4 of `Path to v2`; the exit ran green
+and every gate with it
+**Exit:**
+```
+./venv/bin/python scripts/select_patients.py --verify \
+ && ./venv/bin/python scripts/synthesize_notes.py --verify \
+ && ./venv/bin/python -m pytest tests/test_manifests.py tests/test_notes.py tests/test_fhir.py tests/test_workflow.py tests/test_verifier.py -q --color=no \
+ && env -u GOOGLE_API_KEY ./venv/bin/python -m pa_agent.cli --patient ee9d79ee-ba2e-5915-b6d5-c7e700066d40 --procedure 43775 | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['policy_version_id']=='ncd-100.1-jjm-v1'; by={c['criterion_id']:c for c in d['criterion_results']}; assert 'c3' not in by; assert by['c2']['verdict']=='MET' and by['c5']['verdict']=='MET'; assert by['d']['gap_reason']=='NOT_EVALUATED_BY_THIS_SYSTEM'" \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+The clone resolves to Palmetto's tree from its own bundle with no `--state`
+passed and no credential in the environment; the run-length criterion is
+absent rather than failed; the two run-scoped criteria Noridian scopes out
+behind `c3` are `MET`; the unclaimed criterion abstains with its own reason.
+`run_eval.py` grades `J1` `PASS` on the updated baseline.
+
+**What it delivers.** An eighth bundle, `ee9d79ee-…`, computed by
+`select_patients.py --clone` from E4's chart and a declared Alabama address,
+recorded under `synthetic_patients` in the population manifest and recomputed
+by `--verify`; a seventh note, byte-identical to its source because the
+synthesizer seeds from the manifest's `cloned_from`; content-keyed replay in
+`RecordedExtractionRunner`, so T-15's recording answers the clone for zero
+calls; the `J1` row with `policy_version_id` and `absent_criteria`
+expectations and the two scorer branches they need; T-17's verifier
+recording re-measured whole, thirty claims; and the report, README and
+CLAUDE.md restated for a corpus of eight patients and two contractors
+*(D102)*.
+
+**Closed by D102.** Two facts about the code decided the shape. The
+synthesizer seeds each note's practice line and MRN from the patient id, so
+a clone's note is byte-identical only if the manifest says which id to seed
+from — `cloned_from` is that declaration, and the notes gate asserts the
+identity by hash. And `RecordedExtractionRunner` was keyed by `document_id`,
+so the identical bytes under the clone's id were `NOT_RECORDED`; it now finds
+a payload by sha256 first, and the `document_id` route is kept for payloads
+recorded without a hash. Regenerating the notes reproduced the six existing
+ones byte for byte; the population manifest changed by the clone's record,
+its `synthetic_patients` block and `bundle_count` alone.
+
+**What the same chart says under each tree.** E4's chart as a Washington
+request is `NOT_MET`: `c3` carries a `Shortfall` of three months against
+four, and `c2`, `c4` and `c5` are scoped out behind it. The clone, resolved
+to Palmetto's tree from its own bundle with no `--state` passed, has no `c3`
+to fail: `c2` and `c5` are `MET` on the same January–March run, `c4` and
+`d` abstain with `NOT_EVALUATED_BY_THIS_SYSTEM`, and the outcome is
+`INSUFFICIENT_EVIDENCE` — five model calls replayed, zero spent. Before the
+verifier round the same request aborted with exit 3 on an unrecorded
+`a/MET`, which is the recording refusing to default rather than a defect.
+
+**The verifier round.** Three claims were new — `a/MET` under the clone's
+id, `c2/MET` and `c5/MET` on the three-month run — and the recording was
+re-measured whole per D45: **30 of 30 accepted**, 22,838 input and 1,261
+output tokens, `verifier-v4` on AI Studio, beside D78's 27/27 twice. The
+report's figures moved with the row and are quoted in D102's successors:
+abstention 3/15 to 4/16, `MET` base rate 0.611 to 0.591 over twenty-two
+labeled pairs, 95 spans checked, A6 at 38 calls across ten determinations.
+
+Mutations caught, each restored and `__pycache__` cleared: the content route
+in the runner disabled (the replay test red, and `J1` `ERROR` in the eval);
+the clone's note tampered; the notes manifest dropping `cloned_from`; the
+clone bundle's city edited; the `synthetic_patients` block deleted; the
+scorer's `policy_version_id` check disabled; its `absent_criteria` check
+disabled; the extraction enumeration no longer skipping the clone (twelve
+notes, not eleven); the clone manifest's traps drifting from its source's;
+and `J1` relabeled with `c3` present (`FAIL`/`WRONG_CRITERION`).
 
 ### `[x] T-87` Jurisdiction resolution, and a second tree from a second MAC
 **REQ:** 1, 2, 4, 42, 55 · **Depends:** T-24, T-38, T-86 · **Discovered in:**

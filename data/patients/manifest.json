@@ -83,7 +83,7 @@
     }
   ],
   "selection_criteria": {
-    "bundle_count": 7,
+    "bundle_count": 8,
     "base_bundle_count": 6,
     "bmi_range": [
       33.0,
@@ -149,6 +149,31 @@
       "latest_bmi": 35.0,
       "latest_bmi_date": "2026-08-15T15:11:36-07:00",
       "has_active_t2dm": false
+    },
+    {
+      "filename": "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+      "sha256": "807774c0ae505a1e47d8a1ef1af5caded71c3cfc5d9360ef80b4c9b4672ff778",
+      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
+      "latest_bmi": 35.89,
+      "latest_bmi_date": "2025-09-19T00:51:37-07:00",
+      "has_active_t2dm": false
+    }
+  ],
+  "synthetic_patients": [
+    {
+      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
+      "cloned_from": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "source_bundle": "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json",
+      "bundle": "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+      "address": {
+        "city": "Birmingham",
+        "state": "AL",
+        "postal_code": "35203",
+        "latitude": 33.5186,
+        "longitude": -86.8104
+      },
+      "task": "T-88",
+      "decision": "D102"
     }
   ]
 }

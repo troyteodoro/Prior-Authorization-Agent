@@ -858,17 +858,20 @@ def _caveats_section() -> list[str]:
         "never reads them, and every cited span is validated against the "
         "source rather than against a label. Re-labeling and review ride "
         "with the corpus expansion of a later version.",
-        "- **This system determines coverage as one contractor would.** NCD "
-        "100.1 quantifies nothing — no months, no visit counts, no recency. "
-        "Every constant in the criteria tree comes from A53028, a Noridian "
-        "Jurisdiction F article. A different MAC is a different tree over the "
-        "same NCD (D21, D29). These are not CMS's thresholds.",
-        "- **The corpus is six patients and five policy documents, and every "
-        "case here runs under one of the two trees.** Rates over a set this "
-        "size move by large steps; one case is worth more than a percentage "
-        "point in every table above. Palmetto's tree is loaded and resolved "
-        "by state (T-87) and reaches no eval row until T-88 adds a patient in "
-        "its territory.",
+        "- **This system determines coverage as one contractor would, for "
+        "each of two contractors.** NCD 100.1 quantifies nothing — no months, "
+        "no visit counts, no recency. Every constant in a criteria tree comes "
+        "from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 "
+        "for Palmetto GBA Jurisdictions J and M — and a request resolves by "
+        "procedure code and state (D21, D29, D100). These are not CMS's "
+        "thresholds; they are two contractors' worth of them.",
+        "- **The corpus is eight patients and five policy documents.** Six "
+        "bundles from the base seed, E12's with its declared observation "
+        "(D73), and one declared clone of E4's chart re-addressed into "
+        "Palmetto's territory (T-88, D102) — the one row, `J1`, that runs "
+        "under the second tree, and it shares its note's bytes with E4. "
+        "Rates over a set this size move by large steps; one case is worth "
+        "more than a percentage point in every table above.",
         "",
     ]
 

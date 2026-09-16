@@ -100,6 +100,12 @@ def synthesized_cases() -> list[dict]:
             # E12's chart is declared note-free (D73): nothing to extract,
             # so the measurement never spends a call on it.
             continue
+        if manifest.get("cloned_from"):
+            # A declared clone's note is its source's bytes (T-88, D102): the
+            # source's row measures it, and `RecordedExtractionRunner` replays
+            # by content. Skipped by declaration rather than by duplicate
+            # hash, so which row "owns" the bytes never depends on sort order.
+            continue
         documents = store.get_notes(manifest["patient_id"])
         assert len(documents) == 1, manifest["patient_id"]
         document = documents[0]

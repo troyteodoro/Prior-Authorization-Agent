@@ -33,10 +33,11 @@ VALUE_SET_CODES = {"44054006", "59621000"}
 
 EXPECTED_CASES = {
     "E1", "E2", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E10b", "E10c",
-    "E11", "E12",
+    "E11", "E12", "J1",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
+# J1 is the second jurisdiction (T-88, D102): a declared clone of E4's chart.
 DELIBERATELY_ABSENT = {"E3"}
 
 
@@ -115,7 +116,7 @@ def _latest_structured_bmi(store, patient_id) -> tuple[float, date]:
 
 def test_one_manifest_per_committed_patient(manifests, population):
     assert set(manifests) == set(population), (
-        "manifests and the committed population must cover the same six patients"
+        "manifests and the committed population must cover the same eight patients"
     )
     for patient_id, body in manifests.items():
         assert body["bundle"] == population[patient_id]["filename"]
@@ -123,6 +124,28 @@ def test_one_manifest_per_committed_patient(manifests, population):
             "every manifest pins D35's reference date; a floating as_of makes "
             "'recent' depend on when the suite runs"
         )
+
+
+def test_a_declared_clone_carries_its_source_facts_unchanged(manifests):
+    """T-88 (D102). The clone's manifest copies its source's facts rather than
+    pointing at them, so every reader stays simple — and this is what keeps the
+    copy honest. Programs, traps and assertions must be equal; `cases` and
+    `rationale` are the clone's own; and exactly one manifest is a clone,
+    because the population manifest declares exactly one."""
+    clones = {pid: body for pid, body in manifests.items() if body.get("cloned_from")}
+    assert len(clones) == 1, "D102 declares exactly one clone"
+    (patient_id, body), = clones.items()
+    source = manifests[body["cloned_from"]]
+    assert source.get("cloned_from") is None, "a clone of a clone is not declared"
+    for field in ("wm_programs", "traps", "program_assertions", "as_of"):
+        assert body[field] == source[field], f"{field} drifted from the source's"
+    assert body["cases"] == ["J1"]
+    assert not set(body["cases"]) & set(source["cases"])
+    assert body["bundle"] != source["bundle"]
+    population = json.loads(POPULATION.read_text(encoding="utf-8"))
+    declared = population["synthetic_patients"]
+    assert [d["patient_id"] for d in declared] == [patient_id]
+    assert declared[0]["cloned_from"] == body["cloned_from"]
 
 
 def test_every_edge_case_is_covered_exactly_once(manifests):

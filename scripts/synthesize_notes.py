@@ -24,6 +24,11 @@ Two properties the gate depends on, both deliberate:
   whitespace-insensitive anchoring exists because quotes cross wrap points;
   a corpus of clean single lines would leave that path untested until
   production.
+
+A manifest that declares `cloned_from` (T-88, D102) is rendered from its own
+facts but seeded from the *source* patient's id, so the clone's note is
+byte-identical to its source's — which is what lets T-15's recording answer
+it for zero calls. `--verify` asserts that identity by hash.
 """
 
 from __future__ import annotations
@@ -296,20 +301,27 @@ def generate() -> int:
         height_m = _height_m(store, patient_id)
         # One generator per patient, seeded from the shared seed and the
         # patient id, so adding a patient cannot reshuffle everyone's prose.
-        rng = random.Random(f"{SEED}:{patient_id}")
+        # A declared clone seeds from its source (D102): the practice line
+        # and MRN are the only per-patient randomness, and the clone's note
+        # must be its source's bytes.
+        seed_patient_id = manifest.get("cloned_from") or patient_id
+        rng = random.Random(f"{SEED}:{seed_patient_id}")
         text = render(manifest, demo, height_m, rng)
 
         out_dir = NOTES_DIR / patient_id
         out_dir.mkdir()
         note_path = out_dir / "chart_note.txt"
         note_path.write_text(text, encoding="utf-8")
-        records.append({
+        record = {
             "patient_id": patient_id,
             "document_id": f"{patient_id}/chart_note.txt",
             "sha256": sha256(note_path),
             "cases": manifest["cases"],
             "characters": len(text),
-        })
+        }
+        if manifest.get("cloned_from"):
+            record["cloned_from"] = manifest["cloned_from"]
+        records.append(record)
         print(f"  {manifest['cases']} -> {note_path.relative_to(REPO_ROOT)} ({len(text)} chars)")
 
     NOTES_MANIFEST.write_text(
@@ -343,6 +355,27 @@ def verify() -> int:
     if on_disk != listed:
         print(f"  FAIL notes on disk {sorted(on_disk ^ listed)} not in the manifest")
         failures.append("stray")
+    # A declared clone's note is its source's bytes (T-88, D102). Checked from
+    # the fact manifests, not from the notes manifest's own `cloned_from`, so a
+    # clone whose record dropped the field is still held to it.
+    by_patient = {r["patient_id"]: r for r in manifest["notes"]}
+    for path in sorted(MANIFEST_DIR.glob("*.json")):
+        facts = json.loads(path.read_text(encoding="utf-8"))
+        source_id = facts.get("cloned_from")
+        if not source_id:
+            continue
+        clone_record = by_patient.get(facts["patient_id"])
+        source_record = by_patient.get(source_id)
+        ok = (
+            clone_record is not None
+            and source_record is not None
+            and clone_record["sha256"] == source_record["sha256"]
+            and clone_record.get("cloned_from") == source_id
+        )
+        print(("  ok   " if ok else "  FAIL ")
+              + f"{facts['patient_id'][:12]} note is byte-identical to its source {source_id[:12]}")
+        if not ok:
+            failures.append(f"clone {facts['patient_id']}")
     if failures:
         print(f"{len(failures)} check(s) failed")
         return 1

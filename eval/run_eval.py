@@ -103,6 +103,9 @@ class ReasonClass(str, Enum):
     """
 
     WRONG_OUTCOME = "WRONG_OUTCOME"
+    # T-88 (D102): the answer came from the wrong tree. Its own class because
+    # a right outcome under the wrong jurisdiction is P1's failure exactly.
+    WRONG_POLICY_VERSION = "WRONG_POLICY_VERSION"
     WRONG_CRITERION = "WRONG_CRITERION"
     WRONG_GAP_REASON = "WRONG_GAP_REASON"
     WRONG_DISCREPANCIES = "WRONG_DISCREPANCIES"
@@ -181,9 +184,10 @@ def score(
     """Compare a determination (or a `NoPolicyResult`) against its label.
 
     Checks run gravest first, and only the gravest finding is reported (D75):
-    outcome, then the named criteria (verdict before `gap_reason`), then the
-    discrepancy count, then span validity on every cited verdict (A3, Art. III),
-    then the model-call budget. A4's zero-call assertion is a claim about *how*
+    outcome, then the policy version (T-88), then the named criteria (verdict
+    before `gap_reason`) and the criteria the row declares absent, then the
+    discrepancy count, then span validity on every cited verdict (A3, Art.
+    III), then the model-call budget. A4's zero-call assertion is a claim about *how*
     the right answer was reached, and reporting it over a wrong answer would
     bury the more serious defect.
 
@@ -245,6 +249,20 @@ def score(
             **measured,
         )
 
+    # T-88 (D102): a row in a second jurisdiction pins which tree answered.
+    # Checked before the criteria, because every criterion expectation below
+    # is a claim about *that* tree's criteria.
+    expected_version = expect.get("policy_version_id")
+    if expected_version is not None and determination.policy_version_id != expected_version:
+        return CaseResult(
+            case_id,
+            CaseStatus.FAIL,
+            ReasonClass.WRONG_POLICY_VERSION,
+            f"expected policy_version_id {expected_version}, got "
+            f"{determination.policy_version_id}",
+            **measured,
+        )
+
     # Criterion-scoped expectations (D75, generalizing D72's E10 ruling). Only
     # the criteria the row names are checked: §6's rows are claims about
     # specific criteria, and pinning the rest here would be labeling from the
@@ -284,6 +302,22 @@ def score(
                     f"{expected['gap_reason']}, got {observed_reason}",
                     **measured,
                 )
+
+    # T-88 (D102): a row may declare that a criterion does not exist under its
+    # tree — J1's claim is that Palmetto states no run length, so `c3` is
+    # absent rather than failed. A determination carrying it answered under
+    # the wrong shape, whatever it said.
+    for criterion_id in expect.get("absent_criteria") or []:
+        if criterion_id in results_by_id:
+            return CaseResult(
+                case_id,
+                CaseStatus.FAIL,
+                ReasonClass.WRONG_CRITERION,
+                f"criterion {criterion_id}: expected absent from this tree, but "
+                f"the determination carries it "
+                f"({results_by_id[criterion_id].verdict.value})",
+                **measured,
+            )
 
     # REQ-39's advisory channel, counted exactly. E10's single entry and
     # E10c's empty list are both labels, so both directions fail.
@@ -760,6 +794,39 @@ def self_check() -> list[tuple[str, bool, str]]:
                 ],
             ),
             resolve_synthetic,
+        ),
+        ("FAIL", "WRONG_CRITERION"),
+    )
+    # T-88 (D102): the two expectations J1 needs, each in both directions.
+    record(
+        "a matching policy_version_id scores PASS",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_MET", "policy_version_id": "self-check-v0"}),
+            not_met_c3,
+        ),
+        ("PASS", None),
+    )
+    record(
+        "the wrong tree is FAIL/WRONG_POLICY_VERSION even with the right outcome",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_MET", "policy_version_id": "other-v9"}),
+            not_met_c3,
+        ),
+        ("FAIL", "WRONG_POLICY_VERSION"),
+    )
+    record(
+        "a criterion declared absent and absent scores PASS",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_MET", "absent_criteria": ["c4"]}),
+            not_met_c3,
+        ),
+        ("PASS", None),
+    )
+    record(
+        "a criterion declared absent but present is FAIL/WRONG_CRITERION",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_MET", "absent_criteria": ["c3"]}),
+            not_met_c3,
         ),
         ("FAIL", "WRONG_CRITERION"),
     )

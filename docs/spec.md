@@ -656,7 +656,12 @@ no run length, requires weight rather than BMI monthly, and adds a
 multidisciplinary evaluation — so two of its criteria are declared unclaimed
 and abstained on rather than evaluated on a proxy. The thresholds are still
 not CMS's; there are now two contractors' worth of them, and every other MAC
-is still a tree nobody has compiled.
+is still a tree nobody has compiled. Since T-88 one eval row runs under the
+second tree *(D102)*: `J1`, a declared clone of E4's chart re-addressed into
+Alabama. Its January–March run is a `c3` shortfall of three against four
+under Noridian and not a criterion at all under Palmetto — `c2` and `c5` are
+`MET` on the same bytes, and the determination abstains on what the tree
+declares unclaimed. That is P1 as a determination rather than a paragraph.
 
 ### P2 — Extraction refuses paraphrase, and that loses evidence
 
@@ -678,9 +683,12 @@ re-ask for the verbatim text, is T-89.
 ### P3 — Six patients, five documents, fifteen cases
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
-than a percentage point in every table. A precision of 1.000 over eleven `MET`
-calls against a base rate of 0.611 is a real result and a small one; it says
-the approach does not obviously fail, and nothing more.
+than a percentage point in every table. A precision of 1.000 over thirteen
+`MET` calls against a base rate of 0.591 is a real result and a small one; it
+says the approach does not obviously fail, and nothing more. Since T-88 the
+set is sixteen rows over eight bundles, one of them a declared clone that
+shares its note's bytes with its source *(D102)*; the count moved by one row
+and the bound did not.
 
 ### P4 — The ground truth is a first draft
 

@@ -1,5 +1,5 @@
 {
-  "recorded_on": "2026-09-10",
+  "recorded_on": "2026-09-16",
   "note": "Observed status per case. Updated by --update-baseline; the change is meant to be read as a diff (D27).",
   "cases": {
     "E1": {
@@ -55,6 +55,10 @@
       "reason_class": null
     },
     "E9": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "J1": {
       "status": "PASS",
       "reason_class": null
     },

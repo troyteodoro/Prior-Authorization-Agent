@@ -63,6 +63,16 @@
         "E10b"
       ],
       "characters": 808
+    },
+    {
+      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
+      "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note.txt",
+      "sha256": "1c5fb0a834246efe8195aa10a98decc96a7f7beb6125700860f5e7f60c8efcf0",
+      "cases": [
+        "J1"
+      ],
+      "characters": 1654,
+      "cloned_from": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd"
     }
   ]
 }

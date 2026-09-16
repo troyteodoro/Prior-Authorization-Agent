@@ -1,6 +1,7 @@
-"""T-04 + T-41 — generate and select the Synthea population (D35, D73).
+"""T-04 + T-41 + T-88 — generate, select and clone the Synthea population
+(D35, D73, D102).
 
-Two modes:
+Three modes:
 
     python scripts/select_patients.py --generate
         Downloads the pinned Synthea release jar if absent, then runs Synthea
@@ -8,19 +9,29 @@ Two modes:
         most-recent BMI observations span 33 to 45 (D35), and the E12 run
         yields a seventh patient to whose bundle one synthetic BMI observation
         of exactly 35.0 is appended under a declared provenance block (D73).
-        Copies all seven to data/patients/bundles/ and writes
-        data/patients/manifest.json. Network and Java.
+        Copies all seven to data/patients/bundles/, writes
+        data/patients/manifest.json, then performs the clone below. Network
+        and Java.
+
+    python scripts/select_patients.py --clone
+        The eighth bundle (T-88, D102): one committed Washington bundle
+        re-addressed into Palmetto GBA's territory. A deterministic function
+        of the source bytes and the declaration in `CLONES` — the source id
+        substituted everywhere it occurs, the Patient's first address
+        rewritten, the result serialized the way the E12 bundle is — so the
+        clone can be recomputed and compared rather than trusted. Disk only.
 
     python scripts/select_patients.py [--verify]
         The exit condition. Re-reads the disk and nothing else: hashes the
-        seven committed bundles against the manifest, re-extracts each
+        eight committed bundles against the manifest, re-extracts each
         most-recent BMI from the bundle itself, re-asserts the span conditions
-        and the recorded seeds, and checks the declared synthetic observation
-        exists, matches its declaration, and is the most-recent BMI. No
+        and the recorded seeds, checks the declared synthetic observation
+        exists, matches its declaration, and is the most-recent BMI, and
+        recomputes the declared clone from its source and compares bytes. No
         network, no Java, no generation, no model.
 
 The committed bundles are corpus, exactly as T-02's documents are: everything
-downstream (T-05, T-06, T-12) reads these seven files, and a bundle whose hash
+downstream (T-05, T-06, T-12) reads these eight files, and a bundle whose hash
 drifts fails the gate rather than quietly feeding a different patient to the
 tests. Selection is deterministic given the generated populations —  but
 Synthea itself is not byte-deterministic across runs (D73: one of six base
@@ -43,6 +54,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import uuid
 from datetime import date
 from pathlib import Path
 
@@ -78,7 +90,7 @@ BMI_CEILING = 45.0
 BMI_THRESHOLD = 35.0  # criterion (a)'s boundary; at least one patient below it
 BMI_HIGH_MARK = 40.0  # and at least one at or above this
 BASE_BUNDLE_COUNT = 6  # the D35 selection
-BUNDLE_COUNT = 7  # plus the E12 patient (D73)
+BUNDLE_COUNT = 8  # plus the E12 patient (D73) and the T-88 clone (D102)
 
 LOINC_BMI = "39156-5"
 SNOMED_T2DM = "44054006"
@@ -95,6 +107,77 @@ E12_BMI = 35.0  # the boundary itself
 E12_BASE_BAND = (33.0, 37.0)  # the base patient's natural BMI must be nearby
 E12_SYNTHETIC_DATE = "2026-08-15"  # in-window from the 2026-09-01 reference
 LOOKBACK_MONTHS = 12  # D40; the synthetic observation must be in-window
+
+# The second-jurisdiction patient (T-88, D102). One committed bundle cloned
+# and re-addressed into Palmetto GBA's territory, so a determination can run
+# under `ncd-100.1-jjm-v1` on a chart whose note T-15's recording already
+# holds. The source is E4's chart: a three-month run that is a `c3`
+# shortfall under Noridian and, under Palmetto, not a criterion at all. The
+# new id is uuid5 over the source id and the state, so the declaration is
+# the derivation and nothing here is chosen twice. Everything in this block
+# is a decision recorded in D102, not a measurement.
+CLONES = [
+    {
+        "cloned_from": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+        "state": "AL",
+        "city": "Birmingham",
+        "postal_code": "35203",
+        "latitude": 33.5186,
+        "longitude": -86.8104,
+        "task": "T-88",
+        "decision": "D102",
+    }
+]
+
+
+def clone_patient_id(declaration: dict) -> str:
+    return str(
+        uuid.uuid5(
+            uuid.NAMESPACE_OID, f"{declaration['cloned_from']}:{declaration['state']}"
+        )
+    )
+
+
+def clone_bundle(source_text: str, declaration: dict) -> tuple[str, str]:
+    """The clone's bytes, as a function of the source's and the declaration.
+
+    Returns `(patient_id, text)`. Substituting the id in the *text* rewrites
+    `Patient.id`, every `fullUrl`, every `subject.reference` and anything else
+    that names the patient, in one pass and with no list of fields to keep
+    current. The address is then edited on the parsed bundle and the whole
+    thing serialized compactly — D73's form for the E12 bundle, and the reason
+    `--verify` can compare bytes rather than fields.
+    """
+    source_id = declaration["cloned_from"]
+    new_id = clone_patient_id(declaration)
+    if source_id not in source_text:
+        sys.exit(f"the source bundle never names {source_id}; nothing to clone")
+    bundle = json.loads(source_text.replace(source_id, new_id))
+    patients = [
+        e["resource"]
+        for e in bundle["entry"]
+        if e.get("resource", {}).get("resourceType") == "Patient"
+    ]
+    if len(patients) != 1 or patients[0].get("id") != new_id:
+        sys.exit("the clone must carry exactly one Patient resource under the new id")
+    address = patients[0]["address"][0]
+    address["city"] = declaration["city"]
+    address["state"] = declaration["state"]
+    address["postalCode"] = declaration["postal_code"]
+    for extension in address.get("extension", []):
+        if extension.get("url") == "http://hl7.org/fhir/StructureDefinition/geolocation":
+            for coordinate in extension.get("extension", []):
+                if coordinate.get("url") == "latitude":
+                    coordinate["valueDecimal"] = declaration["latitude"]
+                elif coordinate.get("url") == "longitude":
+                    coordinate["valueDecimal"] = declaration["longitude"]
+    return new_id, json.dumps(bundle, ensure_ascii=False)
+
+
+def clone_filename(source_filename: str, declaration: dict) -> str:
+    """Synthea's `<names>_<uuid>.json`, with the uuid swapped — the names stay,
+    because the clone is the same chart re-addressed, not a new person."""
+    return source_filename.replace(declaration["cloned_from"], clone_patient_id(declaration))
 
 
 def sha256(path: Path) -> str:
@@ -398,6 +481,69 @@ def generate() -> int:
         t2dm = " (active T2DM)" if r["has_active_t2dm"] else ""
         print(f"  {r['latest_bmi']:5.1f} on {r['latest_bmi_date'][:10]}  {r['filename']}{t2dm}")
     print(f"manifest written: {MANIFEST_PATH.relative_to(REPO_ROOT)}")
+    return clone()
+
+
+# --------------------------------------------------------------------------
+# The clone (--clone): disk only, no Java, no network (T-88, D102)
+# --------------------------------------------------------------------------
+
+
+def clone() -> int:
+    """Write the declared clone from its committed source and record it.
+
+    Re-runnable: an existing clone record is replaced, never duplicated, and
+    the source is read from the committed population — so after a
+    regeneration that restored a drifted base bundle from git (D73), this
+    re-derives the clone from the bytes the manifest pins.
+    """
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    by_patient = {r["patient_id"]: r for r in manifest["bundles"]}
+    provenance = []
+    for declaration in CLONES:
+        source = by_patient.get(declaration["cloned_from"])
+        if source is None:
+            sys.exit(f"clone source {declaration['cloned_from']} is not in the population")
+        source_path = BUNDLES_DIR / source["filename"]
+        new_id, text = clone_bundle(source_path.read_text(encoding="utf-8"), declaration)
+        dest = BUNDLES_DIR / clone_filename(source["filename"], declaration)
+        dest.write_text(text, encoding="utf-8")
+        info = read_bundle(dest)
+        manifest["bundles"] = [r for r in manifest["bundles"] if r["patient_id"] != new_id]
+        manifest["bundles"].append(
+            {
+                "filename": dest.name,
+                "sha256": sha256(dest),
+                "patient_id": info["patient_id"],
+                "latest_bmi": info["latest_bmi"],
+                "latest_bmi_date": info["latest_bmi_date"],
+                "has_active_t2dm": info["has_active_t2dm"],
+            }
+        )
+        provenance.append(
+            {
+                "patient_id": new_id,
+                "cloned_from": declaration["cloned_from"],
+                "source_bundle": source["filename"],
+                "bundle": dest.name,
+                "address": {
+                    "city": declaration["city"],
+                    "state": declaration["state"],
+                    "postal_code": declaration["postal_code"],
+                    "latitude": declaration["latitude"],
+                    "longitude": declaration["longitude"],
+                },
+                "task": declaration["task"],
+                "decision": declaration["decision"],
+            }
+        )
+        print(f"  clone {new_id} <- {declaration['cloned_from']} ({declaration['state']}) -> {dest.name}")
+    manifest["synthetic_patients"] = provenance
+    manifest["selection_criteria"]["bundle_count"] = BUNDLE_COUNT
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"manifest written: {MANIFEST_PATH.relative_to(REPO_ROOT)}")
     return verify()
 
 
@@ -421,7 +567,7 @@ def _months_before(as_of: date, d: date) -> int:
 
 def verify() -> int:
     failures: list[str] = []
-    print("T-04/T-41 verify —")
+    print("T-04/T-41/T-88 verify —")
 
     if not MANIFEST_PATH.exists():
         print(f"  FAIL no manifest at {MANIFEST_PATH.relative_to(REPO_ROOT)}; run --generate")
@@ -542,6 +688,66 @@ def verify() -> int:
                 f"inside the {LOOKBACK_MONTHS}-month lookback from {as_of}",
                 failures,
             )
+    # The declared clone (T-88, D102): declared exactly once, recomputable from
+    # its source and the declaration, its patient in the declared state, and
+    # its record in `bundles` hashing to the recomputed bytes. Unconditional,
+    # as the observation block above is: deleting the declaration cannot
+    # quietly re-launder the eighth bundle as generated.
+    clones = manifest.get("synthetic_patients")
+    _check(
+        isinstance(clones, list) and len(clones) == len(CLONES) == 1,
+        "exactly one declared clone (D102)",
+        failures,
+    )
+    if isinstance(clones, list) and len(clones) == len(CLONES):
+        by_patient = {r["patient_id"]: r for r in records}
+        for declaration, declared in zip(CLONES, clones):
+            expected_id = clone_patient_id(declaration)
+            _check(
+                declared.get("patient_id") == expected_id
+                and declared.get("cloned_from") == declaration["cloned_from"]
+                and declared.get("address", {}).get("state") == declaration["state"],
+                f"clone {expected_id[:12]} is declared from {declaration['cloned_from'][:12]} "
+                f"into {declaration['state']}",
+                failures,
+            )
+            source = by_patient.get(declaration["cloned_from"])
+            source_path = BUNDLES_DIR / source["filename"] if source else None
+            clone_path = BUNDLES_DIR / declared.get("bundle", "")
+            if source_path is None or not source_path.exists() or not clone_path.exists():
+                _check(False, "the clone and its source are both on disk", failures)
+                continue
+            _, recomputed = clone_bundle(
+                source_path.read_text(encoding="utf-8"), declaration
+            )
+            _check(
+                clone_path.read_text(encoding="utf-8") == recomputed,
+                f"{clone_path.name}: recomputing the clone from its source "
+                "reproduces the committed bytes",
+                failures,
+            )
+            _check(
+                by_patient.get(expected_id, {}).get("filename") == clone_path.name,
+                "the clone is listed in `bundles` under its own id",
+                failures,
+            )
+            bundle = json.loads(clone_path.read_text(encoding="utf-8"))
+            patient = next(
+                (e["resource"] for e in bundle["entry"]
+                 if e.get("resource", {}).get("resourceType") == "Patient"),
+                {},
+            )
+            _check(
+                (patient.get("address") or [{}])[0].get("state") == declaration["state"],
+                f"the clone's Patient.address[0].state is {declaration['state']}",
+                failures,
+            )
+            _check(
+                declaration["cloned_from"] not in clone_path.read_text(encoding="utf-8"),
+                "the clone never names its source id",
+                failures,
+            )
+
     if bmis:
         _check(
             all(BMI_FLOOR <= b <= BMI_CEILING for b in bmis),
@@ -569,10 +775,15 @@ def verify() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--generate", action="store_true", help="generate, select, write manifest")
+    mode.add_argument("--generate", action="store_true", help="generate, select, write manifest, clone")
+    mode.add_argument("--clone", action="store_true", help="recompute the declared clone from its committed source")
     mode.add_argument("--verify", action="store_true", help="verify the committed bundles (default)")
     args = parser.parse_args()
-    return generate() if args.generate else verify()
+    if args.generate:
+        return generate()
+    if args.clone:
+        return clone()
+    return verify()
 
 
 if __name__ == "__main__":

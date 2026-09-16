@@ -7385,3 +7385,98 @@ reading of the policy nobody wrote down.
 D45) — `c4` is then claimed; or an evaluator for the multidisciplinary
 evaluation is built under Amendment 1 — that is REQ-44's territory and
 P6's v2 path; or Palmetto revises the LCD to quantify a run length.
+
+---
+
+## D102 — The second-jurisdiction patient is a declared clone of the three-month chart, and its note replays by content
+
+**Context.** T-87 loaded Palmetto's tree and made resolution read the
+state, and proved the graph on an existing Washington chart re-addressed
+with `--state AL`. No committed patient lives in Palmetto's territory, so no
+eval row runs under `ncd-100.1-jjm-v1` and every figure in `eval/report.md`
+is still one contractor's. D97 fixed the shape of the fix: one existing
+bundle cloned and re-addressed, its note byte-identical to its source so
+T-15's extraction recording replays for nothing, and one verifier round.
+Two facts about the code decide how that shape is built. `synthesize_notes.py`
+seeds each note's practice line and MRN from the patient id, so a cloned
+patient's note is *not* byte-identical unless the generator is told which id
+to seed from. And `RecordedExtractionRunner` is keyed by `document_id`, so a
+byte-identical note under a second id is `NOT_RECORDED` today.
+
+**Chosen.**
+
+1. **The source is E4's chart** (`07a5f345-…`), the three-month run with the
+   April gap. Under Noridian it is `NOT_MET` on `c3` with a `Shortfall` of
+   3 against 4, and `c2`, `c4` and `c5` are scoped out behind it. Under
+   Palmetto there is no `c3`: `c2` and `c5` evaluate on the same run and
+   come out `MET`, and the determination abstains only on what the tree
+   declares unclaimed and on `b`, which the chart lacks under either tree.
+   The same bytes are a shortfall in one jurisdiction and not a criterion in
+   the other — that is P1 stated as a determination rather than a paragraph.
+   Rejected: E1's chart. Every one of its Palmetto claims already replays
+   (T-87's record shows it), so the clone would cost no verifier call, and
+   it would show only the unclaimed abstention T-87's record already shows.
+   The measurement round is the price of the informative case.
+2. **The clone is a function, not a file.** `scripts/select_patients.py
+   --clone` computes it from the committed source bundle and a declaration:
+   the source id substituted everywhere it occurs in the bundle text, the
+   `Patient`'s first address rewritten to a declared Alabama address
+   (Birmingham, 35203, with its geolocation), and the result serialized the
+   way D73's E12 bundle is. The new id is `uuid5` over the source id and the
+   state — `ee9d79ee-ba2e-5915-b6d5-c7e700066d40` — so the declaration is
+   the derivation. `data/patients/manifest.json` gains a `synthetic_patients`
+   block beside `synthetic_observations`, and `--verify` recomputes the clone
+   from the source and compares bytes, then hashes it like any bundle;
+   `BUNDLE_COUNT` is 8. Rejected: a fresh Synthea patient in Alabama (a new
+   note, a new extraction round, a new verifier round, for one patient);
+   text-level edits that preserve Synthea's pretty-printing (a longer path to
+   the same guarantee — formatting is not a fact about the patient, and the
+   E12 bundle already established the compact form).
+3. **The clone's manifest carries its source's facts and names its source.**
+   `eval/manifests/<clone>.json` copies the fact set — programs, traps,
+   assertions — with `cases: ["J1"]` and one new field, `cloned_from`.
+   `synthesize_notes.py` seeds the clone's generator from `cloned_from`,
+   which is what makes the note byte-identical, and its `--verify` asserts
+   the clone's note hash equals the source's. A test pins the copied facts
+   equal to the source's, so the two cannot drift apart silently. Rejected: a
+   manifest that only points at its source (every reader of the manifests —
+   three test files, two measurement scripts, the synthesizer — would need
+   to resolve the pointer, for no fact gained); a second field naming the
+   seed patient separately from the fact source (a note is a rendering of
+   facts, so the two cannot legitimately differ).
+4. **The extraction replay is keyed by content first.** A recorded payload is
+   a claim about bytes, not about a name (D18), so `RecordedExtractionRunner`
+   now finds a payload by the note's sha256 before it looks by
+   `document_id`; the `document_id` route survives for payloads recorded
+   without a hash, and the `DOCUMENT_CHANGED` diagnosis is unchanged — a
+   note whose bytes moved under a recorded id still refuses. The replayed
+   result carries the *requesting* document id, so the clone's spans point
+   into the clone's note and validate through the port. `synthesized_cases`
+   in `scripts/run_extraction.py` skips a manifest that declares
+   `cloned_from`, so the measurement scripts still enumerate eleven notes and
+   the recording gains no row for bytes it already holds. Rejected: skipping
+   by duplicate hash in enumeration order (which note is "first" would
+   depend on how two uuids sort, and the recording's row identity with it).
+5. **The row is `J1`, outside §6 like NP1.** Labeled from L34576 and the
+   manifest, never from the observed run (spec §8): `policy_version_id`
+   `ncd-100.1-jjm-v1`; `c3` absent; `c2` and `c5` `MET`; `c4` and `d`
+   `INSUFFICIENT_EVIDENCE` / `NOT_EVALUATED_BY_THIS_SYSTEM`; outcome
+   `INSUFFICIENT_EVIDENCE`. The scorer gains the two expectations the row
+   needs and nothing else: `policy_version_id`, checked right after the
+   outcome and reported as `WRONG_POLICY_VERSION`, and `absent_criteria`,
+   reported as `WRONG_CRITERION` — the row's claim is that the run-length
+   criterion does not exist here, and a scorer that can only check present
+   criteria could not state it. Both branches join the self-check.
+   The abstention account moves from 3/15 to 4/16 because the row abstains
+   by construction; the report, README and CLAUDE.md quote the new figure.
+6. **The verifier recording is re-measured whole.** Three claims are new —
+   `a/MET` (the Observation JSON now carries the clone's id), `c2/MET` and
+   `c5/MET` on the three-month run — and `run_verifier_measurement.py`
+   measures every unique claim, so the recording is a new measurement of
+   all thirty, recorded beside D78's history rather than patched into it.
+
+**Reverses if:** T-81 makes per-patient recordings the norm (a clone's note
+then need not be byte-identical, and content-keyed replay stops carrying
+weight); or a second clone is wanted (the block becomes a list and `--verify`
+checks each — the "exactly one" assertion is the thing to relax, not the
+mechanism).

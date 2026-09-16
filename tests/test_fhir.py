@@ -44,7 +44,7 @@ def store() -> LocalPatientStore:
 
 
 def test_every_patient_yields_bmi_observations_with_dates(store, manifest_records):
-    assert len(manifest_records) == 7  # six generated + the E12 patient (D73)
+    assert len(manifest_records) == 8  # six generated + E12 (D73) + the T-88 clone (D102)
     for record in manifest_records:
         observations = store.get_observations(record["patient_id"])
         bmis = [o for o in observations if o.code == LOINC_BMI]
@@ -201,7 +201,7 @@ def test_get_document_and_get_notes_serve_the_same_bytes(store, manifest_records
         for note in store.get_notes(record["patient_id"]):
             assert store.get_document(note.document_id) == note
             seen += 1
-    assert seen == 6, f"expected the six-note corpus, walked {seen}"
+    assert seen == 7, f"expected the seven-note corpus, walked {seen}"
 
 
 def test_the_namespace_is_the_union_of_both_records(

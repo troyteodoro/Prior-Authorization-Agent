@@ -1,6 +1,6 @@
 {
   "eval_set_id": "us1-v1",
-  "note": "Labeled acceptance cases: spec §6's fourteen plus NP1 (REQ-1, outside §6 per D75). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6 and the T-06 manifests, never from an observed run. Row semantics: D75.",
+  "note": "Labeled acceptance cases: spec §6's fourteen plus NP1 (REQ-1, outside §6 per D75) and J1 (the second jurisdiction, outside §6 per D102). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, never from an observed run. Row semantics: D75.",
   "cases": [
     {
       "case_id": "E3",
@@ -323,6 +323,40 @@
         "max_model_calls": 0
       },
       "state": "WA"
+    },
+    {
+      "case_id": "J1",
+      "story": "US-1",
+      "spec_ref": "REQ-1, REQ-55; spec §10 P1; outside §6 (D102)",
+      "description": "E4's chart re-addressed into Palmetto GBA's territory: no run-length criterion",
+      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "The patient is a declared clone of E4's (data/patients/manifest.json, synthetic_patients; T-88, D102) with an Alabama address, and the state is read from the bundle, so the row passes none. The label is transcribed from L34576 and the manifest: the LCD states no consecutive-month run length, so c3 is absent rather than failed; the January-March run ended within 12 months of as_of and documents diet and activity in every month, so c2 and c5 are MET where Noridian scopes them out behind c3's shortfall (E4); c4 and d are declared unclaimed by the tree (D101) and abstain with NOT_EVALUATED_BY_THIS_SYSTEM. The overall INSUFFICIENT_EVIDENCE is theirs and b's, which the chart lacks under either tree; the labeled claim is the shape - the same bytes are a shortfall in one jurisdiction and not a criterion in the other.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "ncd-100.1-jjm-v1",
+        "max_model_calls": 5,
+        "criteria": {
+          "c2": {
+            "verdict": "MET"
+          },
+          "c5": {
+            "verdict": "MET"
+          },
+          "c4": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c3"
+        ]
+      }
     }
   ]
 }
