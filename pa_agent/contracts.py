@@ -820,6 +820,26 @@ class Discrepancy(BaseModel):
         return self
 
 
+class Shortfall(BaseModel):
+    """What a `NOT_MET` fell short by, as numbers rather than prose (T-86, D99).
+
+    `observed` is what the chart showed, `required` what the policy asked,
+    `unit` which quantity the two are — `consecutive_months`, `bmi`,
+    `months_without_bmi`. Three fields and no free text, because the field
+    exists to be *compared*: `check_citation_sufficiency` re-runs the
+    predicate over only the cited evidence and requires the same shortfall
+    back, and a shortfall that lived in `detail` would be a comparison on
+    wording. The verifier never sees it — the claim digest reads verdict and
+    quotes only — so adding it moved no recording.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    observed: float
+    required: float
+    unit: str = Field(min_length=1)
+
+
 class CriterionResult(BaseModel):
     """One criterion, adjudicated.
 
@@ -855,6 +875,12 @@ class CriterionResult(BaseModel):
     # REQ-39: advisory, never on the gap list, never changing this verdict.
     # Reconciliation (T-33) is the only thing that fills it.
     discrepancies: list[Discrepancy] = Field(default_factory=list)
+    # T-86 (D99): the arithmetic behind a `NOT_MET`, structured. Refused on
+    # any other verdict here; *required* on every `NOT_MET` a predicate
+    # produces by `workflow.step_sufficiency`, which is where production
+    # strictness lives — this contract is shared with fixtures that model a
+    # result's shape and not its arithmetic.
+    shortfall: Shortfall | None = None
     detail: str | None = None
 
     @model_validator(mode="after")
@@ -909,6 +935,20 @@ class CriterionResult(BaseModel):
                 f"{self.criterion_id}: {self.verdict.value} carries "
                 f"gap_reason {self.gap_reason.value} (REQ-31). Only an "
                 "abstention has a gap to explain."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _only_a_not_met_falls_short(self) -> CriterionResult:
+        """T-86 (D99): a shortfall is the arithmetic of a `NOT_MET`. On `MET`
+        it is a contradiction, on an abstention it is a number about evidence
+        that was not found, and on `ERROR` it is a verdict the system said it
+        could not reach."""
+        if self.shortfall is not None and self.verdict is not CriterionVerdict.NOT_MET:
+            raise ValueError(
+                f"{self.criterion_id}: {self.verdict.value} carries a shortfall "
+                f"({self.shortfall.observed} vs {self.shortfall.required} "
+                f"{self.shortfall.unit}). Only a NOT_MET fell short of anything."
             )
         return self
 

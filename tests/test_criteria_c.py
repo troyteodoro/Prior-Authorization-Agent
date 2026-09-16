@@ -24,6 +24,8 @@ from pa_agent.contracts import (
     WmEvent,
 )
 from pa_agent.criteria import (
+    CitationInsufficient,
+    check_citation_sufficiency,
     enumerate_runs,
     evaluate_c1,
     evaluate_c2,
@@ -31,6 +33,7 @@ from pa_agent.criteria import (
     evaluate_c4,
     evaluate_c5,
     qualifying_run,
+    restricted_run,
 )
 from pa_agent.stores.policy import LocalPolicyStore
 
@@ -513,3 +516,142 @@ def test_no_model_is_reachable_from_the_predicates():
         f"pa_agent/criteria.py imports {sorted(imported)}; the predicates are "
         "arithmetic over contracts and nothing else (REQ-13, Art. II)"
     )
+
+
+# --------------------------------------------------------------------------
+# T-86 (D99): a NOT_MET re-derives from its own citations
+# --------------------------------------------------------------------------
+
+
+def _check(tree, results: dict[str, object], criterion_id: str, as_of=AS_OF) -> None:
+    """`check_citation_sufficiency` wired as `step_sufficiency` wires it."""
+    check_citation_sufficiency(
+        tree.criterion(criterion_id),
+        results[criterion_id],
+        observations=[],
+        run=results["run"],
+        as_of=as_of,
+        c3_met=results["c3"].verdict is CriterionVerdict.MET,
+    )
+
+
+def _span(n: int) -> EvidenceSpan:
+    return EvidenceSpan(document_id="d", char_start=n * 10, char_end=n * 10 + 8, quote="anything")
+
+
+def _event_at(iso: str, n: int, *, bmi=None, diet=False, activity=False) -> WmEvent:
+    """An event with a span of its own, so a citation can be told apart."""
+    return WmEvent(
+        event_date=date.fromisoformat(iso),
+        span=_span(n),
+        bmi=bmi,
+        bmi_span=_span(n) if bmi is not None else None,
+        diet_documented=diet,
+        diet_span=_span(n) if diet else None,
+        activity_documented=activity,
+        activity_span=_span(n) if activity else None,
+    )
+
+
+def test_every_recorded_not_met_passes_the_sufficiency_check(tree, extracted):
+    """On T-15's real events every shortfall verdict re-derives from what it
+    cites — which is the property by construction, and the reason
+    `eval/baseline.json` does not move under T-86."""
+    seen = 0
+    for case in extracted.values():
+        results = _evaluate_all(tree, case["events"], case["assertions"])
+        for cid in ("c2", "c3", "c4", "c5"):
+            if results[cid].verdict is CriterionVerdict.NOT_MET:
+                assert results[cid].shortfall is not None, f"{cid}: NOT_MET without a shortfall"
+                _check(tree, results, cid)
+                seen += 1
+    assert seen >= 3, "the corpus carries shortfall verdicts (E4, E5, E6) or this test checks nothing"
+
+
+def test_a_verdict_that_is_not_a_shortfall_has_nothing_to_check(tree):
+    """Only a NOT_MET fell short of anything; the check passes the rest
+    untouched rather than re-running them."""
+    events = [_event_at(f"2026-0{m}-05", m, bmi=40.0, diet=True, activity=True) for m in range(4, 9)]
+    results = _evaluate_all(tree, events, [])
+    for cid in ("c1", "c2", "c3", "c4", "c5"):
+        assert results[cid].verdict is CriterionVerdict.MET
+        assert results[cid].shortfall is None
+        _check(tree, results, cid)
+
+
+def test_a_not_met_without_a_structured_shortfall_is_refused(tree):
+    events = [_event_at(f"2026-0{m}-05", m, bmi=40.0) for m in range(6, 9)]  # three months: c3 short
+    results = _evaluate_all(tree, events, [])
+    assert results["c3"].verdict is CriterionVerdict.NOT_MET
+    results["c3"] = results["c3"].model_copy(update={"shortfall": None})
+    with pytest.raises(CitationInsufficient, match="without a structured shortfall"):
+        _check(tree, results, "c3")
+
+
+def test_c4_citing_only_the_first_deficient_month_is_caught(tree):
+    """The mutation the shortfall exists to catch: the verdict alone would
+    re-derive NOT_MET from one month, and only the count says two were
+    claimed."""
+    events = [
+        _event_at("2026-05-05", 1, bmi=40.0),
+        _event_at("2026-06-05", 2),           # no BMI
+        _event_at("2026-07-05", 3, bmi=39.0),
+        _event_at("2026-08-05", 4),           # no BMI
+    ]
+    results = _evaluate_all(tree, events, [])
+    c4 = results["c4"]
+    assert c4.verdict is CriterionVerdict.NOT_MET and c4.shortfall.observed == 2
+    _check(tree, results, "c4")  # honest citation passes
+    results["c4"] = c4.model_copy(update={"spans": c4.spans[:1]})
+    with pytest.raises(CitationInsufficient, match="c4: the cited evidence alone re-derives NOT_MET"):
+        _check(tree, results, "c4")
+
+
+def test_c3_citing_half_its_run_is_caught(tree):
+    events = [_event_at(f"2026-0{m}-05", m, bmi=40.0) for m in range(6, 9)]  # 3 of 4 required
+    results = _evaluate_all(tree, events, [])
+    c3 = results["c3"]
+    assert c3.verdict is CriterionVerdict.NOT_MET and c3.shortfall.observed == 3
+    _check(tree, results, "c3")
+    results["c3"] = c3.model_copy(update={"spans": c3.spans[:2]})
+    with pytest.raises(CitationInsufficient, match="shortfall observed=2.0"):
+        _check(tree, results, "c3")
+
+
+def test_c2_citing_the_first_event_instead_of_the_last_is_caught(tree):
+    """A stale run: c2 cites the run's last event. Citing an earlier one
+    re-derives a *larger* staleness, so the shortfall moves and the check
+    refuses it."""
+    events = [_event_at(f"2024-0{m}-05", m, bmi=40.0) for m in range(3, 8)]  # five months, 2024
+    results = _evaluate_all(tree, events, [])
+    c2 = results["c2"]
+    assert results["c3"].verdict is CriterionVerdict.MET
+    assert c2.verdict is CriterionVerdict.NOT_MET
+    _check(tree, results, "c2")
+    results["c2"] = c2.model_copy(update={"spans": [events[0].span]})
+    with pytest.raises(CitationInsufficient, match="c2: the cited evidence alone"):
+        _check(tree, results, "c2")
+
+
+def test_c5_citing_only_one_deficient_month_is_caught(tree):
+    events = [
+        _event_at("2026-05-05", 1, bmi=40.0, diet=True, activity=True),
+        _event_at("2026-06-05", 2, bmi=40.0, diet=True),               # no activity
+        _event_at("2026-07-05", 3, bmi=40.0, diet=True, activity=True),
+        _event_at("2026-08-05", 4, bmi=40.0, activity=True),           # no diet
+    ]
+    results = _evaluate_all(tree, events, [])
+    c5 = results["c5"]
+    assert c5.verdict is CriterionVerdict.NOT_MET and c5.shortfall.observed == 2
+    _check(tree, results, "c5")
+    results["c5"] = c5.model_copy(update={"spans": c5.spans[1:]})
+    with pytest.raises(CitationInsufficient):
+        _check(tree, results, "c5")
+
+
+def test_restricted_run_re_derives_its_months_from_the_kept_events(tree):
+    events = [_event_at(f"2026-0{m}-05", m, bmi=40.0) for m in range(5, 9)]
+    run = _select(tree, events)
+    narrowed = restricted_run(run, [events[1].span, events[3].span])
+    assert narrowed.months == ((2026, 6), (2026, 8))
+    assert [e.span for e in narrowed.events] == [events[1].span, events[3].span]

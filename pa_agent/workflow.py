@@ -53,6 +53,7 @@ from pa_agent.contracts import (
 )
 from pa_agent.criteria import (
     QualifyingRun,
+    check_citation_sufficiency,
     evaluate_c1,
     evaluate_c2,
     evaluate_c3,
@@ -434,6 +435,40 @@ def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
     state.results.sort(key=lambda r: _criterion_order(state.tree, r.criterion_id))
 
 
+def step_sufficiency(state: WorkflowState, ctx: _Context) -> None:
+    """T-86 (D99): every `NOT_MET` must re-derive from what it cites.
+
+    Article V's verifier is barred from the arithmetic behind a shortfall
+    (D78), so until this step nobody checked it. Python does, here, before
+    `verify` — by re-running the same predicate over only the cited evidence
+    and requiring the same verdict, span set and shortfall back. A failure is
+    a code defect, not a fact about the chart: it maps to that criterion's
+    `ERROR/PREDICATE_EXCEPTION` through `_predicate`, aborts (REQ-24) and is
+    never sent to the verifier at all. Never an abstention (Art. IV).
+
+    Reads `result.verdict` only — a deterministic product — so Article I's
+    branch count is untouched; the event filtering lives in `criteria.py`.
+    """
+    assert state.run is not None, "step_qualifying_run must precede this step"
+    c3_met = any(
+        r.criterion_id == "c3" and r.verdict is CriterionVerdict.MET
+        for r in state.results
+    )
+    for result in state.results:
+        if result.verdict is not CriterionVerdict.NOT_MET:
+            continue
+        _predicate(
+            result.criterion_id,
+            check_citation_sufficiency,
+            state.tree.criterion(result.criterion_id),
+            result,
+            observations=state.observations,
+            run=state.run,
+            as_of=state.as_of,
+            c3_met=c3_met,
+        )
+
+
 def step_verify(state: WorkflowState, ctx: _Context) -> None:
     """Article V (REQ-17, REQ-18; T-17, D78): every cited verdict is checked.
 
@@ -536,6 +571,7 @@ STEPS: tuple[tuple[str, object], ...] = (
     ("criterion_b", step_criterion_b),
     ("qualifying_run", step_qualifying_run),
     ("criteria_c", step_criteria_c),
+    ("sufficiency", step_sufficiency),
     ("verify", step_verify),
 )
 

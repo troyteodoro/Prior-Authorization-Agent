@@ -19,12 +19,12 @@ answers the second question, once.
 **What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
 and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
 spec §10's list of known limits, P1–P8, which D97 sequenced into one task
-each — `T-85` closed first and `T-86` is next; `T-81` is row 6 of that
-sequence.
+each — `T-85` and `T-86` are closed and `T-87` is next; `T-81` is row 6 of
+that sequence.
 
-Sixty-five tasks are on this board — IDs run to T-85 but numbering is not
+Sixty-six tasks are on this board — IDs run to T-86 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **64 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **65 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -59,8 +59,8 @@ row opens; the exit named here is the one D97 fixed.
 | # | Problem | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | P2, first half | `T-85` | **closed** (D98) | `eval/report.md` carries the anchoring account per extraction recording; `build_report.py --verify` green |
-| 2 | P5 | `T-86` | **next** | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
-| 3 | P1, first half | `T-87` | pending | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
+| 2 | P5 | `T-86` | **closed** (D99) | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
+| 3 | P1, first half | `T-87` | **next** | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
 | 4 | P1, second half | `T-88` | pending | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
 | 5 | P2, second half | `T-89` | pending | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | pending | two notes per patient, labels re-read, every recording re-measured |
@@ -1571,6 +1571,49 @@ unchanged (T-30, D77).
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[x] T-86` A shortfall verdict must re-derive from its own citations
+**REQ:** 5, 23, 24 · **Depends:** T-16, T-29 · **Discovered in:** spec §10 P5
+*(D97)* · **Decided by:** D99 · **Timebox:** one day
+**Status:** **closed** (D99) — row 2 of `Path to v2`; `Shortfall`,
+`check_citation_sufficiency`, the `sufficiency` step, nineteen tests, and the
+exit ran green on the unchanged baseline
+**Exit:**
+```
+./venv/bin/python -m pytest tests/test_criteria_c.py tests/test_criteria_ab.py tests/test_workflow.py tests/test_fault_injection.py tests/test_schemas.py -q --color=no -k "sufficiency or shortfall" \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+`eval/run_eval.py` must pass on the **unchanged** baseline: the property
+holds by construction on every committed case, so a moved row is the check
+being wrong, not the case.
+
+**What it delivers.** `CriterionResult.shortfall` — `(observed, required,
+unit)`, refused on anything but `NOT_MET`; every `NOT_MET` the predicates
+produce carries one. `criteria.check_citation_sufficiency` re-runs the same
+predicate over only the cited evidence and requires the same verdict, span
+set and shortfall. A ninth `STEPS` entry, `sufficiency`, runs it between
+`criteria_c` and `verify` through `_predicate`, so a failure is that
+criterion's `ERROR/PREDICATE_EXCEPTION`, an abort, and exit 3 — never an
+abstention (Article IV). No claim digest moves; T-17's recording replays
+unchanged.
+
+**Why Python and not the verifier.** Article V bars the verifier from the
+arithmetic (D78), so the count behind a shortfall was checked by nobody. The
+check does not re-implement the predicates — it re-runs them on a shorter
+input, which is the only implementation of the arithmetic there is.
+
+**Closed by D99.** Criterion (a) carries its shortfall too — the BMI against
+the threshold, or the months since the observation against the lookback —
+so every `NOT_MET` the graph can produce is covered, not only c2–c5. On the
+committed corpus the report counts four `NOT_MET` verdicts, four re-derived.
+One audit moved: `tests/test_workflow.py`'s enumerated loop list gained a
+second `state.results`, the sufficiency pass, which iterates over
+deterministic verdicts and spends nothing. Mutations caught: the step removed
+from `STEPS`, the check comparing verdicts only, c4 emitting no shortfall,
+`restricted_run` copying the run's months instead of re-deriving them, the
+step skipping every result, the contract's validator removed, and a `NOT_MET`
+without a shortfall passing the check.
 
 ### `[x] T-85` The anchoring loss becomes a reported figure
 **REQ:** 7, 35 · **Depends:** T-22, T-71 · **Discovered in:** spec §10 P2

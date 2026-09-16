@@ -617,3 +617,65 @@ def test_the_two_fault_mappings_share_one_builder(script_source=None):
         f"{builders} build ERROR result lists; one builder, and which criteria "
         "it covers is the caller's ruling (D76, D90)"
     )
+
+
+# --------------------------------------------------------------------------
+# T-86 (D99): an under-cited NOT_MET is a fault, never an abstention
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def e6_patient() -> str:
+    """E6: BMI documented in two of four months, so c4 is NOT_MET with two
+    deficient months — the shape an under-citation can be injected into."""
+    manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
+    return next(
+        record["patient_id"]
+        for record in manifest["notes"]
+        if "E6" in record["cases"]
+    )
+
+
+def test_an_under_cited_not_met_errors_its_criterion_and_reaches_exit_three(
+    policy_store, patient_store, runner, ref, e6_patient, monkeypatch, capsys
+) -> None:
+    """The predicate answers correctly and cites only the first deficient
+    month. The verdict alone would re-derive from that one month; the
+    shortfall says two were claimed. Article IV: the criterion is `ERROR`,
+    not an abstention — the specialist has nothing to collect, the code
+    cited less than it counted."""
+    from pa_agent import criteria
+
+    real = criteria.evaluate_c4
+
+    def under_cite(*args, **kwargs):
+        result = real(*args, **kwargs)
+        if result.verdict is CriterionVerdict.NOT_MET:
+            return result.model_copy(update={"spans": result.spans[:1]})
+        return result
+
+    monkeypatch.setattr("pa_agent.workflow.evaluate_c4", under_cite)
+    with pytest.raises(DeterminationAborted) as caught:
+        _run(policy_store, patient_store, runner, e6_patient, ref)
+
+    [errored] = caught.value.results
+    assert errored.criterion_id == "c4"
+    assert errored.verdict is CriterionVerdict.ERROR
+    assert errored.error_code is ErrorCode.PREDICATE_EXCEPTION
+    assert "CitationInsufficient" in (errored.error_detail or "")
+    assert errored.gap_reason is None, "a fault names no next action (Art. IV)"
+
+    rc = cli.main(["--patient", e6_patient, "--procedure", CONTRACTOR_CODE])
+    out, err = capsys.readouterr()
+    assert rc == 3 and out == ""
+    assert "criterion c4" in err and "PREDICATE_EXCEPTION" in err
+
+
+def test_the_honest_citation_on_the_same_patient_passes(
+    policy_store, patient_store, runner, ref, e6_patient
+) -> None:
+    run = _run(policy_store, patient_store, runner, e6_patient, ref)
+    c4 = next(r for r in run.determination.criterion_results if r.criterion_id == "c4")
+    assert c4.verdict is CriterionVerdict.NOT_MET
+    assert c4.shortfall is not None and c4.shortfall.observed == 2
+    assert "sufficiency" in run.steps

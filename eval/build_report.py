@@ -319,9 +319,18 @@ def _span_section(cache: dict[Any, Any]) -> list[str]:
     index = DocumentIndex()
     checked = valid = 0
     met_checked = met_valid = 0
+    not_met = not_met_with_shortfall = 0
     for determination in _determinations(cache):
         for result in determination.criterion_results:
             is_met = result.verdict is CriterionVerdict.MET
+            if result.verdict is CriterionVerdict.NOT_MET:
+                # T-86 (D99): each of these passed `step_sufficiency` on the
+                # way here, so the count is the count of verdicts whose own
+                # citations re-derived them. Counted, not asserted: the graph
+                # already aborts on a failure, and a report row that could
+                # only ever read n/n is still the row a reviewer looks for.
+                not_met += 1
+                not_met_with_shortfall += result.shortfall is not None
             for span in result.spans:
                 checked += 1
                 met_checked += is_met
@@ -353,6 +362,8 @@ def _span_section(cache: dict[Any, Any]) -> list[str]:
         f"| Spans checked | {checked} |",
         f"| Spans that slice back | {valid} |",
         f"| Span validity rate | **{_fmt(rate)}** |",
+        f"| `NOT_MET` verdicts | {not_met} |",
+        f"| …of those, re-derived from their own citations (T-86, D99) | {not_met_with_shortfall} |",
         f"| Spans on `MET` verdicts | {met_checked} |",
         f"| …of those, valid | {met_valid} |",
         f"| **A3: `MET` verdicts with an invalid span** | "

@@ -7147,3 +7147,79 @@ be measured before the figure it is meant to move is on the record.
 **Reverses if:** a later measurement shows a drop on an *event* quote
 rather than an assertion. An event drop changes c3's run, and T-89 then
 moves ahead of everything downstream of extraction.
+
+---
+
+## D99 — A shortfall verdict must re-derive from its own citations, checked by Python before the verifier sees it
+
+**Context.** P5: Article V's verifier is blind by design and is barred from
+date and count arithmetic (D78's v3 asymmetry), so a shortfall-type
+`NOT_MET` — "the run is three months, four required", "two of four months
+document no BMI" — has its arithmetic checked by nobody. The verifier sees
+the instances and not the count; the predicate that computed the count is
+the only thing that ever looked at it. That half of verification is
+Python's, and until now Python did not do it either.
+
+**The property.** A `NOT_MET` cites the evidence that fell short (REQ-5,
+D48). If the citations are the evidence the verdict rests on, then running
+the same predicate over *only the cited evidence* must reproduce the same
+verdict and the same shortfall. Where it does not, the verdict rested on
+something it did not cite — which under Article III is indistinguishable
+from a fabricated citation, and is a code defect, not a fact about the
+chart. What each predicate cites today: (a) the one observation it
+compared; c2 the run's last event; c3 every event of the run; c4 and c5 the
+events of every deficient month. All five are sufficient for their
+arithmetic. c3's negative half — "no longer run exists" — depends on events
+outside the run by construction and is not what the check claims to cover.
+
+**Chosen.**
+
+1. `CriterionResult` gains `shortfall: Shortfall | None` — `(observed,
+   required, unit)`, three numbers-and-a-name and no free text. It is
+   **refused on any verdict but `NOT_MET`** by a validator, and **required on
+   every `NOT_MET` the predicates produce** by the step below rather than by
+   the contract. The contract is shared with test fixtures that model the
+   shape of a result and not its arithmetic, and a hard `iff` there would
+   rewrite every one of them to say nothing new; production strictness
+   lives in the graph, where every real `NOT_MET` passes.
+2. `criteria.py` gains `check_citation_sufficiency`: restrict the inputs to
+   what the result cites — the qualifying run to its cited events, the
+   observations to the cited observation — re-run the same predicate, and
+   require `(verdict, cited span set, shortfall)` identical. It raises
+   `CitationInsufficient`, a `ValueError`, naming both triples. Comparing
+   the verdict alone is not enough: a predicate that cites only the first
+   deficient month still re-derives `NOT_MET`; the shortfall is what catches
+   under-citation, which is why it had to become structured.
+3. `workflow.py` gains a ninth `STEPS` entry, `sufficiency`, between
+   `criteria_c` and `verify`. It runs through `_predicate`, so a failure is
+   that criterion's `ERROR/PREDICATE_EXCEPTION`, the determination aborts
+   (REQ-23, REQ-24, D76) and the CLI exits 3. Before `verify`, so an
+   insufficient citation is never sent to Article V's verifier at all. The
+   claim digest reads verdict and quotes only, so no digest moves and T-17's
+   recording replays unchanged.
+4. Article IV: the failure is `ERROR`, never an abstention and never a
+   silent downgrade. The step constructs no `gap_reason`; the contract would
+   refuse one on a `NOT_MET` anyway.
+
+**Rejected — a validator on `CriterionResult`.** It would need the events
+and the tree, which a contract object must not reach for.
+
+**Rejected — a scorer-only check in `eval/run_eval.py`.** It would grade a
+property production never enforces, and every committed case would pass it
+while a real request could not be checked.
+
+**Rejected — parsing the shortfall out of `detail`.** `detail` is prose for
+a reviewer; a check that reads it is a check on the wording.
+
+**Rejected — abstaining on failure.** Turning a code defect into
+`INSUFFICIENT_EVIDENCE` sends the specialist to collect evidence that
+exists (D9's collapse).
+
+**Cost.** One more step per determination, string comparison and a second
+run of a pure predicate over a shorter list; no model call. On every
+committed case the property holds by construction, so `eval/baseline.json`
+does not move — a moved row is the check being wrong.
+
+**Reverses if:** a criterion is added whose `NOT_MET` legitimately rests
+on evidence it cannot cite. The property is then stated per criterion in
+the tree rather than assumed for all, and this entry names the exception.

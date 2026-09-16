@@ -178,6 +178,10 @@ def test_the_facts_are_loaded_before_the_criteria_that_read_them() -> None:
     assert order.index("extract") < order.index("reconcile")
     assert order.index("criterion_a") < order.index("reconcile")
     assert order.index("gather") < order.index("criterion_a")
+    # T-86 (D99): the sufficiency check reads final NOT_MET verdicts and must
+    # run before the verifier sees them — an insufficient citation is never
+    # sent to Article V at all.
+    assert order.index("criteria_c") < order.index("sufficiency") < order.index("verify")
     assert order.index("gather") < order.index("criterion_b")
     assert order.index("qualifying_run") < order.index("criteria_c")
 
@@ -730,6 +734,8 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
         "result.spans",                   # ...and T-17's quote slicing (D78)
         "state.notes",                    # the fan-out: PatientStore's answer
         "state.results",                  # ...it spends no model call (D76)
+        "state.results",                  # T-86: the sufficiency pass over the
+                                          # deterministic verdicts (D99)
     ], f"workflow.py loops over {iterables}"
 
 

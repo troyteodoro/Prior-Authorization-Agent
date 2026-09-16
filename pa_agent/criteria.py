@@ -38,6 +38,7 @@ from pa_agent.contracts import (
     GapReason,
     Observation,
     ProgramAssertion,
+    Shortfall,
     WmEvent,
 )
 
@@ -104,6 +105,11 @@ def evaluate_criterion_a(
             criterion_id=criterion.id,
             verdict=CriterionVerdict.NOT_MET,
             spans=spans,
+            shortfall=Shortfall(
+                observed=_months_between(latest.effective_date, as_of),
+                required=lookback_months,
+                unit="months_since_bmi_observation",
+            ),
             detail=(
                 f"most recent BMI ({latest.value}) observed "
                 f"{latest.effective_date.isoformat()}, outside the "
@@ -116,6 +122,9 @@ def evaluate_criterion_a(
         criterion_id=criterion.id,
         verdict=CriterionVerdict.MET if met else CriterionVerdict.NOT_MET,
         spans=spans,
+        shortfall=(
+            None if met else Shortfall(observed=latest.value, required=threshold, unit="bmi")
+        ),
         detail=(
             f"most recent BMI {latest.value} on "
             f"{latest.effective_date.isoformat()} vs threshold {threshold}"
@@ -409,6 +418,11 @@ def evaluate_c3(
         criterion_id=criterion.id,
         verdict=verdict,
         spans=[e.span for e in run.events],
+        shortfall=(
+            None
+            if verdict is CriterionVerdict.MET
+            else Shortfall(observed=run.length, required=required, unit="consecutive_months")
+        ),
         detail=(
             f"longest run of consecutive months is {run.length}; "
             f"{required} required"
@@ -443,6 +457,11 @@ def evaluate_c2(
         criterion_id=criterion.id,
         verdict=verdict,
         spans=[last.span],
+        shortfall=(
+            None
+            if verdict is CriterionVerdict.MET
+            else Shortfall(observed=months_since, required=window, unit="months_since_run_end")
+        ),
         detail=(
             f"run ended {last.event_date.isoformat()}, {months_since} month(s) "
             f"before {as_of.isoformat()}; window is {window}"
@@ -494,6 +513,7 @@ def evaluate_c4(
         # The encounters that happened and documented no BMI — evidence that
         # falls short, which is what a NOT_MET cites (REQ-5, D48).
         spans=[e.span for month in deficient for e in run.events_in(month)],
+        shortfall=Shortfall(observed=len(deficient), required=0, unit="months_without_bmi"),
         detail=(
             f"{len(deficient)} of {run.length} month(s) document no BMI: "
             + ", ".join(f"{y}-{m:02d}" for y, m in deficient)
@@ -541,8 +561,109 @@ def evaluate_c5(
         criterion_id=criterion.id,
         verdict=CriterionVerdict.NOT_MET,
         spans=[e.span for month in deficient for e in run.events_in(month)],
+        shortfall=Shortfall(
+            observed=len(deficient), required=0, unit="months_without_diet_and_activity"
+        ),
         detail=(
             f"{len(deficient)} of {run.length} month(s) lack diet and activity "
             "documentation: " + ", ".join(f"{y}-{m:02d}" for y, m in deficient)
         ),
     )
+
+
+# --------------------------------------------------------------------------
+# T-86 (D99): a NOT_MET must re-derive from what it cites
+# --------------------------------------------------------------------------
+
+
+class CitationInsufficient(ValueError):
+    """A `NOT_MET` whose own citations do not reproduce it.
+
+    Under Article III that is indistinguishable from a fabricated citation,
+    and it is a code defect rather than a fact about the chart — so the
+    graph maps it to `ERROR/PREDICATE_EXCEPTION` and aborts (D99), never to
+    an abstention.
+    """
+
+
+def restricted_run(run: QualifyingRun, cited: list[EvidenceSpan]) -> QualifyingRun:
+    """The qualifying run reduced to the events a result cites.
+
+    Months are re-derived from the kept events rather than copied, so a run
+    that cited only some of its months is measured as the shorter run it
+    actually evidenced — which is what lets the shortfall comparison catch
+    under-citation.
+    """
+    events = tuple(e for e in run.events if e.span in cited)
+    months = tuple(sorted({_month(e.event_date) for e in events}))
+    return QualifyingRun(months=months, events=events)
+
+
+def _span_keys(spans: list[EvidenceSpan]) -> list[tuple[str, int, int]]:
+    return sorted((s.document_id, s.char_start, s.char_end) for s in spans)
+
+
+def check_citation_sufficiency(
+    criterion: Criterion,
+    result: CriterionResult,
+    *,
+    observations: list[Observation],
+    run: QualifyingRun,
+    as_of: date,
+    c3_met: bool,
+) -> None:
+    """Re-run the predicate over only the cited evidence; require the same answer.
+
+    The property (D99): a `NOT_MET` cites the evidence that fell short, so the
+    same predicate run over *only* that evidence must yield the same verdict,
+    the same span set and the same shortfall. Nothing is re-implemented here —
+    the predicate is re-run on a shorter input, which is the only
+    implementation of the arithmetic there is (Art. II).
+
+    Comparing the verdict alone would not do: a predicate that cites only the
+    first deficient month still re-derives `NOT_MET`. The shortfall is what
+    catches under-citation, and it is why `Shortfall` is structured.
+
+    Returns `None` on success. Raises `CitationInsufficient` when the result is
+    a `NOT_MET` without a shortfall, a `NOT_MET` this function cannot re-derive,
+    or a `NOT_MET` whose citations yield a different answer. Anything that is
+    not a `NOT_MET` has no shortfall to check and passes untouched.
+    """
+    if result.verdict is not CriterionVerdict.NOT_MET:
+        return
+    if result.shortfall is None:
+        raise CitationInsufficient(
+            f"{criterion.id}: NOT_MET without a structured shortfall; the "
+            "arithmetic behind it cannot be checked (D99)"
+        )
+
+    cited = list(result.spans)
+    if criterion.id == "a":
+        again = evaluate_criterion_a(
+            criterion, [o for o in observations if o.span in cited], as_of
+        )
+    elif criterion.id == "c2":
+        again = evaluate_c2(criterion, restricted_run(run, cited), as_of, c3_met)
+    elif criterion.id == "c3":
+        narrowed = restricted_run(run, cited)
+        again = evaluate_c3(criterion, list(narrowed.events), None, narrowed)
+    elif criterion.id == "c4":
+        again = evaluate_c4(criterion, restricted_run(run, cited), c3_met)
+    elif criterion.id == "c5":
+        again = evaluate_c5(criterion, restricted_run(run, cited), c3_met)
+    else:
+        raise CitationInsufficient(
+            f"{criterion.id}: NOT_MET on a criterion with no re-derivation "
+            "defined; D99 names the exception or the check does not pass it"
+        )
+
+    before = (result.verdict, _span_keys(result.spans), result.shortfall)
+    after = (again.verdict, _span_keys(again.spans), again.shortfall)
+    if before != after:
+        raise CitationInsufficient(
+            f"{criterion.id}: the cited evidence alone re-derives "
+            f"{after[0].value} with shortfall {after[2]} over {len(after[1])} "
+            f"span(s); the verdict claimed {before[0].value} with shortfall "
+            f"{before[2]} over {len(before[1])} span(s). A NOT_MET must rest on "
+            "what it cites (Art. III, D99)."
+        )

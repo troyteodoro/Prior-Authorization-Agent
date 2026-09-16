@@ -59,6 +59,8 @@ Every span carried by a criterion verdict, re-sliced from its source document an
 | Spans checked | 82 |
 | Spans that slice back | 82 |
 | Span validity rate | **1.000** |
+| `NOT_MET` verdicts | 4 |
+| …of those, re-derived from their own citations (T-86, D99) | 4 |
 | Spans on `MET` verdicts | 75 |
 | …of those, valid | 75 |
 | **A3: `MET` verdicts with an invalid span** | **0** |

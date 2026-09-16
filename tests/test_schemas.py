@@ -30,6 +30,7 @@ from pa_agent.contracts import (
     Determination,
     DeterminationOutcome,
     Document,
+    ErrorCode,
     EvidenceSpan,
     GapReason,
     Observation,
@@ -37,6 +38,7 @@ from pa_agent.contracts import (
     ProcedureEntry,
     ProcedureSets,
     ProgramAssertion,
+    Shortfall,
     WmEvent,
 )
 from pa_agent.stores.patient import LocalPatientStore, PatientStore
@@ -584,3 +586,42 @@ def test_no_model_is_imported_by_the_contracts_or_the_stores() -> None:
         cwd=Path(__file__).resolve().parent.parent,
     )
     assert result.returncode == 0, result.stderr
+
+
+# --------------------------------------------------------------------------
+# T-86 (D99): a shortfall belongs to a NOT_MET and nothing else
+# --------------------------------------------------------------------------
+
+
+def test_a_not_met_may_carry_a_structured_shortfall() -> None:
+    span = EvidenceSpan(document_id="d", char_start=0, char_end=4)
+    result = CriterionResult(
+        criterion_id="c3",
+        verdict=CriterionVerdict.NOT_MET,
+        spans=[span],
+        shortfall=Shortfall(observed=3, required=4, unit="consecutive_months"),
+    )
+    assert result.shortfall.observed == 3.0 and result.shortfall.unit == "consecutive_months"
+
+
+@pytest.mark.parametrize(
+    "verdict, extra",
+    [
+        (CriterionVerdict.MET, {"spans": [EvidenceSpan(document_id="d", char_start=0, char_end=4)]}),
+        (CriterionVerdict.INSUFFICIENT_EVIDENCE, {"gap_reason": GapReason.NO_EVIDENCE_RETRIEVED}),
+        (CriterionVerdict.ERROR, {"error_code": ErrorCode.PREDICATE_EXCEPTION, "error_detail": "x"}),
+    ],
+)
+def test_a_shortfall_on_any_other_verdict_is_refused(verdict, extra) -> None:
+    with pytest.raises(ValidationError, match="Only a NOT_MET fell short"):
+        CriterionResult(
+            criterion_id="c3",
+            verdict=verdict,
+            shortfall=Shortfall(observed=3, required=4, unit="consecutive_months"),
+            **extra,
+        )
+
+
+def test_a_shortfall_names_its_unit() -> None:
+    with pytest.raises(ValidationError):
+        Shortfall(observed=3, required=4, unit="")

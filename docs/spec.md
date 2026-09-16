@@ -680,7 +680,13 @@ and count arithmetic, because two measured rounds of false rejections showed
 it rejecting every shortfall-type `NOT_MET`: the shortfall is arithmetic over
 a chart the blindness deliberately hides. A verifier that cannot see the chart
 cannot check a claim *about* the chart's arithmetic, and that half of
-verification is done by Python instead.
+verification is done by Python instead. Since T-86 it actually is: every
+`NOT_MET` carries a structured shortfall, and the graph re-runs the same
+predicate over only the cited evidence before the verifier sees the claim,
+requiring the same verdict, span set and shortfall back — a failure is that
+criterion's `ERROR`, never an abstention *(D99)*. What remains true is the
+limit itself: the model checks citation fidelity, and the arithmetic is
+checked by the code that computed it, on a shorter input.
 
 ### P6 — Model adjudication is unclaimed, so the model's judgment is never on the hook
 

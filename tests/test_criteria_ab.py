@@ -17,7 +17,14 @@ from pathlib import Path
 import pytest
 
 from pa_agent.contracts import Condition, CriterionVerdict, EvidenceSpan, Observation
-from pa_agent.criteria import BMI_LOINC, evaluate_criterion_a, evaluate_criterion_b
+from pa_agent.criteria import (
+    BMI_LOINC,
+    CitationInsufficient,
+    QualifyingRun,
+    check_citation_sufficiency,
+    evaluate_criterion_a,
+    evaluate_criterion_b,
+)
 from pa_agent.index import DocumentIndex
 from pa_agent.spans import validate
 from pa_agent.stores.patient import LocalPatientStore
@@ -266,3 +273,60 @@ def test_the_criteria_module_makes_no_model_call():
         f"pa_agent/criteria.py imports {sorted(imported)}; criteria are "
         "arithmetic over contracts and nothing else (Art. II, D40)"
     )
+
+
+# --------------------------------------------------------------------------
+# T-86 (D99): criterion (a)'s NOT_MET re-derives from the observation it cites
+# --------------------------------------------------------------------------
+
+
+def _obs_at(value: float, when: date, n: int) -> Observation:
+    span = EvidenceSpan(document_id="bundle", char_start=n * 100, char_end=n * 100 + 10)
+    return Observation(code=BMI_LOINC, value=value, effective_date=when, span=span)
+
+
+def _check_a(criterion_a, result, observations, as_of=AS_OF) -> None:
+    check_citation_sufficiency(
+        criterion_a,
+        result,
+        observations=observations,
+        run=QualifyingRun(months=(), events=()),
+        as_of=as_of,
+        c3_met=False,
+    )
+
+
+def test_a_below_threshold_not_met_carries_the_bmi_shortfall_and_re_derives(criterion_a):
+    observations = [_obs_at(41.0, date(2025, 1, 1), 1), _obs_at(33.5, date(2026, 8, 1), 2)]
+    result = evaluate_criterion_a(criterion_a, observations, AS_OF)
+    assert result.verdict is CriterionVerdict.NOT_MET
+    assert (result.shortfall.observed, result.shortfall.required, result.shortfall.unit) == (
+        33.5, 35.0, "bmi"
+    )
+    _check_a(criterion_a, result, observations)
+
+
+def test_a_stale_not_met_carries_the_months_shortfall_and_re_derives(criterion_a):
+    observations = [_obs_at(41.0, date(2024, 1, 1), 1)]
+    result = evaluate_criterion_a(criterion_a, observations, AS_OF)
+    assert result.verdict is CriterionVerdict.NOT_MET
+    assert result.shortfall.unit == "months_since_bmi_observation"
+    assert result.shortfall.required == criterion_a.require("lookback_months")
+    _check_a(criterion_a, result, observations)
+
+
+def test_a_not_met_citing_a_different_observation_is_caught(criterion_a):
+    """The verdict rests on the most recent BMI (33.5). Citing the older
+    41.0 instead re-derives MET over the cited evidence, and the check
+    refuses the citation."""
+    observations = [_obs_at(41.0, date(2026, 6, 1), 1), _obs_at(33.5, date(2026, 8, 1), 2)]
+    result = evaluate_criterion_a(criterion_a, observations, AS_OF)
+    assert result.verdict is CriterionVerdict.NOT_MET
+    swapped = result.model_copy(update={"spans": [observations[0].span]})
+    with pytest.raises(CitationInsufficient, match="a: the cited evidence alone re-derives MET"):
+        _check_a(criterion_a, swapped, observations)
+
+
+def test_a_met_carries_no_shortfall(criterion_a):
+    result = evaluate_criterion_a(criterion_a, [_obs_at(36.0, date(2026, 8, 1), 1)], AS_OF)
+    assert result.verdict is CriterionVerdict.MET and result.shortfall is None

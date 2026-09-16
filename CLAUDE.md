@@ -150,7 +150,7 @@ answers sc2, the national T2DM-with-BMI-under-35 exclusion. Both spend zero mode
 calls. Anything surviving both enters `workflow.py`.
 
 **`workflow.py` is plain Python and deliberately not an ADK `Workflow`.** `STEPS`
-is a module-level tuple of seven named callables — gather, extract, criterion_a,
+is a module-level tuple of named callables — gather, extract, criterion_a,
 reconcile, criterion_b, qualifying_run, criteria_c — and a driver walks it and
 records what it visited. An ADK `Workflow` would put `google.adk` on the import
 path of every deterministic test, and the three `sys.modules` assertions that
@@ -174,7 +174,7 @@ differential real.**
   citations*. `LiveVerifierRunner`, `RecordedVerifierRunner` (replays T-17's
   recording at `eval/verifier/results.json`, keyed by claim digest — a miss
   raises, never defaults), and a raising `NullVerifierRunner`. `("verify",
-  step_verify)` is the eighth `STEPS` entry: cited verdicts only, first
+  step_verify)` is the last `STEPS` entry (T-86's `sufficiency` precedes it, D99): cited verdicts only, first
   rejection → `INSUFFICIENT_EVIDENCE`/`VERIFIER_REJECTED`, no retry, and the
   determination still emits (REQ-18).
 
@@ -361,8 +361,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**64 of 65 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~25s, 659 tests across 31 files). IDs run to T-85, but
+**65 of 66 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`, ~25s, 678 tests across 31 files). IDs run to T-86, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -397,8 +397,11 @@ own clock.
 Open: **T-81 alone**. v1 is complete — **A1–A9 all
 hold** — and what remains is spec §10's list of known limits, P1–P8, which
 **D97 sequenced into one task each**: T-85 through T-90 plus T-81, in
-`docs/tasks.md`'s `Path to v2` table. T-85 closed first (D98): `eval/report.md`
-now carries the anchoring account for every extraction recording. Free tasks first, the runner change
+`docs/tasks.md`'s `Path to v2` table. T-85 (D98) put the anchoring account in
+`eval/report.md`; T-86 (D99) made every `NOT_MET` carry a structured
+`shortfall` and added the `sufficiency` step — the ninth `STEPS` entry, between
+`criteria_c` and `verify` — which re-runs the predicate over only the cited
+evidence and maps a mismatch to `ERROR`, never an abstention. T-87 is next. Free tasks first, the runner change
 (T-89) before the corpus grows (T-81), the Vertex measurement (T-90) last.
 Read the table rather than this paragraph *(D70, D72, D97)*.
 
