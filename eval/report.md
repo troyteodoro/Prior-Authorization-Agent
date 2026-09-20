@@ -8,11 +8,11 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Outcomes against the labels
 
-20 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
+24 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
 
 | Status | Cases | Meaning |
 |---|---|---|
-| `PASS` | 20 | matched the label on every checked dimension |
+| `PASS` | 24 | matched the label on every checked dimension |
 | `FAIL` | 0 | answered, and answered wrongly |
 | `BLOCKED` | 0 | the component under test does not exist yet |
 | `ERROR` | 0 | a classified fault; the system did not answer (REQ-28) |
@@ -21,21 +21,21 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Per-criterion precision on `MET` (A2, A3)
 
-The system emitted **66** criterion verdicts across 13 determinations. The eval set labels **30** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
+The system emitted **81** criterion verdicts across 16 determinations. The eval set labels **45** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
 
 | Criterion | Labeled pairs | System said `MET` | Correct | Precision |
 |---|---|---|---|---|
-| `a` | 7 | 6 | 6 | 1.000 |
-| `b` | 3 | 2 | 2 | 1.000 |
-| `c` | 1 | 0 | 0 | n/a |
+| `a` | 10 | 9 | 9 | 1.000 |
+| `b` | 6 | 3 | 3 | 1.000 |
+| `c` | 4 | 0 | 0 | n/a |
 | `c1` | 2 | 1 | 1 | 1.000 |
 | `c2` | 3 | 2 | 2 | 1.000 |
 | `c3` | 6 | 3 | 3 | 1.000 |
 | `c4` | 3 | 1 | 1 | 1.000 |
 | `c5` | 2 | 2 | 2 | 1.000 |
-| `d` | 2 | 0 | 0 | n/a |
-| `e` | 1 | 0 | 0 | n/a |
-| **all** | **30** | **17** | **17** | **1.000** |
+| `d` | 5 | 0 | 0 | n/a |
+| `e` | 4 | 0 | 0 | n/a |
+| **all** | **45** | **21** | **21** | **1.000** |
 
 **A2's threshold is 0.90 on `MET`.** Measured: **1.000**.
 
@@ -45,8 +45,8 @@ A precision figure without its denominators is not a result. On a set where most
 
 | Figure | Value |
 |---|---|
-| `MET` base rate (labeled pairs that are `MET`) | 17/30 = **0.567** |
-| Precision of a trivial always-`MET` baseline | **0.567** |
+| `MET` base rate (labeled pairs that are `MET`) | 21/45 = **0.467** |
+| Precision of a trivial always-`MET` baseline | **0.467** |
 | Precision measured | **1.000** |
 
 The baseline's precision *is* the base rate, by construction: a system that answers `MET` everywhere is correct exactly as often as `MET` is the right answer. The measured figure is only a result to the extent it exceeds that number.
@@ -59,13 +59,13 @@ Every span carried by a criterion verdict, re-sliced from its source document an
 
 | Figure | Value |
 |---|---|
-| Spans checked | 98 |
-| Spans that slice back | 98 |
+| Spans checked | 112 |
+| Spans that slice back | 112 |
 | Span validity rate | **1.000** |
-| `NOT_MET` verdicts | 4 |
-| …of those, re-derived from their own citations (T-86, D99) | 4 |
-| Spans on `MET` verdicts | 91 |
-| …of those, valid | 91 |
+| `NOT_MET` verdicts | 5 |
+| …of those, re-derived from their own citations (T-86, D99) | 5 |
+| Spans on `MET` verdicts | 104 |
+| …of those, valid | 104 |
 | **A3: `MET` verdicts with an invalid span** | **0** |
 
 **A3 requires zero.** Measured: 0 (rate 1.000).
@@ -159,13 +159,13 @@ This path declares no tools, so `output_schema_and_tools` never applies to it.
 
 ### The verifier (Article V)
 
-The same **33** claims, put to the blind verifier on both tiers. The claim sets are identical by construction, not by luck: the Vertex claims were enumerated from the AI Studio extraction recording, because a digest is the criterion, the verdict and the sliced quote (D78) and a Vertex extraction would have moved every one of them (D106).
+The same **38** claims, put to the blind verifier on both tiers. The claim sets are identical by construction, not by luck: the Vertex claims were enumerated from the AI Studio extraction recording, because a digest is the criterion, the verdict and the sliced quote (D78) and a Vertex extraction would have moved every one of them (D106).
 
 | Figure | AI Studio | Vertex |
 |---|---|---|
-| Claims | 33 | 33 |
-| Accepted | 33 | 33 |
-| Verdicts that moved between tiers | — | **0** of 33 |
+| Claims | 38 | 38 |
+| Accepted | 38 | 38 |
+| Verdicts that moved between tiers | — | **0** of 38 |
 
 **No verdict moved.** Article V's answer is the same on both tiers for every claim the system produced — which is the result a blind checker should give, and the first evidence this repo has that it is not a property of one endpoint.
 
@@ -187,22 +187,22 @@ A free-tier tool loop is not reproducible at temperature 0 (D91), and neither is
 
 ## Abstention (A5, REQ-28, REQ-31)
 
-**Abstention rate: 6/20 answered = 0.300**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
+**Abstention rate: 8/24 answered = 0.333**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
 
 An `ERROR` entering the numerator alone would let a crash *lower* the abstention rate — caution misreported as confidence (D77).
 
 ### The account, per `gap_reason` (D82)
 
-32 criterion verdicts abstained. Abstentions here have named causes rather than a dial, and the enum is closed precisely so that each member names a different next action (REQ-31, D44). This account is what A5 asks for in this system's terms.
+42 criterion verdicts abstained. Abstentions here have named causes rather than a dial, and the enum is closed precisely so that each member names a different next action (REQ-31, D44). This account is what A5 asks for in this system's terms.
 
 | `gap_reason` | Criterion verdicts | What it tells the specialist to collect |
 |---|---|---|
-| `NO_EVIDENCE_RETRIEVED` | 21 | Find documentation of a program |
-| `NOT_EVALUATED_BY_THIS_SYSTEM` | 8 | — |
+| `NO_EVIDENCE_RETRIEVED` | 22 | Find documentation of a program |
+| `NOT_EVALUATED_BY_THIS_SYSTEM` | 17 | — |
 | `UNSUBSTANTIATED_ASSERTION` | 2 | Find the visit notes behind the claim |
 | `SOURCE_CONFLICT` | 1 | Reconcile the two values |
 
-`NOT_EVALUATED_BY_THIS_SYSTEM` is a **tree's declared limit, not a chart's gap** (REQ-58): `infliximab-ra-jjm-v1` declares c, d, e; `ncd-100.1-jjm-v1` declares c4, d. Those criteria abstain on every chart that tree answers, so the corpus-wide rate moves with which practices the eval set exercises rather than with how well any criterion is evaluated. Read it beside this split (D101, D111, D113).
+`NOT_EVALUATED_BY_THIS_SYSTEM` is a **tree's declared limit, not a chart's gap** (REQ-58): `infliximab-ra-jjm-v1` declares c, d, e; `ncd-100.1-jjm-v1` declares c4, d; `us-abdominal-visceral-j5-j8-v1` declares c, d, e. Those criteria abstain on every chart that tree answers, so the corpus-wide rate moves with which practices the eval set exercises rather than with how well any criterion is evaluated. Read it beside this split (D101, D111, D113).
 
 ### The `discrepancy_tolerance` sweep (A5, D82)
 
@@ -212,13 +212,13 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 | `discrepancy_tolerance` | Discrepancies disclosed | Abstention rate |
 |---|---|---|
-| 0 | 5 | 0.300 |
-| 0.25 | 3 | 0.300 |
-| 0.5 | 1 | 0.300 |
-| 1 ← pinned (D51) | 1 | 0.300 |
-| 2 | 1 | 0.300 |
-| 5 | 1 | 0.300 |
-| 50 | 0 | 0.300 |
+| 0 | 5 | 0.333 |
+| 0.25 | 3 | 0.333 |
+| 0.5 | 1 | 0.333 |
+| 1 ← pinned (D51) | 1 | 0.333 |
+| 2 | 1 | 0.333 |
+| 5 | 1 | 0.333 |
+| 50 | 0 | 0.333 |
 
 **Why abstention does not move.** Tolerance gates whether a disagreement is *recorded*. The abstention branch is a different test — the two values falling on opposite sides of the coverage threshold (REQ-34, `SOURCE_CONFLICT`) — and the threshold is not what is being swept.
 
@@ -267,11 +267,11 @@ Measured from each determination's own `metrics`, never estimated. **Reported, n
 
 | Figure | Total | Per determination |
 |---|---|---|
-| Determinations | 13 | — |
-| Model calls | 48 | 3.7 |
-| Input tokens | 39968 | 3074 |
-| Output tokens | 7688 | 591 |
-| Wall time (ms) | 49714.1 | 3824.2 |
+| Determinations | 16 | — |
+| Model calls | 53 | 3.3 |
+| Input tokens | 55585 | 3474 |
+| Output tokens | 7870 | 492 |
+| Wall time (ms) | 52423.0 | 3276.4 |
 
 **What the latency figure means.** These are the wall times measured *when the recordings were made*, against the pinned model on AI Studio (T-15's extraction recording and T-17's verifier recording). They are not the cost of the replay, which is microseconds and would be a meaningless number to publish. A6 asks for cost and latency from instrumentation rather than estimated; replayed instrumentation is still instrumentation, and a replay's own clock would not be.
 
@@ -284,5 +284,5 @@ Every gate in this repo, this report included, spends **zero** model calls and t
 The measurement context for every figure above.
 
 - **The ground truth is a working first draft, drafted alongside the system it grades** (D19, D42, D96). The manifests are written from the bundles before the notes are synthesized, the system under test never reads them, and every cited span is validated against the source rather than against a label. Re-labeling and review ride with the corpus expansion of a later version.
-- **This system determines coverage as one contractor would, for each of two contractors and two practices.** NCD 100.1 quantifies nothing — no months, no visit counts, no recency. Every constant in a criteria tree comes from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J and M, and L35677 for the same MAC's infliximab policy (T-92, D111) — and a request resolves by procedure code and state, to one tree per practice (D21, D29, D100, D111). These are not CMS's thresholds; they are two contractors' worth of them.
-- **The corpus is 11 patients, 14 chart notes and 7 policy documents.** Six bundles from the base seed, E12's with its declared observation (D73), and one declared clone of E4's chart re-addressed into Palmetto's territory (T-88, D102) — the row `J1`, which shares both its notes' bytes with E4. Every note-bearing chart is two documents since T-81, a split of the facts its manifest already declared (D104). The last three are the second practice (T-93, D113): two Synthea charts carrying rheumatoid arthritis in Palmetto's territory and a declared clone of one of them holding the drug L35677 excludes, all note-free because v1.2 declares every note-only criterion unclaimed. Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above.
+- **This system determines coverage as one contractor would, for each of three contractors and three practices.** NCD 100.1 quantifies nothing — no months, no visit counts, no recency. Every constant in a criteria tree comes from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J and M, L35677 for the same MAC's infliximab policy (T-92, D111), and L35755 for WPS's abdominal and visceral vascular studies (T-94, D114) — and a request resolves by procedure code and state, to one tree per practice (D21, D29, D100, D111). These are not CMS's thresholds; they are three contractors' worth of them.
+- **The corpus is 14 patients, 14 chart notes and 9 policy documents.** Six bundles from the base seed, E12's with its declared observation (D73), and one declared clone of E4's chart re-addressed into Palmetto's territory (T-88, D102) — the row `J1`, which shares both its notes' bytes with E4. Every note-bearing chart is two documents since T-81, a split of the facts its manifest already declared (D104). The last six are the second and third practices, all note-free because v1.2 declares every note-only criterion unclaimed: two Synthea charts carrying rheumatoid arthritis in Palmetto's territory and a declared clone of one of them holding the drug L35677 excludes (T-93, D113), then one Synthea chart in WPS's territory and two declared clones of it that differ only in the date of one re-coded procedure, which is what L35755's frequency limit turns on (T-94, D114). Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above.

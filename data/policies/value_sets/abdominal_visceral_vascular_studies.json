@@ -1,0 +1,37 @@
+{
+  "value_set_id": "abdominal_visceral_vascular_studies",
+  "task": "T-94",
+  "decision": "D114",
+  "status": "VERIFIED",
+  "system": "http://snomed.info/sct",
+  "system_note": "SNOMED CT because that is what LocalPatientStore reports on Procedure.code. The policy names the studies in CPT (93975, 93976) and the chart codes them in SNOMED, so the set is in the system the comparison actually happens in and the CPT codes are the anchor (REQ-59, D114).",
+  "sources": [
+    {
+      "document_id": "a57591",
+      "sha256": "85707330e27df90a7efea09bd93018523af866fe273b6e93a9255b46b249091d"
+    }
+  ],
+  "compiled_from": "The studies A57591's Group 1 paragraph names -- abdominal/visceral vascular studies of abdominal, retroperitoneal and pelvic organs, CPT 93975 and 93976. This is the set criterion (b) counts as a prior study of the same kind as the request, which is what L35755's once-a-year limit is about.",
+  "entries": [
+    {
+      "system": "http://snomed.info/sct",
+      "code": "709640007",
+      "display": "Doppler ultrasonography of renal vein (procedure)",
+      "cpt_anchor": {
+        "system": "CPT",
+        "codes": ["93975", "93976"],
+        "document_id": "a57591",
+        "char_start": 11547,
+        "char_end": 11646,
+        "quote": "Abdominal/visceral vascular studies of abdominal, retroperitoneal, and pelvic organs (93975, 93976)"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "A Doppler ultrasound of the renal vein is a duplex study of the venous outflow of a retroperitoneal organ, which is what 93975 and 93976 describe. The SNOMED code is the one Synthea's own generators emit for that study (Renal_Ultrasound, Procedure, SNOMED-CT 709640007), read from modules/spina_bifida.json inside the pinned synthea-with-dependencies.jar -- so it is the code a chart in this corpus actually carries rather than one recalled.",
+        "weaker_than": "The indication set's entries are concept identities: SNOMED 59621000 and ICD-10 I10 denote the same disorder. This one is a *reading* -- a named SNOMED procedure falling inside a CPT code's description -- and it is recorded as the weaker claim it is, the way the J1745 binding recorded being a revision-history line (D111, D114)."
+      }
+    }
+  ],
+  "known_limit": "One entry, and the reason is the generator rather than the document. Synthea emits exactly one abdominal or visceral vascular ultrasound anywhere in the pinned jar, so a wider set would carry codes no chart in this corpus can hold and no test could distinguish from an empty one. A real deployment's set is every SNOMED procedure inside 93975/93976; widening it needs a SNOMED source this project can re-read, which is what D36 was blocked on."
+}

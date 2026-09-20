@@ -1,0 +1,14 @@
+{
+  "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+  "bundle": "Dale454_Botsford977_53126ee7-0f8a-b494-fb3c-921069a1605b.json",
+  "as_of": "2026-09-01",
+  "note": false,
+  "wm_programs": [],
+  "traps": [],
+  "program_assertions": [],
+  "cases": [
+    "US3",
+    "US4"
+  ],
+  "rationale": "The ultrasound practice's generated chart: Synthea's own, produced in WPS's territory under the seed data/patients/manifest.json records (synthea_ultrasound; T-94, D114), and the source both declared clones derive from. It carries four active conditions A57591's Group 1 lists -- essential hypertension and chronic kidney disease stages 2, 3 and 4 -- which is criterion (a)'s fact, and no abdominal or visceral vascular study of any date. US3 is therefore the frequency criterion's abstention: the chart documents no prior study, and a chart that records none has not recorded that none was performed elsewhere, so (b) abstains with NO_EVIDENCE_RETRIEVED rather than answering a MET it could not cite (D40's asymmetry, REQ-5, D114). US4 runs 76700 over the same chart and never reaches a criterion: Iowa is served by this tree and this tree binds no such code, which is NO_POLICY_FOUND and not NO_JURISDICTION_TREE (D26, REQ-55). The coded facts themselves live in the population manifest and are re-derived by select_patients.py --verify; they are not restated here, because one artifact owns a fact and prose is a copy. The chart carries no note: v1.2 declares every note-only criterion unclaimed, so no extraction ever runs for it and 'note': false states that rather than leaving an absent note to read as a corpus gap (D73's shape)."
+}

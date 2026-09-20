@@ -542,6 +542,8 @@ def _check(tree, results: dict[str, object], criterion_id: str, as_of=AS_OF) -> 
         tree.criterion(criterion_id),
         results[criterion_id],
         observations=[],
+        procedures=[],
+        value_sets={},
         run=results["run"],
         as_of=as_of,
         c3_met=results["c3"].verdict is CriterionVerdict.MET,

@@ -55,7 +55,20 @@ from pa_agent.model_pin import VERIFIER_MODEL
 #: ever had — and carrying it date-bound every claim digest, which broke the
 #: CLI's default (as-of today) against a recording measured at the harness
 #: clock. A changed model input is a new measurement (D45).
-PROMPT_VERSION = "verifier-v4"
+#: v5: v4 measured 38/38 on AI Studio and 36/38 on Vertex, both rejections
+#: false and both on a value-set membership criterion — the verifier decided
+#: whether quoted conditions belong to a set the payload names and never
+#: shows it. That is v2's and v3's failure one category over: Article II's
+#: arithmetic over data Article V hides. v5 bars it, keeping v4's asymmetry
+#: and every rejection that does not need the set (D115).
+#: v6: v5 measured 37/38 on AI Studio with one false rejection — a
+#: shortfall-type `NOT_MET` rejected with a reason that *agreed* with it
+#: ("the quote is from June 2025, outside the 12-month window"), which is
+#: what a NOT_MET cites. v3's asymmetry already forbids that and stopped
+#: being the last thing read when v5's paragraph landed after it, so v6
+#: states the accepting case outright instead of only the forbidden one
+#: (D115). Both rounds are recorded; neither is a re-run of the other.
+PROMPT_VERSION = "verifier-v6"
 
 VERIFIER_TEMPERATURE = 0.0
 
@@ -86,7 +99,19 @@ INSTRUCTION = (
     "something else entirely, or by itself — with no arithmetic — directly "
     "shows the criterion satisfied, such as a value on the satisfying side "
     "of a named threshold quoted as evidence that the threshold was "
-    "missed.\n\n"
+    "missed. Evidence that is stale, short, or otherwise consistent with the "
+    "criterion failing is exactly what a NOT_MET is expected to cite: that "
+    "is an accept, not a rejection.\n\n"
+    "A criterion may name a value set in its constants. That set was "
+    "compiled from the policy and is not shown to you, and membership was "
+    "computed by code against it in a declared code system. So never reject "
+    "a claim because a quoted diagnosis, medication or procedure does not "
+    "look to you like a member of the named set, and never substitute your "
+    "own idea of what that set contains: that is the same re-adjudication as "
+    "doing the arithmetic yourself. Reject such a claim only if the quote is "
+    "not evidence about this criterion's subject at all — a prescription "
+    "quoted for a criterion about diagnoses, or a passage of prose quoted "
+    "where the criterion is about the coded record.\n\n"
     "Respond with JSON: {\"accept\": true|false, \"reason\": \"one sentence\"}."
 )
 

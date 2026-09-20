@@ -81,6 +81,22 @@
     "RA3": {
       "status": "PASS",
       "reason_class": null
+    },
+    "US1": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "US2": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "US3": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "US4": {
+      "status": "PASS",
+      "reason_class": null
     }
   }
 }

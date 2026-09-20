@@ -29,6 +29,7 @@ from pa_agent.contracts import (
     EvidenceSpan,
     Medication,
     Observation,
+    Procedure,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -59,6 +60,18 @@ class PatientStore(Protocol):
         Article VI's line stays a fact you can establish by reading the
         signatures, which is the reason this port is methods and not a query
         interface. `status` is carried and not filtered here (D31, D39).
+        """
+        ...
+
+    def get_procedures(self, patient_id: str) -> list[Procedure]:
+        """Procedures on the chart, for the frequency limit L35755 states.
+
+        A fifth read, in `get_medications`' shape and for its reason. Each
+        procedure carries the **care setting** it was performed in, because
+        the limit excludes two places of service from its own arithmetic and
+        a predicate that could not tell them apart would deny a patient the
+        document does not restrict (T-94, D114). `status` is carried and not
+        filtered here (D31, D39).
         """
         ...
 
@@ -307,6 +320,75 @@ class LocalPatientStore:
                 )
             )
         return medications
+
+    def _encounter_classes(self, patient_id: str) -> dict[str, str]:
+        """`Encounter.fullUrl` -> its `class.code`, for the procedures below.
+
+        Built once per bundle rather than searched per procedure: eleven
+        bundles carry 745 encounters between them and a linear scan per
+        procedure would be quadratic over the corpus for a join that does not
+        change.
+
+        Only entries that carry both a reference and a class code are in the
+        map. A missing key is `None` at the call site and stays `None` — see
+        `Procedure.encounter_class` for why an unresolved setting must not
+        become an excluded one (D114).
+        """
+        classes: dict[str, str] = {}
+        bundle = self._bundle(patient_id)
+        for entry in bundle.get("entry", []):
+            resource = entry.get("resource", {})
+            if resource.get("resourceType") != "Encounter":
+                continue
+            code = (resource.get("class") or {}).get("code")
+            if not code:
+                continue
+            reference = entry.get("fullUrl")
+            if reference:
+                classes[reference] = code
+            identifier = resource.get("id")
+            if identifier:
+                classes[f"urn:uuid:{identifier}"] = code
+        return classes
+
+    def get_procedures(self, patient_id: str) -> list[Procedure]:
+        """Every coded `Procedure`, with the care setting it was performed in.
+
+        `performedPeriod.start` is the date, falling back to
+        `performedDateTime` — Synthea writes the period, and a resource with
+        neither is reported with `performed_date=None` rather than dropped,
+        because dropping it here would hide a prior study from a frequency
+        limit and the predicate is where that judgment belongs (D31, D39).
+
+        The encounter join is made **here**, in the adapter, and reported on
+        the object: the span still describes the resource the verdict cites,
+        and no second lookup path exists that the span does not describe
+        (D66, D113's note on `medicationReference`, D114).
+        """
+        classes = self._encounter_classes(patient_id)
+        procedures = []
+        for resource, span in self._entries_with_spans(patient_id, "Procedure"):
+            coding = self._first_coding(resource)
+            if not coding.get("code"):
+                continue
+            performed = (resource.get("performedPeriod") or {}).get(
+                "start"
+            ) or resource.get("performedDateTime")
+            reference = (resource.get("encounter") or {}).get("reference")
+            procedures.append(
+                Procedure(
+                    code=coding["code"],
+                    system=coding.get("system"),
+                    display=coding.get("display"),
+                    status=resource.get("status"),
+                    performed_date=(
+                        date.fromisoformat(performed[:10]) if performed else None
+                    ),
+                    encounter_class=classes.get(reference) if reference else None,
+                    span=span,
+                )
+            )
+        return procedures
 
     def get_jurisdiction_state(self, patient_id: str) -> str:
         """`Patient.address[0].state` from the bundle, verified on read (D100).

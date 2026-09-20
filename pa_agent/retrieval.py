@@ -40,6 +40,7 @@ from pa_agent.contracts import (
     Document,
     Medication,
     Observation,
+    Procedure,
     RunTrace,
 )
 from pa_agent.stores.patient import PatientStore
@@ -74,6 +75,12 @@ class RetrievalResult:
     observations: list[Observation] = field(default_factory=list)
     conditions: list[Condition] = field(default_factory=list)
     medications: list[Medication] = field(default_factory=list)
+    #: Prior procedures with the care setting each was performed in, for the
+    #: interval kind L35755 needs (T-94, D114). Gathered unconditionally, like
+    #: every other structured read: filtering is the predicates' judgment
+    #: (D39), and a bundle whose shape depended on the tree would be a bundle
+    #: the two planners could fill differently.
+    procedures: list[Procedure] = field(default_factory=list)
     #: `{value_set_id -> the set}`, one entry per criterion that names one.
     #: **Was a single `value_set`**, fetched through `only_criterion_of_kind`,
     #: which was true while one tree declared one membership criterion and
@@ -162,6 +169,7 @@ class FixedRetrievalPlanner:
             observations=patient_store.get_observations(patient_id),
             conditions=patient_store.get_conditions(patient_id),
             medications=patient_store.get_medications(patient_id),
+            procedures=patient_store.get_procedures(patient_id),
             value_sets={
                 value_set_id: policy_store.get_value_set(value_set_id)
                 for value_set_id in declared_value_set_ids(tree)

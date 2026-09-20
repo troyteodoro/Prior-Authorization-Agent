@@ -301,7 +301,14 @@ never needed.
   rather than a `MET` nobody can cite · *(REQ-60, T-92; A10)*
 - **Given** an ultrasound request past the document's frequency limit **When**
   the determination runs **Then** the criterion is `NOT_MET` with each prior
-  study cited, counted by Python · *(A10)*
+  study inside the window cited and a structured shortfall, measured by
+  Python over the chart's own procedures and scoped to the care settings the
+  document excludes · *(REQ-61, T-94; Article II; A10)*
+- **Given** a chart documenting no such prior study at all **When** the same
+  request runs **Then** the criterion **abstains** rather than answering
+  `MET` — a chart that records no study has not recorded that none was
+  performed elsewhere, and a `MET` would have no span to cite ·
+  *(REQ-5, REQ-61, T-94; D40, D114; A10)*
 - **Given** both trees loaded **When** the report is built **Then** it classes
   every criterion of every tree as evaluated by an existing kind, by a new
   kind, or unclaimed — and zero model calls were spent · *(A10)*

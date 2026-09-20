@@ -83,7 +83,7 @@
     }
   ],
   "selection_criteria": {
-    "bundle_count": 11,
+    "bundle_count": 14,
     "base_bundle_count": 6,
     "bmi_range": [
       33.0,
@@ -105,7 +105,13 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "431855005",
+        "431856006",
+        "59621000"
+      ],
+      "prior_study_dates": []
     },
     {
       "filename": "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json",
@@ -118,7 +124,11 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "59621000"
+      ],
+      "prior_study_dates": []
     },
     {
       "filename": "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json",
@@ -131,7 +141,9 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [],
+      "prior_study_dates": []
     },
     {
       "filename": "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
@@ -144,7 +156,11 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "59621000"
+      ],
+      "prior_study_dates": []
     },
     {
       "filename": "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
@@ -157,7 +173,9 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [],
+      "prior_study_dates": []
     },
     {
       "filename": "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json",
@@ -170,7 +188,9 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [],
+      "prior_study_dates": []
     },
     {
       "filename": "Avelina400_Huels583_a8edc52e-9800-0adb-c775-bd81183c355f.json",
@@ -183,7 +203,11 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "59621000"
+      ],
+      "prior_study_dates": []
     },
     {
       "filename": "Shona685_Zieme486_42a430ab-b7ca-87a5-279f-ee115f49fd6e.json",
@@ -196,7 +220,9 @@
       "has_active_ra": true,
       "has_active_methotrexate": true,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 1
+      "methotrexate_orders": 1,
+      "active_indication_codes": [],
+      "prior_study_dates": []
     },
     {
       "filename": "Altagracia629_Torp761_455d3f7d-3b99-dad6-c0b2-d5405144e793.json",
@@ -209,7 +235,29 @@
       "has_active_ra": true,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [],
+      "prior_study_dates": []
+    },
+    {
+      "filename": "Dale454_Botsford977_53126ee7-0f8a-b494-fb3c-921069a1605b.json",
+      "sha256": "012a278085643efcd26e834858e89de964d5d67eeec1cef563fcaf2102e0979c",
+      "cohort": "ultrasound",
+      "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+      "latest_bmi": 28.44,
+      "latest_bmi_date": "2026-08-24T17:06:52-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "431856006",
+        "431857002",
+        "433144002",
+        "59621000"
+      ],
+      "prior_study_dates": []
     },
     {
       "filename": "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
@@ -222,7 +270,9 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0
+      "methotrexate_orders": 0,
+      "active_indication_codes": [],
+      "prior_study_dates": []
     },
     {
       "filename": "Shona685_Zieme486_915602a8-a36d-59bf-b667-47496ab57965.json",
@@ -235,7 +285,53 @@
       "has_active_ra": true,
       "has_active_methotrexate": true,
       "has_active_excluded_biologic": true,
-      "methotrexate_orders": 1
+      "methotrexate_orders": 1,
+      "active_indication_codes": [],
+      "prior_study_dates": []
+    },
+    {
+      "filename": "Dale454_Botsford977_b1bbb34a-aa4b-5c18-a550-8bd26e0da528.json",
+      "sha256": "2243968baaae2a57eb8076692c52cf2fb4ef29f2ca926e2b90a06d40a77cabf5",
+      "cohort": "ultrasound",
+      "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
+      "latest_bmi": 28.44,
+      "latest_bmi_date": "2026-08-24T17:06:52-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "431856006",
+        "431857002",
+        "433144002",
+        "59621000"
+      ],
+      "prior_study_dates": [
+        "2024-06-17T17:06:52-07:00"
+      ]
+    },
+    {
+      "filename": "Dale454_Botsford977_7acd0453-b37c-5c1a-9879-0a7b443065d9.json",
+      "sha256": "4e158742bef6766de281a9b6988af9ed410cbf40ce679bd465e250df7df69e09",
+      "cohort": "ultrasound",
+      "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
+      "latest_bmi": 28.44,
+      "latest_bmi_date": "2026-08-24T17:06:52-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "431856006",
+        "431857002",
+        "433144002",
+        "59621000"
+      ],
+      "prior_study_dates": [
+        "2026-05-25T17:06:52-07:00"
+      ]
     }
   ],
   "synthetic_patients": [
@@ -268,6 +364,40 @@
         "code": "802652",
         "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
         "display": "1 ML etanercept 50 MG/ML Prefilled Syringe [Enbrel]"
+      }
+    },
+    {
+      "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
+      "cloned_from": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+      "source_bundle": "Dale454_Botsford977_53126ee7-0f8a-b494-fb3c-921069a1605b.json",
+      "bundle": "Dale454_Botsford977_b1bbb34a-aa4b-5c18-a550-8bd26e0da528.json",
+      "task": "T-94",
+      "decision": "D114",
+      "variant": "prior-study-outside-window",
+      "synthetic_procedure": {
+        "copy_of_resource_id": "53126ee7-0f8a-b494-2a9e-cc52c39279c8",
+        "performed_date": "2024-06-17",
+        "resource_id_suffix": "-us-prior-synthetic",
+        "code": "709640007",
+        "system": "http://snomed.info/sct",
+        "display": "Doppler ultrasonography of renal vein (procedure)"
+      }
+    },
+    {
+      "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
+      "cloned_from": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+      "source_bundle": "Dale454_Botsford977_53126ee7-0f8a-b494-fb3c-921069a1605b.json",
+      "bundle": "Dale454_Botsford977_7acd0453-b37c-5c1a-9879-0a7b443065d9.json",
+      "task": "T-94",
+      "decision": "D114",
+      "variant": "prior-study-inside-window",
+      "synthetic_procedure": {
+        "copy_of_resource_id": "53126ee7-0f8a-b494-3b90-6334f168db89",
+        "performed_date": "2026-05-25",
+        "resource_id_suffix": "-us-prior-synthetic",
+        "code": "709640007",
+        "system": "http://snomed.info/sct",
+        "display": "Doppler ultrasonography of renal vein (procedure)"
       }
     }
   ],
@@ -313,6 +443,55 @@
       "drug_code": "105585",
       "excluded_drug_code": "802652",
       "rule": "both charts carry an active Condition coded SNOMED 69896004 and no active MedicationRequest for RxNorm 802652; one carries an active MedicationRequest for RxNorm 105585 and one carries none. Codes read from modules/rheumatoid_arthritis.json in the pinned jar (D113)."
+    }
+  },
+  "synthea_ultrasound": {
+    "task": "T-94",
+    "decision": "D114",
+    "seed": 1004,
+    "clinician_seed": 1004,
+    "reference_date": "20260901",
+    "population": 200,
+    "age_range": "30-60",
+    "state": "Iowa",
+    "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+    "command": [
+      "java",
+      "-jar",
+      "data/patients/work/synthea-with-dependencies.jar",
+      "-s",
+      "1004",
+      "-cs",
+      "1004",
+      "-r",
+      "20260901",
+      "-p",
+      "200",
+      "-a",
+      "30-60",
+      "--exporter.baseDirectory",
+      "data/patients/work/output_us",
+      "--exporter.fhir.export",
+      "true",
+      "--exporter.hospital.fhir.export",
+      "false",
+      "--exporter.practitioner.fhir.export",
+      "false",
+      "Iowa"
+    ],
+    "selection": {
+      "cohort": "ultrasound",
+      "chart_count": 1,
+      "state_code": "IA",
+      "indication_codes": [
+        "59621000",
+        "431855005",
+        "431856006",
+        "433144002",
+        "431857002"
+      ],
+      "study_code": "709640007",
+      "rule": "the chart carries at least one active Condition coded in ['59621000', '431855005', '431856006', '433144002', '431857002'] and no Procedure coded SNOMED 709640007, and it carries a Procedure at least 24 months before 20260901 and another at most 6 months before it, both at encounters outside ['EMER', 'IMP'] — the two copy sources the declared clones name. Condition codes read from modules/hypertension.json and modules/metabolic_syndrome/kidney_conditions.json, the study code from modules/spina_bifida.json, all in the pinned jar (D114)."
     }
   }
 }

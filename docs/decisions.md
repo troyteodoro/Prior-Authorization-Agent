@@ -9235,3 +9235,396 @@ becomes a generated chart and the declared prescription is deleted rather
 than kept beside it; or `get_medications` learns to follow a
 `medicationReference`, which would change what these two charts report and is
 a re-measurement of every row that reads them, not a refactor.
+
+---
+
+## D114 — Diagnostic ultrasound is the third practice, and a frequency limit is an interval because an absence has no span
+
+**Context.** T-94 is row 4 of v1.2 and the largest row on the board: rows 2
+and 3 in one task — a coverage document, the tree compiled from it, the
+patients, and the eval rows. Spec §11 asks for *a MAC LCD for a non-invasive
+vascular or abdominal study*, and the board fixes the rows as **a `MET`, a
+`NOT_MET` on a frequency limit, and a `NO_POLICY_FOUND` for an unlisted
+code**. D97's rule applies as it did at T-92: the document is chosen by
+fetching candidates and reading what they say, not by assuming what a
+document of that kind contains.
+
+**How the candidates were found, which is new here.** T-92 read four
+candidates out of the MCD's own report. That report renders client-side and
+its table is empty in the fetched HTML, so this round used the MCD's
+**published export** instead — `current_lcd.zip` and `current_article.zip`
+from `downloads.cms.gov`, 963 final LCDs with their full indication,
+utilization and coding text. That is a survey instrument and **not a corpus
+source**: every document this repo cites is still fetched through T-02's
+extractor from the MCD page and hashed, because the export's field text and
+the page's extracted text are different bytes and every span in this project
+anchors into the latter. The export narrowed 963 LCDs to 33 whose titles name
+an ultrasound study, and those 33 to the four below by searching their text
+for a quantified frequency.
+
+| Candidate | What it says |
+|---|---|
+| **L35755 Non-Invasive Abdominal / Visceral Vascular Studies**, WPS (J-5, J-8), with **A57591** | The conditions-met list is three numbered items, the first of which is a diagnosis claim. Utilization Guidelines: *"Generally, it is expected that noninvasive abdominal/visceral vascular studies would not be performed more than once in a year, excluding inpatient hospital (21) and emergency room (23) places of services."* A57591's Group 1 paragraph reads *"Abdominal/visceral vascular studies of abdominal, retroperitoneal, and pelvic organs (93975, 93976)"* and 316 ICD-10 codes follow it **in the extracted text**. |
+| L37379 Echocardiography, Palmetto GBA | Cardiac rather than vascular or abdominal, and its annual limit is caveated inside its own sentence — *"not generally medically necessary to repeat TTE assessments more frequently than annually, unless done to evaluate the response to therapeutic intervention"*. |
+| L34577 Retroperitoneal Ultrasound, Palmetto GBA | Abdominal, and states **no** frequency limit at all. The row needs one. |
+| L35753 Non-Invasive Cerebrovascular Studies, WPS | A post-endarterectomy schedule — *"6 weeks, 6 months, and annually thereafter"* — which is three intervals keyed to a surgery date the chart would have to supply, not one limit. |
+
+**Chosen — `us-abdominal-visceral-j5-j8-v1`, compiled from L35755 and
+A57591.** It is what §11 named, its frequency limit is the only unhedged one
+in the set, and — unlike either Palmetto candidate — **the codes it governs
+are in the extracted text**: A57591's Group 1 paragraph names 93975 and 93976
+in prose, beside the ICD-10 group they belong to. That is a stronger binding
+than D111 could get for J1745, which had only a revision-history line, and it
+is the same class of claim (D28).
+
+**A third contractor, and the states are the document's.** WPS is neither
+Noridian nor Palmetto, and L35755's own contractor table lists **Iowa,
+Kansas, Missouri, Nebraska, Indiana, Michigan and Alabama** — the last under
+contract 05901, which the table states and this tree therefore declares. So
+Alabama is served by three trees from three practices, which is D111's rule
+arrived at from the document rather than designed: the collision that matters
+is a **code** bound for one state by two trees, and 93975 is bound by nobody
+else. `_binding_index` needed no change and neither did the resolver.
+
+**The tree, and why three of its five criteria are unclaimed.**
+
+| id | Criterion | Evaluation |
+|---|---|---|
+| `a` | A diagnosis A57591 lists as supporting medical necessity for 93975/93976 | deterministic, `condition_value_set_membership` — the kind both earlier practices already needed |
+| `b` | Not performed more than once in a year | deterministic, **new** `procedure_value_set_interval` |
+| `c` | The information is necessary for appropriate medical and/or surgical management | **unclaimed** |
+| `d` | The test is not redundant of other diagnostic procedures that must be performed | **unclaimed** |
+| `e` | Not the initial diagnostic modality for abdominal pain, absent a high index of suspicion that the pain is vascular | **unclaimed** |
+
+Two deterministic of five, exactly as the rheumatology tree came out, and for
+the same reason: coverage documents spend most of their words on judgments.
+`c`, `d` and `e` are each unclaimed **because of the document**, never
+because the engine lacks a predicate — `c` and `d` are claims about the
+ordering clinician's intent and about what else is planned, neither of which
+is a fact in any record this system reads, and `e` is a claim about the
+presenting complaint's differential. That is REQ-57's distinction, and this
+tree was as able to blur it as L35677 was.
+
+Two of the document's four Limitations are **out of this tree's scope rather
+than unclaimed**, and the distinction is recorded because they look alike.
+Limitation 2 (routine iliac-vein imaging) and Limitation 3 (AAA surveillance
+every 6 months above 4 cm) belong to A57591's **Group 2** — aorta, inferior
+vena cava, iliac vasculature, 93978/93979 — and this tree is compiled for
+Group 1, the way `infliximab-ra-jjm-v1` was compiled for one bullet of
+L35677. A criterion declared unclaimed says *a human must still judge this
+request*; a statement about another code group says nothing about this
+request at all, and declaring it would abstain on every determination over a
+question the document did not ask.
+
+**Chosen — the frequency limit is an interval, not a count, because there is
+no span for an absence.** It was designed as a count first — *at most one
+study in twelve months* — and the contract refused it for D111's reason one
+layer along: a chart carrying no prior study would have to answer `MET`, and
+REQ-5 requires a span on every `MET`. D111's escape was to make the statement
+an exclusion, which fires or is silent. That is wrong here: this *is* a
+criterion of the conditions-met list, the request is denied when it fails,
+and an exclusion produces no verdict a reviewer can read.
+
+So the predicate measures the **interval to the most recent prior study**,
+which is REQ-16's shape — evidence present, in a window the policy forbids —
+and it answers three ways, each citing what it has:
+
+- a prior study **inside** the twelve months → `NOT_MET`, citing every prior
+  study inside the window, with `Shortfall(observed=<months since the most
+  recent>, required=12, unit="months_since_prior_procedure")`;
+- the most recent prior study **outside** it → `MET`, citing that study;
+- **no prior study documented** → an abstention with
+  `NO_EVIDENCE_RETRIEVED`. Not `MET`. D40's asymmetry, which is about
+  medications and comorbidities and transfers here unchanged: a chart that
+  records no abdominal ultrasound has not recorded that none was performed,
+  and a study done at another practice is exactly the thing this limit exists
+  to catch. The abstention names what to collect; a `MET` would assert a
+  negative the chart cannot support.
+
+The `MET` direction is monotone in time — a study past twelve months stays
+past — so only the `NOT_MET` row pins an `as_of` (E2's precedent). A row
+whose verdict ages out of its label is a baseline that goes red on a date
+nobody chose.
+
+**Rejected — `MET` with no span when the chart is clean.** It is one
+`spans=[]` away and every downstream test would agree with it, which is why
+REQ-5 is a validator and not a convention.
+
+**Rejected — an exclusion, as in D111.** The exclusion shape is right for a
+LIMITATIONS paragraph that denies outright. This sentence sits under
+Utilization Guidelines and qualifies a service the LCD otherwise covers, and
+the document contemplates its own override — *"Documentation of medical
+necessity needs to be provided for studies performed more frequently"* — which
+is a reviewer's action on a stated criterion, not a categorical denial.
+
+**Chosen — the document's place-of-service carve-out is computed, from the
+encounter each prior study belongs to.** The sentence excludes inpatient
+hospital (21) and emergency room (23) from its own arithmetic. Ignoring that
+would answer `NOT_MET` for a patient whose only prior study was done in an
+emergency room — a wrong verdict on a chart the document does not restrict,
+which is D101's test and the reason `c` in the rheumatology tree is
+unclaimed. FHIR carries what is needed: `Procedure.encounter` resolves to an
+`Encounter` whose `class` is `AMB`, `EMER` or `IMP`, so the criterion
+declares the excluded classes as a constant sourced to that sentence, and the
+predicate drops a prior study performed in one.
+
+Mapping *emergency room (23)* to `EMER` and *inpatient hospital (21)* to
+`IMP` is a terminology binding of `BMI_LOINC`'s class — the policy states a
+place of service and the record codes an encounter class — and it is
+declared in the tree where a reviewer meets it, not buried in the predicate.
+
+**A resource is excluded only on positive evidence of the excluded setting.**
+A prior study whose encounter cannot be resolved counts. The two failure
+directions are not symmetric: excluding on an unknown setting under-counts
+and approves past a limit the policy states, while including it over-counts
+and produces a `NOT_MET` the reviewer can lift with the documentation the
+sentence itself asks for. That is the same rule REQ-60 states for exclusions,
+pointed the other way, and it is why `get_procedures` reports the encounter
+class it found rather than a default.
+
+**Rejected — following the encounter reference silently inside the
+predicate.** D113 recorded `get_medications` *not* following a
+`medicationReference` as a stated scope; this is the same join and it is made
+in the adapter, declared in the port's docstring, and reported on the
+`Procedure` object — so the evidence span still describes the resource the
+verdict cites, and no second lookup path exists that the span does not
+describe (D66).
+
+**What the engine needed: one predicate kind, one port read, and a narrower.**
+`PROCEDURE_VALUE_SET_INTERVAL` with its predicate and its entry in
+`STEP_KINDS`; `get_procedures` on the patient port, reporting code, system,
+performed date, status and encounter class; `RetrievalResult.procedures` on
+both planners; and `_cited_procedures` in `NARROWERS`, because T-86's
+sufficiency step refuses a `NOT_MET` from a kind with no re-derivation and
+this is the first structured kind since criterion (a) that can answer one.
+`step_criterion_b` evaluates it — the step's name stays bariatric-shaped
+(D110) and its kind tuple becomes the union `STRUCTURED_KINDS`, because a
+fourth step would rename what every recorded run reports having visited for
+no gain.
+
+**The kind is named for what it computes.** `procedure_value_set_interval`,
+not `prior_procedure_count`: the engine measures an interval to the most
+recent member of a named set, and a kind called *count* is a promise the
+predicate does not keep. `PredicateKind`'s own docstring is the rule — an
+overstated kind is worse than a missing one, because a tree can be written
+against it.
+
+**§11's lab-threshold statement is not earned by this document and stays
+unminted.** The version's awaiting-T-94 bullet reads *"lab thresholds and
+prior-procedure counts"*. L35755 quantifies no laboratory value — its
+arithmetic is a frequency and nothing else — and a predicate built here for a
+threshold no committed document states would be a kind with no tree to
+declare it and no verdict to check it, which is REQ-57's *unbuilt* in the
+other direction. D111's rule, applied a second time: **the kind is earned by
+a document that states it, not by a task that was promised one.** So T-94
+mints **REQ-61** alone, and v1.2 closes without a lab-threshold statement
+unless T-95 finds a document that states one, which it will not, because T-95
+adds no document.
+
+**REQ-61**, minted here. Prior procedures are counted and dated by Python
+over structured resources, and a criterion evaluated against them cites the
+resource. The criterion names the value set the procedures must fall in and
+the care settings the document excludes from its arithmetic; a resource is
+excluded only on positive evidence that it was performed in one of them.
+
+**The patients: what Synthea gives and what is declared.** Measured before
+choosing, in D113's order. Synthea's generators emit **one** abdominal or
+visceral vascular ultrasound anywhere in the pinned jar — SNOMED
+`709640007 Doppler ultrasonography of renal vein (procedure)`, in
+`modules/spina_bifida.json`, at a single infant workup behind a congenital
+prevalence — so no population size produces a chart with two such studies in
+a year, or with one at a useful age. What Synthea does emit in quantity is
+criterion (a)'s side: essential hypertension and chronic kidney disease are
+common, and both are in A57591's Group 1.
+
+So the cohort is one generated chart and two declared derivatives of it, and
+the derivative is narrower than D113's:
+
+- the base chart is Synthea's own, from one run in **Iowa** under its own
+  recorded seed, selected mechanically for an active condition in the
+  indication value set;
+- each clone appends **nothing**. It **re-codes one of the patient's own
+  `Procedure` resources** to SNOMED 709640007 and changes its id, leaving the
+  performed date, the encounter reference and everything else as Synthea
+  wrote them — so the prior study's date and its care setting are the
+  generator's, not the compiler's, and the two clones differ from each other
+  only in **which** of the patient's procedures was re-coded.
+
+One chart, two dates, three verdicts: `MET` on the clone whose re-coded
+procedure predates the window, `NOT_MET` on the clone whose re-coded
+procedure sits inside it, and the abstention on the base chart, which
+documents no study at all. The predicate's three answers are exercised by
+three bundles that differ in one field.
+
+**Rejected — hand-written prior studies with chosen dates.** It would make
+the frequency verdict a verdict about a date this repo wrote, and D113
+rejected the same shortcut for the same reason. Re-coding a real procedure
+keeps the date, the encounter and the setting outside the compiler's control,
+which is what makes the carve-out's evidence real.
+
+**Rejected — a second generated chart instead of the second clone.** The
+pairing is the point, as it was for `RA1`/`RA2`: two charts that differ by
+one field say *this request is the same request and the policy answers it
+differently because of when the last study was*. Two unrelated patients say
+that less clearly and cost a second multi-megabyte bundle.
+
+**The ER carve-out is pinned by a unit test, not by the corpus.** No
+committed chart carries an abdominal vascular study at an emergency or
+inpatient encounter, so the corpus cannot tell a predicate that honours the
+carve-out from one that ignores it — D113's tenth mutation, seen coming this
+time. `tests/test_ultrasound_tree.py` builds the chart the corpus does not
+have; `tests/test_ultrasound_corpus.py` checks the committed bundles. D65's
+division, and the reason both files exist.
+
+**Cost, stated before it is spent.** Four new verifier claims —
+`US1`'s two `MET` verdicts and `US2`'s `MET` and `NOT_MET` — so T-17's
+recording goes from 33 claims to 37 on **both** tiers, for D113's reason:
+`eval/report.md` joins the two recordings on shared digests and says the
+claim sets are identical by construction. `US3` cites nothing and costs
+nothing. A10 is untouched — every gate still replays, and the measurement
+scripts have never been gates (D45).
+
+**NCD 220.5 exists and is deliberately not in the corpus.** The MCD's NCD
+export lists *Ultrasound Diagnostic Procedures* at 220.5, and its nationally
+covered list enumerates A-mode, B-scan and M-mode studies — echoencephalography,
+abdominal sonography, retroperitoneal sonography — and names no duplex or
+Doppler vascular study at all. So it is not a national layer over 93975/93976
+and this tree's `nationally_covered` set is empty for the reason the
+rheumatology tree's is: there is no NCD over this procedure in this corpus to
+transcribe. That reading was made from the export during the survey and is
+**not** a corpus citation; committing 220.5 and checking the relation is
+v2.1's `national_floor` work (D112), not this row's.
+
+**Mutation round at the close.** Ten mutations, all caught by the check that
+should hold them, and two of them only after the check was corrected — which
+is the transferable part. A misstated clone declaration changes no committed
+byte until `select_patients.py --verify` recomputes the clone from it, so a
+unit test over the bundles passes with the declaration wrong; and a value
+set's declared code system is read only when something **loads** the set, so a
+test over the tree's constants passes with the system replaced by one none of
+its entries are in. A mutation that survives the wrong check has not survived.
+
+**Reverses if:** a Synthea release orders a duplex abdominal study in an
+adult module, in which case the clones become generated charts and the
+re-coding is deleted rather than kept beside them; or a committed document
+quantifies a laboratory threshold, which earns the kind §11 predicted and
+this row did not mint; or the request contract gains a place of service, at
+which point the carve-out applies to the request as well as to the prior
+studies and criterion `b` is re-measured, not refactored.
+
+---
+
+## D115 — The verifier is barred from set membership too, because it was already re-deriving it
+
+**Context.** T-94's measurement round accepted 38 of 38 claims on AI Studio
+and 36 of 38 on Vertex. Both rejections are criterion (a) of the ultrasound
+tree — *a diagnosis A57591 lists as supporting medical necessity* — answered
+`MET` over quoted `Condition` resources, and both reasons say the same
+thing:
+
+> *"The provided quotes list conditions such as essential hypertension and
+> chronic kidney disease stages 2, 3, and 4, which do not belong to the
+> required abdominal visceral vascular indications value set."*
+
+The verifier decided a **set-membership** question. It cannot: Article V
+shows it the criterion's label and its constants' *names and values*, so it
+sees `value_set_id: "abdominal_visceral_vascular_indications"` and never sees
+the set. Membership was computed by `criteria.py` against the compiled set in
+its declared code system (REQ-59) over a chart the verifier must not see.
+
+**This is v2's and v3's failure one category over, and the category is the
+same one.** D78 barred date and count arithmetic after two rounds of false
+rejections on shortfall-type `NOT_MET` claims — *"the shortfall is Article
+II's arithmetic over a chart Article V hides"*. Set membership is Article
+II's arithmetic over a **value set** Article V hides, and the instruction
+said nothing about it, because until this round no claim made the gap
+visible.
+
+**It was already a latent false rejection, on a criterion that predates this
+task.** The bariatric tree's criterion (b) is the same kind over
+`obesity_comorbidities`, and the rheumatology tree's (a) is the same kind
+over `rheumatoid_arthritis`. Both have been accepted at every measurement
+since T-17 — because their quotes name conditions whose relevance is obvious
+from the criterion's own label. *Rheumatoid arthritis* quoted for "a
+rheumatoid arthritis diagnosis this LCD supports" needs no set to judge;
+*essential hypertension* quoted for "a diagnosis A57591 lists" cannot be
+judged without one. The corpus was hiding the defect, not the prompt fixing
+it.
+
+**The measurement itself says the judgment is a coin flip.** Three claims in
+this round are criterion (a) `MET` over the same four conditions — `US1`'s,
+`US2`'s and `US3`'s, three digests because the three bundles are different
+bytes. Vertex rejected two of the three and accepted the other, on the same
+evidence and the same criterion. A check that answers differently on the same
+question is not measuring citation fidelity.
+
+**Chosen — never re-derive membership of a named value set**, added to v4's
+instruction as one paragraph with v4's asymmetry rule unchanged (`v5`), then
+`v6` after that round measured a regression in the rule the new paragraph now
+followed (below).
+The verifier keeps every tooth it had: a quote that is not evidence about the
+criterion's subject at all — a prescription cited for a diagnosis criterion,
+a note cited where the criterion is about the coded record — is still
+rejectable, and so is a value on the wrong side of a threshold the constants
+name. What it may no longer do is substitute its own idea of what a set
+contains for the set.
+
+**Rejected — putting the value set in the payload.** It would make membership
+judgeable, and it would hand the verifier the compiled policy fragment the
+criterion was evaluated against, which is re-adjudication with more inputs
+rather than citation fidelity with fewer. Article V's whole claim is that the
+checker cannot see what the decider saw.
+
+**Rejected — rewording the criterion's label until the model stops
+objecting.** The label is a compiled fact about the document, and tuning it
+to a model's reaction is fitting the policy to the checker. It would also not
+work: the Vertex reason quotes the **constant**, not the label.
+
+**Rejected — recording the rejections as findings and moving on.** A
+rejection is an answer (REQ-18), so `US1` and `US3` would carry
+`INSUFFICIENT_EVIDENCE`/`VERIFIER_REJECTED` on Vertex and `MET` on AI Studio.
+Every gate reads the AI Studio recording, so the suite would stay green while
+the committed Vertex recording said the system denies two charts it approves
+— exactly the two-recordings-disagreeing failure D113 refused when it insisted
+both tiers be measured together.
+
+**What it costs.** A changed prompt is a new measurement, never a re-run
+(D45), so all 38 claims are re-measured on **both** tiers — not just the two
+that were rejected, and not just the tier that rejected them. v4's numbers
+are not quoted for what follows.
+
+**Measurement history, every round, in order.** It took two prompt versions
+and the second one is the more interesting.
+
+| Round | AI Studio | Vertex | What it showed |
+|---|---|---|---|
+| v4 | 38/38 | 36/38 | The two false rejections above: membership decided over a set the payload names and never shows. |
+| v5 | 37/38 | not run | A **different** false rejection, and on a claim v4 had accepted at every round since T-17: a shortfall-type `NOT_MET` rejected with *"the quote is from June 10, 2025, which falls outside the required 12-month recency window"* — which is what that `NOT_MET` cites. |
+| v6 | 38/38 | 38/38 | Clean on both tiers; the recordings committed. |
+
+**v5's rejection is not noise and was not re-rolled.** The obvious response to
+one rejection in 38 is to run it again, and that is selecting a measurement
+rather than making one. The reason the model gave is the tell: it *agreed*
+with the verdict it rejected. v3's asymmetry already forbids exactly that —
+*"never reject a NOT_MET because the quotes look sufficient to you"* — but it
+forbids it by naming the **error**, and v5's new paragraph landed after that
+one, so the last thing the model read before answering was a paragraph about
+value sets. v6 states the accepting case outright — *evidence that is stale,
+short, or otherwise consistent with the criterion failing is exactly what a
+NOT_MET is expected to cite: that is an accept* — instead of only the
+forbidden one. A rule written as a prohibition is weaker than the same rule
+written as the expected case, and that is the transferable finding.
+
+**The finding worth keeping about the checker itself.** Three claims in the v4
+round were criterion (a) `MET` over the same four conditions, differing only
+in which bundle's bytes they quote, and Vertex rejected two and accepted one.
+A blind verifier asked a question it structurally cannot answer does not
+abstain — it answers, differently each time. Every round in this table is a
+sample, and the reason they are all recorded is that a table of clean rounds
+with the untidy ones dropped would say something this one does not.
+
+**Reverses if:** a claim payload is ever given the compiled set — at which
+point membership becomes checkable blind and this paragraph is the wrong
+instruction; or a measured round rejects a `MET` whose quote really is about
+another subject and v5's wording is found to have suppressed it, which is the
+failure this change could cause and the one to watch for.

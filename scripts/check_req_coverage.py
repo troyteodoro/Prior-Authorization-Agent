@@ -88,6 +88,7 @@ MAPPING: dict[str, str] = {
     "REQ-58": "tests/test_workflow.py",
     "REQ-59": "tests/test_valueset_port.py",
     "REQ-60": "tests/test_infliximab_tree.py",
+    "REQ-61": "tests/test_ultrasound_tree.py",
     # Verification
     "REQ-17": "tests/test_verifier.py",
     "REQ-18": "tests/test_verifier.py",

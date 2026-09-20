@@ -1,0 +1,109 @@
+{
+  "value_set_id": "abdominal_visceral_vascular_indications",
+  "task": "T-94",
+  "decision": "D114",
+  "status": "VERIFIED",
+  "system": "http://snomed.info/sct",
+  "system_note": "SNOMED CT because that is what LocalPatientStore reports on Condition.code. A set of A57591's ICD-10 codes would load, compare and match nobody, which is the failure REQ-59 exists to prevent (D111).",
+  "sources": [
+    {
+      "document_id": "a57591",
+      "sha256": "85707330e27df90a7efea09bd93018523af866fe273b6e93a9255b46b249091d"
+    }
+  ],
+  "compiled_from": "A57591's Group 1 -- the 316 ICD-10-CM codes that support medical necessity for 93975 and 93976, the abdominal, retroperitoneal and pelvic organ studies this tree is compiled for. Groups 2 and 3 belong to other code pairs and are not in this set, the way the rheumatoid arthritis set is one bullet's subset of A56432's 406 codes (D111, D114).",
+  "entries": [
+    {
+      "system": "http://snomed.info/sct",
+      "code": "59621000",
+      "display": "Essential hypertension (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "I10",
+        "document_id": "a57591",
+        "char_start": 11819,
+        "char_end": 11856,
+        "quote": "I10\n\nEssential (primary) hypertension"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 59621000 and ICD-10-CM I10 both denote essential (primary) hypertension. No corpus document and no credential-free re-downloadable source binds the two systems -- D36's finding, unchanged at T-94. The SNOMED code is the one Synthea's own hypertension module emits (Diagnose_Hypertension, ConditionOnset, SNOMED-CT 59621000), read from modules/hypertension.json inside the pinned synthea-with-dependencies.jar, so it is the code a chart in this corpus actually carries rather than one recalled."
+      },
+      "note": "L35755's indication I.A.1 reads 'Uncontrolled hypertension' and A57591 codes the group with plain I10. The article is the coding authority and the LCD is the coverage authority, which is D28's two classes of claim: this entry follows the article, and the word 'uncontrolled' is a judgment no code carries."
+    },
+    {
+      "system": "http://snomed.info/sct",
+      "code": "431855005",
+      "display": "Chronic kidney disease stage 1 (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "N18.1",
+        "document_id": "a57591",
+        "char_start": 18776,
+        "char_end": 18814,
+        "quote": "N18.1\n\nChronic kidney disease, stage 1"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 431855005 and ICD-10-CM N18.1 both denote chronic kidney disease stage 1. The SNOMED code is the one Synthea emits at CKD1 Diagnosis (ConditionOnset), read from modules/metabolic_syndrome/kidney_conditions.json inside the pinned jar."
+      }
+    },
+    {
+      "system": "http://snomed.info/sct",
+      "code": "431856006",
+      "display": "Chronic kidney disease stage 2 (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "N18.2",
+        "document_id": "a57591",
+        "char_start": 18816,
+        "char_end": 18861,
+        "quote": "N18.2\n\nChronic kidney disease, stage 2 (mild)"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 431856006 and ICD-10-CM N18.2 both denote chronic kidney disease stage 2. The SNOMED code is the one Synthea emits at CKD2 Diagnosis (ConditionOnset), read from modules/metabolic_syndrome/kidney_conditions.json inside the pinned jar."
+      }
+    },
+    {
+      "system": "http://snomed.info/sct",
+      "code": "433144002",
+      "display": "Chronic kidney disease stage 3 (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "N18.30",
+        "document_id": "a57591",
+        "char_start": 18863,
+        "char_end": 18914,
+        "quote": "N18.30\n\nChronic kidney disease, stage 3 unspecified"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 433144002 denotes chronic kidney disease stage 3 without distinguishing 3a from 3b, and N18.30 is the unspecified member of the ICD-10 stage 3 family, which A57591 lists beside N18.31 and N18.32. The SNOMED code is the one Synthea emits at CKD3 Diagnosis (ConditionOnset), read from modules/metabolic_syndrome/kidney_conditions.json inside the pinned jar."
+      }
+    },
+    {
+      "system": "http://snomed.info/sct",
+      "code": "431857002",
+      "display": "Chronic kidney disease stage 4 (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "N18.4",
+        "document_id": "a57591",
+        "char_start": 19000,
+        "char_end": 19047,
+        "quote": "N18.4\n\nChronic kidney disease, stage 4 (severe)"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 431857002 and ICD-10-CM N18.4 both denote chronic kidney disease stage 4. The SNOMED code is the one Synthea emits at CKD4 Diagnosis (ConditionOnset), read from modules/metabolic_syndrome/kidney_conditions.json inside the pinned jar."
+      }
+    }
+  ],
+  "known_limit": "Five entries out of Group 1's 316 codes, and the boundary is where the corpus can be checked rather than where the document stops. Every entry is a condition Synthea's generators actually emit, so a chart can match it; the remaining codes -- visceral artery stenosis, portal hypertension, mesenteric thrombosis, scrotal and ovarian torsion -- are absent from the generator, and an entry nothing can carry is an unverifiable mapping. End-stage renal disease is deliberately absent for a different reason: Synthea codes it SNOMED 46177005 and A57591's Group 1 stops at N18.5, so the anchor does not exist. A chart coding an indication more specifically than these five abstains rather than matching, which is a false abstention and not a false verdict."
+}

@@ -112,9 +112,10 @@ BMI_CEILING = 45.0
 BMI_THRESHOLD = 35.0  # criterion (a)'s boundary; at least one patient below it
 BMI_HIGH_MARK = 40.0  # and at least one at or above this
 BASE_BUNDLE_COUNT = 6  # the D35 selection
-#: plus the E12 patient (D73), the T-88 clone (D102) and T-93's three
-#: rheumatology charts — two generated, one derived (D113).
-BUNDLE_COUNT = 11
+#: plus the E12 patient (D73), the T-88 clone (D102), T-93's three
+#: rheumatology charts — two generated, one derived (D113) — and T-94's three
+#: ultrasound charts: one generated and two derived from it (D114).
+BUNDLE_COUNT = 14
 
 LOINC_BMI = "39156-5"
 SNOMED_T2DM = "44054006"
@@ -166,6 +167,51 @@ RXNORM_SYSTEM = "http://www.nlm.nih.gov/research/umls/rxnorm"
 RXNORM_ETANERCEPT = "802652"
 ETANERCEPT_DISPLAY = "1 ML etanercept 50 MG/ML Prefilled Syringe [Enbrel]"
 
+# The ultrasound cohort (T-94, D114). A fourth Synthea run, in WPS's
+# territory so the third practice's tree is the one a request resolves to, and
+# under the next seed in the sequence. Two things are measured before it runs
+# and recorded here as decisions:
+#
+#   * Synthea emits exactly one abdominal or visceral vascular ultrasound
+#     anywhere in the pinned jar -- `Renal_Ultrasound` in
+#     `modules/spina_bifida.json`, SNOMED 709640007, at a single infant workup
+#     behind a congenital prevalence. So no population size produces a chart
+#     with a prior study at a useful age, and the prior study is declared.
+#   * The indication codes below are the ones Synthea's own modules emit for
+#     the conditions A57591's Group 1 lists -- essential hypertension from
+#     `modules/hypertension.json` and the chronic kidney disease stages from
+#     `modules/metabolic_syndrome/kidney_conditions.json`. Codes, not value
+#     sets: what they mean to a criteria tree is the policy plane's claim and
+#     is asserted in the suite (Art. VI).
+US_SEED = 1004
+US_CLINICIAN_SEED = US_SEED
+US_POPULATION = 200  # hypertension is common; the base run's size suffices
+US_STATE = "Iowa"  # WPS, Jurisdictions J-5 and J-8 (D114)
+US_STATE_CODE = "IA"
+US_OUTPUT_DIR = WORK_DIR / "output_us"
+ULTRASOUND_COHORT = "ultrasound"
+SNOMED_ABDOMINAL_VASCULAR_STUDY = "709640007"
+ABDOMINAL_VASCULAR_STUDY_DISPLAY = "Doppler ultrasonography of renal vein (procedure)"
+SNOMED_SYSTEM = "http://snomed.info/sct"
+SNOMED_US_INDICATIONS = (
+    "59621000",     # Essential hypertension (disorder)
+    "431855005",    # Chronic kidney disease stage 1 (disorder)
+    "431856006",    # Chronic kidney disease stage 2 (disorder)
+    "433144002",    # Chronic kidney disease stage 3 (disorder)
+    "431857002",    # Chronic kidney disease stage 4 (disorder)
+)
+#: The care settings L35755 drops from its own arithmetic, in the vocabulary
+#: FHIR codes them. A copy source is required to be outside them, so the
+#: declared prior study is one the criterion counts (D114).
+EXCLUDED_ENCOUNTER_CLASSES = ("EMER", "IMP")
+#: How far from the reference date each clone's copy source must sit. The
+#: window itself is the policy plane's (twelve months, L35755); these bounds
+#: are wider on both sides so the selection does not turn on the constant --
+#: a chart whose "old" study were eleven and a half months back would make the
+#: label depend on rounding rather than on the document.
+US_OUTSIDE_MIN_MONTHS = 24
+US_INSIDE_MAX_MONTHS = 6
+
 # The second-jurisdiction patient (T-88, D102). One committed bundle cloned
 # and re-addressed into Palmetto GBA's territory, so a determination can run
 # under `ncd-100.1-jjm-v1` on a chart whose note T-15's recording already
@@ -208,6 +254,41 @@ CLONES = [
         },
         "task": "T-93",
         "decision": "D113",
+    },
+    # T-94 (D114): the pair the frequency limit turns on. Both are the same
+    # Iowa chart with one procedure copied and re-coded as the abdominal
+    # vascular study Synthea never writes; they differ only in *which*
+    # procedure was copied, so the prior study's date, encounter and care
+    # setting are the generator's and the two rows differ by that date alone.
+    # Neither declares an address: the variant is the date, not the
+    # jurisdiction.
+    {
+        "cloned_from": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+        "variant": "prior-study-outside-window",
+        "add_procedure": {
+            "copy_of_resource_id": "53126ee7-0f8a-b494-2a9e-cc52c39279c8",
+            "performed_date": "2024-06-17",
+            "resource_id_suffix": "-us-prior-synthetic",
+            "code": SNOMED_ABDOMINAL_VASCULAR_STUDY,
+            "system": SNOMED_SYSTEM,
+            "display": ABDOMINAL_VASCULAR_STUDY_DISPLAY,
+        },
+        "task": "T-94",
+        "decision": "D114",
+    },
+    {
+        "cloned_from": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+        "variant": "prior-study-inside-window",
+        "add_procedure": {
+            "copy_of_resource_id": "53126ee7-0f8a-b494-3b90-6334f168db89",
+            "performed_date": "2026-05-25",
+            "resource_id_suffix": "-us-prior-synthetic",
+            "code": SNOMED_ABDOMINAL_VASCULAR_STUDY,
+            "system": SNOMED_SYSTEM,
+            "display": ABDOMINAL_VASCULAR_STUDY_DISPLAY,
+        },
+        "task": "T-94",
+        "decision": "D114",
     },
 ]
 
@@ -270,6 +351,10 @@ def clone_bundle(source_text: str, declaration: dict) -> tuple[str, str]:
         bundle["entry"].append(
             _declared_medication_entry(bundle, declaration["add_medication"])
         )
+    if "add_procedure" in declaration:
+        bundle["entry"].append(
+            _declared_procedure_entry(bundle, declaration["add_procedure"])
+        )
     return new_id, json.dumps(bundle, ensure_ascii=False)
 
 
@@ -312,6 +397,67 @@ def _declared_medication_entry(bundle: dict, declaration: dict) -> dict:
     resource["id"] = resource["id"] + declaration["resource_id_suffix"]
     entry["fullUrl"] = f"urn:uuid:{resource['id']}"
     resource["medicationCodeableConcept"] = {
+        "coding": [
+            {
+                "system": declaration["system"],
+                "code": declaration["code"],
+                "display": declaration["display"],
+            }
+        ],
+        "text": declaration["display"],
+    }
+    return entry
+
+
+def _declared_procedure_entry(bundle: dict, declaration: dict) -> dict:
+    """One `Procedure`, copied from one the chart already carries and re-coded.
+
+    `_declared_medication_entry`'s shape for the resource type L35755's
+    frequency limit reads, and the reason is sharper here: the whole verdict
+    turns on **when** the prior study happened and **where**, so the date, the
+    encounter reference and the setting are the copy source's and the
+    declaration moves exactly two fields — the resource id and the code
+    (D73's shape for the E12 observation, D113's for the prescription, D114).
+
+    The declaration names its copy source by resource id rather than by code,
+    because two procedures of the same code at different dates are exactly the
+    choice the two clones make, and it restates that source's date so a wrong
+    id fails here rather than producing a chart that quietly answers the other
+    way.
+    """
+    source = None
+    for entry in bundle["entry"]:
+        resource = entry.get("resource", {})
+        if resource.get("resourceType") != "Procedure":
+            continue
+        if declaration["code"] in {c.get("code") for c in _codings(resource)}:
+            sys.exit(
+                f"the source chart already carries a procedure coded "
+                f"{declaration['code']}; the declared addition would not be "
+                "the difference it claims to be"
+            )
+        if resource.get("id") == declaration["copy_of_resource_id"]:
+            source = entry
+    if source is None:
+        sys.exit(
+            "the source chart carries no Procedure "
+            f"{declaration['copy_of_resource_id']!r} to copy"
+        )
+    performed = (source["resource"].get("performedPeriod") or {}).get(
+        "start"
+    ) or source["resource"].get("performedDateTime")
+    if (performed or "")[:10] != declaration["performed_date"]:
+        sys.exit(
+            f"Procedure {declaration['copy_of_resource_id']} was performed "
+            f"{performed!r}, and the declaration says "
+            f"{declaration['performed_date']!r}. The clone's whole verdict is "
+            "that date (D114)."
+        )
+    entry = copy.deepcopy(source)
+    resource = entry["resource"]
+    resource["id"] = resource["id"] + declaration["resource_id_suffix"]
+    entry["fullUrl"] = f"urn:uuid:{resource['id']}"
+    resource["code"] = {
         "coding": [
             {
                 "system": declaration["system"],
@@ -368,6 +514,8 @@ def read_bundle(path: Path) -> dict:
     has_active_methotrexate = False
     has_active_excluded_biologic = False
     methotrexate_orders = 0
+    active_indications: set[str] = set()
+    prior_study_dates: list[str] = []
     for entry in bundle.get("entry", []):
         resource = entry.get("resource", {})
         rtype = resource.get("resourceType")
@@ -389,6 +537,11 @@ def read_bundle(path: Path) -> dict:
                 has_t2dm = True
             if active and SNOMED_RA in codes:
                 has_active_ra = True
+            # T-94 (D114): the indications A57591's Group 1 lists, as the
+            # corpus codes them. A resolved diagnosis is not one, for the
+            # reason a resolved comorbidity is not criterion (b)'s.
+            if active:
+                active_indications |= codes & set(SNOMED_US_INDICATIONS)
         elif rtype == "MedicationRequest":
             # `status` is carried by the record and read here the way the
             # predicate reads it: a completed order is not an active one.
@@ -403,6 +556,17 @@ def read_bundle(path: Path) -> dict:
                 has_active_methotrexate = True
             if active and RXNORM_ETANERCEPT in codes:
                 has_active_excluded_biologic = True
+        elif rtype == "Procedure":
+            # T-94 (D114): every abdominal/visceral vascular study on the
+            # chart, by date. The interval criterion reads the dates, so the
+            # manifest records them and `--verify` recomputes them.
+            codes = {c.get("code") for c in _codings(resource)}
+            if SNOMED_ABDOMINAL_VASCULAR_STUDY in codes:
+                when = (resource.get("performedPeriod") or {}).get(
+                    "start"
+                ) or resource.get("performedDateTime")
+                if when:
+                    prior_study_dates.append(when)
     latest = max(bmi_obs) if bmi_obs else None  # ISO dates sort lexically
     return {
         "patient_id": patient_id,
@@ -413,6 +577,8 @@ def read_bundle(path: Path) -> dict:
         "has_active_methotrexate": has_active_methotrexate,
         "has_active_excluded_biologic": has_active_excluded_biologic,
         "methotrexate_orders": methotrexate_orders,
+        "active_indication_codes": sorted(active_indications),
+        "prior_study_dates": sorted(prior_study_dates),
     }
 
 
@@ -547,6 +713,114 @@ def _pick_e12_base(candidates: list[dict]) -> dict:
     )
 
 
+def _encounter_classes(bundle: dict) -> dict[str, str]:
+    """`urn:uuid:<id>` -> the encounter's class code, for the copy sources."""
+    classes = {}
+    for entry in bundle.get("entry", []):
+        resource = entry.get("resource", {})
+        if resource.get("resourceType") != "Encounter":
+            continue
+        code = (resource.get("class") or {}).get("code")
+        if code and resource.get("id"):
+            classes[f"urn:uuid:{resource['id']}"] = code
+    return classes
+
+
+def copy_sources(path: Path) -> list[dict]:
+    """Every procedure on a chart a declared prior study could be copied from.
+
+    A copy source is a `Procedure` with a date, at an encounter L35755 does
+    not exclude. The clone declarations name one of these by resource id and
+    change two fields — so the prior study's **date, encounter and setting are
+    Synthea's**, not the compiler's, which is what keeps the frequency verdict
+    a verdict about a real chart (D73's shape for the E12 observation, D113's
+    for the appended prescription, D114).
+
+    Sorted by date so a reader of the printed list sees the two ends the two
+    clones need, and deterministic over the bundle either way.
+    """
+    bundle = json.loads(path.read_text(encoding="utf-8"))
+    classes = _encounter_classes(bundle)
+    sources = []
+    for entry in bundle.get("entry", []):
+        resource = entry.get("resource", {})
+        if resource.get("resourceType") != "Procedure":
+            continue
+        when = (resource.get("performedPeriod") or {}).get(
+            "start"
+        ) or resource.get("performedDateTime")
+        if not when or not resource.get("id"):
+            continue
+        reference = (resource.get("encounter") or {}).get("reference")
+        encounter_class = classes.get(reference) if reference else None
+        if encounter_class in EXCLUDED_ENCOUNTER_CLASSES:
+            continue
+        sources.append(
+            {
+                "resource_id": resource["id"],
+                "performed": when,
+                "encounter_class": encounter_class,
+                "code": (_codings(resource)[0] or {}).get("code"),
+            }
+        )
+    return sorted(sources, key=lambda s: (s["performed"], s["resource_id"]))
+
+
+def _select_ultrasound(candidates: list[dict]) -> dict:
+    """The one generated ultrasound chart, deterministically (D114).
+
+    It carries an active diagnosis from A57591's Group 1 as the corpus codes
+    it, which is criterion (a)'s fact, and it carries **no** abdominal or
+    visceral vascular study of its own, so each clone's declared prior study
+    is the only one on its chart and the pair differs by exactly that.
+
+    It must also offer both copy sources the two clones need: a procedure
+    comfortably outside the twelve-month interval and one comfortably inside
+    it, each at an encounter the document does not exclude. Charts are ranked
+    by how many indication codes they carry and then by id, so the choice is
+    a property of the population rather than of the order Synthea exported.
+    """
+    reference = date.fromisoformat(
+        f"{REFERENCE_DATE[:4]}-{REFERENCE_DATE[4:6]}-{REFERENCE_DATE[6:]}"
+    )
+    eligible = []
+    for candidate in candidates:
+        if not candidate["active_indication_codes"] or candidate["prior_study_dates"]:
+            continue
+        sources = copy_sources(candidate["source_path"])
+        outside = [
+            s
+            for s in sources
+            if _months_before(reference, date.fromisoformat(s["performed"][:10]))
+            >= US_OUTSIDE_MIN_MONTHS
+        ]
+        inside = [
+            s
+            for s in sources
+            if 0
+            <= _months_before(reference, date.fromisoformat(s["performed"][:10]))
+            <= US_INSIDE_MAX_MONTHS
+        ]
+        if outside and inside:
+            eligible.append((candidate, outside, inside))
+    if not eligible:
+        sys.exit(
+            f"seed {US_SEED} yields no chart carrying an active indication from "
+            f"{list(SNOMED_US_INDICATIONS)}, no study of its own, and a "
+            f"procedure both at least {US_OUTSIDE_MIN_MONTHS} months and at "
+            f"most {US_INSIDE_MAX_MONTHS} months before {REFERENCE_DATE} at a "
+            "non-excluded encounter. Raise US_POPULATION or bump US_SEED and "
+            "re-record — the recorded seed is whichever worked (D73, D114)."
+        )
+    eligible.sort(
+        key=lambda e: (-len(e[0]["active_indication_codes"]), e[0]["patient_id"])
+    )
+    chosen, outside, inside = eligible[0]
+    chosen["copy_source_outside"] = outside[-1]
+    chosen["copy_source_inside"] = inside[-1]
+    return chosen
+
+
 def _select_rheumatology(candidates: list[dict]) -> tuple[dict, dict]:
     """The two generated rheumatology charts, deterministically (D113).
 
@@ -645,6 +919,8 @@ def _record(path: Path, cohort: str) -> dict:
         "has_active_methotrexate": info["has_active_methotrexate"],
         "has_active_excluded_biologic": info["has_active_excluded_biologic"],
         "methotrexate_orders": info["methotrexate_orders"],
+        "active_indication_codes": info["active_indication_codes"],
+        "prior_study_dates": info["prior_study_dates"],
     }
 
 
@@ -795,6 +1071,142 @@ def generate_rheumatology() -> int:
 
 
 # --------------------------------------------------------------------------
+# The ultrasound cohort (--generate-ultrasound): Java, no network once the jar
+# is present (T-94, D114)
+# --------------------------------------------------------------------------
+
+
+def generate_ultrasound() -> int:
+    """Run Synthea in WPS's territory and adopt the one selected chart.
+
+    Additive and re-runnable in `--generate-rheumatology`'s shape: it replaces
+    its own record and touches no other cohort. One chart rather than three,
+    because the two rows that turn on a prior study are clones of it — the
+    generator writes no abdominal vascular study at any population size, so
+    the study is declared and the pair differs by exactly which of the
+    patient's own procedures was copied and re-coded (D114).
+
+    Ends by printing the copy sources the clone declarations name. They are a
+    property of the generated chart and cannot be written before it exists,
+    which is why this is the same two-step T-88 and T-93 ran: generate, read
+    the declaration off the chart, then `--clone`.
+    """
+    jar_digest = _ensure_jar()
+    command = _run_synthea(
+        US_SEED, US_OUTPUT_DIR, state=US_STATE, population=US_POPULATION
+    )
+    candidates = _read_population(US_OUTPUT_DIR)
+    print(f"{len(candidates)} patient bundles generated (ultrasound run)")
+    chosen = _select_ultrasound(candidates)
+
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    dest = BUNDLES_DIR / chosen["source_path"].name
+    shutil.copyfile(chosen["source_path"], dest)
+    record = _record(dest, ULTRASOUND_COHORT)
+    manifest["bundles"] = [
+        r for r in manifest["bundles"] if r["patient_id"] != record["patient_id"]
+    ]
+    manifest["bundles"].append(record)
+    print(
+        f"  {record['patient_id'][:12]} indications "
+        f"{record['active_indication_codes']}, "
+        f"{len(record['prior_study_dates'])} prior study(ies)  {dest.name}"
+    )
+
+    manifest["synthea_ultrasound"] = {
+        "task": "T-94",
+        "decision": "D114",
+        "seed": US_SEED,
+        "clinician_seed": US_CLINICIAN_SEED,
+        "reference_date": REFERENCE_DATE,
+        "population": US_POPULATION,
+        "age_range": AGE_RANGE,
+        "state": US_STATE,
+        "jar_sha256": jar_digest,
+        "command": command,
+        "selection": {
+            "cohort": ULTRASOUND_COHORT,
+            "chart_count": 1,
+            "state_code": US_STATE_CODE,
+            "indication_codes": list(SNOMED_US_INDICATIONS),
+            "study_code": SNOMED_ABDOMINAL_VASCULAR_STUDY,
+            "rule": (
+                "the chart carries at least one active Condition coded in "
+                f"{list(SNOMED_US_INDICATIONS)} and no Procedure coded SNOMED "
+                f"{SNOMED_ABDOMINAL_VASCULAR_STUDY}, and it carries a "
+                f"Procedure at least {US_OUTSIDE_MIN_MONTHS} months before "
+                f"{REFERENCE_DATE} and another at most {US_INSIDE_MAX_MONTHS} "
+                "months before it, both at encounters outside "
+                f"{list(EXCLUDED_ENCOUNTER_CLASSES)} — the two copy sources "
+                "the declared clones name. Condition codes read from "
+                "modules/hypertension.json and "
+                "modules/metabolic_syndrome/kidney_conditions.json, the study "
+                "code from modules/spina_bifida.json, all in the pinned jar "
+                "(D114)."
+            ),
+        },
+    }
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"manifest written: {MANIFEST_PATH.relative_to(REPO_ROOT)}")
+    print("\ncopy sources for the clone declarations (D114):")
+    for label in ("copy_source_outside", "copy_source_inside"):
+        source = chosen[label]
+        print(
+            f"  {label}: id={source['resource_id']} "
+            f"performed={source['performed'][:10]} "
+            f"encounter_class={source['encounter_class']} "
+            f"code={source['code']}"
+        )
+    print("\nwrite them into CLONES, then run --clone")
+    return 0
+
+
+# --------------------------------------------------------------------------
+# Re-recording (--rerecord): disk only (T-94, D114)
+# --------------------------------------------------------------------------
+
+
+def rerecord() -> int:
+    """Re-derive every committed bundle's manifest facts from its own bytes.
+
+    Adopts nothing and regenerates nothing: `_record` reads the committed
+    file, so every hash is unchanged by construction and a hash that moved is
+    a corrupted checkout rather than a new corpus (D73's rule is about
+    adopting a *regenerated bundle*, which this cannot do).
+
+    It exists because the facts a record carries grow: T-93 added three
+    medication fields and T-94 two more, and a manifest where eight records
+    predate the fields and three carry them is one `--verify` can only check
+    for the newest cohort. The cohort each record declares is preserved, since
+    that is a decision about why the chart was selected and not a fact in the
+    bytes (D113).
+    """
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    rebuilt = []
+    for existing in manifest["bundles"]:
+        path = BUNDLES_DIR / existing["filename"]
+        if not path.exists():
+            sys.exit(f"{existing['filename']} is in the manifest and not on disk")
+        record = _record(path, existing["cohort"])
+        if record["sha256"] != existing["sha256"]:
+            sys.exit(
+                f"{existing['filename']}: bytes hash to {record['sha256'][:12]} "
+                f"and the manifest says {existing['sha256'][:12]}. This mode "
+                "re-derives facts from committed bytes and adopts nothing; a "
+                "drifted bundle is restored from git (D73)."
+            )
+        rebuilt.append(record)
+    manifest["bundles"] = rebuilt
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"{len(rebuilt)} record(s) re-derived; every hash unchanged")
+    return 0
+
+
+# --------------------------------------------------------------------------
 # The clone (--clone): disk only, no Java, no network (T-88, D102)
 # --------------------------------------------------------------------------
 
@@ -845,6 +1257,16 @@ def clone() -> int:
             added = declaration["add_medication"]
             record["synthetic_medication"] = {
                 "copy_of_code": added["copy_of_code"],
+                "resource_id_suffix": added["resource_id_suffix"],
+                "code": added["code"],
+                "system": added["system"],
+                "display": added["display"],
+            }
+        if "add_procedure" in declaration:
+            added = declaration["add_procedure"]
+            record["synthetic_procedure"] = {
+                "copy_of_resource_id": added["copy_of_resource_id"],
+                "performed_date": added["performed_date"],
                 "resource_id_suffix": added["resource_id_suffix"],
                 "code": added["code"],
                 "system": added["system"],
@@ -957,7 +1379,8 @@ def verify() -> int:
             failures,
         )
         _check(
-            r.get("cohort") in (BARIATRIC_COHORT, RHEUMATOLOGY_COHORT),
+            r.get("cohort")
+        in (BARIATRIC_COHORT, RHEUMATOLOGY_COHORT, ULTRASOUND_COHORT),
             f"{r['filename']}: declares a known cohort ({r.get('cohort')!r})",
             failures,
         )
@@ -1178,6 +1601,65 @@ def verify() -> int:
                 failures,
             )
 
+    # The ultrasound cohort (T-94, D114). The generated chart carries the
+    # indication and no study of its own; each clone carries exactly one
+    # declared study, and the two dates are what the frequency verdicts turn
+    # on — so they are re-derived from the committed bytes rather than
+    # trusted to the declaration that produced them.
+    ultrasound = [r for r in records if r.get("cohort") == ULTRASOUND_COHORT]
+    declared_ids = {clone_patient_id(d) for d in CLONES}
+    generated_us = [r for r in ultrasound if r["patient_id"] not in declared_ids]
+    derived_us = [r for r in ultrasound if r["patient_id"] in declared_ids]
+    _check(
+        len(generated_us) == 1 and len(derived_us) == 2,
+        f"one generated ultrasound chart and two derived from it "
+        f"({len(generated_us)} and {len(derived_us)} found)",
+        failures,
+    )
+    if generated_us:
+        _check(
+            bool(generated_us[0]["active_indication_codes"]),
+            "the generated chart carries an active indication from A57591's "
+            f"Group 1 as the corpus codes it: "
+            f"{generated_us[0]['active_indication_codes']}",
+            failures,
+        )
+        _check(
+            not generated_us[0]["prior_study_dates"],
+            "the generated chart carries no abdominal vascular study of its "
+            "own, so each clone's declared study is the only one on its chart",
+            failures,
+        )
+    reference = date.fromisoformat(
+        f"{REFERENCE_DATE[:4]}-{REFERENCE_DATE[4:6]}-{REFERENCE_DATE[6:]}"
+    )
+    for record in derived_us:
+        dates = record["prior_study_dates"]
+        _check(
+            len(dates) == 1,
+            f"{record['filename']}: exactly one declared prior study "
+            f"({len(dates)} found)",
+            failures,
+        )
+        if len(dates) != 1:
+            continue
+        months = _months_before(reference, date.fromisoformat(dates[0][:10]))
+        declaration = next(
+            d
+            for d in CLONES
+            if clone_patient_id(d) == record["patient_id"]
+        )
+        outside = declaration["variant"].endswith("outside-window")
+        _check(
+            (months >= US_OUTSIDE_MIN_MONTHS)
+            if outside
+            else (0 <= months <= US_INSIDE_MAX_MONTHS),
+            f"{record['filename']}: the declared study is {months} month(s) "
+            f"before {REFERENCE_DATE}, which is what "
+            f"{declaration['variant']!r} claims",
+            failures,
+        )
+
     if bmis:
         _check(
             all(BMI_FLOOR <= b <= BMI_CEILING for b in bmis),
@@ -1212,6 +1694,16 @@ def main() -> int:
         action="store_true",
         help="generate and adopt the rheumatology cohort only (T-93), then clone",
     )
+    mode.add_argument(
+        "--generate-ultrasound",
+        action="store_true",
+        help="generate and adopt the ultrasound cohort only (T-94), then clone",
+    )
+    mode.add_argument(
+        "--rerecord",
+        action="store_true",
+        help="re-derive every committed bundle's manifest facts from its bytes",
+    )
     mode.add_argument("--clone", action="store_true", help="recompute the declared clones from their committed sources")
     mode.add_argument("--verify", action="store_true", help="verify the committed bundles (default)")
     args = parser.parse_args()
@@ -1219,6 +1711,10 @@ def main() -> int:
         return generate()
     if args.generate_rheumatology:
         return generate_rheumatology()
+    if args.generate_ultrasound:
+        return generate_ultrasound()
+    if args.rerecord:
+        return rerecord()
     if args.clone:
         return clone()
     return verify()

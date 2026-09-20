@@ -321,6 +321,7 @@ class AgenticRetrievalPlanner:
             observations=patient_store.get_observations(patient_id),
             conditions=patient_store.get_conditions(patient_id),
             medications=patient_store.get_medications(patient_id),
+            procedures=patient_store.get_procedures(patient_id),
             value_sets={
                 value_set_id: policy_store.get_value_set(value_set_id)
                 for value_set_id in declared_value_set_ids(tree)

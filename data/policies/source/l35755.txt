@@ -1,0 +1,744 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05101 - MAC A
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05102 - MAC B
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05201 - MAC A
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05202 - MAC B
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05301 - MAC A
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05302 - MAC B
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05401 - MAC A
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05402 - MAC B
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05901 - MAC A
+
+J - 05
+
+Alabama
+Alaska
+Arizona
+Arkansas
+California - Entire State
+Colorado
+Connecticut
+Delaware
+Florida
+Georgia
+Hawaii
+Idaho
+Illinois
+Indiana
+Iowa
+Kansas
+Kentucky
+Louisiana
+Maine
+Maryland
+Massachusetts
+Michigan
+Mississippi
+Missouri - Entire State
+Montana
+Nebraska
+Nevada
+New Hampshire
+New Jersey
+New Mexico
+North Carolina
+North Dakota
+Ohio
+Oklahoma
+Oregon
+Pennsylvania
+Rhode Island
+South Carolina
+South Dakota
+Tennessee
+Texas
+Utah
+Vermont
+Virginia
+Washington
+West Virginia
+Wisconsin
+Wyoming
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08101 - MAC A
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08102 - MAC B
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08201 - MAC A
+
+J - 08
+
+Michigan
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08202 - MAC B
+
+J - 08
+
+Michigan
+
+LCD Information
+
+Document Information
+
+Source LCD ID
+
+N/A
+
+LCD ID
+
+L35755
+
+Original ICD-9 LCD ID
+
+Not Applicable
+
+LCD Title
+
+Non-Invasive Abdominal / Visceral Vascular Studies
+
+Proposed LCD in Comment Period
+
+N/A
+
+Source Proposed LCD
+
+DL35755
+
+Original Effective Date
+
+For services performed on or after 10/01/2015
+
+Revision Effective Date
+
+For services performed on or after 01/01/2026
+
+Revision Ending Date
+
+N/A
+
+Retirement Date
+
+N/A
+
+Notice Period Start Date
+
+07/01/2015
+
+Notice Period End Date
+
+08/15/2015
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+Issue
+
+Issue Description
+
+Review completed with no change in coverage.
+
+Issue - Explanation of Change Between Proposed LCD and Final LCD
+
+CMS National Coverage Policy
+
+Title XVIII of the Social Security Act section 1833 (e) prohibits Medicare payment for any claim which lacks the necessary information to process the claim.
+
+Title XVIII of the Social Security Act section 1862 (a) (1) (A) allows coverage and payment of those items or services that are considered to be reasonable and necessary for the diagnosis or treatment of illness or injury or to improve the functioning of a malformed body member.
+
+Title XVIII of the Social Security Act section 1862 (a) (1) (D) excludes Medicare payment for any expenses incurred for items or services that are investigational or experimental.
+
+Title XVIII of the Social Security Act section 1862 (a) (7) excludes routine physical examinations and services from Medicare coverage.
+
+42 CFR, Section 410.32 Diagnosis x-ray tests, diagnostic laboratory tests, and other diagnostic indicates that diagnostic tests may only be ordered by the treating physician (or other treating practitioner acting within the scope of his or her license and Medicare requirements) who furnishes a consultation or treats a beneficiary for a specific medical problem and who uses the results in the management of the beneficiary’s specific medical problem. Tests not ordered by the physician or other qualified non-physician provider who is treating the patient are not reasonable and necessary (42 CFR 411.15(k) (1).
+
+42 CFR, Section 410.32 (b) Diagnostic x-ray and other diagnostic tests. (1) Basic rule … all diagnostic x-ray and other diagnostic tests covered under section 1861(s)(3) of the Act and payable under the physician fee schedule must be furnished under the appropriate level of supervision by a physician as defined in section 1861® of the Act. Services furnished without the required level of supervision are not reasonable and necessary. (see 42 CFR 411.15(k)(1)).
+
+CMS Pub 100-02 Medicare Benefit Policy Manual, Chapter 15 – Covered Medical and Other Health Services, Section 80 – Requirements for Diagnostic X-Ray, Diagnostic Laboratory, and Other Diagnostic Tests.
+
+CMS Pub 100-03 Medicare National Coverage Determinations (NCD) Manual - Chapter 1 – Coverage Determinations
+Part 4 Section 220.5 - Ultrasound Diagnostic Procedures
+
+CMS Pub 100-04 Medicare Claims Processing Manual, Chapter 13 – Radiology Services and Other Diagnostic Procedures, Sections –
+10.1 Billing Part B Radiology Services and Other Diagnostic Procedures and
+20 – Payment Conditions for Radiology Services,
+Chapter 16 – Laboratory Services, Section
+40.2 – Payment Limit for Purchased Services.
+
+CMS Pub 100-08, Medicare Program Integrity Manual, Chapter 13 – Local Coverage Determinations, Section 13.5.1 – Reasonable and Necessary Provisions in LCDs.
+
+CMS Publication 100-09, Medicare Contractor Beneficiary and Provider Communications Manual, Chapter 5 - Correct Coding Initiative.
+
+Coverage Guidance
+
+Coverage Indications, Limitations, and/or Medical Necessity
+
+Overview
+Non-invasive abdominal/visceral vascular studies utilize ultrasonic Doppler and physiologic principles to assess the irregularities in blood flow in renal, iliac, and femoral artery systems. These tests are also used to diagnose aortic aneurysms. Noninvasive abdominal/ visceral vascular studies include the patient care required to perform the studies, supervision of the studies, and interpretation of study results, with copies for patient records of test results and analysis of all data, including bi-directional vascular flow or imaging when provided.
+
+Diagnostic tests must be ordered by the physician who is treating the beneficiary and who will use the results in the management of the beneficiary’s specific medical problem. Services are deemed medically necessary when all the following conditions are met:
+
+1. Signs/symptoms of ischemia or altered blood flow are present;
+2. The information is necessary for appropriate medical and/or surgical management;
+3. The test is not redundant of other diagnostic procedures that must be performed. Although, in some circumstances, non-invasive vascular tests are complimentary, such as MRA and duplex, where the latter may confirm an indeterminate finding or demonstrate the physiologic significance of an anatomic stenosis such as in renal, iliac, and/or femoral arteries.
+
+Definitions:
+Duplex Scans: Duplex combines Doppler and conventional ultrasound, allowing the structure of blood vessels, how the blood is flowing through the vessels, and whether there is any obstruction in the vessels to be seen. Color Doppler produces a picture of the blood vessel, and a computer converts the Doppler sounds into colors overlaid on the image, representing information about the speed and direction of blood flow. Using spectral Doppler analysis, the duplex scan images provide anatomic and hemodynamic information, identifying the presence of any stenosis or plaque in the arteries. Duplex scans are in real-time.
+
+I. Abdominal/Visceral Vascular Studies
+Abdominal/visceral non-invasive vascular studies are indicated in the evaluation and/or management of vascular disease along with the narrowing or blockage of arteries that supply blood to the abdomen including intestines (mesenteric vascular disease), pelvic and scrotal contents, and/or retroperitoneal organs including the kidneys (renal vascular disease).
+
+A. Abdominal, Retroperitoneal and Pelvic Organs
+Indications:
+
+1. Uncontrolled hypertension.
+2. Stenosis of visceral artery (atherosclerotic, fibromuscular dysplasia, vasculitis, functional).
+3. Aneurysm of visceral artery.
+4. Portal hypertension, with or without ascites.
+5. Cirrhosis of the liver.
+6. Venous embolism, hemorrhage, infection, and/or thrombosis of visceral vein (renal, hepatic, mesenteric, portal or splenic).
+7. Stenosis of visceral vein (renal, hepatic, mesenteric, portal or splenic).
+8. Complications of internal (biological) (synthetic) prosthetic device implant and/or graft.
+9. Complications in abdominal organ or tissue transplant.
+10. Pain or swelling of scrotal contents, which may be a result of suspected obstruction in arterial inflow or venous outflow to testicles or related structure.
+11. Torsion of the spermatic cord; acute epididymitis or epididymoorchitis; or torsion of the testicular appendages.
+12. Hypertension and normotensive renovascular disease with impaired renal function, which could be acute kidney failure, chronic kidney disease, end stage renal disease, or other vascular disorders of the kidneys.
+13. Pain or swelling of the female genital organs, which may be the result of torsion of the ovaries, ovarian pedicle, or fallopian tube.
+14. Trauma to the abdominal, retroperitoneal and/or pelvic organs, arteries, and /or veins.
+
+B. Aorta, Inferior vena cava, Iliac Vasculature and Bypass grafts
+Indications:
+
+1. Atherosclerosis of aorta.
+2. Atherosclerosis of the extremities with intermittent claudication.
+3. Atherosclerosis of other specified arteries.
+4. Aortic aneurysm and dissection.
+5. Aneurysm of iliac artery.
+6. Thromboangiitis obliterans (Buerger’s disease).
+7. Peripheral vascular disease unspecified.
+8. Arterial embolism and thrombosis of abdominal aorta.
+9. Arterial embolism and thrombosis of iliac artery.
+10. Phlebitis and thrombophlebitis of iliac vein.
+11. Venous embolism and thrombosis of vena cava.
+12. Complications related to surgical procedures involving prosthetic device implant, graft, and/or shunts.
+13. Complications of organ or tissue transplant.
+14. Trauma to the chest wall and/or abdomen resulting in a possible injury to the aorta, inferior vena cava and/or iliac vasculature.
+
+Limitations:
+
+1. Vascular studies are not the initial diagnostic modality for the evaluation of abdominal pain/tenderness. There must be a high index of suspicion that the pain is caused by a vascular disorder, such as mesentery ischemia.
+2. Routine imaging of the iliac veins is not medically necessary. Exceptions will be made for specific medical indications of possible propagation of a known thrombus for consideration for placement of a vena cava filter device via the femoral approach. The medical necessity must be documented in the medical record.
+3. Abdominal aortic aneurysms > 4 cm in diameter may be followed with abdominal ultrasound every 6 months. Documentation of medical necessity needs to be provided for studies performed more frequently.
+4. The outcome must impact the clinical management of the patient. For example, if a patient is going to proceed on to other diagnostic and/or therapeutic procedures regardless of the outcome of the noninvasive studies, the non-invasive vascular studies are usually not medically necessary. That is, if it is obvious from the findings of the history and physical examination that the patient is going to proceed to angiography, then noninvasive vascular studies may not be medically necessary.
+
+II. Penile Vascular Studies
+Duplex scans of the arterial inflow and venous outflow of penile vessels have no therapeutic implications. Therefore, they are considered not medically reasonable or necessary, except in a patient with treatment failure who has sustained a documented groin injury where a vascular etiology for impotence is suspected.
+
+Credentialing and Accreditation Standards
+The accuracy of non-invasive vascular diagnostic studies depends on the knowledge, skill, and experience of the technologist and interpreter. Consequently, the physician performing and/or interpreting the study must be capable of demonstrating documented training and experience. A vascular diagnostic study may be personally performed by a physician, a certified technologist, or in a certified vascular testing lab.
+
+Services will be considered medically reasonable and necessary only if performed by appropriately trained providers.
+
+1. All non-invasive vascular diagnostic studies must be performed meeting at least 1 of the following:
+
+a. performed by a licensed qualified physician, or
+b. performed by a technician who is certified in vascular technology, or
+c. performed in facilities with laboratories accredited in vascular technology.
+
+2. A licensed qualified physician for these services is defined as:
+
+a. Having trained and acquired expertise within the framework of an accredited residency or fellowship program in the applicable specialty/subspecialty in ultrasound (US) or must reflect equivalent education, training, and expertise endorsed by an academic institution in ultrasound or by applicable specialty/subspecialty society in ultrasound, or
+b. Has the Registered Vascular Technologist (RVT), Registered Physician Vascular Interpretation (RPVI), or ASN: Neuroimaging Subspecialty Certification; and
+c. Is able to provide evidence of proficiency in the performance and interpretation of each type of diagnostic procedure performed.
+
+3. Nonphysician personnel performing tests must demonstrate basic qualifications to perform tests and have training and proficiency as evidenced by licensure or certification by an appropriate State health or education department. In the absence of a State licensing board, non-physician personnel must be certified by an appropriate national credentialing body.
+
+Appropriate personnel certification includes the American Registry of Diagnostic Medical Sonographers (ARDMS), Registered Vascular Technologist (RVT) credential; or Cardiovascular Credentialing International’s Registered Vascular Specialist (RVS).
+
+4. Laboratories must be certified by 1 of the following:
+
+Intersocietal Accreditation Commission (IAC),
+
+American College of Radiology (ACR),
+
+Joint Commission (Vascular lab certification would need to be noted under the main certification either under inpatient or ambulatory care depending on where the test is being performed), or
+
+DNV-GL (specific for hospitals only)
+
+According to which certifying body listed above is selected, that accrediting body’s standards must be followed.
+
+Summary of Evidence
+
+N/A
+
+Analysis of Evidence (Rationale for Determination)
+
+N/A
+
+Proposed Process Information
+
+Synopsis of Changes
+
+Changes
+Fields Changed
+
+N/A
+
+Associated Information
+
+Sources of Information
+
+Bibliography
+
+Open Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+Contractor Advisory Committee (CAC) Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+MAC Meeting Information URLs
+
+N/A
+
+Proposed LCD Posting Date
+
+Comment Period Start Date
+
+Comment Period End Date
+
+Reason for Proposed LCD
+
+Requestor Information
+
+This request was MAC initiated.
+
+Requestor Name
+Requestor Letter
+
+View Letter
+
+N/A
+
+Contact for Comments on Proposed LCD
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+
+General Information
+
+Associated Information
+
+Documentation Requirements
+Adequate documentation is essential for high-quality patient care and to demonstrate the reasonableness and medical necessity of the procedure(s). Documentation must support the criteria for coverage as described in the Coverage Indications, Limitations, and/or Medical Necessity section of this LCD. There should be a permanent record of the performed studies and interpretation. The documentation should include a description of the studies performed and any contrast media and/or radiopharmaceuticals used. Any known significant patient reaction or complications should be recorded. Comparison with prior relevant imaging studies needs to be addressed in the documentation along with both normal and abnormal findings. Variations from normal size should be documented along with measurements. The report should address or answer any specific clinical questions. If there are factors that prevent answering the clinical questions, this should be explained in the documentation. Retention of the ultrasound examination images should be consistent both with clinical need and with relevant legal and local health care facility requirements.
+
+If the provider of the study is other than the ordering/referring physician/nonphysician practitioner, that provider must maintain a copy of the test results and interpretation, along with copies of the ordering/referring physician/nonphysician practitioner’s order for the studies. This order is required to provide adequate diagnostic information to the performing provider. The physician/nonphysician practitioner must state the clinical indication/medical necessity for the study in his/her order for the test. The provider is responsible for ensuring the medical necessity of procedures and maintaining the medical record, which must be available to Medicare upon request. Results of all testing must be shared with the referring physician. Non-invasive vascular studies are medically reasonable and medically necessary only if the outcomes will be utilized in the clinical management of the patient.
+
+Utilization Guidelines
+Each patient’s condition and response to treatment must medically warrant the number of services reported for payment. Medicare requires the medical necessity for each study reported to be clearly documented in the patient’s medical record.
+
+Frequency of follow-up studies will be carefully monitored for medical necessity, and it is the responsibility of the physician/provider to maintain documentation of medical necessity in the patient’s medical record.
+
+Generally, it is expected that noninvasive abdominal/visceral vascular studies would not be performed more than once in a year, excluding inpatient hospital (21) and emergency room (23) places of services.
+
+Only 1 preoperative scan is considered reasonable and necessary for bypass surgery. If a more current preoperative scan is indicated for a patient with multiple comorbidities having difficulty being stabilized for surgery or a change in condition, the medical record would need to support the medical necessity of the second scan.
+
+The frequency of medically necessary follow-up noninvasive abdominal/visceral vascular studies post-angioplasty is dictated by the vascular distribution treated.
+
+Preventive and/or screening services unless covered under Statute are not covered by Medicare.
+
+Sources of Information
+
+ACR. (Revised 2014). ACR Practice parameter for communication of diagnostic imaging findings. American College of Radiology Practice Parameter. Resolution 11. pp. 1-9.
+
+ACR. (2011, Amended 2014). ACR-AIUM-SRU Practice parameter for performing and interpreting diagnostic ultrasound examinations. American College of Radiology. Resolution 39. pp.1-6.
+
+ACR. (2010, Sep 9). Ultrasound accreditation program requirements. American College of Radiology. pp.1-10.
+
+Intersocietal Accreditation Commission. (2013, Jun 15). IAC Standards and Guidelines for Vascular Testing Accreditation. pp. 1-67.
+
+Bibliography
+
+Abuhamad AZ, Benacerraf BR, Woletz P, Burke BL. The accreditation of ultrasound practices. Journal of Ultrasound in Medicine. 2004;23(8):1023-1029. doi:10.7863/jum.2004.23.8.1023
+
+Gerhard-Herman M, Gardin JM, Jaff M, Mohler E, Roman M, Naqvi TZ. Guidelines for Noninvasive Vascular Laboratory Testing: A report from the American Society of Echocardiography and the Society of Vascular Medicine and Biology. Journal of the American Society of Echocardiography. 2006;19(8):955-972. doi:10.1016/j.echo.2006.04.019
+
+Hirsch AT, Haskal ZJ, Hertzer NR, et al. ACC/AHA 2005 Practice guidelines for the management of patients with peripheral arterial disease (lower extremity, renal, mesenteric, and abdominal aortic). Circulation. 2006;113(11). doi:10.1161/circulationaha.106.174526
+
+Remer EM, Casalino DD, Arellano RS, et al. ACR appropriateness criteria® acute onset of scrotal pain — without trauma, without antecedent mass. Ultrasound Quarterly. 2012;28(1):47-51. doi:10.1097/ruq.0b013e3182493c97
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+Reasons for Change
+
+01/01/2026
+
+R15
+
+Posted 01/01/2026: Biennial review completed 12/11/2025 with minor formatting changes made. No changes to coverage.
+
+Other
+
+11/30/2023
+
+R14
+
+Posted 11/30/2023 Review completed with no change in coverage.
+
+Other
+
+10/28/2021
+
+R13
+
+10/28/2021 Clarified information under Credentialing and Accreditation Standards regarding certification as a certified vascular testing lab. Sources of Information and Bibliography updated to correct format. Review completed 09/30/2021.
+
+Other
+
+12/26/2019
+
+R12
+
+Any codes listed in this LCD have been removed to comply with Change Request 10901.
+
+Other
+
+11/01/2019
+
+R11
+
+Change Request 10901 Local Coverage Determinations (LCDs): it will no longer be appropriate to include Current Procedure Terminology (CPT)/Health Care Procedure Coding System (HCPCS) codes or International Classification of Diseases Tenth Revision-Clinical Modification (ICD-10-CM) codes in the LCDs. All CPT/HCPCS, ICD-10 codes, and Billing and Coding Guidelines have been removed from this LCD and placed in the Billing and Coding Article related to this LCD. Consistent with Change Request 10901, if any language from IOMs and/or regulations was present in the LCD, it has been removed and the applicable manual/regulation has been referenced.
+
+Revisions Due To Code Removal
+
+10/01/2019
+
+R10
+
+09/26/2019 ICD-010 code update: Description change in Group 2: I70.238, I70.248. Added I26.93, I26.94 to Group 2. Review done 08/27/2019.
+
+Revisions Due To ICD-10-CM Code Changes
+
+06/01/2018
+
+R9
+
+06/01/2018 Annual review done 05/02/2018. Formatting changes made. No change in coverage. At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Other (Annual Review)
+
+06/01/2017
+
+R8
+
+06/01/2017 Annual review done 05/03/2017. Typographical and grammatical corrections made. No change in coverage.
+
+Other ((Annual Review))
+
+10/01/2016
+
+R7
+
+10/01/2016 ICD-10-CM code changes: Group 1 Added codes: K55.011, K55.012, K55.019, K55.021, K55.022, K55.029, K55.031, K55.032, K55.039, K55.041, K55.042, K55.049, K55.051, K55.052, K55.059, K55.061, K55.062, K55.069, K55.30, K55.31, K55.32, K55.33, N50.811, N50.812, N50.819, N50.82, N50.89, N83.511, N83.512, N83.521, N83.522. Deleted codes: K55.0, N50.8, N83.51, N83.52. Description changed codes: I77.79, T82.817A, T82.818A, T82.827A, T82.828A, T82.837A, T82.838A, T82.847A, T82.848A, T82.857A, T82.858A, T82.867A, 82.868A. Group 2 Added codes: K55.011, K55.012, K55.019, K55.021, K55.022, K55.029, K55.031, K55.032, K55.039, K55.041, K55.042, K55.049, Q25.21, Q25.29, Q25.40, Q25.41, Q25.42, Q25.43, Q25.44, Q25.45, Q25.46, Q25.47, Q25.48, Q25.49. Deleted codes: K55.0, Q25.2, Q25.4. Description changed codes: I77.79, T82.817A, T82.818A, T82.827A, T82.828A, T82.837A, T82.838A, T82.847A, T82.848A, T82.857A, T82.858A, T82.867A, T82.868A. Group 3 Added codes: T83.011A, T83.012A, T83.021A, T83.022A, T83.091A, T83.092A, T83.113A, T83.123A, T83.193A, T83.24XA, T83.25XA, T83.411A, T83.421A, T83.491A, Description changed codes: T83.018A, T83.028A, T83.098A, T83.111A, T83.112A, T83.121A, T83.122A, T83.191A, T83.192A, T83.410A, T83.420A, T83.490A, T83.718A, T83.728A,
+
+Revisions Due To ICD-10-CM Code Changes
+
+08/01/2016
+
+R6
+
+08/01/2016 Added code Z48.812 to group 2. Added DNV-GL to the list of accrediting bodies.
+
+Revisions Due To ICD-10-CM Code Changes
+
+10/01/2015
+
+R5
+
+06/01/2016 Annual review completed on 05/06/2016. Corrected typos. Billing and Coding guideline is removed.
+
+Other (annual review)
+
+10/01/2015
+
+R4
+
+01/01/2016 Added I72.8, I74.01, I74.09, I74.10, I74.19, I74.8, I75.89, I77.79, I77.810, I77.811, I77.812, I77.819, and I80.8 to Group 1. Added I82.421, I82.422, I82.423, I82.521, I82.522, and I82.523 to Group 2. All the codes are effective 10/01/2015.
+
+Revisions Due To CPT/HCPCS Code Changes
+Other (Update)
+
+10/01/2015
+
+R3
+
+12/01/2015 Added R94.5 to Group 1 Codes effective 10/01/2015. Removed the CAC information.
+
+Other (Update)
+Revisions Due To ICD-10-CM Code Changes
+
+10/01/2015
+
+R2
+
+10/01/2015 to clarify the revision history from 08/01/2015:
+Group 1 (93975 & 93976) ICD-10 diagnoses codes added included the ones listed in the table along with the following that needed clarification: added N43.40-N45.4, N49.1-N51, N53.8, N53.9, N53.12, N83.51-N83.53, S35.11XA- S35.218S, S35.221A-S35.228S, S35.291A- S35.298S, S35.311A- S35.318S, S35.321A- S35.328S, S35.331A- S35.338S, S35.341A- S35.348S, S35.411A- S35.496S, S35.511A- S35.512S, S35.514A- S35.515S , S35.531A -S35.532S, S35.534A- S35.535S, S35.8X1A-S35.8X8S, T82.817A-T82.817S, T82.827A-T82.827S, T82.837A-T82.837A,, T82.847A-T82.847S, T82.857A- T82.857S, T82.867A- T82.867S, and T82.897A-T82.897S.
+
+The following additional codes have been added as of 10/01/2015: T82.818A-T82.818S, T82.828A-T82.828S, T82.838A-T82.838S, T82.848A-T82.848S, T82.858A-T82.858S, T82.868A-T82.868S, and T82.898A-T82.898S.
+
+Group 2 (93978 & 93979) ICD-10 diagnoses codes added included the ones listed in the table along with the following that needed clarification: added I26.01-I26.99, I27.82, S35.01XA- S35.09XS, S35.11XA- S35.19XS, S35.511A- S35.512S, S35.514A- S35.515S, S35.534A- S35.535S, T82.310A- T82.318S, T82.320A- T82.328S, T82.330A- T82.338S, T82.390A- T82.398S, T82.41XA- T82.511S, T82.513A- T82.518S, T82.520A-T82.521S, T82.523A- T82.528S, T82.530A- T82.531S, T82.533A- T82.538S, T82.590A-T82.591S, T82.593A- T82.598S, T82.818A- T82.818S, T82.828A- T82.828S, T82.838A- T82.838S, T82.848A - T82.848S, T82.858A- T82.858S, T82.868A- T82.868S, and T82.898A- T82.898S.
+
+The following codes have been added as of 10/01/2015: T82.817A-T82.817S, T82.827A-T82.827S, T82.837A-T82.837S, T82.847A-T82.847S, T82.857A-T82.857S, T82.867A-T82.867S, and T82.897A-T82.897S.
+
+Other (Update)
+Revisions Due To ICD-10-CM Code Changes
+
+10/01/2015
+
+R1
+
+08/01/2015 Updated the indications for CPT codes 93975-93976 (#10-14) and CPT codes 93978-93979 (#14) and added diagnoses to these CPT codes in Group 1 Codes (I76, I82.1, I86.2, I86.3, N17.9-N18.5, N43.0-N43.2, N43.40-83.53, R18.0, R18.8, S35.11XA – S35.8X9A, T82.817A - T82.9XXA, Z48.03, Z48.89, Z48.812); and Group 2 Codes (I26.01 – I27.82, I82.0, K55.0, K55.1, S35.00XA – S35.536A, T82.310A – T82.9XXA, Z95.820, Z95.828). Removed CPT code 76936 and physiologic studies definitions since neither are addressed in this policy. Added Remer to Sources of Information.
+
+Other (Update)
+
+N/A
+
+Associated Documents
+
+Attachments
+
+N/A
+
+Related Local Coverage Documents
+
+Articles
+A57591 - Billing and Coding: Non-Invasive Abdominal / Visceral Vascular Studies
+A54402 - Response to Comments: Non-Invasive Abdominal/Visceral Vascular Studies
+
+Related National Coverage Documents
+
+NCDs
+220.5 - Ultrasound Diagnostic Procedures
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+12/22/2025
+01/01/2026 - N/A
+Currently in Effect
+
+You are here
+
+11/20/2023
+11/30/2023 - 12/31/2025
+Superseded
+
+View
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+N/A

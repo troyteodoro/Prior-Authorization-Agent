@@ -458,6 +458,148 @@
           }
         }
       }
+    },
+    {
+      "case_id": "US1",
+      "story": "US-10",
+      "spec_ref": "REQ-57, REQ-58, REQ-59, REQ-61; outside §6 (D114)",
+      "description": "The third practice: an indication the LCD supports and a prior study outside the frequency interval",
+      "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
+      "procedure_code": "93975",
+      "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+      "note": "A Synthea chart in WPS's territory or a declared clone of it (T-94, D114), so the state is read from the bundle and the row passes none. Transcribed from L35755 and A57591 through us_abdominal_visceral_j5_j8.json and the chart's coded facts, never from a run: the chart's four active conditions -- essential hypertension and chronic kidney disease stages 2, 3 and 4 -- are criterion (a)'s value-set membership in the set's declared system (REQ-59). c, d and e are declared unclaimed by the tree -- two are claims about why the study was ordered and what else is planned, and the third is a clinical judgment about a differential -- so they abstain and are never omitted (REQ-58). The letters are this document's and collide with both other practices': `a` is a diagnosis set here and a BMI comparison under NCD 100.1 (D110). Criterion (b) is the new arithmetic: the chart's one prior abdominal vascular study was performed 2024-06-17, more than the twelve months L35755 states, so the criterion is MET citing that study. No as_of is pinned and none is needed -- the MET direction is monotone in time, a study past twelve months stays past (D114). The budget is Article V's alone: one replayed verifier call per cited verdict, and no extraction call, because this tree declares no note criterion and the chart carries no note.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+        "max_model_calls": 2,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          },
+          "b": {
+            "verdict": "MET"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "US2",
+      "story": "US-10",
+      "spec_ref": "REQ-61; outside §6 (D114)",
+      "description": "The frequency limit: a prior study inside the twelve-month interval",
+      "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
+      "procedure_code": "93975",
+      "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+      "as_of": "2026-09-01",
+      "note": "A Synthea chart in WPS's territory or a declared clone of it (T-94, D114), so the state is read from the bundle and the row passes none. Transcribed from L35755 and A57591 through us_abdominal_visceral_j5_j8.json and the chart's coded facts, never from a run: the chart's four active conditions -- essential hypertension and chronic kidney disease stages 2, 3 and 4 -- are criterion (a)'s value-set membership in the set's declared system (REQ-59). c, d and e are declared unclaimed by the tree -- two are claims about why the study was ordered and what else is planned, and the third is a clinical judgment about a differential -- so they abstain and are never omitted (REQ-58). The letters are this document's and collide with both other practices': `a` is a diagnosis set here and a BMI comparison under NCD 100.1 (D110). This chart is US1's chart with a different procedure copied and re-coded: the prior study was performed 2026-05-25 instead of 2024-06-17, and nothing else differs. Criterion (b) is therefore NOT_MET citing that study, with a structured shortfall of 3 months against the 12 the document states, and the overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). **This row pins its own as_of**: the NOT_MET direction ages out -- the same chart answers MET once the study is a year old -- and a label that turns on the harness clock is a baseline that goes red on a date nobody chose (E2's precedent, D114).",
+      "expect": {
+        "outcome": "NOT_MET",
+        "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+        "max_model_calls": 2,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          },
+          "b": {
+            "verdict": "NOT_MET"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "US3",
+      "story": "US-10",
+      "spec_ref": "REQ-61; outside §6 (D114)",
+      "description": "No prior study documented: the frequency criterion abstains and never answers MET",
+      "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+      "procedure_code": "93975",
+      "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+      "note": "A Synthea chart in WPS's territory or a declared clone of it (T-94, D114), so the state is read from the bundle and the row passes none. Transcribed from L35755 and A57591 through us_abdominal_visceral_j5_j8.json and the chart's coded facts, never from a run: the chart's four active conditions -- essential hypertension and chronic kidney disease stages 2, 3 and 4 -- are criterion (a)'s value-set membership in the set's declared system (REQ-59). c, d and e are declared unclaimed by the tree -- two are claims about why the study was ordered and what else is planned, and the third is a clinical judgment about a differential -- so they abstain and are never omitted (REQ-58). The letters are this document's and collide with both other practices': `a` is a diagnosis set here and a BMI comparison under NCD 100.1 (D110). This is the generated chart the two clones derive from, and it carries no abdominal vascular study at all. Criterion (b) abstains with NO_EVIDENCE_RETRIEVED rather than answering MET: a chart that records no study has not recorded that none was performed elsewhere, which is the asymmetry D40 set for comorbidities and D114 carried to procedures -- and a MET here would have no span to cite, which REQ-5 refuses. The three rows together are the predicate's three answers over three charts that differ by one resource.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+        "max_model_calls": 1,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          },
+          "b": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "US4",
+      "story": "US-1",
+      "spec_ref": "REQ-1; outside §6 (D114)",
+      "description": "An ultrasound code no tree binds in a state that is served",
+      "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+      "procedure_code": "76700",
+      "procedure": "Ultrasound, abdominal, real time with image documentation; complete",
+      "note": "76700 is a non-vascular abdominal ultrasound, and no tree in this store binds it. Iowa *is* served -- by the third practice's tree, which binds 93975 and 93976 -- so this is NO_POLICY_FOUND and not NO_JURISDICTION_TREE: no policy governs this code here, which is a different answer from no tree serving the state at all (D26, REQ-55, D114). The second such row in the set, in a second jurisdiction, and it cites nothing, so it costs no verifier call.",
+      "expect": {
+        "outcome": "NO_POLICY_FOUND",
+        "max_model_calls": 0
+      }
     }
   ]
 }

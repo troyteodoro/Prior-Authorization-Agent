@@ -43,6 +43,7 @@ from pa_agent.contracts import (
     Medication,
     Observation,
     PredicateKind,
+    Procedure,
     ProgramAssertion,
     Shortfall,
     WmEvent,
@@ -54,6 +55,19 @@ from pa_agent.contracts import (
 BMI_LOINC = "39156-5"
 
 ACTIVE_STATUS = "active"
+
+#: The two FHIR `Procedure.status` values that assert the study did **not**
+#: happen. Everything else — completed, in-progress, stopped, unknown — is a
+#: study the record says took place, and counts toward L35755's frequency
+#: limit.
+#:
+#: Stated as the closed set of *disqualifiers* rather than as
+#: `status == "completed"`, which is the same rule the encounter carve-out
+#: takes (D114): a prior study is dropped from the arithmetic only on positive
+#: evidence that it should be. Dropping on anything else approves past a limit
+#: the policy states, where counting it produces a `NOT_MET` the reviewer can
+#: lift with the documentation L35755 itself asks for.
+NOT_PERFORMED_STATUSES = frozenset({"not-done", "entered-in-error"})
 
 
 def _months_between(earlier: date, later: date) -> int:
@@ -231,6 +245,113 @@ def evaluate_medication_present(
             f"{minimum} required. Absence of a prescription is not evidence "
             "the patient is not taking the drug, and this document covers a "
             "documented reason it was not prescribed (D40's shape, D111)."
+        ),
+    )
+
+
+def _performed_members(
+    procedures: list[Procedure],
+    value_set: CodedValueSet,
+    excluded_settings: frozenset[str],
+) -> list[Procedure]:
+    """The prior studies this criterion's arithmetic counts, in store order.
+
+    Three filters, each the predicate's judgment rather than the adapter's
+    (D31, D39): the study is in the named value set and its declared system
+    (REQ-59); the record does not say it failed to happen; and it was not
+    performed in one of the care settings the document excludes.
+
+    A procedure with no `performed_date` is dropped here because an interval
+    to an undated event is not computable — and it is dropped rather than
+    counted as recent, since a `NOT_MET` needs a date to state its shortfall.
+    """
+    return [
+        p
+        for p in procedures
+        if p.performed_date is not None
+        and value_set.admits(p.code, p.system)
+        and (p.status or "") not in NOT_PERFORMED_STATUSES
+        and (p.encounter_class or "") not in excluded_settings
+    ]
+
+
+def evaluate_prior_procedure_interval(
+    criterion: Criterion,
+    procedures: list[Procedure],
+    value_set: CodedValueSet,
+    as_of: date,
+) -> CriterionResult:
+    """T-94 (REQ-61): the interval to the most recent prior study of this kind.
+
+    L35755 states *"noninvasive abdominal/visceral vascular studies would not
+    be performed more than once in a year, excluding inpatient hospital (21)
+    and emergency room (23) places of services"*, and this is that sentence as
+    arithmetic. Three verdicts, each citing what it has (D114):
+
+    - a study **inside** the interval: `NOT_MET`, citing every one of them,
+      with the shortfall measured to the most recent — REQ-16's shape, which
+      criterion (a) already takes for a BMI outside its lookback;
+    - the most recent study **outside** it: `MET`, citing that study;
+    - **none documented**: an abstention. Not `MET`. A chart that records no
+      abdominal ultrasound has not recorded that none was performed, and a
+      study done at another practice is the thing this limit exists to catch
+      — D40's asymmetry, reaching a third resource type. A `MET` here would
+      also have no span, which REQ-5 refuses.
+
+    The boundary is inclusive on the `MET` side: a study exactly twelve
+    months old is outside a twelve-month interval, as E12's BMI is at its
+    threshold.
+    """
+    minimum = criterion.require("min_months_since_prior_procedure")
+    excluded_settings = frozenset(criterion.require("excluded_encounter_classes"))
+    value_set_id = criterion.require("value_set_id")
+
+    counted = _performed_members(procedures, value_set, excluded_settings)
+    if not counted:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+            gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
+            detail=(
+                f"no prior procedure in {value_set_id} is documented on this "
+                "chart outside the excluded care settings. A chart that records "
+                "no prior study has not recorded that none was performed (D40)."
+            ),
+        )
+
+    inside = [
+        p for p in counted if _months_between(p.performed_date, as_of) < minimum
+    ]
+    if inside:
+        most_recent = max(inside, key=lambda p: p.performed_date)
+        observed = _months_between(most_recent.performed_date, as_of)
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.NOT_MET,
+            spans=[p.span for p in inside if p.span is not None],
+            shortfall=Shortfall(
+                observed=observed,
+                required=minimum,
+                unit="months_since_prior_procedure",
+            ),
+            detail=(
+                f"{len(inside)} prior procedure(s) in {value_set_id} within the "
+                f"{minimum}-month interval before {as_of.isoformat()}; the most "
+                f"recent was {most_recent.performed_date.isoformat()}, "
+                f"{observed} month(s) ago"
+            ),
+        )
+
+    most_recent = max(counted, key=lambda p: p.performed_date)
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=[most_recent.span] if most_recent.span is not None else [],
+        detail=(
+            f"most recent prior procedure in {value_set_id} was "
+            f"{most_recent.performed_date.isoformat()}, "
+            f"{_months_between(most_recent.performed_date, as_of)} month(s) "
+            f"before {as_of.isoformat()}; {minimum} required"
         ),
     )
 
@@ -719,6 +840,9 @@ class PredicateInputs:
     observations: tuple[Observation, ...] = ()
     conditions: tuple[Condition, ...] = ()
     medications: tuple[Medication, ...] = ()
+    #: Prior procedures, each carrying the care setting it was performed in
+    #: (T-94, D114). Read by the interval kind and by nothing else.
+    procedures: tuple[Procedure, ...] = ()
     #: `{value_set_id -> the set}`. Plural since T-92: one tree declares three,
     #: and each membership criterion names its own in a constant (D111).
     value_sets: Mapping[str, CodedValueSet] = field(default_factory=dict)
@@ -776,6 +900,11 @@ PREDICATES: dict[PredicateKind, Predicate] = {
     ),
     PredicateKind.MEDICATION_VALUE_SET_ACTIVE: lambda c, i: evaluate_medication_present(
         c, list(i.medications), _value_set(c, i)
+    ),
+    PredicateKind.PROCEDURE_VALUE_SET_INTERVAL: (
+        lambda c, i: evaluate_prior_procedure_interval(
+            c, list(i.procedures), _value_set(c, i), i.as_of
+        )
     ),
     PredicateKind.NOTE_EVENT_COUNT: lambda c, i: evaluate_c1(
         c, list(i.events), list(i.assertions)
@@ -941,6 +1070,14 @@ def _cited_observations(
     )
 
 
+def _cited_procedures(
+    inputs: PredicateInputs, cited: list[EvidenceSpan]
+) -> PredicateInputs:
+    return replace(
+        inputs, procedures=tuple(p for p in inputs.procedures if p.span in cited)
+    )
+
+
 def _cited_run(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateInputs:
     narrowed = restricted_run(_require_run(inputs), cited)
     return replace(inputs, run=narrowed, events=tuple(narrowed.events))
@@ -954,6 +1091,7 @@ NARROWERS: dict[
     PredicateKind, Callable[[PredicateInputs, list[EvidenceSpan]], PredicateInputs]
 ] = {
     PredicateKind.BMI_OBSERVATION_THRESHOLD: _cited_observations,
+    PredicateKind.PROCEDURE_VALUE_SET_INTERVAL: _cited_procedures,
     PredicateKind.NOTE_EVENT_RUN_LENGTH: _cited_run,
     PredicateKind.NOTE_EVENT_RUN_RECENCY: _cited_run,
     PredicateKind.NOTE_EVENT_RUN_BMI_RATE: _cited_run,
@@ -970,6 +1108,8 @@ def check_citation_sufficiency(
     result: CriterionResult,
     *,
     observations: list[Observation],
+    procedures: list[Procedure],
+    value_sets: Mapping[str, CodedValueSet],
     run: QualifyingRun,
     as_of: date,
     c3_met: bool,
@@ -1003,6 +1143,8 @@ def check_citation_sufficiency(
     inputs = PredicateInputs(
         as_of=as_of,
         observations=tuple(observations),
+        procedures=tuple(procedures),
+        value_sets=value_sets,
         events=tuple(run.events),
         run=run,
         run_established=c3_met,

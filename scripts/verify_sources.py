@@ -142,6 +142,40 @@ DOCUMENTS: list[dict[str, str]] = [
         # them (D111).
         "note": "extracted text carries no HCPCS codes; the ICD-10-CM groups are present (D111)",
     },
+    # T-94 (D114): the third practice, and the first document in this corpus
+    # published by neither Noridian nor Palmetto. Its own contractor table
+    # lists Alabama alongside the J-5 and J-8 states, so Alabama is served by
+    # three trees from three practices -- D111's rule reached from a document
+    # rather than designed, and no collision, because 93975 is bound by nobody
+    # else.
+    {
+        "document_id": "l35755",
+        "title": "LCD L35755 - Non-Invasive Abdominal / Visceral Vascular Studies",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=35755",
+        "authority": "mac_jurisdiction_j5_j8",
+        "publisher": "Wisconsin Physicians Service Insurance Corporation "
+                     "(A/B MAC, Jurisdictions J-5 and J-8)",
+        "filename": "l35755.txt",
+    },
+    {
+        "document_id": "a57591",
+        "title": "Article A57591 - Billing and Coding: Non-Invasive Abdominal / "
+                 "Visceral Vascular Studies",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=57591",
+        "authority": "mac_jurisdiction_j5_j8",
+        "publisher": "Wisconsin Physicians Service Insurance Corporation "
+                     "(A/B MAC, Jurisdictions J-5 and J-8)",
+        "filename": "a57591.txt",
+        # The CPT/HCPCS table is behind the AMA licence modal here too, but
+        # unlike A56852 and A56432 this article names its codes in prose: each
+        # ICD-10 group's paragraph states the procedures the group supports and
+        # the codes that denote them. So the code binding cites a coverage
+        # document's own sentence rather than a revision-history line (D28,
+        # D114).
+        "note": "the CPT/HCPCS table is behind the licence modal, but the "
+                "ICD-10-CM group paragraphs name 93975/93976, 93978/93979 and "
+                "93980/93981 in prose (D114)",
+    },
 ]
 
 
@@ -319,6 +353,76 @@ ANSWERS: list[dict[str, Any]] = [
                 "the tree: it establishes the code this LCD's group carries, which "
                 "is D28's code-binding class of claim. The coverage claim is cited "
                 "separately, from the LCD's own coverage sentence (D111).",
+    },
+    # T-94 (D114): the third practice's constants, read from L35755 and A57591
+    # the way q1-q3 were read from A53028, q4-q6 from L34576 and q7-q10 from
+    # L35677.
+    {
+        "question_id": "q11",
+        "question": "Does L35755 state a frequency limit for abdominal/visceral "
+                    "vascular studies, and does it scope that limit to a place "
+                    "of service?",
+        "feeds": "us-abdominal-visceral criterion b -- its interval and its "
+                 "excluded encounter classes",
+        "answer": "once in a year, excluding inpatient hospital (21) and "
+                  "emergency room (23) places of service",
+        "document_id": "l35755",
+        "quote": "Generally, it is expected that noninvasive abdominal/visceral "
+                 "vascular studies would not be performed more than once in a "
+                 "year, excluding inpatient hospital (21) and emergency room "
+                 "(23) places of services.",
+        "note": "The one unhedged frequency limit among the four ultrasound "
+                "candidates fetched for D114. It is compiled as an interval "
+                "rather than a count, because a count would have to answer MET "
+                "on a chart with no prior study and REQ-5 refuses a MET with no "
+                "span. The two named places of service are dropped from the "
+                "arithmetic, read off each prior study's encounter, because "
+                "counting an emergency-room study would deny a patient this "
+                "document does not restrict (D114).",
+    },
+    {
+        "question_id": "q12",
+        "question": "What does L35755 require for medical necessity, and how "
+                    "many of its conditions are determinable from coded data?",
+        "feeds": "us-abdominal-visceral criteria a, c and d",
+        "answer": "three conditions, all of which must be met; only the first "
+                  "is a fact in the coded record, and no laboratory value is "
+                  "quantified anywhere in the document",
+        "document_id": "l35755",
+        "quote": "Services are deemed medically necessary when all the "
+                 "following conditions are met:\n\n1. Signs/symptoms of "
+                 "ischemia or altered blood flow are present;\n2. The "
+                 "information is necessary for appropriate medical and/or "
+                 "surgical management;\n3. The test is not redundant of other "
+                 "diagnostic procedures that must be performed.",
+        "note": "Condition 1 is A57591's ICD-10 group, which is criterion (a). "
+                "Conditions 2 and 3 are claims about the ordering clinician's "
+                "intent and about what else is planned -- neither is a fact in "
+                "any record this system reads -- so they are declared unclaimed "
+                "and abstained on, never omitted (REQ-58). The answer's second "
+                "half is why v1.2's lab-threshold statement stays unminted: the "
+                "kind is earned by a document that states one (D114).",
+    },
+    {
+        "question_id": "q13",
+        "question": "Does any document in the corpus name the CPT codes L35755 "
+                    "governs, and does it bind them to an indication list?",
+        "feeds": "the us-abdominal-visceral tree's contractor_determined "
+                 "binding and criterion (a)'s value set",
+        "answer": "yes - A57591's ICD-10 group paragraphs name the codes in "
+                  "prose, each beside the codes that support it",
+        "document_id": "a57591",
+        "quote": "Abdominal/visceral vascular studies of abdominal, "
+                 "retroperitoneal, and pelvic organs (93975, 93976)",
+        "note": "Group 1 of three; Group 2 is 93978/93979 (aorta, inferior vena "
+                "cava, iliac vasculature, bypass grafts) and Group 3 is "
+                "93980/93981 (penile). The article's CPT/HCPCS table is behind "
+                "the AMA licence modal as A56852's and A56432's are, so this "
+                "paragraph is the corpus sentence that names the codes -- and "
+                "unlike L35677's revision-history line it also states what they "
+                "denote and which diagnoses support them, which is D28's two "
+                "classes of claim arriving together. This tree is compiled for "
+                "Group 1 alone (D114).",
     },
 ]
 

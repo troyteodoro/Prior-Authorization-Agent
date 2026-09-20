@@ -52,6 +52,7 @@ from pa_agent.contracts import (
     NoteBmi,
     Observation,
     PredicateKind,
+    Procedure,
     ProgramAssertion,
     RunTrace,
     WmEvent,
@@ -139,6 +140,22 @@ MEMBERSHIP_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP,
     PredicateKind.MEDICATION_VALUE_SET_ACTIVE,
 )
+#: The kinds that read the chart's procedure history — set membership and date
+#: arithmetic over the same structured plane, which is why `step_criterion_b`
+#: evaluates them too (T-94, D114). Its own tuple rather than a third member of
+#: `MEMBERSHIP_KINDS`, because membership is not what this kind computes: it
+#: measures an interval, and it is the first kind reaching this step that can
+#: answer `NOT_MET`.
+PROCEDURE_HISTORY_KINDS: tuple[PredicateKind, ...] = (
+    PredicateKind.PROCEDURE_VALUE_SET_INTERVAL,
+)
+#: What `step_criterion_b` evaluates: everything decided from structured chart
+#: resources alone. A fourth step would be the alternative, and it would rename
+#: what every recorded run reports having visited to buy nothing (D110's rule
+#: about step names).
+STRUCTURED_KINDS: tuple[PredicateKind, ...] = (
+    MEMBERSHIP_KINDS + PROCEDURE_HISTORY_KINDS
+)
 #: The kinds that consume extraction — what `step_qualifying_run` and
 #: `step_criteria_c` evaluate over `state.events`. On an extraction failure
 #: these resolve to `ERROR`; the structured kinds read FHIR and never touched
@@ -155,7 +172,7 @@ NOTE_EVENT_KINDS: tuple[PredicateKind, ...] = (
 #: directly; this is the same fact in the shape the partition is checked in.
 STEP_KINDS: dict[str, tuple[PredicateKind, ...]] = {
     "criterion_a": OBSERVATION_KINDS,
-    "criterion_b": MEMBERSHIP_KINDS,
+    "criterion_b": STRUCTURED_KINDS,
     "criteria_c": NOTE_EVENT_KINDS,
 }
 
@@ -285,6 +302,7 @@ class WorkflowState:
     observations: list[Observation] = field(default_factory=list)
     conditions: list[Condition] = field(default_factory=list)
     medications: list[Medication] = field(default_factory=list)
+    procedures: list[Procedure] = field(default_factory=list)
     value_sets: dict[str, CodedValueSet] = field(default_factory=dict)
 
     # Notes and what the model read out of them
@@ -381,6 +399,7 @@ def step_gather(state: WorkflowState, ctx: _Context) -> None:
     state.observations = plan.observations
     state.conditions = plan.conditions
     state.medications = plan.medications
+    state.procedures = plan.procedures
     state.value_sets = plan.value_sets
     state.notes = plan.notes
     if plan.trace is not None:
@@ -483,16 +502,24 @@ def step_reconcile(state: WorkflowState, ctx: _Context) -> None:
 
 
 def step_criterion_b(state: WorkflowState, ctx: _Context) -> None:
-    """REQ-12: set intersection over structured resources. `MET` or abstention,
-    never `NOT_MET` — a chart cannot prove a comorbidity absent, and it cannot
-    prove a drug is not being taken either (D40, D111)."""
+    """Everything decided from structured chart resources alone.
+
+    REQ-12's set intersections are `MET` or an abstention and never `NOT_MET`
+    — a chart cannot prove a comorbidity absent, and it cannot prove a drug is
+    not being taken either (D40, D111). The interval kind that joined them at
+    T-94 **can** answer `NOT_MET`, because a prior study inside a forbidden
+    window is positive evidence rather than a missing record (REQ-16's shape,
+    REQ-61, D114) — which is why this step's results now reach
+    `step_sufficiency` with something to re-derive.
+    """
     inputs = PredicateInputs(
         as_of=state.as_of,
         conditions=tuple(state.conditions),
         medications=tuple(state.medications),
+        procedures=tuple(state.procedures),
         value_sets=state.value_sets,
     )
-    for criterion in _declared(state.tree, MEMBERSHIP_KINDS):
+    for criterion in _declared(state.tree, STRUCTURED_KINDS):
         state.results.append(_predicate(criterion.id, evaluate, criterion, inputs))
 
 
@@ -652,6 +679,8 @@ def step_sufficiency(state: WorkflowState, ctx: _Context) -> None:
             criterion,
             result,
             observations=state.observations,
+            procedures=state.procedures,
+            value_sets=state.value_sets,
             run=state.run,
             as_of=state.as_of,
             c3_met=_run_established(criterion, state.results, state.run),

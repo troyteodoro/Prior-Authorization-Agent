@@ -217,12 +217,13 @@ output is untrusted model output and there is no private route to a `WmEvent`.
 
 **Two storage ports, two planes** (`stores/policy.py`, `stores/patient.py`,
 REQ-41, Article VI). The patient port serves observations, conditions,
-**medications** (T-92), notes, the jurisdiction state and documents; the
+**medications** (T-92), **procedures** (T-94, each carrying the care setting
+it was performed in), notes, the jurisdiction state and documents; the
 policy port serves resolution, trees, documents and value sets. `stores/__init__.py` imports neither submodule on purpose —
 a package-level re-export would be the module that reaches both planes.
 Production is a second adapter, which is the whole reason the ports exist *(D25)*.
 
-**Adjudication is eight predicate kinds and two exclusion kinds.**
+**Adjudication is nine predicate kinds and two exclusion kinds.**
 `PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
 maps each kind to a binder naming the inputs its predicate receives, and
 `workflow.STEP_KINDS` assigns each kind to the step that evaluates it — a
@@ -230,8 +231,11 @@ partition, checked (T-91, D110). `ExclusionKind` and `criteria.EXCLUSIONS` are
 the same shape for categorical exclusions (T-92, D111). Under both NCD 100.1
 trees that resolves to (a) BMI and (b) comorbidity over structured FHIR and
 c1–c5 over extracted `wm_events`; under `infliximab-ra-jjm-v1` it resolves to
-(a) a diagnosis set and (b) a medication set, and the letters are labels: the
-`kind` chooses the arithmetic. The run-length criterion computes the
+(a) a diagnosis set and (b) a medication set; under
+`us-abdominal-visceral-j5-j8-v1` to (a) a diagnosis set and (b) the interval
+to the most recent prior procedure. The letters are labels: the `kind`
+chooses the arithmetic, and three practices now letter their criteria `a` and
+mean three different things by it. The run-length criterion computes the
 qualifying run **once** and every criterion whose `scoped_to` names it scopes
 to that run. `reconcile.py`
 then runs REQ-34 across the structured and note BMIs. `aggregate.py` parses the
@@ -285,7 +289,33 @@ passing**, because the tests are written in terms of the thing that broke.
   default (as-of today) against a recording measured at the harness clock.
   The verifier is barred from date and count arithmetic outright: v1 and v2
   measured false rejections on every shortfall-type `NOT_MET`, because the
-  shortfall is Article II's arithmetic over a chart Article V hides.
+  shortfall is Article II's arithmetic over a chart Article V hides. **And
+  from set membership, since `verifier-v5`** *(D115)*: a claim names the
+  criterion's `value_set_id` and never shows the set, so a verifier judging
+  whether a quoted condition belongs to it is doing Article II's arithmetic
+  over a value set Article V hides — the same category, found three rounds
+  later because until T-94 every membership claim's quote was obvious from
+  the criterion's own label. A prompt edit re-measures **every** claim on
+  **both** tiers (D45), and v5's round measured a regression in the NOT_MET
+  rule its new paragraph now followed, which is what v6 states positively
+  instead of as a prohibition.
+- **A frequency limit is an interval, never a count** *(REQ-61, T-94, D114)*.
+  *At most one study a year* and *the last study was over a year ago* are the
+  same arithmetic and only the second has a span when it passes: a count has
+  to answer `MET` on a chart with no prior study, and REQ-5 refuses a `MET`
+  with no span — D111's problem, one layer along, and the reason that one
+  became an exclusion and this one did not. No prior study documented is an
+  **abstention**, because a chart that records none has not recorded that
+  none was performed elsewhere (D40's asymmetry, on a third resource type).
+- **A prior study is dropped from a frequency limit only on positive
+  evidence** *(T-94, D114)*. L35755 excludes inpatient and emergency-room
+  places of service from its own arithmetic, so the predicate reads each
+  procedure's `Encounter.class`; a procedure whose encounter cannot be
+  resolved **counts**. The directions are not symmetric — dropping an
+  unresolvable study approves past a limit the policy states, while counting
+  it produces a `NOT_MET` the reviewer lifts with the documentation the
+  policy itself asks for — and no committed chart can tell the two behaviours
+  apart, so `tests/test_ultrasound_tree.py` holds it on charts written there.
 - **Never return `None` or `[]` from an unimplemented store half or planner**
   *(D31, D39, D63)*. A policy store returning `None` reports `NO_POLICY_FOUND`
   for all of Medicare; a patient store returning `[]` manufactures E7 for every
@@ -528,11 +558,12 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**73 of 73 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~45s; the suite collects 1006 tests across 37 files, 27 of
+**74 of 74 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~50s; the suite collects 1120 tests across 39 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
-matrix, which skips the pairs a given tree does not declare, D101's pattern).
-IDs run to T-93, but
+matrix and its exclusion checks, which skip what a given tree does not
+declare, D101's pattern and D114's).
+IDs run to T-94, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -541,10 +572,11 @@ hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
-The eval set is full (T-21, D75): `eval/cases.json` holds twenty labeled rows
-— spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6, `J1`,
-the second-jurisdiction row *(D102)*, and `RA1`–`RA3`, the second practice's
-*(D113)* — all `PASS`, criterion-scoped,
+The eval set is full (T-21, D75): `eval/cases.json` holds twenty-four labeled
+rows — spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6,
+`J1`, the second-jurisdiction row *(D102)*, `RA1`–`RA3`, the second
+practice's *(D113)*, and `US1`–`US4`, the third's *(D114)* — all `PASS`,
+criterion-scoped,
 with every cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
 in-window evidence *(D41)*, so E2 runs 43644 at 2024-12-01 while E7 reads the
@@ -554,18 +586,20 @@ eval harness classifies it as its fourth status — never `FAIL`, never an
 abstention; the reported abstention rate counts an `ERROR` in neither its
 numerator nor its denominator (REQ-28). US-6 closed with T-17 (D78): every
 cited verdict passes through Article V's blind verifier, every gate replays
-the committed 33-claim recording for zero calls, and the measurement
+the committed 38-claim recording for zero calls, and the measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
-27/27 twice, then 30/30 when T-88's three new claims joined *(D102)*, then
-33/33 on both tiers when T-93's three did *(D113)* — is
+27/27 twice, then 30/30 when T-88's three new claims joined *(D102)*,
+33/33 on both tiers when T-93's three did *(D113)*, and 38/38 on both under
+`verifier-v6` when T-94's five did, after two further false-rejection rounds
+forced the set-membership rule *(D115)* — is
 D78's substance. US-7's measurements are in `eval/report.md`
 (T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
-against a 0.567 base rate** (the always-`MET` baseline scores exactly the base
+against a 0.467 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
-98 checked**, **A5 abstention 0.300** with the per-`gap_reason` account, its
+104 checked**, **A5 abstention 0.333** with the per-`gap_reason` account, its
 per-tree split of the declared-unclaimed abstentions *(D113)* and D82's
-tolerance sweep, and **A6 48 model calls / 39,968 input / 7,688 output /
-49.7s across thirteen determinations** — replayed instrumentation, not the
+tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
+52.4s across sixteen determinations** — replayed instrumentation, not the
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
@@ -712,8 +746,23 @@ would buy a passing check rather than a capability.
 
 ### Domain facts that took work to establish
 
-- **The policy corpus is seven documents, two jurisdictions and two
-  practices** *(D21, D29, D100, D101, D111)*. The two added by T-92 are
+- **The policy corpus is nine documents, three jurisdictions and three
+  practices** *(D21, D29, D100, D101, D111, D114)*. The two added by T-94 are
+  WPS's **L35755** (*Non-Invasive Abdominal / Visceral Vascular Studies*) and
+  **A57591** (its billing and coding article) — a third contractor, and the
+  first whose article names its CPT codes **in prose**: each ICD-10 group's
+  paragraph states the procedures it supports and the codes that denote them,
+  which is a stronger binding than the revision-history line J1745 rests on.
+  Its own contractor table lists **Alabama** beside the J-5 and J-8 states, so
+  Alabama is served by three trees from three practices and nothing collides —
+  the collision that matters is a *code* bound for one state by two trees.
+  **L35755 quantifies exactly one thing**: studies *"would not be performed
+  more than once in a year, excluding inpatient hospital (21) and emergency
+  room (23) places of services"*. It states no laboratory threshold, and
+  neither does the rheumatology document, which is why v1.2's lab-threshold
+  statement stays unminted *(D114)*.
+
+  The two added by T-92 are
   Palmetto GBA's **L35677** (*Infliximab*) and **A56432** (its billing and
   coding article), which is the same MAC and the same seven states as the
   bariatric second jurisdiction — the case that tests resolution rather than
@@ -820,28 +869,39 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   stores/            policy.py and patient.py — the two ports and their
                      file-backed adapters. __init__ imports neither.
 data/policies/
-  source/            ncd_100_1, a53028, r931cp, l34576, a56852, l35677, a56432
-                     + sources.json, answers.json (q1–q10)
-  value_sets/        obesity_comorbidities and rheumatoid_arthritis (SNOMED);
-                     methotrexate and biologic_dmards_and_jak_inhibitors
-                     (RxNorm, expanded through RxNav and pinned — T-92, D111).
+  source/            ncd_100_1, a53028, r931cp, l34576, a56852, l35677, a56432,
+                     l35755, a57591 + sources.json, answers.json (q1–q13)
+  value_sets/        obesity_comorbidities, rheumatoid_arthritis,
+                     abdominal_visceral_vascular_indications and
+                     abdominal_visceral_vascular_studies (SNOMED — the last two
+                     T-94's, D114); methotrexate and
+                     biologic_dmards_and_jak_inhibitors (RxNorm, expanded
+                     through RxNav and pinned — T-92, D111).
                      Each declares the one system its membership is tested in
   ncd_100_1_jf.json  Noridian JF's tree, policy_version_id ncd-100.1-jf-v1
   ncd_100_1_jjm.json Palmetto JJ/JM's tree, ncd-100.1-jjm-v1 (T-87, D101)
   infliximab_ra_jjm.json
                      Palmetto JJ/JM's infliximab tree, infliximab-ra-jjm-v1
                      (T-92, D111) — the second practice, same seven states
+  us_abdominal_visceral_j5_j8.json
+                     WPS J-5/J-8's ultrasound tree,
+                     us-abdominal-visceral-j5-j8-v1 (T-94, D114) — the third
+                     practice, a third contractor, seven states of its own
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it
-  bundles/           eleven Synthea v4.0.0 bundles — six from the base seed,
+  bundles/           fourteen Synthea v4.0.0 bundles — six from the base seed,
                      one carrying the declared synthetic BMI-35.0 observation
                      (T-41, D73; E12's patient is note-free by declaration),
                      one declared clone of E4's chart re-addressed into
                      Alabama (T-88, D102), and the rheumatology cohort —
                      two charts from seed 1003's Alabama run plus a declared
                      clone of one carrying a declared etanercept order
-                     (T-93, D113). Every clone is recomputed by --verify
+                     (T-93, D113), and the ultrasound cohort — one chart from
+                     seed 1004's Iowa run plus two declared clones of it, each
+                     carrying one of the patient's own procedures re-coded as
+                     a prior study (T-94, D114). Every clone is recomputed by
+                     --verify
   notes/             fourteen chart notes, two per note-bearing chart as
                      <patient_id>/chart_note_1.txt and chart_note_2.txt (T-81,
                      D104), the clone's byte-identical to its source's per
@@ -857,8 +917,8 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 20 labeled rows (§6's 15 + NP1 + J1 +
-                     RA1-RA3; D75, D102, D104, D113)
+  cases.json         the eval set — 24 labeled rows (§6's 15 + NP1 + J1 +
+                     RA1-RA3 + US1-US4; D75, D102, D104, D113, D114)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it;
@@ -870,16 +930,17 @@ eval/
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91),
                      measured fresh by T-81 over all seven charts (D104)
-  verifier/          results.json — T-17's recording, 33 claims since T-93,
-                     re-measured whole by T-89, T-81 and T-93, and on both
-                     tiers (D78, D102, D103, D104, D113)
+  verifier/          results.json — T-17's recording, 38 claims since T-94,
+                     re-measured whole by T-89, T-81, T-93 and T-94, and on
+                     both tiers; `verifier-v6` since D115
+                     (D78, D102, D103, D104, D113, D115)
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient
 scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               37 files
+tests/               39 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

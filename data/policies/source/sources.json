@@ -90,6 +90,31 @@
       "extractor_version": 1,
       "sha256": "846c2fd5bf932d8ec77888b7124fc1edf64a7c680afc23cc0bee015ccde00944",
       "char_count": 37622
+    },
+    {
+      "document_id": "l35755",
+      "title": "LCD L35755 - Non-Invasive Abdominal / Visceral Vascular Studies",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=35755",
+      "authority": "mac_jurisdiction_j5_j8",
+      "publisher": "Wisconsin Physicians Service Insurance Corporation (A/B MAC, Jurisdictions J-5 and J-8)",
+      "filename": "l35755.txt",
+      "retrieved_at": "2026-09-20T22:20:26.858064+00:00",
+      "extractor_version": 1,
+      "sha256": "be6d9aea7b4102479f56ead78f20195586c9cc5a48d45bf6000f2fe99084383f",
+      "char_count": 30141
+    },
+    {
+      "document_id": "a57591",
+      "title": "Article A57591 - Billing and Coding: Non-Invasive Abdominal / Visceral Vascular Studies",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=57591",
+      "authority": "mac_jurisdiction_j5_j8",
+      "publisher": "Wisconsin Physicians Service Insurance Corporation (A/B MAC, Jurisdictions J-5 and J-8)",
+      "filename": "a57591.txt",
+      "note": "the CPT/HCPCS table is behind the licence modal, but the ICD-10-CM group paragraphs name 93975/93976, 93978/93979 and 93980/93981 in prose (D114)",
+      "retrieved_at": "2026-09-20T22:20:27.368924+00:00",
+      "extractor_version": 1,
+      "sha256": "85707330e27df90a7efea09bd93018523af866fe273b6e93a9255b46b249091d",
+      "char_count": 55147
     }
   ]
 }

@@ -237,6 +237,18 @@ class PredicateKind(str, Enum):
     #: asymmetry, for the same reason: a chart that records no methotrexate does
     #: not record that the patient is not on it (T-92, D111).
     MEDICATION_VALUE_SET_ACTIVE = "medication_value_set_active"
+    #: Months since the most recent prior procedure in a named value set,
+    #: against a minimum interval, ignoring studies performed in the care
+    #: settings the criterion excludes. `NOT_MET` citing every prior study
+    #: inside the interval, `MET` citing the most recent one outside it, and an
+    #: abstention when the chart documents none — a chart that records no prior
+    #: study has not recorded that none was performed, which is D40's asymmetry
+    #: reaching a third resource type (T-94, REQ-61, D114).
+    #:
+    #: *Interval*, not *count*: at most one study a year and "the last one was
+    #: over a year ago" are the same arithmetic, and only the second has
+    #: something to cite when it passes. REQ-5 refuses a `MET` with no span.
+    PROCEDURE_VALUE_SET_INTERVAL = "procedure_value_set_interval"
 
 
 class Criterion(BaseModel):
@@ -767,6 +779,44 @@ class Medication(BaseModel):
     display: str | None = None
     status: str | None = None
     authored_on: date | None = None
+    span: EvidenceSpan | None = None
+
+
+class Procedure(BaseModel):
+    """A procedure on the chart, for the frequency limit L35755 states (T-94).
+
+    `Medication`'s shape, one resource over, with one field neither of the
+    others needs. `encounter_class` is the care setting the procedure was
+    performed in — FHIR `Encounter.class`, `AMB` / `EMER` / `IMP` — because
+    L35755's frequency limit excludes inpatient hospital and emergency room
+    places of service from its own arithmetic, and a predicate that could not
+    tell them apart would deny a patient whose only prior study was done in an
+    emergency room (D114).
+
+    `None` means the adapter could not resolve the encounter, and that is a
+    third state rather than a default: a procedure whose setting is unknown is
+    **not** excluded, because the exclusion is a carve-out the document grants
+    and evidence for it has to be present. Excluding on an unknown setting
+    would approve past a limit the policy states; including it produces a
+    `NOT_MET` the reviewer can lift with the documentation L35755 itself asks
+    for. Same rule as REQ-60, pointed the other way.
+
+    `performed_date` is the study's date, which is the whole arithmetic of the
+    interval kind, and `status` is carried unfiltered in `Condition`'s shape:
+    the adapter reports what the resource says and the predicate decides what
+    counts (D31's split, D39).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    code: str
+    system: str | None = None
+    display: str | None = None
+    status: str | None = None
+    performed_date: date | None = None
+    #: FHIR `Encounter.class` of the encounter this procedure belongs to, or
+    #: `None` when it could not be resolved. Never defaulted — see above.
+    encounter_class: str | None = None
     span: EvidenceSpan | None = None
 
 

@@ -32,6 +32,11 @@ TREE_PATHS = {
     # which is the whole question v1.2 asks — a check only the bariatric trees
     # pass is a check rheumatology escaped.
     "infliximab-ra-jjm-v1": REPO_ROOT / "data" / "policies" / "infliximab_ra_jjm.json",
+    # T-94 (D114): the third practice, and the first tree from a contractor
+    # that is neither Noridian nor Palmetto.
+    "us-abdominal-visceral-j5-j8-v1": (
+        REPO_ROOT / "data" / "policies" / "us_abdominal_visceral_j5_j8.json"
+    ),
 }
 SOURCE_DIR = REPO_ROOT / "data" / "policies" / "source"
 MANIFEST_PATH = SOURCE_DIR / "sources.json"
@@ -47,6 +52,10 @@ EXPECTED_CRITERIA_BY_TREE = {
     # diagnosis set, `b` a medication set. Dispatch reads each criterion's
     # declared kind and no letter (T-91, D110; T-92, D111).
     "infliximab-ra-jjm-v1": ["a", "b", "c", "d", "e"],
+    # L35755's letters, which collide with the rheumatology tree's and mean
+    # something else again: `a` is a diagnosis set and `b` is an interval to a
+    # prior procedure (T-94, D114).
+    "us-abdominal-visceral-j5-j8-v1": ["a", "b", "c", "d", "e"],
 }
 EXPECTED_CRITERIA = EXPECTED_CRITERIA_BY_TREE["ncd-100.1-jf-v1"]
 
@@ -82,6 +91,16 @@ REQUIRED_CONSTANTS_BY_TREE = {
         ("d", "excluded_condition"),
         ("e", "disease_activity"),
     ],
+    "us-abdominal-visceral-j5-j8-v1": [
+        ("a", "min_comorbidity_count"),
+        ("a", "value_set_id"),
+        ("b", "min_months_since_prior_procedure"),
+        ("b", "excluded_encounter_classes"),
+        ("b", "value_set_id"),
+        ("c", "requirement"),
+        ("d", "requirement"),
+        ("e", "limitation"),
+    ],
 }
 REQUIRED_CONSTANTS = sorted({pair for pairs in REQUIRED_CONSTANTS_BY_TREE.values() for pair in pairs})
 
@@ -100,6 +119,12 @@ TYPE_CHECKS = {
     "integer_months": lambda v: isinstance(v, int) and not isinstance(v, bool),
     "boolean": lambda v: isinstance(v, bool),
     "string": lambda v: isinstance(v, str),
+    # T-94 (D114): the care settings L35755 excludes from its own arithmetic.
+    # A list, because the document names two and a predicate that took one
+    # would need the tree to lie about the second.
+    "string_list": lambda v: isinstance(v, list)
+    and bool(v)
+    and all(isinstance(item, str) and item for item in v),
     "rate": lambda v: isinstance(v, str),
 }
 
@@ -881,7 +906,20 @@ def test_req2_reads_membership_not_absence(procedure_sets):
 
 @pytest.fixture(scope="module")
 def exclusions(tree) -> list[dict]:
-    assert "categorical_exclusions" in tree, "T-14's exclusion is missing"
+    """The tree's categorical exclusions, or a skip when it states none.
+
+    Two of the three practices declare one — the NCD's 04/2009 T2DM sentence
+    and L35677's LIMITATIONS paragraph — and L35755 states no categorical
+    denial at all: its four Limitations narrow indications and none of them
+    says *not covered* (T-94, D114). So the key is optional and its **absence
+    is the skip**, D101's pattern for the per-tree constant matrix.
+
+    What must not become optional is the check on an exclusion that *is*
+    declared, which is why this skips rather than returning `[]`: an empty
+    list would run every assertion below over nothing and pass.
+    """
+    if "categorical_exclusions" not in tree:
+        pytest.skip(f"{tree['policy_version_id']} declares no categorical exclusion")
     return tree["categorical_exclusions"]
 
 

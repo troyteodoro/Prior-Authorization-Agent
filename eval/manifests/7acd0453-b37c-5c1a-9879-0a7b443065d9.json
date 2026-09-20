@@ -1,0 +1,14 @@
+{
+  "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
+  "bundle": "Dale454_Botsford977_7acd0453-b37c-5c1a-9879-0a7b443065d9.json",
+  "cloned_from": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+  "as_of": "2026-09-01",
+  "note": false,
+  "wm_programs": [],
+  "traps": [],
+  "program_assertions": [],
+  "cases": [
+    "US2"
+  ],
+  "rationale": "US2 is US1's chart with a different procedure copied and re-coded, and nothing else: the declared study was performed 2026-05-25 instead of 2024-06-17 (T-94, D114). Criterion (b) is therefore NOT_MET citing that study, with a structured shortfall of 3 months against the 12 L35755 states, and the overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). The pair is the point: the same request, the same chart, and the policy answers differently because of when the last study was. This row pins its own as_of at 2026-09-01, because the NOT_MET direction ages out - the same chart answers MET once the study is a year old - and a label that turns on the harness clock is a baseline that goes red on a date nobody chose (E2's precedent). The coded facts themselves live in the population manifest and are re-derived by select_patients.py --verify; they are not restated here, because one artifact owns a fact and prose is a copy. The chart carries no note: v1.2 declares every note-only criterion unclaimed, so no extraction ever runs for it and 'note': false states that rather than leaving an absent note to read as a corpus gap (D73's shape)."
+}

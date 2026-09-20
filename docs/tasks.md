@@ -17,11 +17,15 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-94`, row 4 of `v1.2` in `Roadmap after v1.1` below.**
+**What to do next: `T-95`, row 5 of `v1.2` in `Roadmap after v1.1` below** —
+the compatibility account, which closes the version.
 **v1.2 is open**: `T-91` closed row 1 and minted REQ-57 and REQ-58 *(D109,
 D110)*; `T-92` closed row 2 and minted REQ-59 and REQ-60 *(D111)*; `T-93`
-closed row 3 and minted nothing — its two remaining statements await T-94 and
-T-95 *(D109)*. Row 3's
+closed row 3 and minted nothing *(D109)*; **`T-94` closed row 4 and minted
+REQ-61** *(D114)*, and settled the version's two remaining statements by
+**not** minting them: no committed document quantifies a laboratory
+threshold or a medication trial duration, and a kind is earned by a document
+that states it rather than by a task that was promised one. Row 3's
 exit was rewritten at T-92's close, because the document chosen by fetching
 its header states no trial duration and no screening requirement and no
 Medicare rheumatology LCD does *(D111)*. **Row 3 cost a verifier measurement
@@ -41,9 +45,9 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-three tasks are on this board — IDs run to T-93 but numbering is not
+Seventy-four tasks are on this board — IDs run to T-94 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **73 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **74 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -165,7 +169,7 @@ both tiers *(D113)*. Every gate still replays, which is what A10 asserts.
 | 1 | the predicate vocabulary is explicit | `T-91` | **closed** (D110) | every tree predicate declares its kind; a kind the engine lacks raises at load, never abstains (D31's shape); every gate green |
 | 2 | rheumatoid arthritis: source and tree | `T-92` | **closed** (D111) | governing document chosen by fetching its header (D97's Palmetto correction), hashed into `sources.json`, `verify_sources.py --offline` green; tree compiled; judgment-shaped criteria declared unclaimed, none omitted |
 | 3 | rheumatoid arthritis: patients and eval rows | `T-93` | **closed** (D113) | Synthea patients or declared additions (D73's shape); rows for a criterion `MET`, a `NOT_COVERED` on the combination limitation, and an abstention; `run_eval.py` green. **Rewritten by D111** from "`NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen": L35677 states neither, and no Medicare rheumatology LCD does |
-| 4 | ultrasound: source, tree, patients and rows | `T-94` | pending | as rows 2 and 3; rows for `MET`, `NOT_MET` on a frequency limit, `NO_POLICY_FOUND` for an unlisted code |
+| 4 | ultrasound: source, tree, patients and rows | `T-94` | **closed** (D114, D115) | as rows 2 and 3; rows for `MET`, `NOT_MET` on a frequency limit, `NO_POLICY_FOUND` for an unlisted code |
 | 5 | the compatibility account | `T-95` | pending | `eval/report.md` renders, per practice, each criterion as evaluated by an existing kind / a new kind / unclaimed; `build_report.py --verify` green; README's degradation section gains the paragraph |
 
 ### v1.3 — Medical-history review: ICD suggestions with evidence
@@ -1800,6 +1804,100 @@ unchanged (T-30, D77).
 ---
 
 ## `US-10` Take a new practice's coverage rules without a rewrite
+
+### `[x] T-94` Diagnostic ultrasound: the source, the tree, the patients and the rows
+
+**REQ:** 61 · **Depends:** T-91 *(D110)*, T-92 *(D111)* · **Blocks:** T-95 ·
+**Decided by:** D114, D115 · **Gates:** A10 (fourth of five rows) ·
+**Timebox:** one day
+**Status:** **closed** (D114, D115) — the exit ran green and every gate with
+it. Rows 2 and 3 in one row: a third practice's document, its tree, its
+patients and its eval rows. No bariatric or rheumatology verdict, span or
+eval row moved; the verifier recording was re-measured whole on both tiers
+under a new prompt version, and every figure `eval/report.md` owns was
+re-derived, with the copies in `README.md` and `CLAUDE.md` re-read from it.
+**Exit:**
+
+```
+./venv/bin/python scripts/verify_sources.py --offline \
+ && ./venv/bin/python scripts/select_patients.py --verify \
+ && ./venv/bin/python -m pytest tests/test_ultrasound_tree.py tests/test_ultrasound_corpus.py tests/test_criteria_tree.py tests/test_predicate_kinds.py tests/test_manifests.py -q --color=no \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --rescore \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: L35755 and A57591 are in the hashed corpus with answers that
+slice back and the seven documents already committed are carried forward
+byte-identical; `us-abdominal-visceral-j5-j8-v1` loads beside the three
+trees already there, every criterion it declares deterministic names a kind
+the engine implements and every criterion it declares unclaimed names none
+and carries a note; 93975 in an Iowa request resolves to it while 43775 in
+the same state is `NO_JURISDICTION_TREE` and 76700 is `NO_POLICY_FOUND`;
+three ultrasound charts are in the pinned population — one Synthea chart
+under a recorded seed and two declared clones that re-code one of the
+patient's own procedures — and `--verify` recomputes both clones from the
+committed bytes; the three new eval rows are `PASS` against the baseline,
+the `MET` row citing the indication and the prior study, the `NOT_MET` row
+citing the study inside the window with its shortfall, the
+`NO_POLICY_FOUND` row citing nothing; the verifier recording holds all four
+new claims on both tiers and rescores coherent; and every figure in
+`eval/report.md` re-derives from the artifact that owns it.
+
+**What it delivers.** The third practice, from a document chosen by fetching
+four candidates and reading what they say — with the candidate list itself
+taken from the MCD's published export rather than from its client-rendered
+report, which is a survey instrument and not a corpus source (D114).
+`PROCEDURE_VALUE_SET_INTERVAL` on the contract with its predicate, its step
+and its narrower; `get_procedures` on the patient port, carrying the
+encounter class each procedure was performed at; `RetrievalResult.procedures`
+on both planners; two value sets; the tree; two documents added to the
+corpus; one Synthea run in Iowa and two declared clones; and eval rows `US1`,
+`US2` and `US3`.
+
+**What it mints.** REQ-61 — prior procedures are counted and dated by Python,
+cited to the resource, and scoped to the care settings the criterion
+declares. **Not** §11's lab-threshold half: L35755 quantifies no laboratory
+value, and a kind is earned by a document that states it rather than by a
+task that was promised one (D111's rule, applied a second time; D114).
+
+**What it costs.** Verifier measurement rounds on both tiers — five new
+cited verdicts are five new claims, 33 becoming **38** per tier, which is the
+cost D113 corrected the roadmap to state. It cost **three** rounds rather
+than one: the first measured two false rejections on Vertex, both of them
+the verifier deciding value-set membership over a set the claim names and
+never shows, which is D78's category three rounds later. `verifier-v5` bars
+it, `verifier-v6` restates the `NOT_MET` rule v5's new paragraph displaced,
+and every round is in D115 rather than only the clean one.
+
+**What it found that was already broken.** The membership hole was not this
+row's: the bariatric and rheumatology membership criteria have been accepted
+at every round since T-17 because their quotes are obviously about their
+criterion's subject. The corpus was hiding it *(D115)*.
+
+**Why the prompt fix is not its own task.** Working rule 6 makes discovered
+work a numbered task, and this is the exception the rule allows for: T-94's
+exit cannot run green while two tiers' recordings disagree about two of its
+own rows, so deferring it would close a row on a red gate. It carries its own
+decision entry instead, which is what rule 5 asks of it.
+
+**Mutation round.** Ten mutations, each run against the check that should
+hold it, restored from git with `__pycache__` cleared between (the method
+note's three traps). All ten caught: the care-setting carve-out dropped, a
+study the record disowns counted, the abstention answering `MET` instead, the
+interval boundary excluding where it includes, only the most recent study
+inside the window cited, the new kind's narrower deleted, no step evaluating
+the new kind, the encounter join dropped from the adapter, a declared prior
+study's date misstated, and the study value set declaring the wrong code
+system. **Two of them needed the right check rather than a nearer one**: a
+misstated clone declaration changes no committed byte until
+`select_patients.py --verify` recomputes it, and a value set's declared system
+is only read when something loads the set — a unit test over the tree's
+constants passes with it wrong.
+
+---
 
 ### `[x] T-93` Rheumatoid arthritis: the patients and the eval rows
 

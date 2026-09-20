@@ -34,6 +34,7 @@ VALUE_SET_CODES = {"44054006", "59621000"}
 EXPECTED_CASES = {
     "E1", "E2", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E10b", "E10c",
     "E11", "E12", "E13", "J1", "RA1", "RA2", "RA3",
+    "US1", "US2", "US3", "US4",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
@@ -41,7 +42,11 @@ EXPECTED_CASES = {
 # E13 (T-81, D104) is E1's chart with its qualifying run split across two
 # documents. RA1-RA3 are the second practice (T-93, D113): two Synthea charts
 # in Palmetto's territory and a declared clone of one of them, all note-free,
-# because v1.2 declares every note-only criterion unclaimed.
+# because v1.2 declares every note-only criterion unclaimed. US1-US4 are the
+# third practice (T-94, D114): one Synthea chart in WPS's territory and two
+# declared clones of it that differ by the date of one re-coded procedure,
+# also note-free, and US3 and US4 are two rows over the one chart — the
+# frequency criterion's abstention and an unlisted code.
 DELIBERATELY_ABSENT = {"E3"}
 
 

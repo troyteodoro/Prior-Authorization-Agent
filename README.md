@@ -64,8 +64,8 @@ replays a committed recording.
 ## Where the project stands
 
 **v1 and v1.1 are both complete, and v1.2 is under way.**
-73 of 73 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A9 holding. The suite collects 1006 tests (27 skip). v1 delivered the
+74 of 74 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A9 holding. The suite collects 1120 tests (58 skip). v1 delivered the
 determination end to end; v1.1 closed spec §10's eight known limits — a
 second jurisdiction, a bounded re-ask for unanchorable quotes, a second note
 per chart, a citation-sufficiency check, a second measured tier, and the
@@ -83,7 +83,13 @@ given the drug the policy's limitation excludes — because the generator
 writes no biologic for this disease at any population size — and three eval
 rows over them. **The engine needed nothing**: the same code that closed
 T-92 produced every labeled verdict, so what a second practice cost here was
-corpus work and not engine work *(T-93, D113)*.
+corpus work and not engine work *(T-93, D113)*. Its fourth row took the whole
+of that again in one task — **non-invasive abdominal and visceral vascular
+ultrasound**, compiled from WPS's L35755 and A57591, a third contractor with
+its own six states plus one the document's own table adds — and needed one
+predicate kind the engine lacked: the interval to the most recent prior
+procedure, which is how a frequency limit compiles when an absence has no
+span to cite *(T-94, D114)*.
 
 Measured figures live in `eval/report.md`, which is generated and gate-verified
 rather than written; *Status in detail* below carries them, and
@@ -99,7 +105,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 |---|---|---|---|
 | v1 | bariatric determination end to end, two implementations graded against one oracle | US-1–US-9 | **complete** |
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
-| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **in progress** |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **in progress** (four of five rows closed) |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | planned |
 | v1.4 | sessions and intake, headless | US-12 | planned |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
@@ -132,10 +138,13 @@ for rheumatoid arthritis**, compiled from Palmetto GBA's L35677 and A56432,
 which loads beside the bariatric trees over the same seven states and needed
 exactly one predicate kind the engine did not have *(T-92, D111)*; then that
 practice's patients and eval rows, which needed **no engine change at all**
-*(T-93, D113)*. **Diagnostic ultrasound is the next practice to be tested**,
-and the version closes on a compatibility account that classes every
-criterion of every tree as evaluated by an existing predicate kind, by a new
-one, or unclaimed. The measured results are in *Status in detail* below.
+*(T-93, D113)*. Its fourth row did both halves again for a third practice and
+a third contractor — **abdominal and visceral vascular ultrasound**, from
+WPS's L35755 and A57591 — for one more predicate kind: the interval to the
+most recent prior procedure, which is what a frequency limit becomes once you
+notice that "no prior study" has no span to cite *(T-94, D114)*. The version
+closes on a compatibility account that classes every criterion of every tree
+as evaluated by an existing predicate kind, by a new one, or unclaimed. The measured results are in *Status in detail* below.
 
 ---
 
@@ -283,7 +292,7 @@ an expression a generic engine improvises over.
 ## A full prior-auth form, mapped to these lanes
 
 A complete prior authorization request carries more than this build
-implements — this build is one procedure family, two jurisdictions, chart
+implements — this build is three procedure families, three jurisdictions, chart
 notes as the only unstructured evidence. But the architecture's rules assign *every*
 field of a full form to a lane mechanically, and the assignment is worth
 seeing whole, because it is what "applies to a different modality" actually
@@ -351,7 +360,7 @@ Three ports meet at the model boundary:
   from a bounded tool allowlist). Everything downstream cannot tell which
   planner ran — which is exactly what makes the comparison a comparison.
 - **`VerifierRunner`** — *who checks the citations.* Live, recorded (replays a
-  committed 33-claim recording keyed by claim digest — a miss raises, never
+  committed 38-claim recording keyed by claim digest — a miss raises, never
   defaults), and a deliberately raising null runner.
 
 **Where ADK sits: it is a leaf, never the skeleton.** `google-adk` is imported
@@ -425,7 +434,7 @@ Guardrails that keep the differential honest:
 
 ## The policy corpus, and what it took to get right
 
-Five documents, two jurisdictions:
+Nine documents, three jurisdictions, three practices:
 
 | Document | What it is | What it may be cited for |
 |---|---|---|
@@ -434,6 +443,10 @@ Five documents, two jurisdictions:
 | `r931cp` | CMS Pub. 100-04 Transmittal 931 | Code bindings **only** — its coverage content predates the 2012 delegation to the MACs |
 | `l34576` | Palmetto GBA LCD, Jurisdictions J and M | **Every quantified constant** in Palmetto's tree |
 | `a56852` | Palmetto GBA billing & coding article | Nothing yet — its CPT table sits behind the AMA licence modal and the extracted text names no code |
+| `l35677` | Palmetto GBA LCD, infliximab | **Every constant** in the rheumatology tree, and the revision-history line naming HCPCS J1745 |
+| `a56432` | Palmetto GBA billing & coding article, infliximab | The ICD-10 group the rheumatoid arthritis value set anchors into — its HCPCS table is behind the licence modal |
+| `l35755` | WPS LCD, non-invasive abdominal/visceral vascular studies, Jurisdictions J-5 and J-8 | **Every constant** in the ultrasound tree, including the once-a-year frequency limit and the places of service it excludes |
+| `a57591` | WPS billing & coding article | The Group 1 paragraph naming CPT 93975/93976 in prose, and the 316 ICD-10 codes the indication value set anchors into |
 
 A request resolves by procedure code **and the patient's state**: Washington
 reaches Noridian's tree, Alabama reaches Palmetto's, and Texas — in neither —
@@ -464,10 +477,11 @@ stated plainly:
   recorded with a name and date in the decision log. The count is pinned at
   zero provisional constants, so a new one is a visible diff.
 
-Patient data is entirely synthetic: eleven Synthea v4.0.0 FHIR bundles
+Patient data is entirely synthetic: fourteen Synthea v4.0.0 FHIR bundles
 (pinned by manifest hashes; one carries a declared synthetic observation, one
-is a declared clone re-addressed into Palmetto's territory, and one is a
-declared clone carrying a declared synthetic prescription) and fourteen
+is a declared clone re-addressed into Palmetto's territory, one is a declared
+clone carrying a declared synthetic prescription, and two are declared clones
+carrying one re-coded procedure apiece) and fourteen
 synthesized chart notes — two per note-bearing chart since T-81, a split of
 the facts each manifest declares — the clone's byte-identical to its source's
 by declaration. No real or de-identified patient data of any kind is in scope.
@@ -537,8 +551,9 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1006 tests across 37 files, 27 of them skipped — the skips are a per-tree
-constant matrix, which skips the pairs a given tree does not declare.
+1120 tests across 39 files, 58 of them skipped — the skips are per-tree
+matrices, which skip what a given tree does not declare: a constant pair, or
+a categorical exclusion it states none of.
 
 Nothing in the gates spends a model call or touches the network — that is a
 membership rule enforced by a test, not a habit. The commands that do spend
@@ -559,6 +574,10 @@ nothing about the cases the corpus does not contain.
 # rheumatoid arthritis — Palmetto GBA's L35677, the second practice
 ./venv/bin/python -m pytest tests/test_infliximab_tree.py -q          # the tree
 ./venv/bin/python -m pytest tests/test_rheumatology_corpus.py -q      # the charts
+
+# abdominal/visceral vascular ultrasound — WPS's L35755, the third practice
+./venv/bin/python -m pytest tests/test_ultrasound_tree.py -q          # the tree
+./venv/bin/python -m pytest tests/test_ultrasound_corpus.py -q        # the charts
 ```
 
 `tests/test_infliximab_tree.py` (23 tests) pins resolution, dispatch by
@@ -573,10 +592,13 @@ committed chart carries a finished course of a drug in either value set, so
 the "a completed order is not an active one" rule is held by the tree file,
 on charts written for it.
 
-**Diagnostic ultrasound is the next practice to be tested** — `T-94`, row 4
-of v1.2 — and it arrives as the same pair: a tree compiled from a fetched MAC
-document, then patients and rows over the committed corpus, with `MET`,
-`NOT_MET` on a frequency limit, and `NO_POLICY_FOUND` for an unlisted code.
+`tests/test_ultrasound_tree.py` (35 tests) and
+`tests/test_ultrasound_corpus.py` (19 tests) are the same pair for the third
+practice, and the division earns its keep twice there: no committed chart
+carries a prior study in an emergency or inpatient setting, or one the record
+disowns, so a predicate ignoring L35755's own place-of-service carve-out
+would pass every corpus check. Both behaviours are held by the tree file, on
+charts written for them.
 
 ### Testing the ADK path
 
@@ -610,7 +632,7 @@ the installed framework still discovers the agent.
 ./venv/bin/python eval/run_eval.py --update-baseline   # adopt drift, as a reviewed diff
 ```
 
-Twenty labeled cases across two practices, every cited span re-validated by
+Twenty-four labeled cases across three practices, every cited span re-validated by
 the scorer. The gate
 fails on drift in **either** direction, so a case that *starts* passing is
 adopted explicitly with `--update-baseline` and a commit. Four result statuses
@@ -759,30 +781,31 @@ gate rather than a plausible-looking table.
 
 | Gate | Result |
 |---|---|
-| A1 | 20 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.567** base rate and an always-`MET` baseline scoring exactly that |
-| A3 | **zero** `MET` verdicts with an invalid span, over 98 spans checked |
+| A1 | 24 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.467** base rate and an always-`MET` baseline scoring exactly that |
+| A3 | **zero** `MET` verdicts with an invalid span, over 104 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.300**, accounted for per `gap_reason` — the rise is the second practice's three declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
-| A6 | 48 model calls / 39,968 in / 7,688 out / 49.7s across thirteen determinations, from instrumentation |
-| A7 | 58 requirements: 56 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A5 | abstention **0.333**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across sixteen determinations, from instrumentation |
+| A7 | 63 requirements: 61 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 
-### What the second practice measured (T-92, T-93)
+### What the second and third practices measured (T-92 – T-94)
 
-v1.2's question is whether the engine is bariatric-shaped, and the first
-three rows answer it with numbers rather than with an opinion.
+v1.2's question is whether the engine is bariatric-shaped, and its first four
+rows answer it with numbers rather than with an opinion.
 
-| Figure | Result |
-|---|---|
-| Predicate kinds the rheumatology tree needed that the engine lacked | **1** of 8 (`medication_value_set_active`) |
-| Its criteria evaluated deterministically / declared unclaimed | **2** / **3** — none unclaimed for want of a predicate |
-| Engine changes needed to give it patients and rows | **none** — no predicate, step, contract or tree moved |
-| Eval rows, and their result | **3** (`RA1`, `RA2`, `RA3`), all `PASS` |
-| Model calls spent by those rows | **3** — one replayed verifier call per cited verdict, no extraction at all |
-| Verifier claims, both tiers | **33** of 33 accepted, zero verdicts moved between tiers |
-| Bariatric verdicts, spans, rows or recordings that moved | **zero** |
+| Figure | Rheumatology | Ultrasound |
+|---|---|---|
+| Predicate kinds the tree needed that the engine lacked | **1** (`medication_value_set_active`) | **1** (`procedure_value_set_interval`) |
+| Its criteria evaluated deterministically / declared unclaimed | **2** / **3** | **2** / **3** |
+| …any of them unclaimed for want of a predicate | **none** | **none** |
+| Engine changes needed to give it patients and rows | **none** | one port read and one narrower, both the new kind's |
+| Eval rows, and their result | **3** (`RA1`–`RA3`), all `PASS` | **4** (`US1`–`US4`), all `PASS` |
+| Model calls spent by those rows | **3** | **5** — one replayed verifier call per cited verdict, no extraction at all |
+| Bariatric verdicts, spans, rows or recordings that moved | **zero** | **zero** |
+| Verifier claims, both tiers | **38** of 38 accepted under `verifier-v6`, zero verdicts moving between tiers |
 
 Three of five criteria are declared unclaimed, and that ratio is the finding
 rather than a shortfall: NYHA class is not in ICD-10, *"untreated"* is a
@@ -812,11 +835,23 @@ notes, because the extraction step is unconditional; it changes no verdict,
 so it is a cost and not a defect, and it is scheduled where extraction
 becomes tree-declared.
 
-**Diagnostic ultrasound is next** — row 4, a MAC document fetched and
-compiled, then patients and rows for a `MET`, a `NOT_MET` on a frequency
-limit and a `NO_POLICY_FOUND` for an unlisted code. Row 5 closes the version
-with the compatibility account: per practice, every criterion classed as
-evaluated by an existing predicate kind, by a new one, or unclaimed.
+**Two of the third practice's findings are about the checker, not the
+tree.** A frequency limit cannot compile as a *count*: "at most one study a
+year" would have to answer `MET` on a chart with no prior study, and REQ-5
+refuses a `MET` with no span, so it compiles as the interval to the most
+recent prior study — `NOT_MET` citing a study inside the window, `MET` citing
+the most recent one outside it, and an **abstention** when the chart
+documents none, because a chart that records no study has not recorded that
+none was performed elsewhere. And the blind verifier turned out to be
+re-deriving **set membership** — judging whether quoted conditions belong to
+a value set the claim names and never shows it — which is the same class of
+error that made it re-do date arithmetic two rounds earlier. Two more prompt
+versions and a full re-measurement on both tiers fixed it; every round is in
+the log rather than only the clean one *(D115)*.
+
+**Row 5 closes the version** with the compatibility account: per practice,
+every criterion classed as evaluated by an existing predicate kind, by a new
+one, or unclaimed.
 
 **v1.1 is complete (D107).** Its last row was an entry rather than code: P6's
 path for model adjudication, written down and deliberately not taken. **The
@@ -883,11 +918,12 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   agent/             ADK path: extraction_agent, retrieval_agent, tools, bounds
   stores/            policy.py and patient.py — two ports, two planes;
                      __init__.py imports neither, on purpose
-data/policies/       seven source documents, four value sets (SNOMED and
-                     RxNorm), and three criteria trees — two bariatric
-                     (ncd-100.1-jf-v1, ncd-100.1-jjm-v1) and one rheumatology
-                     (infliximab-ra-jjm-v1)
-data/patients/       eleven Synthea bundles + fourteen synthesized notes, hash-pinned
+data/policies/       nine source documents, six value sets (SNOMED and
+                     RxNorm), and four criteria trees — two bariatric
+                     (ncd-100.1-jf-v1, ncd-100.1-jjm-v1), one rheumatology
+                     (infliximab-ra-jjm-v1) and one ultrasound
+                     (us-abdominal-visceral-j5-j8-v1)
+data/patients/       fourteen Synthea bundles + fourteen synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free — one set per
                      tier, the AI Studio one being what every gate replays

@@ -119,6 +119,9 @@ class _Chart:
     def get_medications(self, patient_id: str) -> list:
         return list(self._medications)
 
+    def get_procedures(self, patient_id: str) -> list:
+        return []
+
     def get_notes(self, patient_id: str) -> list:
         return []
 

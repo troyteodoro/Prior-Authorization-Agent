@@ -1,0 +1,202 @@
+{
+  "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+  "title": "Non-invasive abdominal/visceral vascular studies of the abdominal, retroperitoneal and pelvic organs, as operationalized by WPS (Jurisdictions J-5 and J-8)",
+  "compiled_by": "T-94, hand-compiled from L35755 and A57591 (D114)",
+  "jurisdiction": {
+    "authority": "mac_jurisdiction_j5_j8",
+    "contractor": "Wisconsin Physicians Service Insurance Corporation",
+    "states": [
+      "IA",
+      "KS",
+      "MO",
+      "NE",
+      "AL",
+      "IN",
+      "MI"
+    ],
+    "note": "The seven states L35755's own contractor table lists: Iowa, Kansas, Missouri and Nebraska under J-5, Indiana and Michigan under J-8, and Alabama under contract 05901, which the table states and this tree therefore declares. Alabama is served by Palmetto's two trees as well, so it is a state with three trees from three practices -- D111's rule reached from a document rather than designed. Nothing collides: the collision that matters is a code bound for one state by two trees, and 93975 is bound by nobody else."
+  },
+  "sources": [
+    {
+      "document_id": "l35755",
+      "sha256": "be6d9aea7b4102479f56ead78f20195586c9cc5a48d45bf6000f2fe99084383f"
+    },
+    {
+      "document_id": "a57591",
+      "sha256": "85707330e27df90a7efea09bd93018523af866fe273b6e93a9255b46b249091d"
+    }
+  ],
+  "decision_expression": "a AND b AND c AND d AND e",
+  "criteria": [
+    {
+      "id": "a",
+      "label": "A diagnosis A57591 lists as supporting medical necessity for 93975/93976",
+      "evaluation": "deterministic",
+      "kind": "condition_value_set_membership",
+      "constants": {
+        "min_comorbidity_count": {
+          "value": 1,
+          "type": "integer",
+          "source": {
+            "document_id": "l35755",
+            "char_start": 8430,
+            "char_end": 8494,
+            "quote": "1. Signs/symptoms of ischemia or altered blood flow are present;"
+          },
+          "note": "The constant name is the predicate's, shared by every tree declaring `condition_value_set_membership`, and it reads wrongly here for the second time: this counts the request's indication, not a co-morbidity. Kept for D111's reason -- constant *names* are in `get_policy_context`'s measured payload, so renaming is a new measurement rather than a tidy-up (D45) -- and renamed in the v1.6 round, which re-measures anyway."
+        },
+        "value_set_id": {
+          "value": "abdominal_visceral_vascular_indications",
+          "type": "string",
+          "note": "A57591's Group 1 in the SNOMED the patient plane speaks. The document states the indication in prose -- signs or symptoms of ischemia or altered blood flow -- and the article renders that as 316 ICD-10 codes; the set is the subset of those the corpus can carry, and says so (REQ-59, D114)."
+        }
+      }
+    },
+    {
+      "id": "b",
+      "label": "Not performed more than once in a year",
+      "evaluation": "deterministic",
+      "kind": "procedure_value_set_interval",
+      "constants": {
+        "min_months_since_prior_procedure": {
+          "value": 12,
+          "type": "integer",
+          "comparison": ">=",
+          "source": {
+            "document_id": "l35755",
+            "char_start": 20410,
+            "char_end": 20615,
+            "quote": "Generally, it is expected that noninvasive abdominal/visceral vascular studies would not be performed more than once in a year, excluding inpatient hospital (21) and emergency room (23) places of services."
+          },
+          "note": "Compiled as an interval rather than a count. The two are the same arithmetic -- at most one study a year, and the last one over a year ago -- and only the second has something to cite when it passes: a count would answer `MET` on a chart with no prior study at all, and REQ-5 refuses a `MET` with no span (D114). The boundary is inclusive on the `MET` side, as E12's is at criterion (a)'s threshold."
+        },
+        "excluded_encounter_classes": {
+          "value": [
+            "EMER",
+            "IMP"
+          ],
+          "type": "string_list",
+          "source": {
+            "document_id": "l35755",
+            "char_start": 20410,
+            "char_end": 20615,
+            "quote": "Generally, it is expected that noninvasive abdominal/visceral vascular studies would not be performed more than once in a year, excluding inpatient hospital (21) and emergency room (23) places of services."
+          },
+          "note": "The document's own carve-out, in the vocabulary the record codes. Place of service 23 is an emergency room and 21 is an inpatient hospital; FHIR `Encounter.class` writes those as EMER and IMP. That mapping is a terminology binding of `BMI_LOINC`'s class -- the policy states a place of service and the chart codes an encounter class -- and it is declared here, where a reviewer meets it, rather than inside the predicate. Ignoring the carve-out would deny a patient whose only prior study was done in an emergency room, which is a wrong verdict on a chart this document does not restrict (D101's test, D114). A prior study whose encounter cannot be resolved is *not* excluded: the carve-out is a grant and needs positive evidence, and erring the other way approves past a limit the policy states."
+        },
+        "value_set_id": {
+          "value": "abdominal_visceral_vascular_studies",
+          "type": "string",
+          "note": "The SNOMED procedures that are a study of the kind this request is, anchored to A57591's Group 1 paragraph naming 93975 and 93976."
+        }
+      }
+    },
+    {
+      "id": "c",
+      "label": "The information is necessary for appropriate medical and/or surgical management",
+      "evaluation": "unclaimed",
+      "constants": {
+        "requirement": {
+          "value": "The information is necessary for appropriate medical and/or surgical management",
+          "type": "string",
+          "source": {
+            "document_id": "l35755",
+            "char_start": 8495,
+            "char_end": 8578,
+            "quote": "2. The information is necessary for appropriate medical and/or surgical management;"
+          },
+          "note": "The second of the three conditions the sentence above requires all of."
+        }
+      },
+      "note": "Unclaimed because it is a claim about why the study was ordered, and no coded resource records an intention. The document restates it as Limitation 4 -- 'The outcome must impact the clinical management of the patient.' -- and that is the same requirement said twice, not a sixth criterion: declaring both would abstain twice on one question and read as two things a reviewer owes. A reviewer evaluates it against the record (REQ-58, D114)."
+    },
+    {
+      "id": "d",
+      "label": "The test is not redundant of other diagnostic procedures that must be performed",
+      "evaluation": "unclaimed",
+      "constants": {
+        "requirement": {
+          "value": "The test is not redundant of other diagnostic procedures that must be performed",
+          "type": "string",
+          "source": {
+            "document_id": "l35755",
+            "char_start": 8579,
+            "char_end": 8662,
+            "quote": "3. The test is not redundant of other diagnostic procedures that must be performed."
+          },
+          "note": "The third condition. The sentence continues that non-invasive tests are sometimes complementary rather than redundant -- MRA and duplex -- which is the judgment itself."
+        }
+      },
+      "note": "Unclaimed because redundancy is a claim about what else is planned for this patient, and a plan is not in the coded record: the chart carries procedures that happened, never the ones a clinician has decided to order instead. This is a limit of the record, not of the engine -- criterion (b) reads the same resource type and is evaluated (REQ-57, REQ-58, D114)."
+    },
+    {
+      "id": "e",
+      "label": "Not the initial diagnostic modality for abdominal pain, absent a high index of suspicion that the pain is vascular",
+      "evaluation": "unclaimed",
+      "constants": {
+        "limitation": {
+          "value": "There must be a high index of suspicion that the pain is caused by a vascular disorder",
+          "type": "string",
+          "source": {
+            "document_id": "l35755",
+            "char_start": 12255,
+            "char_end": 12479,
+            "quote": "1. Vascular studies are not the initial diagnostic modality for the evaluation of abdominal pain/tenderness. There must be a high index of suspicion that the pain is caused by a vascular disorder, such as mesentery ischemia."
+          },
+          "note": "Limitation 1 of four. Limitations 2 and 3 -- routine iliac-vein imaging, and the six-month surveillance interval for aneurysms over 4 cm -- belong to A57591's Group 2, the aorta and iliac codes, and are outside this tree rather than unclaimed by it (D114)."
+        }
+      },
+      "note": "Unclaimed because 'a high index of suspicion' is a clinical judgment, and because the antecedent is too: whether this study is the initial modality for a patient's abdominal pain depends on what the workup has been, which the chart records as procedures without recording what they were for. Declared and abstained on rather than omitted, because omitting it approves where this MAC might not (REQ-58, D101's rule)."
+    }
+  ],
+  "procedure_sets": {
+    "note": "One entry, two codes. There is no NCD over these procedures in this corpus to transcribe national sets from, so both national sets are empty for the reason the infliximab tree's are (D26's three answers, D33's third outcome). NCD 220.5 *Ultrasound Diagnostic Procedures* exists and is deliberately not in the corpus: its nationally covered list enumerates A-mode, B-scan and M-mode studies and names no duplex or Doppler vascular study, so it is not a national layer over 93975/93976. That reading was made from the MCD's own NCD export during D114's survey and is not a corpus citation; committing 220.5 and checking the relation is v2.1's `national_floor` work (D112).",
+    "nationally_covered": [],
+    "nationally_non_covered": [],
+    "contractor_determined": [
+      {
+        "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+        "coverage_claim": {
+          "document_id": "l35755",
+          "char_start": 4848,
+          "char_end": 5127,
+          "quote": "Title XVIII of the Social Security Act section 1862 (a) (1) (A) allows coverage and payment of those items or services that are considered to be reasonable and necessary for the diagnosis or treatment of illness or injury or to improve the functioning of a malformed body member.",
+          "note": "The statutory standard this LCD applies, which is not a coverage grant on its own. The corroborating quote is WPS exercising it, which is the two-part shape D33 requires of a contractor-determined code.",
+          "corroborating_quote": {
+            "document_id": "l35755",
+            "char_start": 8346,
+            "char_end": 8428,
+            "quote": "Services are deemed medically necessary when all the following conditions are met:",
+            "note": "WPS covers these studies under the conditions this tree compiles."
+          }
+        },
+        "codes": [
+          {
+            "code": "93975",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "char_start": 11547,
+            "char_end": 11646,
+            "quote": "Abdominal/visceral vascular studies of abdominal, retroperitoneal, and pelvic organs (93975, 93976)",
+            "document_id": "a57591",
+            "note": "A57591's Group 1 paragraph. The article's CPT/HCPCS table sits behind the AMA licence modal as A56852's and A56432's do, but unlike them this article names its codes in prose, beside what they denote and the diagnoses that support them -- so the code binding and the indication set anchor into the same sentence. Stronger evidence than L35677's revision-history line and the same class of claim (D28, D114)."
+          },
+          {
+            "code": "93976",
+            "system": "CPT",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "char_start": 11547,
+            "char_end": 11646,
+            "quote": "Abdominal/visceral vascular studies of abdominal, retroperitoneal, and pelvic organs (93975, 93976)",
+            "document_id": "a57591",
+            "note": "The limited study to 93975's complete one; the same sentence binds both, and this tree's criteria do not distinguish them because the document's conditions and its frequency limit do not either."
+          }
+        ]
+      }
+    ]
+  }
+}

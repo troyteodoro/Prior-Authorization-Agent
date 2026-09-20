@@ -3,8 +3,8 @@
   "model": "gemini-3.5-flash-lite",
   "tier": "ai_studio",
   "claims_enumerated_from": "results.json",
-  "prompt_version": "verifier-v4",
-  "measured_at": "2026-09-20T20:23:29.955712+00:00",
+  "prompt_version": "verifier-v6",
+  "measured_at": "2026-09-20T23:00:56.308184+00:00",
   "claims": [
     {
       "digest": "5f1f38ba429de837d96e0089fff5ea37a074c79b755013bb62de268b916e408e",
@@ -30,17 +30,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is an Observation resource documenting a BMI of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote is a valid BMI observation matching the criterion subject with a value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is an Observation resource documenting a BMI of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote is a valid BMI observation matching the criterion subject with a value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 936,
-        "output_tokens": 51,
-        "wall_time_ms": 900.6134159862995
+        "input_tokens": 1108,
+        "output_tokens": 56,
+        "wall_time_ms": 930.7162500917912
       }
     },
     {
@@ -66,17 +66,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement.",
+      "reason": "The provided quote is a valid FHIR condition resource for essential hypertension, which is pertinent to the subject of obesity comorbidities.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement."
+        "reason": "The provided quote is a valid FHIR condition resource for essential hypertension, which is pertinent to the subject of obesity comorbidities."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 977,
-        "output_tokens": 44,
-        "wall_time_ms": 823.7055840436369
+        "input_tokens": 1149,
+        "output_tokens": 40,
+        "wall_time_ms": 769.1406250232831
       }
     },
     {
@@ -104,17 +104,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold.",
+      "reason": "The provided quotes consistently document multiple visits to a physician-supervised weight management program meeting the minimum event requirement.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold."
+        "reason": "The provided quotes consistently document multiple visits to a physician-supervised weight management program meeting the minimum event requirement."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 856,
-        "output_tokens": 34,
-        "wall_time_ms": 931.3897920073941
+        "input_tokens": 1028,
+        "output_tokens": 37,
+        "wall_time_ms": 762.33137503732
       }
     },
     {
@@ -137,17 +137,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote directly supports the MET verdict by documenting a recent visit within the 12-month window that satisfies the criterion.",
+      "reason": "The provided quote is direct evidence of a qualifying program visit within the required recency window.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote directly supports the MET verdict by documenting a recent visit within the 12-month window that satisfies the criterion."
+        "reason": "The provided quote is direct evidence of a qualifying program visit within the required recency window."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 505,
-        "output_tokens": 42,
-        "wall_time_ms": 586.1625409452245
+        "input_tokens": 677,
+        "output_tokens": 34,
+        "wall_time_ms": 819.0083339577541
       }
     },
     {
@@ -173,17 +173,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes document four monthly program visits that are consistent with satisfaction of the minimum consecutive months criterion.",
+      "reason": "The quotes document four consecutive monthly program visits from March to June 2026, satisfying the minimum consecutive months criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes document four monthly program visits that are consistent with satisfaction of the minimum consecutive months criterion."
+        "reason": "The quotes document four consecutive monthly program visits from March to June 2026, satisfying the minimum consecutive months criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 718,
-        "output_tokens": 35,
-        "wall_time_ms": 586.0712089342996
+        "input_tokens": 890,
+        "output_tokens": 41,
+        "wall_time_ms": 709.3965420499444
       }
     },
     {
@@ -209,17 +209,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document the required BMI values matching the claimed verdict of satisfaction.",
+      "reason": "The provided quotes document the BMI for the required monthly intervals and are consistent with the MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document the required BMI values matching the claimed verdict of satisfaction."
+        "reason": "The provided quotes document the BMI for the required monthly intervals and are consistent with the MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 483,
-        "output_tokens": 32,
-        "wall_time_ms": 762.2009579790756
+        "input_tokens": 655,
+        "output_tokens": 35,
+        "wall_time_ms": 708.135333028622
       }
     },
     {
@@ -255,17 +255,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period.",
+      "reason": "The quotes provided are directly on topic, demonstrating documentation of both diet and physical activity across the qualifying period.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period."
+        "reason": "The quotes provided are directly on topic, demonstrating documentation of both diet and physical activity across the qualifying period."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 641,
-        "output_tokens": 32,
-        "wall_time_ms": 706.9755831034854
+        "input_tokens": 813,
+        "output_tokens": 37,
+        "wall_time_ms": 846.6166249709204
       }
     },
     {
@@ -292,17 +292,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote shows a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote is a valid BMI observation directly addressing the criterion and contains a value of 35.89, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote shows a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote is a valid BMI observation directly addressing the criterion and contains a value of 35.89, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 957,
-        "output_tokens": 48,
-        "wall_time_ms": 781.5557500580326
+        "input_tokens": 1129,
+        "output_tokens": 53,
+        "wall_time_ms": 909.0761250117794
       }
     },
     {
@@ -329,17 +329,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document multiple physician-supervised weight management program visits meeting the minimum event requirement.",
+      "reason": "The quotes directly document multiple physician-supervised weight management program visits meeting the minimum event requirement and showing consistent program participation.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document multiple physician-supervised weight management program visits meeting the minimum event requirement."
+        "reason": "The quotes directly document multiple physician-supervised weight management program visits meeting the minimum event requirement and showing consistent program participation."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 782,
-        "output_tokens": 34,
-        "wall_time_ms": 838.9272500062361
+        "input_tokens": 954,
+        "output_tokens": 39,
+        "wall_time_ms": 766.1353750154376
       }
     },
     {
@@ -364,17 +364,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes are relevant program visit records and do not directly show the four-month minimum duration was satisfied without underlying count arithmetic.",
+      "reason": "The quoted visits show program participation, and since this is a NOT_MET verdict whose shortfall was computed upstream, the quotes appropriately document the available visits without direct contradiction.",
       "raw": {
         "accept": true,
-        "reason": "The quotes are relevant program visit records and do not directly show the four-month minimum duration was satisfied without underlying count arithmetic."
+        "reason": "The quoted visits show program participation, and since this is a NOT_MET verdict whose shortfall was computed upstream, the quotes appropriately document the available visits without direct contradiction."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 647,
-        "output_tokens": 41,
-        "wall_time_ms": 856.3750830944628
+        "input_tokens": 819,
+        "output_tokens": 49,
+        "wall_time_ms": 840.4523748904467
       }
     },
     {
@@ -401,17 +401,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents a Body mass index (BMI) observation with a value of 42.5 kg/m2, which satisfies the coverage threshold of 35.0 or greater.",
+      "reason": "The provided quote is an official observation directly reporting a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents a Body mass index (BMI) observation with a value of 42.5 kg/m2, which satisfies the coverage threshold of 35.0 or greater."
+        "reason": "The provided quote is an official observation directly reporting a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 954,
-        "output_tokens": 56,
-        "wall_time_ms": 765.5599169665948
+        "input_tokens": 1126,
+        "output_tokens": 52,
+        "wall_time_ms": 693.1441250490025
       }
     },
     {
@@ -437,17 +437,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document physician-supervised weight management program visits that meet the minimum event threshold of one.",
+      "reason": "The quotes consistently document multiple physician-supervised weight management program visits with corresponding dates, weights, and BMIs, satisfying the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document physician-supervised weight management program visits that meet the minimum event threshold of one."
+        "reason": "The quotes consistently document multiple physician-supervised weight management program visits with corresponding dates, weights, and BMIs, satisfying the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 718,
-        "output_tokens": 37,
-        "wall_time_ms": 870.6656669965014
+        "input_tokens": 890,
+        "output_tokens": 42,
+        "wall_time_ms": 771.6101669939235
       }
     },
     {
@@ -470,17 +470,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provided as evidence for the NOT_MET verdict does not directly show the recency window requirement as met, and as a blind verifier, we do not perform date arithmetic to overturn a NOT_MET claim.",
+      "reason": "The quote provided as evidence for the NOT_MET verdict is relevant to the subject of the criterion and does not directly show the criterion as satisfied without arithmetic.",
       "raw": {
         "accept": true,
-        "reason": "The quote provided as evidence for the NOT_MET verdict does not directly show the recency window requirement as met, and as a blind verifier, we do not perform date arithmetic to overturn a NOT_MET claim."
+        "reason": "The quote provided as evidence for the NOT_MET verdict is relevant to the subject of the criterion and does not directly show the criterion as satisfied without arithmetic."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 508,
-        "output_tokens": 60,
-        "wall_time_ms": 923.057832987979
+        "input_tokens": 680,
+        "output_tokens": 48,
+        "wall_time_ms": 791.1774589447305
       }
     },
     {
@@ -506,17 +506,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document monthly supervised program visits across four consecutive months (March through June 2025), supporting the MET verdict for the minimum consecutive months criterion.",
+      "reason": "The quotes document monthly program visits spanning from March to June 2025, which provides valid evidence supporting the MET verdict for the minimum consecutive months criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document monthly supervised program visits across four consecutive months (March through June 2025), supporting the MET verdict for the minimum consecutive months criterion."
+        "reason": "The quotes document monthly program visits spanning from March to June 2025, which provides valid evidence supporting the MET verdict for the minimum consecutive months criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 722,
-        "output_tokens": 50,
-        "wall_time_ms": 980.8925420511514
+        "input_tokens": 894,
+        "output_tokens": 48,
+        "wall_time_ms": 967.465708963573
       }
     },
     {
@@ -542,17 +542,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document the BMI values required for the criterion.",
+      "reason": "The provided quotes directly document the BMI values required for satisfaction of the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document the BMI values required for the criterion."
+        "reason": "The provided quotes directly document the BMI values required for satisfaction of the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 483,
-        "output_tokens": 29,
-        "wall_time_ms": 922.2847500350326
+        "input_tokens": 655,
+        "output_tokens": 31,
+        "wall_time_ms": 615.3270420618355
       }
     },
     {
@@ -588,17 +588,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both diet and activity across the evaluation period supporting the MET verdict.",
+      "reason": "The quotes consistently document both diet and activity across the evaluation period as claimed.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both diet and activity across the evaluation period supporting the MET verdict."
+        "reason": "The quotes consistently document both diet and activity across the evaluation period as claimed."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 631,
-        "output_tokens": 34,
-        "wall_time_ms": 739.4354169955477
+        "input_tokens": 803,
+        "output_tokens": 31,
+        "wall_time_ms": 756.902709021233
       }
     },
     {
@@ -625,17 +625,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote correctly documents a body mass index (BMI) observation of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The quoted observation provides a BMI value of 39.23 kg/m2, which directly satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote correctly documents a body mass index (BMI) observation of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The quoted observation provides a BMI value of 39.23 kg/m2, which directly satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 958,
-        "output_tokens": 54,
-        "wall_time_ms": 825.4482499323785
+        "input_tokens": 1130,
+        "output_tokens": 49,
+        "wall_time_ms": 699.9998340616003
       }
     },
     {
@@ -661,17 +661,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document multiple physician-supervised weight management program visits with dietary reviews and exercise logs, satisfying the requirement for at least one documented event.",
+      "reason": "The quotes consistently document physician-supervised weight management program visits meeting the required minimum event count.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document multiple physician-supervised weight management program visits with dietary reviews and exercise logs, satisfying the requirement for at least one documented event."
+        "reason": "The quotes consistently document physician-supervised weight management program visits meeting the required minimum event count."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 727,
-        "output_tokens": 46,
-        "wall_time_ms": 829.9910830100998
+        "input_tokens": 899,
+        "output_tokens": 34,
+        "wall_time_ms": 615.4967499896884
       }
     },
     {
@@ -694,17 +694,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provided serves as valid evidence for the program follow-up within the specified time frame and is consistent with the satisfaction of the recency criterion.",
+      "reason": "The quote directly supports the MET verdict by providing recent exercise and program follow-up documentation consistent with the qualifying run criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quote provided serves as valid evidence for the program follow-up within the specified time frame and is consistent with the satisfaction of the recency criterion."
+        "reason": "The quote directly supports the MET verdict by providing recent exercise and program follow-up documentation consistent with the qualifying run criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 513,
-        "output_tokens": 46,
-        "wall_time_ms": 898.5917090903968
+        "input_tokens": 685,
+        "output_tokens": 40,
+        "wall_time_ms": 806.2947910511866
       }
     },
     {
@@ -730,17 +730,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes document continuous program visits across four consecutive months from March to June 2026, satisfying the criterion for participation duration.",
+      "reason": "The provided quotes directly document program visits across four consecutive months (March through June 2026), supporting the MET verdict for the minimum consecutive months criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes document continuous program visits across four consecutive months from March to June 2026, satisfying the criterion for participation duration."
+        "reason": "The provided quotes directly document program visits across four consecutive months (March through June 2026), supporting the MET verdict for the minimum consecutive months criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 731,
-        "output_tokens": 44,
-        "wall_time_ms": 799.3117909645662
+        "input_tokens": 903,
+        "output_tokens": 48,
+        "wall_time_ms": 592.7839170908555
       }
     },
     {
@@ -764,17 +764,17 @@
         ]
       },
       "accept": true,
-      "reason": "The claim is NOT_MET, and the provided quotes are directly relevant to the criterion evaluating BMI documentation.",
+      "reason": "The quotes provided appropriately document clinical visit encounters for the evaluation of the BMI requirement, aligning with the NOT_MET verdict without showing direct satisfaction.",
       "raw": {
         "accept": true,
-        "reason": "The claim is NOT_MET, and the provided quotes are directly relevant to the criterion evaluating BMI documentation."
+        "reason": "The quotes provided appropriately document clinical visit encounters for the evaluation of the BMI requirement, aligning with the NOT_MET verdict without showing direct satisfaction."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 593,
-        "output_tokens": 37,
-        "wall_time_ms": 781.9552910514176
+        "input_tokens": 765,
+        "output_tokens": 44,
+        "wall_time_ms": 810.2329580578953
       }
     },
     {
@@ -810,17 +810,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both dietary plans and physical activity across multiple instances in support of the criterion.",
+      "reason": "The quotes consistently document both dietary plans and specific physical activity across the required interval, fully supporting the MET verdict for this criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both dietary plans and physical activity across multiple instances in support of the criterion."
+        "reason": "The quotes consistently document both dietary plans and specific physical activity across the required interval, fully supporting the MET verdict for this criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 636,
-        "output_tokens": 36,
-        "wall_time_ms": 593.5307499021292
+        "input_tokens": 808,
+        "output_tokens": 41,
+        "wall_time_ms": 602.4073329754174
       }
     },
     {
@@ -847,17 +847,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote correctly pertains to the BMI criterion, and since the claimed verdict is NOT_MET for a threshold of 35.0 with a measured value of 34.26, the evidence directly supports the stated shortfall.",
+      "reason": "The cited quote provides a BMI observation of 34.26 kg/m2, which is below the threshold of 35.0, correctly supporting the NOT_MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The quote correctly pertains to the BMI criterion, and since the claimed verdict is NOT_MET for a threshold of 35.0 with a measured value of 34.26, the evidence directly supports the stated shortfall."
+        "reason": "The cited quote provides a BMI observation of 34.26 kg/m2, which is below the threshold of 35.0, correctly supporting the NOT_MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 957,
-        "output_tokens": 63,
-        "wall_time_ms": 887.1997919632122
+        "input_tokens": 1129,
+        "output_tokens": 55,
+        "wall_time_ms": 929.1884590638801
       }
     },
     {
@@ -884,17 +884,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes document active and confirmed diagnoses of Type 2 Diabetes mellitus and Essential hypertension, which are established obesity-related co-morbidities satisfying the criterion.",
+      "reason": "The provided quotes contain valid FHIR Condition resources relevant to obesity-related co-morbidities, supporting the MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes document active and confirmed diagnoses of Type 2 Diabetes mellitus and Essential hypertension, which are established obesity-related co-morbidities satisfying the criterion."
+        "reason": "The provided quotes contain valid FHIR Condition resources relevant to obesity-related co-morbidities, supporting the MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1533,
-        "output_tokens": 49,
-        "wall_time_ms": 756.5754160750657
+        "input_tokens": 1705,
+        "output_tokens": 41,
+        "wall_time_ms": 759.092167019844
       }
     },
     {
@@ -920,17 +920,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity satisfying the minimum count of one.",
+      "reason": "The quote provides a confirmed active condition of essential hypertension, which is a recognized obesity-related comorbidity supporting the MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity satisfying the minimum count of one."
+        "reason": "The quote provides a confirmed active condition of essential hypertension, which is a recognized obesity-related comorbidity supporting the MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1000,
-        "output_tokens": 45,
-        "wall_time_ms": 620.3725830418989
+        "input_tokens": 1172,
+        "output_tokens": 41,
+        "wall_time_ms": 545.126875047572
       }
     },
     {
@@ -957,17 +957,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote directly documents a BMI value of 35.0, which satisfies the coverage threshold of 35.0 or greater.",
+      "reason": "The quoted observation is directly on subject for BMI and reports a value of 35.0, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote directly documents a BMI value of 35.0, which satisfies the coverage threshold of 35.0 or greater."
+        "reason": "The quoted observation is directly on subject for BMI and reports a value of 35.0, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 860,
-        "output_tokens": 45,
-        "wall_time_ms": 792.326790979132
+        "input_tokens": 1032,
+        "output_tokens": 43,
+        "wall_time_ms": 689.0003749867901
       }
     },
     {
@@ -993,17 +993,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement.",
+      "reason": "The quote provides a confirmed condition of essential hypertension which is relevant to obesity-related co-morbidities.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement."
+        "reason": "The quote provides a confirmed condition of essential hypertension which is relevant to obesity-related co-morbidities."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 883,
-        "output_tokens": 42,
-        "wall_time_ms": 541.5213330416009
+        "input_tokens": 1055,
+        "output_tokens": 38,
+        "wall_time_ms": 670.6710839644074
       }
     },
     {
@@ -1030,17 +1030,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote contains a BMI observation of 35.89 kg/m2, which meets the threshold of 35.0 or greater.",
+      "reason": "The provided quote is a valid BMI observation directly related to the criterion and its value of 35.89 satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote contains a BMI observation of 35.89 kg/m2, which meets the threshold of 35.0 or greater."
+        "reason": "The provided quote is a valid BMI observation directly related to the criterion and its value of 35.89 satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 862,
-        "output_tokens": 48,
-        "wall_time_ms": 785.0532910088077
+        "input_tokens": 1034,
+        "output_tokens": 51,
+        "wall_time_ms": 821.7818749835715
       }
     },
     {
@@ -1063,17 +1063,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is relevant to the recency and program visit criteria, and the quoted BMI of 35.7 satisfies the required threshold.",
+      "reason": "The quote is relevant to the recency criterion and shows a recent visit date within the acceptable window.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is relevant to the recency and program visit criteria, and the quoted BMI of 35.7 satisfies the required threshold."
+        "reason": "The quote is relevant to the recency criterion and shows a recent visit date within the acceptable window."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 504,
-        "output_tokens": 45,
-        "wall_time_ms": 734.6794590121135
+        "input_tokens": 676,
+        "output_tokens": 36,
+        "wall_time_ms": 734.082999988459
       }
     },
     {
@@ -1107,17 +1107,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both diet and activity across multiple entries as required by the criterion.",
+      "reason": "The quotes document both diet and activity consistent with the satisfaction of the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both diet and activity across multiple entries as required by the criterion."
+        "reason": "The quotes document both diet and activity consistent with the satisfaction of the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 602,
-        "output_tokens": 34,
-        "wall_time_ms": 775.4149170359597
+        "input_tokens": 774,
+        "output_tokens": 31,
+        "wall_time_ms": 711.0301670618355
       }
     },
     {
@@ -1143,17 +1143,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is a confirmed diagnosis of rheumatoid arthritis which directly supports the MET verdict for this criterion.",
+      "reason": "The quote provides a confirmed active diagnosis of rheumatoid arthritis matching the criterion subject.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is a confirmed diagnosis of rheumatoid arthritis which directly supports the MET verdict for this criterion."
+        "reason": "The quote provides a confirmed active diagnosis of rheumatoid arthritis matching the criterion subject."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 994,
-        "output_tokens": 36,
-        "wall_time_ms": 700.3910839557648
+        "input_tokens": 1166,
+        "output_tokens": 31,
+        "wall_time_ms": 705.613458994776
       }
     },
     {
@@ -1179,17 +1179,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote correctly documents an active prescription for Methotrexate 2.5 MG Oral Tablet, supporting the MET verdict for combination use with methotrexate.",
+      "reason": "The provided quote is a valid MedicationRequest for methotrexate which directly addresses the criterion regarding combination use.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote correctly documents an active prescription for Methotrexate 2.5 MG Oral Tablet, supporting the MET verdict for combination use with methotrexate."
+        "reason": "The provided quote is a valid MedicationRequest for methotrexate which directly addresses the criterion regarding combination use."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1019,
-        "output_tokens": 45,
-        "wall_time_ms": 770.7302910275757
+        "input_tokens": 1191,
+        "output_tokens": 35,
+        "wall_time_ms": 694.1329999826849
       }
     },
     {
@@ -1215,27 +1215,230 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is a confirmed active condition record for Rheumatoid arthritis, which directly matches the required diagnosis criterion.",
+      "reason": "The provided quote is a FHIR Condition resource directly documenting a confirmed active diagnosis of rheumatoid arthritis, which aligns with the criterion's subject.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is a confirmed active condition record for Rheumatoid arthritis, which directly matches the required diagnosis criterion."
+        "reason": "The provided quote is a FHIR Condition resource directly documenting a confirmed active diagnosis of rheumatoid arthritis, which aligns with the criterion's subject."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 999,
+        "input_tokens": 1171,
+        "output_tokens": 44,
+        "wall_time_ms": 839.2357500270009
+      }
+    },
+    {
+      "digest": "d8b06296beb3faed0b222a2946f1e5d59717240b3edb81f0f39fc618acc0f829",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A diagnosis A57591 lists as supporting medical necessity for 93975/93976",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "abdominal_visceral_vascular_indications"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-7ffd-3f45860d2d2d\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"59621000\", \"display\": \"Essential hypertension (disorder)\"}], \"text\": \"Essential hypertension (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:b1bbb34a-aa4b-5c18-a550-8bd26e0da528\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-31f4-77361643a4ee\"}, \"onsetDateTime\": \"1992-12-14T16:06:52-08:00\", \"recordedDate\": \"1992-12-14T16:06:52-08:00\"}",
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-5629-2f09fe16de89\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"431856006\", \"display\": \"Chronic kidney disease stage 2 (disorder)\"}], \"text\": \"Chronic kidney disease stage 2 (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:b1bbb34a-aa4b-5c18-a550-8bd26e0da528\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-23bc-d34dae1aa176\"}, \"onsetDateTime\": \"2008-11-24T16:06:52-08:00\", \"recordedDate\": \"2008-11-24T16:06:52-08:00\"}",
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-b3cb-064a6233a439\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"433144002\", \"display\": \"Chronic kidney disease stage 3 (disorder)\"}], \"text\": \"Chronic kidney disease stage 3 (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:b1bbb34a-aa4b-5c18-a550-8bd26e0da528\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-c26a-24a63514f22b\"}, \"onsetDateTime\": \"2011-10-10T17:06:52-07:00\", \"recordedDate\": \"2011-10-10T17:06:52-07:00\"}",
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-e565-4c1c21430800\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"431857002\", \"display\": \"Chronic kidney disease stage 4 (disorder)\"}], \"text\": \"Chronic kidney disease stage 4 (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:b1bbb34a-aa4b-5c18-a550-8bd26e0da528\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-ded6-c3ec48633253\"}, \"onsetDateTime\": \"2025-11-03T16:06:52-08:00\", \"recordedDate\": \"2025-11-03T16:06:52-08:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes provided are valid FHIR Condition resources relevant to diagnoses, and membership in the named value set was computed by code.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes provided are valid FHIR Condition resources relevant to diagnoses, and membership in the named value set was computed by code."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 2358,
+        "output_tokens": 41,
+        "wall_time_ms": 747.583125019446
+      }
+    },
+    {
+      "digest": "5700625f374df0a0ff35388adfffeabe6cf6fd155090f76d90f5932a8627102e",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Not performed more than once in a year",
+          "constants": {
+            "excluded_encounter_classes": {
+              "value": [
+                "EMER",
+                "IMP"
+              ]
+            },
+            "min_months_since_prior_procedure": {
+              "value": 12,
+              "comparison": ">="
+            },
+            "value_set_id": {
+              "value": "abdominal_visceral_vascular_studies"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Procedure\", \"id\": \"53126ee7-0f8a-b494-2a9e-cc52c39279c8-us-prior-synthetic\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure\"]}, \"status\": \"completed\", \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"709640007\", \"display\": \"Doppler ultrasonography of renal vein (procedure)\"}], \"text\": \"Doppler ultrasonography of renal vein (procedure)\"}, \"subject\": {\"reference\": \"urn:uuid:b1bbb34a-aa4b-5c18-a550-8bd26e0da528\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-aedc-cdeafb603785\"}, \"performedPeriod\": {\"start\": \"2024-06-17T17:06:52-07:00\", \"end\": \"2024-06-17T17:43:41-07:00\"}, \"location\": {\"reference\": \"Location?identifier=https://github.com/synthetichealth/synthea|73e1a275-053f-341d-ba8e-900cec77d849\", \"display\": \"FAMILY WELLNESS ASSOCIATES, INC.\"}}"
+        ]
+      },
+      "accept": true,
+      "reason": "The quote provides valid procedural evidence matching the abdominal visceral vascular studies value set and is consistent with the MET verdict.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote provides valid procedural evidence matching the abdominal visceral vascular studies value set and is consistent with the MET verdict."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1073,
         "output_tokens": 38,
-        "wall_time_ms": 690.4490840388462
+        "wall_time_ms": 786.7277499753982
+      }
+    },
+    {
+      "digest": "0e7097bf18cff8dd4a1da5001fc4a879d0dd270ba8799fadf64c0202dd1cfbaa",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A diagnosis A57591 lists as supporting medical necessity for 93975/93976",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "abdominal_visceral_vascular_indications"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-7ffd-3f45860d2d2d\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"59621000\", \"display\": \"Essential hypertension (disorder)\"}], \"text\": \"Essential hypertension (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:7acd0453-b37c-5c1a-9879-0a7b443065d9\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-31f4-77361643a4ee\"}, \"onsetDateTime\": \"1992-12-14T16:06:52-08:00\", \"recordedDate\": \"1992-12-14T16:06:52-08:00\"}",
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-5629-2f09fe16de89\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"431856006\", \"display\": \"Chronic kidney disease stage 2 (disorder)\"}], \"text\": \"Chronic kidney disease stage 2 (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:7acd0453-b37c-5c1a-9879-0a7b443065d9\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-23bc-d34dae1aa176\"}, \"onsetDateTime\": \"2008-11-24T16:06:52-08:00\", \"recordedDate\": \"2008-11-24T16:06:52-08:00\"}",
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-b3cb-064a6233a439\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"433144002\", \"display\": \"Chronic kidney disease stage 3 (disorder)\"}], \"text\": \"Chronic kidney disease stage 3 (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:7acd0453-b37c-5c1a-9879-0a7b443065d9\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-c26a-24a63514f22b\"}, \"onsetDateTime\": \"2011-10-10T17:06:52-07:00\", \"recordedDate\": \"2011-10-10T17:06:52-07:00\"}",
+          "{\"resourceType\": \"Condition\", \"id\": \"53126ee7-0f8a-b494-e565-4c1c21430800\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"431857002\", \"display\": \"Chronic kidney disease stage 4 (disorder)\"}], \"text\": \"Chronic kidney disease stage 4 (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:7acd0453-b37c-5c1a-9879-0a7b443065d9\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-ded6-c3ec48633253\"}, \"onsetDateTime\": \"2025-11-03T16:06:52-08:00\", \"recordedDate\": \"2025-11-03T16:06:52-08:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes contain valid FHIR condition resources relevant to diagnoses, and value set membership verification is delegated to the system as instructed.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes contain valid FHIR condition resources relevant to diagnoses, and value set membership verification is delegated to the system as instructed."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 2370,
+        "output_tokens": 42,
+        "wall_time_ms": 747.2925420152023
+      }
+    },
+    {
+      "digest": "b5f8cd3e03c6c12c7e8381b2bffac2709babd20b40c6bf0dca65ff9aee6856ef",
+      "criterion_id": "b",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Not performed more than once in a year",
+          "constants": {
+            "excluded_encounter_classes": {
+              "value": [
+                "EMER",
+                "IMP"
+              ]
+            },
+            "min_months_since_prior_procedure": {
+              "value": 12,
+              "comparison": ">="
+            },
+            "value_set_id": {
+              "value": "abdominal_visceral_vascular_studies"
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "{\"resourceType\": \"Procedure\", \"id\": \"53126ee7-0f8a-b494-3b90-6334f168db89-us-prior-synthetic\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure\"]}, \"status\": \"completed\", \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"709640007\", \"display\": \"Doppler ultrasonography of renal vein (procedure)\"}], \"text\": \"Doppler ultrasonography of renal vein (procedure)\"}, \"subject\": {\"reference\": \"urn:uuid:7acd0453-b37c-5c1a-9879-0a7b443065d9\"}, \"encounter\": {\"reference\": \"urn:uuid:53126ee7-0f8a-b494-1f27-d67e63d69812\"}, \"performedPeriod\": {\"start\": \"2026-05-25T17:06:52-07:00\", \"end\": \"2026-05-25T20:58:52-07:00\"}, \"location\": {\"reference\": \"Location?identifier=https://github.com/synthetichealth/synthea|b3acb384-f921-3c1c-a16c-022cdddb581a\", \"display\": \"MERCYONE SIOUXLAND MEDICAL CENTER\"}, \"reasonReference\": [{\"reference\": \"urn:uuid:53126ee7-0f8a-b494-e565-4c1c21430800\", \"display\": \"Chronic kidney disease stage 4 (disorder)\"}]}"
+        ]
+      },
+      "accept": true,
+      "reason": "The quote correctly documents a prior abdominal visceral vascular study as evidence for the frequency criterion and the verdict is appropriately marked as NOT_MET.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote correctly documents a prior abdominal visceral vascular study as evidence for the frequency criterion and the verdict is appropriately marked as NOT_MET."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1150,
+        "output_tokens": 43,
+        "wall_time_ms": 657.7088329941034
+      }
+    },
+    {
+      "digest": "3c7e0136b91b81392f594c5dbe3a9b54f22537a36e69b5263c3c7b66f7cb100d",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A diagnosis A57591 lists as supporting medical necessity for 93975/93976",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "abdominal_visceral_vascular_indications"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"53126ee7-0f8a-b494-7ffd-3f45860d2d2d\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"59621000\",\n          \"display\": \"Essential hypertension (disorder)\"\n        } ],\n        \"text\": \"Essential hypertension (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-fb3c-921069a1605b\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-31f4-77361643a4ee\"\n      },\n      \"onsetDateTime\": \"1992-12-14T16:06:52-08:00\",\n      \"recordedDate\": \"1992-12-14T16:06:52-08:00\"\n    }",
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"53126ee7-0f8a-b494-5629-2f09fe16de89\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"431856006\",\n          \"display\": \"Chronic kidney disease stage 2 (disorder)\"\n        } ],\n        \"text\": \"Chronic kidney disease stage 2 (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-fb3c-921069a1605b\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-23bc-d34dae1aa176\"\n      },\n      \"onsetDateTime\": \"2008-11-24T16:06:52-08:00\",\n      \"recordedDate\": \"2008-11-24T16:06:52-08:00\"\n    }",
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"53126ee7-0f8a-b494-b3cb-064a6233a439\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"433144002\",\n          \"display\": \"Chronic kidney disease stage 3 (disorder)\"\n        } ],\n        \"text\": \"Chronic kidney disease stage 3 (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-fb3c-921069a1605b\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-c26a-24a63514f22b\"\n      },\n      \"onsetDateTime\": \"2011-10-10T17:06:52-07:00\",\n      \"recordedDate\": \"2011-10-10T17:06:52-07:00\"\n    }",
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"53126ee7-0f8a-b494-e565-4c1c21430800\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"431857002\",\n          \"display\": \"Chronic kidney disease stage 4 (disorder)\"\n        } ],\n        \"text\": \"Chronic kidney disease stage 4 (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-fb3c-921069a1605b\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:53126ee7-0f8a-b494-ded6-c3ec48633253\"\n      },\n      \"onsetDateTime\": \"2025-11-03T16:06:52-08:00\",\n      \"recordedDate\": \"2025-11-03T16:06:52-08:00\"\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes are valid FHIR Condition resources containing diagnoses which serve as evidence for the criterion, and the verifier must not re-adjudicate value set membership.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes are valid FHIR Condition resources containing diagnoses which serve as evidence for the criterion, and the verifier must not re-adjudicate value set membership."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 2818,
+        "output_tokens": 50,
+        "wall_time_ms": 718.9316250151023
       }
     }
   ],
   "aggregate": {
-    "claims": 33,
-    "accepted": 33,
+    "claims": 38,
+    "accepted": 38,
     "rejected": 0,
-    "model_calls": 33,
-    "input_tokens": 25889,
-    "output_tokens": 1412,
-    "wall_time_ms": 25759.4
+    "model_calls": 38,
+    "input_tokens": 41334,
+    "output_tokens": 1589,
+    "wall_time_ms": 28541.1
   }
 }

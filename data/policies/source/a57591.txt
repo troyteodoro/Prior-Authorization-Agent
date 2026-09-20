@@ -1,0 +1,3109 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05101 - MAC A
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05102 - MAC B
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05201 - MAC A
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05202 - MAC B
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05301 - MAC A
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05302 - MAC B
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05401 - MAC A
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05402 - MAC B
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05901 - MAC A
+
+J - 05
+
+Alabama
+Alaska
+Arizona
+Arkansas
+California - Entire State
+Colorado
+Connecticut
+Delaware
+Florida
+Georgia
+Hawaii
+Idaho
+Illinois
+Indiana
+Iowa
+Kansas
+Kentucky
+Louisiana
+Maine
+Maryland
+Massachusetts
+Michigan
+Mississippi
+Missouri - Entire State
+Montana
+Nebraska
+Nevada
+New Hampshire
+New Jersey
+New Mexico
+North Carolina
+North Dakota
+Ohio
+Oklahoma
+Oregon
+Pennsylvania
+Rhode Island
+South Carolina
+South Dakota
+Tennessee
+Texas
+Utah
+Vermont
+Virginia
+Washington
+West Virginia
+Wisconsin
+Wyoming
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08101 - MAC A
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08102 - MAC B
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08201 - MAC A
+
+J - 08
+
+Michigan
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08202 - MAC B
+
+J - 08
+
+Michigan
+
+Article Information
+
+General Information
+
+Source Article ID
+
+N/A
+
+Article ID
+
+A57591
+
+Original ICD-9 Article ID
+
+Not Applicable
+
+Article Title
+
+Billing and Coding: Non-Invasive Abdominal / Visceral Vascular Studies
+
+Article Type
+
+Billing and Coding
+
+Original Effective Date
+
+11/01/2019
+
+Revision Effective Date
+
+08/01/2026
+
+Revision Ending Date
+
+N/A
+
+Retirement Date
+
+N/A
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+CMS National Coverage Policy
+
+Italicized font represents CMS national language/wording copied directly from CMS Manuals or CMS Transmittals. Contractors are prohibited from changing national NCD language/wording.
+
+Title XVIII of the Social Security Act section 1833 (e) prohibits Medicare payment for any claim which lacks the necessary information to process the claim.
+
+Title XVIII of the Social Security Act section 1862 (a) (1) (A) allows coverage and payment of those items or services that are considered to be medically reasonable and necessary for the diagnosis or treatment of illness or injury or to improve the functioning of a malformed body member.
+
+Title XVIII of the Social Security Act section 1862 (a) (1) (D) excludes Medicare payment for any expenses incurred for items or services that are investigational or experimental.
+
+Title XVIII of the Social Security Act section 1862 (a) (7) excludes routine physical examinations and services from Medicare coverage.
+
+42 CFR, Section 410.32 Diagnosis x-ray tests, diagnostic laboratory tests, and other diagnostic indicates that diagnostic tests may only be ordered by the treating physician (or other treating practitioner acting within the scope of his or her license and Medicare requirements) who furnishes a consultation or treats a beneficiary for a specific medical problem and who uses the results in the management of the beneficiary’s specific medical problem. Tests not ordered by the physician or other qualified non-physician provider who is treating the patient are not reasonable and necessary (42 CFR 411.15(k) (1).
+
+42 CFR, Section 410.32 (b) Diagnostic x-ray and other diagnostic tests. (1) Basic rule … all diagnostic x-ray and other diagnostic tests covered under section 1861(s)(3) of the Act and payable under the physician fee schedule must be furnished under the appropriate level of supervision by a physician as defined in section 1861® of the Act. Services furnished without the required level of supervision are not reasonable and necessary. (see 42 CFR 411.15(k)(1)).
+
+CMS Pub 100-02 Medicare Benefit Policy Manual, Chapter 15 – Covered Medical and Other Health Services, Section 80 – Requirements for Diagnostic X-Ray, Diagnostic Laboratory, and Other Diagnostic Tests.
+
+CMS Pub 100-03 Medicare National Coverage Determinations (NCD) Manual - Chapter 1 – Coverage Determinations
+Part 4 Section 220.5 - Ultrasound Diagnostic Procedures
+
+CMS Pub 100-04 Medicare Claims Processing Manual, Chapter 13 – Radiology Services and Other Diagnostic Procedures, Sections –
+10.1 Billing Part B Radiology Services and Other Diagnostic Procedures and
+20 – Payment Conditions for Radiology Services,
+Chapter 16 – Laboratory Services, Section
+40.2 – Payment Limit for Purchased Services.
+
+CMS Pub 100-08, Medicare Program Integrity Manual, Chapter 13 – Local Coverage Determinations, Section 13.5.1 – Reasonable and Necessary Provisions in LCDs.
+
+CMS Publication 100-09, Medicare Contractor Beneficiary and Provider Communications Manual, Chapter 5 - Correct Coding Initiative.
+
+Article Guidance
+
+Article Text
+
+The billing and coding information in this article is dependent on the coverage indications, limitations and/or medical necessity described in the related LCD.
+
+Documentation Requirements
+Adequate documentation is essential for high-quality patient care and to demonstrate the reasonableness and medical necessity of the procedure(s). Documentation must support the criteria for coverage as described in the Coverage Indications, Limitations, and/or Medical Necessity section of this LCD. There should be a permanent record of the performed studies and interpretation. The documentation should include a description of the studies performed and any contrast media and/or radiopharmaceuticals used. Any known significant patient reaction or complications should be recorded. Comparison with prior relevant imaging studies needs to be addressed in the documentation along with both normal and abnormal findings. Variations from normal size should be documented along with measurements. The report should address or answer any specific clinical questions. If there are factors that prevent answering the clinical questions, this should be explained in the documentation. Retention of the ultrasound examination images should be consistent both with clinical need and with relevant legal and local health care facility requirements.
+
+If the provider of the study is other than the ordering/referring physician/nonphysician practitioner, that provider must maintain a copy of the test results and interpretation, along with copies of the ordering/referring physician/nonphysician practitioner’s order for the studies. This order is required to provide adequate diagnostic information to the performing provider. The physician/nonphysician practitioner must state the clinical indication/medical necessity for the study in his/her order for the test. The provider is responsible for ensuring the medical necessity of procedures and maintaining the medical record, which must be available to Medicare upon request. Results of all testing must be shared with the referring physician. Non-invasive vascular studies are medically reasonable and medically necessary only if the outcomes will be utilized in the clinical management of the patient.
+
+Utilization Guidelines
+Each patient’s condition and response to treatment must medically warrant the number of services reported for payment. Medicare requires the medical necessity for each study reported to be clearly documented in the patient’s medical record.
+
+Frequency of follow-up studies will be carefully monitored for medical necessity and it is the responsibility of the physician/provider to maintain documentation of medical necessity in the patient’s medical record.
+
+Generally, it is expected that noninvasive abdominal/visceral vascular studies would not be performed more than once in a year, excluding inpatient hospital (21) and emergency room (23) places of services.
+
+Only 1 preoperative scan is considered reasonable and necessary for bypass surgery. If a more current preoperative scan is indicated for a patient with multiple comorbidities having difficulty being stabilized for surgery or a change in condition, the medical record would need to support the medical necessity of the second scan.
+
+The frequency of medically necessary follow-up noninvasive abdominal/visceral vascular studies post-angioplasty is dictated by the vascular distribution treated.
+
+Preventive and/or screening services unless covered under Statute are not covered by Medicare.
+
+Response To Comments
+
+Number
+Comment
+Response
+
+1
+
+N/A
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Modifiers
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+(316 Codes)
+
+Group 1 Paragraph
+
+Abdominal/visceral vascular studies of abdominal, retroperitoneal, and pelvic organs (93975, 93976)
+
+For codes in the table below that requires a 7th character: letter A initial encounter, D subsequent encounter or S sequela may be used.
+
+Group 1 Codes
+
+Code
+Description
+
+I10
+
+Essential (primary) hypertension
+
+I11.0
+
+Hypertensive heart disease with heart failure
+
+I11.9
+
+Hypertensive heart disease without heart failure
+
+I12.0
+
+Hypertensive chronic kidney disease with stage 5 chronic kidney disease or end stage renal disease
+
+I12.9
+
+Hypertensive chronic kidney disease with stage 1 through stage 4 chronic kidney disease, or unspecified chronic kidney disease
+
+I13.0
+
+Hypertensive heart and chronic kidney disease with heart failure and stage 1 through stage 4 chronic kidney disease, or unspecified chronic kidney disease
+
+I13.10
+
+Hypertensive heart and chronic kidney disease without heart failure, with stage 1 through stage 4 chronic kidney disease, or unspecified chronic kidney disease
+
+I13.11
+
+Hypertensive heart and chronic kidney disease without heart failure, with stage 5 chronic kidney disease, or end stage renal disease
+
+I13.2
+
+Hypertensive heart and chronic kidney disease with heart failure and with stage 5 chronic kidney disease, or end stage renal disease
+
+I15.0
+
+Renovascular hypertension
+
+I15.1
+
+Hypertension secondary to other renal disorders
+
+I15.2
+
+Hypertension secondary to endocrine disorders
+
+I15.8
+
+Other secondary hypertension
+
+I26.03
+
+Cement embolism of pulmonary artery with acute cor pulmonale
+
+I26.04
+
+Fat embolism of pulmonary artery with acute cor pulmonale
+
+I26.95
+
+Cement embolism of pulmonary artery without acute cor pulmonale
+
+I26.96
+
+Fat embolism of pulmonary artery without acute cor pulmonale
+
+I70.1
+
+Atherosclerosis of renal artery
+
+I71.11
+
+Aneurysm of the ascending aorta, ruptured
+
+I71.12
+
+Aneurysm of the aortic arch, ruptured
+
+I71.13
+
+Aneurysm of the descending thoracic aorta, ruptured
+
+I71.21
+
+Aneurysm of the ascending aorta, without rupture
+
+I71.22
+
+Aneurysm of the aortic arch, without rupture
+
+I71.23
+
+Aneurysm of the descending thoracic aorta, without rupture
+
+I71.31
+
+Pararenal abdominal aortic aneurysm, ruptured
+
+I71.32
+
+Juxtarenal abdominal aortic aneurysm, ruptured
+
+I71.33
+
+Infrarenal abdominal aortic aneurysm, ruptured
+
+I71.41
+
+Pararenal abdominal aortic aneurysm, without rupture
+
+I71.42
+
+Juxtarenal abdominal aortic aneurysm, without rupture
+
+I71.43
+
+Infrarenal abdominal aortic aneurysm, without rupture
+
+I71.51
+
+Supraceliac aneurysm of the thoracoabdominal aorta, ruptured
+
+I71.52
+
+Paravisceral aneurysm of the thoracoabdominal aorta, ruptured
+
+I71.61
+
+Supraceliac aneurysm of the thoracoabdominal aorta, without rupture
+
+I71.62
+
+Paravisceral aneurysm of the thoracoabdominal aorta, without rupture
+
+I72.2
+
+Aneurysm of renal artery
+
+I72.8
+
+Aneurysm of other specified arteries
+
+I74.01
+
+Saddle embolus of abdominal aorta
+
+I74.09
+
+Other arterial embolism and thrombosis of abdominal aorta
+
+I74.10
+
+Embolism and thrombosis of unspecified parts of aorta
+
+I74.19
+
+Embolism and thrombosis of other parts of aorta
+
+I74.5
+
+Embolism and thrombosis of iliac artery
+
+I74.8
+
+Embolism and thrombosis of other arteries
+
+I75.81
+
+Atheroembolism of kidney
+
+I75.89
+
+Atheroembolism of other site
+
+I76
+
+Septic arterial embolism
+
+I77.2
+
+Rupture of artery
+
+I77.3
+
+Arterial fibromuscular dysplasia
+
+I77.4
+
+Celiac artery compression syndrome
+
+I77.73
+
+Dissection of renal artery
+
+I77.79
+
+Dissection of other specified artery
+
+I77.810
+
+Thoracic aortic ectasia
+
+I77.811
+
+Abdominal aortic ectasia
+
+I77.812
+
+Thoracoabdominal aortic ectasia
+
+I77.819
+
+Aortic ectasia, unspecified site
+
+I77.82
+
+Antineutrophilic cytoplasmic antibody [ANCA] vasculitis
+
+I80.8
+
+Phlebitis and thrombophlebitis of other sites
+
+I81
+
+Portal vein thrombosis
+
+I82.0
+
+Budd-Chiari syndrome
+
+I82.1
+
+Thrombophlebitis migrans
+
+I82.210
+
+Acute embolism and thrombosis of superior vena cava
+
+I82.211
+
+Chronic embolism and thrombosis of superior vena cava
+
+I82.290
+
+Acute embolism and thrombosis of other thoracic veins
+
+I82.291
+
+Chronic embolism and thrombosis of other thoracic veins
+
+I82.3
+
+Embolism and thrombosis of renal vein
+
+I86.1
+
+Scrotal varices
+
+I86.2
+
+Pelvic varices
+
+I86.3
+
+Vulval varices
+
+I86.4
+
+Gastric varices
+
+I86.8
+
+Varicose veins of other specified sites
+
+K55.011
+
+Focal (segmental) acute (reversible) ischemia of small intestine
+
+K55.012
+
+Diffuse acute (reversible) ischemia of small intestine
+
+K55.019
+
+Acute (reversible) ischemia of small intestine, extent unspecified
+
+K55.021
+
+Focal (segmental) acute infarction of small intestine
+
+K55.022
+
+Diffuse acute infarction of small intestine
+
+K55.029
+
+Acute infarction of small intestine, extent unspecified
+
+K55.031
+
+Focal (segmental) acute (reversible) ischemia of large intestine
+
+K55.032
+
+Diffuse acute (reversible) ischemia of large intestine
+
+K55.039
+
+Acute (reversible) ischemia of large intestine, extent unspecified
+
+K55.041
+
+Focal (segmental) acute infarction of large intestine
+
+K55.042
+
+Diffuse acute infarction of large intestine
+
+K55.049
+
+Acute infarction of large intestine, extent unspecified
+
+K55.051
+
+Focal (segmental) acute (reversible) ischemia of intestine, part unspecified
+
+K55.052
+
+Diffuse acute (reversible) ischemia of intestine, part unspecified
+
+K55.059
+
+Acute (reversible) ischemia of intestine, part and extent unspecified
+
+K55.061
+
+Focal (segmental) acute infarction of intestine, part unspecified
+
+K55.062
+
+Diffuse acute infarction of intestine, part unspecified
+
+K55.069
+
+Acute infarction of intestine, part and extent unspecified
+
+K55.1
+
+Chronic vascular disorders of intestine
+
+K55.30
+
+Necrotizing enterocolitis, unspecified
+
+K55.31
+
+Stage 1 necrotizing enterocolitis
+
+K55.32
+
+Stage 2 necrotizing enterocolitis
+
+K55.33
+
+Stage 3 necrotizing enterocolitis
+
+K55.8
+
+Other vascular disorders of intestine
+
+K70.2
+
+Alcoholic fibrosis and sclerosis of liver
+
+K70.30
+
+Alcoholic cirrhosis of liver without ascites
+
+K70.31
+
+Alcoholic cirrhosis of liver with ascites
+
+K74.00
+
+Hepatic fibrosis, unspecified
+
+K74.01
+
+Hepatic fibrosis, early fibrosis
+
+K74.02
+
+Hepatic fibrosis, advanced fibrosis
+
+K74.1
+
+Hepatic sclerosis
+
+K74.2
+
+Hepatic fibrosis with hepatic sclerosis
+
+K74.3
+
+Primary biliary cirrhosis
+
+K74.4
+
+Secondary biliary cirrhosis
+
+K74.5
+
+Biliary cirrhosis, unspecified
+
+K74.60
+
+Unspecified cirrhosis of liver
+
+K74.69
+
+Other cirrhosis of liver
+
+K75.0
+
+Abscess of liver
+
+K75.1
+
+Phlebitis of portal vein
+
+K75.2
+
+Nonspecific reactive hepatitis
+
+K75.3
+
+Granulomatous hepatitis, not elsewhere classified
+
+K75.4
+
+Autoimmune hepatitis
+
+K75.81
+
+Nonalcoholic steatohepatitis (NASH)
+
+K75.89
+
+Other specified inflammatory liver diseases
+
+K76.0
+
+Fatty (change of) liver, not elsewhere classified
+
+K76.1
+
+Chronic passive congestion of liver
+
+K76.2
+
+Central hemorrhagic necrosis of liver
+
+K76.3
+
+Infarction of liver
+
+K76.4
+
+Peliosis hepatis
+
+K76.5
+
+Hepatic veno-occlusive disease
+
+K76.6
+
+Portal hypertension
+
+K76.7
+
+Hepatorenal syndrome
+
+K76.81
+
+Hepatopulmonary syndrome
+
+K76.82
+
+Hepatic encephalopathy
+
+N17.0
+
+Acute kidney failure with tubular necrosis
+
+N17.1
+
+Acute kidney failure with acute cortical necrosis
+
+N17.2
+
+Acute kidney failure with medullary necrosis
+
+N17.8
+
+Other acute kidney failure
+
+N17.9
+
+Acute kidney failure, unspecified
+
+N18.1
+
+Chronic kidney disease, stage 1
+
+N18.2
+
+Chronic kidney disease, stage 2 (mild)
+
+N18.30
+
+Chronic kidney disease, stage 3 unspecified
+
+N18.31
+
+Chronic kidney disease, stage 3a
+
+N18.32
+
+Chronic kidney disease, stage 3b
+
+N18.4
+
+Chronic kidney disease, stage 4 (severe)
+
+N18.5
+
+Chronic kidney disease, stage 5
+
+N26.1
+
+Atrophy of kidney (terminal)
+
+N26.2
+
+Page kidney
+
+N26.9
+
+Renal sclerosis, unspecified
+
+N27.0
+
+Small kidney, unilateral
+
+N27.1
+
+Small kidney, bilateral
+
+N28.0
+
+Ischemia and infarction of kidney
+
+N29
+
+Other disorders of kidney and ureter in diseases classified elsewhere
+
+N43.0
+
+Encysted hydrocele
+
+N43.1
+
+Infected hydrocele
+
+N43.2
+
+Other hydrocele
+
+N43.3
+
+Hydrocele, unspecified
+
+N43.40
+
+Spermatocele of epididymis, unspecified
+
+N43.41
+
+Spermatocele of epididymis, single
+
+N43.42
+
+Spermatocele of epididymis, multiple
+
+N44.00
+
+Torsion of testis, unspecified
+
+N44.01
+
+Extravaginal torsion of spermatic cord
+
+N44.02
+
+Intravaginal torsion of spermatic cord
+
+N44.03
+
+Torsion of appendix testis
+
+N44.04
+
+Torsion of appendix epididymis
+
+N44.1
+
+Cyst of tunica albuginea testis
+
+N44.2
+
+Benign cyst of testis
+
+N44.8
+
+Other noninflammatory disorders of the testis
+
+N45.1
+
+Epididymitis
+
+N45.2
+
+Orchitis
+
+N45.3
+
+Epididymo-orchitis
+
+N45.4
+
+Abscess of epididymis or testis
+
+N49.1
+
+Inflammatory disorders of spermatic cord, tunica vaginalis and vas deferens
+
+N49.2
+
+Inflammatory disorders of scrotum
+
+N49.3
+
+Fournier gangrene
+
+N49.8
+
+Inflammatory disorders of other specified male genital organs
+
+N49.9
+
+Inflammatory disorder of unspecified male genital organ
+
+N50.0
+
+Atrophy of testis
+
+N50.1
+
+Vascular disorders of male genital organs
+
+N50.3
+
+Cyst of epididymis
+
+N50.811
+
+Right testicular pain
+
+N50.812
+
+Left testicular pain
+
+N50.819
+
+Testicular pain, unspecified
+
+N50.82
+
+Scrotal pain
+
+N50.89
+
+Other specified disorders of the male genital organs
+
+N50.9
+
+Disorder of male genital organs, unspecified
+
+N51
+
+Disorders of male genital organs in diseases classified elsewhere
+
+N53.12
+
+Painful ejaculation
+
+N53.8
+
+Other male sexual dysfunction
+
+N53.9
+
+Unspecified male sexual dysfunction
+
+N83.511
+
+Torsion of right ovary and ovarian pedicle
+
+N83.512
+
+Torsion of left ovary and ovarian pedicle
+
+N83.521
+
+Torsion of right fallopian tube
+
+N83.522
+
+Torsion of left fallopian tube
+
+N83.53
+
+Torsion of ovary, ovarian pedicle and fallopian tube
+
+Q26.5
+
+Anomalous portal venous connection
+
+Q26.6
+
+Portal vein-hepatic artery fistula
+
+Q27.1
+
+Congenital renal artery stenosis
+
+Q27.2
+
+Other congenital malformations of renal artery
+
+Q27.33
+
+Arteriovenous malformation of digestive system vessel
+
+Q27.34
+
+Arteriovenous malformation of renal vessel
+
+Q60.0
+
+Renal agenesis, unilateral
+
+Q60.1
+
+Renal agenesis, bilateral
+
+Q60.3
+
+Renal hypoplasia, unilateral
+
+Q60.4
+
+Renal hypoplasia, bilateral
+
+Q60.6
+
+Potter's syndrome
+
+Q61.01
+
+Congenital single renal cyst
+
+Q61.02
+
+Congenital multiple renal cysts
+
+Q61.11
+
+Cystic dilatation of collecting ducts
+
+Q61.19
+
+Other polycystic kidney, infantile type
+
+Q61.2
+
+Polycystic kidney, adult type
+
+Q61.4
+
+Renal dysplasia
+
+Q61.5
+
+Medullary cystic kidney
+
+Q61.8
+
+Other cystic kidney diseases
+
+R09.89*
+
+Other specified symptoms and signs involving the circulatory and respiratory systems
+
+R10.0
+
+Acute abdomen
+
+R10.11
+
+Right upper quadrant pain
+
+R10.12
+
+Left upper quadrant pain
+
+R10.13
+
+Epigastric pain
+
+R10.21
+
+Pelvic and perineal pain right side
+
+R10.22
+
+Pelvic and perineal pain left side
+
+R10.23
+
+Pelvic and perineal pain bilateral
+
+R10.24
+
+Suprapubic pain
+
+R10.31
+
+Right lower quadrant pain
+
+R10.32
+
+Left lower quadrant pain
+
+R10.33
+
+Periumbilical pain
+
+R10.84
+
+Generalized abdominal pain
+
+R10.85
+
+Abdominal pain of multiple sites
+
+R10.8A1
+
+Right flank tenderness
+
+R10.8A2
+
+Left flank tenderness
+
+R10.A1
+
+Flank pain, right side
+
+R10.A2
+
+Flank pain, left side
+
+R10.A3
+
+Flank pain, bilateral
+
+R18.0
+
+Malignant ascites
+
+R18.8
+
+Other ascites
+
+R19.00
+
+Intra-abdominal and pelvic swelling, mass and lump, unspecified site
+
+R19.01
+
+Right upper quadrant abdominal swelling, mass and lump
+
+R19.02
+
+Left upper quadrant abdominal swelling, mass and lump
+
+R19.03
+
+Right lower quadrant abdominal swelling, mass and lump
+
+R19.04
+
+Left lower quadrant abdominal swelling, mass and lump
+
+R19.05
+
+Periumbilic swelling, mass or lump
+
+R19.06
+
+Epigastric swelling, mass or lump
+
+R19.07
+
+Generalized intra-abdominal and pelvic swelling, mass and lump
+
+R19.09
+
+Other intra-abdominal and pelvic swelling, mass and lump
+
+R19.31
+
+Right upper quadrant abdominal rigidity
+
+R19.32
+
+Left upper quadrant abdominal rigidity
+
+R19.33
+
+Right lower quadrant abdominal rigidity
+
+R19.34
+
+Left lower quadrant abdominal rigidity
+
+R19.35
+
+Periumbilic abdominal rigidity
+
+R19.36
+
+Epigastric abdominal rigidity
+
+R19.37
+
+Generalized abdominal rigidity
+
+R94.4
+
+Abnormal results of kidney function studies
+
+R94.5
+
+Abnormal results of liver function studies
+
+S35.11XA
+
+Minor laceration of inferior vena cava, initial encounter
+
+S35.12XA
+
+Major laceration of inferior vena cava, initial encounter
+
+S35.19XA
+
+Other injury of inferior vena cava, initial encounter
+
+S35.211A
+
+Minor laceration of celiac artery, initial encounter
+
+S35.212A
+
+Major laceration of celiac artery, initial encounter
+
+S35.218A
+
+Other injury of celiac artery, initial encounter
+
+S35.221A
+
+Minor laceration of superior mesenteric artery, initial encounter
+
+S35.222A
+
+Major laceration of superior mesenteric artery, initial encounter
+
+S35.228A
+
+Other injury of superior mesenteric artery, initial encounter
+
+S35.291A
+
+Minor laceration of branches of celiac and mesenteric artery, initial encounter
+
+S35.292A
+
+Major laceration of branches of celiac and mesenteric artery, initial encounter
+
+S35.298A
+
+Other injury of branches of celiac and mesenteric artery, initial encounter
+
+S35.311A
+
+Laceration of portal vein, initial encounter
+
+S35.318A
+
+Other specified injury of portal vein, initial encounter
+
+S35.321A
+
+Laceration of splenic vein, initial encounter
+
+S35.328A
+
+Other specified injury of splenic vein, initial encounter
+
+S35.331A
+
+Laceration of superior mesenteric vein, initial encounter
+
+S35.338A
+
+Other specified injury of superior mesenteric vein, initial encounter
+
+S35.341A
+
+Laceration of inferior mesenteric vein, initial encounter
+
+S35.348A
+
+Other specified injury of inferior mesenteric vein, initial encounter
+
+S35.411A
+
+Laceration of right renal artery, initial encounter
+
+S35.412A
+
+Laceration of left renal artery, initial encounter
+
+S35.413A
+
+Laceration of unspecified renal artery, initial encounter
+
+S35.414A
+
+Laceration of right renal vein, initial encounter
+
+S35.415A
+
+Laceration of left renal vein, initial encounter
+
+S35.416A
+
+Laceration of unspecified renal vein, initial encounter
+
+S35.491A
+
+Other specified injury of right renal artery, initial encounter
+
+S35.492A
+
+Other specified injury of left renal artery, initial encounter
+
+S35.493A
+
+Other specified injury of unspecified renal artery, initial encounter
+
+S35.494A
+
+Other specified injury of right renal vein, initial encounter
+
+S35.495A
+
+Other specified injury of left renal vein, initial encounter
+
+S35.496A
+
+Other specified injury of unspecified renal vein, initial encounter
+
+S35.511A
+
+Injury of right iliac artery, initial encounter
+
+S35.512A
+
+Injury of left iliac artery, initial encounter
+
+S35.514A
+
+Injury of right iliac vein, initial encounter
+
+S35.515A
+
+Injury of left iliac vein, initial encounter
+
+S35.531A
+
+Injury of right uterine artery, initial encounter
+
+S35.532A
+
+Injury of left uterine artery, initial encounter
+
+S35.534A
+
+Injury of right uterine vein, initial encounter
+
+S35.535A
+
+Injury of left uterine vein, initial encounter
+
+S35.8X1A
+
+Laceration of other blood vessels at abdomen, lower back and pelvis level, initial encounter
+
+S35.8X8A
+
+Other specified injury of other blood vessels at abdomen, lower back and pelvis level, initial encounter
+
+T81.710A
+
+Complication of mesenteric artery following a procedure, not elsewhere classified, initial encounter
+
+T81.711A
+
+Complication of renal artery following a procedure, not elsewhere classified, initial encounter
+
+T82.817A
+
+Embolism due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.818A
+
+Embolism due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.827A
+
+Fibrosis due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.828A
+
+Fibrosis due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.837A
+
+Hemorrhage due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.838A
+
+Hemorrhage due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.847A
+
+Pain due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.848A
+
+Pain due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.857A
+
+Stenosis of other cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.858A
+
+Stenosis of other vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.867A
+
+Thrombosis due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.868A
+
+Thrombosis due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.897A
+
+Other specified complication of cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.898A
+
+Other specified complication of vascular prosthetic devices, implants and grafts, initial encounter
+
+T86.11
+
+Kidney transplant rejection
+
+T86.12
+
+Kidney transplant failure
+
+T86.13
+
+Kidney transplant infection
+
+T86.19
+
+Other complication of kidney transplant
+
+T86.41
+
+Liver transplant rejection
+
+T86.42
+
+Liver transplant failure
+
+T86.43
+
+Liver transplant infection
+
+T86.49
+
+Other complications of liver transplant
+
+T86.850
+
+Intestine transplant rejection
+
+T86.851
+
+Intestine transplant failure
+
+T86.852
+
+Intestine transplant infection
+
+T86.858
+
+Other complications of intestine transplant
+
+Z48.03
+
+Encounter for change or removal of drains
+
+Z48.812
+
+Encounter for surgical aftercare following surgery on the circulatory system
+
+Z48.89
+
+Encounter for other specified surgical aftercare
+
+Z95.828
+
+Presence of other vascular implants and grafts
+
+Group 1 Medical Necessity ICD-10-CM Codes Asterisk Explanation
+
+*Use this diagnostic code to report abdominal bruit.
+
+Group 2
+(240 Codes)
+
+Group 2 Paragraph
+
+Visceral vascular studies of aorta, inferior vena cava, iliac vasculature, and bypass grafts (93978, 93979)
+
+For codes in the table below that require a 7th character: letter A initial encounter, D subsequent encounter or S sequela may be used.
+
+Group 2 Codes
+
+Code
+Description
+
+I26.01
+
+Septic pulmonary embolism with acute cor pulmonale
+
+I26.02
+
+Saddle embolus of pulmonary artery with acute cor pulmonale
+
+I26.09
+
+Other pulmonary embolism with acute cor pulmonale
+
+I26.90
+
+Septic pulmonary embolism without acute cor pulmonale
+
+I26.92
+
+Saddle embolus of pulmonary artery without acute cor pulmonale
+
+I26.93
+
+Single subsegmental thrombotic pulmonary embolism without acute cor pulmonale
+
+I26.94
+
+Multiple subsegmental thrombotic pulmonary emboli without acute cor pulmonale
+
+I26.99
+
+Other pulmonary embolism without acute cor pulmonale
+
+I27.82
+
+Chronic pulmonary embolism
+
+I27.840
+
+Fontan-associated liver disease [FALD]
+
+I27.841
+
+Fontan-associated lymphatic dysfunction
+
+I27.848
+
+Other Fontan-associated condition
+
+I27.849
+
+Fontan related circulation, unspecified
+
+I70.0
+
+Atherosclerosis of aorta
+
+I70.211
+
+Atherosclerosis of native arteries of extremities with intermittent claudication, right leg
+
+I70.212
+
+Atherosclerosis of native arteries of extremities with intermittent claudication, left leg
+
+I70.213
+
+Atherosclerosis of native arteries of extremities with intermittent claudication, bilateral legs
+
+I70.218
+
+Atherosclerosis of native arteries of extremities with intermittent claudication, other extremity
+
+I70.221
+
+Atherosclerosis of native arteries of extremities with rest pain, right leg
+
+I70.222
+
+Atherosclerosis of native arteries of extremities with rest pain, left leg
+
+I70.223
+
+Atherosclerosis of native arteries of extremities with rest pain, bilateral legs
+
+I70.228
+
+Atherosclerosis of native arteries of extremities with rest pain, other extremity
+
+I70.231
+
+Atherosclerosis of native arteries of right leg with ulceration of thigh
+
+I70.232
+
+Atherosclerosis of native arteries of right leg with ulceration of calf
+
+I70.233
+
+Atherosclerosis of native arteries of right leg with ulceration of ankle
+
+I70.234
+
+Atherosclerosis of native arteries of right leg with ulceration of heel and midfoot
+
+I70.235
+
+Atherosclerosis of native arteries of right leg with ulceration of other part of foot
+
+I70.238
+
+Atherosclerosis of native arteries of right leg with ulceration of other part of lower leg
+
+I70.241
+
+Atherosclerosis of native arteries of left leg with ulceration of thigh
+
+I70.242
+
+Atherosclerosis of native arteries of left leg with ulceration of calf
+
+I70.243
+
+Atherosclerosis of native arteries of left leg with ulceration of ankle
+
+I70.244
+
+Atherosclerosis of native arteries of left leg with ulceration of heel and midfoot
+
+I70.245
+
+Atherosclerosis of native arteries of left leg with ulceration of other part of foot
+
+I70.248
+
+Atherosclerosis of native arteries of left leg with ulceration of other part of lower leg
+
+I70.25
+
+Atherosclerosis of native arteries of other extremities with ulceration
+
+I70.261
+
+Atherosclerosis of native arteries of extremities with gangrene, right leg
+
+I70.262
+
+Atherosclerosis of native arteries of extremities with gangrene, left leg
+
+I70.263
+
+Atherosclerosis of native arteries of extremities with gangrene, bilateral legs
+
+I70.268
+
+Atherosclerosis of native arteries of extremities with gangrene, other extremity
+
+I71.010
+
+Dissection of ascending aorta
+
+I71.011
+
+Dissection of aortic arch
+
+I71.012
+
+Dissection of descending thoracic aorta
+
+I71.02
+
+Dissection of abdominal aorta
+
+I71.03
+
+Dissection of thoracoabdominal aorta
+
+I71.11
+
+Aneurysm of the ascending aorta, ruptured
+
+I71.12
+
+Aneurysm of the aortic arch, ruptured
+
+I71.13
+
+Aneurysm of the descending thoracic aorta, ruptured
+
+I71.21
+
+Aneurysm of the ascending aorta, without rupture
+
+I71.22
+
+Aneurysm of the aortic arch, without rupture
+
+I71.23
+
+Aneurysm of the descending thoracic aorta, without rupture
+
+I71.31
+
+Pararenal abdominal aortic aneurysm, ruptured
+
+I71.32
+
+Juxtarenal abdominal aortic aneurysm, ruptured
+
+I71.33
+
+Infrarenal abdominal aortic aneurysm, ruptured
+
+I71.41
+
+Pararenal abdominal aortic aneurysm, without rupture
+
+I71.42
+
+Juxtarenal abdominal aortic aneurysm, without rupture
+
+I71.43
+
+Infrarenal abdominal aortic aneurysm, without rupture
+
+I71.51
+
+Supraceliac aneurysm of the thoracoabdominal aorta, ruptured
+
+I71.52
+
+Paravisceral aneurysm of the thoracoabdominal aorta, ruptured
+
+I71.61
+
+Supraceliac aneurysm of the thoracoabdominal aorta, without rupture
+
+I71.62
+
+Paravisceral aneurysm of the thoracoabdominal aorta, without rupture
+
+I72.3
+
+Aneurysm of iliac artery
+
+I73.00
+
+Raynaud's syndrome without gangrene
+
+I73.1
+
+Thromboangiitis obliterans [Buerger's disease]
+
+I74.01
+
+Saddle embolus of abdominal aorta
+
+I74.09
+
+Other arterial embolism and thrombosis of abdominal aorta
+
+I74.11
+
+Embolism and thrombosis of thoracic aorta
+
+I74.19
+
+Embolism and thrombosis of other parts of aorta
+
+I74.5
+
+Embolism and thrombosis of iliac artery
+
+I75.021
+
+Atheroembolism of right lower extremity
+
+I75.022
+
+Atheroembolism of left lower extremity
+
+I75.023
+
+Atheroembolism of bilateral lower extremities
+
+I77.0
+
+Arteriovenous fistula, acquired
+
+I77.72
+
+Dissection of iliac artery
+
+I77.79
+
+Dissection of other specified artery
+
+I77.810
+
+Thoracic aortic ectasia
+
+I77.811
+
+Abdominal aortic ectasia
+
+I77.812
+
+Thoracoabdominal aortic ectasia
+
+I77.82
+
+Antineutrophilic cytoplasmic antibody [ANCA] vasculitis
+
+I80.211
+
+Phlebitis and thrombophlebitis of right iliac vein
+
+I80.212
+
+Phlebitis and thrombophlebitis of left iliac vein
+
+I80.213
+
+Phlebitis and thrombophlebitis of iliac vein, bilateral
+
+I82.0
+
+Budd-Chiari syndrome
+
+I82.220
+
+Acute embolism and thrombosis of inferior vena cava
+
+I82.221
+
+Chronic embolism and thrombosis of inferior vena cava
+
+I82.421
+
+Acute embolism and thrombosis of right iliac vein
+
+I82.422
+
+Acute embolism and thrombosis of left iliac vein
+
+I82.423
+
+Acute embolism and thrombosis of iliac vein, bilateral
+
+I82.521
+
+Chronic embolism and thrombosis of right iliac vein
+
+I82.522
+
+Chronic embolism and thrombosis of left iliac vein
+
+I82.523
+
+Chronic embolism and thrombosis of iliac vein, bilateral
+
+I97.51
+
+Accidental puncture and laceration of a circulatory system organ or structure during a circulatory system procedure
+
+I97.52
+
+Accidental puncture and laceration of a circulatory system organ or structure during other procedure
+
+J95.71
+
+Accidental puncture and laceration of a respiratory system organ or structure during a respiratory system procedure
+
+J95.72
+
+Accidental puncture and laceration of a respiratory system organ or structure during other procedure
+
+K55.011
+
+Focal (segmental) acute (reversible) ischemia of small intestine
+
+K55.012
+
+Diffuse acute (reversible) ischemia of small intestine
+
+K55.019
+
+Acute (reversible) ischemia of small intestine, extent unspecified
+
+K55.021
+
+Focal (segmental) acute infarction of small intestine
+
+K55.022
+
+Diffuse acute infarction of small intestine
+
+K55.029
+
+Acute infarction of small intestine, extent unspecified
+
+K55.031
+
+Focal (segmental) acute (reversible) ischemia of large intestine
+
+K55.032
+
+Diffuse acute (reversible) ischemia of large intestine
+
+K55.039
+
+Acute (reversible) ischemia of large intestine, extent unspecified
+
+K55.041
+
+Focal (segmental) acute infarction of large intestine
+
+K55.042
+
+Diffuse acute infarction of large intestine
+
+K55.049
+
+Acute infarction of large intestine, extent unspecified
+
+K55.1
+
+Chronic vascular disorders of intestine
+
+K91.71
+
+Accidental puncture and laceration of a digestive system organ or structure during a digestive system procedure
+
+K91.72
+
+Accidental puncture and laceration of a digestive system organ or structure during other procedure
+
+M79.601
+
+Pain in right arm
+
+M79.602
+
+Pain in left arm
+
+M79.604
+
+Pain in right leg
+
+M79.605
+
+Pain in left leg
+
+M79.621
+
+Pain in right upper arm
+
+M79.622
+
+Pain in left upper arm
+
+M79.631
+
+Pain in right forearm
+
+M79.632
+
+Pain in left forearm
+
+M79.641
+
+Pain in right hand
+
+M79.642
+
+Pain in left hand
+
+M79.644
+
+Pain in right finger(s)
+
+M79.645
+
+Pain in left finger(s)
+
+M79.651
+
+Pain in right thigh
+
+M79.652
+
+Pain in left thigh
+
+M79.661
+
+Pain in right lower leg
+
+M79.662
+
+Pain in left lower leg
+
+M79.671
+
+Pain in right foot
+
+M79.672
+
+Pain in left foot
+
+M79.674
+
+Pain in right toe(s)
+
+M79.675
+
+Pain in left toe(s)
+
+Q25.21
+
+Interruption of aortic arch
+
+Q25.29
+
+Other atresia of aorta
+
+Q25.3
+
+Supravalvular aortic stenosis
+
+Q25.40
+
+Congenital malformation of aorta unspecified
+
+Q25.41
+
+Absence and aplasia of aorta
+
+Q25.42
+
+Hypoplasia of aorta
+
+Q25.43
+
+Congenital aneurysm of aorta
+
+Q25.44
+
+Congenital dilation of aorta
+
+Q25.45
+
+Double aortic arch
+
+Q25.46
+
+Tortuous aortic arch
+
+Q25.47
+
+Right aortic arch
+
+Q25.48
+
+Anomalous origin of subclavian artery
+
+Q25.49
+
+Other congenital malformations of aorta
+
+Q25.8
+
+Other congenital malformations of other great arteries
+
+Q25.9
+
+Congenital malformation of great arteries, unspecified
+
+Q26.0
+
+Congenital stenosis of vena cava
+
+Q26.1
+
+Persistent left superior vena cava
+
+Q26.2
+
+Total anomalous pulmonary venous connection
+
+Q26.3
+
+Partial anomalous pulmonary venous connection
+
+Q26.8
+
+Other congenital malformations of great veins
+
+R09.89
+
+Other specified symptoms and signs involving the circulatory and respiratory systems
+
+R19.00
+
+Intra-abdominal and pelvic swelling, mass and lump, unspecified site
+
+R19.01
+
+Right upper quadrant abdominal swelling, mass and lump
+
+R19.02
+
+Left upper quadrant abdominal swelling, mass and lump
+
+R19.03
+
+Right lower quadrant abdominal swelling, mass and lump
+
+R19.04
+
+Left lower quadrant abdominal swelling, mass and lump
+
+R19.05
+
+Periumbilic swelling, mass or lump
+
+R19.06
+
+Epigastric swelling, mass or lump
+
+R19.07
+
+Generalized intra-abdominal and pelvic swelling, mass and lump
+
+R19.09
+
+Other intra-abdominal and pelvic swelling, mass and lump
+
+S35.01XA
+
+Minor laceration of abdominal aorta, initial encounter
+
+S35.02XA
+
+Major laceration of abdominal aorta, initial encounter
+
+S35.09XA
+
+Other injury of abdominal aorta, initial encounter
+
+S35.11XA
+
+Minor laceration of inferior vena cava, initial encounter
+
+S35.12XA
+
+Major laceration of inferior vena cava, initial encounter
+
+S35.19XA
+
+Other injury of inferior vena cava, initial encounter
+
+S35.511A
+
+Injury of right iliac artery, initial encounter
+
+S35.512A
+
+Injury of left iliac artery, initial encounter
+
+S35.514A
+
+Injury of right iliac vein, initial encounter
+
+S35.515A
+
+Injury of left iliac vein, initial encounter
+
+S35.534A
+
+Injury of right uterine vein, initial encounter
+
+S35.535A
+
+Injury of left uterine vein, initial encounter
+
+T82.310A
+
+Breakdown (mechanical) of aortic (bifurcation) graft (replacement), initial encounter
+
+T82.311A
+
+Breakdown (mechanical) of carotid arterial graft (bypass), initial encounter
+
+T82.312A
+
+Breakdown (mechanical) of femoral arterial graft (bypass), initial encounter
+
+T82.318A
+
+Breakdown (mechanical) of other vascular grafts, initial encounter
+
+T82.320A
+
+Displacement of aortic (bifurcation) graft (replacement), initial encounter
+
+T82.321A
+
+Displacement of carotid arterial graft (bypass), initial encounter
+
+T82.322A
+
+Displacement of femoral arterial graft (bypass), initial encounter
+
+T82.328A
+
+Displacement of other vascular grafts, initial encounter
+
+T82.330A
+
+Leakage of aortic (bifurcation) graft (replacement), initial encounter
+
+T82.331A
+
+Leakage of carotid arterial graft (bypass), initial encounter
+
+T82.332A
+
+Leakage of femoral arterial graft (bypass), initial encounter
+
+T82.338A
+
+Leakage of other vascular grafts, initial encounter
+
+T82.390A
+
+Other mechanical complication of aortic (bifurcation) graft (replacement), initial encounter
+
+T82.391A
+
+Other mechanical complication of carotid arterial graft (bypass), initial encounter
+
+T82.392A
+
+Other mechanical complication of femoral arterial graft (bypass), initial encounter
+
+T82.398A
+
+Other mechanical complication of other vascular grafts, initial encounter
+
+T82.41XA
+
+Breakdown (mechanical) of vascular dialysis catheter, initial encounter
+
+T82.42XA
+
+Displacement of vascular dialysis catheter, initial encounter
+
+T82.43XA
+
+Leakage of vascular dialysis catheter, initial encounter
+
+T82.49XA
+
+Other complication of vascular dialysis catheter, initial encounter
+
+T82.510A
+
+Breakdown (mechanical) of surgically created arteriovenous fistula, initial encounter
+
+T82.511A
+
+Breakdown (mechanical) of surgically created arteriovenous shunt, initial encounter
+
+T82.513A
+
+Breakdown (mechanical) of balloon (counterpulsation) device, initial encounter
+
+T82.514A
+
+Breakdown (mechanical) of infusion catheter, initial encounter
+
+T82.515A
+
+Breakdown (mechanical) of umbrella device, initial encounter
+
+T82.518A
+
+Breakdown (mechanical) of other cardiac and vascular devices and implants, initial encounter
+
+T82.520A
+
+Displacement of surgically created arteriovenous fistula, initial encounter
+
+T82.521A
+
+Displacement of surgically created arteriovenous shunt, initial encounter
+
+T82.523A
+
+Displacement of balloon (counterpulsation) device, initial encounter
+
+T82.524A
+
+Displacement of infusion catheter, initial encounter
+
+T82.525A
+
+Displacement of umbrella device, initial encounter
+
+T82.528A
+
+Displacement of other cardiac and vascular devices and implants, initial encounter
+
+T82.530A
+
+Leakage of surgically created arteriovenous fistula, initial encounter
+
+T82.531A
+
+Leakage of surgically created arteriovenous shunt, initial encounter
+
+T82.533A
+
+Leakage of balloon (counterpulsation) device, initial encounter
+
+T82.534A
+
+Leakage of infusion catheter, initial encounter
+
+T82.535A
+
+Leakage of umbrella device, initial encounter
+
+T82.538A
+
+Leakage of other cardiac and vascular devices and implants, initial encounter
+
+T82.590A
+
+Other mechanical complication of surgically created arteriovenous fistula, initial encounter
+
+T82.591A
+
+Other mechanical complication of surgically created arteriovenous shunt, initial encounter
+
+T82.593A
+
+Other mechanical complication of balloon (counterpulsation) device, initial encounter
+
+T82.594A
+
+Other mechanical complication of infusion catheter, initial encounter
+
+T82.595A
+
+Other mechanical complication of umbrella device, initial encounter
+
+T82.598A
+
+Other mechanical complication of other cardiac and vascular devices and implants, initial encounter
+
+T82.817A
+
+Embolism due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.818A
+
+Embolism due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.827A
+
+Fibrosis due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.828A
+
+Fibrosis due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.837A
+
+Hemorrhage due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.838A
+
+Hemorrhage due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.847A
+
+Pain due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.848A
+
+Pain due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.857A
+
+Stenosis of other cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.858A
+
+Stenosis of other vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.867A
+
+Thrombosis due to cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.868A
+
+Thrombosis due to vascular prosthetic devices, implants and grafts, initial encounter
+
+T82.897A
+
+Other specified complication of cardiac prosthetic devices, implants and grafts, initial encounter
+
+T82.898A
+
+Other specified complication of vascular prosthetic devices, implants and grafts, initial encounter
+
+T86.11
+
+Kidney transplant rejection
+
+T86.12
+
+Kidney transplant failure
+
+T86.13
+
+Kidney transplant infection
+
+T86.19
+
+Other complication of kidney transplant
+
+T86.41
+
+Liver transplant rejection
+
+T86.42
+
+Liver transplant failure
+
+T86.43
+
+Liver transplant infection
+
+T86.49
+
+Other complications of liver transplant
+
+Z48.812
+
+Encounter for surgical aftercare following surgery on the circulatory system
+
+Z95.820
+
+Peripheral vascular angioplasty status with implants and grafts
+
+Z95.828
+
+Presence of other vascular implants and grafts
+
+Group 3
+(53 Codes)
+
+Group 3 Paragraph
+
+Penile vascular studies (93980, 93981)
+
+For codes in the table below that require a 7th character: letter A initial encounter, D subsequent encounter or S sequela may be used.
+
+Group 3 Codes
+
+Code
+Description
+
+N48.31
+
+Priapism due to trauma
+
+N48.81
+
+Thrombosis of superficial vein of penis
+
+N48.82
+
+Acquired torsion of penis
+
+N48.83
+
+Acquired buried penis
+
+N48.89
+
+Other specified disorders of penis
+
+N50.1
+
+Vascular disorders of male genital organs
+
+S38.001A
+
+Crushing injury of unspecified external genital organs, male, initial encounter
+
+S38.01XA
+
+Crushing injury of penis, initial encounter
+
+S38.02XA
+
+Crushing injury of scrotum and testis, initial encounter
+
+T83.010A
+
+Breakdown (mechanical) of cystostomy catheter, initial encounter
+
+T83.011A
+
+Breakdown (mechanical) of indwelling urethral catheter, initial encounter
+
+T83.012A
+
+Breakdown (mechanical) of nephrostomy catheter, initial encounter
+
+T83.018A
+
+Breakdown (mechanical) of other urinary catheter, initial encounter
+
+T83.020A
+
+Displacement of cystostomy catheter, initial encounter
+
+T83.021A
+
+Displacement of indwelling urethral catheter, initial encounter
+
+T83.022A
+
+Displacement of nephrostomy catheter, initial encounter
+
+T83.028A
+
+Displacement of other urinary catheter, initial encounter
+
+T83.090A
+
+Other mechanical complication of cystostomy catheter, initial encounter
+
+T83.091A
+
+Other mechanical complication of indwelling urethral catheter, initial encounter
+
+T83.092A
+
+Other mechanical complication of nephrostomy catheter, initial encounter
+
+T83.098A
+
+Other mechanical complication of other urinary catheter, initial encounter
+
+T83.110A
+
+Breakdown (mechanical) of urinary electronic stimulator device, initial encounter
+
+T83.111A
+
+Breakdown (mechanical) of implanted urinary sphincter, initial encounter
+
+T83.112A
+
+Breakdown (mechanical) of indwelling ureteral stent, initial encounter
+
+T83.113A
+
+Breakdown (mechanical) of other urinary stents, initial encounter
+
+T83.118A
+
+Breakdown (mechanical) of other urinary devices and implants, initial encounter
+
+T83.120A
+
+Displacement of urinary electronic stimulator device, initial encounter
+
+T83.121A
+
+Displacement of implanted urinary sphincter, initial encounter
+
+T83.122A
+
+Displacement of indwelling ureteral stent, initial encounter
+
+T83.123A
+
+Displacement of other urinary stents, initial encounter
+
+T83.128A
+
+Displacement of other urinary devices and implants, initial encounter
+
+T83.190A
+
+Other mechanical complication of urinary electronic stimulator device, initial encounter
+
+T83.191A
+
+Other mechanical complication of implanted urinary sphincter, initial encounter
+
+T83.192A
+
+Other mechanical complication of indwelling ureteral stent, initial encounter
+
+T83.193A
+
+Other mechanical complication of other urinary stent, initial encounter
+
+T83.198A
+
+Other mechanical complication of other urinary devices and implants, initial encounter
+
+T83.21XA
+
+Breakdown (mechanical) of graft of urinary organ, initial encounter
+
+T83.22XA
+
+Displacement of graft of urinary organ, initial encounter
+
+T83.23XA
+
+Leakage of graft of urinary organ, initial encounter
+
+T83.24XA
+
+Erosion of graft of urinary organ, initial encounter
+
+T83.25XA
+
+Exposure of graft of urinary organ, initial encounter
+
+T83.29XA
+
+Other mechanical complication of graft of urinary organ, initial encounter
+
+T83.410A
+
+Breakdown (mechanical) of implanted penile prosthesis, initial encounter
+
+T83.411A
+
+Breakdown (mechanical) of implanted testicular prosthesis, initial encounter
+
+T83.418A
+
+Breakdown (mechanical) of other prosthetic devices, implants and grafts of genital tract, initial encounter
+
+T83.420A
+
+Displacement of implanted penile prosthesis, initial encounter
+
+T83.421A
+
+Displacement of implanted testicular prosthesis, initial encounter
+
+T83.428A
+
+Displacement of other prosthetic devices, implants and grafts of genital tract, initial encounter
+
+T83.490A
+
+Other mechanical complication of implanted penile prosthesis, initial encounter
+
+T83.491A
+
+Other mechanical complication of implanted testicular prosthesis, initial encounter
+
+T83.498A
+
+Other mechanical complication of other prosthetic devices, implants and grafts of genital tract, initial encounter
+
+T83.718A
+
+Erosion of other implanted mesh to organ or tissue, initial encounter
+
+T83.728A
+
+Exposure of other implanted mesh into organ or tissue, initial encounter
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+ICD-10-PCS Codes
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+
+N/A
+
+Bill Type Codes
+
+Contractors may specify Bill Types to help providers identify those Bill Types typically
+used to report this service. Absence of a Bill Type does not guarantee that the
+article does not apply to that Bill Type. Complete absence of all Bill Types indicates
+that coverage is not influenced by Bill Type and the article should be assumed to
+apply equally to all claims.
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Contractors may specify Revenue Codes to help providers identify those Revenue Codes typically used to report this service.
+In most instances Revenue Codes are purely advisory. Unless specified in the article, services reported under other
+Revenue Codes are equally subject to this coverage determination. Complete absence of all Revenue Codes indicates
+that coverage is not influenced by Revenue Code and the article should be assumed to apply equally to all Revenue Codes.
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Other Coding Information
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Coding Table Information
+
+Excluded CPT/HCPCS Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+N/A
+
+N/A
+
+Non-Excluded CPT/HCPCS Ended Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+
+08/01/2026
+
+R10
+
+Posted 08/27/2026: Under ICD-10-CM Codes that Support Medical Necessity, Group 1 codes, added R10.A1, R10.A2, and R10.A3. These changes are effective for dates of service on or after 08/01/2026.
+
+03/26/2026
+
+R9
+
+Posted 03/26/2026. Under ICD-10-CM Codes that Support Medical Necessity, Group 1 codes, added R10.21, R10.22, R10.23, and R10.24. These changes are effective 03/26/2026.
+
+02/26/2026
+
+R8
+
+Posted 02/26/2026: Under ICD-10-CM Codes that Support Medical Necessity, Group 1 codes, added K74.1, K74.2, K74.3, K74.4, K74.5, K75.0, K75.1, K75.2, K75.3, K75.4, K75.81, K75.89, K76.0, K76.1, K76.2, K76.3, K76.4, K76.5, K76.7, K76.81, and K76.82. These changes are effective 02/26/2026.
+
+10/01/2025
+
+R7
+
+Posted 09/25/2025: Under ICD-10-CM Codes that Support Medical Necessity, Group 1 codes, deleted R10.2. Under ICD-10-CM Codes that Support Medical Necessity, Group 1 codes, added R10.85, R10.8A1, R10.8A2. Under ICD-10-CM Codes that Support Medical Necessity, Group 2 codes, added I27.840, I27.841, I27.848, and I27.849. These changes are due to the 2026 annual ICD-10-CM code updates and are effective 10/01/2025.
+
+07/31/2025
+
+R6
+
+Posted 07/31/2025: Under ICD-10-CM Codes that Support Medical Necessity, Group 1 codes, added Z95.828. This change is effective on 07/31/2025. Minor formatting changes were also made.
+
+10/01/2024
+
+R5
+
+Posted 09/26/2024: Under ICD-10-CM Codes that Support Medical Necessity Group 2, description update was made to I26.93 and I26.94. Under ICD-10-CM Codes that Support Medical Necessity, Group 1, added codes I26.03, I26.04; I26.95, and I26.96. These changes are due to the 2025 annual ICD-10-CM code updates and are effective 10/01/2024.
+
+10/01/2023
+
+R4
+
+Posted 09/28/2023 Under ICD-10-CM Codes that Support Medical Necessity Group 1 & 2 Codes the following codes had description changes: I71.51, I71.52, I71.61, and I71.62. These updates were made due to the annual ICD-10-CM code update and are effective 10/01/2023. Review completed 09/01/2023.
+
+10/01/2022
+
+R3
+
+Posted 09/29/2022 Under ICD-10-CM Codes that Support Medical Necessity Group 1 & 2 Codes the following codes were added: I71.11, I71.12, I71.13, I71.21, I71.22, I71.23, I71.31, I71.32, I71.33, I71.41, I71.42, I71.43, I71.51, I71.52, I71.61, I71.62, and I77.82. Also added to Group 2: I71.010, I71.011, and I71.012. The following were deleted from Group 1 & 2: I71.1, I71.2, I71.3, I71.4, I71.5, and I71.6. Also deleted from Group 2 was 171.01. These updates were made due to the annual ICD-10-CM code update and are effective 10/01/2022.
+
+10/28/2021
+
+R2
+
+10/28/2021 Review completed 09/30/2021.
+
+10/01/2020
+
+R1
+
+10/01/2020 ICD-10-CM code updates to Group 1: added K74.00, K74.01, K74.02, N18.30, N18.31, N18.32 and deleted: K74.0, N18.3. Review completed 09/09/2020.
+
+N/A
+
+Associated Documents
+
+Medicare BPM Ch 15.50.2 SAD Determinations
+
+Medicare BPM Ch 15.50.2
+
+Related Local Coverage Documents
+
+Articles
+A54402 - Response to Comments: Non-Invasive Abdominal/Visceral Vascular Studies
+LCDs
+L35755 - Non-Invasive Abdominal / Visceral Vascular Studies
+
+Related National Coverage Documents
+
+NCDs
+220.5 - Ultrasound Diagnostic Procedures
+
+SAD Process URL 1
+
+N/A
+
+SAD Process URL 2
+
+N/A
+
+Statutory Requirements URLs
+
+N/A
+
+Rules and Regulations URLs
+
+N/A
+
+CMS Manual Explanations URLs
+
+N/A
+
+Other URLs
+
+N/A
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+08/21/2026
+08/01/2026 - N/A
+Currently in Effect
+
+You are here
+
+03/20/2026
+03/26/2026 - 07/31/2026
+Superseded
+
+View
+
+02/20/2026
+02/26/2026 - 03/25/2026
+Superseded
+
+View
+
+09/18/2025
+10/01/2025 - 02/25/2026
+Superseded
+
+View
+
+07/22/2025
+07/31/2025 - 09/30/2025
+Superseded
+
+View
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+N/A

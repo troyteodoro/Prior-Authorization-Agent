@@ -371,6 +371,18 @@ silently produces nothing approves past a denial the policy states outright.
 An exclusion that does not fire produces **nothing** — it is not a criterion
 and has no verdict to abstain with. *(T-92, D41, D111)*
 
+**REQ-61** A criterion may be evaluated against the patient's **prior
+procedures**: Python counts them and measures the interval to the most recent
+one in the value set the criterion names, and the verdict cites the resource.
+The criterion also names the **care settings** the document excludes from that
+arithmetic, and a resource is excluded only on positive evidence that it was
+performed in one of them — an unresolvable setting counts, because excluding
+it approves past a limit the policy states while counting it produces a
+`NOT_MET` a reviewer can lift with the documentation the policy asks for. A
+frequency limit compiles as an interval and not as a count: *at most one a
+year* and *the last one was over a year ago* are the same arithmetic, and only
+the second has a span to cite when it passes (REQ-5). *(T-94, D40, D114)*
+
 ### Verification
 
 **REQ-17** Each accepted verdict is checked by a verifier receiving only the
@@ -929,6 +941,15 @@ whether two trees from unrelated practices compile into the predicate
 vocabulary the engine has — and where a criterion cannot be expressed,
 whether the engine says so rather than approving past it.
 
+**Row 4 is closed.** The ultrasound document is WPS's **L35755** with
+**A57591**, chosen by fetching four candidates and reading what they say
+*(T-94, D114)*; it needed one predicate kind — the interval to the most recent
+prior procedure — and its three unclaimed criteria are unclaimed because of
+the document, as the rheumatology tree's were. Two of the three rows that
+cite forced a **verifier prompt change**: the blind verifier was deciding
+value-set membership over a set the claim names and never shows, which is
+D78's category three rounds later *(D115)*.
+
 **In scope.** An explicit predicate vocabulary: every tree predicate declares
 its kind, and a kind the engine lacks fails at load. Two new criteria trees
 compiled from real coverage documents, each chosen by fetching its header as
@@ -981,12 +1002,18 @@ by the task whose close checks it, not by the version's opening commit)*.
   changed no engine behaviour, so it has no statement of its own to check —
   what it checks is REQ-57 through REQ-60 over a committed corpus rather than
   over a chart written in a test *(D109, D113)*.
-- *Awaiting `T-94`.* Lab thresholds and prior-procedure counts are computed by
-  Python over structured resources, cited to the resource. **Medication trial
-  duration is not among them**: the rheumatology document chosen by fetching
-  its header states none, and no Medicare rheumatology LCD does — Part B drug
-  LCDs restate FDA labelling. The kind is earned by a document that quantifies
-  a trial, not by a task that needs one *(T-92, D111)*.
+- **REQ-61**, minted by `T-94`. Prior procedures are counted and dated by
+  Python over structured resources, cited to the resource, and scoped to the
+  care settings the criterion declares.
+- *Not minted, and it will not be.* This version's plan paired prior-procedure
+  counts with **lab thresholds**, and **neither** the rheumatology nor the
+  ultrasound document quantifies a laboratory value — L35755's only arithmetic
+  is a frequency. **Medication trial duration** went the same way one row
+  earlier: no Medicare rheumatology LCD states one, because Part B drug LCDs
+  restate FDA labelling *(T-92, D111)*. Both are D111's rule applied twice —
+  **a kind is earned by a document that states it, not by a task that was
+  promised one** — and T-95 adds no document, so v1.2 closes without either
+  *(T-94, D114)*.
 - *Awaiting `T-95`.* `eval/report.md` carries the compatibility account,
   generated and verified.
 

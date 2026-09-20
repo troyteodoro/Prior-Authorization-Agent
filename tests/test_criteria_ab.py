@@ -303,6 +303,8 @@ def _check_a(criterion_a, result, observations, as_of=AS_OF) -> None:
         criterion_a,
         result,
         observations=observations,
+        procedures=[],
+        value_sets={},
         run=QualifyingRun(months=(), events=()),
         as_of=as_of,
         c3_met=False,

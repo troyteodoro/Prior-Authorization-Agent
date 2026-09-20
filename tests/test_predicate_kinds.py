@@ -55,7 +55,9 @@ from pa_agent.workflow import (
     MEMBERSHIP_KINDS,
     NOTE_EVENT_KINDS,
     OBSERVATION_KINDS,
+    PROCEDURE_HISTORY_KINDS,
     STEP_KINDS,
+    STRUCTURED_KINDS,
     _declared,
 )
 
@@ -186,15 +188,17 @@ def test_an_unclaimed_criterion_may_not_declare_a_kind():
 def test_the_vocabulary_is_the_kinds_that_have_predicates():
     """Pinned as a literal, so the three checks below cannot pass vacuously.
 
-    Seven at T-91, eight since T-92 (D111): the second practice needed one
-    kind bariatric surgery never did — active medications against a named
-    value set — and got no more than one, because its remaining criteria are
-    unclaimed by the document rather than unbuilt by the engine.
+    Seven at T-91, eight since T-92 and nine since T-94: each new practice
+    needed exactly one kind its predecessors did not — active medications
+    against a named value set (D111), then the interval to a prior procedure
+    (D114) — and no more than one, because the rest of what those documents
+    say is unclaimed by the document rather than unbuilt by the engine.
     """
     assert {k.value for k in PredicateKind} == {
         "bmi_observation_threshold",
         "condition_value_set_membership",
         "medication_value_set_active",
+        "procedure_value_set_interval",
         "note_event_count",
         "note_event_run_length",
         "note_event_run_recency",
@@ -223,9 +227,14 @@ def test_every_kind_is_evaluated_by_exactly_one_step():
     assert len(claimed) == len(set(claimed))
     assert STEP_KINDS == {
         "criterion_a": OBSERVATION_KINDS,
-        "criterion_b": MEMBERSHIP_KINDS,
+        "criterion_b": STRUCTURED_KINDS,
         "criteria_c": NOTE_EVENT_KINDS,
     }
+    # T-94 (D114): `criterion_b` gained a kind rather than the graph gaining a
+    # step, and the union is asserted so the procedure-history kind cannot be
+    # dropped out of it while the partition check still passes on the rest.
+    assert STRUCTURED_KINDS == MEMBERSHIP_KINDS + PROCEDURE_HISTORY_KINDS
+    assert PROCEDURE_HISTORY_KINDS == (PredicateKind.PROCEDURE_VALUE_SET_INTERVAL,)
 
 
 def test_dispatch_raises_rather_than_skipping_a_kind_with_no_predicate(monkeypatch):
@@ -403,6 +412,8 @@ def test_a_not_met_from_a_kind_with_no_narrower_is_reported_as_a_defect(store):
             jf.criterion("c1"),
             impossible,
             observations=[],
+            procedures=[],
+            value_sets={},
             run=criteria_module.QualifyingRun(months=(), events=()),
             as_of=AS_OF,
             c3_met=False,
