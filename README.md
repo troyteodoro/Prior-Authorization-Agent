@@ -64,8 +64,8 @@ replays a committed recording.
 ## Where the project stands
 
 **v1 and v1.1 are both complete, and v1.2 is under way.**
-72 of 72 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A9 holding. The suite collects 990 tests (27 skip). v1 delivered the
+73 of 73 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A9 holding. The suite collects 1006 tests (27 skip). v1 delivered the
 determination end to end; v1.1 closed spec §10's eight known limits — a
 second jurisdiction, a bounded re-ask for unanchorable quotes, a second note
 per chart, a citation-sufficiency check, a second measured tier, and the
@@ -77,7 +77,13 @@ first tree from an unrelated practice — **infliximab for rheumatoid
 arthritis**, compiled from Palmetto GBA's L35677 and A56432 — which loads
 beside the bariatric trees, resolves by its own J-code in the same seven
 states, and needed one predicate kind the engine did not have *(T-92,
-D111)*.
+D111)*. Its third row gave that practice patients: two Synthea charts
+carrying rheumatoid arthritis in Palmetto's territory, one of them cloned and
+given the drug the policy's limitation excludes — because the generator
+writes no biologic for this disease at any population size — and three eval
+rows over them. **The engine needed nothing**: the same code that closed
+T-92 produced every labeled verdict, so what a second practice cost here was
+corpus work and not engine work *(T-93, D113)*.
 
 Measured figures live in `eval/report.md`, which is generated and gate-verified
 rather than written; *Status in detail* below carries them, and
@@ -335,7 +341,7 @@ Three ports meet at the model boundary:
   from a bounded tool allowlist). Everything downstream cannot tell which
   planner ran — which is exactly what makes the comparison a comparison.
 - **`VerifierRunner`** — *who checks the citations.* Live, recorded (replays a
-  committed 30-claim recording keyed by claim digest — a miss raises, never
+  committed 33-claim recording keyed by claim digest — a miss raises, never
   defaults), and a deliberately raising null runner.
 
 **Where ADK sits: it is a leaf, never the skeleton.** `google-adk` is imported
@@ -448,9 +454,10 @@ stated plainly:
   recorded with a name and date in the decision log. The count is pinned at
   zero provisional constants, so a new one is a visible diff.
 
-Patient data is entirely synthetic: eight Synthea v4.0.0 FHIR bundles
-(pinned by manifest hashes; one carries a declared synthetic observation and
-one is a declared clone re-addressed into Palmetto's territory) and fourteen
+Patient data is entirely synthetic: eleven Synthea v4.0.0 FHIR bundles
+(pinned by manifest hashes; one carries a declared synthetic observation, one
+is a declared clone re-addressed into Palmetto's territory, and one is a
+declared clone carrying a declared synthetic prescription) and fourteen
 synthesized chart notes — two per note-bearing chart since T-81, a split of
 the facts each manifest declares — the clone's byte-identical to its source's
 by declaration. No real or de-identified patient data of any kind is in scope.
@@ -647,9 +654,9 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   standing answer; on the two-note corpus it fired once, on the very
   paraphrase P2 was written from, and recovered it. What remains is a claim
   the model never quoted at all.
-- **P3 — Small everything.** Eight patients (one a declared clone), fourteen
-  chart notes, five policy documents, seventeen cases: every rate moves in
-  large steps, and one case outweighs a percentage point.
+- **P3 — Small everything.** Eleven patients (two of them declared
+  clones), fourteen chart notes, seven policy documents, twenty cases: every
+  rate moves in large steps, and one case outweighs a percentage point.
 - **P4 — The ground truth is a first draft.** The labels were drafted
   alongside the system; the second pass was taken with T-81, every row
   re-derived from the manifests and the trees' constants and recorded in
@@ -704,12 +711,12 @@ gate rather than a plausible-looking table.
 
 | Gate | Result |
 |---|---|
-| A1 | 17 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.609** base rate and an always-`MET` baseline scoring exactly that |
-| A3 | **zero** `MET` verdicts with an invalid span, over 95 spans checked |
+| A1 | 20 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.567** base rate and an always-`MET` baseline scoring exactly that |
+| A3 | **zero** `MET` verdicts with an invalid span, over 98 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.235**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
-| A6 | 45 model calls / 36,956 in / 7,590 out / 47.7s across ten determinations, from instrumentation |
+| A5 | abstention **0.300**, accounted for per `gap_reason` — the rise is the second practice's three declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A6 | 48 model calls / 39,968 in / 7,688 out / 49.7s across thirteen determinations, from instrumentation |
 | A7 | 58 requirements: 56 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
@@ -779,9 +786,11 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   agent/             ADK path: extraction_agent, retrieval_agent, tools, bounds
   stores/            policy.py and patient.py — two ports, two planes;
                      __init__.py imports neither, on purpose
-data/policies/       five source documents, the SNOMED value set, and two
-                     criteria trees (ncd-100.1-jf-v1, ncd-100.1-jjm-v1)
-data/patients/       eight Synthea bundles + fourteen synthesized notes, hash-pinned
+data/policies/       seven source documents, four value sets (SNOMED and
+                     RxNorm), and three criteria trees — two bariatric
+                     (ncd-100.1-jf-v1, ncd-100.1-jjm-v1) and one rheumatology
+                     (infliximab-ra-jjm-v1)
+data/patients/       eleven Synthea bundles + fourteen synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free — one set per
                      tier, the AI Studio one being what every gate replays

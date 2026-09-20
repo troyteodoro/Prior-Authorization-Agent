@@ -40,6 +40,7 @@ import run_eval as harness  # noqa: E402
 from pa_agent.contracts import (  # noqa: E402
     CriterionVerdict,
     Determination,
+    GapReason,
 )
 from pa_agent.index import DocumentIndex  # noqa: E402
 from pa_agent.spans import SpanValidationError, validate  # noqa: E402
@@ -916,6 +917,33 @@ def _agentic_tier_rows() -> list[str]:
     ]
 
 
+def _corpus_counts() -> dict[str, int]:
+    """The corpus's size, from the three artifacts that own it (D108's rule).
+
+    Hardcoding these is what went stale when T-93 added three charts: the
+    sentence read "eight patients" while eleven were being scored, and every
+    gate stayed green because prose is not a figure anything re-derives.
+    """
+    population = json.loads(
+        (REPO_ROOT / "data" / "patients" / "manifest.json").read_text(encoding="utf-8")
+    )
+    notes = json.loads(
+        (REPO_ROOT / "data" / "patients" / "notes" / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    sources = json.loads(
+        (REPO_ROOT / "data" / "policies" / "source" / "sources.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    return {
+        "patients": len(population["bundles"]),
+        "notes": len(notes["notes"]),
+        "documents": len(sources["documents"]),
+    }
+
+
 def _abstention_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
     """A5's first half (D82): the account per `gap_reason`, not a rate alone."""
     account = harness.abstention_account(results)
@@ -939,6 +967,22 @@ def _abstention_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
         for reason, count in sorted(reasons.items(), key=lambda kv: (-kv[1], kv[0]))
     ]
 
+    # T-93 (D113): where the declared-limit abstentions come from. A practice
+    # whose document is judgment-heavy raises the corpus-wide rate without any
+    # criterion answering worse, and a reader who sees only the rate would
+    # read that as the system getting more cautious.
+    unclaimed: dict[str, set[str]] = {}
+    for determination in _determinations(cache):
+        for result in determination.criterion_results:
+            if result.gap_reason is GapReason.NOT_EVALUATED_BY_THIS_SYSTEM:
+                unclaimed.setdefault(determination.policy_version_id, set()).add(
+                    result.criterion_id
+                )
+    split = "; ".join(
+        f"`{tree}` declares {', '.join(sorted(ids))}"
+        for tree, ids in sorted(unclaimed.items())
+    )
+
     return [
         "## Abstention (A5, REQ-28, REQ-31)",
         "",
@@ -960,6 +1004,12 @@ def _abstention_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
         "| `gap_reason` | Criterion verdicts | What it tells the specialist to collect |",
         "|---|---|---|",
         *(rows or ["| — | 0 | no criterion abstained |"]),
+        "",
+        f"`NOT_EVALUATED_BY_THIS_SYSTEM` is a **tree's declared limit, not a "
+        f"chart's gap** (REQ-58): {split}. Those criteria abstain on every "
+        "chart that tree answers, so the corpus-wide rate moves with which "
+        "practices the eval set exercises rather than with how well any "
+        "criterion is evaluated. Read it beside this split (D101, D111, D113).",
         "",
     ]
 
@@ -1272,21 +1322,28 @@ def _caveats_section() -> list[str]:
         "source rather than against a label. Re-labeling and review ride "
         "with the corpus expansion of a later version.",
         "- **This system determines coverage as one contractor would, for "
-        "each of two contractors.** NCD 100.1 quantifies nothing — no months, "
-        "no visit counts, no recency. Every constant in a criteria tree comes "
-        "from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 "
-        "for Palmetto GBA Jurisdictions J and M — and a request resolves by "
-        "procedure code and state (D21, D29, D100). These are not CMS's "
-        "thresholds; they are two contractors' worth of them.",
-        "- **The corpus is eight patients, fourteen chart notes and five "
-        "policy documents.** Six bundles from the base seed, E12's with its "
-        "declared observation (D73), and one declared clone of E4's chart "
-        "re-addressed into Palmetto's territory (T-88, D102) — the one row, "
-        "`J1`, that runs under the second tree, and it shares both its "
-        "notes' bytes with E4. Every note-bearing chart is two documents "
-        "since T-81, a split of the facts its manifest already declared "
-        "(D104). Rates over a set this size move by large steps; one case is "
-        "worth more than a percentage point in every table above.",
+        "each of two contractors and two practices.** NCD 100.1 quantifies "
+        "nothing — no months, no visit counts, no recency. Every constant in a "
+        "criteria tree comes from its MAC's document — A53028 for Noridian "
+        "Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J and M, and "
+        "L35677 for the same MAC's infliximab policy (T-92, D111) — and a "
+        "request resolves by procedure code and state, to one tree per "
+        "practice (D21, D29, D100, D111). These are not CMS's thresholds; "
+        "they are two contractors' worth of them.",
+        f"- **The corpus is {_corpus_counts()['patients']} patients, "
+        f"{_corpus_counts()['notes']} chart notes and "
+        f"{_corpus_counts()['documents']} policy documents.** Six bundles "
+        "from the base seed, E12's with its declared observation (D73), and "
+        "one declared clone of E4's chart re-addressed into Palmetto's "
+        "territory (T-88, D102) — the row `J1`, which shares both its notes' "
+        "bytes with E4. Every note-bearing chart is two documents since T-81, "
+        "a split of the facts its manifest already declared (D104). The last "
+        "three are the second practice (T-93, D113): two Synthea charts "
+        "carrying rheumatoid arthritis in Palmetto's territory and a declared "
+        "clone of one of them holding the drug L35677 excludes, all note-free "
+        "because v1.2 declares every note-only criterion unclaimed. Rates "
+        "over a set this size move by large steps; one case is worth more "
+        "than a percentage point in every table above.",
         "",
     ]
 

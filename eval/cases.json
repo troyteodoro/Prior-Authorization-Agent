@@ -1,6 +1,6 @@
 {
   "eval_set_id": "us1-v1",
-  "note": "Labeled acceptance cases: spec §6's fifteen plus NP1 (REQ-1, outside §6 per D75) and J1 (the second jurisdiction, outside §6 per D102). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, never from an observed run. Row semantics: D75.",
+  "note": "Labeled acceptance cases: spec §6's fifteen plus NP1 (REQ-1, outside §6 per D75), J1 (the second jurisdiction, outside §6 per D102) and RA1-RA3 (the second practice, outside §6 per D113). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, never from an observed run. Row semantics: D75.",
   "cases": [
     {
       "case_id": "E3",
@@ -376,6 +376,87 @@
         "absent_criteria": [
           "c3"
         ]
+      }
+    },
+    {
+      "case_id": "RA1",
+      "story": "US-10",
+      "spec_ref": "REQ-57, REQ-58, REQ-59; outside §6 (D113)",
+      "description": "The second practice: the diagnosis and the concurrent drug the LCD names",
+      "patient_id": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+      "procedure_code": "J1745",
+      "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
+      "note": "A Synthea chart in Palmetto GBA's territory (T-93, D113), so the state is read from the bundle and the row passes none. Transcribed from L35677 through infliximab_ra_jjm.json and the chart's coded facts, never from a run: the active rheumatoid arthritis condition is criterion (a)'s value-set membership and the active methotrexate order is (b)'s, both MET citing the resource itself, in each set's declared code system (REQ-59). c, d and e are declared unclaimed by the tree -- NYHA class is not in ICD-10, 'untreated' is a judgment, disease activity is a clinical assessment -- so they abstain and are never omitted (REQ-58), and the overall INSUFFICIENT_EVIDENCE is theirs alone. The labeled claim is the whole shape: five criteria answered, two of them on arithmetic, three of them declared beyond this system, and none of NCD 100.1's -- the letters collide across the two practices and the criteria do not (D110). The budget is Article V's and nothing else's: one replayed verifier call per cited verdict (2 here), and no extraction call at all, because this tree declares no note criterion for a runner to be reached by.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "infliximab-ra-jjm-v1",
+        "max_model_calls": 2,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          },
+          "b": {
+            "verdict": "MET"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "RA2",
+      "story": "US-10",
+      "spec_ref": "REQ-60; outside §6 (D113)",
+      "description": "The combination limitation: infliximab beside another biologic",
+      "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
+      "procedure_code": "J1745",
+      "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
+      "note": "RA1's chart with one appended etanercept order -- a declared clone, because Synthea's rheumatoid arthritis module orders no biologic and no JAK inhibitor at any population size (T-93, D113; D73's shape). L35677's LIMITATIONS paragraph calls that combination 'not medically reasonable and necessary and therefore, not covered', so the answer is NOT_COVERED and no criterion is evaluated: an exclusion fires before the graph and has no verdict to abstain with (REQ-60, D41's shape). The labeled claim is the pair -- the same bytes plus one prescription turn an approvable chart into a denial, and the denial cites the prescription that fired it rather than asserting an absence. The budget is Article V's and nothing else's: one replayed verifier call per cited verdict (none here, since an exclusion answers before any criterion), and no extraction call at all, because this tree declares no note criterion for a runner to be reached by.",
+      "expect": {
+        "outcome": "NOT_COVERED",
+        "policy_version_id": "infliximab-ra-jjm-v1",
+        "max_model_calls": 0
+      }
+    },
+    {
+      "case_id": "RA3",
+      "story": "US-10",
+      "spec_ref": "REQ-31, REQ-59; outside §6 (D113)",
+      "description": "The concurrent drug is not on the chart: abstain, never deny",
+      "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
+      "procedure_code": "J1745",
+      "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
+      "note": "A second Synthea chart from RA1's run (T-93, D113): the same active rheumatoid arthritis condition, so (a) is MET on the same arithmetic, and no methotrexate order anywhere in the bundle -- not active, not completed. (b) therefore abstains with NO_EVIDENCE_RETRIEVED naming what to collect, and never NOT_MET: L35677 covers a patient unable to tolerate methotrexate whose reason is documented in the record, this system does not read that record, and a chart with no prescription has not recorded that the patient is not taking the drug (D40's asymmetry, carried to medications by D111). Pinning both verdicts on one chart is the point -- the diagnosis criterion and the drug criterion answer differently on the same patient, which is what a criterion-scoped row is for (D75). The budget is Article V's and nothing else's: one replayed verifier call per cited verdict (1 here), and no extraction call at all, because this tree declares no note criterion for a runner to be reached by.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "infliximab-ra-jjm-v1",
+        "max_model_calls": 1,
+        "criteria": {
+          "a": {
+            "verdict": "MET"
+          },
+          "b": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          }
+        }
       }
     }
   ]

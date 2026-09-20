@@ -219,7 +219,10 @@ def test_the_clone_is_byte_identical_per_document(documents, manifests):
         source = manifest.get("cloned_from")
         if not source:
             continue
-        assert documents[patient_id] == documents[source], (
+        # `.get`, because a clone of a note-free chart must be note-free
+        # too and both sides are then absent (T-93's rheumatology clone,
+        # D113). Indexing would raise on the pair that agrees.
+        assert documents.get(patient_id) == documents.get(source), (
             f"{patient_id}: a clone's documents are its source's, per basename (D102)"
         )
 

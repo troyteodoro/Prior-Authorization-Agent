@@ -33,13 +33,15 @@ VALUE_SET_CODES = {"44054006", "59621000"}
 
 EXPECTED_CASES = {
     "E1", "E2", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E10b", "E10c",
-    "E11", "E12", "E13", "J1",
+    "E11", "E12", "E13", "J1", "RA1", "RA2", "RA3",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
 # J1 is the second jurisdiction (T-88, D102): a declared clone of E4's chart.
 # E13 (T-81, D104) is E1's chart with its qualifying run split across two
-# documents.
+# documents. RA1-RA3 are the second practice (T-93, D113): two Synthea charts
+# in Palmetto's territory and a declared clone of one of them, all note-free,
+# because v1.2 declares every note-only criterion unclaimed.
 DELIBERATELY_ABSENT = {"E3"}
 
 
@@ -129,25 +131,42 @@ def test_one_manifest_per_committed_patient(manifests, population):
 
 
 def test_a_declared_clone_carries_its_source_facts_unchanged(manifests):
-    """T-88 (D102). The clone's manifest copies its source's facts rather than
-    pointing at them, so every reader stays simple — and this is what keeps the
-    copy honest. Programs, traps and assertions must be equal; `cases` and
-    `rationale` are the clone's own; and exactly one manifest is a clone,
-    because the population manifest declares exactly one."""
+    """T-88 (D102), generalized by T-93 (D113). The clone's manifest copies its
+    source's facts rather than pointing at them, so every reader stays simple —
+    and this is what keeps the copy honest. Programs, traps and assertions must
+    be equal, and so must whether the chart has a note at all; `cases` and
+    `rationale` are the clone's own; and the manifests declare exactly the
+    clones the population does, no more and no fewer.
+
+    Two clones now, of different kinds: one chart re-addressed into another
+    jurisdiction, one carrying a declared prescription. Neither edits a fact
+    this file grades, which is why they are checked by the same rule — what
+    differs between a clone and its source is declared in the population
+    manifest and verified there, by re-deriving the bytes."""
     clones = {pid: body for pid, body in manifests.items() if body.get("cloned_from")}
-    assert len(clones) == 1, "D102 declares exactly one clone"
-    (patient_id, body), = clones.items()
-    source = manifests[body["cloned_from"]]
-    assert source.get("cloned_from") is None, "a clone of a clone is not declared"
-    for field in ("wm_programs", "traps", "program_assertions", "as_of", "documents"):
-        assert body[field] == source[field], f"{field} drifted from the source's"
-    assert body["cases"] == ["J1"]
-    assert not set(body["cases"]) & set(source["cases"])
-    assert body["bundle"] != source["bundle"]
     population = json.loads(POPULATION.read_text(encoding="utf-8"))
     declared = population["synthetic_patients"]
-    assert [d["patient_id"] for d in declared] == [patient_id]
-    assert declared[0]["cloned_from"] == body["cloned_from"]
+    assert sorted(clones) == sorted(d["patient_id"] for d in declared), (
+        "the manifests and the population must declare the same clones"
+    )
+    by_patient = {d["patient_id"]: d for d in declared}
+    claimed_cases = set()
+    for patient_id, body in clones.items():
+        source = manifests[body["cloned_from"]]
+        assert source.get("cloned_from") is None, "a clone of a clone is not declared"
+        for field in ("wm_programs", "traps", "program_assertions", "as_of"):
+            assert body[field] == source[field], f"{field} drifted from the source's"
+        assert body.get("note") == source.get("note"), (
+            f"{patient_id}: a clone is note-free exactly when its source is"
+        )
+        assert body.get("documents") == source.get("documents")
+        assert not set(body["cases"]) & set(source["cases"]), (
+            f"{patient_id}: a clone and its source answer different rows"
+        )
+        assert not set(body["cases"]) & claimed_cases
+        claimed_cases |= set(body["cases"])
+        assert body["bundle"] != source["bundle"]
+        assert by_patient[patient_id]["cloned_from"] == body["cloned_from"]
 
 
 def test_every_edge_case_is_covered_exactly_once(manifests):

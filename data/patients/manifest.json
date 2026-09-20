@@ -83,7 +83,7 @@
     }
   ],
   "selection_criteria": {
-    "bundle_count": 8,
+    "bundle_count": 11,
     "base_bundle_count": 6,
     "bmi_range": [
       33.0,
@@ -97,66 +97,145 @@
     {
       "filename": "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json",
       "sha256": "e3d764f3c4c7d22c7bed9d3e957bcee67856425387426ee327c88f8fa9f80529",
+      "cohort": "bariatric",
       "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
       "latest_bmi": 34.26,
       "latest_bmi_date": "2024-03-15T07:15:32-07:00",
-      "has_active_t2dm": true
+      "has_active_t2dm": true,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
     },
     {
       "filename": "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json",
       "sha256": "0498ac2325a53bea01aae6d09f7f372f1fd1be3bd3fda0ff5a3de7e448957eb3",
+      "cohort": "bariatric",
       "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
       "latest_bmi": 34.6,
       "latest_bmi_date": "2026-04-24T04:38:35-07:00",
-      "has_active_t2dm": false
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
     },
     {
       "filename": "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json",
       "sha256": "6e57abc88f206d4bf65cbe7fb4a7292a49d4d7624ac55926a74f87d9306029a2",
+      "cohort": "bariatric",
       "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
       "latest_bmi": 35.89,
       "latest_bmi_date": "2025-09-19T00:51:37-07:00",
-      "has_active_t2dm": false
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
     },
     {
       "filename": "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
       "sha256": "0671280c6529302c67affd811a335d02e0a36e2a3f3311cea2d421279de29688",
+      "cohort": "bariatric",
       "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
       "latest_bmi": 37.65,
       "latest_bmi_date": "2025-10-21T19:35:08-07:00",
-      "has_active_t2dm": false
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
     },
     {
       "filename": "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
       "sha256": "257579bd5d1ddc23aed2dcfd4006902227709cdd8c1d66c7011855402b844551",
+      "cohort": "bariatric",
       "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
       "latest_bmi": 39.23,
       "latest_bmi_date": "2026-04-26T13:49:23-07:00",
-      "has_active_t2dm": false
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
     },
     {
       "filename": "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json",
       "sha256": "9f8a269b812d6cc70ff2ee0ccabdecc18203fa802f035252e7002b91bcc72139",
+      "cohort": "bariatric",
       "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
       "latest_bmi": 42.5,
       "latest_bmi_date": "2026-03-13T08:52:43-07:00",
-      "has_active_t2dm": false
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
     },
     {
       "filename": "Avelina400_Huels583_a8edc52e-9800-0adb-c775-bd81183c355f.json",
       "sha256": "1bda8ffb186367433ff5f6984c7d79691e644ef08e93a313c99be7a54ac8039c",
+      "cohort": "bariatric",
       "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
       "latest_bmi": 35.0,
       "latest_bmi_date": "2026-08-15T15:11:36-07:00",
-      "has_active_t2dm": false
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
+    },
+    {
+      "filename": "Shona685_Zieme486_42a430ab-b7ca-87a5-279f-ee115f49fd6e.json",
+      "sha256": "f92b91c59e830b463fb341eff804e3ec83b60d71db4390581c5ade77fea0d25e",
+      "cohort": "rheumatology",
+      "patient_id": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+      "latest_bmi": 30.4,
+      "latest_bmi_date": "2025-12-16T15:20:17-08:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": true,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 1
+    },
+    {
+      "filename": "Altagracia629_Torp761_455d3f7d-3b99-dad6-c0b2-d5405144e793.json",
+      "sha256": "bd483842634a187b024cb2ab10f28cdf33965bb33feb7f3c8cf45fa5c808374e",
+      "cohort": "rheumatology",
+      "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
+      "latest_bmi": 27.76,
+      "latest_bmi_date": "2026-04-23T12:50:12-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
     },
     {
       "filename": "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
       "sha256": "807774c0ae505a1e47d8a1ef1af5caded71c3cfc5d9360ef80b4c9b4672ff778",
+      "cohort": "bariatric",
       "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
       "latest_bmi": 35.89,
       "latest_bmi_date": "2025-09-19T00:51:37-07:00",
-      "has_active_t2dm": false
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "methotrexate_orders": 0
+    },
+    {
+      "filename": "Shona685_Zieme486_915602a8-a36d-59bf-b667-47496ab57965.json",
+      "sha256": "9c3ecacbc28ebe4cfada979fc03fd17aa40d100897e34d8e30b9ea3eae62bdc5",
+      "cohort": "rheumatology",
+      "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
+      "latest_bmi": 30.4,
+      "latest_bmi_date": "2025-12-16T15:20:17-08:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": true,
+      "has_active_excluded_biologic": true,
+      "methotrexate_orders": 1
     }
   ],
   "synthetic_patients": [
@@ -165,15 +244,75 @@
       "cloned_from": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
       "source_bundle": "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json",
       "bundle": "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+      "task": "T-88",
+      "decision": "D102",
       "address": {
         "city": "Birmingham",
         "state": "AL",
         "postal_code": "35203",
         "latitude": 33.5186,
         "longitude": -86.8104
-      },
-      "task": "T-88",
-      "decision": "D102"
+      }
+    },
+    {
+      "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
+      "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+      "source_bundle": "Shona685_Zieme486_42a430ab-b7ca-87a5-279f-ee115f49fd6e.json",
+      "bundle": "Shona685_Zieme486_915602a8-a36d-59bf-b667-47496ab57965.json",
+      "task": "T-93",
+      "decision": "D113",
+      "variant": "concurrent-biologic",
+      "synthetic_medication": {
+        "copy_of_code": "105585",
+        "resource_id_suffix": "-ra-excl-synthetic",
+        "code": "802652",
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "display": "1 ML etanercept 50 MG/ML Prefilled Syringe [Enbrel]"
+      }
     }
-  ]
+  ],
+  "synthea_rheumatology": {
+    "task": "T-93",
+    "decision": "D113",
+    "seed": 1003,
+    "clinician_seed": 1003,
+    "reference_date": "20260901",
+    "population": 1000,
+    "age_range": "30-60",
+    "state": "Alabama",
+    "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+    "command": [
+      "java",
+      "-jar",
+      "data/patients/work/synthea-with-dependencies.jar",
+      "-s",
+      "1003",
+      "-cs",
+      "1003",
+      "-r",
+      "20260901",
+      "-p",
+      "1000",
+      "-a",
+      "30-60",
+      "--exporter.baseDirectory",
+      "data/patients/work/output_ra",
+      "--exporter.fhir.export",
+      "true",
+      "--exporter.hospital.fhir.export",
+      "false",
+      "--exporter.practitioner.fhir.export",
+      "false",
+      "Alabama"
+    ],
+    "selection": {
+      "cohort": "rheumatology",
+      "chart_count": 2,
+      "state_code": "AL",
+      "diagnosis_code": "69896004",
+      "drug_code": "105585",
+      "excluded_drug_code": "802652",
+      "rule": "both charts carry an active Condition coded SNOMED 69896004 and no active MedicationRequest for RxNorm 802652; one carries an active MedicationRequest for RxNorm 105585 and one carries none. Codes read from modules/rheumatoid_arthritis.json in the pinned jar (D113)."
+    }
+  }
 }

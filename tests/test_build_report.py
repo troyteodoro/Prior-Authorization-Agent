@@ -219,12 +219,46 @@ def test_only_labeled_pairs_are_scored(script):
 # --------------------------------------------------------------------------
 
 
+def test_the_corpus_size_is_the_corpus_s_size():
+    """The caveat above asserts the sentence; this asserts its numbers.
+
+    They were hardcoded prose until T-93 added three charts and the sentence
+    said eight while eleven were scored (D113). The generator now derives them
+    from the three artifacts that own them, and this is what fails if it stops
+    (D108's rule, applied to the one figure in the report that is not measured
+    from a run).
+    """
+    import json
+
+    population = json.loads(
+        (REPO_ROOT / "data" / "patients" / "manifest.json").read_text(encoding="utf-8")
+    )
+    notes = json.loads(
+        (REPO_ROOT / "data" / "patients" / "notes" / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    sources = json.loads(
+        (REPO_ROOT / "data" / "policies" / "source" / "sources.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    sentence = (
+        f"The corpus is {len(population['bundles'])} patients, "
+        f"{len(notes['notes'])} chart notes and "
+        f"{len(sources['documents'])} policy documents."
+    )
+    assert sentence in REPORT.read_text(encoding="utf-8"), (
+        f"eval/report.md does not state: {sentence!r}"
+    )
+
+
 @pytest.mark.parametrize(
     "claim",
     [
         "first draft, drafted alongside the system it grades",  # D19/D42/D96
         "as one contractor would",                               # D21/D29
-        "eight patients",                                        # corpus size (D102)
+        "The corpus is",                                         # corpus size (D102)
         "declared clone",                                        # J1's provenance
     ],
 )

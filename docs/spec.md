@@ -747,11 +747,11 @@ instance above was one run's behaviour and the mechanism is the standing
 answer to its recurrence. What it cannot recover is a claim the model never
 quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
-### P3 — Eight patients, five documents, seventeen cases *(was six, five, fifteen)*
+### P3 — Eleven patients, seven documents, twenty cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
-than a percentage point in every table. A precision of 1.000 over fourteen
-`MET` calls against a base rate of 0.609 is a real result and a small one; it
+than a percentage point in every table. A precision of 1.000 over seventeen
+`MET` calls against a base rate of 0.567 is a real result and a small one; it
 says the approach does not obviously fail, and nothing more. Since T-88 the
 set is sixteen rows over eight bundles, one of them a declared clone that
 shares its note's bytes with its source *(D102)*; the count moved by one row
@@ -759,7 +759,12 @@ and the bound did not. Since T-81 it is seventeen rows over fourteen chart
 notes *(D104)*: every note-bearing chart is two documents, a split of the
 facts its manifest already declared, so the document count doubled while
 the fact set — and therefore every existing label — stayed as it was. The
-row that moved is `E13`, the one labeled claim the split creates. More
+row that moved is `E13`, the one labeled claim the split creates. Since T-93
+it is twenty rows over eleven bundles and seven documents *(D113)*: the second
+practice's two Synthea charts and a declared clone of one of them, all
+note-free, and three rows running a tree NCD 100.1 did not produce. The
+practice axis is no longer one-sided, and the set is still small enough that
+one case outweighs a percentage point. More
 patients is a separate decision, taken after T-81's numbers landed *(D97)*.
 
 ### P4 — The ground truth is a first draft
@@ -900,7 +905,7 @@ number.
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
 | v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
-| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only | US-10 | T-91–T-95 | none | A10 |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted | US-11 | T-96–T-99 | one recording round | A11 |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
@@ -948,7 +953,15 @@ a window, c1's shape.
 criteria are declared unclaimed and abstain with
 `NOT_EVALUATED_BY_THIS_SYSTEM`, never omitted; their extraction is v1.6's,
 because a new extraction schema is a measurement round (D45) and this version
-asks a question about the engine. **Zero model calls.**
+asks a question about the engine.
+
+**What it spends, corrected at T-93.** No extraction round — but **one
+verifier round per row that cites**, on both tiers. A claim digest is the
+criterion, the verdict and the sliced quote, so a row answering `MET` or
+`NOT_MET` is a claim T-17's recording must hold before any gate can grade it
+(D78, D113). This version's plan said *zero model calls*, which was true of
+extraction and never true of a cited row. **Every gate still replays**, which
+is what A10 asserts.
 
 **Requirements, and the task that mints each** *(D109: a statement is minted
 by the task whose close checks it, not by the version's opening commit)*.
@@ -964,6 +977,10 @@ by the task whose close checks it, not by the version's opening commit)*.
 - **REQ-60**, minted by `T-92`. A categorical exclusion declares its kind and
   the procedure set it reaches; an unimplemented kind fails to load, and an
   exclusion that does not fire produces nothing.
+- *`T-93` minted none.* It gave the second practice patients and rows and
+  changed no engine behaviour, so it has no statement of its own to check —
+  what it checks is REQ-57 through REQ-60 over a committed corpus rather than
+  over a chart written in a test *(D109, D113)*.
 - *Awaiting `T-94`.* Lab thresholds and prior-procedure counts are computed by
   Python over structured resources, cited to the resource. **Medication trial
   duration is not among them**: the rheumatology document chosen by fetching

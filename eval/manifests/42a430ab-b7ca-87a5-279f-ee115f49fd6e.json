@@ -1,0 +1,13 @@
+{
+  "patient_id": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+  "bundle": "Shona685_Zieme486_42a430ab-b7ca-87a5-279f-ee115f49fd6e.json",
+  "as_of": "2026-09-01",
+  "note": false,
+  "wm_programs": [],
+  "traps": [],
+  "program_assertions": [],
+  "cases": [
+    "RA1"
+  ],
+  "rationale": "RA1 is the rheumatology practice's approvable chart: Synthea's own, generated in Palmetto GBA's territory under the seed data/patients/manifest.json records (synthea_rheumatology; T-93, D113). It carries an active rheumatoid arthritis condition and an active methotrexate order, which are criterion (a)'s and criterion (b)'s facts under infliximab-ra-jjm-v1, so both are MET citing the resources themselves. The determination is still INSUFFICIENT_EVIDENCE, because c, d and e are declared unclaimed by the tree and abstain with NOT_EVALUATED_BY_THIS_SYSTEM - three of five criteria this system does not claim to judge is the finding D111 recorded, not a defect of this chart. The coded facts themselves live in the population manifest and are re-derived by select_patients.py --verify; they are not restated here, because one artifact owns a fact and prose is a copy. The chart carries no note: v1.2 declares every note-only criterion unclaimed, so no extraction ever runs for it and 'note': false states that rather than leaving an absent note to read as a corpus gap (D73's shape)."
+}

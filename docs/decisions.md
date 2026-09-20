@@ -9030,3 +9030,208 @@ re-verified is a corpus whose hashes mean nothing.
 stable and re-downloadable under the terms this repo's fetcher already meets —
 then v2.2's tree is compiled rather than synthesized, and the mimic becomes a
 second, clearly-labelled row rather than the only one.
+
+---
+
+## D113 — The second practice's patients are Synthea's, and the drug its module never prescribes is declared
+
+**Context.** T-93 is row 3 of v1.2: patients in Palmetto GBA's territory with
+rheumatoid arthritis, and the eval rows that grade them. D111 rewrote the exit
+before the row opened, because the document states no trial duration and no
+screening requirement: **a criterion `MET`, a `NOT_COVERED` on the combination
+limitation, and an abstention**. Spec §11 fixes the method — *Synthea patients
+where a module exists, declared additions in D73's shape where it does not* —
+so the first question is which half of that sentence this practice falls in,
+and the answer is: both, and the split is not where it was expected.
+
+**Measured before choosing anything.** `modules/rheumatoid_arthritis.json`
+inside the pinned `synthea-with-dependencies.jar` was read, then run:
+
+- Incidence is **0.01** at the module's `Initial`, and onset is a 25–80 year
+  delay from birth, so most of that 1% never reaches onset inside an age band.
+- Rheumatoid arthritis is coded **SNOMED 69896004**, which is the code
+  `rheumatoid_arthritis` already declares (T-92 read it from this same file).
+- After 1990 the module's care plan always reaches `DMARD`, which orders
+  **RxNorm 105585**, *Methotrexate 2.5 MG Oral Tablet*, and ends it after a
+  40–60 month delay. So "active methotrexate" is a window, not a property: a
+  chart carries it only if the diagnosis is recent enough.
+- **No biologic and no Janus kinase inhibitor appear anywhere in the module.**
+  Its whole pharmacy is naproxen, methotrexate and prednisone.
+
+One run: seed 1003, clinician seed 1003, reference date 20260901, ages 30–60,
+`-p 1000`, **Alabama** — Palmetto's territory, the same knobs as T-04's base
+run and T-41's E12 run, the next seed in the sequence. It exported 1082
+bundles carrying **five** rheumatoid arthritis charts:
+
+| chart | rheumatoid arthritis | methotrexate | what it can serve |
+|---|---|---|---|
+| `42a430ab` | **active**, onset 2024-08-08 | **active**, ordered 2024-08-08 | criterion (a) and (b) both `MET` |
+| `455d3f7d` | **active**, onset 2011-03-12 | **none on the chart at all** | (a) `MET`, (b) an abstention |
+| `ca58be34`, `cc5a379c`, `d21df761` | resolved | completed | both criteria abstaining |
+
+So the corpus supplies two of the three rows as generated Synthea charts, and
+**cannot supply the third at any population size**, because the limitation
+denies a combination the generator never writes.
+
+**Chosen — two generated charts and one declared derivative, and the
+derivative is a clone of the first.** `RA1` is `42a430ab`; `RA3` is
+`455d3f7d`; `RA2` is a declared clone of `RA1`'s bundle carrying **one**
+appended `MedicationRequest` — etanercept, RxNorm 802652, *1 ML etanercept
+50 MG/ML Prefilled Syringe [Enbrel]*, the brand L35677's LIMITATIONS
+paragraph names first — copied from the patient's own methotrexate order with
+the drug and the resource id changed and nothing else. Both declared shapes
+this repo already has, composed: T-88's clone (a new id derived from the
+declaration, the bytes recomputed from the source and compared) and D73's
+appended synthetic resource (a copy of one of the patient's own resources,
+with the one field the case needs moved).
+
+The pairing is the reason for the clone. `RA1` and `RA2` differ by exactly one
+prescription, so the denial row says the thing an exclusion is for: *this
+chart meets every criterion the system can evaluate, and the policy denies it
+anyway, citing the drug*. A third generated patient would have said it less
+clearly and cost a third unrelated chart.
+
+**Rejected — hand-written FHIR for all three.** Cheaper, deterministic, and it
+would make every rheumatology verdict a verdict about resources this repo
+wrote to be matched. The two charts Synthea produced carry 53 and 42
+conditions and 25 and 51 medication orders apiece — chronic pain, opioid
+dependence, contraceptives, an obesity finding — and criterion (a) admitting
+exactly one of them is a result. Against hand-written charts it would be a
+tautology.
+
+**Rejected — the resolved-RA charts for the abstention row.** `ca58be34` is
+704 KB against `455d3f7d`'s 3.08 MB and would abstain on both criteria, which
+is a real row and the weaker one: it turns on `clinical_status` and on a
+`completed` prescription, both already unit-pinned by T-92. `455d3f7d`
+abstains on **(b) alone**, which is the asymmetry the new predicate kind
+introduced (D40's rule, carried to medications by D111): the chart establishes
+the diagnosis, records no methotrexate, and the system says *collect this*
+rather than *denied*. That is the row a reviewer should be shown, and it costs
+2.4 MB more.
+
+**Rejected — inventing a mechanism for why `455d3f7d` has no methotrexate.**
+The module orders one after 1990 and this patient's onset is 2011, so the
+chart is not what the module's happy path produces. What the bundle actually
+records at the 2011-03-12 diagnosis encounter is the condition, the care plan,
+the care team, a history-and-physical note and an active naproxen order; the
+string `105585` does not occur anywhere in the 3.08 MB, so no claim, no
+`Medication` resource and no dropped export explains it either. The label
+rests on what the committed bytes say, which is all the system reads. The
+generator's internals are not re-derivable by any gate here and are therefore
+not asserted.
+
+**Measured, because the alternative was to assume it.** Both charts carry
+`MedicationRequest` resources by `medicationReference` — two on `455d3f7d`,
+one on `42a430ab` — which `LocalPatientStore.get_medications` does not follow,
+by the stated scope D111 recorded when no criterion was compiled against
+medications. All three resolve to contraceptives and all three are
+`completed`. Neither methotrexate nor any excluded biologic hides behind that
+limit on these charts. Had one, the abstention row would have been an artifact
+of the adapter rather than a fact about the chart, and every test would have
+agreed with it.
+
+**What the engine needed: nothing.** The three determinations were dry-run
+against the code as T-92 committed it, over a patient store rooted at a
+temporary copy, with an extraction runner that raises if it is called. They
+produced the labeled verdicts — `a` `MET` and `b` `MET` with c, d and e
+abstaining `NOT_EVALUATED_BY_THIS_SYSTEM`; `a` `MET` with `b` abstaining
+`NO_EVIDENCE_RETRIEVED`; and `NOT_COVERED` with no criterion evaluated — for
+zero model calls, under `infliximab-ra-jjm-v1`, on a state read from the
+bundle. **No predicate, no step, no contract and no tree moved.** The only
+code this row changes is `scripts/select_patients.py`, which is tooling and
+not the system under test. That is US-10's question answered a second way:
+T-92 showed the document compiles, and this row shows the corpus does too.
+
+**The labels are still transcription, not observation** (spec §8). Each row's
+expected verdicts were derived from `infliximab_ra_jjm.json`'s five criteria
+and the two value sets, read against the charts' conditions and medications,
+*before* the dry run; the dry run is what showed the machinery reaches them.
+A row whose label came from the run would be grading the system against
+itself, which is the habit D19 and D42 exist to prevent.
+
+**The cost that was not in the plan: an eval row with a cited verdict is a
+verifier measurement.** v1.2's roadmap column says *model calls: none*, and
+that was written about extraction recordings. It is wrong for any row that
+cites evidence. `RecordedVerifierRunner` is keyed by claim digest and **raises
+on a claim it has not got** (D78, D31's shape), and a digest is the criterion,
+the verdict and the sliced quote — so `RA1`'s two `MET` verdicts and `RA3`'s
+one are three claims T-17's recording does not hold, and the eval gate cannot
+run until it does. The recording is therefore re-measured whole on **both**
+tiers, 30 claims becoming 33, because D106's joint account holds only while
+the two recordings are keyed alike.
+
+Recorded as a **correction, not an exception**: T-94's rows will cost exactly
+the same, so the roadmap's column and §11's v1.2 entry are corrected to say
+what a cited row costs. **A10 is untouched** — its claim is *zero model calls
+in any gate*, and every gate still replays. The measurement scripts have never
+been gates (D45), which is the only reason this distinction survives contact.
+
+**Rejected — rows that cite nothing, to keep the column true.** The only way
+to add a rheumatology row with no claim is to add no `MET` and no `NOT_MET`,
+which deletes the row the exit condition names. A plan figure is not worth a
+deliverable, and a column that costs the version its content is a column to
+correct.
+
+**Rejected — measuring only the AI Studio tier.** Cheaper by half and it
+makes `eval/report.md` lie: the verifier table joins the two recordings on
+shared digests and states that the claim sets are identical by construction.
+Three claims on one side only would leave that sentence rendering over 30
+shared of 33, which is exactly the stale-half failure D91 named.
+
+**What it costs the corpus.** Three bundles, 8.9 MB, taking the committed
+population from eight patients to eleven and the eval set from seventeen rows
+to twenty. P3's bound is unchanged in kind — twenty rows is still a small set
+— but the practice axis is no longer one-sided: four of the twenty rows now
+run a tree that is not NCD 100.1's.
+
+**Found while building it: a note-less tree still pays for the notes.**
+`step_extract` is an unconditional entry in `STEPS`, so a determination under
+`infliximab-ra-jjm-v1` over a chart that *has* notes reads every one of them
+and hands the events to no criterion. The three rows here cannot show it —
+their charts are note-free — but the corpus supplies the case for nothing:
+`J1`'s patient is in Palmetto's territory with two chart notes, and a J1745
+request over that chart runs the extractor. **It changes no verdict**, which
+is why this is a cost and not a defect, and `tests/test_rheumatology_corpus.py`
+pins the correctness half: no rheumatology criterion cites that chart's
+weight-management notes.
+
+It is **`T-107`'s to remove**, the v1.6 row where the tree declares its own
+extraction schema, and that row's exit is extended here to say so — D111's
+move on this task's own exit, one version ahead. Left unnamed it would be
+discovered again by whoever first runs a note-bearing chart against a
+note-less tree and finds a model call they cannot account for.
+
+**Rejected — gating `step_extract` on the tree here.** It is one condition and
+it is half of T-107: the other half is that a tree *declares* what it extracts,
+and a skip keyed on "does any criterion consume note events" is that
+declaration written implicitly, in the step, where the next practice's tree
+cannot see it. Building it now also moves the extraction path outside a
+measurement round, and v1.2 was scoped to leave extraction alone (D45).
+
+**Mutation round at the close.** Ten mutations, each run against the check
+that should hold it, restored from git with `__pycache__` cleared between
+(the method note's three traps). Nine were caught by their own check: a
+recorded coded fact contradicting the chart, the clone held to the other
+cohort's BMI band, the declared prescription dropped from the declaration,
+the appended order no longer required to be active, the drug criterion
+answering `NOT_MET` instead of abstaining, the exclusion citing the
+methotrexate order rather than the biologic, a needed verifier claim deleted
+from the recording, `RA3`'s label saying the drug criterion denies, and
+membership no longer scoped to the declared system.
+
+**The tenth is worth stating rather than fixing.** Deleting the
+`status == "active"` filter from `_active_members` survives
+`tests/test_rheumatology_corpus.py` entirely: no committed chart carries a
+*completed* order for a drug in either value set, so the corpus cannot tell
+the two behaviours apart. `tests/test_infliximab_tree.py` catches it, on
+charts written in the test — D65's division, and the reason both files exist.
+A fourth bundle carrying a finished methotrexate course would close it in the
+corpus too; it is not worth 700 KB for a claim already pinned, and the record
+here is what stops a later reader assuming the corpus covers it.
+
+**Reverses if:** a Synthea module — or a later release of this one — orders a
+biologic or a JAK inhibitor for rheumatoid arthritis, in which case `RA2`
+becomes a generated chart and the declared prescription is deleted rather
+than kept beside it; or `get_medications` learns to follow a
+`medicationReference`, which would change what these two charts report and is
+a re-measurement of every row that reads them, not a refactor.

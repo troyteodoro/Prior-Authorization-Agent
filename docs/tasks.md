@@ -17,12 +17,18 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-93`, row 3 of `v1.2` in `Roadmap after v1.1` below.**
+**What to do next: `T-94`, row 4 of `v1.2` in `Roadmap after v1.1` below.**
 **v1.2 is open**: `T-91` closed row 1 and minted REQ-57 and REQ-58 *(D109,
-D110)*; `T-92` closed row 2 and minted REQ-59 and REQ-60 *(D111)*. Row 3's
+D110)*; `T-92` closed row 2 and minted REQ-59 and REQ-60 *(D111)*; `T-93`
+closed row 3 and minted nothing — its two remaining statements await T-94 and
+T-95 *(D109)*. Row 3's
 exit was rewritten at T-92's close, because the document chosen by fetching
 its header states no trial duration and no screening requirement and no
-Medicare rheumatology LCD does *(D111)*. Acceptance gates A1–A9 all hold and US-1 through US-7 and US-9 are
+Medicare rheumatology LCD does *(D111)*. **Row 3 cost a verifier measurement
+round the version's plan did not budget** — an eval row with a cited verdict
+is a claim the recording must hold — so the `Model calls` column below is
+corrected rather than worked around, and T-94's rows will cost the same
+*(D113)*. Acceptance gates A1–A9 all hold and US-1 through US-7 and US-9 are
 delivered; **v1 and v1.1 are both complete.** v1.1 — the round D97 opened as
 "v2" and D105 renamed — was spec §10's list of known limits, P1–P8,
 sequenced into one task each,
@@ -35,9 +41,9 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-two tasks are on this board — IDs run to T-92 but numbering is not
+Seventy-three tasks are on this board — IDs run to T-93 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **72 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **73 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -134,7 +140,7 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
 | v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
-| v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only | US-10 | T-91–T-95 | none | A10 |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 |
 | v1.3 | medical-history review: ICD suggestions with evidence | US-11 | T-96–T-99 | one recording round | A11 |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
@@ -148,14 +154,17 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 Does the engine take a tree from an unrelated practice? Since D101 every
 criteria step evaluates what the tree declares, so the test is whether two
 trees compile into the predicate vocabulary the engine has, and whether it
-says so where they cannot. **Zero model calls**: note-only criteria are
-declared unclaimed and abstain; their extraction is v1.6's.
+says so where they cannot. **No extraction round**: note-only criteria are
+declared unclaimed and abstain; their extraction is v1.6's. **One verifier
+round per row that cites**, which this version's plan did not budget and
+T-93 paid — a cited verdict is a claim `RecordedVerifierRunner` must hold, on
+both tiers *(D113)*. Every gate still replays, which is what A10 asserts.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the predicate vocabulary is explicit | `T-91` | **closed** (D110) | every tree predicate declares its kind; a kind the engine lacks raises at load, never abstains (D31's shape); every gate green |
 | 2 | rheumatoid arthritis: source and tree | `T-92` | **closed** (D111) | governing document chosen by fetching its header (D97's Palmetto correction), hashed into `sources.json`, `verify_sources.py --offline` green; tree compiled; judgment-shaped criteria declared unclaimed, none omitted |
-| 3 | rheumatoid arthritis: patients and eval rows | `T-93` | pending | Synthea patients or declared additions (D73's shape); rows for a criterion `MET`, a `NOT_COVERED` on the combination limitation, and an abstention; `run_eval.py` green. **Rewritten by D111** from "`NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen": L35677 states neither, and no Medicare rheumatology LCD does |
+| 3 | rheumatoid arthritis: patients and eval rows | `T-93` | **closed** (D113) | Synthea patients or declared additions (D73's shape); rows for a criterion `MET`, a `NOT_COVERED` on the combination limitation, and an abstention; `run_eval.py` green. **Rewritten by D111** from "`NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen": L35677 states neither, and no Medicare rheumatology LCD does |
 | 4 | ultrasound: source, tree, patients and rows | `T-94` | pending | as rows 2 and 3; rows for `MET`, `NOT_MET` on a frequency limit, `NO_POLICY_FOUND` for an unlisted code |
 | 5 | the compatibility account | `T-95` | pending | `eval/report.md` renders, per practice, each criterion as evaluated by an existing kind / a new kind / unclaimed; `build_report.py --verify` green; README's degradation section gains the paragraph |
 
@@ -216,7 +225,7 @@ re-measured differential.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the declared extraction schema | `T-107` | pending | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load |
+| 1 | the declared extraction schema | `T-107` | pending | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load; **and a tree that declares no fact type reads no note** — extended by *(D113)*, which measured a rheumatology determination extracting both notes of a chart whose events no criterion consumes |
 | 2 | practice three | `T-108` | pending | source, tree, patients, notes, rows, recording; `run_eval.py` green |
 | 3 | practice four | `T-109` | pending | as row 2 |
 | 4 | the note criteria v1.2 deferred, and the four-practice account | `T-110` | pending | rheumatoid and ultrasound note-only criteria evaluated; `eval/report.md` carries the account over four practices; differential re-measured; every gate green |
@@ -1791,6 +1800,70 @@ unchanged (T-30, D77).
 ---
 
 ## `US-10` Take a new practice's coverage rules without a rewrite
+
+### `[x] T-93` Rheumatoid arthritis: the patients and the eval rows
+
+**REQ:** 59, 60 · **Depends:** T-92 *(D111)* · **Blocks:** T-95 ·
+**Decided by:** D113 · **Gates:** A10 (third of five rows) · **Timebox:**
+one day
+**Status:** **closed** (D113) — the exit ran green and every gate with it. No
+bariatric verdict, span, eval row or recording moved; the verifier recording
+gained three claims on each tier and every figure `eval/report.md` owns was
+re-derived, with the copies in `README.md` and `CLAUDE.md` re-read from it.
+**Exit:**
+
+```
+./venv/bin/python scripts/select_patients.py --verify \
+ && ./venv/bin/python -m pytest tests/test_rheumatology_corpus.py tests/test_manifests.py tests/test_infliximab_tree.py -q --color=no \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --rescore \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: three rheumatology charts are in the pinned population — two
+generated by Synthea in Palmetto GBA's territory under a recorded seed, one a
+declared clone of the first carrying one declared synthetic prescription —
+and `--verify` recomputes each of them from the committed bytes, the clone
+included; the three new eval rows are `PASS` against the baseline, the
+criterion `MET` row citing the condition and the prescription, the denial
+citing the excluded prescription, the abstention naming what to collect; the
+verifier recording holds all three new claims on both tiers and rescores
+coherent; and every figure in `eval/report.md` re-derives from the artifacts
+that own it.
+
+**What it delivers.** The second practice's charts: `42a430ab` (active
+rheumatoid arthritis, active methotrexate) and `455d3f7d` (active rheumatoid
+arthritis, no methotrexate on the chart at all), both Synthea's own under
+seed 1003 in Alabama; a declared derivative of the first carrying one
+etanercept order, because the module prescribes no biologic and no JAK
+inhibitor at any population size (D113); eval rows `RA1`, `RA2` and `RA3`;
+and the tooling that generates, declares and re-derives all three.
+
+**What it does not change.** No predicate, no step, no contract, no tree and
+no bariatric verdict, span, row or recording. The rheumatology determinations
+were dry-run against the engine T-92 committed and produced the labeled
+verdicts unchanged, which is the row's actual finding: a second practice's
+*corpus* needed corpus work and no engine work.
+
+**What it costs that the plan did not say.** One verifier measurement round
+on both tiers. An eval row with a cited verdict is a claim
+`RecordedVerifierRunner` must hold, so three new `MET` verdicts are three new
+claims and 30 becomes 33 per tier. v1.2's *model calls: none* was written
+about extraction recordings and is corrected on the board and in §11 rather
+than worked around; A10's *zero model calls in any gate* is untouched
+*(D113)*.
+
+**Mutation round.** Ten mutations, nine caught by the check that should hold
+them. The tenth — dropping the `status == "active"` filter on medications —
+survives this task's own file and is caught by T-92's, because no committed
+chart carries a completed order for a drug in either value set. Recorded in
+D113 rather than papered over with a fourth bundle.
+
+**What it mints.** Nothing. v1.2's two remaining statements have no check at
+this close — they await T-94 and T-95 *(D109)*.
+
+---
 
 ### `[x] T-92` Rheumatoid arthritis: the source and the tree
 

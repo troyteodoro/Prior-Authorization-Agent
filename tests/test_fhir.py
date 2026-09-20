@@ -39,12 +39,16 @@ def store() -> LocalPatientStore:
 
 
 # --------------------------------------------------------------------------
-# BMI observations, from all six bundles
+# BMI observations, from every committed bundle
 # --------------------------------------------------------------------------
 
 
 def test_every_patient_yields_bmi_observations_with_dates(store, manifest_records):
-    assert len(manifest_records) == 8  # six generated + E12 (D73) + the T-88 clone (D102)
+    # Six generated + E12 (D73) + the T-88 clone (D102) + T-93's two
+    # rheumatology charts and the clone of one (D113). Synthea records a BMI
+    # for every patient it generates, so this holds across both cohorts even
+    # though only one of them was selected on the value.
+    assert len(manifest_records) == 11
     for record in manifest_records:
         observations = store.get_observations(record["patient_id"])
         bmis = [o for o in observations if o.code == LOINC_BMI]

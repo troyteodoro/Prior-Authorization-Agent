@@ -2,8 +2,9 @@
   "task": "T-17",
   "model": "gemini-3.5-flash-lite",
   "tier": "ai_studio",
+  "claims_enumerated_from": "results.json",
   "prompt_version": "verifier-v4",
-  "measured_at": "2026-09-20T05:57:59.314605+00:00",
+  "measured_at": "2026-09-20T20:23:29.955712+00:00",
   "claims": [
     {
       "digest": "5f1f38ba429de837d96e0089fff5ea37a074c79b755013bb62de268b916e408e",
@@ -29,17 +30,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote correctly documents a BMI value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote is an Observation resource documenting a BMI of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote correctly documents a BMI value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote is an Observation resource documenting a BMI of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 936,
-        "output_tokens": 49,
-        "wall_time_ms": 793.9610410248861
+        "output_tokens": 51,
+        "wall_time_ms": 900.6134159862995
       }
     },
     {
@@ -65,17 +66,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote shows an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of having at least one co-morbidity.",
+      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote shows an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of having at least one co-morbidity."
+        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 977,
-        "output_tokens": 52,
-        "wall_time_ms": 750.4492501029745
+        "output_tokens": 44,
+        "wall_time_ms": 823.7055840436369
       }
     },
     {
@@ -103,17 +104,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document multiple visits for a physician-supervised weight management program meeting the minimum event requirement.",
+      "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document multiple visits for a physician-supervised weight management program meeting the minimum event requirement."
+        "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 856,
-        "output_tokens": 37,
-        "wall_time_ms": 682.6058749575168
+        "output_tokens": 34,
+        "wall_time_ms": 931.3897920073941
       }
     },
     {
@@ -136,17 +137,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provides a recent visit date of 06/09/2026, which is within the 12-month recency window and supports the criterion.",
+      "reason": "The provided quote directly supports the MET verdict by documenting a recent visit within the 12-month window that satisfies the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quote provides a recent visit date of 06/09/2026, which is within the 12-month recency window and supports the criterion."
+        "reason": "The provided quote directly supports the MET verdict by documenting a recent visit within the 12-month window that satisfies the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 505,
-        "output_tokens": 53,
-        "wall_time_ms": 847.8396669961512
+        "output_tokens": 42,
+        "wall_time_ms": 586.1625409452245
       }
     },
     {
@@ -172,17 +173,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes document four consecutive monthly program visits demonstrating active participation and adherence.",
+      "reason": "The quotes document four monthly program visits that are consistent with satisfaction of the minimum consecutive months criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes document four consecutive monthly program visits demonstrating active participation and adherence."
+        "reason": "The quotes document four monthly program visits that are consistent with satisfaction of the minimum consecutive months criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 718,
-        "output_tokens": 30,
-        "wall_time_ms": 708.0505839549005
+        "output_tokens": 35,
+        "wall_time_ms": 586.0712089342996
       }
     },
     {
@@ -208,17 +209,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently provide BMI values matching the required criteria for every month of the run.",
+      "reason": "The provided quotes consistently document the required BMI values matching the claimed verdict of satisfaction.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently provide BMI values matching the required criteria for every month of the run."
+        "reason": "The provided quotes consistently document the required BMI values matching the claimed verdict of satisfaction."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 483,
-        "output_tokens": 33,
-        "wall_time_ms": 844.9266669340432
+        "output_tokens": 32,
+        "wall_time_ms": 762.2009579790756
       }
     },
     {
@@ -254,17 +255,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period in accordance with the criterion requirements.",
+      "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period in accordance with the criterion requirements."
+        "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 641,
-        "output_tokens": 38,
-        "wall_time_ms": 905.7682079728693
+        "output_tokens": 32,
+        "wall_time_ms": 706.9755831034854
       }
     },
     {
@@ -291,17 +292,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents a BMI observation of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote shows a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents a BMI observation of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote shows a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 957,
         "output_tokens": 48,
-        "wall_time_ms": 771.9012500019744
+        "wall_time_ms": 781.5557500580326
       }
     },
     {
@@ -328,17 +329,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document multiple physician-supervised program visits satisfying the minimum event requirement.",
+      "reason": "The quotes consistently document multiple physician-supervised weight management program visits meeting the minimum event requirement.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document multiple physician-supervised program visits satisfying the minimum event requirement."
+        "reason": "The quotes consistently document multiple physician-supervised weight management program visits meeting the minimum event requirement."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 782,
-        "output_tokens": 32,
-        "wall_time_ms": 814.1920000780374
+        "output_tokens": 34,
+        "wall_time_ms": 838.9272500062361
       }
     },
     {
@@ -363,17 +364,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes are relevant to the supervised program visits and the NOT_MET verdict must be accepted as the shortfall calculation cannot be re-adjudicated by the verifier.",
+      "reason": "The quotes are relevant program visit records and do not directly show the four-month minimum duration was satisfied without underlying count arithmetic.",
       "raw": {
         "accept": true,
-        "reason": "The quotes are relevant to the supervised program visits and the NOT_MET verdict must be accepted as the shortfall calculation cannot be re-adjudicated by the verifier."
+        "reason": "The quotes are relevant program visit records and do not directly show the four-month minimum duration was satisfied without underlying count arithmetic."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 647,
-        "output_tokens": 50,
-        "wall_time_ms": 759.9850420374423
+        "output_tokens": 41,
+        "wall_time_ms": 856.3750830944628
       }
     },
     {
@@ -400,17 +401,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote correctly documents a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote documents a Body mass index (BMI) observation with a value of 42.5 kg/m2, which satisfies the coverage threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote correctly documents a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote documents a Body mass index (BMI) observation with a value of 42.5 kg/m2, which satisfies the coverage threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 954,
-        "output_tokens": 48,
-        "wall_time_ms": 802.1474159322679
+        "output_tokens": 56,
+        "wall_time_ms": 765.5599169665948
       }
     },
     {
@@ -436,17 +437,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes directly document multiple physician-supervised weight management program visits which satisfy the minimum required events.",
+      "reason": "The provided quotes consistently document physician-supervised weight management program visits that meet the minimum event threshold of one.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes directly document multiple physician-supervised weight management program visits which satisfy the minimum required events."
+        "reason": "The provided quotes consistently document physician-supervised weight management program visits that meet the minimum event threshold of one."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 718,
-        "output_tokens": 36,
-        "wall_time_ms": 919.8110830038786
+        "output_tokens": 37,
+        "wall_time_ms": 870.6656669965014
       }
     },
     {
@@ -469,17 +470,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provided is relevant to the record and does not directly show the recency window requirement as met without access to the full date arithmetic.",
+      "reason": "The quote provided as evidence for the NOT_MET verdict does not directly show the recency window requirement as met, and as a blind verifier, we do not perform date arithmetic to overturn a NOT_MET claim.",
       "raw": {
         "accept": true,
-        "reason": "The quote provided is relevant to the record and does not directly show the recency window requirement as met without access to the full date arithmetic."
+        "reason": "The quote provided as evidence for the NOT_MET verdict does not directly show the recency window requirement as met, and as a blind verifier, we do not perform date arithmetic to overturn a NOT_MET claim."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 508,
-        "output_tokens": 44,
-        "wall_time_ms": 828.3052078913897
+        "output_tokens": 60,
+        "wall_time_ms": 923.057832987979
       }
     },
     {
@@ -505,17 +506,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document monthly supervised program visits spanning four consecutive months from March to June 2025, directly supporting the MET verdict for the duration criterion.",
+      "reason": "The provided quotes consistently document monthly supervised program visits across four consecutive months (March through June 2025), supporting the MET verdict for the minimum consecutive months criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document monthly supervised program visits spanning four consecutive months from March to June 2025, directly supporting the MET verdict for the duration criterion."
+        "reason": "The provided quotes consistently document monthly supervised program visits across four consecutive months (March through June 2025), supporting the MET verdict for the minimum consecutive months criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 722,
-        "output_tokens": 48,
-        "wall_time_ms": 778.2456249697134
+        "output_tokens": 50,
+        "wall_time_ms": 980.8925420511514
       }
     },
     {
@@ -541,17 +542,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document the patient's BMI values, supporting the claim that the criterion is met.",
+      "reason": "The provided quotes consistently document the BMI values required for the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document the patient's BMI values, supporting the claim that the criterion is met."
+        "reason": "The provided quotes consistently document the BMI values required for the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 483,
-        "output_tokens": 37,
-        "wall_time_ms": 817.6515001105145
+        "output_tokens": 29,
+        "wall_time_ms": 922.2847500350326
       }
     },
     {
@@ -587,17 +588,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes explicitly document both diet and activity across multiple instances, consistent with the claimed satisfaction of the criterion.",
+      "reason": "The provided quotes consistently document both diet and activity across the evaluation period supporting the MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes explicitly document both diet and activity across multiple instances, consistent with the claimed satisfaction of the criterion."
+        "reason": "The provided quotes consistently document both diet and activity across the evaluation period supporting the MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 631,
-        "output_tokens": 38,
-        "wall_time_ms": 877.1437500836328
+        "output_tokens": 34,
+        "wall_time_ms": 739.4354169955477
       }
     },
     {
@@ -624,17 +625,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is an official observation showing a BMI value of 39.23 kg/m2, which successfully meets or exceeds the required threshold of 35.0.",
+      "reason": "The provided quote correctly documents a body mass index (BMI) observation of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is an official observation showing a BMI value of 39.23 kg/m2, which successfully meets or exceeds the required threshold of 35.0."
+        "reason": "The provided quote correctly documents a body mass index (BMI) observation of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 958,
         "output_tokens": 54,
-        "wall_time_ms": 894.9664159445092
+        "wall_time_ms": 825.4482499323785
       }
     },
     {
@@ -660,17 +661,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold.",
+      "reason": "The provided quotes consistently document multiple physician-supervised weight management program visits with dietary reviews and exercise logs, satisfying the requirement for at least one documented event.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold."
+        "reason": "The provided quotes consistently document multiple physician-supervised weight management program visits with dietary reviews and exercise logs, satisfying the requirement for at least one documented event."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 727,
-        "output_tokens": 34,
-        "wall_time_ms": 715.2249159989879
+        "output_tokens": 46,
+        "wall_time_ms": 829.9910830100998
       }
     },
     {
@@ -693,17 +694,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote directly supports the MET verdict by documenting a recent program follow-up within the required recency window and showing patient adherence to the lifestyle intervention.",
+      "reason": "The quote provided serves as valid evidence for the program follow-up within the specified time frame and is consistent with the satisfaction of the recency criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quote directly supports the MET verdict by documenting a recent program follow-up within the required recency window and showing patient adherence to the lifestyle intervention."
+        "reason": "The quote provided serves as valid evidence for the program follow-up within the specified time frame and is consistent with the satisfaction of the recency criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 513,
         "output_tokens": 46,
-        "wall_time_ms": 818.8534170622006
+        "wall_time_ms": 898.5917090903968
       }
     },
     {
@@ -729,17 +730,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes document sequential monthly program visits spanning from March to June 2026, which are consistent with the satisfaction of the four-month duration criterion.",
+      "reason": "The provided quotes document continuous program visits across four consecutive months from March to June 2026, satisfying the criterion for participation duration.",
       "raw": {
         "accept": true,
-        "reason": "The quotes document sequential monthly program visits spanning from March to June 2026, which are consistent with the satisfaction of the four-month duration criterion."
+        "reason": "The provided quotes document continuous program visits across four consecutive months from March to June 2026, satisfying the criterion for participation duration."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 731,
-        "output_tokens": 48,
-        "wall_time_ms": 818.2005000999197
+        "output_tokens": 44,
+        "wall_time_ms": 799.3117909645662
       }
     },
     {
@@ -763,17 +764,17 @@
         ]
       },
       "accept": true,
-      "reason": "The claim is NOT_MET, and the provided quotes are relevant documentation showing missing BMI values during the visits, which is consistent with the verdict without directly showing the criterion as satisfied.",
+      "reason": "The claim is NOT_MET, and the provided quotes are directly relevant to the criterion evaluating BMI documentation.",
       "raw": {
         "accept": true,
-        "reason": "The claim is NOT_MET, and the provided quotes are relevant documentation showing missing BMI values during the visits, which is consistent with the verdict without directly showing the criterion as satisfied."
+        "reason": "The claim is NOT_MET, and the provided quotes are directly relevant to the criterion evaluating BMI documentation."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 593,
-        "output_tokens": 52,
-        "wall_time_ms": 740.8069589873776
+        "output_tokens": 37,
+        "wall_time_ms": 781.9552910514176
       }
     },
     {
@@ -809,17 +810,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document both dietary reviews and physical activity across multiple months, supporting the MET verdict for the criterion.",
+      "reason": "The provided quotes consistently document both dietary plans and physical activity across multiple instances in support of the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document both dietary reviews and physical activity across multiple months, supporting the MET verdict for the criterion."
+        "reason": "The provided quotes consistently document both dietary plans and physical activity across multiple instances in support of the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 636,
-        "output_tokens": 38,
-        "wall_time_ms": 712.89695892483
+        "output_tokens": 36,
+        "wall_time_ms": 593.5307499021292
       }
     },
     {
@@ -846,17 +847,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote correctly pertains to the BMI criterion and shows a value of 34.26, which is below the threshold of 35.0, consistent with the NOT_MET verdict.",
+      "reason": "The quote correctly pertains to the BMI criterion, and since the claimed verdict is NOT_MET for a threshold of 35.0 with a measured value of 34.26, the evidence directly supports the stated shortfall.",
       "raw": {
         "accept": true,
-        "reason": "The quote correctly pertains to the BMI criterion and shows a value of 34.26, which is below the threshold of 35.0, consistent with the NOT_MET verdict."
+        "reason": "The quote correctly pertains to the BMI criterion, and since the claimed verdict is NOT_MET for a threshold of 35.0 with a measured value of 34.26, the evidence directly supports the stated shortfall."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 957,
-        "output_tokens": 56,
-        "wall_time_ms": 697.2934999503195
+        "output_tokens": 63,
+        "wall_time_ms": 887.1997919632122
       }
     },
     {
@@ -883,17 +884,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes document active, confirmed diagnoses of Type 2 diabetes mellitus and essential hypertension, which are recognized obesity-related co-morbidities supporting the MET verdict.",
+      "reason": "The provided quotes document active and confirmed diagnoses of Type 2 Diabetes mellitus and Essential hypertension, which are established obesity-related co-morbidities satisfying the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes document active, confirmed diagnoses of Type 2 diabetes mellitus and essential hypertension, which are recognized obesity-related co-morbidities supporting the MET verdict."
+        "reason": "The provided quotes document active and confirmed diagnoses of Type 2 Diabetes mellitus and Essential hypertension, which are established obesity-related co-morbidities satisfying the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 1533,
-        "output_tokens": 50,
-        "wall_time_ms": 742.2522080596536
+        "output_tokens": 49,
+        "wall_time_ms": 756.5754160750657
       }
     },
     {
@@ -919,17 +920,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity.",
+      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity satisfying the minimum count of one.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity."
+        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity satisfying the minimum count of one."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 1000,
-        "output_tokens": 49,
-        "wall_time_ms": 676.4824589481577
+        "output_tokens": 45,
+        "wall_time_ms": 620.3725830418989
       }
     },
     {
@@ -956,17 +957,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote directly documents a BMI value of 35.0 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote directly documents a BMI value of 35.0, which satisfies the coverage threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote directly documents a BMI value of 35.0 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote directly documents a BMI value of 35.0, which satisfies the coverage threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 860,
-        "output_tokens": 48,
-        "wall_time_ms": 730.6100829737261
+        "output_tokens": 45,
+        "wall_time_ms": 792.326790979132
       }
     },
     {
@@ -992,17 +993,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is an active and confirmed condition of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity.",
+      "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is an active and confirmed condition of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity."
+        "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 883,
-        "output_tokens": 49,
-        "wall_time_ms": 735.9697089996189
+        "output_tokens": 42,
+        "wall_time_ms": 541.5213330416009
       }
     },
     {
@@ -1029,17 +1030,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quoted BMI observation of 35.89 kg/m2 directly supports the criterion requiring a BMI at or above the threshold of 35.0.",
+      "reason": "The provided quote contains a BMI observation of 35.89 kg/m2, which meets the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The quoted BMI observation of 35.89 kg/m2 directly supports the criterion requiring a BMI at or above the threshold of 35.0."
+        "reason": "The provided quote contains a BMI observation of 35.89 kg/m2, which meets the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 862,
-        "output_tokens": 50,
-        "wall_time_ms": 902.3869580123574
+        "output_tokens": 48,
+        "wall_time_ms": 785.0532910088077
       }
     },
     {
@@ -1062,17 +1063,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote directly supports the criterion by providing a recent visit with a BMI measurement satisfying the condition.",
+      "reason": "The provided quote is relevant to the recency and program visit criteria, and the quoted BMI of 35.7 satisfies the required threshold.",
       "raw": {
         "accept": true,
-        "reason": "The quote directly supports the criterion by providing a recent visit with a BMI measurement satisfying the condition."
+        "reason": "The provided quote is relevant to the recency and program visit criteria, and the quoted BMI of 35.7 satisfies the required threshold."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 504,
-        "output_tokens": 35,
-        "wall_time_ms": 840.2026660041884
+        "output_tokens": 45,
+        "wall_time_ms": 734.6794590121135
       }
     },
     {
@@ -1106,27 +1107,135 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document both diet and activity across multiple entries matching the requirements of the criterion.",
+      "reason": "The provided quotes consistently document both diet and activity across multiple entries as required by the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document both diet and activity across multiple entries matching the requirements of the criterion."
+        "reason": "The provided quotes consistently document both diet and activity across multiple entries as required by the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 602,
         "output_tokens": 34,
-        "wall_time_ms": 842.432584031485
+        "wall_time_ms": 775.4149170359597
+      }
+    },
+    {
+      "digest": "ff0f5636bdb9abe4cce070d496cb29d95a81e20f06077cc7cd11592e3e6bf564",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A rheumatoid arthritis diagnosis this LCD supports",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "rheumatoid_arthritis"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"69896004\",\n          \"display\": \"Rheumatoid arthritis (disorder)\"\n        } ],\n        \"text\": \"Rheumatoid arthritis (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:42a430ab-b7ca-87a5-279f-ee115f49fd6e\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"\n      },\n      \"onsetDateTime\": \"2024-08-08T16:20:17-07:00\",\n      \"recordedDate\": \"2024-08-08T16:20:17-07:00\"\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is a confirmed diagnosis of rheumatoid arthritis which directly supports the MET verdict for this criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is a confirmed diagnosis of rheumatoid arthritis which directly supports the MET verdict for this criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 994,
+        "output_tokens": 36,
+        "wall_time_ms": 700.3910839557648
+      }
+    },
+    {
+      "digest": "98353f6b7bf465f1d91d6a274a5a39480f381da262673d3b40e9fa1c5715864a",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Used in combination with methotrexate",
+          "constants": {
+            "min_medication_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "methotrexate"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"MedicationRequest\",\n      \"id\": \"42a430ab-b7ca-87a5-317f-802f59311ea6\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest\" ]\n      },\n      \"status\": \"active\",\n      \"intent\": \"order\",\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\",\n          \"code\": \"community\",\n          \"display\": \"Community\"\n        } ],\n        \"text\": \"Community\"\n      } ],\n      \"medicationCodeableConcept\": {\n        \"coding\": [ {\n          \"system\": \"http://www.nlm.nih.gov/research/umls/rxnorm\",\n          \"code\": \"105585\",\n          \"display\": \"Methotrexate 2.5 MG Oral Tablet\"\n        } ],\n        \"text\": \"Methotrexate 2.5 MG Oral Tablet\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:42a430ab-b7ca-87a5-279f-ee115f49fd6e\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"\n      },\n      \"authoredOn\": \"2024-08-08T16:20:17-07:00\",\n      \"requester\": {\n        \"reference\": \"Practitioner?identifier=http://hl7.org/fhir/sid/us-npi|9999996595\",\n        \"display\": \"Dr. January966 Roberts511\"\n      },\n      \"reasonReference\": [ {\n        \"reference\": \"urn:uuid:42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\",\n        \"display\": \"Rheumatoid arthritis (disorder)\"\n      } ]\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote correctly documents an active prescription for Methotrexate 2.5 MG Oral Tablet, supporting the MET verdict for combination use with methotrexate.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote correctly documents an active prescription for Methotrexate 2.5 MG Oral Tablet, supporting the MET verdict for combination use with methotrexate."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1019,
+        "output_tokens": 45,
+        "wall_time_ms": 770.7302910275757
+      }
+    },
+    {
+      "digest": "4d2fbddb16f0f0696b6a673633162dfed2037f87135aea8a7c696431d5697d6b",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A rheumatoid arthritis diagnosis this LCD supports",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "rheumatoid_arthritis"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"455d3f7d-3b99-dad6-081c-b1ab77048b2e\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"69896004\",\n          \"display\": \"Rheumatoid arthritis (disorder)\"\n        } ],\n        \"text\": \"Rheumatoid arthritis (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:455d3f7d-3b99-dad6-c0b2-d5405144e793\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:455d3f7d-3b99-dad6-6095-a621c0892416\"\n      },\n      \"onsetDateTime\": \"2011-03-12T11:50:12-08:00\",\n      \"recordedDate\": \"2011-03-12T11:50:12-08:00\"\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is a confirmed active condition record for Rheumatoid arthritis, which directly matches the required diagnosis criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is a confirmed active condition record for Rheumatoid arthritis, which directly matches the required diagnosis criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 999,
+        "output_tokens": 38,
+        "wall_time_ms": 690.4490840388462
       }
     }
   ],
   "aggregate": {
-    "claims": 30,
-    "accepted": 30,
+    "claims": 33,
+    "accepted": 33,
     "rejected": 0,
-    "model_calls": 30,
-    "input_tokens": 22877,
-    "output_tokens": 1316,
-    "wall_time_ms": 23771.6
+    "model_calls": 33,
+    "input_tokens": 25889,
+    "output_tokens": 1412,
+    "wall_time_ms": 25759.4
   }
 }

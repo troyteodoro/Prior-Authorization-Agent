@@ -376,6 +376,21 @@ passing**, because the tests are written in terms of the thing that broke.
   **`native_schema_enabled` lives in `pa_agent/agent/`, never in `tiers.py`** —
   nothing under `pa_agent/` outside that subpackage may import `google.adk`,
   even lazily, and `tests/test_adk_agent.py` scans for it.
+- **An eval row with a cited verdict is a verifier measurement** *(T-93,
+  D113)*. A claim digest is the criterion, the verdict and the sliced quote,
+  and `RecordedVerifierRunner` raises on one it has not got — so a new row
+  whose criteria answer `MET` or `NOT_MET` cannot be graded until
+  `run_verifier_measurement.py` has been run on **both** tiers, and the gate
+  reports it as a criterion in `ERROR` rather than as a missing recording.
+  Adding rows is therefore never free, whatever a version's plan says it
+  spends; what stays free is every gate, which replays.
+- **A bundle is held to the rule its cohort was selected by** *(T-93, D113)*.
+  D35's BMI band is the bariatric six's and says nothing about a rheumatology
+  chart, which was never selected on a BMI — so each record declares its
+  cohort and `--verify` scopes the band to it. Applying one cohort's rule to
+  the whole population fails on a chart that is fine; deleting the rule is
+  worse, and the shape that avoids both is to say which rule each chart
+  answers to.
 - **Never make a gate call a model** *(D45)*. Measurement scripts spend the
   calls; `pytest` re-reads the recording, re-hashes every note, re-validates
   every span and checks the recorded model is the pin.
@@ -513,11 +528,11 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**72 of 72 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~45s; the suite collects 990 tests across 36 files, 27 of
+**73 of 73 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~45s; the suite collects 1006 tests across 37 files, 27 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix, which skips the pairs a given tree does not declare, D101's pattern).
-IDs run to T-92, but
+IDs run to T-93, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -526,9 +541,10 @@ hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
-The eval set is full (T-21, D75): `eval/cases.json` holds seventeen labeled rows
-— spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6, and
-`J1`, the second-jurisdiction row *(D102)* — all `PASS`, criterion-scoped,
+The eval set is full (T-21, D75): `eval/cases.json` holds twenty labeled rows
+— spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6, `J1`,
+the second-jurisdiction row *(D102)*, and `RA1`–`RA3`, the second practice's
+*(D113)* — all `PASS`, criterion-scoped,
 with every cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
 in-window evidence *(D41)*, so E2 runs 43644 at 2024-12-01 while E7 reads the
@@ -538,17 +554,19 @@ eval harness classifies it as its fourth status — never `FAIL`, never an
 abstention; the reported abstention rate counts an `ERROR` in neither its
 numerator nor its denominator (REQ-28). US-6 closed with T-17 (D78): every
 cited verdict passes through Article V's blind verifier, every gate replays
-the committed 30-claim recording for zero calls, and the measurement
+the committed 33-claim recording for zero calls, and the measurement
 history — two false-rejection rounds forcing the verdict-asymmetry rule, then
-27/27 twice, then 30/30 when T-88's three new claims joined *(D102)* — is
+27/27 twice, then 30/30 when T-88's three new claims joined *(D102)*, then
+33/33 on both tiers when T-93's three did *(D113)* — is
 D78's substance. US-7's measurements are in `eval/report.md`
 (T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
-against a 0.609 base rate** (the always-`MET` baseline scores exactly the base
+against a 0.567 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
-95 checked**, **A5 abstention 0.235** with the per-`gap_reason` account and
-D82's tolerance sweep, and **A6 45 model calls / 36,956 input / 7,590 output /
-47.7s across ten determinations** — replayed instrumentation, not the replay's
-own clock. Read them from `eval/report.md`, which is generated; these are a
+98 checked**, **A5 abstention 0.300** with the per-`gap_reason` account, its
+per-tree split of the declared-unclaimed abstentions *(D113)* and D82's
+tolerance sweep, and **A6 48 model calls / 39,968 input / 7,688 output /
+49.7s across thirteen determinations** — replayed instrumentation, not the
+replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
 Open: **nothing on the board. v1 and v1.1 are complete and `v1.2` is under
@@ -574,9 +592,24 @@ its kind and its scope; one that does not fire produces nothing). No
 bariatric verdict, span, eval row or recording moved. It also **rewrote row
 3's exit before it opened**: the board asked for a `NOT_MET` on trial
 duration and an abstention on a missing screen, and no Medicare rheumatology
-LCD states either — D97's Palmetto correction, one row later. **`T-93` is
-next**, row 3: patients in Palmetto's territory with rheumatoid arthritis,
-and their eval rows.
+LCD states either — D97's Palmetto correction, one row later.
+
+**`T-93` closed row 3** (D113): that practice's patients and their rows.
+Synthea's own `rheumatoid_arthritis` module supplies the diagnosis (SNOMED
+69896004) and the drug (RxNorm 105585) and **no biologic or JAK inhibitor at
+all**, so a 1000-patient Alabama run under seed 1003 gave two charts — one
+with an active methotrexate order, one with none — and the combination
+limitation's chart is a **declared clone of the first carrying one declared
+prescription** (D73's shape). Rows `RA1` (both claimed criteria `MET`, the
+three unclaimed abstaining), `RA2` (`NOT_COVERED`, citing the prescription)
+and `RA3` ((b) abstains and never denies). **The engine needed nothing** —
+no predicate, step, contract or tree moved, and only `select_patients.py`,
+which is tooling, changed. What it did cost is a **verifier measurement**:
+an eval row with a cited verdict is a claim `RecordedVerifierRunner` must
+hold, so 30 claims became 33 on both tiers and v1.2's *zero model calls*
+column is corrected rather than worked around — A10's claim is zero model
+calls **in any gate**, and every gate still replays. **`T-94` is next**, row
+4: diagnostic ultrasound — source, tree, patients and rows.
 
 Row 8 of v1.1
 closed with D107: P6's path for REQ-44/47 is written down and deliberately not
@@ -801,17 +834,21 @@ data/policies/
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it
-  bundles/           eight Synthea v4.0.0 bundles — six from the base seed,
+  bundles/           eleven Synthea v4.0.0 bundles — six from the base seed,
                      one carrying the declared synthetic BMI-35.0 observation
                      (T-41, D73; E12's patient is note-free by declaration),
-                     and one declared clone of E4's chart re-addressed into
-                     Alabama (T-88, D102), recomputed by --verify
+                     one declared clone of E4's chart re-addressed into
+                     Alabama (T-88, D102), and the rheumatology cohort —
+                     two charts from seed 1003's Alabama run plus a declared
+                     clone of one carrying a declared etanercept order
+                     (T-93, D113). Every clone is recomputed by --verify
   notes/             fourteen chart notes, two per note-bearing chart as
                      <patient_id>/chart_note_1.txt and chart_note_2.txt (T-81,
                      D104), the clone's byte-identical to its source's per
                      document; plus notes/manifest.json — a second, separate
                      manifest, one record per document
-  work/              gitignored: the Synthea jar and the full 200-patient run
+  work/              gitignored: the Synthea jar and whichever full run a
+                     --generate mode last wrote (three are declared)
 eval/
   run_eval.py        the baseline diff (T-10). Drift in **either** direction
                      fails; a case that starts passing is adopted with
@@ -820,7 +857,8 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 17 labeled rows (§6's 15 + NP1 + J1; D75, D102, D104)
+  cases.json         the eval set — 20 labeled rows (§6's 15 + NP1 + J1 +
+                     RA1-RA3; D75, D102, D104, D113)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it;
@@ -832,15 +870,16 @@ eval/
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91),
                      measured fresh by T-81 over all seven charts (D104)
-  verifier/          results.json — T-17's recording, 30 claims since T-88,
-                     re-measured whole by T-89 and T-81 (D78, D102, D103, D104)
+  verifier/          results.json — T-17's recording, 33 claims since T-93,
+                     re-measured whole by T-89, T-81 and T-93, and on both
+                     tiers (D78, D102, D103, D104, D113)
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient
 scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               36 files
+tests/               37 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

@@ -1,0 +1,14 @@
+{
+  "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
+  "bundle": "Shona685_Zieme486_915602a8-a36d-59bf-b667-47496ab57965.json",
+  "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+  "as_of": "2026-09-01",
+  "note": false,
+  "wm_programs": [],
+  "traps": [],
+  "program_assertions": [],
+  "cases": [
+    "RA2"
+  ],
+  "rationale": "RA2 is RA1's chart plus one prescription. It is a declared clone (data/patients/manifest.json, synthetic_patients; T-93, D113) carrying one appended MedicationRequest for etanercept, a drug L35677's LIMITATIONS paragraph names and Synthea's rheumatoid arthritis module never orders at any population size - the module's whole pharmacy is naproxen, methotrexate and prednisone, so this fact cannot be generated and is declared instead. The labeled claim is the pairing: the same chart that meets both criteria the system can evaluate is NOT_COVERED once the excluded drug is on it, the denial cites the prescription that fired it, and no criterion is evaluated at all - an exclusion fires before the graph, which is why it has no verdict to abstain with (REQ-60, D41's shape, D111). Note-free for RA1's reason."
+}
