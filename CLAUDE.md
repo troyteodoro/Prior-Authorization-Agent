@@ -95,6 +95,20 @@ deterministic path is usable as a regression oracle *(D62)*.
     `tests/test_check_gates.py::test_ratification_programme_is_gone` is what
     makes putting the files **or the board records** back a red suite rather
     than a quiet commit.
+12. **Before a task closes, the documents must agree** *(D108)*. The exit
+    condition and `check_gates.py` are not the whole close: figures copied into
+    `README.md` and `CLAUDE.md` go stale silently, and A2, A5 and A6 sat wrong
+    in this file for two whole tasks with every gate green. **The generated
+    artifact owns the figure and prose is a copy** — `eval/report.md` owns every
+    measured number, `docs/tasks.md` owns the counts, the suite owns its own
+    size. Re-derive each copy from its owner, never the reverse.
+    `tests/test_docs_consistency.py` checks the ones that actually drifted, so
+    a stale copy is a red suite; the ones it does not cover are still yours to
+    check. **The exception, and it is not optional:** figures inside *closed
+    task records* in `docs/tasks.md` and anything in `docs/decisions.md` are
+    **never** updated — they record what was true at that close, the log is
+    append-only, and a reversal is a new entry.
+
 
 ## Commands
 
@@ -102,7 +116,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (873 tests, ~40s)
+./venv/bin/python -m pytest -q                  # the suite alone, ~40s
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -433,7 +447,8 @@ notes *(D67)*. Both are pinned by parsing.
 ## Current state
 
 **70 of 70 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~45s, 873 tests across 33 files). IDs run to T-90, but
+(`check_gates.py`, ~45s; the suite collects 882 tests across 34 files, 3 of
+which skip). IDs run to T-90, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -695,7 +710,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               33 files, 873 tests
+tests/               34 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

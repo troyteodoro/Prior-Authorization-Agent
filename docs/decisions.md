@@ -8361,3 +8361,86 @@ arithmetic nor set membership — a coverage document asking for a judgment
 rather than a threshold. The version that meets one opens this question again
 with its own entry, against the four preconditions above, and the burden is on
 that entry to show the capability is real rather than the check is passable.
+
+---
+
+## D108 — The README leads with where the project is going, and document drift becomes a gate rather than a habit
+
+**The owner's decision, 2026-09-20.** Two changes, asked for together and
+answered together because they are the same problem seen from both ends.
+
+**Context.** Closing v1.1 needed a documentation sweep, and the sweep found
+more than the round had caused. `CLAUDE.md` carried A2 at a 0.591 base rate,
+A5 at 0.250 and A6 at 38 calls when the generated report had said 0.609,
+0.235 and 45 since D104 — **wrong for two whole tasks, through two closes,
+with every gate green**. Spec §5 quoted the agentic delta as 84,925 tokens
+over six patients and §10's P3 a 0.591 base rate; the test count read 653 in
+one document and 833 in another against an actual 876; the board count read
+69; and the README's opening still said "the one tree currently loaded"
+nineteen tasks after T-87 loaded a second. None of it was caught, because
+none of it was checked: `eval/report.md` is generated and `--verify`'d, and
+every prose copy of its figures is a copy nothing compares.
+
+Separately, the README buried its status at line 607 of 730 and stated no
+plan at all. A reader deciding whether the project is alive had to reach the
+bottom, and a reader asking where it goes next had to open `docs/spec.md`
+§11.
+
+**Chosen.**
+
+1. **The README leads with a *Where the project stands* section**, before the
+   design discussion: what is complete, what is next, and the full version
+   roadmap through v2.0 as a table. The detailed status and measured figures
+   stay where they are, further down; the top block is the summary a reader
+   needs in the first screen.
+2. **That roadmap is a third copy of spec §11's, so it is pinned rather than
+   trusted.** `tests/test_docs_consistency.py` parses both and requires the
+   version ids, their order and the story each closes to agree. Adding a copy
+   of a table without a check is how the figures above went stale.
+3. **Working rule 12: before a task closes, the documents must agree**, with
+   the ownership rule stated so it is followable — the generated artifact
+   owns the figure and prose is a copy; `eval/report.md` owns every measured
+   number, `docs/tasks.md` owns the counts, the suite owns its own size. And
+   the exception that matters: **figures inside closed task records and inside
+   this log are never updated.** They record what was true at that close, the
+   log is append-only, and a reversal is a new entry.
+4. **The drift-prone copies become mechanical.** The same test pins the task
+   count against the board's closed records, the acceptance figures in
+   `CLAUDE.md` against `eval/report.md`, and the suite size against a real
+   collection. Copies that earn nothing are deleted instead: the test count
+   appeared five times and now appears twice, both checked.
+
+**How the suite counts itself without recursing.** The test runs
+`pytest --collect-only -q -p no:cacheprovider` in a subprocess — 0.6s, and
+collection does not execute test bodies, so it cannot re-enter the suite the
+way D69's guard is about. `check_gates.py` refuses to run under pytest
+because it *runs* the suite; collecting it is a different act.
+
+**Rejected — a process rule on its own.** That is what the repo already had:
+working rule 4 says a task closes on a command returning zero, and every
+close honoured it while the figures rotted. A rule nothing checks is the
+thing that failed here, so the rule ships with the check.
+
+**Rejected — removing the duplication entirely and pointing at the sources.**
+The README is the document a reviewer reads first and it has to stand on its
+own; a status section that says "see `docs/`" is not a status section. The
+answer to a copy is a check on the copy, not an indirection.
+
+**Rejected — a `scripts/check_docs.py` gate.** A new tracked script has to be
+classified in `check_gates.GATES` or `EXCLUDED`, and this belongs in the
+suite, which is already gate #1 and already where the repo's other
+document-level pins live.
+
+**Rejected — pinning every number in every document.** The test covers what
+actually drifted and what a reader would be misled by. A pin on every figure
+would be friction that gets suppressed rather than satisfied, which is worse
+than no pin because it looks like coverage.
+
+**Cost.** Adding a test now obliges a doc edit in the same commit — the suite
+size, the task count and the acceptance figures cannot move silently. That is
+the point, and it is the friction the sweep's findings argue for.
+
+**Reverses if:** the pins start being satisfied by editing the expected value
+rather than the document — a `# noqa`-shaped habit. The signal would be a
+commit that changes only the test's expectations, and the answer then is to
+delete the copy rather than loosen the check.

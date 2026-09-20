@@ -22,10 +22,12 @@ lives in a reviewed JSON file, the aggregator parses the policy's own
 `decision_expression` rather than hardcoding one, and the resolver maps
 procedure codes to policies by set membership. A new specialty, payer policy,
 or jurisdiction is therefore a new policy file and value set over the same
-engine — a change to data under review, not a change to Python. The one tree
-currently loaded is the control; *Where this system degrades* below is
-explicit that a second jurisdiction is a second tree, and that the design
-makes adding one a small change to build.
+engine — a change to data under review, not a change to Python. Two trees are
+loaded today over the same NCD — Noridian's and Palmetto's — and they differ
+in **shape**, not only in constants: Palmetto states no run length and adds a
+criterion the pipeline cannot evaluate, which the engine declares unclaimed
+and abstains on rather than approving past. *Where this system degrades*
+below is explicit about what that does and does not prove.
 
 **And it is modular enough to sit inside a practice's back office.** The
 application is ports and adapters end to end: two storage ports keep the
@@ -56,6 +58,46 @@ The last command prints a real determination — seven criterion verdicts, evide
 spans that slice back into the source note, a gap list, and per-run cost
 counters — for **zero model calls**, because the default extraction runner
 replays a committed recording.
+
+---
+
+## Where the project stands
+
+**v1 and v1.1 are both complete.** 70 of 70 tasks closed, 0 open, all ten
+zero-cost gates green, and acceptance gates A1–A9 holding. The suite collects
+882 tests (3 skip). v1 delivered the determination end to end; v1.1 closed
+spec §10's eight known limits — a second jurisdiction, a bounded re-ask for
+unanchorable quotes, a second note per chart, a citation-sufficiency check, a
+second measured tier, and the written-down path for the one limit that stays
+open on purpose.
+
+Measured figures live in `eval/report.md`, which is generated and gate-verified
+rather than written; *Status in detail* below carries them, and
+*Where this system degrades* carries the limits.
+
+### The road from here
+
+One version at a time; a version opens when the previous one closes. Each
+names one story and one acceptance gate, and mints its requirements when its
+first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
+
+| Version | Delivers | Story | State |
+|---|---|---|---|
+| v1 | bariatric determination end to end, two implementations graded against one oracle | US-1–US-9 | **complete** |
+| v1.1 | spec §10's eight known limits, one task each | — | **complete** |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **next** |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | planned |
+| v1.4 | sessions and intake, headless | US-12 | planned |
+| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
+| v2.0 | the reviewer's UI over the session port | US-15 | planned |
+
+**v1.2 asks the question this design is built to answer:** whether the engine
+is bariatric-shaped. Two trees from unrelated practices are compiled against
+the predicate vocabulary the engine already has, and where a criterion cannot
+be expressed the engine must say so — declared unclaimed and abstaining, never
+quietly omitted, because omitting a criterion approves where a payer would
+not. It spends zero model calls.
 
 ---
 
@@ -451,7 +493,7 @@ real key ever appears in a tracked file).
 
 ```bash
 ./venv/bin/python scripts/check_gates.py      # all ten zero-cost gates, ~35s
-./venv/bin/python -m pytest -q                # the suite alone (873 tests, ~25s)
+./venv/bin/python -m pytest -q                # the suite alone, ~25s
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q         # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
@@ -622,10 +664,11 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
 
 ---
 
-## Status, and the road after v1.1
+## Status in detail, and what it measured
 
-**70 of 70 tasks closed, 0 open; all ten gates green. v1 and v1.1 are both
-complete** — spec §10's eight known limits are all addressed.
+The summary and the roadmap are at the top of this file; this section is the
+measured substance behind them.
+
 Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
 procedures, cited structured criteria, the categorical exclusion, note-only
 criteria with two independent BMI readings, the gap list, the blind verifier,
@@ -723,7 +766,7 @@ eval/                cases.json, baseline.json, report.md (generated), and the
 spike/spike_001/     the founding extraction spike — still a gate and a
                      regression corpus; see "What the spike taught"
 scripts/             the gates, the measurement scripts, and the corpus tooling
-tests/               the suite (873 tests), including the AST-level pins
+tests/               the suite, including the AST-level pins
 docs/                constitution, spec, stories, tasks, decisions
 ```
 
