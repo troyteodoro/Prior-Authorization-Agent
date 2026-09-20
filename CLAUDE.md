@@ -102,7 +102,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (871 tests, ~40s)
+./venv/bin/python -m pytest -q                  # the suite alone (873 tests, ~40s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -433,7 +433,7 @@ notes *(D67)*. Both are pinned by parsing.
 ## Current state
 
 **70 of 70 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~45s, 871 tests across 33 files). IDs run to T-90, but
+(`check_gates.py`, ~45s, 873 tests across 33 files). IDs run to T-90, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -459,12 +459,13 @@ history — two false-rejection rounds forcing the verdict-asymmetry rule, then
 27/27 twice, then 30/30 when T-88's three new claims joined *(D102)* — is
 D78's substance. US-7's measurements are in `eval/report.md`
 (T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
-against a 0.591 base rate** (the always-`MET` baseline scores exactly the base
+against a 0.609 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
-95 checked**, **A5 abstention 0.250** with the per-`gap_reason` account and
-D82's tolerance sweep, and **A6 38 model calls / 31,118 input / 6,925 output /
-39.6s across ten determinations** — replayed instrumentation, not the replay's
-own clock.
+95 checked**, **A5 abstention 0.235** with the per-`gap_reason` account and
+D82's tolerance sweep, and **A6 45 model calls / 36,956 input / 7,590 output /
+47.7s across ten determinations** — replayed instrumentation, not the replay's
+own clock. Read them from `eval/report.md`, which is generated; these are a
+copy and the report is the source.
 
 Open: **nothing on the board. v1 and v1.1 are both complete** — §11's closing
 condition is met and A1–A9 hold — **and `v1.2` is next, opening when `T-91`
@@ -476,20 +477,26 @@ so it adds an extractor and leaves Python deciding. Claiming REQ-44 needs a
 predicate that cannot be compiled (the shape D97 rejected in Novitas's
 "diligent effort"), a stability mechanism satisfying **Article II's own test**,
 an oracle other than the deterministic path, and its own gate. None is met and
-nothing through v2.0 schedules one; the unclaimed set stays closed at two. T-90 (D106) took row 7: the whole corpus measured a second time
+nothing through v2.0 schedules one; the unclaimed set stays closed at two.
+
+T-90 (D106) took row 7: the whole corpus measured a second time
 on **Vertex** and committed beside the AI Studio recordings, which did not
 move. Fidelity is identical on both tiers, the verifier accepts the same 30
 claims with no verdict moving, and 0 of 169 / 0 of 165 / 0 of 76 model offsets
 were usable — D18's fourth reproduction. D71's clause is answered *partly*:
 the injected `set_model_response` round trip is an AI Studio artifact and
 vanishes natively (tool calls 26 → 12, unescaped spans 4 → 0) while the token
-overhead only halves, 4.12x → 2.14x against each tier's own direct runner. The §10 round was
+overhead only halves, 4.12x → 2.14x against each tier's own direct runner.
+Cost figures do not transfer between tiers and only within-tier comparisons
+are quoted.
+
+The §10 round was
 opened as "v2" and renamed v1.1 by D105, which also fixed the versions after
 it — v1.2 through v2.0, one story and one gate each — in spec §11, on the
 board's `Roadmap after v1.1`, and in stories F3–F6; a version's REQ ids are
-minted when it opens, so the count below is unchanged. v1 is complete —
-**A1–A9 all hold** — and spec §10's list of known limits, P1–P8, which
-**D97 sequenced into one task each**, is six rows closed of eight. T-85 (D98)
+minted when it opens, so the count below is unchanged. v1 and v1.1 are both
+complete — **A1–A9 all hold** — and spec §10's list of known limits, P1–P8,
+which **D97 sequenced into one task each**, is **all eight rows closed**. T-85 (D98)
 put the anchoring account in `eval/report.md`; T-86 (D99) made every
 `NOT_MET` carry a structured `shortfall` and added the `sufficiency` step —
 the ninth `STEPS` entry, between `criteria_c` and `verify` — which re-runs
@@ -521,7 +528,7 @@ agentic differential measured fresh at 7/7 and 49/49 with the planner
 gathering both notes for every patient, so the direct recall figure is
 measured and reads 1.000 on the first day it could have fallen. The label
 re-read D96 deferred to this task is D104's table. The Vertex measurement
-(T-90) is last.
+(T-90, D106) and P6's entry (D107) closed the round.
 Read the table rather than this paragraph *(D70, D72, D97)*.
 
 **The ratification programme is deleted** *(T-82, D92; finished by T-84, D94)*.
@@ -688,7 +695,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               33 files, 871 tests
+tests/               33 files, 873 tests
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

@@ -260,10 +260,11 @@ They stay in §5 rather than being deleted, because Amendment 1 genuinely grants
 these permissions and a spec that omitted them would describe a constitution this
 repo does not have. T-61 built the agentic path without claiming them and said so;
 this table is that statement made auditable. Note also that the agentic path
-produces identical answers for real money — 24 model calls and 84,925 input
-tokens over six patients the fixed planner spent nothing on *(D64, re-measured
-in D91)* — so a task claiming these would buy a passing check rather than a
-capability.
+produces identical answers for real money — 24 model calls and 90,743 input
+tokens over seven patients the fixed planner spent nothing on *(D64,
+re-measured in D91 and D104)* — so a task claiming these would buy a passing
+check rather than a capability. *D107* fixes the four preconditions that would
+claim them, none of which is met.
 
 ### Adjudication
 
@@ -716,8 +717,8 @@ quoted at all, and a re-ask that paraphrases twice is dropped twice.
 ### P3 — Eight patients, five documents, seventeen cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
-than a percentage point in every table. A precision of 1.000 over thirteen
-`MET` calls against a base rate of 0.591 is a real result and a small one; it
+than a percentage point in every table. A precision of 1.000 over fourteen
+`MET` calls against a base rate of 0.609 is a real result and a small one; it
 says the approach does not obviously fail, and nothing more. Since T-88 the
 set is sixteen rows over eight bundles, one of them a declared clone that
 shares its note's bytes with its source *(D102)*; the count moved by one row

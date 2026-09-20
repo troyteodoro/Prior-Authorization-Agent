@@ -450,8 +450,8 @@ real key ever appears in a tracked file).
 ### Gates and tests
 
 ```bash
-./venv/bin/python scripts/check_gates.py      # all ten zero-cost gates, ~25s
-./venv/bin/python -m pytest -q                # the suite alone (653 tests, ~18s)
+./venv/bin/python scripts/check_gates.py      # all ten zero-cost gates, ~35s
+./venv/bin/python -m pytest -q                # the suite alone (873 tests, ~25s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q         # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
@@ -503,7 +503,10 @@ abstention rate). `--cases` and `--baseline` point at alternate files;
 ### Measurements, and their free replays
 
 Four commands spend model calls. Each records what it measured, and each has a
-free path that re-derives every number from the committed recording:
+free path that re-derives every number from the committed recording. All four
+take `--tier {ai_studio,vertex}`, defaulting to the development tier; the
+output *and* the replay paths are routed per tier, so a Vertex run cannot
+overwrite the recordings the gates read:
 
 | Spends model calls | Free replay |
 |---|---|
@@ -592,21 +595,37 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   not by the verifier.
 - **P6 — The model's judgment is never on the hook.** Model adjudication is
   deliberately unclaimed; the agentic path decides what to *read*, never what
-  the answer is.
+  the answer is. What would change that is written down rather than left
+  vague: not a criterion that is merely hard to extract — the second
+  contractor's multidisciplinary-evaluation requirement looks like one and
+  decomposes into extraction plus set membership plus a date window — but a
+  criterion whose *predicate* cannot be compiled at all, of the kind a policy
+  asks for when it wants a "diligent effort" rather than a threshold. Three
+  things follow, and they are why it stays unclaimed: a model verdict is not
+  reproducible run to run, which is what this project's own second article
+  forbids; the deterministic path stops being the regression oracle for a
+  criterion it cannot compute; and the differential that grades the agentic
+  path could not cover it.
 - **P7 — Retrieval recall is one measured day.** Since T-81 every chart is
   two notes and the planner can skip one, so the direct figure is measured
   rather than constructed; on the first measurement it gathered every note.
   A free-tier tool loop is not reproducible at temperature 0, so that is a
   sample, re-measured and never re-run.
 - **P8 — Every free number is a replay.** The reproducible figures describe
-  one measured day, one pinned model, one API tier. Any configuration change
-  is a new measurement, never a re-run.
+  one measured day against one pinned model. That is still true, and the
+  *one tier* half no longer is: the whole corpus was measured a second time
+  on Vertex and both sets are committed, rendered as columns in
+  `eval/report.md`. Fidelity is identical across the two; **cost is not**, and
+  the direct runner spends markedly more input tokens on Vertex for an
+  identical prompt, so token figures are only quoted within a tier. Any
+  configuration change is still a new measurement, never a re-run.
 
 ---
 
-## Status and the road to v1
+## Status, and the road after v1.1
 
-**69 of 69 tasks closed, 0 open; all ten gates green.**
+**70 of 70 tasks closed, 0 open; all ten gates green. v1 and v1.1 are both
+complete** — spec §10's eight known limits are all addressed.
 Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
 procedures, cited structured criteria, the categorical exclusion, note-only
 criteria with two independent BMI readings, the gap list, the blind verifier,
@@ -691,7 +710,7 @@ recorded rather than engineered around.
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      retrieval, runners, extraction, verifier, reconcile,
-                     aggregate, determination, contracts, model_pin, cli
+                     aggregate, determination, contracts, model_pin, tiers, cli
   agent/             ADK path: extraction_agent, retrieval_agent, tools, bounds
   stores/            policy.py and patient.py — two ports, two planes;
                      __init__.py imports neither, on purpose
@@ -699,11 +718,12 @@ data/policies/       five source documents, the SNOMED value set, and two
                      criteria trees (ncd-100.1-jf-v1, ncd-100.1-jjm-v1)
 data/patients/       eight Synthea bundles + fourteen synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
-                     committed recordings that make replay free
+                     committed recordings that make replay free — one set per
+                     tier, the AI Studio one being what every gate replays
 spike/spike_001/     the founding extraction spike — still a gate and a
                      regression corpus; see "What the spike taught"
 scripts/             the gates, the measurement scripts, and the corpus tooling
-tests/               the suite (653 tests), including the AST-level pins
+tests/               the suite (873 tests), including the AST-level pins
 docs/                constitution, spec, stories, tasks, decisions
 ```
 
