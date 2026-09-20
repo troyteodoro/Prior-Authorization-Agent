@@ -466,9 +466,17 @@ D82's tolerance sweep, and **A6 38 model calls / 31,118 input / 6,925 output /
 39.6s across ten determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **nothing on the board. `Path to v1.1`'s row 8 — P6's entry, a decision
-and no code — is the last of the round, and v1.1 closes when it is logged**
-*(spec §11)*. T-90 (D106) took row 7: the whole corpus measured a second time
+Open: **nothing on the board. v1 and v1.1 are both complete** — §11's closing
+condition is met and A1–A9 hold — **and `v1.2` is next, opening when `T-91`
+does and minting its requirements in the same commit** *(D105 rule 2)*. Row 8
+closed with D107: P6's path for REQ-44/47 is written down and deliberately not
+taken. The candidate that looks like it claims model adjudication does not —
+Palmetto's `d` decomposes into extraction plus set membership plus a window,
+so it adds an extractor and leaves Python deciding. Claiming REQ-44 needs a
+predicate that cannot be compiled (the shape D97 rejected in Novitas's
+"diligent effort"), a stability mechanism satisfying **Article II's own test**,
+an oracle other than the deterministic path, and its own gate. None is met and
+nothing through v2.0 schedules one; the unclaimed set stays closed at two. T-90 (D106) took row 7: the whole corpus measured a second time
 on **Vertex** and committed beside the AI Studio recordings, which did not
 move. Fidelity is identical on both tiers, the verifier accepts the same 30
 claims with no verdict moving, and 0 of 169 / 0 of 165 / 0 of 76 model offsets
@@ -542,7 +550,10 @@ Worth knowing before a review: **REQ-44/REQ-47 are unclaimed on purpose** —
 Amendment 1 reserves the entire decision procedure to Python, so there is no
 verdict a model could determine without doing something reserved. They are
 declared in spec §5's *Unclaimed in v1* table, which is what makes A7
-satisfiable *(D63, D70)*.
+satisfiable *(D63, D70)*. **D107 fixes the four preconditions that would claim
+them** and none is met; adding an extractor for a judgment-*shaped* criterion
+is REQ-38's shape, not REQ-44's, and a task that built one and ticked REQ-44
+would buy a passing check rather than a capability.
 
 ### Domain facts that took work to establish
 

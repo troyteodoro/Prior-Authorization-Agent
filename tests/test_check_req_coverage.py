@@ -67,6 +67,47 @@ def test_the_unclaimed_table_is_read_not_assumed_empty(script, spec_text):
         assert claims
 
 
+def test_the_claiming_condition_points_at_a_logged_path(script, spec_text):
+    """P6's row closed on "the path logged; the unclaimed set unchanged"
+    (D107), and this is the half that would otherwise be a promise.
+
+    `check_req_coverage.py` only requires three words, which "a later
+    amendment" satisfies — a condition nobody could act on and nobody could
+    tell had gone stale. REQ-44's condition has to name the entry that fixes
+    it and the preconditions that entry sets, so reverting the table or
+    gutting the entry is a red suite rather than a quiet edit. REQ-47's
+    condition defers to REQ-44's on purpose and is checked as that deferral,
+    not as a second copy.
+    """
+    unclaimed = script.unclaimed_table(spec_text)
+    _why, claims = unclaimed["REQ-44"]
+
+    assert re.search(r"\bD\d+\b", claims), (
+        "REQ-44's claiming condition names no decision entry, so the path it "
+        "refers to cannot be found or checked for staleness"
+    )
+    for precondition in ("v1.6", "Article II", "oracle", "gate"):
+        assert precondition in claims, (
+            f"REQ-44's claiming condition no longer states the {precondition!r} "
+            "precondition (D107)"
+        )
+
+    _why47, claims47 = unclaimed["REQ-47"]
+    assert "REQ-44" in claims47, "REQ-47 defers to REQ-44 (D107)"
+
+
+def test_the_entry_behind_the_unclaimed_list_states_what_would_claim_it(script):
+    """A7's list does not grow without an entry, and the entry has to say
+    something. The gate already requires *an* entry naming each id; this
+    requires the one that closed P6 to still carry its refusal."""
+    decisions = (REPO_ROOT / "docs" / "decisions.md").read_text(encoding="utf-8")
+    assert "## D107" in decisions, "the entry that logged P6's path is gone"
+    body = decisions[decisions.index("## D107"):]
+    body = body[: body.index("\n---\n")] if "\n---\n" in body else body
+    for claim in ("REQ-44", "REQ-47", "Article II"):
+        assert claim in body, f"D107 no longer names {claim!r}"
+
+
 def test_a_spec_without_the_section_fails(script):
     with pytest.raises(script.CheckFailed, match="Unclaimed in v1"):
         script.unclaimed_table("**REQ-1** something\n")

@@ -253,7 +253,7 @@ and `scripts/check_req_coverage.py` (T-23) reads it rather than assuming it empt
 
 | REQ | Why unclaimed | What would claim it |
 |---|---|---|
-| REQ-44 | Amendment 1 reserves date arithmetic, numeric comparison, counting, sorting and set membership to Python on **both** paths, and those are the entire decision procedure for all seven criteria. There is no verdict a model could determine without doing something reserved. | A later amendment relaxing one of those reservations, or a criterion whose decision procedure falls outside the reserved list. |
+| REQ-44 | Amendment 1 reserves date arithmetic, numeric comparison, counting, sorting and set membership to Python on **both** paths, and those are the entire decision procedure for all seven criteria. There is no verdict a model could determine without doing something reserved. | Four preconditions, none met, fixed by *D107*: a tree declaring a predicate that is neither arithmetic nor set membership (not before v1.6); a stability mechanism satisfying Article II's own test, which means n samples with Python aggregating them; an oracle other than the deterministic implementation, since a criterion Python cannot compute has none; and the version's own acceptance gate on label agreement and run-to-run stability. |
 | REQ-47 | Same reservation. The obligation it states — verified spans behind any model-determined outcome — has no outcome to attach to while REQ-44 is unclaimed. | Whatever claims REQ-44. |
 
 They stay in §5 rather than being deleted, because Amendment 1 genuinely grants
@@ -768,6 +768,25 @@ reserved. That is a deliberate limit on what has been demonstrated, not an
 oversight — the agentic path is real and it decides *what to read*, not what
 the answer is.
 
+**D107 writes down what would claim them, and nothing through v2.0 does.** The
+candidate that looks like the answer is not one: Palmetto's `d`, a
+multidisciplinary evaluation within six months, decomposes into extraction plus
+set membership plus a window, so building it would add an extractor and leave
+Python deciding — REQ-38's shape, not REQ-44's. What claims REQ-44 is a
+criterion whose *predicate* cannot be compiled, and this repo has already met
+one and turned it away: D97 rejected Novitas's L35022 for asking a "diligent
+effort" and giving a deterministic tree nothing to compile. The property that
+made it useless as a tree is the property that would claim REQ-44. Three
+further preconditions follow. **Article II's test binds harder than Amendment
+1's list** — same input, different verdict means the computation is in the
+wrong place, and a model verdict is exactly that (D47, D91) — so the model
+would supply n opinions and Python would count them, counting staying
+reserved. The deterministic implementation stops being the oracle for a
+criterion it cannot compute, so the labels become the oracle, at a quality P3
+and P4 have not reached. And the version claiming it states its own gate on
+label agreement and run-to-run stability, because the differential cannot
+cover it. The unclaimed set stays closed at two.
+
 ### P7 — Retrieval recall is measured directly, and on this corpus the direct figure cannot fall
 
 The recording carries both the documents each run *cited* and the bundle the
@@ -853,9 +872,10 @@ requirement with no check is a wish, and a wish is not given a number.
 
 ### v1.1 — Finishing §10
 
-The path D97 fixed, unchanged: T-85 through T-89, T-81 and T-90 closed, P6's
-entry open. The Vertex column renders in `eval/report.md` *(T-90, D106)*, so
-v1.1 closes when P6's path is logged. Gate: A1–A9 still hold.
+**Closed.** The path D97 fixed ran unchanged: T-85 through T-90 and T-81, then
+P6's entry. The Vertex column renders in `eval/report.md` *(T-90, D106)* and
+P6's path is logged *(D107)*; A1–A9 all hold. **v1.2 is next** and opens when
+its first task does, minting its requirements then *(D105 rule 2)*.
 
 ### v1.2 — Cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound
 

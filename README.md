@@ -630,8 +630,9 @@ gate rather than a plausible-looking table.
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 
-**The second tier landed with T-90 (D106), and one row of the v1.1 path is
-left — an entry, not code.** The whole corpus was measured a second time on
+**v1.1 is complete (D107).** Its last row was an entry rather than code: P6's
+path for model adjudication, written down and deliberately not taken. **The
+second tier landed with T-90 (D106).** The whole corpus was measured a second time on
 **Vertex** and committed beside the AI Studio recordings, which did not move;
 `eval/report.md` renders the two as columns. Fidelity did not change:
 precision, recall, REQ-9 exclusion and field agreement are 1.000 on both
@@ -668,6 +669,20 @@ is reserved out of v1 because Amendment 1 keeps the entire
 decision procedure in Python — there is no verdict a model could determine
 without doing something reserved. Declaring that explicitly, rather than quietly
 not doing it, is what makes the coverage gate satisfiable.
+
+**What it would take to claim them is written down, and nothing on the roadmap
+does (D107).** The criterion that looks like the candidate — a multidisciplinary
+evaluation within six months, which the second contractor's policy requires —
+turns out to decompose into extraction plus set membership plus a date window,
+so building it would add an extractor and leave Python deciding. Claiming model
+adjudication needs a criterion whose *predicate* cannot be compiled at all, of
+the kind one MAC's policy asks for when it requires a "diligent effort" rather
+than a threshold. Three consequences follow, and they are why it stays
+unclaimed: a model verdict is not reproducible run to run, which is precisely
+what Article II's own test forbids; the deterministic implementation stops
+being the regression oracle for a criterion it cannot compute; and the
+differential that grades the agentic path could not cover it. The limit is
+recorded rather than engineered around.
 
 ---
 

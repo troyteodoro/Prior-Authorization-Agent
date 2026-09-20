@@ -17,14 +17,16 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `Path to v1.1`, below.** Acceptance gates A1–A9 all hold
-and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains of
-v1.1 — the round D97 opened as "v2" and D105 renamed — is spec §10's list of
-known limits, P1–P8, sequenced into one task each: `T-85` through `T-90` and
-`T-81` are closed; **row 8, P6's entry, is the last of them and is next** —
-it mints no requirement and spends nothing, and v1.1 closes when it is
-logged *(spec §11)*. The versions after v1.1 are in `Roadmap after v1.1`
-*(D105)*, further down.
+**What to do next: open `v1.2`, in `Roadmap after v1.1` below.** Acceptance
+gates A1–A9 all hold and US-1 through US-7 and US-9 are delivered; **v1 and
+v1.1 are both complete.** v1.1 — the round D97 opened as "v2" and D105 renamed
+— was spec §10's list of known limits, P1–P8, sequenced into one task each,
+and **all eight rows are closed**: `T-85` through `T-90` and `T-81`, then P6's
+entry *(D107)*. §11's closing condition is met — the Vertex column renders in
+`eval/report.md` *(T-90, D106)* and P6's path is logged — with A1–A9 still
+holding. **v1.2 is next**, cross-practice round one, and opens when `T-91`
+does, minting its requirements in the same commit *(D105 rule 2)*. The
+versions after it are in `Roadmap after v1.1` *(D105)*, further down.
 
 Seventy tasks are on this board — IDs run to T-90 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
@@ -60,6 +62,8 @@ Free tasks first, the runner change before the corpus grows, the second tier
 last so it measures the final configuration. A task record is written when its
 row opens; the exit named here is the one D97 fixed.
 
+**All eight rows are closed; v1.1 is closed** *(T-90/D106 and D107)*.
+
 | # | Problem | Task | State | Exit, in one line |
 | --- | --- | --- | --- | --- |
 | 1 | P2, first half | `T-85` | **closed** (D98) | `eval/report.md` carries the anchoring account per extraction recording; `build_report.py --verify` green |
@@ -69,7 +73,7 @@ row opens; the exit named here is the one D97 fixed.
 | 5 | P2, second half | `T-89` | **closed** (D103) | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | **closed** (D104) | two notes per patient, labels re-read, every recording re-measured |
 | 7 | P8 | `T-90` | **closed** (D106) | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
-| 8 | P6 | entry only | pending | the v1.1 path for REQ-44/47 logged; the unclaimed set unchanged |
+| 8 | P6 | entry only | **closed** (D107) | the v1.1 path for REQ-44/47 logged; the unclaimed set unchanged |
 
 **Why four of those rows delivered nothing.** D74 converted D42's framing —
 the eval ground truth was drafted alongside the system it grades, as were the
@@ -119,7 +123,7 @@ are in spec §11; each closes on its story closing with every gate green.
 
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
-| v1.1 | spec §10 P1–P8 — `Path to v1.1` above | — | T-85–T-90 | the Vertex round | A1–A9 |
+| v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only | US-10 | T-91–T-95 | none | A10 |
 | v1.3 | medical-history review: ICD suggestions with evidence | US-11 | T-96–T-99 | one recording round | A11 |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |

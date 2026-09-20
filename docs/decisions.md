@@ -8253,3 +8253,111 @@ Studio day is: a tool loop is not reproducible at temperature 0 (D91), and
 measurement shares. Nothing here licenses quoting a Vertex figure for AI
 Studio or the reverse; the two columns stand side by side because that is the
 only honest way to hold them.
+
+---
+
+## D107 — What it would take to claim REQ-44 and REQ-47, and why nothing through v2.0 does
+
+**Context.** P6, the last of spec §10's problems and the only one whose answer
+is an entry rather than code. REQ-44 (*the model may evaluate criteria and
+determine criterion-level and overall outcomes*) and REQ-47 (*every
+model-determined outcome carries verified spans or resolves to
+`INSUFFICIENT_EVIDENCE`*) are declared *Unclaimed in v1*. Amendment 1 genuinely
+grants both, so they stay in §5 — a spec that omitted them would describe a
+constitution this repo does not have *(D63, D70)*. D97 chose that P6 "stays
+unclaimed with its path written down", and this entry is that path. It closes
+v1.1.
+
+**The bind, stated exactly.** Amendment 1 reserves to Python, on **both**
+paths: date arithmetic and window calculation, numeric comparison, counting,
+sorting and set membership. Every criterion this system adjudicates is one or
+more of those and nothing else — (a) a numeric comparison, (b) set membership
+in a value set, c1 a count, c2 a window, c3 a count over a window, c4 and c5
+rates over a run. There is no verdict a model could determine without doing
+something reserved, which is why the unclaimed table has read "no outcome to
+attach to" since T-23.
+
+**The candidate that looked like the answer and is not.** Palmetto's L34576
+declares `d`, *a thorough multidisciplinary evaluation within the previous six
+months*, with four named components — bariatric surgeon, primary care
+referral, mental health, nutrition. The tree carries it `evaluation:
+"unclaimed"` and the graph abstains on it *(D101)*, and it looks like the
+judgment-shaped criterion REQ-44 needs. It is not. Decomposed, it is: *did the
+chart document each of four things* — extraction, which the model already does
+— then *are all four present* (set membership) and *is it within six months*
+(date arithmetic). Both halves are reserved. Building `d` claims REQ-38's
+shape, not REQ-44's: the model would extract four more facts and Python would
+still decide. **Adding an extractor is not adjudication**, and a task that
+built `d` and then ticked REQ-44 would be buying a passing check, which is the
+exact move D97 rejected.
+
+**What would actually claim it.** A criterion whose *predicate* cannot be
+compiled — not one whose evidence is merely harder to extract. The repo has
+already met one and turned it away: D97 considered Novitas's L35022 for the
+second jurisdiction and rejected it because it "defers its thresholds to the
+NCD and asks for a **diligent effort**, which is judgment-shaped and gives a
+deterministic tree nothing to compile." The property that made it useless as a
+tree is the property that would claim REQ-44. That is the shape to look for,
+and it is a coverage document's choice, not this system's.
+
+**Four preconditions, none of them met.**
+
+1. **A non-mechanical predicate exists in a compiled tree.** Not before
+   **v1.6**: until the tree declares its own extraction schema, `WmEvent` is
+   the only fact type and a judgment criterion has nothing to hold *(spec §11)*.
+2. **Article II's test is satisfied, and it binds harder than Amendment 1's
+   list.** Article II reads: *if the same input could produce a different
+   verdict on a second run, the computation is in the wrong place.* A model
+   verdict is exactly that — D91 measured that a tool loop is not reproducible
+   at temperature 0, and D47 recorded the same instability in extraction. So
+   claiming REQ-44 needs a stability mechanism, and the only one consistent
+   with Amendment 1 is **n samples with Python aggregating them**: the model
+   supplies opinions, Python counts them, and disagreement past a threshold
+   resolves to `INSUFFICIENT_EVIDENCE` or human review rather than to a
+   verdict. Counting stays reserved, which is what keeps this inside the
+   amendment rather than around it.
+3. **Something other than the deterministic implementation serves as the
+   oracle.** Amendment 1 makes the deterministic path the regression oracle and
+   that is the only reason the differential is a differential *(D62)*. A
+   criterion Python cannot compute has no oracle, so the labels become the
+   oracle — and P4 says the labels are a working first draft. Claiming REQ-44
+   therefore waits on the corpus and label work P3 and P4 describe, not merely
+   on a version's feature list.
+4. **Its own acceptance gate.** The differential cannot cover it, so the
+   version claiming REQ-44 states a threshold on agreement with the label *and*
+   on run-to-run stability, in §11's shape. A capability whose gate is the
+   existing A1–A9 would be claimed by the checks it does not exercise.
+
+**Chosen: nothing through v2.0 claims them, and the roadmap is not amended to
+schedule it.** v1.2 through v2.0 are fixed *(D105)* and none of them needs
+model adjudication: v1.2 and v1.6 test the engine against other practices and
+declare judgment-shaped criteria unclaimed and abstaining *(D101's rule)*, v1.3
+keeps the model quoting notes and never proposing codes, and v1.4 through v2.0
+add no adjudication at all. The unclaimed set stays exactly **{REQ-44,
+REQ-47}** and stays closed: it does not grow without an entry here, and
+`scripts/check_req_coverage.py` reads it rather than assuming it empty.
+
+**Rejected — claiming them now on the agentic path.** T-61 built that path and
+said plainly it claimed neither. The path decides *what to read*, not what the
+answer is, and it produces identical answers for real money — 24 model calls
+and 90,743 input tokens the fixed planner never spent *(D64, re-measured in
+D91 and D104)*. A task that redefined "the model chose which documents to
+gather" as "the model determined an outcome" would move a line in a table and
+change no behaviour.
+
+**Rejected — amending Article II or Amendment 1 to relax a reservation.** The
+reservations are the entire reason the deterministic path is usable as a
+regression oracle *(D62)* and the reason Article IV's three states stay apart.
+Relaxing one to satisfy a requirement inverts the precedence this repo runs
+on: a task that cannot close without amending an article is a wrong task, and
+the article is not what gives way.
+
+**Rejected — deleting REQ-44 and REQ-47 from §5.** They are real permissions
+Amendment 1 grants. Deleting them would make A7 trivially satisfiable and
+would hide, rather than record, a limit on what has been demonstrated.
+
+**Reverses if:** a compiled tree turns out to need a predicate that is neither
+arithmetic nor set membership — a coverage document asking for a judgment
+rather than a threshold. The version that meets one opens this question again
+with its own entry, against the four preconditions above, and the burden is on
+that entry to show the capability is real rather than the check is passable.
