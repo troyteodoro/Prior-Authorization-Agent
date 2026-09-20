@@ -508,26 +508,31 @@ def test_anchoring_reports_the_reask_per_recording_from_the_note_blocks(script):
 
 def test_anchoring_reads_every_committed_recording(script):
     """The figures the section exists to carry, pinned to the recordings as
-    committed: T-15 and T-63 inline anchored everything; T-63 tool-fetch lost
-    one assertion quote on E8 (D71, D88, D98)."""
+    committed. T-89's three re-measurements (D103) anchored every span on the
+    first turn — E8's assertion included, the quote T-63's tool-fetch run had
+    paraphrased (D71, D98) — so the re-ask had nothing to ask about and the
+    columns read zero asked, zero recovered."""
     text = "\n".join(script._anchoring_section())
-    assert "| T-15 direct (`results.json`) | 11 | 171 | 171 | **0** | 2/2 = **1.000** |" in text
     assert (
-        "| T-63 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** "
+        "| T-89 direct (`results.json`) | 11 | 169 | 169 | **0** | 0 | **0** "
         "| 2/2 = **1.000** |"
     ) in text
     assert (
-        "| T-63 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) "
-        "| 76 | 75 | **1** | 0/1 = **0.000** |"
+        "| T-89 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** "
+        "| 0 | **0** | 2/2 = **1.000** |"
     ) in text
-    assert "note `E8+E10b`: `assertion_quote_unanchorable`" in text
-    assert "completed a six-month medically supervised" in text
+    assert (
+        "| T-89 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) "
+        "| 76 | 76 | **0** | 0 | **0** | 1/1 = **1.000** |"
+    ) in text
+    assert "**No claim was dropped in any recording.**" in text
+    assert "asked about 0 quotes and recovered 0 (D103)" in text
 
 
 def test_anchoring_is_in_the_committed_report():
     text = REPORT.read_text(encoding="utf-8")
-    assert "## Anchoring (Article III, D18, D88)" in text
-    assert "assertion_quote_unanchorable" in text
+    assert "## Anchoring (Article III, D18, D88, D103)" in text
+    assert "| Re-asked | Recovered |" in text
 
 
 def test_anchoring_names_a_dropped_claim_beside_its_note(script):
@@ -594,7 +599,7 @@ def test_anchoring_assertion_coverage_follows_d88(script):
 
 
 def test_anchoring_labels_each_recording_by_its_own_header(script):
-    assert script._recording_label(_recording(task="T-15", runner=None)) == "T-15 direct"
+    assert script._recording_label(_recording(task="T-89", runner=None)) == "T-89 direct"
     assert script._recording_label(_recording(tool_fetch=False)) == "T-63 ADK inline"
     assert script._recording_label(_recording(tool_fetch=True)) == "T-63 ADK tool-fetch"
 

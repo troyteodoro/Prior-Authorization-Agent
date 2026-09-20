@@ -32,8 +32,8 @@
     "total_output_tokens": 7518,
     "total_wall_time_ms": 53366.1,
     "oracle_model_calls": 31,
-    "oracle_input_tokens": 25432,
-    "oracle_output_tokens": 5628,
+    "oracle_input_tokens": 25426,
+    "oracle_output_tokens": 5523,
     "input_token_ratio": 4.3,
     "model_call_ratio": 1.8
   },
@@ -73,9 +73,9 @@
         },
         "planner_tool_calls": [],
         "model_calls": 7,
-        "input_tokens": 5085,
-        "output_tokens": 1216,
-        "wall_time_ms": 7569.3
+        "input_tokens": 5082,
+        "output_tokens": 1210,
+        "wall_time_ms": 6767.8
       },
       "agentic": {
         "outcome": "NOT_MET",
@@ -162,8 +162,8 @@
         "planner_tool_calls": [],
         "model_calls": 4,
         "input_tokens": 3580,
-        "output_tokens": 1310,
-        "wall_time_ms": 5798.0
+        "output_tokens": 1295,
+        "wall_time_ms": 5418.0
       },
       "agentic": {
         "outcome": "NOT_MET",
@@ -253,8 +253,8 @@
         "planner_tool_calls": [],
         "model_calls": 3,
         "input_tokens": 3300,
-        "output_tokens": 161,
-        "wall_time_ms": 2502.3
+        "output_tokens": 147,
+        "wall_time_ms": 2412.2
       },
       "agentic": {
         "outcome": "NOT_MET",
@@ -341,8 +341,8 @@
         "planner_tool_calls": [],
         "model_calls": 7,
         "input_tokens": 5184,
-        "output_tokens": 1165,
-        "wall_time_ms": 7504.9
+        "output_tokens": 1102,
+        "wall_time_ms": 6920.8
       },
       "agentic": {
         "outcome": "NOT_MET",
@@ -424,9 +424,9 @@
         },
         "planner_tool_calls": [],
         "model_calls": 8,
-        "input_tokens": 6362,
-        "output_tokens": 1599,
-        "wall_time_ms": 9153.3
+        "input_tokens": 6359,
+        "output_tokens": 1598,
+        "wall_time_ms": 8648.4
       },
       "agentic": {
         "outcome": "MET",
@@ -512,8 +512,8 @@
         "planner_tool_calls": [],
         "model_calls": 2,
         "input_tokens": 1921,
-        "output_tokens": 177,
-        "wall_time_ms": 1648.9
+        "output_tokens": 171,
+        "wall_time_ms": 1917.2
       },
       "agentic": {
         "outcome": "INSUFFICIENT_EVIDENCE",
@@ -564,5 +564,6 @@
       "disagreement": {},
       "outcome_agrees": true
     }
-  ]
+  ],
+  "rescored_at": "2026-09-20T00:38:58.948158+00:00"
 }

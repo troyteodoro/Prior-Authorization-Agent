@@ -7631,3 +7631,63 @@ recordings while paying the turn (the constant then goes to zero and the
 mechanism stays as a declared capability); or a recovered quote ever reads
 as a different claim than the one the first turn made, in which case the
 patch must be reviewed rather than anchored.
+
+**Result — measured 2026-09-20, `gemini-3.5-flash-lite` on AI Studio,
+`google-adk` 2.8.0, prompt version `t15-instruction-v1/t89-reask-v1`.**
+All three extraction recordings re-measured, the verifier recording after
+them, and the agentic differential rescored.
+
+| | T-15 direct (D45) | **T-89 direct** | T-63 inline (D71) | **T-89 inline** | T-63 tool-fetch (D71) | **T-89 tool-fetch** |
+|---|---|---|---|---|---|---|
+| notes scored | 11 | 11 | 11 | 11 | 6 | 6 |
+| precision / recall / REQ-9 / fields | 1.000 ×4 | **1.000 ×4** | 1.000 ×4 | **1.000 ×4** | 1.000 ×4 | **1.000 ×4** |
+| spans emitted / anchored | 171 / 171 | **169 / 169** | 165 / 165 | **165 / 165** | 76 / **75** | **76 / 76** |
+| assertion coverage (D88) | 2/2 | **2/2** | 2/2 | **2/2** | **0/1** | **1/1** |
+| quotes re-asked / recovered | — | **0 / 0** | — | **0 / 0** | — | **0 / 0** |
+| model calls | 11 | 11 | 11 | 11 | 12 | 13 |
+| input tokens | 12,103 | 12,103 | 12,822 | 12,822 | 22,969 | 26,469 |
+| output tokens | 9,371 | 9,220 | 8,697 | 8,894 | 3,992 | 4,651 |
+| wall time | 25,920.8 ms | 26,850.7 ms | 26,884.6 ms | 26,945.0 ms | 15,835.4 ms | 17,861.7 ms |
+
+**The re-ask never fired.** On this day's three runs every quote anchored
+on the first turn — E8's program assertion under tool-fetch included, the
+one T-63's run had paraphrased. The model wrote *completing* this time, the
+anchorer located it, and the mechanism built to recover the paraphrase had
+nothing to ask about: zero targets, zero re-ask calls, zero recovered, in
+all three recordings. Fidelity is 1.000 on every figure on every path, as
+before; the tool-fetch run's `spans_unescaped` went 11 → 0 on the same
+prompt, which is D47's finding again — quote *encoding* and assertion
+emission are the unstable parts of this model's output, and a single run
+is a sample of that instability, not a rate.
+
+**What this measurement says.** The instance P2 was written from was one
+run's behaviour, and the second run did not reproduce it. The mechanism is
+therefore insurance whose measured premium on this corpus is zero calls:
+a note that needs no re-ask costs exactly what it cost before, and the
+twenty-five tests in `tests/test_reask.py` and the six in
+`tests/test_adk_agent.py` are what exercise the path — with E8's real note
+and the real paraphrase — until a live run does. The reversal clause is
+*recovers nothing while paying the turn*; no turn was paid, so it does not
+fire, and the mechanism stays as the declared answer to the failure D71
+recorded.
+
+**Every turn is counted, and it moved nothing here** because nothing
+spent a second turn: the direct aggregate's new `model_calls` reads 11 for
+11 notes, the replay carries an 11-entry set of one-turn traces, and A6
+reads 38 calls / 31,118 input / 6,925 output / 39.6 s across ten
+determinations (was 38 / 31,124 / 6,992 / 40.2 s — the output tokens and
+the wall time are the re-measured extraction's).
+
+**Downstream.** Three claim digests moved — `c5/MET` on E1, E5+E10c, E11
+and J1's chart, because the c5 quote cites a span whose bytes the new run
+chose differently — so the verifier recording was re-measured whole per
+D45: **30 of 30 accepted**, 22,832 input / 1,260 output tokens, beside
+D102's 30/30. `eval/run_eval.py` reads 16 of 16 `PASS` on the **unchanged
+baseline** — no `(status, reason_class)` moved. The agentic differential
+rescored to the same 6/6 outcomes, 42/42 criteria and 80/80 spans; the
+ratio is still 4.3x and the delta is **24 model calls and 84,931 input
+tokens** the fixed planner never spent (was 84,925; the oracle side's
+replayed extraction is what moved).
+
+**Cost of the round.** 11 + 11 + 13 extraction calls, 30 verifier calls,
+no agentic re-measurement.

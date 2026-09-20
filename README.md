@@ -136,11 +136,15 @@ false-rejecting every shortfall-type `NOT_MET`, because the shortfall is
 Article II's arithmetic over a chart the verifier deliberately cannot see.
 
 **Evidence is mechanical throughout.** Model-reported character offsets proved
-unusable (0 of 80 correct in the spike; 0 of 171 in the first full-corpus run), so
-spans are located by searching for the model's verbatim quote — exact match
-first, then whitespace-normalized — always recording raw offsets. Locating
-(`anchor.py`), resolving (`index.py`), and validating (`spans.py`) are separate
-modules so a locator cannot launder its bugs through the validator.
+unusable (0 of 80 correct in the spike; 0 of 171 in the first full-corpus run;
+0 of 169 in its re-measurement), so spans are located by searching for the
+model's verbatim quote — exact match first, then whitespace-normalized —
+always recording raw offsets. A quote the search cannot find is re-asked
+once, for its verbatim text, and the answer is searched the same way: the
+model supplies a new quote, Python admits or drops it, and nothing rewrites a
+quote to an overlap it found. Locating (`anchor.py`), resolving
+(`index.py`), and validating (`spans.py`) are separate modules so a locator
+cannot launder its bugs through the validator.
 
 ---
 
@@ -257,14 +261,16 @@ Three ports meet at the model boundary:
 
 - **`ExtractionRunner`** — *who reads the note.* A direct `google-genai`
   runner, an ADK agent runner, and a recorded runner that replays a committed
-  extraction for zero cost. The recorded runner is why the entire test suite
-  and eval harness exercise the full chain end-to-end for free.
+  extraction for zero cost. Both live runners walk the same fixed two-step:
+  extract, then one bounded re-ask for the verbatim text of any quote the
+  anchorer refused. The recorded runner is why the entire test suite and
+  eval harness exercise the full chain end-to-end for free.
 - **`RetrievalPlanner`** — *who decides what to fetch.* A fixed planner (three
   store reads in a fixed order) and an agentic planner (the model chooses,
   from a bounded tool allowlist). Everything downstream cannot tell which
   planner ran — which is exactly what makes the comparison a comparison.
 - **`VerifierRunner`** — *who checks the citations.* Live, recorded (replays a
-  committed 27-claim recording keyed by claim digest — a miss raises, never
+  committed 30-claim recording keyed by claim digest — a miss raises, never
   defaults), and a deliberately raising null runner.
 
 **Where ADK sits: it is a leaf, never the skeleton.** `google-adk` is imported
@@ -298,7 +304,7 @@ below.
 
 **The measured result so far:** model-directed retrieval agrees with the
 deterministic oracle on **6/6 outcomes and 42/42 criterion verdicts, with
-80/80 spans valid and zero errors.** It cost **24 model calls and 84,925 input
+80/80 spans valid and zero errors.** It cost **24 model calls and 84,931 input
 tokens** across six patients that the fixed planner spent nothing on — 4.3× the
 deterministic path's end-to-end input tokens, on a comparison where extraction
 and verification are the same replayed payload on both sides. Quote the delta
@@ -329,7 +335,9 @@ Guardrails that keep the differential honest:
 - Every model turn is counted, not just the first: a tool round trip is two
   LLM calls, and summing only first turns once understated output tokens
   12.1× and inverted a comparison's sign using figures that were each
-  individually real.
+  individually real. The rule reaches every path — the direct runner's
+  re-ask is a second turn on its trace, and a replay carries the recorded
+  trace whole.
 
 ---
 
@@ -496,7 +504,7 @@ free path that re-derives every number from the committed recording:
 
 | Spends model calls | Free replay |
 |---|---|
-| `scripts/run_extraction.py` — the direct extraction measurement | `--rescore` re-anchors the recorded payloads |
+| `scripts/run_extraction.py` — the direct extraction measurement | `--rescore` re-anchors the recorded payloads and re-derives what the re-ask recovered |
 | `scripts/run_adk_extraction.py [--tool-fetch] [--limit N]` — the ADK extraction measurement, in either mode | `--compare` diffs this mode's recording against the direct one |
 | `eval/run_agentic_eval.py --measure [--limit N]` — the fixed-vs-agentic differential | bare run is the gate; `--rescore` recomputes the oracle side; `--report` prints the comparison |
 | `scripts/run_verifier_measurement.py` — the blind-verifier measurement | `--rescore` re-checks the committed recording |
@@ -565,7 +573,9 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   shortfall in Washington is not a criterion at all.
 - **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
   quoting produces a claim nobody can anchor, so the system abstains where
-  evidence existed. Fail-closed, and still a loss.
+  evidence existed. Fail-closed, and still a loss. The bounded re-ask is the
+  standing answer; re-measured, it had nothing to ask about, so what remains
+  is a claim the model never quoted at all.
 - **P3 — Small everything.** Eight patients (one a declared clone), five
   documents, sixteen cases:
   every rate moves in large steps, and one case outweighs a percentage point.
@@ -589,7 +599,7 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
 
 ## Status and the road to v1
 
-**64 of 65 tasks closed, 1 open; all ten gates green.**
+**68 of 69 tasks closed, 1 open; all ten gates green.**
 Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
 procedures, cited structured criteria, the categorical exclusion, note-only
 criteria with two independent BMI readings, the gap list, the blind verifier,
@@ -608,8 +618,8 @@ gate rather than a plausible-looking table.
 | A3 | **zero** `MET` verdicts with an invalid span, over 95 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.250**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
-| A6 | 38 model calls / 31,124 in / 6,992 out / 40.2s across ten determinations, from instrumentation |
-| A7 | 55 requirements: 53 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A6 | 38 model calls / 31,118 in / 6,925 out / 39.6s across ten determinations, from instrumentation |
+| A7 | 56 requirements: 54 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 

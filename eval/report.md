@@ -68,23 +68,21 @@ Every span carried by a criterion verdict, re-sliced from its source document an
 
 **A3 requires zero.** Measured: 0 (rate 1.000).
 
-The model's own character offsets are not used and never were: 0 of 80 were usable in the spike and 0 of 171 in T-15. Spans are located by searching the model's verbatim quote, exact first then whitespace-normalized, always recording raw offsets (D18).
+The model's own character offsets are not used and never were: 0 of 80 were usable in the spike, 0 of 171 in T-15's run and 0 of 169 in T-89's re-measurement of it. Spans are located by searching the model's verbatim quote, exact first then whitespace-normalized, always recording raw offsets (D18).
 
-## Anchoring (Article III, D18, D88)
+## Anchoring (Article III, D18, D88, D103)
 
-Every span a model emits is located by searching its verbatim quote in the note — exact first, then whitespace-normalized — and a quote that does not occur is dropped rather than approximated (D18). A dropped claim is evidence the chart holds and the determination does not cite: fail-closed, and still a loss. Recomputed from the per-note scores of each committed extraction recording; the recordings' own `aggregate` blocks are a measured-day snapshot and are not read (T-71).
+Every span a model emits is located by searching its verbatim quote in the note — exact first, then whitespace-normalized — and a quote that does not occur is dropped rather than approximated (D18). A dropped claim is evidence the chart holds and the determination does not cite: fail-closed, and still a loss. Since T-89 a quote the anchorer refused is re-asked once for its verbatim text and the answer is anchored the same way (REQ-56, D103); *Re-asked* counts the quotes asked about and *Recovered* the ones the second answer anchored. Recomputed from the per-note scores and re-ask blocks of each committed extraction recording; the recordings' own `aggregate` blocks are a measured-day snapshot and are not read (T-71).
 
-| Recording | Notes scored | Spans emitted | Anchored | Not anchored | Assertion coverage (D88) |
-|---|---|---|---|---|---|
-| T-15 direct (`results.json`) | 11 | 171 | 171 | **0** | 2/2 = **1.000** |
-| T-63 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** | 2/2 = **1.000** |
-| T-63 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) | 76 | 75 | **1** | 0/1 = **0.000** |
+| Recording | Notes scored | Spans emitted | Anchored | Not anchored | Re-asked | Recovered | Assertion coverage (D88) |
+|---|---|---|---|---|---|---|---|
+| T-89 direct (`results.json`) | 11 | 169 | 169 | **0** | 0 | **0** | 2/2 = **1.000** |
+| T-89 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** | 0 | **0** | 2/2 = **1.000** |
+| T-89 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) | 76 | 76 | **0** | 0 | **0** | 1/1 = **1.000** |
 
-**Dropped claims, named.** Each is a quote the model emitted that does not occur in its note.
+**No claim was dropped in any recording.**
 
-- T-63 ADK tool-fetch, note `E8+E10b`: `assertion_quote_unanchorable` — *completed a six-month medically supervised weight-loss program last year*
-
-**What a drop costs.** The determination that results is well-formed and says less than the chart does — it abstains, or names a weaker gap, where evidence existed. The failure is fail-closed rather than a wrong approval, and it is still a failure (spec §10, P2). A similarity fallback is not the fix: a match generous enough to absorb a tense change is generous enough to absorb a negation (D18). The bounded re-ask for the verbatim text is T-89 (D98).
+**What a drop costs.** The determination that results is well-formed and says less than the chart does — it abstains, or names a weaker gap, where evidence existed. The failure is fail-closed rather than a wrong approval, and it is still a failure (spec §10, P2). A similarity fallback is not the fix: a match generous enough to absorb a tense change is generous enough to absorb a negation (D18). The fix is the bounded verbatim re-ask — one extra model call on a note with an unanchorable quote, the answer admitted by the anchorer and never by the model — and across these recordings it was asked about 0 quotes and recovered 0 (D103).
 
 ## Abstention (A5, REQ-28, REQ-31)
 
@@ -158,9 +156,9 @@ Measured from each determination's own `metrics`, never estimated. **Reported, n
 |---|---|---|
 | Determinations | 10 | — |
 | Model calls | 38 | 3.8 |
-| Input tokens | 31124 | 3112 |
-| Output tokens | 6992 | 699 |
-| Wall time (ms) | 40243.9 | 4024.4 |
+| Input tokens | 31118 | 3112 |
+| Output tokens | 6925 | 692 |
+| Wall time (ms) | 39629.1 | 3962.9 |
 
 **What the latency figure means.** These are the wall times measured *when the recordings were made*, against the pinned model on AI Studio (T-15's extraction recording and T-17's verifier recording). They are not the cost of the replay, which is microseconds and would be a meaningless number to publish. A6 asks for cost and latency from instrumentation rather than estimated; replayed instrumentation is still instrumentation, and a replay's own clock would not be.
 

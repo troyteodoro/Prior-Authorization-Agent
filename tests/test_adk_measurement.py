@@ -875,8 +875,11 @@ def test_no_required_assertion_reports_none_rather_than_one(script):
 
 def test_the_committed_recordings_report_their_assertion_coverage(script):
     """Recomputed over what is committed — no measurement, no model call. This
-    is the figure D71 could not see: the tool_fetch mode reports **1.000 recall
-    and 1.000 precision with an assertion it never anchored**."""
+    is the figure D71 could not see: T-63's tool_fetch recording reported
+    **1.000 recall and 1.000 precision with an assertion it never anchored**.
+    T-89's re-measurement (D103) anchored E8's assertion on the first turn, so
+    the committed figure now reads 1/1 — and the column exists so that a
+    future run that loses it again reads 0/1 beside its 1.000 recall."""
     import json
 
     covers = {}
@@ -892,9 +895,10 @@ def test_the_committed_recordings_report_their_assertion_coverage(script):
         )
 
     assert covers["adk_results_inline"] == (2, 2, 1.0, 1.0)
-    assert covers["adk_results_tool_fetch"] == (1, 0, 0.0, 1.0), (
-        "the tool_fetch mode lost its one required assertion while reporting "
-        "recall 1.000 — D71's finding, now readable from the aggregate (T-71)"
+    assert covers["adk_results_tool_fetch"] == (1, 1, 1.0, 1.0), (
+        "the tool_fetch recording's one required assertion is anchored since "
+        "T-89's re-measurement; a 0 here is D71's loss come back, readable "
+        "from the aggregate (T-71)"
     )
 
 

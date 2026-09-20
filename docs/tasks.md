@@ -19,12 +19,12 @@ answers the second question, once.
 **What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
 and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
 spec §10's list of known limits, P1–P8, which D97 sequenced into one task
-each — `T-85` through `T-88` are closed and `T-89` is in progress; `T-81`
-is row 6 of that sequence.
+each — `T-85` through `T-89` are closed and `T-81` is next, row 6 of that
+sequence.
 
 Sixty-nine tasks are on this board — IDs run to T-89 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **67 are closed and 2 are open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **68 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -62,7 +62,7 @@ row opens; the exit named here is the one D97 fixed.
 | 2 | P5 | `T-86` | **closed** (D99) | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
 | 3 | P1, first half | `T-87` | **closed** (D100, D101) | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
 | 4 | P1, second half | `T-88` | **closed** (D102) | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
-| 5 | P2, second half | `T-89` | **in progress** (D103) | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
+| 5 | P2, second half | `T-89` | **closed** (D103) | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | pending | two notes per patient, labels re-read, every recording re-measured |
 | 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
 | 8 | P6 | entry only | pending | the v2 path for REQ-44/47 logged; the unclaimed set unchanged |
@@ -1572,11 +1572,13 @@ unchanged (T-30, D77).
 
 Real work with a runnable exit that delivers no user outcome.
 
-### `[~] T-89` A bounded verbatim re-ask in the extraction runners
+### `[x] T-89` A bounded verbatim re-ask in the extraction runners
 **REQ:** 8, 35, 52, 56 · **Depends:** T-85, T-63, T-71 · **Discovered in:**
 spec §10 P2 *(D97, D98)* · **Decided by:** D103 · **Timebox:** two days plus
 three extraction rounds and one verifier round
-**Status:** **in progress** — row 5 of `Path to v2`; D103 written, code next
+**Status:** **closed** (D103) — row 5 of `Path to v2`; the exit ran green
+and every gate with it, on three re-measured extraction recordings and a
+re-measured verifier recording
 **Exit:**
 ```
 ./venv/bin/python -m pytest tests/test_reask.py tests/test_adk_agent.py tests/test_extraction.py tests/test_adk_measurement.py tests/test_build_report.py -q --color=no \
@@ -1601,6 +1603,46 @@ recording after them if any cited span's text moved, because a claim digest
 is the sliced quote (D78). *Every turn counted* names the second defect: the
 direct measurement script summed one turn per note and the replay carried
 one, which D71's fix never reached.
+
+**What it delivers.** `REASK_ROUNDS`, `REASK_INSTRUCTION`, `VerbatimAnswers`,
+`reask_targets`, `apply_verbatim` and `extract_with_reask` in
+`pa_agent/extraction.py` — model-free, shared by both runners; every drop
+carries the payload `path` it came from; `extract()` walks the two-step
+directly, `AdkExtractionRunner` walks it as two self-contained invocations
+(`build_reask_agent`, the extractor's flags and allowlist by construction,
+because `include_contents="none"` keeps the first turn out of the second as
+it keeps note N-1 out of note N); a failed re-ask is recorded on
+`reask.error` and the trace, never raised; `ExtractionResult.trace` on the
+direct path, `turn_metrics` in the direct script, and the replay carrying
+the recorded trace; `PROMPT_VERSION` naming both halves and pinned on all
+three recordings; REQ-56; `tests/test_reask.py`.
+
+**Closed by D103.** The three recordings, re-measured, anchored every span
+on the first turn — 169/169, 165/165, 76/76, E8's assertion included — so
+the re-ask fired on none of them: zero targets, zero calls, zero recovered.
+The mechanism is insurance whose measured premium is zero; the paraphrase
+on record was one run's behaviour, and the tool-fetch run's unescaped-span
+count going 11 → 0 on the same prompt is D47's instability seen again.
+Three `c5/MET` claim digests moved with the new spans, so the verifier
+recording was re-measured whole: 30 of 30 accepted. The eval set reads 16
+of 16 `PASS` on the unchanged baseline; the agentic differential rescored
+to the same 6/6 and 42/42 at 4.3x, delta 24 calls and 84,931 input tokens.
+
+Mutations caught, each restored and `__pycache__` cleared: `REASK_ROUNDS`
+zero; a second re-ask firing; `apply_verbatim` writing an unasked path, or
+a blank answer; targets read from the truncated `dropped` quote; `raw` left
+as the first turn (the replay drops the recovered claim); `metrics` set to
+the last turn; the trace holding turn one only; a drop losing its `path`;
+the re-ask raising instead of recording; `VerbatimAnswers.quotes` given a
+default; `PROMPT_VERSION` reverted; `from_records` ignoring the trace; the
+replayed trace not re-addressed; the session counter advancing per
+invocation; the re-ask agent without `read_note`, or with history; the
+re-ask output key mismatched; a schema failure classified as the call
+failing; the direct aggregate summing the singular `metrics`; `--rescore`
+copying the stored recovered set. One survived and is equivalent: dropping
+the reason filter in `reask_targets`, because an unparseable date carries
+no path and the path check already excludes it — the filter stays as the
+second guard.
 
 ### `[x] T-88` The second-jurisdiction patient and the `J1` case
 **REQ:** 1, 4, 25, 42, 55 · **Depends:** T-87, T-41, T-17 · **Discovered in:**

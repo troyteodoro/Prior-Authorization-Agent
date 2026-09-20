@@ -375,9 +375,10 @@ def _span_section(cache: dict[Any, Any]) -> list[str]:
         f"{met_checked - met_valid} (rate {_fmt(met_rate)}).",
         "",
         "The model's own character offsets are not used and never were: 0 of 80 "
-        "were usable in the spike and 0 of 171 in T-15. Spans are located by "
-        "searching the model's verbatim quote, exact first then "
-        "whitespace-normalized, always recording raw offsets (D18).",
+        "were usable in the spike, 0 of 171 in T-15's run and 0 of 169 in "
+        "T-89's re-measurement of it. Spans are located by searching the "
+        "model's verbatim quote, exact first then whitespace-normalized, "
+        "always recording raw offsets (D18).",
         "",
     ]
 

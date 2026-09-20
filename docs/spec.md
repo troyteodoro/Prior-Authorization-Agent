@@ -686,8 +686,15 @@ is still a failure. The per-note record shows it; the headline aggregate did
 not, until T-71. The instance is one word — *completed* for *completing*, in
 the ADK tool-fetch run on E8, with 62 verbatim characters after it — and
 `eval/report.md` carries the anchoring account for every extraction
-recording since T-85 *(D98)*. The mechanism that would recover it, a bounded
-re-ask for the verbatim text, is T-89.
+recording since T-85 *(D98)*. Since T-89 the mechanism exists *(REQ-56,
+D103)*: a quote the anchorer refuses is re-asked once, in both live runners,
+for its verbatim text, and the answer is anchored exactly as the first was —
+the model supplies a new quote, Python admits or drops it. Re-measured, the
+three recordings anchored every span on the first turn, E8's assertion
+included, so the re-ask was asked about nothing and cost nothing; the
+instance above was one run's behaviour and the mechanism is the standing
+answer to its recurrence. What it cannot recover is a claim the model never
+quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
 ### P3 — Six patients, five documents, fifteen cases
 

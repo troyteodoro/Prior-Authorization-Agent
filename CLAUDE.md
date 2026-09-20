@@ -26,7 +26,7 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-54 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-56 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
 | `docs/tasks.md` | The board. Tasks T-00 through T-84, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
 | `docs/decisions.md` | D1–D94, kill criteria, open questions. Append-only. |
@@ -102,7 +102,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (773 tests, ~21s)
+./venv/bin/python -m pytest -q                  # the suite alone (813 tests, ~36s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -163,10 +163,13 @@ graph has one conditional — whether a short circuit fired — and that is a
 differential real.**
 
 - `ExtractionRunner` (`runners.py`, REQ-52) — *who reads the note*.
-  `DirectExtractionRunner` (raw `google-genai`, D45's measured configuration),
-  `AdkExtractionRunner` (`pa_agent/agent/`), `RecordedExtractionRunner` (replays
-  T-15's recording, spends nothing — this is why `pytest` and `eval/run_eval.py`
-  exercise the whole chain end to end for free).
+  `DirectExtractionRunner` (raw `google-genai`, D103's measured configuration —
+  D45's plus the re-ask), `AdkExtractionRunner` (`pa_agent/agent/`),
+  `RecordedExtractionRunner` (replays the direct recording, trace and all,
+  spends nothing — this is why `pytest` and `eval/run_eval.py` exercise the
+  whole chain end to end for free). Both live runners walk
+  `extract_with_reask`: extract, then at most `REASK_ROUNDS` re-asks for the
+  verbatim text of what the anchorer refused (T-89).
 - `RetrievalPlanner` (`retrieval.py`, D63) — *who decides what to fetch*.
   `FixedRetrievalPlanner` (three store reads in a fixed order) and
   `AgenticRetrievalPlanner` (the model chooses). Everything downstream cannot
@@ -216,6 +219,13 @@ passing**, because the tests are written in terms of the thing that broke.
   package is Article V silently skipped, and every downstream test would agree
   with it. `RecordedVerifierRunner` raises on an unrecorded claim for the same
   reason (D31's shape).
+- **The re-ask writes quote fields at the paths Python named, and nothing
+  else; a failed re-ask is recorded, never raised** *(T-89, D103)*. The
+  targets come from `build_result`'s drops, the patch is applied only there,
+  and the anchorer admits or drops the answer exactly as it did the first —
+  the model never decides whether a citation stands. Letting the re-ask raise
+  would send a successful extraction through the attempt budget and report
+  "the system did not look" for a note it read (D90).
 - **A verifier claim is (criterion, verdict, quotes) — no `as_of`, no dates
   beyond what the quotes contain** *(D78)*. The field rode along for three
   prompt versions and date-bound every claim digest, which broke the CLI
@@ -255,7 +265,7 @@ passing**, because the tests are written in terms of the thing that broke.
   recording's internal coherence and not its agreement with today's code. The
   visible symptom was a cost *ratio*: D64's 13.9x became 4.3x with no change to
   retrieval, because Article V's verifier entered the shared denominator.
-  **Quote the delta beside the ratio** — 24 model calls and 84,925 input tokens
+  **Quote the delta beside the ratio** — 24 model calls and 84,931 input tokens
   the fixed planner never spent — because the delta is the figure that does not
   move when the denominator does.
 - **Never make a gate call a model** *(D45)*. Measurement scripts spend the
@@ -277,7 +287,8 @@ passing**, because the tests are written in terms of the thing that broke.
   *(D20)*, test files included — that rule is what left the suite red in T-67.
 - **Spans are located by searching the model's verbatim quote**, exact first then
   whitespace-normalized, always recording raw offsets *(D18)*. The model's own
-  offsets are unusable: 0 of 80 in the spike, 0 of 171 in T-15.
+  offsets are unusable: 0 of 80 in the spike, 0 of 171 in T-15, 0 of 169 in
+  T-89's re-measurement.
 - **`BLOCKED` is not `FAIL`, and `skipped` is not `failed`** *(D27, D67)*.
   "Answered wrongly" and "the component does not exist yet" have different next
   actions and only one names a task.
@@ -362,8 +373,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**67 of 68 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~25s, 773 tests across 31 files). IDs run to T-88, but
+**68 of 69 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`, ~40s, 813 tests across 32 files). IDs run to T-89, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -392,8 +403,8 @@ D78's substance. US-7's measurements are in `eval/report.md`
 against a 0.591 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
 95 checked**, **A5 abstention 0.250** with the per-`gap_reason` account and
-D82's tolerance sweep, and **A6 38 model calls / 31,124 input / 6,992 output /
-40.2s across ten determinations** — replayed instrumentation, not the replay's
+D82's tolerance sweep, and **A6 38 model calls / 31,118 input / 6,925 output /
+39.6s across ten determinations** — replayed instrumentation, not the replay's
 own clock.
 
 Open: **T-81 alone**. v1 is complete — **A1–A9 all
@@ -412,8 +423,13 @@ Palmetto's territory: a declared clone of E4's chart, computed by
 byte-identical to its source's so T-15's recording replays it by content —
 `RecordedExtractionRunner` is keyed by sha256 first — and whose eval row
 `J1` pins that the three-month run is a `c3` shortfall in Washington and not
-a criterion in Alabama. **T-89 is next.** Free tasks first, the runner change
-(T-89) before the corpus grows (T-81), the Vertex measurement (T-90) last.
+a criterion in Alabama. T-89 (D103) added the bounded verbatim re-ask to both
+live runners — one extra call, only on a note with a quote the anchorer
+refused, the answer admitted by the anchorer and never by the model — and
+re-measured all three extraction recordings and the verifier's: every span
+anchored on the first turn, so the re-ask fired nowhere and the paraphrase
+P2 was written from did not recur. **T-81 is next.** The runner change came
+before the corpus grows (T-81); the Vertex measurement (T-90) is last.
 Read the table rather than this paragraph *(D70, D72, D97)*.
 
 **The ratification programme is deleted** *(T-82, D92; finished by T-84, D94)*.
@@ -499,7 +515,7 @@ satisfiable *(D63, D70)*.
 - **The measured result so far** *(D64, D66, re-measured in D91)*:
   model-directed retrieval agrees with the deterministic oracle on 6/6 outcomes
   and 42/42 criteria, 80/80 spans valid, zero errors — for **24 model calls and
-  84,925 input tokens** the fixed planner did not spend, 4.3x its end-to-end
+  84,931 input tokens** the fixed planner did not spend, 4.3x its end-to-end
   input tokens. **Quote the delta beside the ratio**: the fixed planner makes no
   model call, so the ratio's denominator is the replayed extraction-plus-verifier
   cost shared by both sides, and it moved from D64's 13.9x to 4.3x when Article
@@ -550,7 +566,7 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 15 labeled rows (§6's 14 + NP1; D75)
+  cases.json         the eval set — 16 labeled rows (§6's 14 + NP1 + J1; D75, D102)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it
@@ -558,14 +574,15 @@ eval/
                      adk_results_tool_fetch.json — T-63's two, one per mode (D68)
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91)
-  verifier/          results.json — T-17's 27-claim recording (D78)
+  verifier/          results.json — T-17's recording, 30 claims since T-88,
+                     re-measured whole by T-89 (D78, D102, D103)
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient
 scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               31 files, 773 tests
+tests/               32 files, 813 tests
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and
