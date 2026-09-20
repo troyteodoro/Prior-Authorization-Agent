@@ -52,7 +52,7 @@ from pa_agent.criteria import (
 )
 from pa_agent.stores.policy import LocalPolicyStore
 from pa_agent.workflow import (
-    CONDITION_KINDS,
+    MEMBERSHIP_KINDS,
     NOTE_EVENT_KINDS,
     OBSERVATION_KINDS,
     STEP_KINDS,
@@ -183,11 +183,18 @@ def test_an_unclaimed_criterion_may_not_declare_a_kind():
 # --------------------------------------------------------------------------
 
 
-def test_the_vocabulary_is_the_seven_kinds_that_have_predicates():
-    """Pinned as a literal, so the three checks below cannot pass vacuously."""
+def test_the_vocabulary_is_the_kinds_that_have_predicates():
+    """Pinned as a literal, so the three checks below cannot pass vacuously.
+
+    Seven at T-91, eight since T-92 (D111): the second practice needed one
+    kind bariatric surgery never did — active medications against a named
+    value set — and got no more than one, because its remaining criteria are
+    unclaimed by the document rather than unbuilt by the engine.
+    """
     assert {k.value for k in PredicateKind} == {
         "bmi_observation_threshold",
         "condition_value_set_membership",
+        "medication_value_set_active",
         "note_event_count",
         "note_event_run_length",
         "note_event_run_recency",
@@ -216,7 +223,7 @@ def test_every_kind_is_evaluated_by_exactly_one_step():
     assert len(claimed) == len(set(claimed))
     assert STEP_KINDS == {
         "criterion_a": OBSERVATION_KINDS,
-        "criterion_b": CONDITION_KINDS,
+        "criterion_b": MEMBERSHIP_KINDS,
         "criteria_c": NOTE_EVENT_KINDS,
     }
 
@@ -371,12 +378,13 @@ def test_only_criterion_of_kind_refuses_a_duplicate_rather_than_taking_the_first
 
 
 def test_only_the_kinds_that_can_answer_not_met_declare_a_narrower():
-    """`note_event_count` and `condition_value_set_membership` abstain instead
-    of answering `NOT_MET` (D13, D40), so neither has a re-derivation."""
+    """The membership kinds and `note_event_count` abstain instead of
+    answering `NOT_MET` (D13, D40, D111), so none has a re-derivation."""
     assert set(NARROWERS) <= set(PREDICATES)
     assert set(PredicateKind) - set(NARROWERS) == {
         PredicateKind.NOTE_EVENT_COUNT,
         PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP,
+        PredicateKind.MEDICATION_VALUE_SET_ACTIVE,
     }
 
 

@@ -64,15 +64,20 @@ replays a committed recording.
 ## Where the project stands
 
 **v1 and v1.1 are both complete, and v1.2 is under way.**
-71 of 71 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A9 holding. The suite collects 901 tests (3 skip). v1 delivered the
+72 of 72 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A9 holding. The suite collects 990 tests (27 skip). v1 delivered the
 determination end to end; v1.1 closed spec §10's eight known limits — a
 second jurisdiction, a bounded re-ask for unanchorable quotes, a second note
 per chart, a citation-sufficiency check, a second measured tier, and the
 written-down path for the one limit that stays open on purpose. v1.2 opened
 with the predicate vocabulary: every criterion a tree declares names the
 arithmetic that evaluates it, and a tree naming one the engine lacks fails to
-load instead of abstaining past it *(T-91, D110)*.
+load instead of abstaining past it *(T-91, D110)*. Its second row added the
+first tree from an unrelated practice — **infliximab for rheumatoid
+arthritis**, compiled from Palmetto GBA's L35677 and A56432 — which loads
+beside the bariatric trees, resolves by its own J-code in the same seven
+states, and needed one predicate kind the engine did not have *(T-92,
+D111)*.
 
 Measured figures live in `eval/report.md`, which is generated and gate-verified
 rather than written; *Status in detail* below carries them, and

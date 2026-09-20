@@ -1,0 +1,203 @@
+{
+  "policy_version_id": "infliximab-ra-jjm-v1",
+  "title": "Infliximab for rheumatoid arthritis, as operationalized by Palmetto GBA (Jurisdictions J and M)",
+  "compiled_by": "T-92, hand-compiled from L35677 and A56432 (D111)",
+  "jurisdiction": {
+    "authority": "mac_jurisdiction_jj_jm",
+    "contractor": "Palmetto GBA",
+    "states": [
+      "AL",
+      "GA",
+      "NC",
+      "SC",
+      "TN",
+      "VA",
+      "WV"
+    ],
+    "note": "The same seven states Palmetto's bariatric tree serves, which is the point: a state is served by one tree per practice, not by one tree (D111). The criterion letters below are this document's, and they mean nothing the bariatric trees' letters mean -- `a` is a diagnosis set and not a BMI comparison, `b` is a medication set and not a comorbidity count. The engine dispatches on each criterion's declared kind and on no letter, which is what T-91 built and this tree is the first to depend on (D110)."
+  },
+  "sources": [
+    {
+      "document_id": "l35677",
+      "sha256": "62249fae792b62bb9996c09b634a9974ac318cb72d7154914fab064f7a849134"
+    },
+    {
+      "document_id": "a56432",
+      "sha256": "846c2fd5bf932d8ec77888b7124fc1edf64a7c680afc23cc0bee015ccde00944"
+    }
+  ],
+  "decision_expression": "a AND b AND c AND d AND e",
+  "criteria": [
+    {
+      "id": "a",
+      "label": "A rheumatoid arthritis diagnosis this LCD supports",
+      "evaluation": "deterministic",
+      "kind": "condition_value_set_membership",
+      "constants": {
+        "min_comorbidity_count": {
+          "value": 1,
+          "type": "integer",
+          "source": {
+            "document_id": "l35677",
+            "char_start": 6430,
+            "char_end": 6651,
+            "quote": "When used in combination with methotrexate, to reduce the signs and symptoms, inhibit the progression of structural damage and improve physical function in patients with moderately to severely active rheumatoid arthritis."
+          },
+          "note": "The constant name is the predicate's, shared across every tree that declares `condition_value_set_membership`, and it reads wrongly here: rheumatoid arthritis is this request's indication, not a co-morbidity. It is kept because constant *names* are in `get_policy_context`'s payload, and that payload is part of a measured configuration -- renaming it in the bariatric trees would be a new measurement, not a re-run (D45, D64, D111). Renamed in the v1.6 round, which re-measures anyway."
+        },
+        "value_set_id": {
+          "value": "rheumatoid_arthritis",
+          "type": "string",
+          "note": "A56432's ICD-10 group carries 406 codes across every indication L35677 covers; this tree is compiled for the rheumatoid arthritis bullet alone and the set is that bullet's subset, in the SNOMED the patient plane speaks (REQ-59, D111)."
+        }
+      }
+    },
+    {
+      "id": "b",
+      "label": "Used in combination with methotrexate",
+      "evaluation": "deterministic",
+      "kind": "medication_value_set_active",
+      "constants": {
+        "min_medication_count": {
+          "value": 1,
+          "type": "integer",
+          "source": {
+            "document_id": "l35677",
+            "char_start": 6430,
+            "char_end": 6651,
+            "quote": "When used in combination with methotrexate, to reduce the signs and symptoms, inhibit the progression of structural damage and improve physical function in patients with moderately to severely active rheumatoid arthritis."
+          },
+          "note": "`MET` on an active prescription, an abstention otherwise, never `NOT_MET` (D40's asymmetry): the document's own note covers a patient unable to tolerate methotrexate whose reason is documented in the record, and this system does not read that record (D111)."
+        },
+        "value_set_id": {
+          "value": "methotrexate",
+          "type": "string",
+          "note": "RxNorm, expanded from the ingredient through RxNav and pinned (D111)."
+        }
+      }
+    },
+    {
+      "id": "c",
+      "label": "No Class III or IV congestive heart failure",
+      "evaluation": "unclaimed",
+      "constants": {
+        "excluded_condition": {
+          "value": "Class III or IV congestive heart failure",
+          "type": "string",
+          "source": {
+            "document_id": "l35677",
+            "char_start": 10392,
+            "char_end": 10439,
+            "quote": "a. Class III or IV congestive heart failure; or"
+          },
+          "note": "One of the two contraindications introduced by the sentence above it."
+        }
+      },
+      "note": "Unclaimed because the New York Heart Association class is not in the coded record: ICD-10 I50.x records heart failure and says nothing about which class, and no other structured resource carries it. A tree reading I50.x as Class III/IV would deny patients this document covers; one reading it as not-Class-III/IV would approve patients it excludes. Both are wrong verdicts, which is D101's test. This is a limit of the record, not of the engine (REQ-57, REQ-58, D111)."
+    },
+    {
+      "id": "d",
+      "label": "No untreated active or latent tuberculosis",
+      "evaluation": "unclaimed",
+      "constants": {
+        "excluded_condition": {
+          "value": "Untreated active or latent tuberculosis",
+          "type": "string",
+          "source": {
+            "document_id": "l35677",
+            "char_start": 10440,
+            "char_end": 10482,
+            "quote": "b. Untreated active or latent tuberculosis"
+          },
+          "note": "The second contraindication, from the same sentence."
+        }
+      },
+      "note": "Unclaimed on two counts. *Untreated* is a judgment about the record rather than a coded fact, and latent tuberculosis is established by a screening result -- a tuberculin test or an interferon-gamma release assay -- that the structured plane does not carry. A reviewer evaluates it against the chart (REQ-58, D111)."
+    },
+    {
+      "id": "e",
+      "label": "Moderately to severely active rheumatoid arthritis",
+      "evaluation": "unclaimed",
+      "constants": {
+        "disease_activity": {
+          "value": "moderately to severely active",
+          "type": "string",
+          "source": {
+            "document_id": "l35677",
+            "char_start": 6430,
+            "char_end": 6651,
+            "quote": "When used in combination with methotrexate, to reduce the signs and symptoms, inhibit the progression of structural damage and improve physical function in patients with moderately to severely active rheumatoid arthritis."
+          },
+          "note": "From the same bullet criterion (a) and (b) are compiled from."
+        }
+      },
+      "note": "Unclaimed: disease activity is a clinical assessment. The chart carries no DAS28, CDAI or SDAI score, and a diagnosis code grades nothing -- the same code serves a patient in remission. Declared and abstained on, never omitted, because omitting it approves where this MAC would not (REQ-58, D101's rule, D111)."
+    }
+  ],
+  "categorical_exclusions": [
+    {
+      "id": "concurrent_biologic_or_jak",
+      "label": "Infliximab combined with another biologic or a JAK inhibitor is not covered",
+      "procedure_scope": "contractor_determined",
+      "kind": "active_medication_value_set",
+      "claim": {
+        "document_id": "l35677",
+        "char_start": 10497,
+        "char_end": 10853,
+        "quote": "When used in combination with other biologics, such as Enbrel®(etanercept), Kineret® (anakinra), Orencia®(abatacept), Rituxan®(rituximab), Humira®(adalimumab), Cimzia® (certolizumab), Simponi® (golimumab), or a Janus kinase inhibitor [e.g. Xeljanz® (tofacitinib)], infliximab is considered not medically reasonable and necessary and therefore, not covered."
+      },
+      "constants": {
+        "value_set_id": {
+          "value": "biologic_dmards_and_jak_inhibitors",
+          "type": "string",
+          "source": {
+            "document_id": "l35677",
+            "char_start": 10497,
+            "char_end": 10853,
+            "quote": "When used in combination with other biologics, such as Enbrel®(etanercept), Kineret® (anakinra), Orencia®(abatacept), Rituxan®(rituximab), Humira®(adalimumab), Cimzia® (certolizumab), Simponi® (golimumab), or a Janus kinase inhibitor [e.g. Xeljanz® (tofacitinib)], infliximab is considered not medically reasonable and necessary and therefore, not covered."
+          },
+          "note": "The eight drugs the sentence names, each expanded to every RxNorm concept RxNav relates to its ingredient. Infliximab itself is not a member: the limitation is about what it is combined with."
+        }
+      },
+      "note": "An exclusion and not a criterion, because the document denies rather than failing a requirement -- *not medically reasonable and necessary and therefore, not covered* -- and because a criterion would have to answer `MET` for a chart carrying no such drug, which REQ-5 refuses: there is no span for an absence. It fires on positive evidence, citing every prescription that fired it, and is silent otherwise (D41's shape, D111). Scope is `contractor_determined`, the set this LCD's code resolves in, so it reaches this request and no other."
+    }
+  ],
+  "procedure_sets": {
+    "note": "One member. Part B drug coverage is the contractor's determination under section 1862(a)(1)(A) rather than a national one, so J1745 sits in the contractor-determined set and nowhere else -- there is no NCD over this procedure to transcribe national sets from (D26's three answers, D33's third outcome).",
+    "nationally_covered": [],
+    "nationally_non_covered": [],
+    "contractor_determined": [
+      {
+        "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
+        "coverage_claim": {
+          "document_id": "l35677",
+          "char_start": 3890,
+          "char_end": 4165,
+          "quote": "Title XVIII of the Social Security Act 1862(a)(1)(A) allows coverage and payment for only those services that are considered to be medically reasonable and necessary for the diagnosis or treatment of illness or injury or to improve the functioning of a malformed body member.",
+          "note": "The statutory standard this LCD applies. Not a coverage grant on its own: the corroborating quote is Palmetto exercising it, which is the two-part shape D33 requires of a contractor-determined code.",
+          "corroborating_quote": {
+            "document_id": "l35677",
+            "char_start": 5233,
+            "char_end": 5340,
+            "quote": "The use of infliximab will be considered medically reasonable and necessary in the following circumstances:",
+            "note": "Palmetto covers infliximab under the criteria this tree compiles."
+          }
+        },
+        "codes": [
+          {
+            "code": "J1745",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "char_start": 27242,
+            "char_end": 27311,
+            "quote": "Under CPT/HCPCS Codes the description was revised for CPT code J1745.",
+            "document_id": "l35677",
+            "note": "A revision-history line, which is weaker evidence than a code table and is recorded as such. A56432's CPT/HCPCS table sits behind the AMA licence modal, outside the containers T-02's extractor reads -- A56852's problem exactly (D101) -- so this is the one sentence in the corpus that names the code this LCD's group carries. The coverage claim is cited separately (D28, D111)."
+          }
+        ]
+      }
+    ]
+  }
+}

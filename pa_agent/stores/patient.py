@@ -23,7 +23,13 @@ from datetime import date
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
-from pa_agent.contracts import Condition, Document, EvidenceSpan, Observation
+from pa_agent.contracts import (
+    Condition,
+    Document,
+    EvidenceSpan,
+    Medication,
+    Observation,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_PATIENT_ROOT = REPO_ROOT / "data" / "patients"
@@ -44,6 +50,16 @@ class PatientStore(Protocol):
 
     def get_conditions(self, patient_id: str) -> list[Condition]:
         """Coded diagnoses, for criterion (b)'s set intersection (REQ-12)."""
+        ...
+
+    def get_medications(self, patient_id: str) -> list[Medication]:
+        """Prescribed medications, for the set intersections L35677 needs.
+
+        A fourth read rather than a filter over a generic one: what crosses
+        Article VI's line stays a fact you can establish by reading the
+        signatures, which is the reason this port is methods and not a query
+        interface. `status` is carried and not filtered here (D31, D39).
+        """
         ...
 
     def get_notes(self, patient_id: str) -> list[Document]:
@@ -263,6 +279,34 @@ class LocalPatientStore:
                 )
             )
         return conditions
+
+    def get_medications(self, patient_id: str) -> list[Medication]:
+        """Every `MedicationRequest` carrying a code, status carried unfiltered.
+
+        `medicationCodeableConcept` only. A `medicationReference` points at a
+        `Medication` resource in the bundle and this adapter does not follow it
+        — stated scope, in `get_observations`' shape (D39): one committed
+        bundle carries a single such resource, no criterion is compiled against
+        it, and following a reference silently is how a second, quieter lookup
+        path gets built that the evidence span no longer describes.
+        """
+        medications = []
+        for resource, span in self._entries_with_spans(patient_id, "MedicationRequest"):
+            coding = self._first_coding(resource, "medicationCodeableConcept")
+            if not coding.get("code"):
+                continue
+            authored = resource.get("authoredOn")
+            medications.append(
+                Medication(
+                    code=coding["code"],
+                    system=coding.get("system"),
+                    display=coding.get("display"),
+                    status=resource.get("status"),
+                    authored_on=date.fromisoformat(authored[:10]) if authored else None,
+                    span=span,
+                )
+            )
+        return medications
 
     def get_jurisdiction_state(self, patient_id: str) -> str:
         """`Patient.address[0].state` from the bundle, verified on read (D100).

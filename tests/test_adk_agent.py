@@ -233,7 +233,7 @@ def test_the_policy_tools_call_the_injected_policy_store() -> None:
 
     value_set_id = store.get_tree(TREE_VERSION).criterion("b").require("value_set_id")
     codes = toolset.tools["get_policy_value_set"](value_set_id)
-    assert codes["codes"] == sorted(store.get_value_set(value_set_id))
+    assert codes["codes"] == sorted(store.get_value_set(value_set_id).codes)
 
 
 def test_a_tool_has_no_route_to_an_answer_when_the_port_refuses() -> None:

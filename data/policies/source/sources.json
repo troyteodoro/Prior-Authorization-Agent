@@ -65,6 +65,31 @@
       "extractor_version": 1,
       "sha256": "a339bb3c6e7478e2d8095dc608c24f37f6785e8f9086734f7163f3160db804d1",
       "char_count": 64339
+    },
+    {
+      "document_id": "l35677",
+      "title": "LCD L35677 - Infliximab",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=35677",
+      "authority": "mac_jurisdiction_jj_jm",
+      "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+      "filename": "l35677.txt",
+      "retrieved_at": "2026-09-20T12:45:12.682115+00:00",
+      "extractor_version": 1,
+      "sha256": "62249fae792b62bb9996c09b634a9974ac318cb72d7154914fab064f7a849134",
+      "char_count": 63350
+    },
+    {
+      "document_id": "a56432",
+      "title": "Article A56432 - Billing and Coding: Infliximab",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=56432",
+      "authority": "mac_jurisdiction_jj_jm",
+      "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+      "filename": "a56432.txt",
+      "note": "extracted text carries no HCPCS codes; the ICD-10-CM groups are present (D111)",
+      "retrieved_at": "2026-09-20T12:45:13.099742+00:00",
+      "extractor_version": 1,
+      "sha256": "846c2fd5bf932d8ec77888b7124fc1edf64a7c680afc23cc0bee015ccde00944",
+      "char_count": 37622
     }
   ]
 }

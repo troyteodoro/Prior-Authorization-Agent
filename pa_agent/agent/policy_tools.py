@@ -141,7 +141,7 @@ def build_policy_tools(policy_store: PolicyStore) -> PolicyToolset:
         started = time.perf_counter()
         arguments = {"value_set_id": value_set_id}
         try:
-            codes = policy_store.get_value_set(value_set_id)
+            value_set = policy_store.get_value_set(value_set_id)
         except Exception as exc:
             _record("get_policy_value_set", arguments, started, False,
                     f"{type(exc).__name__}")
@@ -150,7 +150,9 @@ def build_policy_tools(policy_store: PolicyStore) -> PolicyToolset:
         # Truncates rather than faults. A model cannot decide membership anyway —
         # Amendment 1 reserves it to Python — so a partial list informs and never
         # adjudicates, and criterion (b) reads the port's full set (D66).
-        listed, meta = bounded(sorted(codes))
+        # `.codes`, not the object: the payload's shape is a measured prompt and
+        # the declared system is not in it (D64, D66, D111).
+        listed, meta = bounded(sorted(value_set.codes))
         return {"value_set_id": value_set_id, "codes": listed, **meta}
 
     toolset.tools = {

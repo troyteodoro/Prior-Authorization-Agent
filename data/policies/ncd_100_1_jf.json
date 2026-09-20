@@ -231,6 +231,7 @@
       "id": "t2dm_bmi_under_35",
       "label": "Bariatric surgery for T2DM with BMI below 35 is nationally non-covered",
       "procedure_scope": "nationally_covered",
+      "kind": "bmi_below_bound_with_active_condition",
       "claim": {
         "document_id": "ncd_100_1",
         "char_start": 14616,

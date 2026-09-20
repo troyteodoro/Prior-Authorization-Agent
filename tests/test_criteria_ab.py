@@ -16,7 +16,13 @@ from pathlib import Path
 
 import pytest
 
-from pa_agent.contracts import Condition, CriterionVerdict, EvidenceSpan, Observation
+from pa_agent.contracts import (
+    CodedValueSet,
+    Condition,
+    CriterionVerdict,
+    EvidenceSpan,
+    Observation,
+)
 from pa_agent.criteria import (
     BMI_LOINC,
     CitationInsufficient,
@@ -36,6 +42,7 @@ PATIENT_MANIFEST = REPO_ROOT / "data" / "patients" / "manifest.json"
 CRITERIA_MODULE = REPO_ROOT / "pa_agent" / "criteria.py"
 
 AS_OF = date(2026, 9, 1)  # the population's recorded reference date (D35)
+SNOMED = "http://snomed.info/sct"
 SNOMED_T2DM = "44054006"
 SYNTH_SPAN = EvidenceSpan(document_id="synthetic", char_start=0, char_end=10)
 
@@ -51,9 +58,13 @@ def criterion_b():
 
 
 @pytest.fixture(scope="module")
-def value_set() -> frozenset[str]:
+def value_set() -> CodedValueSet:
     data = json.loads(VALUESET_PATH.read_text(encoding="utf-8"))
-    return frozenset(e["code"] for e in data["entries"])
+    return CodedValueSet(
+        value_set_id=data["value_set_id"],
+        system=data["system"],
+        codes=frozenset(e["code"] for e in data["entries"]),
+    )
 
 
 @pytest.fixture(scope="module")
@@ -229,12 +240,12 @@ def test_a_patient_with_no_valueset_comorbidity_abstains(
 def test_a_resolved_comorbidity_does_not_count(criterion_b, value_set):
     """The false MET the clinical_status field exists to prevent (D39)."""
     resolved = Condition(
-        code=SNOMED_T2DM, clinical_status="resolved", span=SYNTH_SPAN
+        code=SNOMED_T2DM, system=SNOMED, clinical_status="resolved", span=SYNTH_SPAN
     )
     result = evaluate_criterion_b(criterion_b, [resolved], value_set)
     assert result.verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
 
-    active = Condition(code=SNOMED_T2DM, clinical_status="active", span=SYNTH_SPAN)
+    active = Condition(code=SNOMED_T2DM, system=SNOMED, clinical_status="active", span=SYNTH_SPAN)
     result = evaluate_criterion_b(criterion_b, [active], value_set)
     assert result.verdict is CriterionVerdict.MET
 
@@ -242,7 +253,7 @@ def test_a_resolved_comorbidity_does_not_count(criterion_b, value_set):
 def test_a_condition_outside_the_value_set_does_not_count(criterion_b, value_set):
     """Prediabetes is in the population and not in Group 1."""
     prediabetes = Condition(
-        code="714628002", clinical_status="active", span=SYNTH_SPAN
+        code="714628002", system=SNOMED, clinical_status="active", span=SYNTH_SPAN
     )
     result = evaluate_criterion_b(criterion_b, [prediabetes], value_set)
     assert result.verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE

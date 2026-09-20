@@ -34,11 +34,12 @@ from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
 from pa_agent.contracts import (
+    CodedValueSet,
     Condition,
     CriteriaTree,
     Document,
+    Medication,
     Observation,
-    PredicateKind,
     RunTrace,
 )
 from pa_agent.stores.patient import PatientStore
@@ -72,7 +73,12 @@ class RetrievalResult:
 
     observations: list[Observation] = field(default_factory=list)
     conditions: list[Condition] = field(default_factory=list)
-    value_set: frozenset[str] = frozenset()
+    medications: list[Medication] = field(default_factory=list)
+    #: `{value_set_id -> the set}`, one entry per criterion that names one.
+    #: **Was a single `value_set`**, fetched through `only_criterion_of_kind`,
+    #: which was true while one tree declared one membership criterion and
+    #: raises the moment a tree declares three (T-92, D111).
+    value_sets: dict[str, CodedValueSet] = field(default_factory=dict)
     notes: list[Document] = field(default_factory=list)
     #: `None` for a planner that made no model call, rather than an empty trace —
     #: an empty trace implies a run that recorded nothing (the distinction D62
@@ -82,6 +88,28 @@ class RetrievalResult:
     @property
     def document_ids(self) -> list[str]:
         return [note.document_id for note in self.notes]
+
+
+def declared_value_set_ids(tree: CriteriaTree) -> list[str]:
+    """Every `value_set_id` the tree's deterministic criteria name, in tree order.
+
+    Read off each criterion's own constants, never looked up by kind: a
+    criterion that needs a value set says so in the constant, and asking the
+    tree for *the* membership criterion is what `only_criterion_of_kind` does —
+    correct for one such criterion and a raise for three (D111). Duplicates
+    collapse, so two criteria naming one set cost one store read.
+    """
+    ids: list[str] = []
+    for criterion in tree.criteria:
+        if criterion.evaluation != "deterministic":
+            continue
+        constant = criterion.constants.get("value_set_id")
+        if constant is None:
+            continue
+        value = str(constant.value)
+        if value not in ids:
+            ids.append(value)
+    return ids
 
 
 @runtime_checkable
@@ -128,15 +156,15 @@ class FixedRetrievalPlanner:
         patient_store: PatientStore,
         policy_store: PolicyStore,
     ) -> RetrievalResult:
-        # The value set's id comes from the membership criterion's own constant,
-        # so no caller writes a code-system literal and the policy names what it
-        # needs (D52). Found by kind, never by id (D110).
-        value_set_id = tree.only_criterion_of_kind(
-            PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP
-        ).require("value_set_id")
+        # Value set ids come from the criteria's own constants, so no caller
+        # writes a code-system literal and the policy names what it needs (D52).
         return RetrievalResult(
             observations=patient_store.get_observations(patient_id),
             conditions=patient_store.get_conditions(patient_id),
-            value_set=policy_store.get_value_set(value_set_id),
+            medications=patient_store.get_medications(patient_id),
+            value_sets={
+                value_set_id: policy_store.get_value_set(value_set_id)
+                for value_set_id in declared_value_set_ids(tree)
+            },
             notes=patient_store.get_notes(patient_id),
         )

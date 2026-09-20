@@ -1,0 +1,36 @@
+{
+  "value_set_id": "rheumatoid_arthritis",
+  "task": "T-92",
+  "decision": "D111",
+  "status": "VERIFIED",
+  "system": "http://snomed.info/sct",
+  "system_note": "SNOMED CT because that is what LocalPatientStore reports on Condition.code: 419 of the 421 conditions in the committed bundles carry this system. A set of A56432's ICD-10 codes would match nobody (D52, REQ-59).",
+  "sources": [
+    {
+      "document_id": "a56432",
+      "sha256": "846c2fd5bf932d8ec77888b7124fc1edf64a7c680afc23cc0bee015ccde00944"
+    }
+  ],
+  "compiled_from": "A56432's ICD-10-CM codes that support medical necessity, narrowed to the rheumatoid arthritis indication. The article's Group 1 carries 406 codes across every indication L35677 covers -- Crohn's disease, psoriasis, sarcoidosis and the rest -- and this tree is compiled for the rheumatoid arthritis bullet alone, so the set is that bullet's subset and says so.",
+  "entries": [
+    {
+      "system": "http://snomed.info/sct",
+      "code": "69896004",
+      "display": "Rheumatoid arthritis (disorder)",
+      "icd10_anchor": {
+        "system": "ICD-10-CM",
+        "code": "M06.9",
+        "document_id": "a56432",
+        "char_start": 28356,
+        "char_end": 28396,
+        "quote": "M06.9\n\nRheumatoid arthritis, unspecified"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "SNOMED CT 69896004 and ICD-10-CM M06.9 both denote rheumatoid arthritis. No corpus document and no credential-free re-downloadable source binds the two systems -- D36's finding, re-checked for T-92: the SNOMED browser API answers 405 and the NLM clinical tables carry no SNOMED identifier. The SNOMED code is the one Synthea's own rheumatoid_arthritis module emits (ConditionOnset, SNOMED-CT 69896004), read from modules/rheumatoid_arthritis.json inside the pinned synthea-with-dependencies.jar, so it is the code a chart in this corpus actually carries rather than one recalled."
+      }
+    }
+  ],
+  "known_limit": "One entry. A chart coding rheumatoid arthritis more specifically -- seropositive, or by joint -- abstains rather than matching, which is a false abstention and not a false verdict. Widening it needs a SNOMED source this project can re-read, which is the same thing D36 was blocked on."
+}

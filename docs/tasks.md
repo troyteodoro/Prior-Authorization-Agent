@@ -17,9 +17,12 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-92`, row 2 of `v1.2` in `Roadmap after v1.1` below.**
-**v1.2 is open**: `T-91` closed it row 1 and minted REQ-57 and REQ-58 *(D109,
-D110)*. Acceptance gates A1–A9 all hold and US-1 through US-7 and US-9 are
+**What to do next: `T-93`, row 3 of `v1.2` in `Roadmap after v1.1` below.**
+**v1.2 is open**: `T-91` closed row 1 and minted REQ-57 and REQ-58 *(D109,
+D110)*; `T-92` closed row 2 and minted REQ-59 and REQ-60 *(D111)*. Row 3's
+exit was rewritten at T-92's close, because the document chosen by fetching
+its header states no trial duration and no screening requirement and no
+Medicare rheumatology LCD does *(D111)*. Acceptance gates A1–A9 all hold and US-1 through US-7 and US-9 are
 delivered; **v1 and v1.1 are both complete.** v1.1 — the round D97 opened as
 "v2" and D105 renamed — was spec §10's list of known limits, P1–P8,
 sequenced into one task each,
@@ -32,9 +35,9 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-one tasks are on this board — IDs run to T-91 but numbering is not
+Seventy-two tasks are on this board — IDs run to T-92 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **71 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **72 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -146,8 +149,8 @@ declared unclaimed and abstain; their extraction is v1.6's.
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the predicate vocabulary is explicit | `T-91` | **closed** (D110) | every tree predicate declares its kind; a kind the engine lacks raises at load, never abstains (D31's shape); every gate green |
-| 2 | rheumatoid arthritis: source and tree | `T-92` | pending | governing document chosen by fetching its header (D97's Palmetto correction), hashed into `sources.json`, `verify_sources.py --offline` green; tree compiled; judgment-shaped criteria declared unclaimed, none omitted |
-| 3 | rheumatoid arthritis: patients and eval rows | `T-93` | pending | Synthea patients or declared additions (D73's shape); rows for `MET`, `NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen; `run_eval.py` green |
+| 2 | rheumatoid arthritis: source and tree | `T-92` | **closed** (D111) | governing document chosen by fetching its header (D97's Palmetto correction), hashed into `sources.json`, `verify_sources.py --offline` green; tree compiled; judgment-shaped criteria declared unclaimed, none omitted |
+| 3 | rheumatoid arthritis: patients and eval rows | `T-93` | pending | Synthea patients or declared additions (D73's shape); rows for a criterion `MET`, a `NOT_COVERED` on the combination limitation, and an abstention; `run_eval.py` green. **Rewritten by D111** from "`NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen": L35677 states neither, and no Medicare rheumatology LCD does |
 | 4 | ultrasound: source, tree, patients and rows | `T-94` | pending | as rows 2 and 3; rows for `MET`, `NOT_MET` on a frequency limit, `NO_POLICY_FOUND` for an unlisted code |
 | 5 | the compatibility account | `T-95` | pending | `eval/report.md` renders, per practice, each criterion as evaluated by an existing kind / a new kind / unclaimed; `build_report.py --verify` green; README's degradation section gains the paragraph |
 
@@ -1744,6 +1747,65 @@ unchanged (T-30, D77).
 ---
 
 ## `US-10` Take a new practice's coverage rules without a rewrite
+
+### `[x] T-92` Rheumatoid arthritis: the source and the tree
+
+**REQ:** 59, 60 · **Depends:** T-91 *(D110)* · **Blocks:** T-93, T-95 ·
+**Decided by:** D111 · **Gates:** A10 (second of five rows) · **Timebox:**
+one day
+**Status:** **closed** (D111) — the exit ran green and every gate with it.
+No bariatric verdict, span, eval row or recording moved; the two figures in
+`README.md` and `CLAUDE.md` that the suite owns were re-derived.
+**Exit:**
+
+```
+./venv/bin/python scripts/verify_sources.py --offline \
+ && ./venv/bin/python -m pytest tests/test_infliximab_tree.py tests/test_criteria_tree.py tests/test_valueset_port.py tests/test_resolver.py tests/test_predicate_kinds.py -q --color=no \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: L35677 and A56432 are in the hashed corpus with four answers
+(q7–q10) that slice back, and the five documents already committed are
+carried forward byte-identical; `infliximab-ra-jjm-v1` loads, every
+criterion it declares deterministic names a kind the engine implements and
+every criterion it declares unclaimed names none and carries a note; every
+constant slices back into the document it cites; `J1745` in an Alabama
+request resolves to it while `43775` in the same state still resolves to
+`ncd-100.1-jjm-v1`; a determination over a rheumatology chart produces a
+verdict for all five criteria with zero model calls; the combination
+limitation denies with its prescriptions cited; and every value set declares
+the one system its membership is tested in.
+
+**What it delivers.** The second practice, from a document chosen the way
+D97 chose Palmetto's — by fetching four candidates' headers and reading what
+they say. `MEDICATION_VALUE_SET_ACTIVE` on the contract with its predicate
+and its step; `ExclusionKind`, `criteria.EXCLUSIONS` and
+`evaluate_exclusion`, the exclusion counterpart of T-91's dispatch;
+`CodedValueSet` and system-scoped membership; `get_medications` on the
+patient port; `RetrievalResult.value_sets`, plural, read off each
+criterion's own constant instead of through `only_criterion_of_kind`; and
+the store's one-tree-per-state rule replaced by the code-level collision
+that a request actually resolves through.
+
+**What the document turned out to say.** Four of its six statements are
+judgment or are absent from the coded record — NYHA class is not in ICD-10,
+*"untreated"* is a judgment, disease activity is a clinical assessment — so
+they are declared unclaimed, abstained on and never omitted. Each is
+unclaimed because of the document or the chart, never because the engine
+lacks a predicate, which is the distinction REQ-57 exists to keep and the
+one this task was most able to blur.
+
+**What it mints.** REQ-59 and REQ-60, the two of v1.2's remaining statements
+that have a check at this close. The third waits for T-94, minus medication
+trial duration: no Medicare rheumatology LCD states one *(D111)*.
+
+**What it rewrote.** Row 3's exit, before it opened. The board asked for a
+`NOT_MET` on trial duration and an `INSUFFICIENT_EVIDENCE` on a missing
+screen; L35677 states neither, and the one quantified trial in it belongs to
+its pulmonary sarcoidosis bullet. D97's Palmetto correction, one row later.
+
+---
 
 ### `[x] T-91` The predicate vocabulary is explicit
 

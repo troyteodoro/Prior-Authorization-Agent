@@ -354,6 +354,23 @@ would not. An unclaimed criterion declares no kind; the declaration and the
 abstention are one statement, and a criterion the engine can evaluate is
 evaluated. *(T-87, T-91, D101, D110)*
 
+**REQ-59** A value set declares the one code system its entries are in, and
+membership is tested **within that system**: a code matches only when the
+resource carrying it declares the same system, and a resource declaring none
+is not a member. A value set whose entries are not all in its declared system
+**fails to load**. A set of one vocabulary's codes compared against a plane
+that speaks another loads cleanly, compares cleanly and matches nobody, and
+every verdict downstream agrees with it. *(T-92, D52, D111)*
+
+**REQ-60** A categorical exclusion declares the `kind` that evaluates it and
+the procedure set it reaches, and the set is compared against the set the
+request resolved in. An exclusion whose kind the engine does not implement
+**fails to load**, for REQ-57's reason at higher stakes: a criterion that
+silently produces nothing approves past a requirement, and an exclusion that
+silently produces nothing approves past a denial the policy states outright.
+An exclusion that does not fire produces **nothing** — it is not a criterion
+and has no verdict to abstain with. *(T-92, D41, D111)*
+
 ### Verification
 
 **REQ-17** Each accepted verdict is checked by a verifier receiving only the
@@ -940,11 +957,17 @@ by the task whose close checks it, not by the version's opening commit)*.
 - **REQ-58**, minted by `T-91`. A tree may declare any criterion
   `evaluation: "unclaimed"`; the graph abstains on it with
   `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it *(generalising D101)*.
-- *Awaiting `T-92`.* A value set declares the code system of every entry;
-  membership is tested within the declared system.
-- *Awaiting `T-92` and `T-94`.* Medication trial duration, lab thresholds and
-  prior-procedure counts are computed by Python over structured resources,
-  cited to the resource.
+- **REQ-59**, minted by `T-92`. A value set declares the code system of every
+  entry; membership is tested within the declared system.
+- **REQ-60**, minted by `T-92`. A categorical exclusion declares its kind and
+  the procedure set it reaches; an unimplemented kind fails to load, and an
+  exclusion that does not fire produces nothing.
+- *Awaiting `T-94`.* Lab thresholds and prior-procedure counts are computed by
+  Python over structured resources, cited to the resource. **Medication trial
+  duration is not among them**: the rheumatology document chosen by fetching
+  its header states none, and no Medicare rheumatology LCD does — Part B drug
+  LCDs restate FDA labelling. The kind is earned by a document that quantifies
+  a trial, not by a task that needs one *(T-92, D111)*.
 - *Awaiting `T-95`.* `eval/report.md` carries the compatibility account,
   generated and verified.
 

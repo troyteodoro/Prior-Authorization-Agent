@@ -275,7 +275,7 @@ REQ ids are minted when the version's first task opens.
 ### `US-10` Take a new practice's coverage rules without a rewrite
 
 > **As** Dr. Vance
-> **I want** a rheumatology tree and an ultrasound tree to load beside the bariatric one and be checked by the same engine
+> **I want** a rheumatology tree and an ultrasound tree to load beside the bariatric ones and be checked by the same engine
 > **So that** I learn which of the engine's assumptions were bariatric surgery's, before a second practice depends on it
 
 **Version:** v1.2 · **Value:** the engine's claim is "what the tree
@@ -290,10 +290,15 @@ never needed.
   declares it unclaimed **Then** the determination abstains on it with
   `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it · *(REQ-58, T-91; D101;
   A10)*
-- **Given** a patient whose conventional DMARD trial is shorter than the
-  document requires **When** the determination runs **Then** that criterion is
-  `NOT_MET` with the medication resource cited, computed by Python over the
-  prescription dates · *(Article II; A10)*
+- **Given** a patient carrying the diagnosis and the concurrent drug the
+  document names **When** the determination runs **Then** both criteria are
+  `MET` citing the condition and the prescription, by set membership over
+  structured resources in each value set's declared code system · *(REQ-59,
+  T-92; Article II; A10)*
+- **Given** a patient on a drug the document's limitation excludes **When**
+  the determination runs **Then** the request is `NOT_COVERED` citing every
+  offending prescription, and a chart carrying none produces no exclusion
+  rather than a `MET` nobody can cite · *(REQ-60, T-92; A10)*
 - **Given** an ultrasound request past the document's frequency limit **When**
   the determination runs **Then** the criterion is `NOT_MET` with each prior
   study cited, counted by Python · *(A10)*

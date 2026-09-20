@@ -42,9 +42,10 @@ from datetime import date
 from pa_agent.contracts import (
     Determination,
     DeterminationOutcome,
+    ExclusionMatch,
     PredicateKind,
 )
-from pa_agent.criteria import evaluate_sc2
+from pa_agent.criteria import ExclusionInputs, evaluate_exclusion
 from pa_agent.resolver import (
     NoJurisdictionTree,
     NoPolicyFound,
@@ -56,7 +57,7 @@ from pa_agent.resolver import (
 from pa_agent.runners import ExtractionRunner
 from pa_agent.verifier import VerifierRunner
 from pa_agent.stores.patient import PatientStore
-from pa_agent.stores.policy import PolicyStore
+from pa_agent.stores.policy import PolicyRef, PolicyStore
 from pa_agent.workflow import run_criteria_workflow
 
 
@@ -157,51 +158,33 @@ def determine(
     if isinstance(resolution, NoPolicyFound):
         return NoPolicyResult(procedure_code=resolution.procedure_code)
 
-    if isinstance(resolution, ResolvedByContractor):
-        # REQ-42: same chain as `Resolved` (the criteria are the MAC's own), and
-        # sc2 is skipped — the 04/2009 exclusion names the nationally covered
-        # procedures and predates the 2012 LSG delegation, so it does not reach a
-        # procedure CMS had not yet delegated when it was written (D41).
-        return _criteria_determination(
-            store,
-            patient_store,
-            resolution.policy_ref,
-            patient_id,
-            as_of,
-            extraction_runner,
-            verifier,
-        )
-
-    assert isinstance(resolution, Resolved)
-    # sc2 runs before the criteria chain, and only for the nationally covered
-    # set — the 04/2009 exclusion names exactly those procedures and predates
-    # the LSG delegation, so contractor requests skip it (D41).
+    assert isinstance(resolution, (Resolved, ResolvedByContractor))
+    # sc2 runs before the criteria chain, for every exclusion whose declared
+    # scope is the set this request actually resolved in.
+    #
+    # **Was `!= "nationally_covered": continue`, in the `Resolved` branch
+    # only.** That was D41's rule written as a literal: the 04/2009 exclusion
+    # names exactly the nationally covered procedures and predates the 2012 LSG
+    # delegation, so it must not reach a procedure CMS had not yet delegated
+    # when it was written. Written as a comparison it says the same thing —
+    # that exclusion still never fires on a delegated code — and it admits a
+    # MAC's own exclusion over a delegated procedure, which is what L35677's
+    # LIMITATIONS paragraph is (T-92, D111).
     if patient_id is not None and patient_store is not None and as_of is not None:
-        tree = store.get_tree(resolution.policy_ref.policy_version_id)
-        # The window comes from the tree's BMI criterion, found by the kind it
-        # declares: an id means "BMI threshold" only inside one policy (D110).
-        lookback = tree.only_criterion_of_kind(
-            PredicateKind.BMI_OBSERVATION_THRESHOLD
-        ).require("lookback_months")
-        observations = patient_store.get_observations(patient_id)
-        conditions = patient_store.get_conditions(patient_id)
-        for exclusion in tree.categorical_exclusions:
-            if exclusion.procedure_scope != "nationally_covered":
-                continue
-            match = evaluate_sc2(
-                exclusion, observations, conditions, as_of, lookback
+        match = _exclusion_match(
+            store, patient_store, resolution.policy_ref, patient_id, as_of
+        )
+        if match is not None:
+            return Determination(
+                patient_id=patient_id,
+                procedure_code=procedure_code,
+                policy_version_id=resolution.policy_ref.policy_version_id,
+                outcome=DeterminationOutcome.NOT_COVERED,
+                coverage_claim=match.claim,
+                exclusion_evidence=match.evidence,
+                criterion_results=[],
+                metrics=[],
             )
-            if match is not None:
-                return Determination(
-                    patient_id=patient_id,
-                    procedure_code=procedure_code,
-                    policy_version_id=resolution.policy_ref.policy_version_id,
-                    outcome=DeterminationOutcome.NOT_COVERED,
-                    coverage_claim=match.claim,
-                    exclusion_evidence=match.evidence,
-                    criterion_results=[],
-                    metrics=[],
-                )
 
     return _criteria_determination(
         store,
@@ -212,6 +195,69 @@ def determine(
         extraction_runner,
         verifier,
     )
+
+
+def _exclusion_match(
+    store: PolicyStore,
+    patient_store: PatientStore,
+    policy_ref: PolicyRef,
+    patient_id: str,
+    as_of: date,
+) -> ExclusionMatch | None:
+    """The first categorical exclusion this request trips, or `None`.
+
+    Scope is a comparison, not a literal: an exclusion reaches a request only
+    when the set it declares is the set the code resolved in (D41 restated,
+    D111). Every exclusion the tree declares in scope is evaluated by the kind
+    it declares, and a kind the engine lacks raises rather than being skipped —
+    a skipped exclusion approves past a denial the policy states.
+    """
+    tree = store.get_tree(policy_ref.policy_version_id)
+    in_scope = [
+        exclusion
+        for exclusion in tree.categorical_exclusions
+        if exclusion.procedure_scope == policy_ref.coverage.value
+    ]
+    if not in_scope:
+        return None
+
+    # The window comes from the tree's BMI criterion, found by the kind it
+    # declares: an id means "BMI threshold" only inside one policy (D110). A
+    # tree with no such criterion supplies `None`, and the binder that needs a
+    # window raises rather than defaulting (D111).
+    bmi_criterion = next(
+        (
+            criterion
+            for criterion in tree.criteria
+            if criterion.evaluation == "deterministic"
+            and criterion.kind is PredicateKind.BMI_OBSERVATION_THRESHOLD
+        ),
+        None,
+    )
+    inputs = ExclusionInputs(
+        as_of=as_of,
+        observations=tuple(patient_store.get_observations(patient_id)),
+        conditions=tuple(patient_store.get_conditions(patient_id)),
+        medications=tuple(patient_store.get_medications(patient_id)),
+        value_sets={
+            value_set_id: store.get_value_set(value_set_id)
+            for value_set_id in sorted(
+                {
+                    str(exclusion.constants["value_set_id"].value)
+                    for exclusion in in_scope
+                    if "value_set_id" in exclusion.constants
+                }
+            )
+        },
+        lookback_months=(
+            bmi_criterion.require("lookback_months") if bmi_criterion else None
+        ),
+    )
+    for exclusion in in_scope:
+        match = evaluate_exclusion(exclusion, inputs)
+        if match is not None:
+            return match
+    return None
 
 
 def _criteria_determination(

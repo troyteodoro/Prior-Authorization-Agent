@@ -1,0 +1,2164 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Palmetto GBA
+
+A and B MAC
+
+10111 - MAC A
+
+J - J
+
+Alabama
+
+Palmetto GBA
+
+A and B MAC
+
+10112 - MAC B
+
+J - J
+
+Alabama
+
+Palmetto GBA
+
+A and B MAC
+
+10211 - MAC A
+
+J - J
+
+Georgia
+
+Palmetto GBA
+
+A and B MAC
+
+10212 - MAC B
+
+J - J
+
+Georgia
+
+Palmetto GBA
+
+A and B MAC
+
+10311 - MAC A
+
+J - J
+
+Tennessee
+
+Palmetto GBA
+
+A and B MAC
+
+10312 - MAC B
+
+J - J
+
+Tennessee
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11201 - MAC A
+
+J - M
+
+South Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11202 - MAC B
+
+J - M
+
+South Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11301 - MAC A
+
+J - M
+
+Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11302 - MAC B
+
+J - M
+
+Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11401 - MAC A
+
+J - M
+
+West Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11402 - MAC B
+
+J - M
+
+West Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11501 - MAC A
+
+J - M
+
+North Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11502 - MAC B
+
+J - M
+
+North Carolina
+
+Article Information
+
+General Information
+
+Source Article ID
+
+N/A
+
+Article ID
+
+A56432
+
+Original ICD-9 Article ID
+
+Not Applicable
+
+Article Title
+
+Billing and Coding: Infliximab
+
+Article Type
+
+Billing and Coding
+
+Original Effective Date
+
+04/11/2019
+
+Revision Effective Date
+
+01/01/2026
+
+Revision Ending Date
+
+N/A
+
+Retirement Date
+
+N/A
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+CMS National Coverage Policy
+
+Title XVIII of the Social Security Act 1833(e) prohibits Medicare payment for any claim lacking the necessary documentation to process the claim.
+
+CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 17, §40 Discarded Drugs and Biologicals
+
+Article Guidance
+
+Article Text
+
+The information in this article contains billing, coding or other guidelines that complement the Local Coverage Determination (LCD) for Infliximab L35677.
+
+Response To Comments
+
+Number
+Comment
+Response
+
+1
+
+N/A
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Modifiers
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+(406 Codes)
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+Code
+Description
+
+D86.0
+
+Sarcoidosis of lung
+
+D86.1
+
+Sarcoidosis of lymph nodes
+
+D86.2
+
+Sarcoidosis of lung with sarcoidosis of lymph nodes
+
+D86.3
+
+Sarcoidosis of skin
+
+D86.81
+
+Sarcoid meningitis
+
+D86.82
+
+Multiple cranial nerve palsies in sarcoidosis
+
+D86.83
+
+Sarcoid iridocyclitis
+
+D86.84
+
+Sarcoid pyelonephritis
+
+D86.85
+
+Sarcoid myocarditis
+
+D86.86
+
+Sarcoid arthropathy
+
+D86.87
+
+Sarcoid myositis
+
+D86.89
+
+Sarcoidosis of other sites
+
+D86.9
+
+Sarcoidosis, unspecified
+
+H44.111
+
+Panuveitis, right eye
+
+H44.112
+
+Panuveitis, left eye
+
+H44.113
+
+Panuveitis, bilateral
+
+H44.119
+
+Panuveitis, unspecified eye
+
+I30.8
+
+Other forms of acute pericarditis
+
+I30.9
+
+Acute pericarditis, unspecified
+
+I40.8
+
+Other acute myocarditis
+
+I40.9
+
+Acute myocarditis, unspecified
+
+J70.2
+
+Acute drug-induced interstitial lung disorders
+
+J70.4
+
+Drug-induced interstitial lung disorders, unspecified
+
+K50.00
+
+Crohn's disease of small intestine without complications
+
+K50.011
+
+Crohn's disease of small intestine with rectal bleeding
+
+K50.012
+
+Crohn's disease of small intestine with intestinal obstruction
+
+K50.013
+
+Crohn's disease of small intestine with fistula
+
+K50.014
+
+Crohn's disease of small intestine with abscess
+
+K50.018
+
+Crohn's disease of small intestine with other complication
+
+K50.019
+
+Crohn's disease of small intestine with unspecified complications
+
+K50.10
+
+Crohn's disease of large intestine without complications
+
+K50.111
+
+Crohn's disease of large intestine with rectal bleeding
+
+K50.112
+
+Crohn's disease of large intestine with intestinal obstruction
+
+K50.113
+
+Crohn's disease of large intestine with fistula
+
+K50.114
+
+Crohn's disease of large intestine with abscess
+
+K50.118
+
+Crohn's disease of large intestine with other complication
+
+K50.119
+
+Crohn's disease of large intestine with unspecified complications
+
+K50.80
+
+Crohn's disease of both small and large intestine without complications
+
+K50.811
+
+Crohn's disease of both small and large intestine with rectal bleeding
+
+K50.812
+
+Crohn's disease of both small and large intestine with intestinal obstruction
+
+K50.813
+
+Crohn's disease of both small and large intestine with fistula
+
+K50.814
+
+Crohn's disease of both small and large intestine with abscess
+
+K50.818
+
+Crohn's disease of both small and large intestine with other complication
+
+K50.819
+
+Crohn's disease of both small and large intestine with unspecified complications
+
+K50.90
+
+Crohn's disease, unspecified, without complications
+
+K50.911
+
+Crohn's disease, unspecified, with rectal bleeding
+
+K50.912
+
+Crohn's disease, unspecified, with intestinal obstruction
+
+K50.913
+
+Crohn's disease, unspecified, with fistula
+
+K50.914
+
+Crohn's disease, unspecified, with abscess
+
+K50.918
+
+Crohn's disease, unspecified, with other complication
+
+K50.919
+
+Crohn's disease, unspecified, with unspecified complications
+
+K51.00
+
+Ulcerative (chronic) pancolitis without complications
+
+K51.011
+
+Ulcerative (chronic) pancolitis with rectal bleeding
+
+K51.012
+
+Ulcerative (chronic) pancolitis with intestinal obstruction
+
+K51.013
+
+Ulcerative (chronic) pancolitis with fistula
+
+K51.014
+
+Ulcerative (chronic) pancolitis with abscess
+
+K51.018
+
+Ulcerative (chronic) pancolitis with other complication
+
+K51.019
+
+Ulcerative (chronic) pancolitis with unspecified complications
+
+K51.20
+
+Ulcerative (chronic) proctitis without complications
+
+K51.211
+
+Ulcerative (chronic) proctitis with rectal bleeding
+
+K51.212
+
+Ulcerative (chronic) proctitis with intestinal obstruction
+
+K51.213
+
+Ulcerative (chronic) proctitis with fistula
+
+K51.214
+
+Ulcerative (chronic) proctitis with abscess
+
+K51.218
+
+Ulcerative (chronic) proctitis with other complication
+
+K51.219
+
+Ulcerative (chronic) proctitis with unspecified complications
+
+K51.30
+
+Ulcerative (chronic) rectosigmoiditis without complications
+
+K51.311
+
+Ulcerative (chronic) rectosigmoiditis with rectal bleeding
+
+K51.312
+
+Ulcerative (chronic) rectosigmoiditis with intestinal obstruction
+
+K51.313
+
+Ulcerative (chronic) rectosigmoiditis with fistula
+
+K51.314
+
+Ulcerative (chronic) rectosigmoiditis with abscess
+
+K51.318
+
+Ulcerative (chronic) rectosigmoiditis with other complication
+
+K51.319
+
+Ulcerative (chronic) rectosigmoiditis with unspecified complications
+
+K51.50
+
+Left sided colitis without complications
+
+K51.511
+
+Left sided colitis with rectal bleeding
+
+K51.512
+
+Left sided colitis with intestinal obstruction
+
+K51.513
+
+Left sided colitis with fistula
+
+K51.514
+
+Left sided colitis with abscess
+
+K51.518
+
+Left sided colitis with other complication
+
+K51.519
+
+Left sided colitis with unspecified complications
+
+K51.80
+
+Other ulcerative colitis without complications
+
+K51.811
+
+Other ulcerative colitis with rectal bleeding
+
+K51.812
+
+Other ulcerative colitis with intestinal obstruction
+
+K51.813
+
+Other ulcerative colitis with fistula
+
+K51.814
+
+Other ulcerative colitis with abscess
+
+K51.818
+
+Other ulcerative colitis with other complication
+
+K51.819
+
+Other ulcerative colitis with unspecified complications
+
+K51.90
+
+Ulcerative colitis, unspecified, without complications
+
+K51.911
+
+Ulcerative colitis, unspecified with rectal bleeding
+
+K51.912
+
+Ulcerative colitis, unspecified with intestinal obstruction
+
+K51.913
+
+Ulcerative colitis, unspecified with fistula
+
+K51.914
+
+Ulcerative colitis, unspecified with abscess
+
+K51.918
+
+Ulcerative colitis, unspecified with other complication
+
+K51.919
+
+Ulcerative colitis, unspecified with unspecified complications
+
+K52.1
+
+Toxic gastroenteritis and colitis
+
+K63.2
+
+Fistula of intestine
+
+L40.0
+
+Psoriasis vulgaris
+
+L40.1
+
+Generalized pustular psoriasis
+
+L40.2
+
+Acrodermatitis continua
+
+L40.3
+
+Pustulosis palmaris et plantaris
+
+L40.4
+
+Guttate psoriasis
+
+L40.50
+
+Arthropathic psoriasis, unspecified
+
+L40.51
+
+Distal interphalangeal psoriatic arthropathy
+
+L40.52
+
+Psoriatic arthritis mutilans
+
+L40.53
+
+Psoriatic spondylitis
+
+L40.54
+
+Psoriatic juvenile arthropathy
+
+L40.59
+
+Other psoriatic arthropathy
+
+L40.8
+
+Other psoriasis
+
+L40.9
+
+Psoriasis, unspecified
+
+L73.2
+
+Hidradenitis suppurativa
+
+M02.30
+
+Reiter's disease, unspecified site
+
+M02.311
+
+Reiter's disease, right shoulder
+
+M02.312
+
+Reiter's disease, left shoulder
+
+M02.319
+
+Reiter's disease, unspecified shoulder
+
+M02.321
+
+Reiter's disease, right elbow
+
+M02.322
+
+Reiter's disease, left elbow
+
+M02.329
+
+Reiter's disease, unspecified elbow
+
+M02.331
+
+Reiter's disease, right wrist
+
+M02.332
+
+Reiter's disease, left wrist
+
+M02.339
+
+Reiter's disease, unspecified wrist
+
+M02.341
+
+Reiter's disease, right hand
+
+M02.342
+
+Reiter's disease, left hand
+
+M02.349
+
+Reiter's disease, unspecified hand
+
+M02.351
+
+Reiter's disease, right hip
+
+M02.352
+
+Reiter's disease, left hip
+
+M02.359
+
+Reiter's disease, unspecified hip
+
+M02.361
+
+Reiter's disease, right knee
+
+M02.362
+
+Reiter's disease, left knee
+
+M02.369
+
+Reiter's disease, unspecified knee
+
+M02.371
+
+Reiter's disease, right ankle and foot
+
+M02.372
+
+Reiter's disease, left ankle and foot
+
+M02.379
+
+Reiter's disease, unspecified ankle and foot
+
+M02.38
+
+Reiter's disease, vertebrae
+
+M02.39
+
+Reiter's disease, multiple sites
+
+M02.80
+
+Other reactive arthropathies, unspecified site
+
+M02.811
+
+Other reactive arthropathies, right shoulder
+
+M02.812
+
+Other reactive arthropathies, left shoulder
+
+M02.819
+
+Other reactive arthropathies, unspecified shoulder
+
+M02.831
+
+Other reactive arthropathies, right wrist
+
+M02.832
+
+Other reactive arthropathies, left wrist
+
+M02.839
+
+Other reactive arthropathies, unspecified wrist
+
+M02.841
+
+Other reactive arthropathies, right hand
+
+M02.842
+
+Other reactive arthropathies, left hand
+
+M02.849
+
+Other reactive arthropathies, unspecified hand
+
+M02.851
+
+Other reactive arthropathies, right hip
+
+M02.852
+
+Other reactive arthropathies, left hip
+
+M02.859
+
+Other reactive arthropathies, unspecified hip
+
+M02.861
+
+Other reactive arthropathies, right knee
+
+M02.862
+
+Other reactive arthropathies, left knee
+
+M02.869
+
+Other reactive arthropathies, unspecified knee
+
+M02.871
+
+Other reactive arthropathies, right ankle and foot
+
+M02.872
+
+Other reactive arthropathies, left ankle and foot
+
+M02.879
+
+Other reactive arthropathies, unspecified ankle and foot
+
+M02.88
+
+Other reactive arthropathies, vertebrae
+
+M02.89
+
+Other reactive arthropathies, multiple sites
+
+M02.9
+
+Reactive arthropathy, unspecified
+
+M05.20
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified site
+
+M05.211
+
+Rheumatoid vasculitis with rheumatoid arthritis of right shoulder
+
+M05.212
+
+Rheumatoid vasculitis with rheumatoid arthritis of left shoulder
+
+M05.219
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified shoulder
+
+M05.221
+
+Rheumatoid vasculitis with rheumatoid arthritis of right elbow
+
+M05.222
+
+Rheumatoid vasculitis with rheumatoid arthritis of left elbow
+
+M05.229
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified elbow
+
+M05.231
+
+Rheumatoid vasculitis with rheumatoid arthritis of right wrist
+
+M05.232
+
+Rheumatoid vasculitis with rheumatoid arthritis of left wrist
+
+M05.239
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified wrist
+
+M05.241
+
+Rheumatoid vasculitis with rheumatoid arthritis of right hand
+
+M05.242
+
+Rheumatoid vasculitis with rheumatoid arthritis of left hand
+
+M05.249
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified hand
+
+M05.251
+
+Rheumatoid vasculitis with rheumatoid arthritis of right hip
+
+M05.252
+
+Rheumatoid vasculitis with rheumatoid arthritis of left hip
+
+M05.259
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified hip
+
+M05.261
+
+Rheumatoid vasculitis with rheumatoid arthritis of right knee
+
+M05.262
+
+Rheumatoid vasculitis with rheumatoid arthritis of left knee
+
+M05.269
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified knee
+
+M05.271
+
+Rheumatoid vasculitis with rheumatoid arthritis of right ankle and foot
+
+M05.272
+
+Rheumatoid vasculitis with rheumatoid arthritis of left ankle and foot
+
+M05.279
+
+Rheumatoid vasculitis with rheumatoid arthritis of unspecified ankle and foot
+
+M05.29
+
+Rheumatoid vasculitis with rheumatoid arthritis of multiple sites
+
+M05.30
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified site
+
+M05.311
+
+Rheumatoid heart disease with rheumatoid arthritis of right shoulder
+
+M05.312
+
+Rheumatoid heart disease with rheumatoid arthritis of left shoulder
+
+M05.319
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified shoulder
+
+M05.321
+
+Rheumatoid heart disease with rheumatoid arthritis of right elbow
+
+M05.322
+
+Rheumatoid heart disease with rheumatoid arthritis of left elbow
+
+M05.329
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified elbow
+
+M05.331
+
+Rheumatoid heart disease with rheumatoid arthritis of right wrist
+
+M05.332
+
+Rheumatoid heart disease with rheumatoid arthritis of left wrist
+
+M05.339
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified wrist
+
+M05.341
+
+Rheumatoid heart disease with rheumatoid arthritis of right hand
+
+M05.342
+
+Rheumatoid heart disease with rheumatoid arthritis of left hand
+
+M05.349
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified hand
+
+M05.351
+
+Rheumatoid heart disease with rheumatoid arthritis of right hip
+
+M05.352
+
+Rheumatoid heart disease with rheumatoid arthritis of left hip
+
+M05.359
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified hip
+
+M05.361
+
+Rheumatoid heart disease with rheumatoid arthritis of right knee
+
+M05.362
+
+Rheumatoid heart disease with rheumatoid arthritis of left knee
+
+M05.369
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified knee
+
+M05.371
+
+Rheumatoid heart disease with rheumatoid arthritis of right ankle and foot
+
+M05.372
+
+Rheumatoid heart disease with rheumatoid arthritis of left ankle and foot
+
+M05.379
+
+Rheumatoid heart disease with rheumatoid arthritis of unspecified ankle and foot
+
+M05.39
+
+Rheumatoid heart disease with rheumatoid arthritis of multiple sites
+
+M05.40
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified site
+
+M05.411
+
+Rheumatoid myopathy with rheumatoid arthritis of right shoulder
+
+M05.412
+
+Rheumatoid myopathy with rheumatoid arthritis of left shoulder
+
+M05.419
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified shoulder
+
+M05.421
+
+Rheumatoid myopathy with rheumatoid arthritis of right elbow
+
+M05.422
+
+Rheumatoid myopathy with rheumatoid arthritis of left elbow
+
+M05.429
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified elbow
+
+M05.431
+
+Rheumatoid myopathy with rheumatoid arthritis of right wrist
+
+M05.432
+
+Rheumatoid myopathy with rheumatoid arthritis of left wrist
+
+M05.439
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified wrist
+
+M05.441
+
+Rheumatoid myopathy with rheumatoid arthritis of right hand
+
+M05.442
+
+Rheumatoid myopathy with rheumatoid arthritis of left hand
+
+M05.449
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified hand
+
+M05.451
+
+Rheumatoid myopathy with rheumatoid arthritis of right hip
+
+M05.452
+
+Rheumatoid myopathy with rheumatoid arthritis of left hip
+
+M05.459
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified hip
+
+M05.461
+
+Rheumatoid myopathy with rheumatoid arthritis of right knee
+
+M05.462
+
+Rheumatoid myopathy with rheumatoid arthritis of left knee
+
+M05.469
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified knee
+
+M05.471
+
+Rheumatoid myopathy with rheumatoid arthritis of right ankle and foot
+
+M05.472
+
+Rheumatoid myopathy with rheumatoid arthritis of left ankle and foot
+
+M05.479
+
+Rheumatoid myopathy with rheumatoid arthritis of unspecified ankle and foot
+
+M05.49
+
+Rheumatoid myopathy with rheumatoid arthritis of multiple sites
+
+M05.50
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified site
+
+M05.511
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of right shoulder
+
+M05.512
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of left shoulder
+
+M05.519
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified shoulder
+
+M05.521
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of right elbow
+
+M05.522
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of left elbow
+
+M05.529
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified elbow
+
+M05.531
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of right wrist
+
+M05.532
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of left wrist
+
+M05.539
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified wrist
+
+M05.541
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of right hand
+
+M05.542
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of left hand
+
+M05.549
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified hand
+
+M05.551
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of right hip
+
+M05.552
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of left hip
+
+M05.559
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified hip
+
+M05.561
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of right knee
+
+M05.562
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of left knee
+
+M05.569
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified knee
+
+M05.571
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of right ankle and foot
+
+M05.572
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of left ankle and foot
+
+M05.579
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of unspecified ankle and foot
+
+M05.59
+
+Rheumatoid polyneuropathy with rheumatoid arthritis of multiple sites
+
+M05.60
+
+Rheumatoid arthritis of unspecified site with involvement of other organs and systems
+
+M05.611
+
+Rheumatoid arthritis of right shoulder with involvement of other organs and systems
+
+M05.612
+
+Rheumatoid arthritis of left shoulder with involvement of other organs and systems
+
+M05.619
+
+Rheumatoid arthritis of unspecified shoulder with involvement of other organs and systems
+
+M05.621
+
+Rheumatoid arthritis of right elbow with involvement of other organs and systems
+
+M05.622
+
+Rheumatoid arthritis of left elbow with involvement of other organs and systems
+
+M05.629
+
+Rheumatoid arthritis of unspecified elbow with involvement of other organs and systems
+
+M05.631
+
+Rheumatoid arthritis of right wrist with involvement of other organs and systems
+
+M05.632
+
+Rheumatoid arthritis of left wrist with involvement of other organs and systems
+
+M05.639
+
+Rheumatoid arthritis of unspecified wrist with involvement of other organs and systems
+
+M05.641
+
+Rheumatoid arthritis of right hand with involvement of other organs and systems
+
+M05.642
+
+Rheumatoid arthritis of left hand with involvement of other organs and systems
+
+M05.649
+
+Rheumatoid arthritis of unspecified hand with involvement of other organs and systems
+
+M05.651
+
+Rheumatoid arthritis of right hip with involvement of other organs and systems
+
+M05.652
+
+Rheumatoid arthritis of left hip with involvement of other organs and systems
+
+M05.659
+
+Rheumatoid arthritis of unspecified hip with involvement of other organs and systems
+
+M05.661
+
+Rheumatoid arthritis of right knee with involvement of other organs and systems
+
+M05.662
+
+Rheumatoid arthritis of left knee with involvement of other organs and systems
+
+M05.669
+
+Rheumatoid arthritis of unspecified knee with involvement of other organs and systems
+
+M05.671
+
+Rheumatoid arthritis of right ankle and foot with involvement of other organs and systems
+
+M05.672
+
+Rheumatoid arthritis of left ankle and foot with involvement of other organs and systems
+
+M05.679
+
+Rheumatoid arthritis of unspecified ankle and foot with involvement of other organs and systems
+
+M05.69
+
+Rheumatoid arthritis of multiple sites with involvement of other organs and systems
+
+M05.70
+
+Rheumatoid arthritis with rheumatoid factor of unspecified site without organ or systems involvement
+
+M05.711
+
+Rheumatoid arthritis with rheumatoid factor of right shoulder without organ or systems involvement
+
+M05.712
+
+Rheumatoid arthritis with rheumatoid factor of left shoulder without organ or systems involvement
+
+M05.719
+
+Rheumatoid arthritis with rheumatoid factor of unspecified shoulder without organ or systems involvement
+
+M05.721
+
+Rheumatoid arthritis with rheumatoid factor of right elbow without organ or systems involvement
+
+M05.722
+
+Rheumatoid arthritis with rheumatoid factor of left elbow without organ or systems involvement
+
+M05.729
+
+Rheumatoid arthritis with rheumatoid factor of unspecified elbow without organ or systems involvement
+
+M05.731
+
+Rheumatoid arthritis with rheumatoid factor of right wrist without organ or systems involvement
+
+M05.732
+
+Rheumatoid arthritis with rheumatoid factor of left wrist without organ or systems involvement
+
+M05.739
+
+Rheumatoid arthritis with rheumatoid factor of unspecified wrist without organ or systems involvement
+
+M05.741
+
+Rheumatoid arthritis with rheumatoid factor of right hand without organ or systems involvement
+
+M05.742
+
+Rheumatoid arthritis with rheumatoid factor of left hand without organ or systems involvement
+
+M05.749
+
+Rheumatoid arthritis with rheumatoid factor of unspecified hand without organ or systems involvement
+
+M05.751
+
+Rheumatoid arthritis with rheumatoid factor of right hip without organ or systems involvement
+
+M05.752
+
+Rheumatoid arthritis with rheumatoid factor of left hip without organ or systems involvement
+
+M05.759
+
+Rheumatoid arthritis with rheumatoid factor of unspecified hip without organ or systems involvement
+
+M05.761
+
+Rheumatoid arthritis with rheumatoid factor of right knee without organ or systems involvement
+
+M05.762
+
+Rheumatoid arthritis with rheumatoid factor of left knee without organ or systems involvement
+
+M05.769
+
+Rheumatoid arthritis with rheumatoid factor of unspecified knee without organ or systems involvement
+
+M05.771
+
+Rheumatoid arthritis with rheumatoid factor of right ankle and foot without organ or systems involvement
+
+M05.772
+
+Rheumatoid arthritis with rheumatoid factor of left ankle and foot without organ or systems involvement
+
+M05.779
+
+Rheumatoid arthritis with rheumatoid factor of unspecified ankle and foot without organ or systems involvement
+
+M05.79
+
+Rheumatoid arthritis with rheumatoid factor of multiple sites without organ or systems involvement
+
+M05.80
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified site
+
+M05.811
+
+Other rheumatoid arthritis with rheumatoid factor of right shoulder
+
+M05.812
+
+Other rheumatoid arthritis with rheumatoid factor of left shoulder
+
+M05.819
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified shoulder
+
+M05.821
+
+Other rheumatoid arthritis with rheumatoid factor of right elbow
+
+M05.822
+
+Other rheumatoid arthritis with rheumatoid factor of left elbow
+
+M05.829
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified elbow
+
+M05.831
+
+Other rheumatoid arthritis with rheumatoid factor of right wrist
+
+M05.832
+
+Other rheumatoid arthritis with rheumatoid factor of left wrist
+
+M05.839
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified wrist
+
+M05.841
+
+Other rheumatoid arthritis with rheumatoid factor of right hand
+
+M05.842
+
+Other rheumatoid arthritis with rheumatoid factor of left hand
+
+M05.849
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified hand
+
+M05.851
+
+Other rheumatoid arthritis with rheumatoid factor of right hip
+
+M05.852
+
+Other rheumatoid arthritis with rheumatoid factor of left hip
+
+M05.859
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified hip
+
+M05.861
+
+Other rheumatoid arthritis with rheumatoid factor of right knee
+
+M05.862
+
+Other rheumatoid arthritis with rheumatoid factor of left knee
+
+M05.869
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified knee
+
+M05.871
+
+Other rheumatoid arthritis with rheumatoid factor of right ankle and foot
+
+M05.872
+
+Other rheumatoid arthritis with rheumatoid factor of left ankle and foot
+
+M05.879
+
+Other rheumatoid arthritis with rheumatoid factor of unspecified ankle and foot
+
+M05.89
+
+Other rheumatoid arthritis with rheumatoid factor of multiple sites
+
+M05.8A
+
+Other rheumatoid arthritis with rheumatoid factor of other specified site
+
+M05.9
+
+Rheumatoid arthritis with rheumatoid factor, unspecified
+
+M05.A
+
+Abnormal rheumatoid factor and anti-citrullinated protein antibody with rheumatoid arthritis
+
+M06.00
+
+Rheumatoid arthritis without rheumatoid factor, unspecified site
+
+M06.011
+
+Rheumatoid arthritis without rheumatoid factor, right shoulder
+
+M06.012
+
+Rheumatoid arthritis without rheumatoid factor, left shoulder
+
+M06.019
+
+Rheumatoid arthritis without rheumatoid factor, unspecified shoulder
+
+M06.021
+
+Rheumatoid arthritis without rheumatoid factor, right elbow
+
+M06.022
+
+Rheumatoid arthritis without rheumatoid factor, left elbow
+
+M06.029
+
+Rheumatoid arthritis without rheumatoid factor, unspecified elbow
+
+M06.031
+
+Rheumatoid arthritis without rheumatoid factor, right wrist
+
+M06.032
+
+Rheumatoid arthritis without rheumatoid factor, left wrist
+
+M06.039
+
+Rheumatoid arthritis without rheumatoid factor, unspecified wrist
+
+M06.041
+
+Rheumatoid arthritis without rheumatoid factor, right hand
+
+M06.042
+
+Rheumatoid arthritis without rheumatoid factor, left hand
+
+M06.049
+
+Rheumatoid arthritis without rheumatoid factor, unspecified hand
+
+M06.051
+
+Rheumatoid arthritis without rheumatoid factor, right hip
+
+M06.052
+
+Rheumatoid arthritis without rheumatoid factor, left hip
+
+M06.059
+
+Rheumatoid arthritis without rheumatoid factor, unspecified hip
+
+M06.061
+
+Rheumatoid arthritis without rheumatoid factor, right knee
+
+M06.062
+
+Rheumatoid arthritis without rheumatoid factor, left knee
+
+M06.069
+
+Rheumatoid arthritis without rheumatoid factor, unspecified knee
+
+M06.071
+
+Rheumatoid arthritis without rheumatoid factor, right ankle and foot
+
+M06.072
+
+Rheumatoid arthritis without rheumatoid factor, left ankle and foot
+
+M06.079
+
+Rheumatoid arthritis without rheumatoid factor, unspecified ankle and foot
+
+M06.08
+
+Rheumatoid arthritis without rheumatoid factor, vertebrae
+
+M06.09
+
+Rheumatoid arthritis without rheumatoid factor, multiple sites
+
+M06.0A
+
+Rheumatoid arthritis without rheumatoid factor, other specified site
+
+M06.4
+
+Inflammatory polyarthropathy
+
+M06.9
+
+Rheumatoid arthritis, unspecified
+
+M08.011
+
+Unspecified juvenile rheumatoid arthritis, right shoulder
+
+M08.012
+
+Unspecified juvenile rheumatoid arthritis, left shoulder
+
+M08.021
+
+Unspecified juvenile rheumatoid arthritis, right elbow
+
+M08.022
+
+Unspecified juvenile rheumatoid arthritis, left elbow
+
+M08.031
+
+Unspecified juvenile rheumatoid arthritis, right wrist
+
+M08.032
+
+Unspecified juvenile rheumatoid arthritis, left wrist
+
+M08.041
+
+Unspecified juvenile rheumatoid arthritis, right hand
+
+M08.042
+
+Unspecified juvenile rheumatoid arthritis, left hand
+
+M08.051
+
+Unspecified juvenile rheumatoid arthritis, right hip
+
+M08.052
+
+Unspecified juvenile rheumatoid arthritis, left hip
+
+M08.061
+
+Unspecified juvenile rheumatoid arthritis, right knee
+
+M08.062
+
+Unspecified juvenile rheumatoid arthritis, left knee
+
+M08.071
+
+Unspecified juvenile rheumatoid arthritis, right ankle and foot
+
+M08.072
+
+Unspecified juvenile rheumatoid arthritis, left ankle and foot
+
+M08.08
+
+Unspecified juvenile rheumatoid arthritis, vertebrae
+
+M08.09
+
+Unspecified juvenile rheumatoid arthritis, multiple sites
+
+M08.0A
+
+Unspecified juvenile rheumatoid arthritis, other specified site
+
+M08.1
+
+Juvenile ankylosing spondylitis
+
+M08.2A
+
+Juvenile rheumatoid arthritis with systemic onset, other specified site
+
+M08.3
+
+Juvenile rheumatoid polyarthritis (seronegative)
+
+M08.411
+
+Pauciarticular juvenile rheumatoid arthritis, right shoulder
+
+M08.412
+
+Pauciarticular juvenile rheumatoid arthritis, left shoulder
+
+M08.421
+
+Pauciarticular juvenile rheumatoid arthritis, right elbow
+
+M08.422
+
+Pauciarticular juvenile rheumatoid arthritis, left elbow
+
+M08.431
+
+Pauciarticular juvenile rheumatoid arthritis, right wrist
+
+M08.432
+
+Pauciarticular juvenile rheumatoid arthritis, left wrist
+
+M08.441
+
+Pauciarticular juvenile rheumatoid arthritis, right hand
+
+M08.442
+
+Pauciarticular juvenile rheumatoid arthritis, left hand
+
+M08.451
+
+Pauciarticular juvenile rheumatoid arthritis, right hip
+
+M08.452
+
+Pauciarticular juvenile rheumatoid arthritis, left hip
+
+M08.461
+
+Pauciarticular juvenile rheumatoid arthritis, right knee
+
+M08.462
+
+Pauciarticular juvenile rheumatoid arthritis, left knee
+
+M08.471
+
+Pauciarticular juvenile rheumatoid arthritis, right ankle and foot
+
+M08.472
+
+Pauciarticular juvenile rheumatoid arthritis, left ankle and foot
+
+M08.48
+
+Pauciarticular juvenile rheumatoid arthritis, vertebrae
+
+M08.9A
+
+Juvenile arthritis, unspecified, other specified site
+
+M31.4
+
+Aortic arch syndrome [Takayasu]
+
+M35.2
+
+Behcet's disease
+
+M45.0
+
+Ankylosing spondylitis of multiple sites in spine
+
+M45.1
+
+Ankylosing spondylitis of occipito-atlanto-axial region
+
+M45.2
+
+Ankylosing spondylitis of cervical region
+
+M45.3
+
+Ankylosing spondylitis of cervicothoracic region
+
+M45.4
+
+Ankylosing spondylitis of thoracic region
+
+M45.5
+
+Ankylosing spondylitis of thoracolumbar region
+
+M45.6
+
+Ankylosing spondylitis lumbar region
+
+M45.7
+
+Ankylosing spondylitis of lumbosacral region
+
+M45.8
+
+Ankylosing spondylitis sacral and sacrococcygeal region
+
+M45.9
+
+Ankylosing spondylitis of unspecified sites in spine
+
+M48.8X1
+
+Other specified spondylopathies, occipito-atlanto-axial region
+
+M48.8X2
+
+Other specified spondylopathies, cervical region
+
+M48.8X3
+
+Other specified spondylopathies, cervicothoracic region
+
+M48.8X4
+
+Other specified spondylopathies, thoracic region
+
+M48.8X5
+
+Other specified spondylopathies, thoracolumbar region
+
+M48.8X6
+
+Other specified spondylopathies, lumbar region
+
+M48.8X7
+
+Other specified spondylopathies, lumbosacral region
+
+M48.8X8
+
+Other specified spondylopathies, sacral and sacrococcygeal region
+
+M48.8X9
+
+Other specified spondylopathies, site unspecified
+
+N17.8
+
+Other acute kidney failure
+
+N17.9
+
+Acute kidney failure, unspecified
+
+R19.7
+
+Diarrhea, unspecified
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+ICD-10-PCS Codes
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+N/A
+
+Bill Type Codes
+
+Contractors may specify Bill Types to help providers identify those Bill Types typically
+used to report this service. Absence of a Bill Type does not guarantee that the
+article does not apply to that Bill Type. Complete absence of all Bill Types indicates
+that coverage is not influenced by Bill Type and the article should be assumed to
+apply equally to all claims.
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Contractors may specify Revenue Codes to help providers identify those Revenue Codes typically used to report this service.
+In most instances Revenue Codes are purely advisory. Unless specified in the article, services reported under other
+Revenue Codes are equally subject to this coverage determination. Complete absence of all Revenue Codes indicates
+that coverage is not influenced by Revenue Code and the article should be assumed to apply equally to all Revenue Codes.
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Other Coding Information
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Coding Table Information
+
+Excluded CPT/HCPCS Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+N/A
+
+N/A
+
+Non-Excluded CPT/HCPCS Ended Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+
+01/01/2026
+
+R9
+
+Under CPT/HCPCS Codes Group 1: Codes deleted Q5109. This revision is due to the 2026 Annual/Q1 CPT/HCPCS Code Update and is retroactive effective for dates of service on or after 1/1/26.
+
+10/01/2025
+
+R8
+
+Under ICD-10-CM Codes that Support Medical Necessity Group 1: Codes added M05.A. This revision is due to the Annual ICD-10-CM Update and will become effective on 10/1/25.
+
+10/01/2024
+
+R7
+
+Under ICD-10-CM Codes that Support Medical Necessity Group 1: Codes added M02.30, M02.311, M02.312, M02.319, M02.321, M02.322, M02.329, M02.331, M02.332, M02.339, M02.341, M02.342, M02.349, M02.351, M02.352, M02.359, M02.361, M02.362, M02.369, M02.371, M02.372, M02.379, M02.38, M02.39, M02.80, M02.811, M02.812, M02.819, M02.831, M02.832, M02.839, M02.841, M02.842, M02.849, M02.851, M02.852, M02.859, M02.861, M02.862, M02.869, M02.871, M02.872, M02.879, M02.88, M02.89 and M02.9.
+
+08/08/2024
+
+R6
+
+Under CMS National Coverage Policy added the following regulation: CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 17, §40 Discarded Drugs and Biologicals.
+
+09/01/2023
+
+R5
+
+Under ICD-10-CM Codes that Support Medical Necessity Group 1: Codes added H44.111, H44.112, H44.113, H44.119, K52.1, J70.2, J70.4, N17.8, N17.9, I30.8, I30.9, I40.8, I40.9, R19.7 and M06.4. Formatting was corrected throughout article. This revision is retroactive effective for dates of service on or after 09/01/23.
+
+10/28/2021
+
+R4
+
+Under CMS National Coverage Policy updated regulation descriptions and section headings.This revision is effective on 10/28/2021.
+
+10/01/2020
+
+R3
+
+Under CPT/HCPCS Codes Group 1: Codes added Q5121 due to the Q3 CPT/HCPCS Update. This revision is retroactive for dates of service on or after 7/1/20.Under ICD-10 Codes that Support Medical Necessity Group 1: Codes added M05.8A, M06.0A, M08.0A, M08.2A and M08.9A. This revision is due to the Annual ICD-10 Code Update and is effective on October 1, 2020.
+
+10/31/2019
+
+R2
+
+This article is being revised in order to adhere to CMS requirements per Chapter 13, Section 13.5.1 of the Program Integrity Manual, to remove all coding from LCDs and incorporate into related Billing and Coding Articles. Title XVIII of the Social Security Act 1833(e) prohibits Medicare payment for any claim lacking the necessary documentation to process the claim was removed from the CMS National Coverage Policy section of the related Infliximab L35677 LCD and placed in this article.
+
+05/05/2019
+
+R1
+
+All coding located in the Coding Information section has been removed from the related Infliximab L35677 LCD and added to this article. Under Covered ICD-10 Codes added M08.011, M08.012, M08.021, M08.022, M08.031, M08.032, M08.041, M08.042, M08.051, M08.052, M08.061, M08.062, M08.071, M08.072, M08.08, M08.09, M08.3, M08.411, M08.412, M08.421, M08.422, M08.431, M08.432, M08.441, M08.442, M08.451, M08.452, M08.461, M08.462, M08.471, M08.472 and M08.48.
+
+N/A
+
+Associated Documents
+
+Medicare BPM Ch 15.50.2 SAD Determinations
+
+Medicare BPM Ch 15.50.2
+
+Related Local Coverage Documents
+
+LCDs
+L35677 - Infliximab
+
+Related National Coverage Documents
+
+NCDs
+N/A
+
+SAD Process URL 1
+
+N/A
+
+SAD Process URL 2
+
+N/A
+
+Statutory Requirements URLs
+
+N/A
+
+Rules and Regulations URLs
+
+N/A
+
+CMS Manual Explanations URLs
+
+N/A
+
+Other URLs
+
+N/A
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+02/04/2026
+01/01/2026 - N/A
+Currently in Effect
+
+You are here
+
+08/18/2025
+10/01/2025 - 12/31/2025
+Superseded
+
+View
+
+09/06/2024
+10/01/2024 - 09/30/2025
+Superseded
+
+View
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+Infliximab
+
+Biosimilar

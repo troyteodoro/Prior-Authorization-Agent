@@ -342,7 +342,11 @@ def _gathered(run: WorkflowRun) -> dict:
         "notes": len(state.notes),
         "observations": len(state.observations),
         "conditions": len(state.conditions),
-        "value_set": len(state.value_set),
+        # Every code gathered, across every set the tree declares. The key
+        # stays singular: it is a **recorded** field (D91's free half), the
+        # tree this differential runs declares exactly one set, and renaming it
+        # would rewrite a committed recording to say the same number (T-92).
+        "value_set": sum(len(v.codes) for v in state.value_sets.values()),
     }
 
 

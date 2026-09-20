@@ -329,17 +329,51 @@ def _root_with(tmp_path: Path, extra_tree: dict) -> Path:
     return root
 
 
-def test_two_trees_claiming_one_state_refuse_to_load(tmp_path):
-    """D100's mirror of the code collision: a state bound two ways would be
-    resolved by file order."""
+def test_two_trees_binding_one_code_for_one_state_refuse_to_load(tmp_path):
+    """A code bound two ways for one state would be resolved by file order.
+
+    **Was `test_two_trees_claiming_one_state_refuse_to_load`** (T-87, D100).
+    Two trees claiming one state was the collision while one tree per state was
+    the model, and it stopped being one when a second practice arrived: since
+    T-92 Palmetto GBA serves AL for bariatric surgery *and* for infliximab, and
+    that is legitimate. The collision that survives is this one, and it is the
+    one a request actually resolves through (D111).
+    """
     duplicate = json.loads(
         (REPO_ROOT / "data" / "policies" / "ncd_100_1_jjm.json").read_text(encoding="utf-8")
     )
     duplicate["policy_version_id"] = "ncd-100.1-dup-v1"
     duplicate["jurisdiction"]["states"] = ["AL"]
     store = LocalPolicyStore(_root_with(tmp_path, duplicate))
-    with pytest.raises(ValueError, match="state AL is claimed by"):
+    with pytest.raises(ValueError, match="resolution would depend on load order"):
         store.resolve(CONTRACTOR_CODE, "WA")
+
+
+def test_two_practices_may_serve_one_state(tmp_path):
+    """The rule the one above replaced would have refused this outright.
+
+    A second tree over the same states, binding codes the first does not, is
+    what a second practice *is* — and each code still resolves to exactly one
+    tree (T-92, D111).
+    """
+    other = json.loads(
+        (REPO_ROOT / "data" / "policies" / "ncd_100_1_jjm.json").read_text(encoding="utf-8")
+    )
+    other["policy_version_id"] = "another-practice-v1"
+    # Binds nothing: a second practice's codes are its own, and `procedure_sets`
+    # is optional. Two trees binding the *same* code for one state is the
+    # collision above, and it still raises.
+    other.pop("procedure_sets")
+    store = LocalPolicyStore(_root_with(tmp_path, other))
+
+    serving = {t.policy_version_id for t in store.trees_for_state("AL")}
+    assert {"ncd-100.1-jjm-v1", "another-practice-v1"} <= serving
+    bariatric = store.resolve(CONTRACTOR_CODE, "AL")
+    assert bariatric is not None
+    assert bariatric.policy_version_id == "ncd-100.1-jjm-v1", (
+        "a second tree over the same states changed which tree a bariatric "
+        "code resolves to"
+    )
 
 
 def test_two_trees_disagreeing_about_a_national_set_refuse_to_load(tmp_path):

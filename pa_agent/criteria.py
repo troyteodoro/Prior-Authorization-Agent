@@ -25,19 +25,22 @@ No model is imported here and never will be (Art. II, REQ-11, REQ-12).
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass, replace
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field, replace
 from datetime import date
 
 from pa_agent.contracts import (
     CategoricalExclusion,
+    CodedValueSet,
     Condition,
     Criterion,
     CriterionResult,
     CriterionVerdict,
     EvidenceSpan,
+    ExclusionKind,
     ExclusionMatch,
     GapReason,
+    Medication,
     Observation,
     PredicateKind,
     ProgramAssertion,
@@ -136,16 +139,23 @@ def evaluate_criterion_a(
 
 
 def evaluate_criterion_b(
-    criterion: Criterion, conditions: list[Condition], value_set: frozenset[str]
+    criterion: Criterion, conditions: list[Condition], value_set: CodedValueSet
 ) -> CriterionResult:
     """REQ-12: set intersection between the patient's active condition codes
-    and the comorbidity value set. `MET` or abstention — never `NOT_MET`."""
+    and the comorbidity value set. `MET` or abstention — never `NOT_MET`.
+
+    Membership is tested **within the set's declared system** since T-92
+    (REQ-59, D111). Measured before the comparison was narrowed: of the 421
+    conditions in the committed bundles, 419 are SNOMED and the two that are
+    not are resolved dental ICD-10 codes outside every value set, so no
+    verdict, span or eval row moves.
+    """
     minimum = criterion.require("min_comorbidity_count")
 
     qualifying = [
         c
         for c in conditions
-        if c.clinical_status == ACTIVE_STATUS and c.code in value_set
+        if c.clinical_status == ACTIVE_STATUS and value_set.admits(c.code, c.system)
     ]
     if len(qualifying) >= minimum:
         return CriterionResult(
@@ -166,6 +176,94 @@ def evaluate_criterion_b(
             f"{minimum} required. Absence of a documented comorbidity is not "
             "evidence of its absence (D40)."
         ),
+    )
+
+
+def _active_members(
+    medications: list[Medication], value_set: CodedValueSet
+) -> list[Medication]:
+    """The active medications this value set admits, in the store's order.
+
+    `status == "active"` is the filter, and it is the predicate's judgment
+    rather than the adapter's (D31, D39): `get_medications` reports every
+    `MedicationRequest` the bundle carries, and what counts as on the chart
+    now is decided here, once, for both medication kinds.
+    """
+    return [
+        m
+        for m in medications
+        if m.status == ACTIVE_STATUS and value_set.admits(m.code, m.system)
+    ]
+
+
+def evaluate_medication_present(
+    criterion: Criterion, medications: list[Medication], value_set: CodedValueSet
+) -> CriterionResult:
+    """T-92: the document requires a concurrent drug. `MET` or abstention.
+
+    D40's asymmetry, and for D40's reason. L35677 covers infliximab for
+    rheumatoid arthritis *"when used in combination with methotrexate"*, and a
+    chart with no active methotrexate has not recorded that the patient is not
+    taking it — the document's own note covers patients *"unable to tolerate
+    methotrexate"* whose reason is documented in the record, and a `NOT_MET`
+    would deny them on a chart that does not disagree (D111).
+    """
+    minimum = criterion.require("min_medication_count")
+    value_set_id = criterion.require("value_set_id")
+
+    qualifying = _active_members(medications, value_set)
+    if len(qualifying) >= minimum:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.MET,
+            spans=[m.span for m in qualifying if m.span is not None],
+            detail=(
+                f"active medications in {value_set_id}: "
+                + ", ".join(sorted(m.code for m in qualifying))
+            ),
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+        gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
+        detail=(
+            f"{len(qualifying)} active medication(s) in {value_set_id}; "
+            f"{minimum} required. Absence of a prescription is not evidence "
+            "the patient is not taking the drug, and this document covers a "
+            "documented reason it was not prescribed (D40's shape, D111)."
+        ),
+    )
+
+
+def evaluate_excluded_medication(
+    exclusion: CategoricalExclusion,
+    medications: list[Medication],
+    value_set: CodedValueSet,
+) -> ExclusionMatch | None:
+    """T-92: the policy denies the procedure when a named drug is on the chart.
+
+    L35677's LIMITATIONS paragraph. Fires on positive evidence and cites every
+    prescription that fired it; `None` when nothing matches, which is not an
+    abstention — an exclusion is not a criterion and has no verdict to abstain
+    with (D41's shape, D111).
+
+    This is where an absence stops needing a citation. Written as a criterion
+    the same rule would have to answer `MET` for a clean chart, and REQ-5
+    refuses a `MET` with no span, because there is no span for an absence.
+    """
+    offending = [
+        m
+        for m in medications
+        if m.status == ACTIVE_STATUS and value_set.admits(m.code, m.system)
+    ]
+    spans = [m.span for m in offending if m.span is not None]
+    if not spans:
+        # Every match with no citable span is the same as no match: Article III
+        # admits no uncited denial, and `ExclusionMatch` requires at least one
+        # span rather than letting one be constructed without (D41).
+        return None
+    return ExclusionMatch(
+        exclusion_id=exclusion.id, claim=exclusion.claim, evidence=spans
     )
 
 
@@ -620,7 +718,10 @@ class PredicateInputs:
     as_of: date
     observations: tuple[Observation, ...] = ()
     conditions: tuple[Condition, ...] = ()
-    value_set: frozenset[str] = frozenset()
+    medications: tuple[Medication, ...] = ()
+    #: `{value_set_id -> the set}`. Plural since T-92: one tree declares three,
+    #: and each membership criterion names its own in a constant (D111).
+    value_sets: Mapping[str, CodedValueSet] = field(default_factory=dict)
     events: tuple[WmEvent, ...] = ()
     assertions: tuple[ProgramAssertion, ...] = ()
     run: QualifyingRun | None = None
@@ -630,6 +731,24 @@ class PredicateInputs:
 
 
 Predicate = Callable[[Criterion, PredicateInputs], CriterionResult]
+
+
+def _value_set(criterion: Criterion, inputs: PredicateInputs) -> CodedValueSet:
+    """The set this criterion names, or a raise naming what was not gathered.
+
+    A missing set is a retrieval fault, not an empty set: an empty one would
+    make the criterion abstain about codes nothing looked for, which is D39's
+    empty list one layer in.
+    """
+    value_set_id = criterion.require("value_set_id")
+    try:
+        return inputs.value_sets[value_set_id]
+    except KeyError:
+        raise ValueError(
+            f"criterion {criterion.id} names value set {value_set_id!r}, which "
+            f"the planner did not gather (it gathered {sorted(inputs.value_sets)}). "
+            "An empty set here would abstain about codes nothing looked for (D39)."
+        ) from None
 
 
 def _require_run(inputs: PredicateInputs) -> QualifyingRun:
@@ -653,7 +772,10 @@ PREDICATES: dict[PredicateKind, Predicate] = {
         c, list(i.observations), i.as_of
     ),
     PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP: lambda c, i: evaluate_criterion_b(
-        c, list(i.conditions), i.value_set
+        c, list(i.conditions), _value_set(c, i)
+    ),
+    PredicateKind.MEDICATION_VALUE_SET_ACTIVE: lambda c, i: evaluate_medication_present(
+        c, list(i.medications), _value_set(c, i)
     ),
     PredicateKind.NOTE_EVENT_COUNT: lambda c, i: evaluate_c1(
         c, list(i.events), list(i.assertions)
@@ -697,6 +819,90 @@ def evaluate(criterion: Criterion, inputs: PredicateInputs) -> CriterionResult:
             "a note (REQ-57, REQ-58, D110)"
         ) from None
     return predicate(criterion, inputs)
+
+
+class UnknownExclusionKind(LookupError):
+    """An exclusion declaring a kind this engine does not implement.
+
+    `UnknownPredicateKind`'s counterpart, and the more dangerous of the two:
+    an unimplemented *criterion* that quietly produced nothing would approve
+    past a requirement, and an unimplemented *exclusion* that quietly produced
+    nothing would approve past a denial the policy states outright. Both raise.
+    """
+
+
+@dataclass(frozen=True)
+class ExclusionInputs:
+    """What the exclusion dispatcher is handed, sliced per kind by its binder.
+
+    `PredicateInputs`' counterpart and for its reason: each binder names the
+    slice its evaluator receives, so an evaluator cannot reach a fact nobody
+    decided to give it (D62's rule about narrow signatures).
+    """
+
+    as_of: date
+    observations: tuple[Observation, ...] = ()
+    conditions: tuple[Condition, ...] = ()
+    medications: tuple[Medication, ...] = ()
+    value_sets: Mapping[str, CodedValueSet] = field(default_factory=dict)
+    #: Criterion (a)'s window, borrowed by the BMI exclusion — one window, one
+    #: constant (D41). `None` when the tree declares no BMI criterion, which is
+    #: the shape every non-bariatric tree takes; the binder that needs it
+    #: raises rather than choosing a default.
+    lookback_months: int | None = None
+
+
+def _require_lookback(inputs: ExclusionInputs) -> int:
+    if inputs.lookback_months is None:
+        raise ValueError(
+            "this exclusion is scoped to criterion (a)'s lookback window, and "
+            "the tree declares no bmi_observation_threshold criterion to read "
+            "it from. A default window here would categorically deny on "
+            "evidence of unknown age (D41, D84)."
+        )
+    return inputs.lookback_months
+
+
+def _exclusion_value_set(
+    exclusion: CategoricalExclusion, inputs: ExclusionInputs
+) -> CodedValueSet:
+    value_set_id = exclusion.constants["value_set_id"].value
+    try:
+        return inputs.value_sets[str(value_set_id)]
+    except KeyError:
+        raise ValueError(
+            f"exclusion {exclusion.id} names value set {value_set_id!r}, which "
+            f"was not gathered (gathered {sorted(inputs.value_sets)}). An empty "
+            "set here would let a stated denial pass silently."
+        ) from None
+
+
+Exclusion = Callable[[CategoricalExclusion, ExclusionInputs], "ExclusionMatch | None"]
+
+#: kind -> the call. `PREDICATES`' counterpart (T-92, D111).
+EXCLUSIONS: dict[ExclusionKind, Exclusion] = {
+    ExclusionKind.BMI_BELOW_BOUND_WITH_ACTIVE_CONDITION: lambda e, i: evaluate_sc2(
+        e, list(i.observations), list(i.conditions), i.as_of, _require_lookback(i)
+    ),
+    ExclusionKind.ACTIVE_MEDICATION_VALUE_SET: lambda e, i: evaluate_excluded_medication(
+        e, list(i.medications), _exclusion_value_set(e, i)
+    ),
+}
+
+
+def evaluate_exclusion(
+    exclusion: CategoricalExclusion, inputs: ExclusionInputs
+) -> ExclusionMatch | None:
+    """Run the evaluator the exclusion declares, or raise naming the kind."""
+    try:
+        evaluator = EXCLUSIONS[exclusion.kind]
+    except KeyError:
+        raise UnknownExclusionKind(
+            f"exclusion {exclusion.id} declares kind {exclusion.kind.value!r}, "
+            "which this engine does not implement. Skipping it would approve "
+            "past a denial the policy states (D111)."
+        ) from None
+    return evaluator(exclusion, inputs)
 
 
 # --------------------------------------------------------------------------

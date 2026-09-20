@@ -36,6 +36,7 @@ from datetime import date
 from pa_agent.aggregate import assemble
 from pa_agent.contracts import (
     CallMetrics,
+    CodedValueSet,
     Condition,
     CriteriaTree,
     Criterion,
@@ -47,6 +48,7 @@ from pa_agent.contracts import (
     ErrorCode,
     EvidenceSpan,
     GapReason,
+    Medication,
     NoteBmi,
     Observation,
     PredicateKind,
@@ -127,8 +129,15 @@ _RETRYABLE_FAILURES = tuple(
 OBSERVATION_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.BMI_OBSERVATION_THRESHOLD,
 )
-CONDITION_KINDS: tuple[PredicateKind, ...] = (
+#: The kinds evaluated by set membership over structured chart resources.
+#: `step_criterion_b` is the step that evaluates them, and it keeps its
+#: bariatric-shaped name: step names are the graph's, no step's identity
+#: depends on a tree, and renaming them churns recordings for nothing (D110).
+#: The tuple's name says what it holds, because that is what a reader needs
+#: when a second practice adds a resource the first never read (T-92, D111).
+MEMBERSHIP_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP,
+    PredicateKind.MEDICATION_VALUE_SET_ACTIVE,
 )
 #: The kinds that consume extraction — what `step_qualifying_run` and
 #: `step_criteria_c` evaluate over `state.events`. On an extraction failure
@@ -146,7 +155,7 @@ NOTE_EVENT_KINDS: tuple[PredicateKind, ...] = (
 #: directly; this is the same fact in the shape the partition is checked in.
 STEP_KINDS: dict[str, tuple[PredicateKind, ...]] = {
     "criterion_a": OBSERVATION_KINDS,
-    "criterion_b": CONDITION_KINDS,
+    "criterion_b": MEMBERSHIP_KINDS,
     "criteria_c": NOTE_EVENT_KINDS,
 }
 
@@ -275,7 +284,8 @@ class WorkflowState:
     # Structured facts (patient plane, no model)
     observations: list[Observation] = field(default_factory=list)
     conditions: list[Condition] = field(default_factory=list)
-    value_set: frozenset[str] = frozenset()
+    medications: list[Medication] = field(default_factory=list)
+    value_sets: dict[str, CodedValueSet] = field(default_factory=dict)
 
     # Notes and what the model read out of them
     notes: list[Document] = field(default_factory=list)
@@ -370,7 +380,8 @@ def step_gather(state: WorkflowState, ctx: _Context) -> None:
         ) from exc
     state.observations = plan.observations
     state.conditions = plan.conditions
-    state.value_set = plan.value_set
+    state.medications = plan.medications
+    state.value_sets = plan.value_sets
     state.notes = plan.notes
     if plan.trace is not None:
         state.traces.append(plan.trace)
@@ -472,14 +483,16 @@ def step_reconcile(state: WorkflowState, ctx: _Context) -> None:
 
 
 def step_criterion_b(state: WorkflowState, ctx: _Context) -> None:
-    """REQ-12: set intersection. `MET` or abstention, never `NOT_MET` — a chart
-    cannot prove a comorbidity absent (D40)."""
+    """REQ-12: set intersection over structured resources. `MET` or abstention,
+    never `NOT_MET` — a chart cannot prove a comorbidity absent, and it cannot
+    prove a drug is not being taken either (D40, D111)."""
     inputs = PredicateInputs(
         as_of=state.as_of,
         conditions=tuple(state.conditions),
-        value_set=state.value_set,
+        medications=tuple(state.medications),
+        value_sets=state.value_sets,
     )
-    for criterion in _declared(state.tree, CONDITION_KINDS):
+    for criterion in _declared(state.tree, MEMBERSHIP_KINDS):
         state.results.append(_predicate(criterion.id, evaluate, criterion, inputs))
 
 

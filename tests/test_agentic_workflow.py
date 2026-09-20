@@ -30,6 +30,7 @@ import pytest
 
 from pa_agent.agent.tool_bounds import MAX_ROWS
 from pa_agent.contracts import (
+    CodedValueSet,
     Condition,
     CriterionVerdict,
     Document,
@@ -42,6 +43,7 @@ from pa_agent.retrieval import (
     RetrievalError,
     RetrievalPlanner,
     RetrievalResult,
+    declared_value_set_ids,
 )
 from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.stores.patient import LocalPatientStore
@@ -532,8 +534,12 @@ class _WideValueSetStore:
     def __init__(self, size: int = MAX_ROWS + 1) -> None:
         self.codes = frozenset(f"{100000 + i}" for i in range(size))
 
-    def get_value_set(self, value_set_id: str) -> frozenset[str]:
-        return self.codes
+    def get_value_set(self, value_set_id: str) -> CodedValueSet:
+        return CodedValueSet(
+            value_set_id=value_set_id,
+            system="http://snomed.info/sct",
+            codes=self.codes,
+        )
 
     def get_tree(self, policy_version_id: str):  # pragma: no cover - unused here
         raise NotImplementedError
@@ -555,7 +561,7 @@ def test_the_value_set_is_bounded_and_criterion_b_still_reads_all_of_it(
         "value_set_id", "codes", "total", "returned", "truncated"
     }
     full = policy_store.get_value_set(value_set_id)
-    assert response["total"] == len(full)
+    assert response["total"] == len(full.codes)
     assert response["truncated"] is False
 
     wide = _WideValueSetStore()
@@ -566,8 +572,8 @@ def test_the_value_set_is_bounded_and_criterion_b_still_reads_all_of_it(
 
     # And the criterion is unaffected, which is the reason truncating is legal
     # here at all: membership is Python's, over the port's full set.
-    assert wide.get_value_set(value_set_id) == frozenset(wide.codes)
-    assert len(wide.get_value_set(value_set_id)) == MAX_ROWS + 1
+    assert wide.get_value_set(value_set_id).codes == frozenset(wide.codes)
+    assert len(wide.get_value_set(value_set_id).codes) == MAX_ROWS + 1
 
 
 def test_the_ceiling_is_one_python_constant_the_model_never_sees():
@@ -844,11 +850,14 @@ def test_a_planner_that_skips_a_note_changes_a_verdict_and_nothing_raises(
         name = "cross"
 
         def gather(self, patient_id, tree, patient_store, policy_store):
-            value_set_id = tree.criterion("b").require("value_set_id")
             return RetrievalResult(
                 observations=patient_store.get_observations(patient_id),
                 conditions=patient_store.get_conditions(patient_id),
-                value_set=policy_store.get_value_set(value_set_id),
+                medications=patient_store.get_medications(patient_id),
+                value_sets={
+                    vs_id: policy_store.get_value_set(vs_id)
+                    for vs_id in declared_value_set_ids(tree)
+                },
                 notes=patient_store.get_notes(case_patients["E5"]),
             )
 

@@ -226,6 +226,9 @@ class _TwoNoteStore:
     def get_conditions(self, patient_id: str) -> list:
         return []
 
+    def get_medications(self, patient_id: str) -> list:
+        return []
+
     def get_notes(self, patient_id: str) -> list[Document]:
         assert patient_id == self._patient_id
         self.note_calls += 1
@@ -774,7 +777,7 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
         "(False, True)",                  # T-91: unscoped criteria, then scoped
                                           # ones — a two-element Python literal
         "STEPS",                          # the declared graph
-        "_declared(state.tree, CONDITION_KINDS)",   # T-91: the criteria the tree
+        "_declared(state.tree, MEMBERSHIP_KINDS)",   # T-91: the criteria the tree
         "_declared(state.tree, NOTE_EVENT_KINDS)",  # declares for each step's
         "_declared(state.tree, OBSERVATION_KINDS)", # kinds — policy data (D110)
         "cited",                          # T-17: the cited verdicts, a filtered

@@ -25,6 +25,7 @@ from typing import Any, Protocol, runtime_checkable
 from pydantic import BaseModel, ConfigDict, Field
 
 from pa_agent.contracts import (
+    CodedValueSet,
     CoverageClaim,
     CoverageStatus,
     CriteriaTree,
@@ -98,13 +99,16 @@ class PolicyStore(Protocol):
         """A source document, content-verified, for spans to be checked against."""
         ...
 
-    def get_value_set(self, value_set_id: str) -> frozenset[str]:
-        """The codes a value set admits, by the id a criterion's constant names.
+    def get_value_set(self, value_set_id: str) -> CodedValueSet:
+        """The codes a value set admits, and the system they are tested in.
 
         A value set is a compiled fragment of the policy — A53028's Group 1
         decides which comorbidities count — so it travels with the tree and is
-        versioned with it (Art. VII, D52). The return is deliberately just the
-        codes: set membership is the whole interface a predicate has.
+        versioned with it (Art. VII, D52). Since T-92 the return carries the
+        declared code system beside the codes (REQ-59, D111): set membership is
+        still the whole interface a predicate has, but membership is tested
+        **within a system**, because the second practice matches medications in
+        RxNorm and a bare code set cannot say which vocabulary it is in.
         """
         ...
 
@@ -120,11 +124,11 @@ class LocalPolicyStore:
         self._binding_cache: (
             dict[tuple[str, str], tuple[CriteriaTree, CoverageStatus, Any]] | None
         ) = None
-        self._state_cache: dict[str, CriteriaTree] | None = None
+        self._state_cache: dict[str, tuple[CriteriaTree, ...]] | None = None
         self._documents: dict[str, Document] = {}
         self._manifest: dict[str, dict] | None = None
         self._value_set_dir = self._root / "value_sets"
-        self._value_sets: dict[str, frozenset[str]] = {}
+        self._value_sets: dict[str, CodedValueSet] = {}
 
     # -- policy resolution -------------------------------------------------
 
@@ -143,7 +147,7 @@ class LocalPolicyStore:
         Facility code lists are not consulted. They overlap across procedures
         in the source itself, which is why they are not identities (D30).
         """
-        self.tree_for_state(state)  # raises UnknownJurisdiction
+        self.trees_for_state(state)  # raises UnknownJurisdiction
         index = self._binding_index()
         hit = index.get((state, procedure_code))
         if hit is None:
@@ -157,35 +161,41 @@ class LocalPolicyStore:
             coverage_claim=entry.coverage_claim,
         )
 
-    def tree_for_state(self, state: str) -> CriteriaTree:
-        """The one tree whose jurisdiction names `state` (T-87, D100)."""
+    def trees_for_state(self, state: str) -> tuple[CriteriaTree, ...]:
+        """Every tree whose jurisdiction names `state` (T-87, D100; T-92, D111).
+
+        **Was `tree_for_state`, returning one tree, and raising when two trees
+        claimed a state.** That rule was right while one tree per state was the
+        model and wrong the moment a second practice arrived: Palmetto GBA
+        serves AL, GA, NC, SC, TN, VA and WV for bariatric surgery *and* for
+        infliximab, so the rule and `infliximab-ra-jjm-v1` cannot both exist.
+        The collision that actually makes resolution depend on load order is a
+        **code** bound for one state by two trees, and `_binding_index` below
+        has raised on that since T-24.
+
+        `UnknownJurisdiction` keeps REQ-55's meaning exactly: no tree in this
+        store serves this state at all. A code no tree binds for a state that
+        *is* served stays `NO_POLICY_FOUND` — no policy here governs the code,
+        which is not a denial (D26).
+
+        A national tree names no states and is reachable by no request — every
+        tree this store serves is a MAC's reading of a document (D21), and a
+        request is always for a patient somewhere.
+        """
         index = self._state_index()
         try:
             return index[state]
         except KeyError:
             raise UnknownJurisdiction(state, sorted(index)) from None
 
-    def _state_index(self) -> dict[str, CriteriaTree]:
-        """`{state -> tree}`, built once; two trees claiming one state raise.
-
-        The mirror of the code collision below. A national tree names no
-        states and is reachable by no request — every tree this store serves
-        is a MAC's reading of the NCD (D21), and a request is always for a
-        patient somewhere.
-        """
+    def _state_index(self) -> dict[str, tuple[CriteriaTree, ...]]:
+        """`{state -> the trees serving it}`, built once, in load order."""
         if self._state_cache is None:
-            index: dict[str, CriteriaTree] = {}
+            index: dict[str, list[CriteriaTree]] = {}
             for tree in self._load_trees().values():
                 for state in tree.jurisdiction.states:
-                    if state in index:
-                        raise ValueError(
-                            f"state {state} is claimed by "
-                            f"{index[state].policy_version_id} and "
-                            f"{tree.policy_version_id}; resolution would depend "
-                            "on load order"
-                        )
-                    index[state] = tree
-            self._state_cache = index
+                    index.setdefault(state, []).append(tree)
+            self._state_cache = {k: tuple(v) for k, v in index.items()}
         return self._state_cache
 
     def _binding_index(
@@ -300,14 +310,16 @@ class LocalPolicyStore:
         self._documents[document_id] = document
         return document
 
-    def get_value_set(self, value_set_id: str) -> frozenset[str]:
-        """The SNOMED codes this value set admits (D52).
+    def get_value_set(self, value_set_id: str) -> CodedValueSet:
+        """The codes this value set admits, in the system it declares (D52, D111).
 
-        SNOMED because that is what `LocalPatientStore` reports on
-        `Condition.code` and what `evaluate_criterion_b` tests membership
-        against. A set of ICD-10 codes would load cleanly, compare cleanly and
-        match nobody — criterion (b) would abstain for every patient and every
-        downstream test would agree with it.
+        The system used to be SNOMED by assumption — that is what
+        `LocalPatientStore` reports on `Condition.code` and what
+        `evaluate_criterion_b` tested against — with the note that a set of
+        ICD-10 codes would load cleanly, compare cleanly and match nobody.
+        T-92 gave that a mechanism: the file declares one system, every entry
+        must be in it, and a mismatch raises here rather than shipping a set
+        that is quietly half in another vocabulary (REQ-59).
         """
         if value_set_id in self._value_sets:
             return self._value_sets[value_set_id]
@@ -333,9 +345,35 @@ class LocalPolicyStore:
         entries = payload.get("entries") or []
         if not entries:
             raise ValueError(f"{path.name} admits no codes; see D52")
-        codes = frozenset(str(entry["code"]) for entry in entries)
-        self._value_sets[value_set_id] = codes
-        return codes
+
+        system = payload.get("system")
+        if not system:
+            raise ValueError(
+                f"{path.name} declares no `system`. A value set whose code "
+                "system is implied is one that can be wrong about it silently: "
+                "the codes load, compare, and match nobody (REQ-59, D111)."
+            )
+        wrong = sorted(
+            {
+                str(entry.get("system"))
+                for entry in entries
+                if entry.get("system") != system
+            }
+        )
+        if wrong:
+            raise ValueError(
+                f"{path.name} declares system {system!r} and carries entries in "
+                f"{wrong}. One set is one vocabulary; a mixed set is a set every "
+                "predicate over it would agree with (REQ-59, D111)."
+            )
+
+        value_set = CodedValueSet(
+            value_set_id=value_set_id,
+            system=system,
+            codes=frozenset(str(entry["code"]) for entry in entries),
+        )
+        self._value_sets[value_set_id] = value_set
+        return value_set
 
     def document_ids(self) -> list[str]:
         """The corpus, for tests and for the plane-separation walk."""

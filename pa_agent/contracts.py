@@ -232,6 +232,11 @@ class PredicateKind(str, Enum):
     NOTE_EVENT_RUN_BMI_RATE = "note_event_run_bmi_rate"
     #: Diet and activity documented in every month of the run, at that rate.
     NOTE_EVENT_RUN_BEHAVIOR_RATE = "note_event_run_behavior_rate"
+    #: Active medications intersected with a named value set, against a minimum.
+    #: `MET` on a hit and an abstention otherwise, never `NOT_MET` — D40's
+    #: asymmetry, for the same reason: a chart that records no methotrexate does
+    #: not record that the patient is not on it (T-92, D111).
+    MEDICATION_VALUE_SET_ACTIVE = "medication_value_set_active"
 
 
 class Criterion(BaseModel):
@@ -480,12 +485,45 @@ class ProcedureSets(BaseModel):
         return self
 
 
-class CategoricalExclusion(BaseModel):
-    """A national exclusion that short-circuits a covered procedure (D41).
+class ExclusionKind(str, Enum):
+    """What arithmetic a categorical exclusion is evaluated by (T-92, D111).
 
-    The claim is a `CoverageClaim` — the NCD's own sentence, self-scoping —
+    `PredicateKind`'s counterpart, for the same reason and with the same rule:
+    the tree declares the kind, the engine dispatches on it, and a kind the
+    engine lacks raises at load rather than being skipped. An exclusion that is
+    silently skipped **approves**, which is the one direction this system may
+    not fail in.
+
+    **Why an exclusion rather than a criterion.** L35677's limitation reads
+    *"infliximab is considered not medically reasonable and necessary and
+    therefore, not covered"* when it is combined with another biologic. Written
+    as a criterion it would have to answer `MET` for a chart carrying no such
+    drug, and REQ-5 refuses a `MET` with no span — there is no span for an
+    absence. An exclusion has no such problem: it fires, citing every
+    prescription that fired it, or it is silent (D111).
+    """
+
+    #: The NCD's 04/2009 exclusion: a BMI below a bound, inside the lookback,
+    #: with a named condition active. Both bariatric trees declare it (D41).
+    BMI_BELOW_BOUND_WITH_ACTIVE_CONDITION = "bmi_below_bound_with_active_condition"
+    #: An active medication in a named value set. L35677's LIMITATIONS
+    #: paragraph, which denies rather than failing a criterion (T-92, D111).
+    ACTIVE_MEDICATION_VALUE_SET = "active_medication_value_set"
+
+
+class CategoricalExclusion(BaseModel):
+    """An exclusion that short-circuits a resolved procedure (D41, D111).
+
+    The claim is a `CoverageClaim` — the policy's own sentence, self-scoping —
     and the condition binding carries D28's honesty: the NCD names the
     diagnosis in prose, so the code binding admits it is not in the corpus.
+
+    `procedure_scope` names the procedure set this exclusion reaches, and is
+    compared against the set the request actually resolved in. That is D41's
+    rule stated as a comparison rather than as a literal: the NCD's exclusion
+    scopes to `nationally_covered` and therefore never reaches a procedure CMS
+    had delegated, and a MAC's own exclusion over a delegated procedure scopes
+    to `contractor_determined` and reaches exactly that.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -493,9 +531,13 @@ class CategoricalExclusion(BaseModel):
     id: str = Field(min_length=1)
     label: str
     procedure_scope: str
+    #: The arithmetic that evaluates it (T-92, D111). Required: an exclusion
+    #: with no declared kind is one the dispatcher would have to guess at, and
+    #: a guess that lands on "skip" approves.
+    kind: ExclusionKind
     claim: CoverageClaim
     constants: dict[str, PolicyConstant]
-    condition_binding: dict[str, Any]
+    condition_binding: dict[str, Any] | None = None
     note: str | None = None
 
 
@@ -700,6 +742,66 @@ class Condition(BaseModel):
     onset_date: date | None = None
     clinical_status: str | None = None
     span: EvidenceSpan | None = None
+
+
+class Medication(BaseModel):
+    """A medication on the chart, for the set intersections L35677 needs (T-92).
+
+    `Condition`'s shape, one plane over, and for the same reason: the adapter
+    reports what the `MedicationRequest` says — `status` included, unfiltered —
+    and the predicate decides what counts (D31's split, D39). `system` is
+    carried rather than assumed because membership is now tested **within** a
+    declared system (REQ-59, D111), and a medication is the first resource in
+    this system whose codes are RxNorm rather than SNOMED.
+
+    `authored_on` is the prescription date. It is carried and not yet used by
+    any predicate: L35677 states no trial duration for its rheumatoid arthritis
+    indication, and a duration kind will be earned by a document that does
+    (D111), not by a field that exists.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    code: str
+    system: str | None = None
+    display: str | None = None
+    status: str | None = None
+    authored_on: date | None = None
+    span: EvidenceSpan | None = None
+
+
+class CodedValueSet(BaseModel):
+    """The codes a value set admits, and the one system they are tested in.
+
+    REQ-59 (T-92, D111). The system was implicit while every value set and
+    every condition in the corpus was SNOMED; the second practice matches
+    medications in RxNorm, and an implicit system is one a value set can get
+    wrong silently — a set of a document's ICD-10 codes loads cleanly, compares
+    cleanly and matches nobody, which is the failure `get_value_set`'s
+    docstring has warned about since D52 with no mechanism behind it.
+
+    The system is **one per set**, not one per entry. Per-entry systems are the
+    same information with the freedom to vary, and a set compiled half in
+    SNOMED and half in ICD-10 would then be a well-formed object every
+    predicate over it would agree with.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    value_set_id: str = Field(min_length=1)
+    system: str = Field(min_length=1)
+    codes: frozenset[str]
+
+    def admits(self, code: str, system: str | None) -> bool:
+        """Whether this set admits a code **in its own system**.
+
+        A resource carrying no system is not a member: an unstated system is
+        not this one, and reading it as a match is how a code from another
+        vocabulary that happens to collide gets counted (Art. II — the
+        comparison is arithmetic, and it is done here rather than at four call
+        sites free to disagree).
+        """
+        return system == self.system and code in self.codes
 
 
 class WmEvent(BaseModel):

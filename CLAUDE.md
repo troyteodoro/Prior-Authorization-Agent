@@ -26,10 +26,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-58 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-60 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-15 are the roadmap's, one per version *(D105)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-91, each with a runnable exit condition; T-92 through T-116 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D105, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-92, each with a runnable exit condition; T-93 through T-116 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D111, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -216,16 +216,21 @@ tier land without touching them.
 output is untrusted model output and there is no private route to a `WmEvent`.
 
 **Two storage ports, two planes** (`stores/policy.py`, `stores/patient.py`,
-REQ-41, Article VI). `stores/__init__.py` imports neither submodule on purpose —
+REQ-41, Article VI). The patient port serves observations, conditions,
+**medications** (T-92), notes, the jurisdiction state and documents; the
+policy port serves resolution, trees, documents and value sets. `stores/__init__.py` imports neither submodule on purpose —
 a package-level re-export would be the module that reaches both planes.
 Production is a second adapter, which is the whole reason the ports exist *(D25)*.
 
-**Adjudication is seven predicate kinds.** `PredicateKind` (contracts) is the
-closed vocabulary, `criteria.PREDICATES` maps each kind to a binder naming the
-inputs its predicate receives, and `workflow.STEP_KINDS` assigns each kind to
-the step that evaluates it — a partition, checked (T-91, D110). Under both
-NCD 100.1 trees that resolves to (a) BMI and (b) comorbidity over structured
-FHIR and c1–c5 over extracted `wm_events`, but the letters are labels: the
+**Adjudication is eight predicate kinds and two exclusion kinds.**
+`PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
+maps each kind to a binder naming the inputs its predicate receives, and
+`workflow.STEP_KINDS` assigns each kind to the step that evaluates it — a
+partition, checked (T-91, D110). `ExclusionKind` and `criteria.EXCLUSIONS` are
+the same shape for categorical exclusions (T-92, D111). Under both NCD 100.1
+trees that resolves to (a) BMI and (b) comorbidity over structured FHIR and
+c1–c5 over extracted `wm_events`; under `infliximab-ra-jjm-v1` it resolves to
+(a) a diagnosis set and (b) a medication set, and the letters are labels: the
 `kind` chooses the arithmetic. The run-length criterion computes the
 qualifying run **once** and every criterion whose `scoped_to` names it scopes
 to that run. `reconcile.py`
@@ -291,6 +296,34 @@ passing**, because the tests are written in terms of the thing that broke.
   observations, conditions and the value set from the port, which is what makes
   `MAX_ROWS` truncation a cost control rather than a quiet second filter free to
   disagree with criterion (a).
+- **A value set's system is declared, and membership is tested inside it**
+  *(REQ-59, T-92, D111)*. Conditions are SNOMED and medications are RxNorm, so
+  a bare code comparison is two vocabularies colliding on short numeric
+  strings. `CodedValueSet.admits(code, system)` is the one comparison; a
+  resource declaring no system is not a member; a file whose entries are not
+  all in its declared system raises at load. Measured before the comparison
+  was narrowed: 419 of 421 conditions in the committed bundles are SNOMED and
+  the other two are resolved dental ICD-10 codes outside every set, so nothing
+  moved — which is why this could have been got wrong silently.
+- **An exclusion that does not fire produces nothing, and never a `MET`**
+  *(REQ-60, T-92, D111)*. A categorical exclusion is not a criterion: written
+  as one, "no excluded drug on this chart" would have to answer `MET` with no
+  span, and REQ-5 refuses that because there is no span for an absence. It
+  fires citing what fired it, or it is silent. `ExclusionKind` is dispatched
+  the way `PredicateKind` is, and an unimplemented kind raises at load — an
+  exclusion silently skipped approves past a denial the policy states.
+- **A state is served by one tree *per practice*, not by one tree** *(T-92,
+  D111)*. Palmetto GBA serves the same seven states for bariatric surgery and
+  for infliximab. The collision that matters is a **code** bound for one state
+  by two trees, which `_binding_index` raises on; `UnknownJurisdiction` still
+  means no tree serves the state at all (REQ-55), and a code no tree binds for
+  a served state is `NO_POLICY_FOUND` (D26).
+- **Constant *names* are in a measured tool payload** *(T-92, D111)*.
+  `get_policy_context` emits each criterion's constant names, so renaming one
+  in a committed tree is a changed configuration and a new measurement (D45),
+  not a tidy-up. That is why `infliximab-ra-jjm-v1` declares
+  `min_comorbidity_count` for a criterion counting the patient's *indication*,
+  with a note on the constant saying so.
 - **A criterion's arithmetic comes from its declared `kind`, never from its
   id** *(REQ-57, D110)*. Both trees letter their criteria `a`, `b`, `c1`…
   because NCD 100.1's MACs do, and coverage documents from other practices
@@ -480,9 +513,11 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**71 of 71 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~45s; the suite collects 901 tests across 35 files, 3 of
-which skip). IDs run to T-91, but
+**72 of 72 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~45s; the suite collects 990 tests across 36 files, 27 of
+which skip — the skips are `test_criteria_tree.py`'s per-tree constant
+matrix, which skips the pairs a given tree does not declare, D101's pattern).
+IDs run to T-92, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -522,9 +557,28 @@ opened v1.2** (D110): every criterion a tree declares deterministic names a
 `kind` from `PredicateKind`, the engine dispatches on that and on no
 criterion id, and a kind it does not implement fails at load. It minted
 REQ-57 and REQ-58 — **a statement is minted by the task whose close checks
-it**, not by the version's opening commit, because three of v1.2's five have
-no check until T-92, T-94 and T-95 *(D109, refining D105 rule 2)*. **`T-92`
-is next**, row 2. Row 8 of v1.1
+it**, not by the version's opening commit *(D109, refining D105 rule 2)*.
+
+**`T-92` closed row 2** (D111): the first tree from an unrelated practice.
+`infliximab-ra-jjm-v1`, compiled from Palmetto GBA's **L35677** and
+**A56432**, both fetched into the hashed corpus with answers q7–q10. It
+loads beside the two bariatric trees over the **same seven states**, which
+ended the one-tree-per-state rule — a state is served by one tree per
+practice, and the collision that matters is a code bound for one state by
+two trees. The engine needed **one** predicate kind it did not have
+(`medication_value_set_active`); two more of the document's statements are
+an exclusion rather than criteria, and three are unclaimed because of the
+document and the chart. It minted REQ-59 (a value set declares its code
+system and membership is tested inside it) and REQ-60 (an exclusion declares
+its kind and its scope; one that does not fire produces nothing). No
+bariatric verdict, span, eval row or recording moved. It also **rewrote row
+3's exit before it opened**: the board asked for a `NOT_MET` on trial
+duration and an abstention on a missing screen, and no Medicare rheumatology
+LCD states either — D97's Palmetto correction, one row later. **`T-93` is
+next**, row 3: patients in Palmetto's territory with rheumatoid arthritis,
+and their eval rows.
+
+Row 8 of v1.1
 closed with D107: P6's path for REQ-44/47 is written down and deliberately not
 taken. The candidate that looks like it claims model adjudication does not —
 Palmetto's `d` decomposes into extraction plus set membership plus a window,
@@ -619,17 +673,41 @@ would buy a passing check rather than a capability.
 
 ### Domain facts that took work to establish
 
-- **The policy corpus is five documents and two jurisdictions** *(D21, D29,
-  D100, D101)*: `ncd_100_1` (national), `a53028` (Noridian, A/B MAC,
+- **The policy corpus is seven documents, two jurisdictions and two
+  practices** *(D21, D29, D100, D101, D111)*. The two added by T-92 are
+  Palmetto GBA's **L35677** (*Infliximab*) and **A56432** (its billing and
+  coding article), which is the same MAC and the same seven states as the
+  bariatric second jurisdiction — the case that tests resolution rather than
+  the one that avoids it. **L35677 states no trial duration and no screening
+  requirement for its rheumatoid arthritis indication**, and neither does any
+  other Medicare rheumatology LCD: Part B drug LCDs restate FDA labelling. Its
+  one quantified trial — three months of steroids and immunosuppressants —
+  belongs to its pulmonary sarcoidosis bullet. Say that plainly rather than
+  looking for a document that must have one.
+
+  The bariatric five: `ncd_100_1` (national), `a53028` (Noridian, A/B MAC,
   **Jurisdiction F**), `r931cp` (CMS Pub. 100-04 Transmittal 931), and since
   T-87 `l34576` and `a56852` (Palmetto GBA, **Jurisdictions J and M**). **NCD
   100.1 quantifies nothing** — no months, no visit counts, no recency. Every
   constant in a tree comes from its MAC's document, so this system determines
   coverage *as that MAC would*, and a request resolves by procedure code
-  **and state** — a state neither tree serves is `NO_JURISDICTION_TREE`
-  (REQ-55), never a default. Say that plainly in a review rather than calling
-  the thresholds CMS's.
-- **The two trees differ in shape, not only in constants** *(D101)*. Palmetto's
+  **and state** — a state no tree serves is `NO_JURISDICTION_TREE` (REQ-55),
+  never a default, while a code no tree binds for a state that *is* served is
+  `NO_POLICY_FOUND` (D26, D111). Say that plainly in a review rather than
+  calling the thresholds CMS's.
+- **The rheumatology tree's letters are not the bariatric ones** *(D111)*.
+  `infliximab-ra-jjm-v1` letters its criteria `a` through `e` because L35677
+  does, and `a` is a diagnosis set where the bariatric `a` is a BMI
+  comparison. Four of its five criteria — the two named contraindications and
+  the disease-activity statement — are declared unclaimed **because of the
+  document and the chart**: NYHA class is not in ICD-10, *"untreated"* is a
+  judgment, and disease activity is a clinical assessment no code grades.
+  None is unclaimed because the engine lacks a predicate, which is the
+  distinction REQ-57 keeps and the one this tree was most able to blur. Its
+  J1745 binding cites a **revision-history line** — the only sentence in the
+  corpus that names the code, because A56432's CPT table sits behind the AMA
+  licence modal exactly as A56852's does.
+- **The two bariatric trees differ in shape, not only in constants** *(D101)*. Palmetto's
   L34576 states no run length (no `c3`), requires *weight* rather than BMI
   monthly, and adds a multidisciplinary evaluation; `c4` and `d` are declared
   `evaluation: "unclaimed"` and the graph abstains on them with
@@ -703,11 +781,17 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   stores/            policy.py and patient.py — the two ports and their
                      file-backed adapters. __init__ imports neither.
 data/policies/
-  source/            ncd_100_1, a53028, r931cp, l34576, a56852 + sources.json,
-                     answers.json (q1–q6)
-  value_sets/        obesity_comorbidities.json (SNOMED)
+  source/            ncd_100_1, a53028, r931cp, l34576, a56852, l35677, a56432
+                     + sources.json, answers.json (q1–q10)
+  value_sets/        obesity_comorbidities and rheumatoid_arthritis (SNOMED);
+                     methotrexate and biologic_dmards_and_jak_inhibitors
+                     (RxNorm, expanded through RxNav and pinned — T-92, D111).
+                     Each declares the one system its membership is tested in
   ncd_100_1_jf.json  Noridian JF's tree, policy_version_id ncd-100.1-jf-v1
   ncd_100_1_jjm.json Palmetto JJ/JM's tree, ncd-100.1-jjm-v1 (T-87, D101)
+  infliximab_ra_jjm.json
+                     Palmetto JJ/JM's infliximab tree, infliximab-ra-jjm-v1
+                     (T-92, D111) — the second practice, same seven states
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it
@@ -750,7 +834,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               35 files
+tests/               36 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

@@ -118,6 +118,30 @@ DOCUMENTS: list[dict[str, str]] = [
         # bindings cite the corpus sentence that names the code (D28, D101).
         "note": "extracted text carries no CPT codes; see D101",
     },
+    # T-92 (D111): the second practice. Same MAC as the second bariatric
+    # jurisdiction -- Palmetto serves J and M for both -- which is the case
+    # that tests resolution rather than the one that avoids it.
+    {
+        "document_id": "l35677",
+        "title": "LCD L35677 - Infliximab",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=35677",
+        "authority": "mac_jurisdiction_jj_jm",
+        "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+        "filename": "l35677.txt",
+    },
+    {
+        "document_id": "a56432",
+        "title": "Article A56432 - Billing and Coding: Infliximab",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=56432",
+        "authority": "mac_jurisdiction_jj_jm",
+        "publisher": "Palmetto GBA (A/B MAC, Jurisdictions J and M)",
+        "filename": "a56432.txt",
+        # The CPT/HCPCS table is behind the AMA licence modal, as A56852's is,
+        # so the J-code is not here. The ICD-10-CM codes that support medical
+        # necessity *are*, and the rheumatoid arthritis value set anchors into
+        # them (D111).
+        "note": "extracted text carries no HCPCS codes; the ICD-10-CM groups are present (D111)",
+    },
 ]
 
 
@@ -219,6 +243,82 @@ ANSWERS: list[dict[str, Any]] = [
         "note": "Four named components follow (surgeon, primary care referral, mental "
                 "health, nutrition). Declared in the tree with its window spanned and "
                 "abstained on with NOT_EVALUATED_BY_THIS_SYSTEM (D101).",
+    },
+    # T-92 (D111): the second practice's constants, read from L35677 the way
+    # q1-q3 were read from A53028 and q4-q6 from L34576.
+    {
+        "question_id": "q7",
+        "question": "What does L35677 require alongside infliximab for the "
+                    "rheumatoid arthritis indication, and does it state a trial "
+                    "duration or a screening requirement?",
+        "feeds": "infliximab-ra criteria b and f",
+        "answer": "concurrent methotrexate; no trial duration and no screening "
+                  "requirement are stated for this indication",
+        "document_id": "l35677",
+        "quote": "When used in combination with methotrexate, to reduce the signs "
+                 "and symptoms, inhibit the progression of structural damage and "
+                 "improve physical function in patients with moderately to "
+                 "severely active rheumatoid arthritis.",
+        "note": "The whole RA bullet. 'moderately to severely active' is a clinical "
+                "assessment the chart does not grade, so criterion f is unclaimed. "
+                "The one quantified trial in this document -- three or more months "
+                "of steroids and immunosuppressants -- belongs to the pulmonary "
+                "sarcoidosis bullet, not this one, which is why v1.2 row 3's "
+                "'NOT_MET on trial duration' was rewritten (D111).",
+    },
+    {
+        "question_id": "q8",
+        "question": "What contraindications does L35677 name, and are they in the "
+                    "coded record?",
+        "feeds": "infliximab-ra criteria c and d, both unclaimed",
+        "answer": "Class III or IV congestive heart failure, and untreated active "
+                  "or latent tuberculosis; neither is determinable from coded data",
+        "document_id": "l35677",
+        "quote": "Infliximab will only be covered for the above indications when no "
+                 "contraindications to its use exist including:",
+        "note": "The two follow as 'a.' and 'b.'. NYHA class is not in ICD-10 -- "
+                "I50.x records heart failure and not which class -- and 'untreated' "
+                "is a judgment about the record. Both criteria are declared "
+                "unclaimed because of the document and the chart, never because "
+                "the engine lacks a predicate (REQ-57, D111).",
+    },
+    {
+        "question_id": "q9",
+        "question": "What does L35677 exclude, and can it be computed from "
+                    "structured data?",
+        "feeds": "infliximab-ra criterion e",
+        "answer": "combination with another biologic or a Janus kinase inhibitor; "
+                  "yes - active medications intersected with a named RxNorm set",
+        "document_id": "l35677",
+        "quote": "When used in combination with other biologics, such as "
+                 "Enbrel\u00ae(etanercept), Kineret\u00ae (anakinra), "
+                 "Orencia\u00ae(abatacept), Rituxan\u00ae(rituximab), "
+                 "Humira\u00ae(adalimumab), Cimzia\u00ae (certolizumab), "
+                 "Simponi\u00ae (golimumab), or a Janus kinase inhibitor "
+                 "[e.g. Xeljanz\u00ae (tofacitinib)], infliximab is considered not "
+                 "medically reasonable and necessary and therefore, not covered.",
+        "note": "The document names eight drugs in prose; the value set carries "
+                "each one's RxNorm ingredient and its clinical-drug expansion. An "
+                "exclusion concludes from positive evidence: an active medication "
+                "in the set is NOT_MET, and none is MET. That is not D40's case, "
+                "which is about a requirement a chart cannot prove absent (D111).",
+    },
+    {
+        "question_id": "q10",
+        "question": "Does any document in the corpus name the HCPCS code L35677 "
+                    "governs?",
+        "feeds": "the infliximab-ra tree's contractor_determined binding",
+        "answer": "yes - L35677's revision history names J1745; neither document's "
+                  "CPT/HCPCS table is in the extracted text",
+        "document_id": "l35677",
+        "quote": "Under CPT/HCPCS Codes the description was revised for CPT code "
+                 "J1745.",
+        "note": "A56432's code table sits behind the AMA licence modal, exactly as "
+                "A56852's does (D101). This is a revision-history line rather than "
+                "a code table, which is weaker evidence and is recorded as such in "
+                "the tree: it establishes the code this LCD's group carries, which "
+                "is D28's code-binding class of claim. The coverage claim is cited "
+                "separately, from the LCD's own coverage sentence (D111).",
     },
 ]
 

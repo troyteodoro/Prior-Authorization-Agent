@@ -28,6 +28,10 @@ TREE_PATH = REPO_ROOT / "data" / "policies" / "ncd_100_1_jf.json"
 TREE_PATHS = {
     "ncd-100.1-jf-v1": TREE_PATH,
     "ncd-100.1-jjm-v1": REPO_ROOT / "data" / "policies" / "ncd_100_1_jjm.json",
+    # T-92 (D111): the second practice. Every check below runs over it too,
+    # which is the whole question v1.2 asks — a check only the bariatric trees
+    # pass is a check rheumatology escaped.
+    "infliximab-ra-jjm-v1": REPO_ROOT / "data" / "policies" / "infliximab_ra_jjm.json",
 }
 SOURCE_DIR = REPO_ROOT / "data" / "policies" / "source"
 MANIFEST_PATH = SOURCE_DIR / "sources.json"
@@ -39,6 +43,10 @@ SPEC_PATH = REPO_ROOT / "docs" / "spec.md"
 EXPECTED_CRITERIA_BY_TREE = {
     "ncd-100.1-jf-v1": ["a", "b", "c1", "c2", "c3", "c4", "c5"],
     "ncd-100.1-jjm-v1": ["a", "b", "c1", "c2", "c4", "c5", "d"],
+    # The letters are L35677's and mean nothing the two above mean: `a` is a
+    # diagnosis set, `b` a medication set. Dispatch reads each criterion's
+    # declared kind and no letter (T-91, D110; T-92, D111).
+    "infliximab-ra-jjm-v1": ["a", "b", "c", "d", "e"],
 }
 EXPECTED_CRITERIA = EXPECTED_CRITERIA_BY_TREE["ncd-100.1-jf-v1"]
 
@@ -65,6 +73,15 @@ REQUIRED_CONSTANTS_BY_TREE = {
         ("c5", "documentation_rate"),
         ("d", "evaluation_window_months"),
     ],
+    "infliximab-ra-jjm-v1": [
+        ("a", "min_comorbidity_count"),
+        ("a", "value_set_id"),
+        ("b", "min_medication_count"),
+        ("b", "value_set_id"),
+        ("c", "excluded_condition"),
+        ("d", "excluded_condition"),
+        ("e", "disease_activity"),
+    ],
 }
 REQUIRED_CONSTANTS = sorted({pair for pairs in REQUIRED_CONSTANTS_BY_TREE.values() for pair in pairs})
 
@@ -87,13 +104,40 @@ TYPE_CHECKS = {
 }
 
 
+#: The trees that compile NCD 100.1. Most of the checks in the second half of
+#: this file are about *that document* — six non-covered procedures, 43842,
+#: A53028's facility lists, the 04/2009 T2DM exclusion — and not about trees in
+#: general. Until T-92 every tree in the store was one of these two, so the
+#: distinction cost nothing and was never drawn; the second practice is what
+#: makes it load-bearing (D111). A tree is in this set by assertion, so adding
+#: one is a visible diff either way.
+NCD_TREES = ("ncd-100.1-jf-v1", "ncd-100.1-jjm-v1")
+
+
 @pytest.fixture(scope="module", params=sorted(TREE_PATHS), ids=sorted(TREE_PATHS))
 def tree(request) -> dict:
-    """Every test below runs once per tree (T-87). A check that only
-    Noridian's tree passes is a check the second jurisdiction escaped."""
+    """Every *structural* test below runs once per tree (T-87, T-92).
+
+    A check that only Noridian's tree passes is a check the second jurisdiction
+    escaped, and one that only the bariatric trees pass is a check rheumatology
+    escaped.
+    """
     loaded = json.loads(TREE_PATHS[request.param].read_text(encoding="utf-8"))
     assert loaded["policy_version_id"] == request.param, "file and id disagree"
     return loaded
+
+
+@pytest.fixture(scope="module", params=NCD_TREES, ids=NCD_TREES)
+def ncd_tree(request) -> dict:
+    """The NCD 100.1 readings, for the checks that are about that document."""
+    loaded = json.loads(TREE_PATHS[request.param].read_text(encoding="utf-8"))
+    assert loaded["policy_version_id"] == request.param, "file and id disagree"
+    return loaded
+
+
+@pytest.fixture(scope="module")
+def ncd_criteria(ncd_tree) -> dict:
+    return {c["id"]: c for c in ncd_tree["criteria"]}
 
 
 def test_every_tree_file_in_the_directory_is_asserted():
@@ -149,7 +193,15 @@ def test_the_decision_expression_covers_every_criterion_and_nothing_else(tree, c
     """REQ-19 evaluates this expression in Python. A criterion missing from it is
     a criterion that cannot affect the outcome, which is the quiet failure —
     and an unclaimed criterion left out of it is the omission D101 refused."""
-    named = set(re.findall(r"\b(?:a|b|c[1-5]|d)\b", tree["decision_expression"]))
+    # Every identifier in the expression that is not an operator. **Was a
+    # regex of the bariatric letters**, which silently ignored any criterion
+    # lettered outside it — `e` in the rheumatology tree — and so would have
+    # passed a tree whose expression omitted one (T-92, D111).
+    named = {
+        token
+        for token in re.findall(r"[A-Za-z_][A-Za-z0-9_]*", tree["decision_expression"])
+        if token not in {"AND", "OR", "NOT"}
+    }
     assert named == set(criteria), (
         f"decision_expression names {sorted(named)}, criteria are {sorted(criteria)}"
     )
@@ -182,10 +234,30 @@ def test_required_constant_is_present(tree, criteria, criterion_id, constant):
 
 
 def test_the_discrepancy_tolerance_is_declared_per_reconciled_fact(tree):
-    facts = tree.get("reconciled_facts", [])
-    assert facts, "REQ-39 requires a tolerance per reconciled fact; none are declared"
-    for fact in facts:
+    """REQ-39, over whatever facts a tree reconciles.
+
+    A tree declaring none passes vacuously — the rheumatology tree has no BMI
+    and nothing to reconcile — so the check that a BMI tree *has* one is below,
+    where it cannot be satisfied by a tree that dropped it.
+    """
+    for fact in tree.get("reconciled_facts", []):
         assert "discrepancy_tolerance" in fact, f"{fact['fact']} declares no tolerance"
+
+
+def test_a_tree_with_a_bmi_criterion_reconciles_the_bmi(tree):
+    """The half of REQ-39 a vacuous pass would hide (T-92, D111)."""
+    kinds = {c.get("kind") for c in tree["criteria"]}
+    if "bmi_observation_threshold" not in kinds:
+        assert not tree.get("reconciled_facts"), (
+            "a tree with no BMI criterion reconciles a fact nothing produces"
+        )
+        return
+    facts = {f["fact"] for f in tree.get("reconciled_facts", [])}
+    assert "bmi" in facts, (
+        "a tree comparing a structured BMI to a threshold declares no bmi "
+        "reconciled fact; REQ-34's note-versus-structured comparison has "
+        "nothing to read its tolerance from"
+    )
 
 
 def test_every_constant_declares_a_type_and_honors_it(tree):
@@ -429,8 +501,13 @@ def test_a_constant_is_either_sourced_or_provisional(tree):
     )
 
 
-def test_the_national_floor_is_cited_where_it_is_claimed(tree, criteria, source_texts):
-    floor = criteria["a"]["national_floor"]
+def test_the_national_floor_is_cited_where_it_is_claimed(
+    ncd_tree, ncd_criteria, source_texts
+):
+    """The NCD's floor, which only a tree compiling an NCD has. L35677 operates
+    under section 1862(a)(1)(A) and no national coverage determination, so it
+    declares none (D111)."""
+    floor = ncd_criteria["a"]["national_floor"]
     text = source_texts[floor["document_id"]]
     assert text[floor["char_start"] : floor["char_end"]] == floor["quote"]
     assert floor["document_id"] == "ncd_100_1", (
@@ -443,28 +520,28 @@ def test_the_national_floor_is_cited_where_it_is_claimed(tree, criteria, source_
 # --------------------------------------------------------------------------
 
 
-def test_c4_and_c5_declare_the_same_documentation_rate(criteria):
+def test_c4_and_c5_declare_the_same_documentation_rate(ncd_criteria):
     """One sentence, one shape.
 
     A53028[6339:6503] says `monthly` once and then lists three things. If c4 and
     c5 ever disagree about the rate again, one of them has stopped reading the
     sentence it cites.
     """
-    c4 = criteria["c4"]["constants"]["documentation_rate"]
-    c5 = criteria["c5"]["constants"]["documentation_rate"]
+    c4 = ncd_criteria["c4"]["constants"]["documentation_rate"]
+    c5 = ncd_criteria["c5"]["constants"]["documentation_rate"]
     assert c4["value"] == c5["value"] == "every_month_of_run"
     assert c4["source"] == c5["source"], (
         "c4 and c5 quantify from the same sentence, so they cite the same span"
     )
 
 
-def test_c5_declares_no_event_count(criteria):
+def test_c5_declares_no_event_count(ncd_criteria):
     """The shape D24 removed, kept out.
 
     Re-adding a count is the regression, because the count was `MET` on runs the
     source does not cover and nothing else in the tree would notice.
     """
-    constants = criteria["c5"]["constants"]
+    constants = ncd_criteria["c5"]["constants"]
     assert "c5_min_documented_events" not in constants, (
         "the count is back. D24 replaced it with a rate; see its reversal condition"
     )
@@ -476,15 +553,15 @@ def test_c5_declares_no_event_count(criteria):
     assert not counts, f"c5 declares a numeric threshold again: {counts}"
 
 
-def test_c5s_rate_is_sourced_and_no_longer_provisional(criteria):
+def test_c5s_rate_is_sourced_and_no_longer_provisional(ncd_criteria):
     """T-37's exit condition, on the branch it took."""
-    rate = criteria["c5"]["constants"]["documentation_rate"]
+    rate = ncd_criteria["c5"]["constants"]["documentation_rate"]
     assert not rate.get("provisional"), "open question 6 is closed by D24"
     assert "open_question" not in rate
     assert rate.get("source"), "a rate is a policy claim and carries a span like any other"
 
 
-def test_a_seven_month_run_documented_in_four_months_is_not_met(criteria):
+def test_a_seven_month_run_documented_in_four_months_is_not_met(ncd_criteria):
     """The case T-37 exists to settle.
 
     Under the old count of 4 this run was `MET` — four qualifying events cleared a
@@ -499,7 +576,7 @@ def test_a_seven_month_run_documented_in_four_months_is_not_met(criteria):
     run_months = 7
     months_documenting_both = 4
 
-    rate = criteria["c5"]["constants"]["documentation_rate"]["value"]
+    rate = ncd_criteria["c5"]["constants"]["documentation_rate"]["value"]
     assert rate in RATE_MONTHS_REQUIRED, f"unknown rate vocabulary {rate!r}"
     required = RATE_MONTHS_REQUIRED[rate](run_months)
 
@@ -563,6 +640,15 @@ def procedure_sets(tree) -> dict:
     return tree["procedure_sets"]
 
 
+@pytest.fixture(scope="module")
+def ncd_procedure_sets(ncd_tree) -> dict:
+    """The NCD's sets. The checks below them name §C's six procedures, 43842
+    and A53028's facility lists, which are facts about that document and not
+    about a tree (T-92, D111)."""
+    assert "procedure_sets" in ncd_tree, "T-38's sets are missing from the tree"
+    return ncd_tree["procedure_sets"]
+
+
 def _entries(procedure_sets):
     for set_name in SET_NAMES:
         for entry in procedure_sets[set_name]:
@@ -589,15 +675,28 @@ def _claim_spans(entry):
 
 
 def test_the_tree_carries_the_three_sets(procedure_sets):
+    """All three, every tree. D26's collapse is a tree that can express only
+    the covered set, and an *empty* set is a different claim from a missing
+    one: the rheumatology tree binds one contractor-determined code and
+    nothing nationally, because no NCD governs infliximab (D111)."""
     for set_name in SET_NAMES:
         assert set_name in procedure_sets, f"{set_name} is missing"
-        assert procedure_sets[set_name], f"{set_name} is empty"
+        assert isinstance(procedure_sets[set_name], list)
+    assert any(procedure_sets[name] for name in SET_NAMES), (
+        "a tree binding no code in any set is reachable by no request"
+    )
 
 
-def test_the_non_covered_set_records_all_six_ncd_procedures(procedure_sets):
+def test_the_ncd_tree_populates_all_three_sets(ncd_procedure_sets):
+    """The half the check above stops asserting for every tree."""
+    for set_name in SET_NAMES:
+        assert ncd_procedure_sets[set_name], f"{set_name} is empty"
+
+
+def test_the_non_covered_set_records_all_six_ncd_procedures(ncd_procedure_sets):
     """NCD 100.1 §C names six. A shorter list under-records the source; a longer
     one added a denial nobody wrote."""
-    assert len(procedure_sets["nationally_non_covered"]) == 6
+    assert len(ncd_procedure_sets["nationally_non_covered"]) == 6
 
 
 def test_every_coverage_claim_slices_back(procedure_sets, source_texts):
@@ -628,12 +727,12 @@ def test_no_coverage_claim_cites_the_transmittal(procedure_sets):
 
 
 def test_every_non_covered_claim_falls_inside_the_section_c_list(
-    procedure_sets, source_texts
+    ncd_procedure_sets, source_texts
 ):
     """The assertion that separates a denial from a delegation (D22, D28). §D's
     'may determine coverage' paragraph starts 78 characters after §C's list
     ends and slices back just as cleanly."""
-    for entry in procedure_sets["nationally_non_covered"]:
+    for entry in ncd_procedure_sets["nationally_non_covered"]:
         claim = entry["coverage_claim"]
         scope = claim["scoping_quote"]
         assert "non-covered for all Medicare beneficiaries" in scope["quote"]
@@ -675,13 +774,13 @@ def test_every_identity_binding_slices_back_naming_code_and_procedure(
             )
 
 
-def test_facility_lists_are_transcriptions_not_identities(procedure_sets, source_texts):
+def test_facility_lists_are_transcriptions_not_identities(ncd_procedure_sets, source_texts):
     """D30's finding: A53028's facility lists overlap across procedures whose
     coverage differs (0D160ZB in two lists; 0DV64CZ and 0DB64Z3 inside the lap
     Roux-en-Y list while the article assigns them to LSG). A lookup keyed on
     them answers two ways, so they are recorded and excluded."""
     seen_any = False
-    for set_name, entry in _entries(procedure_sets):
+    for set_name, entry in _entries(ncd_procedure_sets):
         for flist in entry.get("facility_code_lists", []):
             seen_any = True
             where = f"{set_name}/{entry['procedure']}/{flist['label']}"
@@ -718,19 +817,19 @@ def test_no_identity_code_appears_twice_within_a_set(procedure_sets):
         )
 
 
-def test_43775_is_contractor_determined_and_nothing_else(procedure_sets):
+def test_43775_is_contractor_determined_and_nothing_else(ncd_procedure_sets):
     """D22. The code that reached the spec as non-covered and is not."""
-    assert "43775" in _identity_codes(procedure_sets, "contractor_determined")
-    assert "43775" not in _identity_codes(procedure_sets, "nationally_covered")
-    assert "43775" not in _identity_codes(procedure_sets, "nationally_non_covered")
+    assert "43775" in _identity_codes(ncd_procedure_sets, "contractor_determined")
+    assert "43775" not in _identity_codes(ncd_procedure_sets, "nationally_covered")
+    assert "43775" not in _identity_codes(ncd_procedure_sets, "nationally_non_covered")
 
 
-def test_e3s_code_is_nationally_non_covered(procedure_sets):
+def test_e3s_code_is_nationally_non_covered(ncd_procedure_sets):
     """The code T-35 picked (D28), in the set REQ-2 reads."""
-    assert "43842" in _identity_codes(procedure_sets, "nationally_non_covered")
+    assert "43842" in _identity_codes(ncd_procedure_sets, "nationally_non_covered")
 
 
-def test_non_covered_and_absent_are_different_lookups(procedure_sets):
+def test_non_covered_and_absent_are_different_lookups(ncd_procedure_sets):
     """D26's defect 2, asserted on the artifact alone with no resolver involved.
 
     'A policy says no' and 'no policy says anything' must come from two
@@ -740,7 +839,7 @@ def test_non_covered_and_absent_are_different_lookups(procedure_sets):
     is the collapse REQ-2 used to encode.
     """
     membership = {
-        set_name: set(_identity_codes(procedure_sets, set_name))
+        set_name: set(_identity_codes(ncd_procedure_sets, set_name))
         for set_name in SET_NAMES
     }
     hits = [name for name, codes in membership.items() if "43842" in codes]
@@ -753,11 +852,11 @@ def test_non_covered_and_absent_are_different_lookups(procedure_sets):
     assert hits != foreign_hits
 
 
-def test_the_dated_lsg_entry_carries_no_code(procedure_sets):
+def test_the_dated_lsg_entry_carries_no_code(ncd_procedure_sets):
     """§C's LSG bullet is scoped 'prior to June 27, 2012'. The code's current
     determination is the contractor entry; binding 43775 here too would give it
     two answers and re-run D22."""
-    for entry in procedure_sets["nationally_non_covered"]:
+    for entry in ncd_procedure_sets["nationally_non_covered"]:
         if "sleeve" in entry["procedure"].lower() and "laparoscopic" in entry["procedure"].lower():
             assert entry.get("date_qualifier") == "prior to June 27, 2012"
             assert entry.get("codes", []) == []
@@ -786,14 +885,55 @@ def exclusions(tree) -> list[dict]:
     return tree["categorical_exclusions"]
 
 
-def test_the_exclusion_claim_slices_back_and_states_the_denial(
+@pytest.fixture(scope="module")
+def ncd_exclusions(ncd_tree) -> list[dict]:
+    """The NCD's 04/2009 T2DM exclusion (T-14, D41). The checks below name that
+    sentence, that bound and that diagnosis; the generic ones are above."""
+    assert "categorical_exclusions" in ncd_tree, "T-14's exclusion is missing"
+    return ncd_tree["categorical_exclusions"]
+
+
+def test_every_exclusion_declares_a_kind_and_a_scope(exclusions):
+    """T-92 (D111). An exclusion the dispatcher cannot place would have to be
+    skipped, and a skipped exclusion **approves** past a denial the policy
+    states outright — the one direction this system may not fail in. The scope
+    is compared against the set a request resolved in, so a scope naming no set
+    reaches nothing and denies nobody."""
+    assert exclusions, "a tree with no categorical exclusion declares an empty list"
+    for exclusion in exclusions:
+        assert exclusion.get("kind") in {
+            "bmi_below_bound_with_active_condition",
+            "active_medication_value_set",
+        }, f"{exclusion['id']} declares kind {exclusion.get('kind')!r}"
+        assert exclusion["procedure_scope"] in SET_NAMES, (
+            f"{exclusion['id']} is scoped to {exclusion['procedure_scope']!r}, "
+            f"which is not one of {SET_NAMES}"
+        )
+
+
+def test_every_exclusion_claim_slices_back_and_states_a_denial(
     exclusions, source_texts
+):
+    """Article III over every tree's exclusions, whatever they exclude."""
+    for exclusion in exclusions:
+        claim = exclusion["claim"]
+        text = source_texts[claim["document_id"]]
+        assert text[claim["char_start"] : claim["char_end"]] == claim["quote"]
+        assert text.count(claim["quote"]) == 1
+        assert "not covered" in claim["quote"], (
+            f"{exclusion['id']}: the quote names a population without stating "
+            "the denial"
+        )
+
+
+def test_the_exclusion_claim_slices_back_and_states_the_denial(
+    ncd_exclusions, source_texts
 ):
     """The NCD body never states this exclusion; the transmittal-history
     sentence does, and it is self-scoping — procedures, population and denial
     in one breath (D41)."""
-    assert len(exclusions) == 1
-    claim = exclusions[0]["claim"]
+    assert len(ncd_exclusions) == 1
+    claim = ncd_exclusions[0]["claim"]
     text = source_texts[claim["document_id"]]
     assert claim["document_id"] == "ncd_100_1", "the exclusion is national"
     assert text[claim["char_start"] : claim["char_end"]] == claim["quote"]
@@ -805,12 +945,12 @@ def test_the_exclusion_claim_slices_back_and_states_the_denial(
 
 
 def test_the_exclusion_constant_cites_the_ncd_deliberately(
-    exclusions, source_texts
+    ncd_exclusions, source_texts
 ):
     """The one numeric constant legitimately sourced to the NCD: the exclusion
     is national and quantified by CMS itself — outside `_all_constants`, so
     the every-number-is-Noridian's gate keeps its rule (D21, D41)."""
-    bound = exclusions[0]["constants"]["bmi_upper_bound"]
+    bound = ncd_exclusions[0]["constants"]["bmi_upper_bound"]
     assert bound["value"] == 35.0 and bound["comparison"] == "lt"
     source = bound["source"]
     assert source["document_id"] == "ncd_100_1"
@@ -819,8 +959,8 @@ def test_the_exclusion_constant_cites_the_ncd_deliberately(
     assert "less than 35" in source["quote"]
 
 
-def test_the_exclusion_binding_admits_it_is_unsourced(exclusions):
-    binding = exclusions[0]["condition_binding"]
+def test_the_exclusion_binding_admits_it_is_unsourced(ncd_exclusions):
+    binding = ncd_exclusions[0]["condition_binding"]
     assert binding["in_corpus"] is False
     assert binding["source_class"] == "external_code_system"
     assert "char_start" not in binding, (
@@ -828,7 +968,7 @@ def test_the_exclusion_binding_admits_it_is_unsourced(exclusions):
     )
 
 
-def test_the_exclusion_is_scoped_to_the_covered_set(exclusions):
+def test_the_exclusion_is_scoped_to_the_covered_set(ncd_exclusions):
     """The sentence names RYGBP, LAGB and BPD/DS — the covered set exactly —
     and predates the LSG delegation, so contractor requests skip it (D41)."""
-    assert exclusions[0]["procedure_scope"] == "nationally_covered"
+    assert ncd_exclusions[0]["procedure_scope"] == "nationally_covered"

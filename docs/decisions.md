@@ -8650,3 +8650,267 @@ carrying identity it should not, and the answer is a constant, not a second
 kind. `only_criterion_of_kind` raising on a duplicate is the signal; it is
 raised by the value-set fetch and the sc2 lookback, and T-92 is the first
 task that could hit it.
+
+---
+
+## D111 — Infliximab for rheumatoid arthritis is the second practice, and what it cannot say it declares
+
+**Context.** T-92 is row 2 of v1.2: a criteria tree compiled from a real
+rheumatology coverage document, chosen the way D97 chose Palmetto's — by
+fetching the candidate's header and reading what it actually says, rather
+than by assuming what a document of that kind contains. Spec §11 asks for a
+MAC LCD governing **infused biologic DMARDs**, on the reasoning that the
+resolver keys on a procedure code and a J-code needs nothing new there.
+
+Four candidates were fetched through T-02's extractor for this entry, from
+the 969 final LCDs the MCD's own report lists:
+
+| Candidate | What the header says |
+|---|---|
+| **L35677 Infliximab**, Palmetto GBA (J/M), with **A56432** | RA: *"When used in combination with methotrexate, to reduce the signs and symptoms, inhibit the progression of structural damage and improve physical function in patients with moderately to severely active rheumatoid arthritis."* Contraindications: *"a. Class III or IV congestive heart failure; or b. Untreated active or latent tuberculosis"*. Limitation: combination with another biologic or a JAK inhibitor is *"not medically reasonable and necessary and therefore, not covered"*. A56432's 406 ICD-10 codes are in the extracted text. |
+| L39424 MolDX: Molecular Biomarker Testing … in Rheumatoid Arthritis | A lab-test policy, not an infused biologic. Seven of its eleven criteria are technical-assessment and validity statements about the test, not facts about the patient. |
+| L35026 Rituximab, Palmetto GBA | RA restates the FDA label — *"inadequate response to one or more TNF antagonist therapies"* — and quantifies nothing. |
+| L33394 Drugs and Biologicals, Coverage of, for Label and Off-Label Uses | A framework for off-label review, with no practice criteria to compile. |
+
+**Chosen — `infliximab-ra-jjm-v1`, compiled from L35677 and A56432.** It is
+what §11 named, and it is the same MAC as the bariatric second jurisdiction,
+which is the case that tests the store rather than the one that avoids it
+(below).
+
+**The second correction of the kind D97 made, one row later.** The board's
+row 3 fixed T-93's eval rows as *a `NOT_MET` on trial duration* and *an
+`INSUFFICIENT_EVIDENCE` on a missing screen*. **No Medicare rheumatology LCD
+states either.** Part B drug LCDs restate FDA labelling; the trial durations
+and screening requirements that phrasing was written from belong to
+commercial utilisation-management policy, which is not this corpus. The one
+quantified trial in L35677 — *"treatment for 3 or more months with steroids
+(10 mg per day or more) and immunosuppressants"* — is its **pulmonary
+sarcoidosis** bullet, not its RA bullet. Compiling that number into an RA
+criterion would be a constant with a span that does not say what the
+criterion claims, which is worse than the unsourced number D101 rejected,
+because it would slice back cleanly.
+
+So T-93's exit is rewritten here, before it opens: **a criterion `MET`, a
+`NOT_MET` on the combination limitation, and an abstention.** §11's
+trial-duration and lab-threshold statement stays unminted and awaits T-94.
+
+**The tree, and the three things it declares it cannot say.**
+
+| id | Criterion | Evaluation |
+|---|---|---|
+| `a` | A rheumatoid arthritis diagnosis this LCD supports | deterministic, `condition_value_set_membership` — the kind bariatric surgery already needed |
+| `b` | Used in combination with methotrexate | deterministic, **new** `medication_value_set_active` |
+| `c` | No Class III or IV congestive heart failure | **unclaimed** |
+| `d` | No untreated active or latent tuberculosis | **unclaimed** |
+| `e` | Moderately to severely active RA | **unclaimed** |
+
+and the LIMITATIONS paragraph — *not in combination with another biologic or
+a JAK inhibitor* — as a **categorical exclusion**, not a sixth criterion
+(below).
+
+Each unclaimed criterion is unclaimed because of the *document* or the
+*chart*, never because the engine lacks a predicate — REQ-57's distinction,
+and the one this task was most able to blur:
+
+- `c` — **NYHA class is not in ICD-10.** `I50.x` records heart failure and
+  says nothing about which class, and no other coded resource carries it.
+  A tree that read `I50.x` as Class III/IV would deny patients the document
+  covers; one that read it as "not Class III/IV" would approve patients it
+  excludes. Both are wrong verdicts, which is D101's test.
+- `d` — *"untreated"* is a judgment about the record, and latent-TB status
+  comes from a screening result the structured plane does not carry.
+- `e` — disease activity is a clinical assessment. The chart carries no
+  DAS28 or CDAI, and a diagnosis code does not grade severity.
+
+Three unclaimed of five, every one in the decision expression, so an RA
+determination cannot come out `MET` overall and names what a human still
+owes — D101's shape, now on a second practice. That ratio is the finding,
+not a shortfall: these documents are judgment-heavy, and a system that
+reported five deterministic verdicts here would be reporting three it could
+not support.
+
+**The engine needed exactly one predicate kind it did not have.** That is
+the answer to US-10's question, and it is a more interesting number than
+either extreme would have been. `condition_value_set_membership` took the
+diagnosis criterion unchanged; `medication_value_set_active` is the one
+addition; everything else the document says is either an exclusion or a
+judgment. What did *not* transfer was narrower and more surprising than the
+arithmetic: one tree per state, one value set per tree, one code system
+assumed, and a constant name minted for bariatric surgery that is now in a
+measured tool payload and therefore cannot be renamed (below).
+
+**Chosen — a state may be served by several trees; ambiguity is caught where
+a request is resolved.** `LocalPolicyStore._state_index` raised when two
+trees claimed one state, which was right while one tree per state was the
+model. Palmetto serves AL, GA, NC, SC, TN, VA and WV for bariatric surgery
+**and** for infliximab, so that rule and this tree cannot both exist. The
+rule is replaced by the one already a level down: `_binding_index` raises
+when a **code** is bound for one state by two trees, which is the collision
+that would actually make resolution depend on load order.
+`UnknownJurisdiction` keeps REQ-55's meaning — *no tree in this store serves
+this state at all* — and a code no tree binds for a served state stays
+`NO_POLICY_FOUND` (D26).
+
+**Rejected — a MAC whose states do not overlap.** Cheaper, and it builds the
+defect into the corpus. A bariatric request in that MAC's state would find
+the rheumatology tree, miss 43775 and answer `NO_POLICY_FOUND` — *no policy
+governs this code* — when the truth is that no bariatric tree serves that
+state, which is REQ-55's `NO_JURISDICTION_TREE`. The overlapping MAC is the
+honest case, and it is the one that fails loudly if this is got wrong.
+
+**Rejected — a `practice` field on the tree now.** T-95's compatibility
+account groups by practice and will need one; two trees of one practice
+(JF and JJM bariatric) cannot be grouped by `policy_version_id`. It buys
+nothing T-92 needs — the binding index catches the realistic collision, a
+half-finished revision of a tree, because it binds the same codes — and
+adding it here is building ahead of row 5.
+
+**Chosen — value sets are plural per tree and membership is tested within a
+declared system.** `FixedRetrievalPlanner` fetched *the* value set through
+`only_criterion_of_kind`; this tree declares three, in two code systems.
+`get_value_set` now returns a `CodedValueSet` — the id, the one system
+membership is tested in, and the codes — and the planner fetches the set
+every deterministic criterion declaring a `value_set_id` names. Conditions
+are matched in SNOMED, medications in **RxNorm**, which is what Synthea
+codes `MedicationRequest` in and what makes the declared system load-bearing
+rather than documentary: a set of the LCD's ICD-10 codes would load cleanly,
+compare cleanly and match nobody, which is the failure `get_value_set`'s
+docstring has warned about since D52 without any mechanism behind it.
+
+Measured before making the comparison strict: across the eight committed
+bundles, 419 conditions carry `http://snomed.info/sct` and two carry
+`http://hl7.org/fhir/sid/icd-10` — `K02.9` and `K03.81`, both resolved
+dental codes, neither in `obesity_comorbidities`. **No verdict, span or eval
+row moves.** D110's reversal condition is not triggered either: no kind
+appears twice in this tree, and the value-set fetch stops asking
+`only_criterion_of_kind` because it reads a constant off each criterion, not
+an identity off the tree.
+
+**Rejected — `frozenset[(system, code)]`.** The same information, with the
+system re-asserted per entry and therefore able to vary per entry. A value
+set compiled half in SNOMED and half in ICD-10 would then be a well-formed
+object, and every predicate over it would agree with it.
+
+**Chosen — the limitation is a categorical exclusion, because a criterion
+could not state it.** This was designed as a criterion first —
+`medication_value_set_absent`, `NOT_MET` on a hit and `MET` on a clean
+chart — and the contract refused it: REQ-5 requires a span on every `MET`,
+and **there is no span for an absence**. The alternatives were to abstain
+whenever the exclusion does not fire, which makes every exclusion abstain
+and no determination ever complete, or to declare the criterion unclaimed,
+which would throw away the one verdict the chart *can* support — the denial.
+
+An exclusion has none of that trouble. It fires citing every prescription
+that fired it, or it produces nothing; it is not a criterion and has no
+verdict to abstain with, which is how sc2 has behaved since D41. So
+`ExclusionKind`, `criteria.EXCLUSIONS` and `evaluate_exclusion` are T-91's
+dispatch built a second time for exclusions, with the same rule and higher
+stakes: an unimplemented predicate that silently produced nothing would
+approve past a *requirement*; an unimplemented exclusion that silently
+produced nothing approves past a *denial the policy states outright*.
+
+`procedure_scope` becomes a comparison against the set the request resolved
+in, rather than the literal `!= "nationally_covered"` it was. D41's rule is
+unchanged by that — the NCD's 04/2009 exclusion still scopes to
+`nationally_covered` and still never reaches a delegated code — and it
+admits a MAC's own exclusion over a delegated procedure, which is what this
+one is.
+
+`medication_value_set_active` keeps D40's asymmetry: `MET` on a hit, an
+abstention otherwise, never `NOT_MET` — the LCD's own note carves out
+patients *"unable to tolerate methotrexate"* whose reason is documented in
+the record, and a `NOT_MET` would deny them on a chart that does not
+disagree.
+
+**Chosen — `min_comorbidity_count` stays wrong in the rheumatology tree.**
+The constant reads as "minimum number of co-morbidities" and this criterion
+counts the request's *indication*. Renaming it means renaming it in the two
+bariatric trees, because one predicate reads one constant — and
+`get_policy_context` emits constant **names** into the payload the agentic
+planner reads, which is part of the configuration D64 and D91 measured.
+A rename is a new measurement, not a tidy-up (D45), and v1.2 spends zero
+model calls. It is declared with a note on the constant saying exactly this,
+so a reviewer meets the explanation where they meet the oddity, and it is
+renamed in the v1.6 round, which re-measures anyway. The finding worth
+keeping: **a name minted for one practice outlives that practice once it is
+inside a measured prompt.**
+
+**Medications cost the agentic planner no tool and no prompt change, which
+is worth stating because the opposite was assumed while planning this task.**
+`AgenticRetrievalPlanner` builds its bundle's structured half from **direct
+port reads** — `get_observations` and `get_conditions`, exactly as the fixed
+planner does. What the model chooses is *which documents to read*; the four
+patient tools exist so it can see the chart while planning, and the bundle
+does not come from them (D66's rule, that the tool payload is never the
+evidence path). `get_medications` joins that deterministic half, so the second
+practice adds no tool declaration, no prompt change and no measurement
+(D45, D64, D66). A guard that refused a tree whose kinds the planner had no
+tool for was written and deleted: it would have raised on a tree this planner
+can serve.
+
+**Stated limit, not fixed here.** `AgenticRetrievalPlanner` raises when it
+gathers no note, which is right for a tree adjudicated on notes and wrong for
+one that declares no note criteria at all — so it serves note-bearing trees
+only, and the rheumatology tree runs on the fixed planner. Generalising it
+belongs to v1.6, where extraction itself becomes tree-declared and the
+measurement is being paid for anyway. Nothing in v1.2 needs it: the
+differential runs bariatric charts, and it is the one comparison whose
+denominator must not move (D91).
+
+**The J1745 binding cites the one corpus sentence that names the code, and
+that sentence is a revision-history line.** A56432's CPT/HCPCS table sits
+behind the AMA licence modal, outside the `document-view-section` containers
+T-02's extractor reads — A56852's problem exactly (D101) — so neither
+document's extracted text contains a code table. L35677's revision history
+does contain the code: *"Under CPT/HCPCS Codes the description was revised
+for CPT code J1745."* It is weaker evidence than a code table, and it is
+recorded as such in the tree rather than dressed up: it establishes that
+J1745 is the code this LCD's group carries, which is D28's code-binding
+class of claim, and the coverage claim cites the LCD's own coverage sentence
+separately.
+
+**Rejected — inventing the code binding from knowledge of HCPCS.** Every
+other binding in this repo slices back to a corpus document, and one that
+did not would be the first citation in the system whose source is the
+compiler's memory.
+
+**Cost, as built.** One `PredicateKind` member and its predicate; a second
+dispatch vocabulary for exclusions (`ExclusionKind`, `EXCLUSIONS`,
+`evaluate_exclusion`) and the scope comparison that goes with it; one new
+patient-port read (`get_medications` over `MedicationRequest`, RxNorm, with
+`status` and `authoredOn`); `RetrievalResult` gaining `medications` and
+trading `value_set` for `value_sets`; `CodedValueSet` on the contract and
+system-scoped membership; the state-index rule replaced; three value set
+files; the tree; and two documents added to the corpus with the five already
+in it carried forward byte-identical. `tests/test_infliximab_tree.py` is 23
+tests. No model call, no recording touched, no extraction schema change, and
+no bariatric verdict, span or eval row moved.
+
+Two existing tests changed meaning rather than shape, and both are recorded
+here because a reader will otherwise read them as weakened.
+`test_two_trees_claiming_one_state_refuse_to_load` became
+`test_two_trees_binding_one_code_for_one_state_refuse_to_load`, with a second
+test asserting that two practices over one state now *load*.
+`test_no_module_outside_stores_names_the_value_set_path` scanned for the
+substring `value_sets`, which was the directory's name and nothing else's
+until `value_sets` became a field on four objects; it now scans **string
+literals** through the AST, because a path is a literal and a field name is
+not. A substring scan would have reported five offenders naming no path, and
+the way to make it pass again would have been to rename the field — the test
+grading spelling instead of layout.
+
+`tests/test_criteria_tree.py` gained a second fixture. Most of its checks are
+about **NCD 100.1** — §C's six non-covered procedures, 43842, A53028's
+facility lists, the 04/2009 T2DM exclusion — and were parametrized over "every
+tree" because until now every tree was one of that document's two readings.
+They now run over `ncd_tree`; the structural checks still run over every tree,
+and the generic halves that were missing (every exclusion declares a kind and
+a scope, every exclusion claim slices back and states a denial, a tree with a
+BMI criterion reconciles the BMI) were added, so the second practice is not a
+tree the file loads and checks nothing about.
+
+**Reverses if:** a rheumatology document that quantifies a conventional-DMARD
+trial enters the corpus — the trial-duration kind is then earned and `b`
+splits; or the extractor gains a route to the note, which is v1.6 — `d` and
+`e` are then claimable, and `c` still is not, because NYHA class is absent
+from the coded record rather than from the pipeline.

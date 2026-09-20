@@ -3,6 +3,8 @@
   "task": "T-05",
   "decision": "D36",
   "status": "VERIFIED",
+  "system": "http://snomed.info/sct",
+  "system_note": "The one code system membership is tested in (T-92, REQ-59, D111). Declared rather than implied: every entry below was already SNOMED and every condition in the committed bundles that this set can match is SNOMED, so nothing moves -- but a set of A53028's ICD-10 codes would have loaded cleanly, compared cleanly and matched nobody, which is what D52's docstring warned about with no mechanism behind it.",
   "population_manifest": "data/patients/manifest.json",
   "sources": [
     {

@@ -1,0 +1,1211 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Palmetto GBA
+
+A and B MAC
+
+10111 - MAC A
+
+J - J
+
+Alabama
+
+Palmetto GBA
+
+A and B MAC
+
+10112 - MAC B
+
+J - J
+
+Alabama
+
+Palmetto GBA
+
+A and B MAC
+
+10211 - MAC A
+
+J - J
+
+Georgia
+
+Palmetto GBA
+
+A and B MAC
+
+10212 - MAC B
+
+J - J
+
+Georgia
+
+Palmetto GBA
+
+A and B MAC
+
+10311 - MAC A
+
+J - J
+
+Tennessee
+
+Palmetto GBA
+
+A and B MAC
+
+10312 - MAC B
+
+J - J
+
+Tennessee
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11201 - MAC A
+
+J - M
+
+South Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11202 - MAC B
+
+J - M
+
+South Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11301 - MAC A
+
+J - M
+
+Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11302 - MAC B
+
+J - M
+
+Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11401 - MAC A
+
+J - M
+
+West Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11402 - MAC B
+
+J - M
+
+West Virginia
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11501 - MAC A
+
+J - M
+
+North Carolina
+
+Palmetto GBA
+
+A and B and HHH MAC
+
+11502 - MAC B
+
+J - M
+
+North Carolina
+
+LCD Information
+
+Document Information
+
+Source LCD ID
+
+N/A
+
+LCD ID
+
+L35677
+
+Original ICD-9 LCD ID
+
+Not Applicable
+
+LCD Title
+
+Infliximab
+
+Proposed LCD in Comment Period
+
+N/A
+
+Source Proposed LCD
+
+DL35677
+
+Original Effective Date
+
+For services performed on or after 10/01/2015
+
+Revision Effective Date
+
+For services performed on or after 08/08/2024
+
+Revision Ending Date
+
+N/A
+
+Retirement Date
+
+N/A
+
+Notice Period Start Date
+
+12/22/2016
+
+Notice Period End Date
+
+02/05/2017
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+Issue
+
+Issue Description
+
+This LCD outlines limited coverage for this service with specific details under Coverage Indications, Limitations and/or Medical Necessity.
+
+Issue - Explanation of Change Between Proposed LCD and Final LCD
+
+CMS National Coverage Policy
+
+Title XVIII of the Social Security Act 1862(a)(1)(A) allows coverage and payment for only those services that are considered to be medically reasonable and necessary for the diagnosis or treatment of illness or injury or to improve the functioning of a malformed body member.
+
+CMS Internet-Only Manual, Pub. 100-02, Medicare Benefit Policy Manual, Chapter 1, §30 Drugs and Biologicals, §30.1 Drugs Included in the Drug Compendia, §30.2 Approval by Pharmacy and Drug Therapeutics Committee, §30.3 Combination Drugs, §30.4 Drugs Specially Ordered for Inpatients, §30.5 Drugs for Use Outside the Hospital
+
+CMS Internet-Only Manual, Pub. 100-02, Medicare Benefit Policy Manual, Chapter 15, §50 Drugs and Biologicals, §50.1 Definition of Drug or Biological, §50.4.1 Approved Use of Drug, §50.4.2 Unlabeled Use of Drug, §50.4.3 Examples of Not Reasonable and Necessary, §50.4.5 Off-Label Use of Drugs and Biologicals in an Anti-Cancer Chemotherapeutic Regimen
+
+Coverage Guidance
+
+Coverage Indications, Limitations, and/or Medical Necessity
+
+Infliximab is a chimeric monoclonal antibody that binds specifically to tumor necrosis factor alpha (TNFa) and blocks its activity. Overproduction of TNFa, which is a key inflammatory mediator, leads to inflammation in conditions such as Crohn’s disease, rheumatoid arthritis and other autoimmune diseases.
+
+The use of infliximab will be considered medically reasonable and necessary in the following circumstances:
+
+• To reduce the signs and symptoms and induce and maintain clinical remission in adult and pediatric patients with moderately to severely active Crohn’s disease in patients who have had an inadequate response to conventional therapy (e.g., corticosteroids, aminosalicylates, and immunosuppressive agents).
+
+• To reduce the number of draining enterocutaneous and rectovaginal fistulas and maintaining fistula closure for patients with fistulizing Crohn’s disease. Normally, the patient receives an infusion for this indication at weeks 0, 2 & 6. Subsequent treatments will be covered if the patient responds to the initial treatment as demonstrated by a reduction in signs and symptoms.
+
+• To reduce the signs and symptoms of active arthritis, inhibiting the progression of structural damage and improving physical function, in patients with psoriatic arthritis. Normally, the patient receives an infusion for this indication at weeks 0, 2 & 6. Subsequent treatments will be covered if the patient responds to the initial treatment as demonstrated by a reduction in signs and symptoms.
+
+• When used in combination with methotrexate, to reduce the signs and symptoms, inhibit the progression of structural damage and improve physical function in patients with moderately to severely active rheumatoid arthritis. Normally, the patient receives an infusion of infliximab for this indication at weeks 0, 2 & 6 and then approximately every 8 weeks.
+
+• To reduce the signs and symptoms in patients with active ankylosing spondylitis. Normally the patient receives an infusion for this indication at 0, 2 & 6 weeks. Subsequent treatment will be covered if the patient responds to the initial treatment as demonstrated by a reduction in signs and symptoms.
+
+• For the treatment of adult patients with chronic severe plaque psoriasis (as evidenced by plaques covering at least 10% of the body surface) who have failed prior treatment with psoralen-ultraviolet A (UVA), or ultraviolet B (UVB) light therapy; or are candidates for systemic therapy when other conventional systemic therapies have failed (methotrexate, cyclosporine, Soriatane®); or the patient has contraindications to these treatments. Infliximab should only be administered to patients who will be closely monitored and have regular follow-up visits with a physician. Normally the patient receives an infusion at 0, 2 & 6 weeks and every 8 weeks thereafter.
+
+• To reduce signs and symptoms, achieve clinical remission and mucosal healing, and eliminate corticosteroid use in patients with moderately to severely active ulcerative colitis who have had an inadequate response to conventional therapy, such as aminosalicylates, corticosteroids, or immunosuppressants (unless the patient is unable to tolerate these drugs). Normally, the patient receives an infusion for this indication at 0, 2 & 6 weeks, and then every 8 weeks thereafter.
+
+• As an off-label use for reactive arthritis and inflammatory bowel disease (e.g., Reiter’s Syndrome who have failed or are intolerant to non-steroidal anti-inflammatory drugs (NSAIDs), methotrexate and sulfasalazine).
+
+• As an off-label use for hidradenitis suppurativa in the treatment of persons with severe disease refractory to systemic antibiotics and surgical treatments.
+
+• As an off-label use for Behçet’s Disease (BD), also known as Behçet’s Syndrome, in patients without an adequate response to initial therapy, for the treatment of clinical manifestations of BD such as severe ocular involvement, major organ involvement, severe gastrointestinal or neurological involvement and resistant cases of joint or mucocutaneous involvement (i.e., painful oral and genital ulcers).
+
+• As an off-label use for patients with chronic pulmonary sarcoidosis who remain symptomatic despite treatment for 3 or more months with steroids (10 mg per day or more) and immunosuppressants (such as azathioprine, cyclophosphamide or methotrexate) or have a contraindication or intolerance to 1 immunosuppressant (such as azathioprine, cyclophosphamide, or methotrexate) and the patient is not receiving infliximab in combination with either of the following: 1) Biologic disease-modifying anti-rheumatic drugs (DMARDs) [e.g., Enbrel® (etanercept), Humira® (adalimumab), Cimzia® (certolizumab), Simponi® (golimumab)] 2) Janus kinase inhibitor [e.g., Xeljanz® (tofacitinib)]. The current and prospective roles of infliximab in the treatment of pulmonary sarcoidosis do not currently have Food and Drug Administration (FDA) approval; therefore, it is recommended that providers consult the literature for proper dosing of infliximab.
+
+Note: For patients, who are unable to tolerate methotrexate or in the rare instance that methotrexate is contraindicated for a patient, treatment with infliximab alone will be covered only if documentation is maintained in the patient’s record that clearly indicates the reason that the patient cannot take methotrexate.
+
+Infliximab will only be covered for the above indications when no contraindications to its use exist including:
+
+a. Class III or IV congestive heart failure; or
+b. Untreated active or latent tuberculosis
+
+LIMITATIONS
+
+When used in combination with other biologics, such as Enbrel®(etanercept), Kineret® (anakinra), Orencia®(abatacept), Rituxan®(rituximab), Humira®(adalimumab), Cimzia® (certolizumab), Simponi® (golimumab), or a Janus kinase inhibitor [e.g. Xeljanz® (tofacitinib)], infliximab is considered not medically reasonable and necessary and therefore, not covered.
+
+Summary of Evidence
+
+N/A
+
+Analysis of Evidence (Rationale for Determination)
+
+N/A
+
+Proposed Process Information
+
+Synopsis of Changes
+
+Changes
+Fields Changed
+
+N/A
+
+Associated Information
+
+Sources of Information
+
+Bibliography
+
+Open Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+Contractor Advisory Committee (CAC) Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+MAC Meeting Information URLs
+
+N/A
+
+Proposed LCD Posting Date
+
+Comment Period Start Date
+
+Comment Period End Date
+
+Reason for Proposed LCD
+
+Requestor Information
+
+This request was MAC initiated.
+
+Requestor Name
+Requestor Letter
+
+View Letter
+
+N/A
+
+Contact for Comments on Proposed LCD
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+
+General Information
+
+Associated Information
+
+Documentation Requirements
+
+Medical record documentation that is maintained by the performing physician must substantiate the medical necessity for the use of infliximab by clearly indicating the relevant clinical signs and symptoms related to the medical condition for which this drug is indicated. The documentation must also include all prior treatment regimens and the patient’s response to that therapy.
+
+For fistulizing Crohn’s disease, episodic retreatment will be covered if the medical record substantiates that the patient had a reduction in the clinical signs and symptoms of the disease after the initial treatment.
+
+For hidradenitis suppurativa, documentation should include: a listing of other differential diagnoses that have been ruled out and the history of failed antibiotic treatment, prior to the inception of infliximab treatment.
+
+For rheumatoid arthritis, the medical record must clearly indicate:
+
+• the patient is receiving infliximab in combination with methotrexate; or
+• the patient is intolerant of methotrexate; or
+• the patient has a medical condition that contraindicates the use of methotrexate.
+
+For maintenance therapy, submit documentation of the start date for infliximab, the current status of the patient, their current response to therapy and current dosage.
+
+Documentation must be legible, relevant and sufficient to justify the services billed. This documentation must be made available to the A/B MAC upon request.
+
+Utilization Guidelines
+
+It is expected that these services would be performed as indicated by current medical literature and/or standards of practice. When services are performed in excess of established parameters, they may be subject to review for medical necessity.
+
+Sources of Information
+
+N/A
+
+Bibliography
+
+1. Amin EN, Closser DR, Crouser ED. Current best practice in the management of pulmonary and systemic sarcoidosis. Ther Adv Respir Dis. 2014;8(4):111-132.
+
+2. Baughman RP, Drent M, Kavuru M, et al. Infliximab therapy in patients with chronic sarcoidosis and pulmonary involvement. Am J Respir Crit Care Med. 2006;174(7):795-802.
+
+3. Baughman RP, Lower EE. Medical therapy of sarcoidosis. Semin Respir Crit Care Med. 2014;35(3):391-406.
+
+4. Davey-Ranasinghe N. Behcet Disease. Medscape. 2022. Accessed June 24, 2024.
+
+5. Doty JD, Mazur JE, Judson MA. Treatment of sarcoidosis with infliximab. Chest Jour. 2005;127(3):1064-1071.
+
+6. Estrach C, Mpofu S, Moots RJ. Behcet's syndrome: Response to infliximab after failure of etanercept. Rheumat. 2002;41(10):1213-14.
+
+7. Fardet L, Dupuy A, Kerob D, et al. Infliximab for severe hidradenitis suppurativa: Transient clinical efficacy in 7 consecutive patients. J Am Acad Dermatol. 2007;56(4):624-628.
+
+8. Fernandez-Vozmediano JM, Armario-Hita JC. Infliximab for the treatment of hidradenitis suppurativa. Dermatol. 2007;215(1):41-44.
+
+9. Gottlieb AB, Evans R, Li S, et al. Infliximab induction therapy for patients with severe plaque-type psoriasis: A randomized, double blind, placebo-controlled trial. J Am Acad Dermatol. 2004;51(4):534-542.
+
+10. Hoffman GS, Merkel PA, Brasington RD, Lenschow DJ, Liang P. Anti-tumor necrosis factor therapy in patients with difficult to treat Takayasu arteritis. Arthritis Rheum. 2004;50(7):2296-2304.
+
+11. Janssen Biotech, Inc. (1998). REMICADE® (infliximab): Highlights of prescribing information. Horsham, PA: Author. Accessed June 24, 2024.
+
+12. Judson MA, Baughman RP, Costabel U, et al. Efficacy of infliximab in extrapulmonary sarcoidosis: Results from a randomised trial. Eur Respir Jour. 2008;31(6):1189–1196.
+
+13. Keino H, Okada AA, Watanabe T, Taki W. Decreased ocular inflammatory attacks and background retinal and disc vascular leakage in patients with Behcet's disease on infliximab therapy. Br J Opthalmol. 2011;95(9):1245-50.
+
+14. Lipsky PE, Van Der Heijde DM, St Clair EW, et al. Infliximab and methotrexate in the treatment of rheumatoid arthritis. N Engl J Med. 2000;343(22):1594-1602.
+
+15. Molloy ES, Langford CA, Clark TM, Gota CE, Hoffman GS. Anti-tumour necrosis factor therapy in patients with refractory Takayasu arteritis: Long-term follow-up. Ann Rheum Dis. 2008;67(11): 1567-1569.
+
+16. Remicade (infliximab). MedicalNewsToday web site. Accessed June 24, 2024.
+
+17. Roberts SD, Wilkes DS, Burgett RA, Knox KS. Refractory sarcoidosis responding to infliximab. Chest J. 2003;124(5): 2028-2031.
+
+18. Rosi YL, Lowe L, Kang S. Treatment of hidradenitis suppurativa with infliximab in a patient with Crohn’s disease. J Dermatolog Treat. 2005;16(1):58-61.
+
+19. Roussomoustakaki M, Dimoulios P, Chatzicostas C, et al. Hidradenitis suppurativa associated with Crohn's disease and spondyloarthropathy: Response to anti-TNF therapy. J Gastroenterol. 2003;38(10):1000-1004.
+
+20. Rutgeerts P, Feagan BG, Olson A, et al. A randomized placebo-controlled trial of infliximab therapy for active ulcerative colitis: Act I Trial. Gastroenterology. 2005;128:A-105.
+
+21. Rutgeerts P, Sandborn WJ, Feagan BG, et al. Infliximab for induction and maintenance therapy for ulcerative colitis: Act 2 Trial. N Engl J Med. 2005;353(23):2462-76.
+
+22. Saleh S, Ghodsian S, Yakimova V, Henderson J, Sharma OP. Effectiveness of infliximab in treating selected patients with sarcoidosis. Respir Med. 2006;100(11):2053-2059.
+
+23. Sullivan TP, Welsh E, Kerdel FA, Burdick AE, Kirsner RS. Infliximab for hidradenitis suppurativa. Br J Dermatol. 2003;149(5):1046-1049.
+
+24. Van den Bosch F, Kruithof E, Baeten D, et al. Randomized double-blind comparison of chimeric monoclonal antibody to tumor necrosis factor alpha (infliximab) versus placebo in active spondylarthropathy. Arthritis Rheum. 2002:46(3):755-765.
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+Reasons for Change
+
+08/08/2024
+
+R30
+
+Under CMS National Coverage Policy updated section headings and the following regulation was removed and placed in the related Billing and Coding: Infliximab A56432 article: CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 17, §40 Discarded Drugs and Biologicals. Under Bibliography changes were made to reflect AMA citation guidelines. Formatting, punctuation, and typographical errors were corrected throughout the LCD.
+
+Provider Education/Guidance
+
+08/05/2021
+
+R29
+
+Under CMS National Coverage Policy revised and added verbiage. Under Bibliography changes were made to citations to reflect AMA citation guidelines. Formatting, punctuation and typographical errors were corrected throughout the LCD.
+
+Provider Education/Guidance
+
+10/31/2019
+
+R28
+
+This LCD is being revised in order to adhere to CMS requirements per chapter 13, section 13.5.1 of the Program Integrity Manual, to remove all coding from LCDs. There has been no change in coverage with this LCD revision. Title XVIII of the Social Security Act 1833(e) prohibits Medicare payment for any claim lacking the necessary documentation to process the claim was removed from the CMS National Coverage Policy section of this LCD and placed in the related Billing and Coding: Infliximab A56432 article.
+
+Provider Education/Guidance
+
+04/11/2019
+
+R27
+
+All coding located in the Coding Information section has been moved into the related Billing and Coding: Infliximab A56432 article and removed from the LCD.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+
+02/07/2019
+
+R26
+
+Under Coverage Indications, Limitations and/or Medical Necessity a typographical error in the word “corticosteroids” was corrected. Under Bibliography updated versions of two articles and their URLs and removed FCSO reference LCD number L28890.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+Typographical Error
+
+01/01/2019
+
+R25
+
+Under CPT/HCPCS Codes Group 1: Codes, CPT code Q5109 has been added. This revision is due to the Annual CPT/HCPCS Code Update. Under ICD-10 Codes that Support Medical Necessity Group 1: Codes, the following ICD-10 codes have been added: D86.1, D86.3, D86.81, D86.82, D86.83, D86.84, D86.85, D86.86, D86.87 and D86.89. This revision is due to a reconsideration request.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+Revisions Due To CPT/HCPCS Code Changes
+Reconsideration Request
+
+08/06/2018
+
+R24
+
+Under Coverage, Indications, Limitations and/or Medical Necessity deleted the last sentence “See the Limitations for aortic arch syndrome [Takayasu] (ICD-10-CM code M31.4)”. Under Limitations deleted the verbiage in the first paragraph “1. Diagnosis code M31.4 (Aortic arch syndrome [Takayasu]…”. Under ICD-10 Codes that Support Medical Necessity Group 1: Codes added M31.4. Under ICD-10 Codes that Do Not Support Medical Necessity Group 1: Paragraph deleted the verbiage “Diagnosis code M31.4 (Aortic arch syndrome [Takayasu]…”. Under ICD-10 Codes that Do Not Support Medical Necessity Group 1: Codes deleted M31.4. Punctuation was corrected and acronyms were defined throughout the policy as appropriate. Under Bibliography changes were made to reflect AMA citation guidelines.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+Public Education/Guidance
+
+04/01/2018
+
+R23
+
+Under CPT/HCPCS Group 1: Paragraph the verbiage “Claims for Q5102 must use the appropriate modifier to identify the specific biosimilar used” has been removed and replaced with “The new biosimilar payment policy also makes the use of modifiers that describe the manufacturer of a biosimilar product unnecessary. Therefore, modifiers ZA, ZB, and ZC will be discontinued for dates of service on or after April 1, 2018. However, please note that HCPCS code Q5102 and the requirement to use applicable biosimilar modifiers remain in effect for dates of service prior to April 1, 2018”. Under CPT/HCPCS Group 1: Codes, HCPCS Q5102 has been deleted and replaced with HCPCS codes Q5103 and Q5104. This revision is due to Change Request 10515, Transmittal 3988 and Change Request 10454, Transmittal 3997.
+
+Provider Education/Guidance
+Public Education/Guidance
+
+02/26/2018
+
+R22
+
+The Jurisdiction "J" Part B Contracts for Alabama (10112), Georgia (10212) and Tennessee (10312) are now being serviced by Palmetto GBA. The notice period for this LCD begins on 12/14/17 and ends on 02/25/18. Effective 02/26/18, these three contract numbers are being added to this LCD. No coverage, coding or other substantive changes (beyond the addition of the 3 Part B contract numbers) have been completed in this revision.
+
+Change in Affiliated Contract Numbers
+
+01/29/2018
+
+R21
+
+The Jurisdiction "J" Part A Contracts for Alabama (10111), Georgia (10211) and Tennessee (10311) are now being serviced by Palmetto GBA. The notice period for this LCD begins on 12/14/17 and ends on 01/28/18. Effective 01/29/18, these three contract numbers are being added to this LCD. No coverage, coding or other substantive changes (beyond the addition of the 3 Part A contract numbers) have been completed in this revision.
+
+Change in Affiliated Contract Numbers
+
+11/09/2017
+
+R20
+
+Under LCD Title removed the wording “Remicade®” and under Coverage Indications, Limitations and/or Medical Necessity removed all wording titled “Remicade®”.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+Public Education/Guidance
+
+10/26/2017
+
+R19
+
+Under CPT/HCPCS Codes Group 1: Paragraph added Note: Claims for Q5102 must use the appropriate modifier to identify the specific biosimilar used. This revision was due to Change Request 10234, Transmittal 3850.
+
+Provider Education/Guidance
+Public Education/Guidance
+
+09/21/2017
+
+R18
+
+Under Associated Information-Documentation Requirements added verbiage related to documentation requirements for maintenance therapy.
+
+Provider Education/Guidance
+Other
+
+09/04/2017
+
+R17
+
+Under CPT/HCPCS Codes Group 1: Paragraph deleted the verbiage “Effective for dates of service on or after April 5, 2016 claims for Q5102 must use the ZB (Pfizer/hospira) modifier (Q5102ZB)”. Under ICD-10 Codes that do not Support Medical Necessity Group 1: Paragraph revised the verbiage to read “Diagnosis code M31.4 (Aortic arch syndrome [Takayasu]) is not a covered diagnosis given its use has not been demonstrated to be a standard of care and claims can be denied as not medically reasonable and necessary. In rare cases consideration may be given for coverage of diagnosis code M31.4 (Aortic arch syndrome [Takayasu]) when used as a third line therapy when other immunosuppressive therapies have failed. Supporting documentation will be required”.
+
+At this time 21st Century Cures Act will apply to new and revised LCDs that restrict coverage which requires comment and notice. This revision is not a restriction to the coverage determination; and, therefore not all the fields included on the LCD are applicable as noted in this policy.
+
+Provider Education/Guidance
+
+09/04/2017
+
+R16
+
+Under CMS National Coverage Policy Title XVIII of the Social Security Act, §1862(a)(1)(A) revised the verbiage to read “allows coverage and payment for only those services that are considered to be medically reasonable and necessary for the diagnosis or treatment of illness or injury or to improve the functioning of a malformed body member”. Under ICD-10 Codes that Support Medical Necessity added M06.9 and D86.9.Under Sources of Information and Basis for Decision added and corrected author’s initials and names, added volume numbers and corrected capitalization for numerous journal titles.
+
+Provider Education/Guidance
+Typographical Error
+
+02/06/2017
+
+R15
+
+Updated to include all revisions made under Revision 12 and 13 as the changes did not hold when this LCD was moved from comment to notice under Revision 14.
+
+Provider Education/Guidance
+
+02/06/2017
+
+R14
+
+No comments were received from the provider community; therefore, no revisions were made.
+
+Provider Education/Guidance
+
+01/01/2017
+
+R13
+
+Under CPT/HCPCS Codes the description was revised for CPT code J1745. This revision is due to the 2017 Annual CPT/HCPCS Code Update and becomes effective 1/1/17.
+
+Provider Education/Guidance
+Revisions Due To CPT/HCPCS Code Changes
+
+10/06/2016
+
+R12
+
+Under CMS National Coverage Policy for Title XVIII of the Social Security Act, §1862(a)(1)(A) revised the verbiage to read “allows coverage and payment for only those services that are considered to be medically reasonable and necessary for the diagnosis or treatment of illness or injury or to improve the functioning of a malformed body member”. For Title XVIII of the Social Security Act, §1833(e) revised the verbiage to read “prohibits Medicare payment for any claim lacking the necessary information to process that claim”. Under Sources of Information and Basis for Decision added author’s initials and names, added volume numbers and corrected capitalization for numerous journal titles.
+
+Provider Education/Guidance
+Typographical Error
+
+08/22/2016
+
+R11
+
+Under CPT/HCPCS Codes Group 1: Paragraph added Note: Effective for dates of service on or after April 5, 2016 claims for Q5102 must use the ZB (Pfizer/hospira) modifier (Q5102ZB). Under CPT/HCPCS Codes Group 1: Codes added HCPCS code Q5102. Please refer to Change Request (CR) 9658 dated June 28, 2016.
+
+Provider Education/Guidance
+Revisions Due To CPT/HCPCS Code Changes
+
+02/19/2016
+
+R10
+
+Under ICD-10 Codes that Support Medical Necessity added K50.00, K50.011, K50.012, K50.013, K50.014, K50.018, K50.019.
+
+Provider Education/Guidance
+Public Education/Guidance
+Request for Coverage by a Practitioner (Part B)
+
+01/03/2016
+
+R9
+
+Under Coverage Indications, Limitations and /or Medical Necessity added coverage for Behcet’s Disease as follows “As an off-label use for Behçet’s Disease (BD), also known as Behçet’s Syndrome, in patients without an adequate response to initial therapy, for the treatment of clinical manifestations of BD such as severe ocular involvement, major organ involvement, severe gastrointestinal or neurological involvement and resistant cases of joint or mucocutaneous involvement (i.e., painful oral and genital ulcers).”
+Under ICD-10 Codes that Support Medical Necessity added Behcet’s Disease coverage M35.2.
+Under Sources of Information and Basis for Decision added reference to F. Alnaimat’s Behcet Disease Treatment & Management, Keino, Okada and Watanabe’s Decreased ocular inflammatory attacks and background retinal and disc vascular leakage in patients with Behcet's disease on infliximab therapy, and Estrach C Mpofu S and Moots RJ Behcets Syndrome: response to infliximab after failure of etanercept.
+
+Provider Education/Guidance
+Public Education/Guidance
+Request for Coverage by a Provider (Part A)
+Reconsideration Request
+
+10/16/2015
+
+R8
+
+Under Coverage Indications, Limitations and/or Medical Necessity made a few grammatical and punctuation corrections. In the paragraph for Reiter’s syndrome, moved the word “arthritis” to follow the word Reactive to make sentence read… Reactive arthritis and Inflammatory Bowel Disease… Added the statement “As an off-label use for” in the paragraph for pulmonary sarcoidosis.
+
+Typographical Error
+Other (Annual validation)
+
+10/01/2015
+
+R7
+
+Under Coverage Indications, Limitations and/or Medical Necessity added the following language: As an off-label use for hidradenitis suppurativa in the treatments of persons with severe disease refractory to systemic antibiotics and surgical treatments.
+Under ICD-10 codes that support Medical Necessity added L73.2.
+Under Associated Information in documentation requirements added the following language: For hidradenitis suppurativa documentation should include: a listing of other differential diagnoses that have been ruled out and the history of failed antibiotic treatment prior to the inception of infliximab treatment.
+Under Sources of Information and Basis for Decision added citations for Sullivan, Welsh, Kerdel, et al; Fardet, Dupuy, Kerob, et al; Rosi, Lowe, Kang; roussomoustakaki, Dimoulios, Chatzicostas, et al; and Fernandez-ozmediano, Armario-Hita as references for hidradenitis suppurativa.
+
+Provider Education/Guidance
+Request for Coverage by a Provider (Part A)
+Reconsideration Request
+
+10/01/2015
+
+R6
+
+Per CMS Internet-Only Manual, Pub 100-08, Medicare Program Integrity Manual, Chapter 13, §13.1.3 LCDs consist of only “reasonable and necessary” information. All bill type and revenue codes have been removed.
+
+Other (Bill type and/or revenue code removal)
+
+10/01/2015
+
+R5
+
+Under CMS National Coverage Policy separated Pub 100-02 Chapter 1 and Chapter 15 into individual citations.
+Under Coverage Indications, Limitations and/or Medical Necessity inserted coverage criteria for chronic pulmonary sarcoidosis: “Patients with chronic pulmonary sarcoidosis who remain symptomatic despite treatment for 3 or more months with steroids (10 mg per day or more) and immunosuppressants (such as azathioprine, cyclophosphamide, or methotrexate) or have a contraindication or intolerance to one immunosuppressant (such as azathioprine, cyclophosphamide, or methotrexate) and the patient is not receiving infliximab in combination with either of the following: 1) Biologic DMARD [e.g., Enbrel (etanercept), Humira (adalimumab), Cimzia (certolizumab), Simponi (golimumab)] 2) Janus kinase inhibitor [e.g., Xeljanz (tofacitinib)]. The current and prospective roles of infliximab in the treatment of pulmonary sarcoidosis do not currently have FDA approval; therefore, it is recommended that providers consult the literature for proper dosing of infliximab.” Under Limitations corrected the second paragraph to read “When used in combination with other biologics such as Enbrel®(etanercept), Kineret® (anakinra), Orencia®(abatacept), Rituxan®(rituximab), Humira®(adalimumab), Cimzia® (certolizumab), Simponi® (golimumab), or a Janus kinase inhibitor [e.g. Xeljanz® (tofacitinib)], Remicade© (Infliximab) is considered not medically reasonable and necessary and therefore not covered.”
+Under ICD-10 Codes that Support Medical Necessity added ICD-10 codes D86.0 and D86.2 for coverage of pulmonary sarcoidosis.
+Under Sources of Information and Basis for Decision added citations for Amin E, Closser D, Crouser E. Therapeutic Advances in Respiratory Disease; Baughman R, Lower E. Medical Therapy of Sarcoidosis; Judson MA, Baughman RP, et al. Efficacy of infliximab in extrapulmonary sarcoidosis: results from a randomized trial; Baughman R, Drent M, Kavuru M, et al. Infliximab Therapy in Patients with Chronic Sarcoidosis and Pulmonary Involvement; Doty J, Mazur J, Judson M. Treatment of Sarcoidosis With Infliximab; Saleh S, Ghodsian S, Yakimova V. et al. Effectiveness of infliximab in treating selected patients with sarcoidosis; and Roberts S, Wilkes D, Burgett R, et al. Refractory Sarcoidosis Responding to Infliximab. Citations were removed for package inserts 1999-2002, 2005 and 2006 and added for package insert 2013. All sources corrected to AMA formatting.
+
+Reconsideration Request
+
+10/01/2015
+
+R4
+
+Under Bill Type Codes added TOB 023X.
+
+Provider Education/Guidance
+
+10/01/2015
+
+R3
+
+Under Revision History Explanation Corrected the formatting of the Medical News Today source to correctly open hyperlink.
+
+Typographical Error
+
+10/01/2015
+
+R2
+
+In ICD-10 Codes that Support Medical Necessity corrected ICD-10 Code K50.012 to read correctly as K51.012.
+
+Typographical Error
+
+10/01/2015
+
+R1
+
+Removed Notice Period Dates as they were inadvertently placed in ICD-10 version. In ICD-10 Codes that support medical necessity broke out all code ranges in policy to show individual codes.
+
+Provider Education/Guidance
+Other (Removed all codes ranges.)
+
+N/A
+
+Associated Documents
+
+Attachments
+
+N/A
+
+Related Local Coverage Documents
+
+Articles
+A56432 - Billing and Coding: Infliximab
+A55406 - Response to Comments: Infliximab (Remicade®) L35677 (MCD Archive Site)
+LCDs
+DL35677 - Infliximab (Remicade®) (MCD Archive Site)
+
+Related National Coverage Documents
+
+NCDs
+N/A
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+08/01/2024
+08/08/2024 - N/A
+Currently in Effect
+
+You are here
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+Infliximab
+
+Biosimilar
+
+Read the LCD Disclaimer
+
+Email this document to yourself or someone else
+
+An asterisk (*) indicates a required field.
+This email will be sent to the
+recipient email address(es) you enter and will include the text entered into
+the Your Name and Your Email fields. You can specify multiple email
+addresses by separating the email addresses with a comma or semi-colon.
+Please do not use this feature to contact CMS. To submit a comment or
+question to CMS, please use the Feedback/Ask a Question link available at
+the bottom of every MCD page. By submitting information here, you
+acknowledge that this data will be logged. For more information see the CMS Privacy Policy.
+
+*
+Your Name:
+
+*
+Your Name:
+
+Your Email:
+
+Your Email:
+
+*
+Recipient's Email(s):
+
+*
+Recipient's Email(s):
+
+Message:
+Message:
+
+Send Email
+Cancel
+
+Code Range
+
+Close
+
+Contractor Detail
+
+Close
+
+LCD Disclaimer
+
+The Centers for Medicare & Medicaid Services (CMS), the federal agency responsible for administration of the Medicare, Medicaid
+and the State Children's Health Insurance Programs, contracts with certain organizations to assist in the administration of the
+Medicare program. Medicare contractors are required to develop and disseminate Local Coverage Determinations (LCDs).
+CMS believes that the Internet is an effective method to share LCDs that Medicare contractors develop. While every effort has
+been made to provide accurate and complete information, CMS does not guarantee that there are no errors in the information displayed
+on this web site. THE UNITED STATES GOVERNMENT AND ITS EMPLOYEES ARE NOT LIABLE FOR ANY ERRORS, OMISSIONS, OR OTHER INACCURACIES IN
+THE INFORMATION, PRODUCT, OR PROCESSES DISCLOSED HEREIN. Neither the United States Government nor its employees represent that use of
+such information, product, or processes will not infringe on privately owned rights. In no event shall CMS be liable for direct, indirect,
+special, incidental, or consequential damages arising out of the use of such information, product, or process.
+
+Close
+
+License Agreements
+
+License Agreements
+
+American Medical Association Current Procedural Terminology
+
+American Dental Association Current Dental Terminology
+
+American Hospital Association NUBC UB-04
+
+Please review the licensing information below and indicate your agreement and acceptance.
+
+License For Use Of Current Procedural Terminology, Fourth Edition (“CPT®”)
+
+License For Use Of Current Procedural Terminology, Fourth Edition (“CPT®”)
+
+CPT codes, descriptions and other data only are copyright 2025 American Medical Association (or such other date of publication of CPT). All rights reserved. CPT is a registered trademark of the American Medical Association (AMA).
+
+You are authorized to use CPT only as contained herein for your personal use only. Personal use means non-commercial uses for display on personal computers or other devices. Any use not authorized herein is prohibited, including by way of illustration and not by way of limitation, making copies of CPT for resale and/or license, transferring copies of CPT to any party not bound by this agreement, creating any modified or derivative work of CPT, or making any commercial use of CPT. License to use CPT for any use not authorized herein must be obtained through the AMA, Intellectual Property Services, 330 N. Wabash Ave., Suite 39300, Chicago, IL 60611-5885. Applications are available at the AMA Web site,
+https://www.ama-assn.org/practice-management/cpt
+https://www.ama-assn.org/practice-management/cpt.
+
+Applicable FARS Restrictions Apply to Government Use.
+
+This product includes CPT which is commercial technical data and/or computer data bases and/or commercial computer software and/or commercial computer software documentation, as applicable which were developed exclusively at private expense by the American Medical Association, AMA Plaza, 330 N. Wabash Ave., Suite 39300, Chicago, IL 60611-5885. U.S. Government rights to use, modify, reproduce, release, perform, display, or disclose these technical data and/or computer data bases and/or computer software and/or computer software documentation are subject to the limited rights restrictions of FAR 52.227-14 (December 2007) and/or subject to the restricted rights provisions of FAR 52.227-14 (December 2007) and FAR 52.227-19 (December 2007), as applicable, and any applicable agency FAR Supplements, for non-Department of Defense Federal procurements.
+
+AMA Disclaimer of Warranties and Liabilities
+
+CPT is provided “as is” without warranty of any kind, either expressed or implied, including but not limited to, the implied warranties of merchantability and fitness for a particular purpose. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The responsibility for the content of the following materials is with CMS and no endorsement by the AMA is intended or implied. The AMA disclaims responsibility for any consequences or liability attributable to or related to any use, non-use, or interpretation of information contained or not contained in the materials. This Agreement will terminate upon notice if you violate its terms. The AMA is a third party beneficiary to this Agreement.
+
+CMS Disclaimer
+
+The scope of this license is determined by the AMA, the copyright holder. Any questions pertaining to the license or use of the CPT should be addressed to the AMA. End users do not act for or on behalf of the CMS. CMS DISCLAIMS RESPONSIBILITY FOR ANY LIABILITY ATTRIBUTABLE TO END USER USE OF THE CPT. CMS WILL NOT BE LIABLE FOR ANY CLAIMS ATTRIBUTABLE TO ANY ERRORS, OMISSIONS, OR OTHER INACCURACIES IN THE INFORMATION OR MATERIAL CONTAINED ON THIS PAGE. In no event shall CMS be liable for direct, indirect, special, incidental, or consequential damages arising out of the use of such information or material.
+
+Should the foregoing terms and conditions be acceptable to you, please indicate your agreement and acceptance by clicking below on the button labeled “accept”.
+
+License For Use of Current Dental Terminology (CDTTM)
+
+License For Use of Current Dental Terminology (CDT™)
+
+These materials contain Current Dental Terminology (CDTTM), Copyright© 2025 American Dental Association (ADA). All rights reserved. CDT is a trademark of the ADA.
+
+The license granted herein is expressly conditioned upon your acceptance of all terms and conditions contained in this Agreement. By clicking below in the button labeled “I ACCEPT” you hereby acknowledge that you have read, understood, and agree to all terms and conditions set forth in this Agreement.
+If you do not agree with all terms and conditions set forth herein, click below on the button labeled “I DO NOT ACCEPT” and exit from this screen.
+
+If you are acting on behalf of an organization, you represent that you are authorized to act on behalf of such organization and that your acceptance of the terms of this Agreement creates a legally enforceable obligation of the organization. As used herein “YOU” and “YOUR” refer to you and any organization on behalf of which you are acting.
+
+Subject to the terms and conditions contained in this Agreement, you, your employees, and agents are authorized to use CDT only as contained in the following authorized materials and solely for internal use by yourself, employees, and agents within your organization within the United States and its territories. Use of CDT is limited to use in programs administered by Centers for Medicare & Medicaid Services (CMS). You agree to take all necessary steps to ensure that your employees and agents abide by the terms of this Agreement. You acknowledge that the ADA holds all copyright, trademark, and other rights in CDT. You shall not remove, alter, or obscure any ADA copyright notices or other proprietary rights notices included in the materials.
+
+Any use not authorized herein is prohibited, including by way of illustration and not by way of limitation, making copies of CDT for resale and/or license, distributing to commercial third-parties outputs in which the CDT is embedded but not directly accessible but the output relies on the embedded CDT (e.g. Artificial Intelligence outputs), transferring copies of CDT to any party not bound by this Agreement, creating any modified or derivative work of CDT, or making any commercial use of CDT. License to use CDT for any use not authorized herein must be obtained through the American Dental Association, 401 North Michigan Avenue, Chicago, IL 60611. Applications are available at the American Dental Association website,
+https://www.ADA.org
+https://www.ADA.org.
+
+Applicable Federal Acquisition Regulation Clauses (FARS)/Department of Defense Federal Acquisition Regulation supplement (DFARS) Restrictions Apply to Government Use. U.S. Government Rights. This product includes Current Dental Terminology ("CDT"), which is commercial technical data and/or computer data bases and/or commercial computer software and/or commercial computer software documentation, as applicable, which was developed exclusively at private expense by the American Dental Association, 401 North Michigan Avenue, Chicago, Illinois, 60611. U.S. Government rights to use, modify, reproduce, release, perform, display, or disclose these technical data and/or computer data bases and/or computer software and/or computer software documentation are subject to the limited rights restrictions of HHSAR 327.4 (as it may from time to time be amended, superseded or replaced) and the limited rights restrictions of FAR 52.227-14 (June 1987) and/or subject to the restricted rights provisions of FAR 52.227-14 (June 1987) and FAR 52.227-19 (June 1987), as applicable, and any applicable agency FAR Supplements, for non-Department of Defense Federal procurements.
+
+Organizations who contract with CMS acknowledge that they may have a commercial CDT license with the ADA, and that use of CDT codes as permitted herein for the administration of CMS programs does not extend to any other programs or services the organization may administer and royalties dues for the use of the CDT codes are governed by their commercial license.
+
+ADA DISCLAIMER OF WARRANTIES AND LIABILITIES. CDT is provided “AS IS” without warranty of any kind, either expressed or implied, including but not limited to, the implied warranties of merchantability and fitness for a particular purpose. No fee schedules, basic unit, relative values, or related listings are included in CDT. The ADA does not directly or indirectly practice medicine or dispense dental services. ADA has no responsibility for the software, including any CDT and other content contained therein; and no endorsement by the ADA is intended or implied. The ADA expressly disclaims responsibility for any consequences or liability attributable to or related to any use, nonuse, or interpretation of information contained or not contained in this file/product. This Agreement will terminate upon notice to you if you violate the terms of this Agreement. The ADA is a third-party beneficiary to this Agreement.
+
+CMS DISCLAIMER. The scope of this license is determined by the ADA, the copyright holder. Any questions pertaining to the license or use of the CDT should be addressed to the ADA. End Users do not act for or on behalf of CMS. CMS disclaims responsibility for any liability attributable to end user use of the CDT. CMS will not be liable for any claims attributable to any errors, omissions, or other inaccuracies in the information or material covered by this license. In no event shall CMS be liable for damages (including but not limited to direct, indirect, special, incidental, or consequential damages) arising out of the use of such information or material.
+
+The license granted herein is expressly conditioned upon your acceptance of all terms and conditions contained in this Agreement. If the foregoing terms and conditions are acceptable to you, please indicate your Agreement by clicking below on the button labeled “I ACCEPT”. If you do not agree to the terms and conditions, you may not access this content, you must click below on the button labeled “I DO NOT ACCEPT” and exit from this screen.
+
+License For Use of National Uniform Billing Committee (NUBC) UB-04
+
+License For Use of National Uniform Billing Committee (NUBC) UB-04
+
+These materials contain NUBC Official UB-04 Specifications (UB-04 Data), which is copyrighted by the American Hospital Association (AHA).
+
+THE LICENSE GRANTED HEREIN IS EXPRESSLY CONDITIONED UPON YOUR ACCEPTANCE OF ALL TERMS AND CONDITIONS CONTAINED IN THIS AGREEMENT. BY CLICKING BELOW ON THE BUTTON LABELED "I ACCEPT", YOU HEREBY ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD AND AGREED TO ALL TERMS AND CONDITIONS SET FORTH IN THIS AGREEMENT.
+
+IF YOU DO NOT AGREE WITH ALL TERMS AND CONDITIONS SET FORTH HEREIN, CLICK BELOW ON THE BUTTON LABELED "I DO NOT ACCEPT" AND EXIT FROM THIS COMPUTER SCREEN. IF YOU ARE ACTING ON BEHALF OF AN ORGANIZATION, YOU REPRESENT THAT YOU ARE AUTHORIZED TO ACT ON BEHALF OF SUCH ORGANIZATION AND THAT YOUR ACCEPTANCE OF THE TERMS OF THIS AGREEMENT CREATES A LEGALLY ENFORCEABLE OBLIGATION OF THE ORGANIZATION. AS USED HEREIN, "YOU" AND "YOUR" REFER TO YOU AND ANY ORGANIZATION ON BEHALF OF WHICH YOU ARE ACTING.
+
+Subject to the terms and conditions contained in this Agreement, you, your employees, and agents are authorized to use UB-04 Data only as contained in the following authorized materials and solely for internal use by yourself, employees and agents within your organization within the United States and its territories. Use of UB-04 Data is limited to use in programs administered by Centers for Medicare & Medicaid Services (CMS). You agree to take all necessary steps to ensure that your employees and agents abide by the terms of this Agreement. You acknowledge that the AHA holds all copyright, trademark, and other rights in UB-04 Data. You shall not remove, alter, or obscure any AHA copyright notices or other proprietary rights notices included in the materials.
+
+Any use not authorized herein is prohibited, including, by way of illustration and not by way of limitation, making copies of UB-04 Data for resale and/or license, transferring copies of UB-04 Data to any party not bound by this agreement, creating any modified or derivative work of UB-04 Data, or making any commercial use of UB-04 Data. License to use UB-04 Data for any use not authorized herein must be obtained through the American Hospital Association, 155 N. Wacker Drive, Suite 400, Chicago, Illinois, 60606. Applications are available at the NUBC website,
+https://www.nubc.org/
+https://www.nubc.org/.
+
+The UB-04 Data included in this product is commercial technical data and/or computer databases and/or commercial computer software and/or commercial computer software documentation, as applicable, which was developed exclusively at private expense by the American Hospital Association, 155 N. Wacker Drive, Suite 400, Chicago, Illinois 60606. U.S. Government rights to use, modify, reproduce, release, perform, display, or disclose these technical data and/or computer data bases and/or computer software and/or computer software documentation are subject to the limited rights restrictions of DFARS 252.227-7015(b)(2) (November 1995) and/or subject to the restrictions of DFARS 227.7202-1(a) (June 1995) and DFARS 227.7202-3(a) (June 1995), as applicable for U.S. Department of Defense procurements and the limited rights restrictions of FAR 52.227-14 (December 2007) and FAR 52.227-19 (December 2007), as applicable, and any applicable agency FAR Supplements, for non-Department of Defense Federal procurements.
+
+AHA DISCLAIMER OF WARRANTIES AND LIABILITIES. UB-04 Data is provided "as is" without warranty of any kind, either expressed or implied, including but not limited to, the implied warranties of merchantability and fitness for a particular purpose. The sole responsibility for the software, including any UB-04 Data and other content contained therein, is with the Medicare/Medicaid Contractor or the CMS; and no endorsement by the AHA is intended or implied. The AHA expressly disclaims responsibility for any consequences or liability attributable to or related to any use, non-use, or interpretation of information contained or not contained in this file/product. This Agreement will terminate upon notice to you if you violate the terms of this Agreement. The AHA is a third-party beneficiary to this Agreement.
+
+CMS DISCLAIMER. The scope of this license is determined by the AHA, the copyright holder. Any questions pertaining to the license or use of the UB-04 Data should be addressed to the AHA. End users do not act for or on behalf of the CMS. CMS DISCLAIMS RESPONSIBILITY FOR ANY LIABILITY ATTRIBUTABLE TO END USER USE OF THE UB-04 DATA. CMS WILL NOT BE LIABLE FOR ANY CLAIMS ATTRIBUTABLE TO ANY ERRORS, OMISSIONS, OR OTHER INACCURACIES IN THE INFORMATION OR MATERIAL COVERED BY THIS LICENSE. In no event shall CMS be liable for direct, indirect, special, incidental, or consequential damages arising out of the use of such information or material.
+
+I Accept
+I Do Not Accept
+
+Page Help for LCD - Infliximab (L35677)
+
+Close
+
+Introduction
+
+This page displays your requested Local Coverage Determination (LCD). The document is broken into multiple sections. You can use the Contents side panel to help navigate the various sections. You can Hide or Show the Contents panel by clicking on the "Contents" label at the top.
+
+A Local Coverage Determination (LCD) is a decision made by a Medicare Administrative Contractor (MAC) on whether a particular service or item is reasonable and necessary, and therefore covered by Medicare within the specific jurisdiction that the MAC oversees.
+
+Please note that codes (CPT/HCPCS and ICD-10) have moved from LCDs to Billing & Coding Articles.
+
+More information
+
+MACs are Medicare contractors that develop LCDs and process Medicare claims. MACs develop an LCD when there is no national coverage determination (NCD) or when there is a need to further define an NCD for the specific jurisdiction.
+
+LCDs outline how the contractor will review claims to ensure that the services provided meet Medicare coverage requirements.
+
+Before an LCD becomes final, the MAC publishes Proposed LCDs, which include a public comment period.
+
+LCD document IDs begin with the letter "L" (e.g., L12345). Proposed LCD document IDs begin with the letters "DL" (e.g., DL12345).
+
+The guidelines for LCD development are provided in Chapter 13 of the Medicare Program Integrity Manual. The Social Security Act, Sections 1869(f)(2)(B) and 1862(l)(5)(D) define LCDs and provide information on the process.
+
+Tracking Sheet
+
+The LCD Tracking Sheet is a pop-up modal that is displayed on top of any Proposed LCD that began to appear on the MCD on or after 1/1/2022.
+
+The Tracking Sheet provides key details about the Proposed LCD, including a summary of the issue, who requested the new/updated policy, links to key documents, important process-related dates, who to contact with questions about the policy, and the history of previous policy considerations.
+
+The information displayed in the Tracking Sheet is pulled from the accompanying Proposed LCD and its correlating Final LCD and will be updated as new data becomes available.
+
+The Tracking Sheet modal can be closed and re-opened when viewing a Proposed LCD.
+
+Creating a document PDF
+
+Click on the Download button in the top right corner of the document (i.e., to the right of the document title).
+
+In the resulting Print Dialog, set Printer/Destination to “Save as PDF" or “Save to PDF" (for Safari users, Click the PDF button).
+
+Click on the Save button and select a location for the new PDF file.
+
+Note: Some coloring on the document may not appear on the PDF, initially. To enable coloring for banners and buttons in the PDF:
+
+Click on More Settings in the Print Dialog to display additional options.
+
+Select the checkbox next to Background Graphics or Print Backgrounds.
+
+Pro Tip: If you Search using a keyword (e.g., cardiac), the resulting documents will display with the keyword highlighted (e.g., cardiac). If you then click the Download button to create a PDF, the keywords will remain highlighted. To remove the highlighting, search again for the document using the Document ID (e.g., A59657) and then create the PDF (without the highlighted keywords).
+
+Subscriptions
+
+Subscribe to any NCD, NCA, CAL, LCD, or Article by clicking the Subscribe button at the top of the document. View your current subscriptions by clicking the Bell icon in the navbar. An exclamation mark next to the Bell icon indicates that at least one of your subscriptions has a newer document version available. A View button in the Newer Version column indicates that a newer version of an NCD, NCA, CAL, LCD, or Article has been published on the MCD. Clicking View opens the most recent version of the document.
+
+Submit Feedback/Ask a Question
+
+Get email updates
+
+Sign up to get the latest information about your choice of CMS topics. You can decide how often to receive updates.
+
+Email
+
+Sign up - opens in a new window
+Sign up
+
+CMS & HHS Websites
+CMS & HHS Websites
+
+Medicare.gov
+
+Medicaid.gov
+
+InsureKidsNow.gov
+
+HealthCare.gov
+
+HHS.gov
+
+HHS.gov/Open
+
+About CMS
+About CMS
+
+About Us
+
+Careers
+
+Newsroom
+
+Tools
+Tools
+
+Acronyms
+
+Archive
+
+Contacts
+
+Glossary
+
+Helpful Links
+Helpful Links
+
+Privacy Policy
+
+Plain Language
+
+Nondiscrimination & Accessibility
+
+Developer Information
+
+Vulnerability Disclosure Policy
+
+USA Government Sites
+USA Government Sites
+
+Freedom of Information Act
+
+No Fear Act
+
+Inspector General
+
+USA.gov
+
+Connect with CMS
+
+Linkedin link
+
+Youtube link
+
+Facebook link
+
+Twitter link
+
+RSS Feed link
+
+A federal government website managed and paid for by the U.S. Centers for Medicare & Medicaid Services.
+
+7500 Security Boulevard, Baltimore, MD 21244
+
+Frequently Asked Questions (FAQs)
+
+Many questions can be answered on the Help & Resources page in the How To Library or by viewing the FAQs below. Please take a look and if you still have questions or would like to leave feedback, contact us!
+
+Are you a provider and have a question about billing or coding?
+
+Please contact your Medicare Administrative Contractor (MAC). MACs can be found in the MAC Contacts Report.
+
+Do you have questions related to the content of a specific Local Coverage Determination (LCD) or an Article?
+
+Please contact the Medicare Administrative Contractor (MAC) who owns the document. The contractor information can be found at the top of the document in the Contractor Information section (expand the section to see the details). MACs can also be can be found in the MAC Contacts Report.
+
+Are you a beneficiary and have questions about your coverage?
+
+Please call 1-800-Medicare or visit Medicare.gov
+
+Are you looking for codes? (e.g., CPT/HCPCS, ICD-10)
+
+Local Coverage
+
+For the most part, codes are no longer included in the LCD (policy). You will find them in the Billing & Coding Articles. Try using the MCD Search to find what you're looking for. Enter the code you're looking for in the "Enter keyword, code, or document ID" box. The list of results will include documents which contain the code you entered.
+
+Please Note: For Durable Medical Equipment (DME) MACs only, CPT/HCPCS codes remain located in LCDs. All other Codes (ICD-10, Bill Type, and Revenue) have moved to Articles for DME MACs, as they have for the other Local Coverage MAC types.
+
+National Coverage
+
+NCDs do not contain claims processing information like diagnosis or procedure codes nor do they give instructions to the provider on how to bill Medicare for the service or item. For this supplementary claims processing information we rely on other CMS publications, namely Change Requests (CR) Transmittals and inclusions in the Medicare Fee-For-Service Claims Processing Manual (CPM).
+
+In order for CMS to change billing and claims processing systems to accommodate the coverage conditions within the NCD, we instruct contractors and system maintainers to modify the claims processing systems at the national or local level through CR Transmittals. CRs are not policy, rather CRs are used to relay instructions regarding the edits of the various claims processing systems in very descriptive, technical language usually employing the codes or code combinations likely to be encountered with claims subject to the policy in question. As clinical or administrative codes change or system or policy requirements dictate, CR instructions are updated to ensure the systems are applying the most appropriate claims processing instructions applicable to the policy.
+
+How do I find out if a specific CPT code is covered in my state?
+
+Enter the CPT/HCPCS code in the MCD Search and select your state from the drop down. (You may have to accept the AMA License Agreement.) Look for a Billing and Coding Article in the results and open it. (Or, for DME MACs only, look for an LCD.) Review the article, in particular the Coding Information section.
+
+If you need more information on coverage, contact the Medicare Administrative Contractor (MAC) who published the document. The contractor information can be found at the top of the document in the Contractor Information section (expand the section to see the details).
+
+If you don’t find the Article you are looking for, contact your MAC.
+
+Did you receive a Medicare coverage denial?
+
+Was your Medicare claim denied? Here are some hints to help you find more information:
+
+1) Check out the Beneficiary card on the MCD Search page.
+
+2) Try using the MCD Search and enter your information in the "Enter keyword, code, or document ID" box. Your information could include a keyword or topic you're interested in; a Local Coverage Determination (LCD) policy or Article ID; or a CPT/HCPCS procedure/billing code or an ICD-10-CM diagnosis code. Try entering any of this type of information provided in your denial letter.
+
+3) Contact your MAC.
+
+4) Visit Medicare.gov or call 1-800-Medicare.
+
+It is Thursday and the weekly MCD data isn’t refreshed?
+
+Please use the Reset Search Data function, found in the top menu under the Settings (gear) icon. If that doesn’t work please contact technical support.
+
+Are you having technical issues with the Medicare Coverage Database (MCD)?
+
+Technical issues include things such as a link is broken, a report fails to run, a page is not displaying correctly, a search is taking an unexpectedly long time to complete. If you are having an issue like this please contact technical support.
+
+Submit Feedback/Ask a Question
+Cancel
+
+MCD Session Expiration Warning
+
+Your MCD session is currently set to expire in 5 minutes due to inactivity. If your session expires, you will lose all items in your basket and any active searches. If you would like to extend your session, you may select the Continue Button.
+
+Continue
+Cancel
+
+Reset MCD Search Data
+
+If you are experiencing any technical issues related to the search, selecting the 'OK' button to reset the search data should resolve your issues.
+
+OK
+Cancel
+
+Notice
+
+You are leaving the CMS MCD and are being redirected to the CMS MCD Archive that contains outdated (No Longer In Effect) Local Coverage Determinations and Articles
+
+Continue
+Cancel
+
+Notice
+
+You are leaving the CMS MCD and are being redirected to
+
+Continue
+Cancel
+
+MCD Alert
+
+Close
+
+Yes
+No
+Close
+
+Subscriptions
+
+Subscribe to any NCD, NCA, CAL, LCD, or Article by clicking Subscribe at the top of the page. Clicking a document ID link will take you to the subscribed version. Clicking View will take you to the latest document version available, which may not yet be in effect. Click the Trash icon to cancel your subscription(s).
+
+ID
+Title
+Newer Version
+Type
+Contractor
+
+Close
