@@ -1,6 +1,6 @@
-# Specification — Prior Authorization Determination Agent, v1
+# Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1 in progress *(was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72)*
+**Status:** active — v1 complete, A1–A9 hold *(D104)*; v1.1 in progress; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -31,7 +31,7 @@ carries less information than they do.
 
 ## 3. Scope
 
-**In scope for v1**
+**In scope for v1** *(complete; later versions in §11)*
 
 - One policy, two jurisdictions: NCD 100.1, bariatric surgery, as Noridian
   Jurisdiction F implements it (A53028 supplies every quantified constant,
@@ -47,15 +47,18 @@ carries less information than they do.
   deliberately unclaimed, see §5's *Unclaimed in v1* *(D63, D72)*.
 - Differential evaluation of both implementations on the same cases.
 
-**Explicitly out of scope for v1**
+**Explicitly out of scope for v1, and where each lands** *(D105)*
 
-- The automated criteria compiler. The criteria tree is hand-written.
-- MCD bulk ingestion.
-- More than one policy, any payer-specific overlay, any LCD.
-- Vector search or embedding-based retrieval.
-- Any user interface.
-- Terraform, CI/CD, containers.
-- Real or de-identified patient data of any kind.
+- The automated criteria compiler. The criteria tree is hand-written. Not
+  scheduled.
+- MCD bulk ingestion. Not scheduled.
+- More than one policy, any payer-specific overlay, any LCD. *(Partly
+  overtaken: T-87 compiled Palmetto's L34576, an LCD, into the second tree.)*
+  Other practices' policies are v1.2 and v1.6.
+- Vector search or embedding-based retrieval. Not scheduled *(D4, D70)*.
+- Any user interface. v2.0, after every screen's port exists headless.
+- Terraform, CI/CD, containers. Never *(working rule 9)*.
+- Real or de-identified patient data of any kind. Never.
 
 ## 4. Actors
 
@@ -63,7 +66,9 @@ carries less information than they do.
 |---|---|
 | Specialist | Consumes the determination and gap list. Only human in the v1 loop. |
 | Policy author | Reviews and approves criteria tree diffs. Same person as the specialist in v1. |
-| System | Retrieves, extracts, adjudicates, verifies, aggregates. Never submits. |
+| System | Retrieves, extracts, adjudicates, verifies, aggregates. Never submits. *(v1.5 rewords this: transmits only on the reviewer's explicit action, D105.)* |
+| Upstream system | Creates sessions through the intake contract; never reads a determination. *(v1.4, §11)* |
+| Payer (simulated) | Receives the packet on the reviewer's action; never uses the system. *(v1.5, §11)* |
 
 ---
 
@@ -468,7 +473,8 @@ extraction has already mishandled. T-17 exercises it against a stubbed verifier.
 
 ## 7. Acceptance criteria
 
-v1 is done when all of the following hold on the labeled eval set.
+v1 was done when all of the following held on the labeled eval set; they
+have held since D104. Each later version states its own gate in §11.
 
 | Gate | Threshold |
 |---|---|
@@ -707,7 +713,7 @@ instance above was one run's behaviour and the mechanism is the standing
 answer to its recurrence. What it cannot recover is a claim the model never
 quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
-### P3 — Six patients, five documents, fifteen cases
+### P3 — Eight patients, five documents, seventeen cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
 than a percentage point in every table. A precision of 1.000 over thirteen
@@ -796,3 +802,262 @@ means the freely-reproducible figures describe the model as it behaved on one
 measured day, against one pinned model, on one tier. A changed call
 configuration, a changed tool declaration, a changed SDK, or a different tier
 is a **new measurement, never a re-run**.
+
+---
+
+## 11. Versions after v1
+
+v1 is complete and v1.1 — the §10 round D97 opened as "v2" and D105
+renamed — is in progress. This section fixes what follows: one version at a
+time, each with a goal, a scope, the story it closes, the tasks it reserves,
+what it spends, and the gate it must hold *(D105)*. **Requirements here are
+statements, not ids.** A version mints its REQ ids when its first task
+opens, by moving its statements into §5 with numbers; the coverage mapping
+and the pinned count move in the same commit. §1's rule stands: a
+requirement with no check is a wish, and a wish is not given a number.
+
+| Version | Delivers | Story | Tasks | Model calls | Gate |
+|---|---|---|---|---|---|
+| v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only | US-10 | T-91–T-95 | none | A10 |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
+| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
+| v2.0 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
+
+### v1.1 — Finishing §10
+
+The path D97 fixed, unchanged: T-85 through T-89 and T-81 closed, T-90 (the
+Vertex measurement, P8) and P6's entry open. Closes when the Vertex column
+renders in `eval/report.md` and P6's path is logged. Gate: A1–A9 still hold.
+
+### v1.2 — Cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound
+
+**Goal.** Measure how much of the engine is bariatric-shaped. Since D101
+every criteria step evaluates what the tree declares, so the question is
+whether two trees from unrelated practices compile into the predicate
+vocabulary the engine has — and where a criterion cannot be expressed,
+whether the engine says so rather than approving past it.
+
+**In scope.** An explicit predicate vocabulary: every tree predicate declares
+its kind, and a kind the engine lacks fails at load. Two new criteria trees
+compiled from real coverage documents, each chosen by fetching its header as
+D97 did for Palmetto: for rheumatoid arthritis, a MAC LCD or billing article
+governing infused biologic DMARDs (a J-code; the resolver keys on a code, so
+nothing changes there); for ultrasound, a MAC LCD for a non-invasive vascular
+or abdominal study. Synthea patients where a module exists, declared
+additions in D73's shape where it does not. Eval rows for each: a `MET`, a
+`NOT_MET` on the practice's own arithmetic, and one abstention or `NO_POLICY_FOUND`.
+A compatibility account in `eval/report.md`: per practice, each criterion
+classed as evaluated by an existing predicate kind, by a new kind, or
+unclaimed.
+
+**Expected new predicate kinds**, each Article II arithmetic over structured
+FHIR: diagnosis membership by ICD-10 or SNOMED (value sets declare a code
+system per entry — Synthea codes conditions in SNOMED, LCDs list ICD-10, so
+both are carried with the mapping cited); medication trial duration over
+`MedicationRequest` dates; a lab-result threshold; a prior-procedure count in
+a window, c1's shape.
+
+**Out of scope.** Chart notes and extraction for either practice. Note-only
+criteria are declared unclaimed and abstain with
+`NOT_EVALUATED_BY_THIS_SYSTEM`, never omitted; their extraction is v1.6's,
+because a new extraction schema is a measurement round (D45) and this version
+asks a question about the engine. **Zero model calls.**
+
+**Requirements it will mint.**
+
+- Every predicate in a criteria tree declares its kind from a closed set;
+  a tree naming a kind the engine lacks raises at load. Unbuilt is not
+  unclaimed.
+- A tree may declare any criterion `evaluation: "unclaimed"`; the graph
+  abstains on it with `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it
+  *(generalising D101)*.
+- A value set declares the code system of every entry; membership is
+  tested within the declared system.
+- Medication trial duration, lab thresholds and prior-procedure counts are
+  computed by Python over structured resources, cited to the resource.
+- `eval/report.md` carries the compatibility account, generated and
+  verified.
+
+**Gate A10.** Every criterion of every loaded tree is evaluated by a declared
+predicate kind or declared unclaimed, zero omitted; every eval row `PASS`;
+zero model calls in any gate.
+
+### v1.3 — Medical-history review: ICD suggestions with evidence
+
+**Goal.** From the medications and conditions on the chart, surface
+conditions the chart supports but does not carry — a corticosteroid and a
+low bone density, an anticoagulant and a low blood pressure — each tied to
+evidence, so the reviewer can decide whether the packet should carry the
+code.
+
+**Design under the constitution.** A reviewed lookup table,
+`data/knowledge/medication_effects.json`, is the only place a code can come
+from: medication class or RxNorm ingredient → effect condition → ICD-10 and
+SNOMED codes → the structured signal that corroborates it (an observation
+and a threshold) → a source in `sources.json`. It is a file under git and
+review, Article VII's shape. `pa_agent/history.py` is deterministic: an
+active medication matching a row is a candidate; a condition already coded
+is not a suggestion. Python assigns a closed tri-state:
+
+- **green** — corroborated by structured data: an observation crosses the
+  row's threshold. Addable with no further evidence.
+- **yellow** — corroborated only by an anchored note quote. Added with that
+  citation attached automatically.
+- **red** — pharmacological plausibility only; nothing on the chart. The
+  reviewer must write a justification before it can enter a form.
+
+The model's role is confined to the agentic path Amendment 1 opened: asked
+for verbatim quotes documenting each candidate's effect, anchored by
+`anchor.py`, dropped when unanchorable, and verified by Article V's verifier
+as `(candidate, quotes)` claims. It never proposes a code. Suggestions ride
+in a separate `icd_suggestions` block beside the verdicts, each carrying
+`would_affect` — the criteria whose value set contains the code, by set
+membership — as a report; **no verdict changes in v1.3.** A recording at
+`eval/history/results.json` replays in every gate; the live call is a
+measurement script in `EXCLUDED`.
+
+**Requirements it will mint.**
+
+- A suggested code comes only from a row of the knowledge table, and every
+  row names a source the offline verifier covers.
+- The tri-state is assigned by Python over structured thresholds and span
+  presence; the model is never asked which colour, or which code.
+- A suggestion is never a code assignment. It enters no determination
+  verdict, and no form without a human action; red enters no form without
+  a written justification.
+- Every yellow suggestion carries a verified span; a suggestion whose quote
+  fails to anchor is red, never yellow.
+- `would_affect` is computed by set membership against the governing tree's
+  value sets and changes nothing.
+- The model turn is recorded, replayed and counted like every other.
+
+**Gate A11.** Suggestion precision against manifest labels at or above A2's
+bar on `MET`; zero suggestions without a source row; zero yellow without a
+valid span; zero verdict drift against the baseline.
+
+### v1.4 — Sessions and intake, headless
+
+**Goal.** A determination becomes something the specialist can come back
+to. A third plane — the session plane — with its own port and file-backed
+adapter, constructed in `cli.py` and nowhere else (REQ-41's rule); a session
+holds ids and its own determination snapshot and never a copy of either
+corpus (Article VI). An intake contract, `pa_agent/intake.py`: a procedure,
+with or without ICD codes, a patient and a state, from a JSON document an
+upstream system produced or from command-line flags a person typed, both
+validating to the same object. A closed lifecycle enum walked by a Python
+state machine — `CREATED → DETERMINED → IN_REVIEW`, extended by v1.5 — where
+an illegal transition raises. Verbs: `session create | list | show | run`.
+`session list` is v2.0's dashboard checklist, as text. **Zero model calls.**
+
+**Requirements it will mint.**
+
+- The session store is a port; the CLI is the only constructor; the
+  `stores` package still imports no submodule.
+- A session records its intake, the `policy_version_id` and determination
+  it produced, and its lifecycle state; it stores no policy text and no
+  patient resource beyond ids.
+- The lifecycle is a closed enum; every transition is code; an illegal
+  transition raises and is never recorded.
+- A JSON intake and the equivalent flags validate to the same object; a
+  malformed intake is a bad request (exit 1), never a session.
+
+**Gate A12.** Every transition in the enum has a test and every illegal one
+raises; a session round-trips through the adapter byte-stable; the plane
+check extends to the third plane.
+
+### v1.5 — The form, review, simulated submission and tracking, headless
+
+**Goal.** The packet the specialist sends, and what happens to it. A form
+assembled by `pa_agent/form.py` from the determination, the accepted
+suggestions with their justifications, identity pass-through and the rest
+of the fields a prior authorization form carries; a review log the
+specialist appends to beside the determination, which is never edited;
+transmission to a simulated payer — an `.eml`-shaped file in a payer outbox,
+a `payers.json` of simulated contacts — on the specialist's explicit action
+after review; and the session tracked to `AWAITING_DECISION`, with a
+`session decide` stub that closes it. §1's "does not submit" is reworded by
+this version's entry to "transmits only on the reviewer's explicit action
+after review, and never decides to". **Zero model calls.**
+
+**Requirements it will mint.**
+
+- The packet's every citation slices back; a packet is refused while any
+  red suggestion lacks a justification.
+- The review log is append-only; the determination's bytes are unchanged
+  by any review.
+- Transmission is a lifecycle transition taken only on an explicit verb,
+  after `IN_REVIEW`; the system never decides to transmit.
+- The outbox is the only side effect of submission, and every session in it
+  is `AWAITING_DECISION`.
+
+**Gate A13.** Zero packets in the outbox with a red suggestion lacking a
+justification; every citation in every packet valid; every outbox session
+`AWAITING_DECISION`.
+
+### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
+
+**Goal.** The second test on different practices, and the engine change
+v1.2 deferred. The tree declares its extraction schema — the fact types and
+fields the extractor produces — so `WmEvent` stops being the only fact type
+and the runners, the anchorer and `build_result` become generic over declared
+types; `STEPS` stays a fixed tuple (Article I). Candidates, confirmed at
+open: CPAP for obstructive sleep apnea under NCD 240.4, a **nationally
+quantified** NCD, unlike 100.1; and one imaging or therapy domain. The
+rheumatoid and ultrasound trees gain their note-only criteria here. New
+notes are new extraction recordings (D45), and the agentic differential is
+re-measured.
+
+**Requirements it will mint.**
+
+- A tree declares its fact types; the bariatric tree declares `WmEvent` and
+  every existing recording replays unchanged; an unknown fact type raises
+  at load.
+- The anchorer, the validator and the trust boundary are generic over
+  declared fact types; no fact type reaches a `WmEvent`-shaped private
+  route.
+- The compatibility account covers four practices.
+
+**Gate A14.** A10 over four practices; every eval row `PASS`; the agentic
+differential re-measured with zero errors.
+
+### v2.0 — The reviewer's UI *(tentative)*
+
+**Goal.** The first version a persona uses without a terminal. A local
+single-process web app over the session port; the framework is decided in
+its own entry (`adk web` already places FastAPI and uvicorn in the pinned
+environment, so `check_env.py` parity is the first thing checked). No
+authentication, no database beyond the file-backed stores, no deployment —
+working rule 9 holds. Screens map to ports: a dashboard with the session
+checklist and its statuses, and a create form for a procedure with or
+without ICD codes, typed or pasted from an upstream system; a determination
+view with criteria, verdicts, spans rendered as highlighted excerpts beside
+the structured evidence, and the gap list; a suggestions panel where green
+adds, yellow adds with its citation and red opens the justification field at
+that point in the form; the rest of the form; the simulated email and its
+outbox; tracking to awaiting approval. **No logic in the UI**: every action
+is a verb v1.4 and v1.5 already test, and tests are contract tests plus a
+test-client smoke test, no browser automation.
+
+**Requirements it will mint.**
+
+- Every UI action maps to a CLI verb and produces identical output.
+- Templates carry no logic, pinned by parsing (D65's shape).
+- The UI reads and writes through the session port only; it constructs no
+  store.
+
+**Gate A15.** Every UI action maps to a CLI verb with identical output; zero
+logic in templates; every gate green with the app importable.
+
+### Gates by version
+
+| Gate | Version | Threshold |
+|---|---|---|
+| A10 | v1.2 | every criterion of every loaded tree evaluated by a declared kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
+| A11 | v1.3 | suggestion precision at or above A2's bar; zero suggestions without a source row; zero yellow without a valid span; zero verdict drift |
+| A12 | v1.4 | every lifecycle transition tested, every illegal one raises; sessions round-trip byte-stable |
+| A13 | v1.5 | zero packets with an unjustified red suggestion; every packet citation valid; every outbox session `AWAITING_DECISION` |
+| A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors |
+| A15 | v2.0 | every UI action maps to a CLI verb with identical output; zero logic in templates |

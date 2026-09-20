@@ -266,6 +266,200 @@ lands in week 2.
 
 ---
 
+## Feature F3 — Cross-practice compatibility *(v1.2, v1.6; D105)*
+
+Stories for versions after v1.1 carry a **Version** line. Their acceptance
+criteria cite the statements in spec §11 and the gate that version names; the
+REQ ids are minted when the version's first task opens.
+
+### `US-10` Take a new practice's coverage rules without a rewrite
+
+> **As** Dr. Vance
+> **I want** a rheumatology tree and an ultrasound tree to load beside the bariatric one and be checked by the same engine
+> **So that** I learn which of the engine's assumptions were bariatric surgery's, before a second practice depends on it
+
+**Version:** v1.2 · **Value:** the engine's claim is "what the tree
+declares"; this is the first time a tree declares something bariatric surgery
+never needed.
+
+- **Given** a criteria tree compiled from a rheumatology coverage document
+  **When** it is loaded **Then** every predicate names a kind the engine has,
+  or the load fails naming the kind it lacks — it never abstains past an
+  unbuilt predicate · *(REQ minted at v1.2 open; A10)*
+- **Given** a criterion the document states as a judgment **When** the tree
+  declares it unclaimed **Then** the determination abstains on it with
+  `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it · *(D101; A10)*
+- **Given** a patient whose conventional DMARD trial is shorter than the
+  document requires **When** the determination runs **Then** that criterion is
+  `NOT_MET` with the medication resource cited, computed by Python over the
+  prescription dates · *(Article II; A10)*
+- **Given** an ultrasound request past the document's frequency limit **When**
+  the determination runs **Then** the criterion is `NOT_MET` with each prior
+  study cited, counted by Python · *(A10)*
+- **Given** both trees loaded **When** the report is built **Then** it classes
+  every criterion of every tree as evaluated by an existing kind, by a new
+  kind, or unclaimed — and zero model calls were spent · *(A10)*
+
+**Covers:** A10
+**Ships:** the compatibility account in `eval/report.md`, and the first
+predicate kinds bariatric surgery never used.
+
+---
+
+### `US-14` Two more practices, notes included
+
+> **As** Dr. Vance
+> **I want** a second pair of practices — one under a nationally quantified NCD — evaluated all the way through the notes
+> **So that** the extractor, not only the rules engine, is shown to be declared by the tree rather than shaped by bariatric surgery
+
+**Version:** v1.6 · **Value:** v1.2 left every note-only criterion unclaimed;
+this is where the abstentions it declared become verdicts, on four practices.
+
+- **Given** a tree declaring its own fact types **When** the bariatric tree
+  declares `WmEvent` **Then** every existing recording replays unchanged ·
+  *(A14)*
+- **Given** a tree declaring a fact type the engine lacks **When** it is loaded
+  **Then** the load fails, naming it · *(A14)*
+- **Given** the rheumatoid and ultrasound trees **When** their note-only
+  criteria are declared with fact types **Then** they resolve to verdicts with
+  anchored spans, and their v1.2 abstentions are gone from the baseline by a
+  committed `--update-baseline` · *(D27; A14)*
+- **Given** four practices **When** the differential is measured **Then** the
+  agentic path agrees with the oracle on every outcome, or the disagreement is
+  reported · *(Amendment 1; A14)*
+
+**Covers:** A14
+
+---
+
+## Feature F4 — Medical history review *(v1.3; D105)*
+
+### `US-11` Show me what the chart implies but does not code
+
+> **As** Sam
+> **I want** the medications on the chart checked against what they are known to cause, with each suggested code coloured by how much evidence the chart holds for it
+> **So that** a steroid patient's bone density loss is in the packet before the payer asks why it wasn't
+
+**Version:** v1.3 · **Value:** a denial for an undocumented comorbidity that
+the medication list already implied is the denial Sam did not see coming.
+
+- **Given** an active corticosteroid and a DEXA observation past the table's
+  threshold, with no osteoporosis condition coded **When** the review runs
+  **Then** the suggestion is **green** — addable with no further evidence —
+  and cites the observation · *(A11)*
+- **Given** an active anticoagulant and a note documenting hypotension, with
+  no observation past threshold **When** the review runs **Then** the
+  suggestion is **yellow**, added with the anchored quote attached
+  automatically, and the quote is verified blind · *(Article III, Article V;
+  A11)*
+- **Given** an active medication in the table and nothing on the chart
+  **When** the review runs **Then** the suggestion is **red** and cannot enter
+  a form without a written justification · *(A11)*
+- **Given** any suggestion **When** the determination is emitted **Then** every
+  criterion verdict is unchanged, and `would_affect` names the criteria whose
+  value set contains the code, by set membership · *(Article II; A11)*
+- **Given** a quote the anchorer refuses **When** the tri-state is assigned
+  **Then** the suggestion is red, never yellow · *(A11)*
+- **Given** any suggestion **When** its code is traced **Then** it resolves to
+  one row of the knowledge table with a source the offline verifier covers ·
+  *(A11)*
+
+**Covers:** A11
+**Note:** the model quotes; it never proposes a code and never picks a colour.
+
+---
+
+## Feature F5 — Sessions and submission *(v1.4, v1.5; D105)*
+
+### `US-12` Keep my determinations as sessions I can come back to
+
+> **As** Sam
+> **I want** a determination created from a procedure — with or without ICD codes, typed by me or sent from another system — kept as a session with a status
+> **So that** the checklist of what I am working on is the system's, not a spreadsheet beside it
+
+**Version:** v1.4 · **Value:** the dashboard v2.0 draws is a list the system
+already keeps.
+
+- **Given** a procedure code and a patient, with or without ICD codes, from
+  flags or from a JSON intake **When** a session is created **Then** both
+  routes produce the same session object, in `CREATED` · *(A12)*
+- **Given** a malformed intake **When** it is submitted **Then** it is a bad
+  request, exit 1, and no session exists · *(A12)*
+- **Given** a session **When** it is run **Then** it holds the determination
+  and its `policy_version_id` and moves to `DETERMINED`; a second run is a
+  new snapshot, never an edit · *(A12)*
+- **Given** any lifecycle state **When** an illegal transition is attempted
+  **Then** it raises and nothing is recorded · *(Article I; A12)*
+- **Given** the session store **When** the plane check runs **Then** it holds
+  ids and snapshots only — no policy text, no patient resource · *(Article
+  VI; A12)*
+
+**Covers:** A12
+**Ships:** `session create | list | show | run`.
+
+---
+
+### `US-13` Let me review, complete and send the packet
+
+> **As** Sam
+> **I want** to read the determination, accept or reject the suggested codes, fill in what the form still needs, and send it to the payer, with the session then tracked as awaiting their decision
+> **So that** the packet that leaves is one I signed off on, and I can see which ones are out
+
+**Version:** v1.5 · **Value:** the point of the determination is the packet;
+until v1.5 nothing leaves.
+
+- **Given** a determined session **When** Sam reviews it **Then** her edits
+  append to a review log beside the determination, whose bytes are unchanged ·
+  *(A13)*
+- **Given** a red suggestion **When** the form is assembled without a
+  justification **Then** the packet is refused, naming the code · *(A13)*
+- **Given** a reviewed session **When** Sam submits it **Then** an
+  email-shaped packet is written to the simulated payer's outbox, every
+  citation in it slices back, and the session is `AWAITING_DECISION` · *(A13)*
+- **Given** a session not yet in review **When** submission is attempted
+  **Then** it raises; the system never decides to transmit · *(A13)*
+- **Given** a payer's simulated decision **When** it is recorded **Then** the
+  session closes with the outcome and the date · *(A13)*
+
+**Covers:** A13
+**Note:** this version rewords spec §1's "does not submit" to "transmits only
+on the reviewer's explicit action after review".
+
+---
+
+## Feature F6 — Reviewer UI *(v2.0; D105; tentative)*
+
+### `US-15` Work from a dashboard, not a terminal
+
+> **As** Sam
+> **I want** a dashboard of my sessions, each opening to its determination with the criteria, the evidence beside them and the coloured code suggestions, the form, and a send button
+> **So that** clearing a chart is one screen, not a sequence of commands
+
+**Version:** v2.0 · **Value:** every persona-facing behaviour before this
+version is reachable only by someone who reads JSON.
+
+- **Given** the dashboard **When** it renders **Then** it lists what `session
+  list` lists, with the same statuses, and offers a create form for a
+  procedure with or without ICD codes, typed or pasted from an upstream
+  system · *(A15)*
+- **Given** a session opened **When** the determination renders **Then** each
+  criterion shows its verdict, its cited spans highlighted in the note beside
+  the structured evidence, and the gap list · *(A15)*
+- **Given** the suggestions panel **When** Sam acts **Then** green adds with
+  one action, yellow adds with its citation attached, and red opens the
+  justification field at that point in the form · *(A15)*
+- **Given** a reviewed session **When** Sam sends it **Then** the simulated
+  email is previewed, written to the outbox, and the dashboard shows the
+  session awaiting approval · *(A15)*
+- **Given** any UI action **When** it is traced **Then** it maps to one CLI
+  verb with identical output, and the templates carry no logic · *(A15)*
+
+**Covers:** A15
+**Status:** tentative — rows open after v1.6 closes, and the framework is
+decided in the app shell's entry.
+
+---
+
 ## Not stories
 
 Tracked as spikes or technical tasks.
@@ -279,6 +473,8 @@ Tracked as spikes or technical tasks.
 | Note synthesizer | Task | Test data, not a user outcome |
 | Plane separation check | Task | Enforces Article VI, no user outcome |
 | US-5.5 Orchestration (T-61–T-68 on the board) | Task group | The agentic differential against the deterministic oracle — a measurement, not a persona-visible behavior. Numbered like a story only so its tasks have a home on a board organised by story *(D72)* |
+| Predicate vocabulary audit (T-91, v1.2) | Task | Makes the tree schema say what it already assumes; no persona sees it *(D105)* |
+| Tree-declared extraction (T-107, v1.6) | Task | The extractor becomes generic over declared fact types; a refactor the four-practice account measures, not a behavior *(D105)* |
 
 If one of these ends up phrased "As a developer, I want…", it belonged in this
 table.

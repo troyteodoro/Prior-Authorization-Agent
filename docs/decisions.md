@@ -7925,3 +7925,108 @@ owner's review is recorded by this close.
 
 **Cost of the round.** 17 + 17 + 26 extraction calls, 30 verifier calls,
 67 agentic calls (24 of them the planner's).
+
+---
+
+## D105 — v2 becomes v1.1, and the roadmap to v2.0 is fixed
+
+**The owner's decision, 2026-09-20.** The board's `Path to v2` — spec §10's
+eight known limits, one task each (D97) — is renamed **`Path to v1.1`**, and
+the versions after it are fixed here: what each delivers, which story it
+closes, which task ids it reserves, what it spends, and the gate it must
+hold. Spec §11 carries the same table with each version's scope and the
+requirements it will mint; the board mirrors it row for row. D97's rows,
+order and exits are untouched, and D97's "v2 path for REQ-44/47" now
+resolves to v1.1's.
+
+**Why a point release.** Closing the known limits of a finished system is a
+point release; the major version is reserved for the change of surface —
+v2.0 is the reviewer's UI, the first version a persona uses without a
+terminal. Naming the §10 round "v2" would have spent the number on work
+that changes no interface.
+
+**The roadmap.**
+
+| Version | Delivers | Story | Reserved tasks | Model calls | Gate |
+|---|---|---|---|---|---|
+| v1.1 | spec §10 P1–P8 (D97) | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only | US-10 | T-91–T-95 | none | A10 |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
+| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings, differential re-measured | A14 |
+| v2.0 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
+
+**Rules binding every version.**
+
+1. One version in progress at a time; a version opens when the previous
+   one closes. Working rule 1 applied at version scale.
+2. A version's requirements are minted when its first task opens: spec
+   §11's statements move into §5 with numbers, and the coverage mapping
+   in `scripts/check_req_coverage.py` and the count pinned in
+   `tests/test_check_req_coverage.py` move in the same commit. Until
+   then §11 holds statements, not ids — spec §1 says a REQ with no check
+   is a wish, and a wish with a number is one the board will start
+   referencing. Rejected: minting REQ-57 onward now and teaching the
+   coverage gate a "scheduled" state, which changes a gate to serve a
+   document.
+3. Task ids are reserved now, T-91 through T-116, in D97's shape: a
+   record is written when a row opens, never before. The ids exist so
+   that the stories, §11 and the board can refer to the same work
+   without a renumber later.
+4. Each version names one acceptance gate, A10 through A15, stated in
+   §11 as a measurable threshold. A version closes when its story closes
+   and every gate in the repo is green — working rule 4 at version scale.
+5. A version's own opening entry may reorder or split its tasks.
+   Reordering versions is a new entry here, never a board edit.
+
+**Choices taken with the owner, binding on the tasks above.**
+
+1. **v1.2 spends zero model calls.** It asks whether the rules engine is
+   bariatric-shaped, so it tests trees compiled from two unrelated
+   practices against the predicate vocabulary the engine has, and where
+   a criterion cannot be expressed the engine must say so — declared
+   unclaimed and abstaining with `NOT_EVALUATED_BY_THIS_SYSTEM`, never
+   omitted (D101's rule). Note-only criteria of the new practices wait
+   for v1.6. Rejected: extracting rheumatology facts from notes in v1.2 —
+   a new extraction schema is a measurement round per D45, and it would
+   fold the engine question and the extraction question into one delta.
+2. **v1.3's codes come only from a reviewed lookup table.** Medication →
+   effect → ICD-10 and SNOMED → corroborating structured signal → source,
+   a file under git and review in Article VII's shape. The tri-state
+   (green: structured corroboration; yellow: an anchored note quote only;
+   red: pharmacological plausibility only) is Python over set membership
+   and thresholds (Article II). The model's only role is to quote the
+   note, on the agentic path Amendment 1 opened, anchored by `anchor.py`
+   and verified by Article V's verifier; it never proposes a code. A
+   suggestion is never a code assignment: it enters no determination
+   verdict in v1.3 and no form without a human action, and red never
+   leaves without a written justification. Rejected: asking the model
+   which codes the chart supports — that is set membership over the
+   chart, reserved to Python, and a wrong code on a claim is the failure
+   this project exists to make mechanical rather than plausible.
+3. **Submission is a reviewer's action.** v1.5 introduces transmission to
+   a simulated payer; spec §1's "does not submit" is reworded by v1.5's
+   own entry when it opens, to "transmits only on the reviewer's explicit
+   action after review, and never decides to". Not reworded now — the
+   sentence is true of every version before v1.5.
+4. **The UI is last.** Every screen of v2.0 is a view over a port that
+   v1.4 and v1.5 already test headless; the UI adds no logic. Rejected:
+   the UI at v1.4 over stubbed sessions — every screen would be rebuilt
+   when the ports landed.
+5. **Round two precedes the UI.** The engine is proven on four practices
+   before a surface is built on it. Rejected: round two before sessions —
+   the session and form layers depend on the packet shape, which D101
+   already made generic over what a tree declares, so nothing in v1.4 or
+   v1.5 waits on it.
+6. Working rule 9 holds through v2.0: a local single-process app over
+   the file-backed stores, no deployment, no CI, no containers.
+
+**Rejected — a roadmap document.** `docs/` is exactly the five files of
+the precedence table (D93 deleted the sixth for governing nothing). The
+roadmap is the spec's §11, the stories' F3–F6, and the board's rows, each
+in the place a reader already looks.
+
+**Reverses if:** a version's exit turns out to need a later version's
+work, or v2.0 needs a session field the headless versions did not carry.
+The order is rewritten here, never reshuffled on the board alone.

@@ -26,10 +26,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-56 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas. |
-| `docs/tasks.md` | The board. Tasks T-00 through T-84, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
-| `docs/decisions.md` | D1–D94, kill criteria, open questions. Append-only. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-56 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. §11 is the versions after v1, with the requirements each will mint — statements, not ids, until the version opens *(D105)*. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-15 are the roadmap's, one per version *(D105)*. |
+| `docs/tasks.md` | The board. Task records T-00 through T-89, each with a runnable exit condition; T-90 through T-116 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D105, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -420,8 +420,12 @@ D82's tolerance sweep, and **A6 38 model calls / 31,118 input / 6,925 output /
 39.6s across ten determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **nothing on the board; `Path to v2`'s row 7, the Vertex measurement
-(T-90), is next and opens its record when it starts.** v1 is complete —
+Open: **nothing on the board; `Path to v1.1`'s row 7, the Vertex measurement
+(T-90), is next and opens its record when it starts.** The §10 round was
+opened as "v2" and renamed v1.1 by D105, which also fixed the versions after
+it — v1.2 through v2.0, one story and one gate each — in spec §11, on the
+board's `Roadmap after v1.1`, and in stories F3–F6; a version's REQ ids are
+minted when it opens, so the count below is unchanged. v1 is complete —
 **A1–A9 all hold** — and spec §10's list of known limits, P1–P8, which
 **D97 sequenced into one task each**, is six rows closed of eight. T-85 (D98)
 put the anchoring account in `eval/report.md`; T-86 (D99) made every

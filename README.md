@@ -550,7 +550,7 @@ back to one of them:
 | `docs/constitution.md` | The ten articles above in full, with Amendment 1 |
 | `docs/spec.md` | Numbered requirements, edge cases, acceptance criteria — and §10, the problems to address |
 | `docs/stories.md` | The user stories and personas |
-| `docs/tasks.md` | The board; `Path to v1` at the top says what happens next |
+| `docs/tasks.md` | The board; `Path to v1` at the top says what happens next, and `Roadmap after v1.1` what follows |
 | `docs/decisions.md` | Why everything is the way it is — every choice, the alternative it rejected, and the condition that would reverse it |
 
 Two habits from that system show up in the code: every task closes on a
@@ -606,7 +606,7 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
 
 ## Status and the road to v1
 
-**68 of 69 tasks closed, 1 open; all ten gates green.**
+**69 of 69 tasks closed, 0 open; all ten gates green.**
 Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
 procedures, cited structured criteria, the categorical exclusion, note-only
 criteria with two independent BMI readings, the gap list, the blind verifier,
@@ -626,15 +626,22 @@ gate rather than a plausible-looking table.
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.235**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
 | A6 | 45 model calls / 36,956 in / 7,590 out / 47.7s across ten determinations, from instrumentation |
-| A7 | 56 requirements: 54 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 58 requirements: 56 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 
-**One row of the v2 path is open, and it is not on the path to the acceptance
+**One row of the v1.1 path is open, and it is not on the path to the acceptance
 gates:** the Vertex measurement (T-90), the second tier's numbers beside the
 AI Studio ones. The second note per patient landed with T-81 (D104): every
 recording re-measured on a corpus where a skipped note is reachable, and the
 direct retrieval-recall figure is now measured rather than constructed.
+
+**What follows v1.1 is fixed in spec §11 *(D105)*:** two rounds of testing
+the rules engine against other practices' coverage rules (rheumatoid
+arthritis and ultrasound first; two more, notes included, later), a
+medical-history review that suggests ICD codes the chart supports but does
+not carry, sessions and a simulated submission path built headless, and a
+reviewer's UI as v2.0 over ports that by then already have tests.
 
 **Nothing else is outstanding — including the one thing a reader might assume
 is.** An earlier board carried a programme to add a formal review stamp to the

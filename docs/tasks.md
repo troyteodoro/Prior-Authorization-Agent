@@ -10,17 +10,20 @@ breaks every reference to them.
 
 The sections below are organised by **the story a task serves**, which answers
 *why this task exists* and does not answer *what to do next*. `Path to v1` below
-answers the second question, once.
+answers the second question, once; `Roadmap after v1.1` states the versions
+that follow *(D105)*.
 
 ---
 
 ## Path to v1
 
-**What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
-and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
-spec §10's list of known limits, P1–P8, which D97 sequenced into one task
-each — `T-85` through `T-89` and `T-81` are closed; `T-90`, row 7 of that
-sequence, is next and opens its record when it starts.
+**What to do next: `Path to v1.1`, below.** Acceptance gates A1–A9 all hold
+and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains of
+v1.1 — the round D97 opened as "v2" and D105 renamed — is spec §10's list of
+known limits, P1–P8, sequenced into one task each: `T-85` through `T-89` and
+`T-81` are closed; `T-90`, row 7 of that sequence, is next and opens its
+record when it starts. The versions after v1.1 are in `Roadmap after v1.1`
+*(D105)*, further down.
 
 Sixty-nine tasks are on this board — IDs run to T-89 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
@@ -31,7 +34,7 @@ happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
 D81, withdrawn by D92, records deleted by D94)*.
 
 | # | Task | Closes / gates | State |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | `T-73` | the ratification ledger and its gate *(D74)* | **closed**, **withdrawn** *(D92)*, record deleted *(D94)* — this row is what remains |
 | 2 | `T-74` | the owner ratifies constitution, spec, stories *(D74)* | **closed**, **withdrawn** *(D92)*, record deleted *(D94)* — this row is what remains |
 | 3 | `T-21` | **closed US-4 and US-5** · gates **A1**, **A3** | **closed** (D75) — ran before T-74; see D79 |
@@ -48,16 +51,16 @@ Off the path. Real work, nothing waiting on it:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
-| `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | row 6 of `Path to v2` *(D91, D97)* |
+| `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | row 6 of `Path to v1.1` *(D91, D97)* |
 
-### Path to v2 — spec §10's problems, one task each *(D97)*
+### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
 Free tasks first, the runner change before the corpus grows, the second tier
 last so it measures the final configuration. A task record is written when its
 row opens; the exit named here is the one D97 fixed.
 
 | # | Problem | Task | State | Exit, in one line |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | P2, first half | `T-85` | **closed** (D98) | `eval/report.md` carries the anchoring account per extraction recording; `build_report.py --verify` green |
 | 2 | P5 | `T-86` | **closed** (D99) | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
 | 3 | P1, first half | `T-87` | **closed** (D100, D101) | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
@@ -65,7 +68,7 @@ row opens; the exit named here is the one D97 fixed.
 | 5 | P2, second half | `T-89` | **closed** (D103) | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | **closed** (D104) | two notes per patient, labels re-read, every recording re-measured |
 | 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
-| 8 | P6 | entry only | pending | the v2 path for REQ-44/47 logged; the unclaimed set unchanged |
+| 8 | P6 | entry only | pending | the v1.1 path for REQ-44/47 logged; the unclaimed set unchanged |
 
 **Why four of those rows delivered nothing.** D74 converted D42's framing —
 the eval ground truth was drafted alongside the system it grades, as were the
@@ -102,14 +105,135 @@ was one task; D78 closed it.
 
 **Why the report chain is last.** T-22, T-28 and T-23 all read the eval set
 beneath them. Built before T-21 they would be rewritten after it.
+
+---
+
+## Roadmap after v1.1 *(D105)*
+
+One version in progress at a time; a version opens when the previous one
+closes. Task ids are reserved here so the stories, spec §11 and this board
+name the same work; **a task record is written when its row opens**, never
+before, in D97's shape. Each version's scope and the requirements it mints
+are in spec §11; each closes on its story closing with every gate green.
+
+| Version | Delivers | Story | Tasks | Model calls | Gate |
+|---|---|---|---|---|---|
+| v1.1 | spec §10 P1–P8 — `Path to v1.1` above | — | T-85–T-90 | the Vertex round | A1–A9 |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only | US-10 | T-91–T-95 | none | A10 |
+| v1.3 | medical-history review: ICD suggestions with evidence | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
+| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
+| v2.0 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
+
+### v1.2 — Cross-practice round one: rheumatoid arthritis, then ultrasound
+
+Does the engine take a tree from an unrelated practice? Since D101 every
+criteria step evaluates what the tree declares, so the test is whether two
+trees compile into the predicate vocabulary the engine has, and whether it
+says so where they cannot. **Zero model calls**: note-only criteria are
+declared unclaimed and abstain; their extraction is v1.6's.
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the predicate vocabulary is explicit | `T-91` | pending | every tree predicate declares its kind; a kind the engine lacks raises at load, never abstains (D31's shape); every gate green |
+| 2 | rheumatoid arthritis: source and tree | `T-92` | pending | governing document chosen by fetching its header (D97's Palmetto correction), hashed into `sources.json`, `verify_sources.py --offline` green; tree compiled; judgment-shaped criteria declared unclaimed, none omitted |
+| 3 | rheumatoid arthritis: patients and eval rows | `T-93` | pending | Synthea patients or declared additions (D73's shape); rows for `MET`, `NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen; `run_eval.py` green |
+| 4 | ultrasound: source, tree, patients and rows | `T-94` | pending | as rows 2 and 3; rows for `MET`, `NOT_MET` on a frequency limit, `NO_POLICY_FOUND` for an unlisted code |
+| 5 | the compatibility account | `T-95` | pending | `eval/report.md` renders, per practice, each criterion as evaluated by an existing kind / a new kind / unclaimed; `build_report.py --verify` green; README's degradation section gains the paragraph |
+
+### v1.3 — Medical-history review: ICD suggestions with evidence
+
+From the medications and conditions on the chart, surface conditions the
+chart supports but does not carry — a steroid and a low bone density, an
+anticoagulant and a low blood pressure — each tied to evidence and
+colour-sorted by how much evidence it has. Codes come only from a reviewed
+table; the tri-state is Python; the model quotes the note and nothing else.
+**One recording round**, replayed by every gate after.
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the knowledge table and its sources | `T-96` | pending | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test |
+| 2 | deterministic candidates and the tri-state | `T-97` | pending | `history.py`; eval rows E14–E16 (green via a structured signal, yellow via a note quote, red with nothing); `run_eval.py` green |
+| 3 | note quotes, recorded and verified | `T-98` | pending | recording committed, every quote slices back, verifier claims added and re-measured; every gate green |
+| 4 | the CLI surface | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph |
+
+### v1.4 — Sessions and intake, headless
+
+A determination becomes something Sam can come back to. A third plane with
+its own port, an intake contract that accepts a procedure with or without
+ICD codes from an upstream system or the command line, and a closed
+lifecycle enum walked by Python. `session list` is v2.0's dashboard as text.
+**Zero model calls.**
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the session port, its file adapter and the lifecycle | `T-100` | pending | every transition in the enum has a test and every illegal one raises; a session round-trips through the adapter byte-stable; `stores/__init__.py` still imports nothing |
+| 2 | the intake contract | `T-101` | pending | a JSON intake and the CLI flags validate to the same object; a malformed intake is a bad request, exit 1 |
+| 3 | the verbs | `T-102` | pending | `session create / list / show / run` round-trip a determination; every gate green |
+
+### v1.5 — The form, review, simulated submission and tracking, headless
+
+The packet Sam sends: the determination, the accepted suggestions and their
+justifications, and the rest of the form; a review log beside the
+determination, never an edit to it; transmission to a simulated payer on her
+action, and the session tracked to awaiting a decision. Spec §1's "does not
+submit" is reworded by this version's entry. **Zero model calls.**
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the form | `T-103` | pending | `form.py` assembles the packet; every citation in it slices back; a red suggestion without a justification is refused |
+| 2 | the review log | `T-104` | pending | `session review` appends, never edits; the determination's bytes are unchanged after any review |
+| 3 | simulated submission and tracking | `T-105` | pending | `session submit` writes the packet to a payer outbox and moves the session to `AWAITING_DECISION`; `session decide` closes it; illegal orders raise |
+| 4 | the rendered packet | `T-106` | pending | one packet renders byte-stable from a recorded session; every gate green |
+
+### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
+
+The second test on different practices, and the engine change v1.2
+deferred: the tree declares its extraction schema, so `WmEvent` stops being
+the only fact type and the runners, the anchorer and `build_result` become
+generic over declared types. `STEPS` stays a fixed tuple. Candidates: CPAP
+under NCD 240.4 — a nationally quantified NCD, unlike 100.1 — and one imaging
+or therapy domain chosen at open. **New extraction recordings** (D45) and a
+re-measured differential.
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the declared extraction schema | `T-107` | pending | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load |
+| 2 | practice three | `T-108` | pending | source, tree, patients, notes, rows, recording; `run_eval.py` green |
+| 3 | practice four | `T-109` | pending | as row 2 |
+| 4 | the note criteria v1.2 deferred, and the four-practice account | `T-110` | pending | rheumatoid and ultrasound note-only criteria evaluated; `eval/report.md` carries the account over four practices; differential re-measured; every gate green |
+
+### v2.0 — The reviewer's UI *(tentative)*
+
+A local single-process web app over the session port. Dashboard of sessions
+with their status; create one from a procedure with or without ICD codes,
+typed or pasted from an upstream system; open a session to the determination
+with its criteria, evidence and gap list; the suggestions panel — green adds,
+yellow adds with its citation, red opens the justification field at that
+point in the form; the rest of the form; the simulated email; tracking to
+awaiting approval. **No logic in the UI** — every action is a verb v1.4 and
+v1.5 already test. Rows are placeholders until v1.6 closes.
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the app shell | `T-111` | pending | the framework decided in its entry; `check_env.py` green with no new pin, or the pin decided; a test-client smoke test |
+| 2 | the dashboard | `T-112` | pending | the session checklist and the create form map to `session list` and `session create` with identical output |
+| 3 | the determination view | `T-113` | pending | criteria, verdicts, spans rendered as highlighted excerpts beside the structured evidence, the gap list |
+| 4 | suggestions and the form | `T-114` | pending | the three colours behave as v1.3 specified; red cannot be added without its justification |
+| 5 | submit and tracking | `T-115` | pending | the email preview, the outbox, the status transitions |
+| 6 | the smoke gate | `T-116` | pending | every UI action maps to a CLI verb with identical output; templates carry no logic, pinned by parsing (D65's shape); every gate green |
+
 ---
 
 ## Enablers — before any story
 
 ### `[x] T-00` Spike 001: extraction fidelity on hand-written notes
+
 **Type:** spike · **REQ:** 8, 9, 10 · **Informs:** US-4 · **Blocks:** T-15
 **Timebox:** four hours
 **Exit:** `python spike/spike_001/run.py --verify` —
+
 - extraction runs over five hand-labeled notes, at least one carrying
   missed-visit dates inside a gap month
 - writes `results.json` with per-note event precision, event recall, and the
@@ -122,6 +246,7 @@ answering "unreliable" is a successful spike; the bar is the second kill
 criterion. *(D10)*
 
 ### `[x] T-01` Hand-compile NCD 100.1 criteria tree
+
 **REQ:** 32, 37, 39 · **Depends:** T-02, for the constants and their spans
 **Exit:** `pytest tests/test_criteria_tree.py` — the file parses and every
 policy-supplied constant is present and typed: c2's recency window,
@@ -147,6 +272,7 @@ corpus hash, a criterion dropped from the decision expression, and a numeric
 constant sourced to the NCD — each caught by the test that should catch it.
 
 ### `[x] T-02` Download and hash policy source documents
+
 **Serves:** US-2, since spans anchor here · **Answers:** open questions 1, 2
 **Exit:** `python scripts/verify_sources.py` — every source document present,
 content-hashed, re-downloadable to the same hash, plus `answers.json` resolving
@@ -170,6 +296,7 @@ Mutation-tested: altering a document, shifting an offset by one, bumping the
 extractor version, and a quote that is not verbatim each fail the gate.
 
 ### `[x] T-03` Repo skeleton and environment
+
 **Timebox:** two hours
 **Exit:** `python scripts/check_skeleton.py` — target layout present,
 `google-adk` imports at exactly 2.8.0, `pa_agent.agent` imports, and an `adk web`
@@ -184,8 +311,10 @@ The probe hits `/list-apps`, not `/`: on 2.8.0 `GET /` returns 307 to `/dev-ui/`
 Closes before you sleep on day one.
 
 ### `[x] T-09` Data contracts and the two storage ports
+
 **REQ:** 5, 22, 33, 41 · **Depends:** T-00 · **Blocks:** everything
 **Exit:** `pytest tests/test_schemas.py` —
+
 - the models: `Criterion`, `EvidenceSpan`, `CriterionVerdict`, `CriterionResult`,
   `Determination`, `WmEvent`, `CallMetrics`
 - `Document` carrying text and `sha256`, so a span's target is addressable and
@@ -233,6 +362,7 @@ Protocols, a package-level re-export in `stores/__init__.py`, and
 `sources.json`.
 
 ### `[x] T-10` Eval harness with US-1 acceptance cases, failing
+
 **Depends:** T-09
 **Exit:** `python eval/run_eval.py` runs and reports E3 failing
 US-1 cannot close without acceptance tests, so the harness arrives with the first
@@ -265,6 +395,7 @@ model call against A4's zero budget, and a scorer edited to score a wrong outcom
 `PASS` (self-check fails, exit 2, and the report below it is suppressed).
 
 ### `[x] T-24` Policy resolver and short-circuit sc1
+
 **REQ:** 1, 2, 4 · **Depends:** T-09
 **Exit:** `pytest tests/test_resolver.py` — E3 returns `NOT_COVERED`, unknown code
 returns `NO_POLICY_FOUND`, model-call counter reads zero
@@ -285,6 +416,7 @@ quietly mapping like covered, and a schema gate D31 records as having passed by
 accidental substring match.
 
 ### `[x] T-25` Determination assembly, minimal
+
 **REQ:** 4, 21 · **Depends:** T-24
 **Exit:** `python -m pa_agent.cli --patient X --procedure 43842` prints a
 `NOT_COVERED` determination carrying `policy_version_id`, model-call counter zero
@@ -327,6 +459,7 @@ T-25 the assembly.
 ## `US-2` Structured criteria with citations — day 2
 
 ### `[x] T-04` Generate and select the Synthea population
+
 **Exit:** `python scripts/select_patients.py --verify` — six bundles, seed
 recorded, BMI spanning 33 to 45
 
@@ -347,6 +480,7 @@ each caught by the check built for it: a tampered bundle byte, an edited
 manifest BMI, the seed removed, a stray seventh bundle on disk.
 
 ### `[x] T-05` Rebuild the comorbidity value set from real codes
+
 **REQ:** 12 · **Depends:** T-04 · **Blocks:** T-13
 **Exit:** `pytest tests/test_valueset.py` — every code appears in the population,
 `status` is `VERIFIED`
@@ -373,6 +507,7 @@ containment gate refuses. The file lives under `value_sets/` because
 measured when the first draft errored eight store tests.
 
 ### `[x] T-08` Document index with character offsets
+
 **REQ:** 6, 7 · **Depends:** T-02 · **Blocks:** T-11
 **Exit:** `pytest tests/test_index.py` — content hash per document, round-trip
 slice returns the original for 1000 random spans
@@ -391,6 +526,7 @@ for it: a conflict that silently rebinds, an out-of-range slice returning
 `""`, a slice that normalizes whitespace, a store import, an off-by-one.
 
 ### `[x] T-11` Span validator
+
 **REQ:** 6 · **Depends:** T-08, T-09
 **Exit:** `pytest tests/test_spans.py` — fabricated, off-by-one, and reversed
 spans all rejected; no model imported in the module
@@ -412,6 +548,7 @@ returning the quote instead of the slice, the range check deleted, a stray
 import.
 
 ### `[x] T-12` FHIR fact extractor
+
 **REQ:** 11, 12 · **Depends:** T-04, T-09
 **Exit:** `pytest tests/test_fhir.py` — BMI observations and Conditions with
 dates, from all six bundles
@@ -436,6 +573,7 @@ patient served an empty chart, dates collapsed to January 1, a policy
 import appearing.
 
 ### `[x] T-13` Deterministic criteria (a) and (b)
+
 **REQ:** 11, 12 · **Depends:** T-05, T-12, T-39
 **Exit:** `pytest tests/test_criteria_ab.py` — includes the BMI 35.0 boundary;
 asserts zero model calls
@@ -472,6 +610,7 @@ documents. E12's *harness* row arrives with T-21 alongside the rest of spec
 ## `US-3` Categorical exclusion — day 2, late
 
 ### `[x] T-14` Short-circuit sc2
+
 **REQ:** 3 · **Depends:** T-13
 **Exit:** `pytest tests/test_short_circuits.py` — E2 returns `NOT_COVERED` with a
 model-call counter of zero
@@ -513,6 +652,7 @@ row arrives with T-21.
 The big one. Everything before it was lookup.
 
 ### `[x] T-06` Author fact manifests
+
 **REQ:** 8, and every case in spec §6 · **Depends:** T-04
 **Exit:** `pytest tests/test_manifests.py` — one per patient, every edge case
 covered
@@ -549,6 +689,7 @@ ground truth was written by the agent building the system it grades. A
 perfect score on it means the approach does not obviously fail, nothing more.
 
 ### `[x] T-07` Manifest-driven note synthesizer
+
 **REQ:** 8, 9 · **Depends:** T-06
 **Exit:** `pytest tests/test_notes.py` — every note honors its manifest, by
 assertion rather than by reading
@@ -585,6 +726,7 @@ off by one, and a note tampered on disk — which fails at `Document`'s hash
 validator before any test sees it.
 
 ### `[x] T-15` `wm_events` extraction agent
+
 **REQ:** 8, 9, 10, 35, 38 · **Depends:** T-00, T-07, T-11
 **Exit** *(gains a clause from D46 — see below)*:
 `pytest tests/test_extraction.py` — correct events on the five
@@ -628,6 +770,7 @@ initially passed — the live recording did not exercise that path — which is
 why both anchoring repairs now carry direct synthetic tests.
 
 ### `[x] T-31` `gap_reason` on `INSUFFICIENT_EVIDENCE`
+
 **REQ:** 31 · **Depends:** T-09 · **Blocks:** T-16, T-17, T-19, T-33
 **Exit:** `pytest tests/test_gap_reason.py` — a `GapReason` enum with
 `NO_EVIDENCE_RETRIEVED`, `UNSUBSTANTIATED_ASSERTION`, `VERIFIER_REJECTED` and
@@ -659,8 +802,10 @@ member, and two reasons collapsing to one value — which three separate tests
 object to, since that collapse is Article IV's.
 
 ### `[x] T-16` Deterministic predicates c1 through c5
+
 **REQ:** 13, 14, 15, 16, 32, 36, 37, 40 · **Depends:** T-15, T-31
 **Exit:** `pytest tests/test_criteria_c.py` —
+
 - E4, E5, E6, E7, E8, E9, E11 all correct
 - c1 `MET` on a single event, `INSUFFICIENT_EVIDENCE` on zero
 - c2 reads its window from the criteria tree, not a constant
@@ -708,8 +853,8 @@ requirement as written and putting the defect on the board is the move D24,
 D26 and D28 each argued for; no eval case distinguishes the two readings, so
 nothing is being papered over.
 
-
 ### `[x] T-33` Source reconciliation for criterion (a)
+
 **REQ:** 31, 34, 39 · **Depends:** T-13, T-15, T-31, T-39
 **Exit:** `pytest tests/test_reconciliation.py` — E10 (same side of 35.0, beyond
 tolerance) keeps the structured verdict and records one `discrepancies[]` entry;
@@ -720,8 +865,10 @@ Runs after extraction rather than inside T-13, because the note BMI does not
 exist until T-15 and US-2 makes no model call. *(D11)*
 
 ### `[x] T-18` Workflow graph
+
 **REQ:** 1, 4, 19, 52 · **Depends:** T-13, T-16, T-46 · **Blocks:** T-19, T-61
 **Exit:** `pytest tests/test_workflow.py` —
+
 - the step sequence is a module-level constant, and a run visits exactly those
   steps in exactly that order — asserted against the recorded trace, not read
 - **fan-out:** N notes produce N extraction calls, one per note, each recorded
@@ -751,6 +898,7 @@ deleted to allow it. This graph has one conditional — whether a short circuit
 fired — and that is a `return`, not an edge. *(D62)*
 
 ### `[x] T-20` Cost and latency instrumentation
+
 **REQ:** 22 · **Depends:** T-15
 **Exit:** `python eval/run_eval.py` prints per-run token counts and wall time
 Lands with the first model call, not on day five. *(Article X)*
@@ -764,8 +912,10 @@ recorded extraction, for zero model calls.
 ## `US-5` The gap list — day 4
 
 ### `[x] T-19` Aggregator and gap list
+
 **REQ:** 19, 20, 21, 31, 39, 42 · **Depends:** T-18, T-31 · **Blocks:** T-61
 **Exit:** `pytest tests/test_determination.py` —
+
 - the **policy's** `decision_expression` is parsed and evaluated in Python over
   the criterion verdicts — parsed, not `eval()`'d and not hardcoded as `all(...)`,
   because REQ-19 says the expression decides and a hardcoded conjunction silently
@@ -799,6 +949,7 @@ there (`docs/stories.md`). Numbered like a story so this chain of tasks has a
 home on a board organised by story-of-origin *(D72)*.
 
 ### `[x] T-62` ADK extraction runner and its declared tools
+
 **REQ:** 22, 41, 52, 53 · **Depends:** T-12, T-15, T-46 · **Blocks:** T-61, T-63
 **Discovered in:** the T-18 build *(D62)*
 **Exit:** `pytest tests/test_adk_agent.py` — **zero model calls**, driven against a
@@ -836,6 +987,7 @@ has no reason to disagree, and the system would keep passing every test it has
 because the tests compare the two values and would now find them equal. *(D62)*
 
 ### `[x] T-64` One document namespace over the patient plane
+
 **REQ:** 41 · **Depends:** T-12, T-13 · **Discovered in:** the T-19 build *(D62)*
 **Blocks:** T-17 · **Designed by:** D65
 **Exit:** `pytest tests/test_fhir.py` — `PatientStore.get_document` resolves any
@@ -888,6 +1040,7 @@ functions, docstrings exempt. Mutation-tested seven ways.
 hand-rolled union of the two reads. That they got shorter is the deliverable.
 
 ### `[x] T-66` The document tool scopes by argument, not by id shape
+
 **REQ:** 41, 53 · **Depends:** T-64 · **Discovered in:** the T-64 design *(D65)*
 **Designed by:** D66
 **Exit:** `pytest tests/test_adk_agent.py tests/test_agentic_workflow.py` —
@@ -927,6 +1080,7 @@ parse-then-fall-through mutation survived a behavioural test. Fifteen mutations
 across both tasks, all caught.
 
 ### `[x] T-65` Bound what a tool may return
+
 **REQ:** 46, 54 · **Depends:** T-61 · **Discovered in:** the T-61 measurement *(D64)*
 **Designed by:** D66
 **Exit:** `pytest tests/test_agentic_workflow.py` — no declared tool can return an
@@ -980,6 +1134,7 @@ tool is a cost control and not a quiet correctness change. The mutation that
 assembles the bundle from the model's view fails it.
 
 ### `[x] T-67` The spike notes have no address on the patient plane
+
 **REQ:** 41 · **Depends:** T-64 · **Discovered in:** the T-66 build *(D66)*
 **Blocks:** T-63 under `--tool-fetch`
 **Exit:** `pytest tests/test_adk_measurement.py` returns zero: the eleven notes
@@ -1015,6 +1170,7 @@ tool signature. The two honest answers are a manifest entry that admits they hav
 patient, and a script that stops pretending one runner reads both corpora.
 
 ### `[x] T-63` Measure the ADK runner against the direct runner
+
 **REQ:** 22 · **Depends:** T-62 · **Timebox:** two hours of calls
 **Status:** **closed** — both modes measured and recorded *(D71; status line
 corrected by D72)*. Still in no gate: a re-run spends model calls.
@@ -1046,7 +1202,6 @@ a `SetModelResponseTool` and an instruction to answer through it. D5 develops on
 Studio and evals on Vertex, so the tool-calling path runs a **different prompt** on
 the two tiers, and a number from one is not a number for the other. *(D62)*
 
-
 **Closed by D71.** Both recordings written, both aggregates quoted, tier named.
 **Extraction fidelity is identical on all three paths** — precision, recall,
 REQ-9 exclusion and field agreement all 1.000, and **0 model-emitted offsets
@@ -1073,6 +1228,7 @@ endpoint: the 11 unescaped spans are the `SetModelResponseTool` round trip D62
 predicted. A Vertex run is a new measurement.
 
 ### `[x] T-68` The two `tool_fetch` modes overwrite one recording
+
 **REQ:** 22 · **Depends:** T-67 · **Discovered in:** the T-67 build *(D67)*
 **Blocks:** T-63
 **Exit:** `python scripts/run_adk_extraction.py` and
@@ -1117,6 +1273,7 @@ on D67's precedent and recorded in D68 rather than registered. **T-69 registers
 the gap that let it happen.**
 
 ### `[x] T-69` A task can close with the rest of the repo red
+
 **REQ:** none — this is a working rule, not a spec requirement
 **Depends:** none · **Discovered in:** the T-68 build *(D69)*
 **Exit:** `python scripts/check_gates.py` returns zero, running every zero-cost
@@ -1242,6 +1399,7 @@ free.** That is T-65.
 ## `US-6` Trustworthy citations — day 4
 
 ### `[x] T-17` Blind verifier
+
 **REQ:** 17, 18, 31 · **Depends:** T-15, T-31 · **Gates:** Article V
 **Status:** **closed** (D78) — closed US-6
 **Exit:** `pytest tests/test_verifier.py` — mismatched span and verdict rejected;
@@ -1290,6 +1448,7 @@ end to end, carrying `VERIFIER_REJECTED` (`tests/test_verifier.py`).
 ## `US-7` Where the system stops being reliable — day 5
 
 ### `[x] T-21` Expand the eval set to all of spec §6
+
 **Depends:** T-06, T-10, T-41 *(for the E12 row)* · **Gates:** A1, A3 ·
 **Rewritten by:** D74; re-split by D79
 **Status:** **closed** (D75) — closed US-4 and US-5, against the pre-D74 exit
@@ -1332,6 +1491,7 @@ the model's verbatim quote (D18) and source documents are hash-guarded
 mutation that was run.
 
 ### `[x] T-72` A5's curve names a threshold the system does not have
+
 **REQ:** none — reconciles acceptance gate A5 · **Blocks:** T-22 ·
 **Discovered in:** the D72 documentation review · **Timebox:** two hours
 **Status:** **closed** (D82) — spec §7's A5, US-7's third bullet and T-22's exit
@@ -1373,6 +1533,7 @@ produce different reports, which is why this is a decision and not a patch made
 while building T-22 *(working rule 5; T-37's shape)*.
 
 ### `[x] T-22` Metrics report
+
 **Depends:** T-20, T-21, T-72 *(D72)* · **Gates:** A2, A3, A5, A6
 **Status:** **closed** (D85) — `eval/build_report.py`, `eval/report.md`, and
 `--verify` as the tenth gate
@@ -1420,6 +1581,7 @@ precision denominator widened to all labeled pairs, a deleted caveat, the sweep
 section dropped, and the sweep writing the tree file.
 
 ### `[x] T-28` Baseline and base rate in the metrics report
+
 **Depends:** T-22 · **Gates:** A2
 **Status:** **closed** (D85) — delivered with T-22, in the same generator and
 under the same `--verify`
@@ -1436,6 +1598,7 @@ text. The base rate reads the labels and not the system's output; that
 distinction survived a mutation pass and now has its own test.
 
 ### `[x] T-23` README
+
 **Depends:** T-22 · **Gates:** A7, A8
 **Status:** **closed** (D87) — `scripts/check_req_coverage.py` is the eleventh
 gate, and the README's *Where this system degrades* section is A8's deliverable.
@@ -1505,6 +1668,7 @@ in week 2.
 ## `US-9` Withhold what the system couldn't compute
 
 ### `[x] T-26` `ERROR` state in the data contracts
+
 **REQ:** 18a, 23, 24, 26, 30 · **Depends:** T-09 · **Blocks:** T-29, T-30 ·
 **Gates:** A9
 **Exit:** `pytest tests/test_error_state.py` — `ERROR` on `CriterionVerdict`; an
@@ -1516,6 +1680,7 @@ The validator assertion is required — a determination constructible over an
 `ERROR` is the failure REQ-24 exists to prevent.
 
 ### `[x] T-29` Fault injection suite and no-silent-failure audit
+
 **REQ:** 23, 24, 27, 29 · **Depends:** T-11, T-15, T-26 · **Gates:** A9
 **Status:** **closed** (D76). `ExtractionFailure` → `ErrorCode` maps in
 `workflow.py`; an extraction fault errors c1–c5 and raises
@@ -1542,6 +1707,7 @@ handler is bare or catches `Exception` without re-raising or mapping to a named
 on D65's and D67's precedent that substring scans are the gameable form.)*
 
 ### `[x] T-30` `ERROR` accounting in the eval harness
+
 **REQ:** 28 · **Depends:** T-10, T-26 · **Gates:** A9
 **Status:** **closed** (D77). `ERROR` is the harness's fourth `CaseStatus` —
 `DeterminationAborted` classifies to `ERROR`/`ReasonClass.ERROR`, never to
@@ -1573,19 +1739,22 @@ unchanged (T-30, D77).
 Real work with a runnable exit that delivers no user outcome.
 
 ### `[x] T-89` A bounded verbatim re-ask in the extraction runners
+
 **REQ:** 8, 35, 52, 56 · **Depends:** T-85, T-63, T-71 · **Discovered in:**
 spec §10 P2 *(D97, D98)* · **Decided by:** D103 · **Timebox:** two days plus
 three extraction rounds and one verifier round
-**Status:** **closed** (D103) — row 5 of `Path to v2`; the exit ran green
+**Status:** **closed** (D103) — row 5 of `Path to v1.1`; the exit ran green
 and every gate with it, on three re-measured extraction recordings and a
 re-measured verifier recording
 **Exit:**
+
 ```
 ./venv/bin/python -m pytest tests/test_reask.py tests/test_adk_agent.py tests/test_extraction.py tests/test_adk_measurement.py tests/test_build_report.py -q --color=no \
  && ./venv/bin/python scripts/run_extraction.py --rescore \
  && ./venv/bin/python eval/build_report.py --verify \
  && ./venv/bin/python scripts/check_gates.py
 ```
+
 Green means: both live runners re-ask at most once, for the verbatim text of
 every quote the anchorer refused, and patch only the quote fields they asked
 about; a failed re-ask is recorded in the trace, never raised; all three
@@ -1645,12 +1814,14 @@ no path and the path check already excludes it — the filter stays as the
 second guard.
 
 ### `[x] T-88` The second-jurisdiction patient and the `J1` case
+
 **REQ:** 1, 4, 25, 42, 55 · **Depends:** T-87, T-41, T-17 · **Discovered in:**
 spec §10 P1 *(D97)* · **Decided by:** D102 · **Timebox:** one day plus one
 verifier round
-**Status:** **closed** (D102) — row 4 of `Path to v2`; the exit ran green
+**Status:** **closed** (D102) — row 4 of `Path to v1.1`; the exit ran green
 and every gate with it
 **Exit:**
+
 ```
 ./venv/bin/python scripts/select_patients.py --verify \
  && ./venv/bin/python scripts/synthesize_notes.py --verify \
@@ -1659,6 +1830,7 @@ and every gate with it
  && ./venv/bin/python eval/run_eval.py \
  && ./venv/bin/python scripts/check_gates.py
 ```
+
 The clone resolves to Palmetto's tree from its own bundle with no `--state`
 passed and no credential in the environment; the run-length criterion is
 absent rather than failed; the two run-scoped criteria Noridian scopes out
@@ -1716,11 +1888,13 @@ notes, not eleven); the clone manifest's traps drifting from its source's;
 and `J1` relabeled with `c3` present (`FAIL`/`WRONG_CRITERION`).
 
 ### `[x] T-87` Jurisdiction resolution, and a second tree from a second MAC
+
 **REQ:** 1, 2, 4, 42, 55 · **Depends:** T-24, T-38, T-86 · **Discovered in:**
 spec §10 P1 *(D97)* · **Decided by:** D100, D101 · **Timebox:** two days
-**Status:** **closed** (D100, D101) — row 3 of `Path to v2`; the exit ran
+**Status:** **closed** (D100, D101) — row 3 of `Path to v1.1`; the exit ran
 green and every gate with it
 **Exit:**
+
 ```
 ./venv/bin/python scripts/verify_sources.py --offline \
  && ./venv/bin/python -m pytest tests/test_resolver.py tests/test_criteria_tree.py tests/test_determination.py tests/test_planes.py -q --color=no \
@@ -1729,6 +1903,7 @@ green and every gate with it
  && ./venv/bin/python -m pa_agent.cli --patient afdcee59-dfdd-4bc5-37f1-cf7f909ede3d --procedure 43775 --state AL | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['policy_version_id']=='ncd-100.1-jjm-v1'" \
  && ./venv/bin/python scripts/check_gates.py
 ```
+
 A WA patient still resolves to Noridian's tree with no argument added; the
 same patient with `--state TX` gets `NO_JURISDICTION_TREE` and exit 0, since
 no tree serves Texas; with `--state AL` the same chart is adjudicated under
@@ -1775,17 +1950,20 @@ gate ignoring `scoped_to`. The last two of those survived the first pass and
 each got the test it was missing.
 
 ### `[x] T-86` A shortfall verdict must re-derive from its own citations
+
 **REQ:** 5, 23, 24 · **Depends:** T-16, T-29 · **Discovered in:** spec §10 P5
 *(D97)* · **Decided by:** D99 · **Timebox:** one day
-**Status:** **closed** (D99) — row 2 of `Path to v2`; `Shortfall`,
+**Status:** **closed** (D99) — row 2 of `Path to v1.1`; `Shortfall`,
 `check_citation_sufficiency`, the `sufficiency` step, nineteen tests, and the
 exit ran green on the unchanged baseline
 **Exit:**
+
 ```
 ./venv/bin/python -m pytest tests/test_criteria_c.py tests/test_criteria_ab.py tests/test_workflow.py tests/test_fault_injection.py tests/test_schemas.py -q --color=no -k "sufficiency or shortfall" \
  && ./venv/bin/python eval/run_eval.py \
  && ./venv/bin/python scripts/check_gates.py
 ```
+
 `eval/run_eval.py` must pass on the **unchanged** baseline: the property
 holds by construction on every committed case, so a moved row is the check
 being wrong, not the case.
@@ -1818,16 +1996,19 @@ step skipping every result, the contract's validator removed, and a `NOT_MET`
 without a shortfall passing the check.
 
 ### `[x] T-85` The anchoring loss becomes a reported figure
+
 **REQ:** 7, 35 · **Depends:** T-22, T-71 · **Discovered in:** spec §10 P2
 *(D97)* · **Decided by:** D98 · **Timebox:** half a day
-**Status:** **closed** (D98) — row 1 of `Path to v2`; `eval/report.md` gained
+**Status:** **closed** (D98) — row 1 of `Path to v1.1`; `eval/report.md` gained
 its *Anchoring* section, seven tests, and the exit ran green
 **Exit:**
+
 ```
 ./venv/bin/python eval/build_report.py --verify \
  && ./venv/bin/python -m pytest tests/test_build_report.py -q --color=no -k anchoring \
  && ./venv/bin/python scripts/check_gates.py
 ```
+
 `eval/report.md` carries, for each of the three committed extraction
 recordings, spans emitted, anchored and not anchored, claims dropped by
 reason with the dropped claim named beside its note, and D88's assertion
@@ -1854,13 +2035,15 @@ to all scored notes, `None` collapsed to 1.0, the dropped list emptied, a
 skipped note counted as a zero row, and the not-anchored figure zeroed.
 
 ### `[x] T-81` A second note per patient, so retrieval recall can fall
+
 **REQ:** 25, 34, 34a · **Depends:** T-80, T-89 · **Discovered in:** D91 ·
 **Decided by:** D104 · **Timebox:** two days plus three extraction rounds,
 one verifier round and one agentic round
-**Status:** **closed** (D104) — row 6 of `Path to v2`; the exit ran green
+**Status:** **closed** (D104) — row 6 of `Path to v1.1`; the exit ran green
 and every gate with it, on four re-measured recordings and a measured
 agentic differential
 **Exit:**
+
 ```
 ./venv/bin/python scripts/synthesize_notes.py --verify \
  && ./venv/bin/python -m pytest tests/test_manifests.py tests/test_notes.py tests/test_reconciliation.py tests/test_workflow.py tests/test_extraction.py tests/test_adk_measurement.py tests/test_build_report.py -q --color=no \
@@ -1871,6 +2054,7 @@ agentic differential
  && ./venv/bin/python eval/build_report.py --verify \
  && ./venv/bin/python scripts/check_gates.py
 ```
+
 Green means: every note-bearing patient has two hash-verified documents and
 the qualifying run straddles them wherever a run exists; every note-level
 BMI is reconciled (REQ-34a) and no note is preferred by store order; `E13`
@@ -1919,6 +2103,7 @@ follow. That is most of the repo's committed numbers, on a new corpus — a task
 with its own budget *(working rule 6, D45)*.
 
 ### `[x] T-80` Record what the planner gathered, not only what it cited
+
 **REQ:** 25 · **Depends:** T-61, T-27 · **Discovered in:** D86 ·
 **Rewritten and closed by:** D91
 **Status:** **closed** (D91) — the recording carries `gathered` on both sides,
@@ -1973,6 +2158,7 @@ column. The last two and `--rescore`'s are pinned by parsing — no behaviour th
 corpus can produce distinguishes them (D65, D67's move).
 
 ### `[x] T-84` Delete the three superseded ratification records
+
 **REQ:** none — board accuracy · **Discovered in:** reading the board to answer
 "what tasks are open" and finding one programme recorded two ways at once ·
 **Decided by:** D94 · **Timebox:** one hour
@@ -2003,6 +2189,7 @@ restoring a header, confirming red, deleting it again, clearing `__pycache__`
 and re-running with `--color=no` (D68).
 
 ### `[x] T-83` Correct the repo layout and delete the superseded plan doc
+
 **REQ:** none — documentation accuracy · **Discovered in:** checking CLAUDE.md's
 repo-layout section against `git ls-files` rather than reading it · **Timebox:**
 one hour
@@ -2026,6 +2213,7 @@ authoritative and contradicting the board — "44 of 58 tasks closed, all 8 gate
 green". Git remains the record of it.
 
 ### `[x] T-82` Delete the ratification programme
+
 **REQ:** none — board hygiene · **Discovered in:** the owner's decision that the
 programme was scaffolding the project did not need *(D92)* · **Timebox:** one
 session
@@ -2058,6 +2246,7 @@ dropping the tree check (a resurrected `check_ownership.py` passes), dropping th
 without failing `test_every_tracked_script_is_classified`).
 
 ### `[x] T-27` Planner recall against the oracle's evidence bundle
+
 **REQ:** 25 · **Depends:** T-21, T-22, T-61 · **Rewritten by:** D70 ·
 **Closed by:** D86
 **Status:** **closed** (D86) — `eval/report.md` carries per-criterion recall,
@@ -2118,6 +2307,7 @@ nothing could. Vector search stays rejected on rule 9 and on a six-document
 corpus; this is what would let it back in on evidence *(D70)*.
 
 ### `[x] T-77` Map the agentic planner's fault onto the abort path
+
 **REQ:** 23, 24, 29 · **Depends:** T-29, T-61 · **Found by:** T-29
 **Status:** **closed** (D90) — every criterion carries the `ERROR`, and the CLI
 exits 3 instead of crashing with Python's 1
@@ -2166,6 +2356,7 @@ test. Mutations: the mapping deleted, the criteria narrowed to five, the abort
 collapsed into an empty bundle, and a second builder added.
 
 ### `[x] T-32` Plane separation check
+
 **REQ:** 33, 41 · **Depends:** T-09, T-12, T-24 · **Gates:** Article VI
 **Status:** **closed** (D83) — `tests/test_planes.py`, twelve assertions
 **Partly asserted already, and do not rebuild those.** `test_index.py`,
@@ -2219,9 +2410,11 @@ absence for free), an emptied storage scanner, and a `pathlib` import added to
 `criteria.py` all fail.
 
 ### `[x] T-34` Pin the model a measurement runs against
+
 **Guards:** D19 · **Depends:** none · **Discovered in:** T-00
 **Timebox:** one hour
 **Exit:** `pytest tests/test_model_pin.py` —
+
 - the model a bare `python spike/spike_001/run.py` would measure on equals the
   model `results.json` records, so re-running cannot silently replace D19's
   finding with one measured somewhere else
@@ -2250,6 +2443,7 @@ literals are gone. Each check was mutation-tested: moving the pin, restoring a
 literal default, and re-adding a third identifier each fail the suite.
 
 ### `[x] T-35` Re-point E3 and T-25 at a genuinely non-covered procedure
+
 **REQ:** 2 · **Blocks:** T-25, and US-1's close · **Discovered in:** T-02 *(D22)*
 **Exit:** `pytest tests/test_e3_code.py` and `python eval/run_eval.py` — E3's
 procedure code is one NCD 100.1 names as non-covered for all Medicare
@@ -2300,6 +2494,7 @@ reaches `LocalPolicyStore.resolve` and gets the `NotImplementedError` citing T-3
 The baseline update recording that is the first real exercise of D27's gate.
 
 ### `[x] T-36` Decide whether sc1 needs a third outcome
+
 **REQ:** 1, 2, 42 · **Depends:** T-35 · **Discovered in:** T-02 *(D22)* ·
 **Answers:** open question 3's second half
 **Exit:** a decision entry resolving it, and `pytest tests/test_resolver.py`
@@ -2330,6 +2525,7 @@ raise dropping the obligation phrase, and the contractor branch folded into
 the generic covered raise.
 
 ### `[x] T-37` Reconcile REQ-37 with the source: is c5 a count or a rate?
+
 **REQ:** 37, 40 · **Blocks:** T-16 · **Discovered in:** T-01 *(D23)* ·
 **Answers:** open question 6
 **Exit:** a decision entry resolving it, then `pytest tests/test_criteria_tree.py`
@@ -2360,6 +2556,7 @@ closed, and the seven-month run documented in four months is `NOT_MET` in
 `tests/test_criteria_tree.py`. See D24. T-16 builds against the rate.
 
 ### `[x] T-38` Procedure sets in the criteria tree, and REQ-2 rewritten to read them
+
 **REQ:** 1, 2 · **Depends:** T-35 · **Blocks:** T-24, and US-1's close ·
 **Discovered in:** a design walkthrough, not a task *(D26)*
 **Timebox:** two hours
@@ -2367,6 +2564,7 @@ closed, and the seven-month run documented in four months is `NOT_MET` in
 for every code, which D28 had already proven the corpus cannot supply, while
 also demanding 43842 in the non-covered set)*:
 `pytest tests/test_criteria_tree.py` —
+
 - the tree carries three named procedure sets: nationally covered, nationally
   non-covered, and contractor-determined; members are **procedures** in D28's
   two-citation shape
@@ -2415,6 +2613,7 @@ re-pointed at §D's delegation paragraph, which slices back perfectly and means
 the opposite, and only the containment gate catches it.
 
 ### `[x] T-42` The longest run is not always the qualifying run
+
 **REQ:** 14, 32 · **Depends:** T-16 · **Discovered in:** T-16 *(D48)* ·
 **Timebox:** two hours
 **Status:** **closed** (D84) — joint selection, the pin inverted deliberately,
@@ -2481,6 +2680,7 @@ recency test inverted, c3 silently recomputing, and a wrong window, wrong
 minimum or hardcoded `as_of` in the step.
 
 ### `[x] T-71` A lost assertion reports as a flawless run
+
 **REQ:** 31, 35 · **Depends:** T-16, T-31 · **Discovered in:** the T-63
 measurement *(D71)* · **Timebox:** two hours
 **Status:** **closed** (D88) — `assertion_coverage` in the aggregate, and the
@@ -2526,6 +2726,7 @@ Mutations: the denominator widened to all scored notes, `assertion_required`
 ignored, the `None` collapsed to 1.0, and the key dropped.
 
 ### `[x] T-70` A comparison gate asserts on a substring
+
 **REQ:** none — a test-quality defect · **Discovered in:** the T-63 measurement
 *(D71)* · **Timebox:** one hour
 **Status:** **closed** (D89) — the assertion reads parsed cells, and the
@@ -2565,6 +2766,7 @@ suit a test, and the rendering is the contract the test is about); a rarer
 sentinel (fixes the instance, keeps the shape).
 
 ### `[x] T-41` E12 has no patient, and the boundary case needs one
+
 **REQ:** 11 · **Depends:** T-04 · **Blocks:** T-21's E12 row · **Gates:** A1 ·
 **Discovered in:** T-06 *(D42)* · **Timebox:** two hours
 **Exit:** `python scripts/select_patients.py --verify` and
@@ -2605,9 +2807,11 @@ bundle was restored from git and the committed corpus stays pinned by hash,
 recorded in D73.
 
 ### `[x] T-39` A provisional constant must name an *open* question, not any question
+
 **REQ:** 39 · **Discovered in:** T-37 · **Timebox:** one hour
 **Exit:** a decision entry choosing how a question's status is recorded, then
 `pytest tests/test_criteria_tree.py` —
+
 - a provisional constant naming a **resolved** question fails the gate, asserted
   by mutation the way T-01's eight cases are
 - the open/resolved split is read from something the spec states, not inferred
@@ -2647,9 +2851,11 @@ resolved question 6 — the exact citation the old parser accepted — and the
 `Still open` heading deleted. Questions 4 and 5 still pass, still flagged.
 
 ### `[x] T-40` Source the code-to-procedure binding, or state that it stays unsourced
+
 **REQ:** 2 · **Depends:** T-35 · **Discovered in:** T-35 *(D28)* ·
 **Answers:** open question 7
 **Exit:** a decision entry resolving it, then either
+
 - a third document in `data/policies/source/`, hashed and re-downloadable to the
   same hash the way T-02's two are, with `python scripts/verify_sources.py`
   returning zero and every `code_binding` in the repo carrying a
@@ -2690,10 +2896,13 @@ code and procedure, `pytest tests/test_e3_code.py` slices it back, and
 until T-38 and T-24. Open question 7 closed.
 
 ---
+
 ### `[x] T-43` Reconcile the environment pins and declare every direct import
+
 **Depends:** none · **Discovered in:** the T-18 architecture review *(D49)* ·
 **Guards:** D19, D45, D47, D48
 **Exit:** `python scripts/check_env.py` returns zero —
+
 - every pin in `requirements.txt` equals the version installed in the running
   interpreter's environment;
 - every third-party top-level import in tracked Python resolves to a
@@ -2713,11 +2922,13 @@ environment every recorded number in `docs/decisions.md` was produced by; the
 file is what drifted. *(D49)*
 
 ### `[x] T-60` A note-level current BMI, and a new extraction measurement
+
 **REQ:** 34, 38 · **Depends:** T-15 · **Discovered in:** T-33 *(D50)* ·
 **Blocks:** T-33
 **Exit:** `python scripts/run_extraction.py` records a fresh
 `eval/extraction/results.json`, then `pytest tests/test_extraction.py` returns
 zero over the recording, spending no model call, and additionally —
+
 - `Extraction` carries `current_bmi` and `current_bmi_quote`, and
   `ExtractionResult` carries the value with a span that validates through T-11;
 - the E10b note yields `current_bmi` 36.2 anchored to its own clinic line,
@@ -2733,6 +2944,7 @@ reach the value REQ-34 needs. Both sub-35 patients are deliberately
 encounter-free, so no fixture can host the case instead. *(D50)*
 
 ### `[x] T-46` The value set arrives through the policy port
+
 **REQ:** 41 · **Depends:** T-05, T-09 · **Discovered in:** the T-18
 architecture review *(D52)* · **Blocks:** T-18
 **Exit:** `pytest tests/test_valueset_port.py` — `PolicyStore` declares
@@ -2749,7 +2961,6 @@ serves it at runtime" explicitly to T-18. Until now the only readers were two
 test files, both by path. The set is a compiled fragment of the **policy** —
 A53028's Group 1 decides which comorbidities count — so it travels with the
 tree and is versioned with it. *(D52)*
-
 
 ## Working rules
 
