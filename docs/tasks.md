@@ -20,14 +20,15 @@ that follow *(D105)*.
 **What to do next: `Path to v1.1`, below.** Acceptance gates A1–A9 all hold
 and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains of
 v1.1 — the round D97 opened as "v2" and D105 renamed — is spec §10's list of
-known limits, P1–P8, sequenced into one task each: `T-85` through `T-89` and
-`T-81` are closed; `T-90`, row 7 of that sequence, is next and opens its
-record when it starts. The versions after v1.1 are in `Roadmap after v1.1`
+known limits, P1–P8, sequenced into one task each: `T-85` through `T-90` and
+`T-81` are closed; **row 8, P6's entry, is the last of them and is next** —
+it mints no requirement and spends nothing, and v1.1 closes when it is
+logged *(spec §11)*. The versions after v1.1 are in `Roadmap after v1.1`
 *(D105)*, further down.
 
-Sixty-nine tasks are on this board — IDs run to T-89 but numbering is not
+Seventy tasks are on this board — IDs run to T-90 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **69 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **70 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -67,7 +68,7 @@ row opens; the exit named here is the one D97 fixed.
 | 4 | P1, second half | `T-88` | **closed** (D102) | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
 | 5 | P2, second half | `T-89` | **closed** (D103) | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | **closed** (D104) | two notes per patient, labels re-read, every recording re-measured |
-| 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
+| 7 | P8 | `T-90` | **closed** (D106) | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
 | 8 | P6 | entry only | pending | the v1.1 path for REQ-44/47 logged; the unclaimed set unchanged |
 
 **Why four of those rows delivered nothing.** D74 converted D42's framing —
@@ -1737,6 +1738,89 @@ unchanged (T-30, D77).
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[x] T-90` A Vertex measurement beside the AI Studio one
+
+**REQ:** 22, 49, 52 · **Depends:** T-81, T-89, T-63 · **Discovered in:**
+spec §10 P8 *(D97)* · **Decided by:** D106 · **Timebox:** two days plus five
+measurement rounds
+**Status:** **closed** (D106) — row 7 of `Path to v1.1`; the exit ran green
+and every gate with it, on five new recordings and with every AI Studio
+recording byte-identical
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_tier.py tests/test_model_pin.py tests/test_adk_agent.py tests/test_adk_measurement.py tests/test_extraction.py tests/test_verifier.py tests/test_build_report.py -q --color=no \
+ && ./venv/bin/python scripts/run_extraction.py --tier vertex --rescore \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --tier vertex --rescore \
+ && ./venv/bin/python eval/run_agentic_eval.py --tier vertex \
+ && ./venv/bin/python -c "import json; from pa_agent.model_pin import PINNED_MODEL, SECOND_TIER; p=json.load(open('eval/extraction/results_vertex.json')); assert p['tier']==SECOND_TIER and p['model']==PINNED_MODEL" \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: each recording carries the tier read off the client that produced
+it and the capability read off the model that ran; every Vertex span slices
+back and every Vertex note hashes to what was measured; each Vertex
+recording's free half re-derives from itself; `eval/report.md` renders the
+tier column and `--verify` recomputes it; every gate is green and the AI
+Studio figures have not moved.
+
+**What it delivers.** `pa_agent/tiers.py` — the one place a client is built,
+setting the environment and the credential together; `SECOND_TIER` in
+`model_pin.py`; `native_schema_enabled` in `pa_agent/agent/`; `--tier` on the
+four measurement scripts and the CLI, with the output *and* `--rescore` paths
+routed per tier; the agentic gate verifying every committed recording rather
+than one; `output_schema_and_tools` on the ADK recordings; the report's
+`## Tier` section; `tests/test_tier.py`; and five Vertex recordings.
+
+**Why it is not just a second endpoint.** Two facts measured against the
+installed SDK, both of which would have produced a recording that is wrong in
+a way every gate agrees with *(D106)*. ADK decides `output_schema_and_tools`
+— D62's finding, the whole reason the tool-calling prompt differs by tier —
+from `GOOGLE_GENAI_USE_ENTERPRISE` in the **process environment**, never from
+the injected client; `pa_agent/agent/.env` sets it to 0 and every loader
+`setdefault`s it, so a Vertex client alone would have kept the injected
+`SetModelResponseTool` and answered D71's clause backwards. And
+`Client(vertexai=True)` with no project keeps `GOOGLE_API_KEY` and targets
+Vertex express mode — recording `vertex` over the tier D5 chose Vertex to
+avoid. A tier is an environment as well as a credential, and both are now set
+in one place and read back into the artifact.
+
+**Closed by D106.** Fidelity did not move: precision, recall, REQ-9 exclusion
+and field agreement 1.000 on both tiers across all three extraction
+recordings, every span anchored, the verifier accepting the same 30 claims
+with **no verdict moving**, and the agentic differential at 7/7 outcomes,
+49/49 criteria and 93/93 spans. **0 of 169, 0 of 165 and 0 of 76 model
+offsets were usable** — D18's fourth independent reproduction. D71's reversal
+clause is answered *partly*: the injected round trip is gone (tool calls
+26 → 12, unescaped spans 4 → 0) and the token overhead only halves, 4.12x to
+2.14x against each tier's own direct runner, so half of it was the tier and
+half is the cost of asking for a document the caller already holds. The
+pinned model resolves on Vertex under the same name but only at
+`location=global`; three regions answered 404. Cost: 152 recorded calls plus
+one aborted run.
+
+**What it deliberately does not do.** The Vertex recordings replace nothing.
+AI Studio remains the default replay for the CLI and every gate, so A2, A3,
+A5, A6, `eval/baseline.json` and the differential did not move in the commit
+that introduced the tier — the shared delta with no owner D45 forbids. The
+verifier's Vertex claims were enumerated from the *AI Studio* extraction on
+purpose, because a digest is the criterion, verdict and sliced quote (D78)
+and a Vertex extraction would have moved every one, leaving two files with no
+shared keys instead of a column.
+
+Mutations caught, each restored and `__pycache__` cleared: an unknown tier
+falling back to the development tier; `configure_tier_env` using `setdefault`
+so the `.env` wins; `tier_of` always reporting the development tier; the
+Vertex project requirement removed; `client_for` not setting the environment;
+the AI Studio read-back guard dropped; the contradicting legacy switch left in
+place; and the ADK recording stamping its `--tier` instead of asking ADK. The
+last two survived the first pass — the read-back guard because `client_for`
+sets the environment before it builds, so on the ordinary path it is
+unreachable, and the capability stamp because flag and reality agree on a
+correctly configured run, which is exactly why it would be believed. Both got
+the test they were missing rather than being waved through.
 
 ### `[x] T-89` A bounded verbatim re-ask in the extraction runners
 

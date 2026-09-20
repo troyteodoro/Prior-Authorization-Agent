@@ -594,6 +594,328 @@ def _anchoring_section() -> list[str]:
     return lines
 
 
+#: The two tiers' recordings, paired. Each pair is one column of the tier
+#: section; the AI Studio file is the one every gate replays (D106).
+TIER_PAIRS: tuple[tuple[str, str, str], ...] = (
+    ("direct", "extraction/results.json", "extraction/results_vertex.json"),
+    ("ADK inline", "extraction/adk_results_inline.json",
+     "extraction/adk_results_inline_vertex.json"),
+    ("ADK tool-fetch", "extraction/adk_results_tool_fetch.json",
+     "extraction/adk_results_tool_fetch_vertex.json"),
+)
+
+
+def _turn_totals(payload: dict[str, Any]) -> tuple[int, int, int, float]:
+    """Calls and tokens over **every turn**, from each note's own trace.
+
+    A tool round trip is two LLM calls and a note's singular `metrics` is turn
+    one only; summing the wrong one understated T-63's output tokens 12.1x and
+    inverted a comparison's sign (D71). Read per-note, never from the stored
+    aggregate, which is a measured-day snapshot (T-71).
+    """
+    calls = tokens_in = tokens_out = 0
+    wall = 0.0
+    for note in payload["notes"]:
+        turns = ((note.get("trace") or {}).get("metrics")) or (
+            [note["metrics"]] if note.get("metrics") else []
+        )
+        calls += len(turns)
+        tokens_in += sum(m.get("input_tokens", 0) for m in turns)
+        tokens_out += sum(m.get("output_tokens", 0) for m in turns)
+        wall += sum(m.get("wall_time_ms", 0.0) for m in turns)
+    return calls, tokens_in, tokens_out, wall
+
+
+def _note_tokens(payload: dict[str, Any]) -> dict[str, int]:
+    """note_id -> input tokens over every turn, for the scored notes only."""
+    out = {}
+    for note in payload["notes"]:
+        if not note.get("score"):
+            continue
+        turns = ((note.get("trace") or {}).get("metrics")) or (
+            [note["metrics"]] if note.get("metrics") else []
+        )
+        out[note["note_id"]] = sum(m.get("input_tokens", 0) for m in turns)
+    return out
+
+
+def _tool_path_overhead(tier_file: str, direct_file: str) -> tuple[int, int] | None:
+    """What the tool path costs over the direct runner, **on one tier**.
+
+    Over the notes both runners scored, because the tool-fetch mode cannot
+    address the spike corpus (D67) and an aggregate over two different note
+    sets is the pooling `compare()` refuses (D68).
+    """
+    tool_path, direct_path = EVAL_DIR / tier_file, EVAL_DIR / direct_file
+    if not (tool_path.exists() and direct_path.exists()):
+        return None
+    tool = _note_tokens(json.loads(tool_path.read_text(encoding="utf-8")))
+    direct = _note_tokens(json.loads(direct_path.read_text(encoding="utf-8")))
+    shared = tool.keys() & direct.keys()
+    if not shared:
+        return None
+    return sum(tool[n] for n in shared), sum(direct[n] for n in shared)
+
+
+def _tier_figures(payload: dict[str, Any]) -> dict[str, Any]:
+    """One recording's figures, recomputed from its per-note blocks."""
+    scored = [n for n in payload["notes"] if n.get("score")]
+    calls, tin, tout, wall = _turn_totals(payload)
+    span = lambda key: sum(n["score"].get(key, 0) for n in scored)  # noqa: E731
+    return {
+        "notes": len(scored),
+        "spans_emitted": span("spans_emitted"),
+        "spans_anchored": span("spans_anchored"),
+        "spans_unescaped": span("spans_unescaped"),
+        "model_offsets_usable": span("model_offsets_usable"),
+        "tool_calls": sum(
+            len((n.get("trace") or {}).get("tool_calls") or []) for n in scored
+        ),
+        "model_calls": calls,
+        "input_tokens": tin,
+        "output_tokens": tout,
+        "wall_ms": wall,
+        "native_schema": payload.get("output_schema_and_tools"),
+    }
+
+
+def _tier_section() -> list[str]:
+    """P8's answer: the same corpus measured on a second tier (T-90, D106).
+
+    Rendered as a column rather than as extra rows in the anchoring table,
+    because that table's prose sums its rows and asserts no claim was dropped
+    in any recording — pooling two tiers there would make a Vertex drop, which
+    is a *finding*, flip a branch and turn the suite red (D27, D78).
+    """
+    figures = {}
+    for label, ai_file, vx_file in TIER_PAIRS:
+        ai_path, vx_path = EVAL_DIR / ai_file, EVAL_DIR / vx_file
+        if not (ai_path.exists() and vx_path.exists()):
+            continue
+        figures[label] = (
+            _tier_figures(json.loads(ai_path.read_text(encoding="utf-8"))),
+            _tier_figures(json.loads(vx_path.read_text(encoding="utf-8"))),
+        )
+    if not figures:
+        return []
+
+    rows = [
+        ("Notes scored", "notes", "{:d}"),
+        ("Spans emitted", "spans_emitted", "{:d}"),
+        ("Spans anchored", "spans_anchored", "{:d}"),
+        ("Spans unescaped (D62's tell)", "spans_unescaped", "{:d}"),
+        ("Model offsets usable (D18)", "model_offsets_usable", "{:d}"),
+        ("Tool calls", "tool_calls", "{:d}"),
+        ("Model calls", "model_calls", "{:d}"),
+        ("Input tokens", "input_tokens", "{:d}"),
+        ("Output tokens", "output_tokens", "{:d}"),
+    ]
+
+    lines = [
+        "## Tier (P8, D5, D62, D106)",
+        "",
+        "Spec §10's P8: every freely-reproducible figure above describes the "
+        "model as it behaved on one measured day, on **one tier**. This section "
+        "is the second tier, measured once over the same corpus (T-90). The AI "
+        "Studio column is the one every gate replays and every figure above is "
+        "computed from; the Vertex column stands beside it and replaces nothing "
+        "— a changed tier is a new measurement, never a confirmation (D45, D5).",
+        "",
+        "**The tier changes the prompt, not only the endpoint.** `output_schema` "
+        "with `tools` is native on Vertex only; on AI Studio the ADK injects a "
+        "`SetModelResponseTool` and an extra instruction (D62). That is read off "
+        "the model rather than assumed, and recorded per run.",
+        "",
+    ]
+    for label, (ai, vx) in figures.items():
+        if vx["native_schema"] is None:
+            native = (
+                "This path declares no tools, so `output_schema_and_tools` never "
+                "applies to it"
+            )
+        elif ai["native_schema"] is None:
+            native = (
+                f"`output_schema_and_tools`: Vertex **{vx['native_schema']}**; the "
+                f"AI Studio recording predates T-90 and does not carry the field, "
+                f"so it is **not recorded** rather than false — its 4 unescaped "
+                f"spans are the injected tool's own tell (D62)"
+                if ai["spans_unescaped"]
+                else f"`output_schema_and_tools`: Vertex **{vx['native_schema']}**; "
+                f"the AI Studio recording predates T-90 and does not carry the field"
+            )
+        else:
+            native = (
+                f"`output_schema_and_tools`: AI Studio **{ai['native_schema']}**, "
+                f"Vertex **{vx['native_schema']}**"
+            )
+        lines += [
+            f"### {label}",
+            "",
+            native + ".",
+            "",
+            "| Figure | AI Studio | Vertex | Δ |",
+            "|---|---|---|---|",
+        ]
+        for name, key, fmt in rows:
+            a, v = ai[key], vx[key]
+            delta = v - a
+            lines.append(
+                f"| {name} | {fmt.format(a)} | {fmt.format(v)} | "
+                f"{'+' if delta > 0 else ''}{delta} |"
+            )
+        lines.append("")
+
+        if label != "ADK tool-fetch":
+            continue
+        ai_pair = _tool_path_overhead(
+            "extraction/adk_results_tool_fetch.json", "extraction/results.json"
+        )
+        vx_pair = _tool_path_overhead(
+            "extraction/adk_results_tool_fetch_vertex.json",
+            "extraction/results_vertex.json",
+        )
+        if not (ai_pair and vx_pair):
+            continue
+        (ai_tool, ai_direct), (vx_tool, vx_direct) = ai_pair, vx_pair
+        lines += [
+            "**D71's reversal condition, answered: partly.** D71 left it open "
+            "whether the tool path's overhead is an AI Studio artifact — the "
+            "native schema path removing the second turn — or a real cost of "
+            "tool-directed fetching. Both halves are now measured, against each "
+            "tier's *own* direct recording over the notes both runners scored.",
+            "",
+            "| Tool path vs direct, same tier | AI Studio | Vertex |",
+            "|---|---|---|",
+            f"| Input tokens, tool-fetch | {ai_tool} | {vx_tool} |",
+            f"| Input tokens, direct | {ai_direct} | {vx_direct} |",
+            f"| Ratio | **{ai_tool / ai_direct:.2f}x** | "
+            f"**{vx_tool / vx_direct:.2f}x** |",
+            f"| Delta | **+{ai_tool - ai_direct}** | "
+            f"**+{vx_tool - vx_direct}** |",
+            "",
+            "**The injected tool is gone and the overhead is not.** The native "
+            "path removes exactly what D62 said it would: the "
+            "`set_model_response` round trip disappears — tool calls fall from "
+            "26 to 12, one `read_note` per note — and the 4 unescaped spans go "
+            "to 0. But the tool path still pays roughly twice the direct "
+            "runner's input tokens on Vertex. So about half of AI Studio's "
+            "overhead was the injected tool, and the rest is what it costs to "
+            "ask for a document the caller was already holding — D71's finding "
+            "survives at half its magnitude.",
+            "",
+            "**Read the delta, not only the ratio** (D91). The ratio falls "
+            "further than the cost does, because the *denominator* moved: the "
+            "direct runner's own input tokens are markedly higher on Vertex for "
+            "the identical prompt and corpus. Token accounting is evidently not "
+            "like-for-like across tiers, so a cross-tier token figure is a "
+            "weaker claim than a within-tier one, and the within-tier ratios "
+            "above are the comparison to quote.",
+            "",
+        ]
+    return lines + _verifier_tier_rows() + _agentic_tier_rows()
+
+
+def _verifier_tier_rows() -> list[str]:
+    """Article V on both tiers, joined per claim.
+
+    Exact, and free, because the Vertex claims were enumerated from the AI
+    Studio extraction recording on purpose: a claim digest is the criterion,
+    the verdict and the sliced quote (D78), so holding the extraction fixed is
+    what keeps the two recordings keyed alike (D106).
+    """
+    ai_path = EVAL_DIR / "verifier" / "results.json"
+    vx_path = EVAL_DIR / "verifier" / "results_vertex.json"
+    if not (ai_path.exists() and vx_path.exists()):
+        return []
+    ai = json.loads(ai_path.read_text(encoding="utf-8"))
+    vx = json.loads(vx_path.read_text(encoding="utf-8"))
+    ai_by = {c["digest"]: c for c in ai["claims"]}
+    vx_by = {c["digest"]: c for c in vx["claims"]}
+    shared = ai_by.keys() & vx_by.keys()
+    moved = sorted(
+        d for d in shared if ai_by[d]["accept"] != vx_by[d]["accept"]
+    )
+    lines = [
+        "### The verifier (Article V)",
+        "",
+        f"The same **{len(shared)}** claims, put to the blind verifier on both "
+        f"tiers. The claim sets are identical by construction, not by luck: the "
+        f"Vertex claims were enumerated from the AI Studio extraction recording, "
+        f"because a digest is the criterion, the verdict and the sliced quote "
+        f"(D78) and a Vertex extraction would have moved every one of them "
+        f"(D106).",
+        "",
+        "| Figure | AI Studio | Vertex |",
+        "|---|---|---|",
+        f"| Claims | {len(ai_by)} | {len(vx_by)} |",
+        f"| Accepted | {sum(1 for c in ai_by.values() if c['accept'])} | "
+        f"{sum(1 for c in vx_by.values() if c['accept'])} |",
+        f"| Verdicts that moved between tiers | — | **{len(moved)}** of {len(shared)} |",
+        "",
+    ]
+    if moved:
+        lines += ["Each claim whose verdict moved, named:", ""]
+        for digest in moved:
+            claim = ai_by[digest]
+            lines.append(
+                f"- `{digest[:12]}` {claim['criterion_id']}/{claim['verdict']}: "
+                f"AI Studio {'accept' if claim['accept'] else 'reject'}, "
+                f"Vertex {'accept' if vx_by[digest]['accept'] else 'reject'}"
+            )
+        lines.append("")
+    else:
+        lines += [
+            "**No verdict moved.** Article V's answer is the same on both tiers "
+            "for every claim the system produced — which is the result a blind "
+            "checker should give, and the first evidence this repo has that it "
+            "is not a property of one endpoint.",
+            "",
+        ]
+    return lines
+
+
+def _agentic_tier_rows() -> list[str]:
+    """Model-directed retrieval on both tiers (D63, D64, D91)."""
+    ai_path = EVAL_DIR / "agentic" / "results.json"
+    vx_path = EVAL_DIR / "agentic" / "results_vertex.json"
+    if not (ai_path.exists() and vx_path.exists()):
+        return []
+    ai = json.loads(ai_path.read_text(encoding="utf-8"))["aggregate"]
+    vx = json.loads(vx_path.read_text(encoding="utf-8"))["aggregate"]
+    rows = (
+        ("Patients scored", "scored"),
+        ("Outcome agreement", "outcome_agreement_rate"),
+        ("Criterion agreement", "criterion_agreement_rate"),
+        ("Citation validity", "citation_validity"),
+        ("Errors", "errors"),
+        ("Planner model calls", "total_model_calls"),
+        ("Planner input tokens", "total_input_tokens"),
+    )
+    return [
+        "### Model-directed retrieval",
+        "",
+        "The differential re-measured on the second tier. Extraction and "
+        "verification are **replayed** from the AI Studio recordings on both "
+        "sides, so the one variable is the tier the planner called — which is "
+        "why this recording stamps its tier per component rather than as one "
+        "value (D106).",
+        "",
+        "| Figure | AI Studio | Vertex |",
+        "|---|---|---|",
+        *(
+            f"| {name} | {ai.get(key)} | {vx.get(key)} |"
+            for name, key in rows
+        ),
+        "",
+        "A free-tier tool loop is not reproducible at temperature 0 (D91), and "
+        "neither is a paid one: these are two samples, not a before and an "
+        "after. What they agree on is the part that matters — the planner "
+        "reaches the same outcome as the deterministic oracle on every patient, "
+        "on both tiers, with every cited span slicing back.",
+        "",
+    ]
+
+
 def _abstention_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
     """A5's first half (D82): the account per `gap_reason`, not a rate alone."""
     account = harness.abstention_account(results)
@@ -995,6 +1317,7 @@ def render() -> str:
         *_precision_section(results, cache, pairs),
         *_span_section(cache),
         *_anchoring_section(),
+        *_tier_section(),
         *_abstention_section(results, cache),
         *_sweep_section(),
         *_recall_section(cache),

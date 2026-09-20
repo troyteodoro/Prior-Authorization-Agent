@@ -256,6 +256,11 @@ def test_only_tiers_constructs_a_client():
         "eval/extraction/adk_results_tool_fetch.json",
         "eval/verifier/results.json",
         "eval/agentic/results.json",
+        "eval/extraction/results_vertex.json",
+        "eval/extraction/adk_results_inline_vertex.json",
+        "eval/extraction/adk_results_tool_fetch_vertex.json",
+        "eval/verifier/results_vertex.json",
+        "eval/agentic/results_vertex.json",
     ],
 )
 def test_every_committed_recording_states_a_tier_this_project_measures_on(relative):
@@ -263,9 +268,194 @@ def test_every_committed_recording_states_a_tier_this_project_measures_on(relati
     tier that may train on submitted data, quoted as the tier that does not."""
     payload = json.loads((REPO_ROOT / relative).read_text(encoding="utf-8"))
     stamped = payload["tier"]
+    if isinstance(stamped, str):
+        assert stamped in TIERS, f"{relative}: tier {stamped!r}"
+        return
     # The agentic recording stamps per component, because it measures retrieval
-    # on one tier while replaying extraction and verification from another
-    # (D106). Either shape must name only tiers this project measures on.
-    named = list(stamped.values()) if isinstance(stamped, dict) else [stamped]
-    for value in named:
-        assert any(tier in value for tier in TIERS), f"{relative}: tier {value!r}"
+    # on one tier while **replaying** extraction and verification from
+    # recordings made on another. A scalar there would be false (D106).
+    assert stamped["retrieval"] in TIERS, f"{relative}: {stamped['retrieval']!r}"
+    for component in ("extraction", "verifier"):
+        assert stamped[component].startswith("replayed from "), (
+            f"{relative}: {component} claims to have been measured, not replayed"
+        )
+
+
+# --------------------------------------------------------------------------
+# 5. The Vertex recordings: provenance, then the figures they measured
+# --------------------------------------------------------------------------
+#
+# D106 splits these deliberately. The provenance half was written before the
+# round was run and holds whatever Vertex did; the fidelity half carries the
+# values it actually produced, in the shape `test_the_headline_numbers_are_
+# what_the_decision_records` pins D47's. Mirroring `tests/test_extraction.py`'s
+# perfect-score assertions onto a tier nobody had measured would have asserted
+# the answer in advance, and one missed event — the whole reason a second
+# measurement is a measurement — would have made the task unclosable.
+
+VERTEX_EXTRACTIONS = (
+    "eval/extraction/results_vertex.json",
+    "eval/extraction/adk_results_inline_vertex.json",
+    "eval/extraction/adk_results_tool_fetch_vertex.json",
+)
+
+
+def _load(relative: str) -> dict:
+    path = REPO_ROOT / relative
+    assert path.exists(), f"no {relative}; T-90's measurement has not been run"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize("relative", VERTEX_EXTRACTIONS)
+def test_a_vertex_recording_names_the_pin_and_its_own_tier(relative):
+    payload = _load(relative)
+    assert payload["model"] == PINNED_MODEL
+    assert payload["tier"] == SECOND_TIER
+    assert payload["task"] == "T-90", "a Vertex run is its own measurement (D45)"
+
+
+@pytest.mark.parametrize("relative", VERTEX_EXTRACTIONS)
+def test_every_vertex_note_still_hashes_to_what_was_measured(relative):
+    """Article III does not bend for a tier: a recording whose notes have moved
+    describes documents that no longer exist."""
+    import hashlib
+
+    from pa_agent.stores.patient import LocalPatientStore
+
+    store = LocalPatientStore()
+    spike_dir = REPO_ROOT / "spike" / "spike_001" / "notes"
+    checked = 0
+    for record in _load(relative)["notes"]:
+        if record.get("score") is None and record.get("skipped"):
+            continue
+        if record["corpus"] == "spike_001":
+            text = (spike_dir / f"{record['document_id']}.txt").read_text("utf-8")
+        else:
+            text = store.get_document(record["document_id"]).text
+        assert hashlib.sha256(text.encode("utf-8")).hexdigest() == record["note_sha256"]
+        checked += 1
+    assert checked, "no notes were checked; the gate is vacuous"
+
+
+@pytest.mark.parametrize("relative", VERTEX_EXTRACTIONS)
+def test_every_vertex_span_passes_the_validator(relative):
+    """Run through the real rejector, not a private re-slice — a span the
+    system would refuse must not sit in a recording that claims success."""
+    from pa_agent.contracts import Document, EvidenceSpan
+    from pa_agent.index import DocumentIndex
+    from pa_agent.spans import validate
+    from pa_agent.stores.patient import LocalPatientStore
+
+    payload = _load(relative)
+    store = LocalPatientStore()
+    spike_dir = REPO_ROOT / "spike" / "spike_001" / "notes"
+    index = DocumentIndex()
+    for record in payload["notes"]:
+        if record["corpus"] == "spike_001":
+            text = (spike_dir / f"{record['document_id']}.txt").read_text("utf-8")
+        else:
+            text = store.get_document(record["document_id"]).text
+        index.add(Document.from_text(record["document_id"], text))
+
+    checked = 0
+    for record in payload["notes"]:
+        if not record.get("score"):
+            continue
+        spans = []
+        for event in record["events"]:
+            spans.append(event["span"])
+            spans += [
+                event[label]
+                for label in ("bmi_span", "diet_span", "activity_span")
+                if event.get(label)
+            ]
+        spans += [a["span"] for a in record["assertions"]]
+        if record.get("current_bmi_span"):
+            spans.append(record["current_bmi_span"])
+        for raw in spans:
+            assert validate(EvidenceSpan.model_validate(raw), index)
+            checked += 1
+    assert checked, "no spans were checked; the gate is vacuous"
+
+
+@pytest.mark.parametrize(
+    "relative, tool_fetch",
+    [
+        ("eval/extraction/adk_results_inline_vertex.json", False),
+        ("eval/extraction/adk_results_tool_fetch_vertex.json", True),
+    ],
+)
+def test_a_vertex_adk_recording_records_the_capability_that_ran(relative, tool_fetch):
+    """The boolean that separates the two tiers' prompts, present and true.
+
+    On Vertex the native path is available, so a recording claiming otherwise
+    would mean the environment never reached ADK — the silent failure D106 was
+    written about.
+    """
+    payload = _load(relative)
+    assert payload["tool_fetch"] is tool_fetch
+    assert payload["output_schema_and_tools"] is True
+
+
+def test_the_vertex_verifier_answered_the_same_claims():
+    """D106's choice, checked: the Vertex claims were enumerated from the AI
+    Studio extraction, so the two recordings are keyed alike and the per-claim
+    join the report prints is exact rather than approximate."""
+    from pa_agent.verifier import claim_digest
+
+    ai = {c["digest"] for c in _load("eval/verifier/results.json")["claims"]}
+    vx_payload = _load("eval/verifier/results_vertex.json")
+    vx = {c["digest"] for c in vx_payload["claims"]}
+    assert vx == ai, "the tiers answered different claim sets; no join is possible"
+    for record in vx_payload["claims"]:
+        assert claim_digest(record["payload"]) == record["digest"]
+
+
+# --- what Vertex actually measured (written after the round, D106) ---------
+
+
+def test_the_vertex_extraction_figures_are_what_the_entry_records():
+    """D106's result block, pinned to the artifacts. These are measurements,
+    not thresholds: if a re-measurement moves them, this test and the entry
+    move together or neither does (T-34's rule)."""
+    expected = {
+        "eval/extraction/results_vertex.json": (17, 169, 169),
+        "eval/extraction/adk_results_inline_vertex.json": (17, 165, 165),
+        "eval/extraction/adk_results_tool_fetch_vertex.json": (12, 76, 76),
+    }
+    for relative, (notes, emitted, anchored) in expected.items():
+        scored = [n for n in _load(relative)["notes"] if n.get("score")]
+        assert len(scored) == notes, relative
+        assert sum(n["score"]["spans_emitted"] for n in scored) == emitted, relative
+        assert sum(n["score"]["spans_anchored"] for n in scored) == anchored, relative
+
+
+def test_the_model_offsets_are_still_unusable_on_the_second_tier():
+    """D18's finding, reproduced a fourth time on a tier it had never been
+    measured on. The model's own character offsets located nothing; every span
+    in this repo is found by searching the verbatim quote."""
+    for relative in VERTEX_EXTRACTIONS:
+        scored = [n for n in _load(relative)["notes"] if n.get("score")]
+        usable = sum(n["score"]["model_offsets_usable"] for n in scored)
+        assert usable == 0, f"{relative}: {usable} usable offsets — D18 reverses"
+
+
+def test_the_native_path_removed_the_injected_tool_round_trip():
+    """D71's reversal clause, in the artifact rather than in prose.
+
+    On AI Studio the tool-fetch run made ~2 tool calls per note — `read_note`
+    plus the injected `set_model_response` — and emitted 4 unescaped spans. On
+    Vertex the native path leaves exactly one `read_note` per note and no
+    unescaped spans. That half of D71 reversed; the token overhead did not,
+    and `eval/report.md` carries both halves.
+    """
+    ai = _load("eval/extraction/adk_results_tool_fetch.json")
+    vx = _load("eval/extraction/adk_results_tool_fetch_vertex.json")
+    scored = lambda p: [n for n in p["notes"] if n.get("score")]  # noqa: E731
+    tools = lambda p: sum(  # noqa: E731
+        len((n.get("trace") or {}).get("tool_calls") or []) for n in scored(p)
+    )
+    assert tools(ai) == 26 and tools(vx) == 12
+    assert tools(vx) == len(scored(vx)), "one read_note per note, no second turn"
+    assert sum(n["score"]["spans_unescaped"] for n in scored(ai)) == 4
+    assert sum(n["score"]["spans_unescaped"] for n in scored(vx)) == 0

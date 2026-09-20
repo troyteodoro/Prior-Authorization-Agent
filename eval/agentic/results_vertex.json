@@ -1,0 +1,685 @@
+{
+  "task": "T-90",
+  "decision": "D106",
+  "measured_at": "2026-09-20T11:03:29.075874+00:00",
+  "model": "gemini-3.5-flash-lite",
+  "tier": {
+    "retrieval": "vertex",
+    "extraction": "replayed from results.json",
+    "verifier": "replayed from results.json"
+  },
+  "prompt_version": "t61-retrieval-v2",
+  "procedure_code": "43775",
+  "as_of": "2026-09-01",
+  "bounds": {
+    "max_steps": 12,
+    "max_llm_calls": 16
+  },
+  "note": "Extraction is eval/extraction/results.json on both sides, so the one variable is which evidence reached the criteria (D63).",
+  "aggregate": {
+    "patients": 7,
+    "scored": 7,
+    "errors": 0,
+    "error_rate": 0.0,
+    "outcome_disagreements": 0,
+    "outcome_agreement_rate": 1.0,
+    "criterion_disagreements": 0,
+    "criteria_compared": 49,
+    "criterion_agreement_rate": 1.0,
+    "unsupported_outcomes": 20,
+    "unsupported_rate": 0.4082,
+    "spans_valid": 93,
+    "spans_total": 93,
+    "citation_validity": 1.0,
+    "total_model_calls": 64,
+    "total_input_tokens": 105886,
+    "total_output_tokens": 10750,
+    "total_wall_time_ms": 68183.9,
+    "oracle_model_calls": 43,
+    "oracle_input_tokens": 35213,
+    "oracle_output_tokens": 7493,
+    "input_token_ratio": 3.0,
+    "model_call_ratio": 1.5
+  },
+  "patients": [
+    {
+      "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
+      "cases": [
+        "E5"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "NOT_MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_1.txt",
+          "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_2.txt",
+          "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_1.txt",
+            "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_2.txt",
+            "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json"
+          ],
+          "notes": 2,
+          "observations": 244,
+          "conditions": 35,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 8,
+        "input_tokens": 5923,
+        "output_tokens": 1314,
+        "wall_time_ms": 8800.0
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "NOT_MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_1.txt",
+          "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_2.txt",
+          "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_1.txt",
+            "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_2.txt",
+            "Christeen33_Justina408_Rowe323_05cc52df-48cb-961b-29e3-3fd4d1c8bc9f.json"
+          ],
+          "notes": 2,
+          "observations": 244,
+          "conditions": 35,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document"
+        ],
+        "spans_valid": 22,
+        "spans_total": 22,
+        "model_calls": 11,
+        "input_tokens": 16491,
+        "output_tokens": 1769,
+        "wall_time_ms": 11985.0
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "cases": [
+        "E4",
+        "E9"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "NOT_MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c2",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+            "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+          ],
+          "notes": 2,
+          "observations": 102,
+          "conditions": 20,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 5,
+        "input_tokens": 4424,
+        "output_tokens": 1342,
+        "wall_time_ms": 6241.3
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "NOT_MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c2",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+            "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+          ],
+          "notes": 2,
+          "observations": 102,
+          "conditions": 20,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document"
+        ],
+        "spans_valid": 9,
+        "spans_total": 9,
+        "model_calls": 8,
+        "input_tokens": 13936,
+        "output_tokens": 1806,
+        "wall_time_ms": 9542.1
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+      "cases": [
+        "E2",
+        "E7"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "NOT_MET",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note_1.txt",
+            "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note_2.txt",
+            "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json"
+          ],
+          "notes": 2,
+          "observations": 3780,
+          "conditions": 190,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 4093,
+        "output_tokens": 182,
+        "wall_time_ms": 3030.8
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "NOT_MET",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note_1.txt",
+            "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note_2.txt",
+            "Rayford811_Sanford861_49092fd9-d5bf-24e2-474b-00041a279a47.json"
+          ],
+          "notes": 2,
+          "observations": 3780,
+          "conditions": 190,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document"
+        ],
+        "spans_valid": 3,
+        "spans_total": 3,
+        "model_calls": 7,
+        "input_tokens": 15682,
+        "output_tokens": 664,
+        "wall_time_ms": 6205.3
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
+      "cases": [
+        "E6",
+        "E10"
+      ],
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 128,
+          "conditions": 38,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 8,
+        "input_tokens": 6072,
+        "output_tokens": 1258,
+        "wall_time_ms": 8222.2
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET"
+        },
+        "unsupported": [
+          "b"
+        ],
+        "document_ids": [
+          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 128,
+          "conditions": 38,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document"
+        ],
+        "spans_valid": 20,
+        "spans_total": 20,
+        "model_calls": 11,
+        "input_tokens": 16852,
+        "output_tokens": 1749,
+        "wall_time_ms": 11394.3
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "cases": [
+        "E1",
+        "E11",
+        "E10c",
+        "E13"
+      ],
+      "oracle": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 9,
+        "input_tokens": 7197,
+        "output_tokens": 1823,
+        "wall_time_ms": 10140.3
+      },
+      "agentic": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions"
+        ],
+        "spans_valid": 25,
+        "spans_total": 25,
+        "model_calls": 12,
+        "input_tokens": 14688,
+        "output_tokens": 2233,
+        "wall_time_ms": 13143.4
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+      "cases": [
+        "E8",
+        "E10b"
+      ],
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "INSUFFICIENT_EVIDENCE",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "a",
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json",
+            "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note_1.txt",
+            "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 103,
+          "conditions": 46,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 3,
+        "input_tokens": 2716,
+        "output_tokens": 211,
+        "wall_time_ms": 2505.9
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "INSUFFICIENT_EVIDENCE",
+          "b": "MET",
+          "c1": "INSUFFICIENT_EVIDENCE",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "INSUFFICIENT_EVIDENCE",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "a",
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Tressie547_Lolita963_Ratke343_bc6748d3-3a0f-9734-7730-4518f5b268fb.json",
+            "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note_1.txt",
+            "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 103,
+          "conditions": 46,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document"
+        ],
+        "spans_valid": 1,
+        "spans_total": 1,
+        "model_calls": 6,
+        "input_tokens": 13921,
+        "output_tokens": 693,
+        "wall_time_ms": 5403.6
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
+      "cases": [
+        "J1"
+      ],
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "MET",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c4",
+          "d"
+        ],
+        "document_ids": [
+          "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+          "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+          "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+            "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+            "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 102,
+          "conditions": 20,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 6,
+        "input_tokens": 4788,
+        "output_tokens": 1363,
+        "wall_time_ms": 7294.4
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "MET",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c4",
+          "d"
+        ],
+        "document_ids": [
+          "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+          "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+          "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+            "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+            "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 102,
+          "conditions": 20,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document"
+        ],
+        "spans_valid": 13,
+        "spans_total": 13,
+        "model_calls": 9,
+        "input_tokens": 14316,
+        "output_tokens": 1836,
+        "wall_time_ms": 10510.2
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    }
+  ]
+}

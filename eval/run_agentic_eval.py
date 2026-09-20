@@ -388,7 +388,8 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
 
     patients = _patients()[: limit if limit is not None else None]
     print(
-        f"{len(patients)} patients · model {PINNED_MODEL} · tier {MEASURED_TIER} · "
+        f"{len(patients)} patients · model {PINNED_MODEL} · "
+        f"tier {tier_of(client)} · "
         f"max_steps={DEFAULT_MAX_STEPS} max_llm_calls={DEFAULT_MAX_LLM_CALLS}"
     )
     print("extraction is the committed recording on both sides; calls are retrieval only\n")

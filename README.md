@@ -630,11 +630,24 @@ gate rather than a plausible-looking table.
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 
-**One row of the v1.1 path is open, and it is not on the path to the acceptance
-gates:** the Vertex measurement (T-90), the second tier's numbers beside the
-AI Studio ones. The second note per patient landed with T-81 (D104): every
-recording re-measured on a corpus where a skipped note is reachable, and the
-direct retrieval-recall figure is now measured rather than constructed.
+**The second tier landed with T-90 (D106), and one row of the v1.1 path is
+left — an entry, not code.** The whole corpus was measured a second time on
+**Vertex** and committed beside the AI Studio recordings, which did not move;
+`eval/report.md` renders the two as columns. Fidelity did not change:
+precision, recall, REQ-9 exclusion and field agreement are 1.000 on both
+tiers, every span anchors, the verifier accepts the same thirty claims with no
+verdict moving, and 0 of 169, 0 of 165 and 0 of 76 model-emitted character
+offsets were usable — the fourth independent reproduction of that finding. The
+tool-calling path is where the tier bites: the ADK's injected
+`set_model_response` round trip is an AI Studio artifact and disappears on
+Vertex's native schema path (tool calls 26 → 12, unescaped spans 4 → 0), while
+the token overhead only halves, 4.12x to 2.14x against each tier's own direct
+runner. **Cost figures do not transfer between tiers** — the direct runner
+spends markedly more input tokens on Vertex for an identical prompt — so only
+the within-tier comparisons are quoted. The second note per patient landed
+earlier with T-81 (D104): every recording re-measured on a corpus where a
+skipped note is reachable, and the direct retrieval-recall figure is now
+measured rather than constructed.
 
 **What follows v1.1 is fixed in spec §11 *(D105)*:** two rounds of testing
 the rules engine against other practices' coverage rules (rheumatoid

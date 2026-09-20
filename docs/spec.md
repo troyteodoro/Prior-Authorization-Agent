@@ -803,6 +803,31 @@ measured day, against one pinned model, on one tier. A changed call
 configuration, a changed tool declaration, a changed SDK, or a different tier
 is a **new measurement, never a re-run**.
 
+Since T-90 there is a second measured day on a second tier *(D106)*. The same
+corpus was measured on **Vertex** — all three extraction recordings, the
+verifier's thirty claims and the retrieval differential — and committed beside
+the AI Studio ones, which did not move; `eval/report.md` renders the two as
+columns. What the second tier showed is that the things this system claims
+about itself are not properties of one endpoint: precision, recall, REQ-9
+exclusion and field agreement are 1.000 on both, every span anchored, the
+verifier accepted the same thirty claims with **no verdict moving**, and
+**0 of 169, 0 of 165 and 0 of 76 model-emitted offsets were usable** — D18
+reproduced a fourth time. It also answered D71's open clause: the injected
+`SetModelResponseTool` really is an AI Studio artifact and vanishes on the
+native path — tool calls 26 → 12, unescaped spans 4 → 0 — while the tool
+path's token overhead only halves, from 4.12x to 2.14x against each tier's
+own direct runner. Half of that overhead was the tier; the other half is what
+it costs to ask for a document the caller already holds.
+
+What remains true is that two measured days are two samples. Cost figures in
+particular do **not** transfer: the direct runner spends markedly more input
+tokens on Vertex for an identical prompt and corpus, so token accounting is
+not like-for-like across tiers and only the within-tier comparisons carry.
+The pinned model resolves on Vertex under the same name, but only at
+`location=global`, which is now part of what a recording states. Everything
+free is still a replay — that has not changed and is not a defect; what has
+changed is that the replayed numbers are no longer from a single tier.
+
 ---
 
 ## 11. Versions after v1
@@ -828,9 +853,9 @@ requirement with no check is a wish, and a wish is not given a number.
 
 ### v1.1 — Finishing §10
 
-The path D97 fixed, unchanged: T-85 through T-89 and T-81 closed, T-90 (the
-Vertex measurement, P8) and P6's entry open. Closes when the Vertex column
-renders in `eval/report.md` and P6's path is logged. Gate: A1–A9 still hold.
+The path D97 fixed, unchanged: T-85 through T-89, T-81 and T-90 closed, P6's
+entry open. The Vertex column renders in `eval/report.md` *(T-90, D106)*, so
+v1.1 closes when P6's path is logged. Gate: A1–A9 still hold.
 
 ### v1.2 — Cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound
 

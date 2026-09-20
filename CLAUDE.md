@@ -102,7 +102,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (833 tests, ~40s)
+./venv/bin/python -m pytest -q                  # the suite alone (871 tests, ~40s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -127,6 +127,11 @@ Run the system:
 CLI exit codes: `0` an answer, `1` a bad request (unknown patient), `2` an
 unbuilt path, `3` a determination aborted over a criterion in `ERROR` — the
 criterion id and `error_code` go to stderr, nothing to stdout (REQ-29, D76).
+
+`--tier {ai_studio,vertex}` reaches the four measurement scripts and the CLI,
+defaulting to the development tier so every existing invocation is unchanged;
+the output *and* `--rescore` paths are routed per tier, so a Vertex run cannot
+overwrite the AI Studio recordings the gates read *(T-90, D106)*.
 
 Commands that **spend model calls** and are therefore in no gate:
 `scripts/run_extraction.py`, `scripts/run_adk_extraction.py`,
@@ -181,6 +186,13 @@ differential real.**
   step_verify)` is the last `STEPS` entry (T-86's `sufficiency` precedes it, D99): cited verdicts only, first
   rejection → `INSUFFICIENT_EVIDENCE`/`VERIFIER_REJECTED`, no retry, and the
   determination still emits (REQ-18).
+
+**`pa_agent/tiers.py` is the one place a client is built** *(T-90, D106)*.
+`client_for(tier)` sets `GOOGLE_GENAI_USE_ENTERPRISE` and constructs the client
+in one call, verifies what it built, and raises rather than defaulting;
+`tier_of(client)` reads the tier back for the recording. Every runner still
+takes an **injected** client and names no tier, which is what let the second
+tier land without touching them.
 
 **`build_result()` is the trust boundary.** Every runner returns through it. ADK
 output is untrusted model output and there is no private route to a `WmEvent`.
@@ -281,6 +293,18 @@ passing**, because the tests are written in terms of the thing that broke.
   **Quote the delta beside the ratio** — 24 model calls and 90,743 input tokens
   the fixed planner never spent — because the delta is the figure that does not
   move when the denominator does.
+- **A tier is set in one place, and the recording states what ran, not what was
+  asked for** *(T-90, D106)*. `pa_agent/tiers.py` sets the environment and
+  builds the client together, because they are coupled: with the enterprise
+  switch left at `1` even an `api_key=` client comes back claiming
+  `vertexai=True`. An unknown tier raises and a Vertex client without a project
+  raises — both silent alternatives are recordings that lie about their
+  provenance, which is D19's failure and one every downstream gate agrees with.
+  Recordings stamp `tier_of(client)` and `output_schema_and_tools` read off the
+  model; neither `adk_version` nor `tool_fetch` distinguishes the two prompts.
+  **`native_schema_enabled` lives in `pa_agent/agent/`, never in `tiers.py`** —
+  nothing under `pa_agent/` outside that subpackage may import `google.adk`,
+  even lazily, and `tests/test_adk_agent.py` scans for it.
 - **Never make a gate call a model** *(D45)*. Measurement scripts spend the
   calls; `pytest` re-reads the recording, re-hashes every note, re-validates
   every span and checks the recorded model is the pin.
@@ -357,10 +381,32 @@ you.** Do not override these from prior knowledge.
 - `GET /` on `adk web` returns **307** to `/dev-ui/`, not 200. `GET /list-apps`
   returns 200 with a JSON array of discovered app names *(D16)*.
 
+- **A tier is an environment, not only a credential** *(T-90, D106, measured)*.
+  `Gemini.capabilities.output_schema_and_tools` — the thing D62 is about —
+  resolves through `is_enterprise_mode_enabled()`, which reads
+  **`GOOGLE_GENAI_USE_ENTERPRISE` from the process environment**. The injected
+  `genai.Client` is never consulted; only request routing reads
+  `api_client.vertexai`. Measured: unset → `False`; `GOOGLE_GENAI_USE_VERTEXAI=true`
+  → `True`; `GOOGLE_GENAI_USE_ENTERPRISE=0` → `False`; **both set → `False`,
+  enterprise winning silently**; `=1` → `True`. `pa_agent/agent/.env` holds
+  `...=0` and every loader `setdefault`s it, so a Vertex client alone keeps the
+  injected `SetModelResponseTool`.
+- **`genai.Client(vertexai=True)` with no project keeps `GOOGLE_API_KEY`** and
+  targets `aiplatform.googleapis.com` — Vertex express mode on the free tier's
+  credential. Passing project *and* location drops the key to ADC and uses the
+  regional endpoint. A Vertex client **constructs without any credential**; the
+  failure surfaces on the first request, so construction proves nothing.
+- **The pinned model is served on Vertex only at `location=global`** *(T-90)*.
+  `us-central1`, `us-east5` and `europe-west4` all answer 404 for it. The name
+  is unchanged, so `PINNED_MODEL` did not move.
+
 Per D5: develop against the AI Studio free tier, run final evals and any demo
 through Vertex, because Vertex does not train on submitted data. **D19's and
 D45's numbers are AI Studio numbers**; a Vertex run of the same corpus is a new
-measurement, not a confirmation.
+measurement, not a confirmation. Since T-90 both tiers are measured and
+committed side by side *(D106)*, and **cost figures do not transfer** — the
+direct runner spends markedly more input tokens on Vertex for an identical
+prompt, so only within-tier comparisons are quoted.
 
 ## Method note: mutation testing
 
@@ -386,8 +432,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**69 of 69 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~45s, 833 tests across 32 files). IDs run to T-89, but
+**70 of 70 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~45s, 871 tests across 33 files). IDs run to T-90, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -420,8 +466,16 @@ D82's tolerance sweep, and **A6 38 model calls / 31,118 input / 6,925 output /
 39.6s across ten determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **nothing on the board; `Path to v1.1`'s row 7, the Vertex measurement
-(T-90), is next and opens its record when it starts.** The §10 round was
+Open: **nothing on the board. `Path to v1.1`'s row 8 — P6's entry, a decision
+and no code — is the last of the round, and v1.1 closes when it is logged**
+*(spec §11)*. T-90 (D106) took row 7: the whole corpus measured a second time
+on **Vertex** and committed beside the AI Studio recordings, which did not
+move. Fidelity is identical on both tiers, the verifier accepts the same 30
+claims with no verdict moving, and 0 of 169 / 0 of 165 / 0 of 76 model offsets
+were usable — D18's fourth reproduction. D71's clause is answered *partly*:
+the injected `set_model_response` round trip is an AI Studio artifact and
+vanishes natively (tool calls 26 → 12, unescaped spans 4 → 0) while the token
+overhead only halves, 4.12x → 2.14x against each tier's own direct runner. The §10 round was
 opened as "v2" and renamed v1.1 by D105, which also fixed the versions after
 it — v1.2 through v2.0, one story and one gate each — in spec §11, on the
 board's `Roadmap after v1.1`, and in stories F3–F6; a version's REQ ids are
@@ -570,7 +624,7 @@ satisfiable *(D63, D70)*.
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      retrieval, runners, extraction, verifier, reconcile,
-                     aggregate, determination, contracts, model_pin, cli
+                     aggregate, determination, contracts, model_pin, tiers, cli
   agent/             ADK: extraction_agent, retrieval_agent, patient_tools,
                      policy_tools, tool_bounds, agent (adk web entry point)
   stores/            policy.py and patient.py — the two ports and their
@@ -610,7 +664,8 @@ eval/
                      since T-81 each fact names the document it renders into
   extraction/        results.json plus adk_results_inline.json and
                      adk_results_tool_fetch.json — one per mode (D68), all
-                     three re-measured by T-81 on the two-note corpus (D104)
+                     three re-measured by T-81 on the two-note corpus (D104);
+                     and *_vertex.json beside each, T-90's second tier (D106)
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91),
                      measured fresh by T-81 over all seven charts (D104)
@@ -622,7 +677,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               32 files, 833 tests
+tests/               33 files, 871 tests
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

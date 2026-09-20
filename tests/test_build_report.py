@@ -238,6 +238,28 @@ def test_the_report_carries_its_caveats(claim):
     )
 
 
+def test_the_tier_section_renders_both_columns():
+    """T-90's deliverable: §11 closes v1.1 on "the Vertex column renders in
+    eval/report.md". A column, not extra rows in the anchoring table — pooling
+    two tiers there would make a Vertex drop flip that section's
+    no-claim-was-dropped branch and turn a finding into a red gate (D106)."""
+    report_text = REPORT.read_text(encoding="utf-8")
+    assert "## Tier (P8, D5, D62, D106)" in report_text
+    section = report_text[report_text.index("## Tier (P8"):]
+    section = section[: section.index("## Abstention")]
+
+    assert "| Figure | AI Studio | Vertex | \u0394 |" in section
+    # D71's clause, answered with a number rather than a paragraph.
+    assert "D71's reversal condition, answered: partly." in section
+    assert "| Ratio | **4.12x** | **2.14x** |" in section
+    assert "Read the delta, not only the ratio" in section
+    # The anchoring section above it still describes one tier only.
+    anchoring = report_text[report_text.index("## Anchoring"):report_text.index("## Tier (P8")]
+    assert "vertex" not in anchoring.lower(), (
+        "the anchoring account pooled two tiers; its prose sums its own rows"
+    )
+
+
 def test_the_report_says_it_is_generated():
     assert "do not edit by hand" in REPORT.read_text(encoding="utf-8")
 

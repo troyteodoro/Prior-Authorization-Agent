@@ -8182,3 +8182,74 @@ identifier's form, the column is a model comparison as well as a tier
 comparison, D71's clause stays unmet, and the report says so rather than
 letting the column imply otherwise. Or a later version moves development
 onto Vertex, at which point the two constants trade places.
+
+**Result — measured 2026-09-20, `gemini-3.5-flash-lite` on Vertex, `google-adk`
+2.8.0, prompt versions `t15-instruction-v1/t89-reask-v1` and `verifier-v4`.**
+Five recordings, committed beside the AI Studio ones, which did not move. The
+model resolves on Vertex under the pinned name, so the contingency above did
+not fire — but only at `location=global`: `us-central1`, `us-east5` and
+`europe-west4` all answered 404 for this publisher model, which is why the
+location is part of what a recording states.
+
+| | AI Studio | Vertex |
+|---|---|---|
+| direct — spans anchored | 175/175 | **169/169** |
+| direct — calls · in · out | 17 · 17,051 · 9,981 | **17 · 28,713 · 9,476** |
+| ADK inline — spans anchored | 165/165 | **165/165** |
+| ADK inline — calls · in · out | 17 · 18,266 · 8,630 | **17 · 29,911 · 8,666** |
+| ADK tool-fetch — spans anchored | 76/76 | **76/76** |
+| ADK tool-fetch — tool calls | 26 | **12** |
+| ADK tool-fetch — spans unescaped | 4 | **0** |
+| ADK tool-fetch — calls · in · out | 26 · 46,334 · 4,697 | **24 · 41,647 · 5,254** |
+| verifier — accepted | 30/30 | **30/30** |
+| agentic — outcomes · criteria · spans | 7/7 · 49/49 · 93/93 | **7/7 · 49/49 · 93/93** |
+
+**Fidelity did not move.** Precision, recall, REQ-9 exclusion and field
+agreement are 1.000 on both tiers for all three extraction recordings, every
+span anchored, and **0 of 169, 0 of 165 and 0 of 76 model-emitted offsets were
+usable** — D18's finding reproduced a fourth time, on a tier it had never been
+measured on. The verifier accepted the same 30 claims and **no verdict moved**,
+which is the first evidence in this repo that Article V's answers are not a
+property of one endpoint.
+
+**D71's reversal condition is answered, and the answer is *partly*.** Measured
+against each tier's own direct recording over the notes both runners scored:
+
+| Tool path vs direct, same tier | AI Studio | Vertex |
+|---|---|---|
+| Ratio, input tokens | 4.12x | **2.14x** |
+| Delta, input tokens | +35,075 | **+22,156** |
+
+The half D62 predicted reversed exactly: the injected `set_model_response`
+round trip is gone — tool calls fall 26 → 12, one `read_note` per note — and
+the 4 unescaped spans go to 0. The other half did not: the tool path still
+pays roughly twice the direct runner's input tokens on the native path. So
+about half of AI Studio's overhead was the injected tool and the rest is what
+it costs to ask for a document the caller already holds. **D71's finding
+survives at half its magnitude**, and `--tool-fetch` remains what D71 said it
+was — not worth it for a caller that holds the text.
+
+**Quote the delta beside the ratio, again (D91).** The ratio falls further
+than the cost does, because the denominator moved: the direct runner's own
+input tokens are markedly higher on Vertex for an identical prompt and corpus
+(17,051 → 28,713 over seventeen notes). **Token accounting is evidently not
+like-for-like across the two tiers**, so a cross-tier token figure is a weaker
+claim than a within-tier one, and the within-tier ratios are the comparison to
+quote. That is an observation this round can make and not explain; it is
+recorded rather than reasoned about.
+
+**Span counts moved and fidelity did not.** The direct recording emitted 169
+spans against AI Studio's 175 and scored identically on every fidelity
+measure — the same run-to-run instability D47 recorded, now seen across tiers
+rather than across days. It is why the figures above are reported and never
+asserted as thresholds.
+
+**Cost of the round.** 152 recorded model calls — 17 + 17 + 24 extraction, 30
+verifier, 64 agentic — plus one aborted tool-fetch run that was re-run whole.
+
+**What it did not establish.** One Vertex day is one sample, exactly as one AI
+Studio day is: a tool loop is not reproducible at temperature 0 (D91), and
+`location=global` is now a recorded part of the configuration that no earlier
+measurement shares. Nothing here licenses quoting a Vertex figure for AI
+Studio or the reverse; the two columns stand side by side because that is the
+only honest way to hold them.

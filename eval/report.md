@@ -88,6 +88,101 @@ Every span a model emits is located by searching its verbatim quote in the note 
 
 **What a drop costs.** The determination that results is well-formed and says less than the chart does — it abstains, or names a weaker gap, where evidence existed. The failure is fail-closed rather than a wrong approval, and it is still a failure (spec §10, P2). A similarity fallback is not the fix: a match generous enough to absorb a tense change is generous enough to absorb a negation (D18). The fix is the bounded verbatim re-ask — one extra model call on a note with an unanchorable quote, the answer admitted by the anchorer and never by the model — and across these recordings it was asked about 1 quote and recovered 1 (D103).
 
+## Tier (P8, D5, D62, D106)
+
+Spec §10's P8: every freely-reproducible figure above describes the model as it behaved on one measured day, on **one tier**. This section is the second tier, measured once over the same corpus (T-90). The AI Studio column is the one every gate replays and every figure above is computed from; the Vertex column stands beside it and replaces nothing — a changed tier is a new measurement, never a confirmation (D45, D5).
+
+**The tier changes the prompt, not only the endpoint.** `output_schema` with `tools` is native on Vertex only; on AI Studio the ADK injects a `SetModelResponseTool` and an extra instruction (D62). That is read off the model rather than assumed, and recorded per run.
+
+### direct
+
+This path declares no tools, so `output_schema_and_tools` never applies to it.
+
+| Figure | AI Studio | Vertex | Δ |
+|---|---|---|---|
+| Notes scored | 17 | 17 | 0 |
+| Spans emitted | 175 | 169 | -6 |
+| Spans anchored | 175 | 169 | -6 |
+| Spans unescaped (D62's tell) | 0 | 0 | 0 |
+| Model offsets usable (D18) | 0 | 0 | 0 |
+| Tool calls | 0 | 0 | 0 |
+| Model calls | 17 | 17 | 0 |
+| Input tokens | 17051 | 28713 | +11662 |
+| Output tokens | 9981 | 9476 | -505 |
+
+### ADK inline
+
+`output_schema_and_tools`: Vertex **True**; the AI Studio recording predates T-90 and does not carry the field.
+
+| Figure | AI Studio | Vertex | Δ |
+|---|---|---|---|
+| Notes scored | 17 | 17 | 0 |
+| Spans emitted | 165 | 165 | 0 |
+| Spans anchored | 165 | 165 | 0 |
+| Spans unescaped (D62's tell) | 0 | 0 | 0 |
+| Model offsets usable (D18) | 0 | 0 | 0 |
+| Tool calls | 0 | 0 | 0 |
+| Model calls | 17 | 17 | 0 |
+| Input tokens | 18266 | 29911 | +11645 |
+| Output tokens | 8630 | 8666 | +36 |
+
+### ADK tool-fetch
+
+`output_schema_and_tools`: Vertex **True**; the AI Studio recording predates T-90 and does not carry the field, so it is **not recorded** rather than false — its 4 unescaped spans are the injected tool's own tell (D62).
+
+| Figure | AI Studio | Vertex | Δ |
+|---|---|---|---|
+| Notes scored | 12 | 12 | 0 |
+| Spans emitted | 76 | 76 | 0 |
+| Spans anchored | 76 | 76 | 0 |
+| Spans unescaped (D62's tell) | 4 | 0 | -4 |
+| Model offsets usable (D18) | 0 | 0 | 0 |
+| Tool calls | 26 | 12 | -14 |
+| Model calls | 26 | 24 | -2 |
+| Input tokens | 46334 | 41647 | -4687 |
+| Output tokens | 4697 | 5254 | +557 |
+
+**D71's reversal condition, answered: partly.** D71 left it open whether the tool path's overhead is an AI Studio artifact — the native schema path removing the second turn — or a real cost of tool-directed fetching. Both halves are now measured, against each tier's *own* direct recording over the notes both runners scored.
+
+| Tool path vs direct, same tier | AI Studio | Vertex |
+|---|---|---|
+| Input tokens, tool-fetch | 46334 | 41647 |
+| Input tokens, direct | 11259 | 19491 |
+| Ratio | **4.12x** | **2.14x** |
+| Delta | **+35075** | **+22156** |
+
+**The injected tool is gone and the overhead is not.** The native path removes exactly what D62 said it would: the `set_model_response` round trip disappears — tool calls fall from 26 to 12, one `read_note` per note — and the 4 unescaped spans go to 0. But the tool path still pays roughly twice the direct runner's input tokens on Vertex. So about half of AI Studio's overhead was the injected tool, and the rest is what it costs to ask for a document the caller was already holding — D71's finding survives at half its magnitude.
+
+**Read the delta, not only the ratio** (D91). The ratio falls further than the cost does, because the *denominator* moved: the direct runner's own input tokens are markedly higher on Vertex for the identical prompt and corpus. Token accounting is evidently not like-for-like across tiers, so a cross-tier token figure is a weaker claim than a within-tier one, and the within-tier ratios above are the comparison to quote.
+
+### The verifier (Article V)
+
+The same **30** claims, put to the blind verifier on both tiers. The claim sets are identical by construction, not by luck: the Vertex claims were enumerated from the AI Studio extraction recording, because a digest is the criterion, the verdict and the sliced quote (D78) and a Vertex extraction would have moved every one of them (D106).
+
+| Figure | AI Studio | Vertex |
+|---|---|---|
+| Claims | 30 | 30 |
+| Accepted | 30 | 30 |
+| Verdicts that moved between tiers | — | **0** of 30 |
+
+**No verdict moved.** Article V's answer is the same on both tiers for every claim the system produced — which is the result a blind checker should give, and the first evidence this repo has that it is not a property of one endpoint.
+
+### Model-directed retrieval
+
+The differential re-measured on the second tier. Extraction and verification are **replayed** from the AI Studio recordings on both sides, so the one variable is the tier the planner called — which is why this recording stamps its tier per component rather than as one value (D106).
+
+| Figure | AI Studio | Vertex |
+|---|---|---|
+| Patients scored | 7 | 7 |
+| Outcome agreement | 1.0 | 1.0 |
+| Criterion agreement | 1.0 | 1.0 |
+| Citation validity | 1.0 | 1.0 |
+| Errors | 0 | 0 |
+| Planner model calls | 67 | 64 |
+| Planner input tokens | 125956 | 105886 |
+
+A free-tier tool loop is not reproducible at temperature 0 (D91), and neither is a paid one: these are two samples, not a before and an after. What they agree on is the part that matters — the planner reaches the same outcome as the deterministic oracle on every patient, on both tiers, with every cited span slicing back.
+
 ## Abstention (A5, REQ-28, REQ-31)
 
 **Abstention rate: 4/17 answered = 0.235**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
