@@ -466,6 +466,75 @@ decided in the app shell's entry.
 
 ---
 
+### `US-16` Ask one question about two payers
+
+> **As** Sam
+> **I want** the same request answered under the payer that actually covers
+> this patient, and a regional rule that can never be looser than the national
+> one it sits under
+> **So that** I stop keeping one payer's thresholds in my head while reading
+> another's chart
+
+**Version:** v2.1 · **Value:** every answer the system has given so far is
+Medicare's. A second payer is the first time *whose rule is this* has more than
+one answer, and the first time a regional rule can quietly exceed its national
+grant.
+
+- **Given** two payers whose policies both bind a procedure in one state
+  **When** the request names a payer **Then** it resolves to that payer's tree,
+  and neither answer depends on the order the trees were loaded · *(A16)*
+- **Given** a payer this store does not serve **When** the request names it
+  **Then** the answer says so, and it is not the answer for a state no tree
+  serves · *(REQ-55's distinction; A16)*
+- **Given** a regional tree declaring a constant looser than the national floor
+  it cites **When** it is loaded **Then** the load fails naming the constant,
+  the floor and the direction — a regional rule may be stricter and never
+  broader · *(A16)*
+- **Given** a determination **When** it is read **Then** it names the payer and
+  the scope of the tree that produced it, so no figure is quoted as another
+  payer's · *(A16)*
+
+**Covers:** A16
+**Ships:** resolution by payer, and the first check of a relation
+`national_floor` has asserted by its name since T-01 *(D112)*.
+
+---
+
+### `US-17` See what a commercial payer would ask that Medicare does not
+
+> **As** Dr. Vance
+> **I want** a policy written the way a private plan writes one — step therapy
+> with a stated duration, a screening before initiation, a lab value in a
+> window — evaluated by the same engine
+> **So that** I learn whether the engine is Medicare-shaped before anyone
+> points it at commercial work
+
+**Version:** v2.2 · **Value:** the practices tested so far are all CMS's, and
+CMS's drug documents quantify almost nothing — a fact T-92 established by
+fetching four of them. The criteria this system was built to evaluate are
+commonplace in commercial utilisation management and absent from Medicare's
+Part B drug policies.
+
+- **Given** a policy the project synthesized **When** any artifact cites it
+  **Then** that artifact says the policy is synthetic, and it appears nowhere in
+  the fetched corpus or its hashes · *(A17)*
+- **Given** a patient whose step-therapy trial is shorter than the policy
+  requires **When** the determination runs **Then** the criterion is `NOT_MET`
+  citing the prescriptions, with the duration computed by Python over their
+  dates · *(Article II; A17)*
+- **Given** a policy requiring a screening the chart does not carry **When** the
+  determination runs **Then** the criterion abstains naming what to collect, and
+  never reports it as failed · *(Article IV; A17)*
+- **Given** the commercial tree loaded **When** the report is built **Then** the
+  compatibility account covers it beside the CMS practices, and zero model calls
+  were spent · *(A17)*
+
+**Covers:** A17
+**Ships:** the predicate kinds v1.2 expected and could not earn, against a
+document that states them *(D111, D112)*.
+
+---
+
 ## Not stories
 
 Tracked as spikes or technical tasks.

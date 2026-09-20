@@ -99,6 +99,8 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
 | v2.0 | the reviewer's UI over the session port | US-15 | planned |
+| v2.1 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | planned |
+| v2.2 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
 
 **v1.2 asks the question this design is built to answer:** whether the engine
 is bariatric-shaped. Two trees from unrelated practices are compiled against

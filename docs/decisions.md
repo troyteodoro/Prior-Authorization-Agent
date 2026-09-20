@@ -8914,3 +8914,119 @@ trial enters the corpus — the trial-duration kind is then earned and `b`
 splits; or the extractor gains a route to the note, which is v1.6 — `d` and
 `e` are then claimable, and `c` still is not, because NYHA class is absent
 from the coded record rather than from the pipeline.
+
+---
+
+## D112 — Two versions after v2.0: the payer axis, then a mimicked commercial policy
+
+**The owner's decision, 2026-09-20.** D105 fixed the versions through v2.0.
+Two more are added after it: **v2.1**, a request resolves by payer as well as
+by code and state, with national and regional coverage as a declared relation
+rather than a field nobody checks; and **v2.2**, a **mimicked** commercial
+payer policy — synthesized, declared synthetic, never passed off as a real
+payer's — which is what earns the predicate kinds Medicare's documents cannot.
+D105's five rules bind both: one version at a time, statements until a task
+checks them, ids reserved now and records written when a row opens, one
+acceptance gate each, and a reordering is a new entry here.
+
+**Two facts established while closing T-92 are why these are worth doing.**
+
+1. **The `(state, code)` collision recurs one level up.** T-87 resolved by
+   state, T-92 by state *and* practice, because Palmetto GBA serves the same
+   seven states for bariatric surgery and for infliximab. A second **payer**
+   collides immediately and harder: Medicare and any commercial plan both bind
+   43775 in Alabama, and `_binding_index` raises `resolution would depend on
+   load order` on the first such tree. The payer is the axis the index is
+   missing, and the failure is loud — which is the only reason it is safe to
+   have deferred.
+2. **`national_floor` is cited and never checked.** It has been on `Criterion`
+   since T-01 and is read by exactly one test, which asserts the span slices
+   back and cites the NCD. Nothing asserts the **relation the name claims**: a
+   MAC tree declaring `bmi_threshold: 30.0` would cover patients NCD 100.1
+   does not, and every gate would stay green. Both committed trees declare
+   35.0, which is the floor exactly, so this is an unchecked invariant rather
+   than a live defect — and an unchecked invariant that two trees happen to
+   satisfy is D65's shape: no behavioural test on this corpus can tell the
+   difference.
+
+### v2.1 — The payer axis, and a floor that is checked
+
+**Goal.** A request is `(payer, procedure code, state)`, and a regional tree
+may not be broader than the national coverage it operationalizes.
+
+**In scope.** `payer` on `Jurisdiction` and on the request; the binding index
+keyed by it; a tree declaring its **scope** — national or regional — and a
+regional tree naming the national tree it sits under; the floor relation
+checked at load for every constant a floor is declared for, in the direction
+the source states (a threshold may be equal or stricter, never looser). One
+more resolver answer only if the corpus forces it: *this payer is not served*
+is a different answer from *no tree serves this state*, and REQ-55's
+distinction is the precedent. **Zero model calls.**
+
+**Out of scope.** Any real commercial document (v2.2's entry says why none can
+be committed), and plan-level variation below the regional tree.
+
+**Gate A16.** Every loaded tree declares a payer and a scope; every regional
+tree with a declared floor satisfies it at load; two payers binding one code
+in one state resolve to one tree each and neither by load order; every eval
+row `PASS`; zero model calls in any gate.
+
+### v2.2 — A mimicked commercial policy, and the criteria Medicare never states
+
+**Goal.** Test the engine against the shape a **private** payer writes
+coverage in, which is not the shape CMS writes it in.
+
+**Why it is a mimic and not a fetch.** Every document in the corpus is public,
+re-downloadable and hashed, and `verify_sources.py` exists to prove the bytes
+have not moved (D21, D29). A commercial medical policy is copyrighted, usually
+behind a login, and revised without notice; it cannot be committed, cannot be
+re-fetched by a gate, and must not be quoted at length. So v2.2 **synthesizes**
+one in that shape and declares it synthetic in D73's shape — the declared
+synthetic observation and the declared clone are the precedent. It carries no
+URL, is listed apart from the fetched corpus, and **may never be cited as
+evidence of what any real payer requires**. A test asserts that separation,
+because the failure is a reviewer reading a demo as a market claim.
+
+**What it buys, concretely.** D111 recorded that no Medicare rheumatology LCD
+states a conventional-DMARD trial duration or a screening requirement — Part B
+drug LCDs restate FDA labelling — which is why v1.2's expected
+`medication_trial_duration` and lab-threshold kinds went unearned and §11's
+statement for them now awaits T-94. Commercial utilisation management is where
+those criteria actually live: step therapy with a stated duration, a required
+screening before initiation, a lab value within a window, a reauthorisation
+interval. A mimicked policy earns those predicate kinds against a document
+that states them, instead of against a number someone chose.
+
+**In scope.** The synthetic policy and its declared provenance; the predicate
+kinds it earns, each Article II arithmetic over structured FHIR; patients or
+declared additions that exercise them; eval rows including at least one
+`NOT_MET` on a trial duration and one abstention on a screening the chart does
+not carry; the compatibility account extended to the commercial tree.
+**Zero model calls** — note-only criteria are declared unclaimed, as in v1.2.
+
+**Gate A17.** Every criterion of the commercial tree is evaluated by a declared
+kind or declared unclaimed, zero omitted; no citation in any determination
+resolves to the synthetic policy without the artifact naming it synthetic;
+every eval row `PASS`.
+
+**Rejected — one version for both.** Rule 1 at version scale, and the same
+reason D97 gave: a version that changes the resolver *and* adds a corpus of a
+new kind cannot say which of them broke a gate.
+
+**Rejected — putting these before v1.4.** Intake (v1.4) is where a request
+would naturally name a payer, and building intake first means adding a field to
+a settled contract and one field to v2.0's form. That cost is small and known;
+reordering now renumbers four versions and every reserved id across three
+documents for a benefit available later at the same price. **v1.4's own
+opening entry decides** whether its intake contract names a payer — a field
+nothing dispatches on is a comment (D110), so if the answer is yes it arrives
+with something reading it, and if no, v2.1 adds it.
+
+**Rejected — fetching a real commercial policy anyway.** It fails
+`verify_sources.py` on the first revision, and a corpus half of which cannot be
+re-verified is a corpus whose hashes mean nothing.
+
+**Reverses if:** a payer publishes a coverage policy that is public,
+stable and re-downloadable under the terms this repo's fetcher already meets —
+then v2.2's tree is compiled rather than synthesized, and the mimic becomes a
+second, clearly-labelled row rather than the only one.

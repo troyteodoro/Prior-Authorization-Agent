@@ -28,8 +28,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-60 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-15 are the roadmap's, one per version *(D105)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-92, each with a runnable exit condition; T-93 through T-116 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D111, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-92, each with a runnable exit condition; T-93 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D112, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -602,7 +602,13 @@ are quoted.
 The §10 round was
 opened as "v2" and renamed v1.1 by D105, which also fixed the versions after
 it — v1.2 through v2.0, one story and one gate each — in spec §11, on the
-board's `Roadmap after v1.1`, and in stories F3–F6; a version's REQ ids are
+board's `Roadmap after v1.1`, and in stories F3–F6. **D112 added v2.1 and
+v2.2** after them: the payer axis (a request resolves by payer as well as by
+code and state, and `national_floor` stops being a citation nothing checks)
+and a **mimicked** commercial policy, synthesized and declared synthetic
+because a real one cannot be committed or re-fetched by a gate — which is what
+earns the predicate kinds Medicare's drug documents do not state *(D111)*.
+A version's REQ ids are
 minted when it opens, so the count below is unchanged. v1 and v1.1 are both
 complete — **A1–A9 all hold** — and spec §10's list of known limits, P1–P8,
 which **D97 sequenced into one task each**, is **all eight rows closed**. T-85 (D98)

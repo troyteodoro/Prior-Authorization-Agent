@@ -906,6 +906,8 @@ number.
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
 | v2.0 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
+| v2.1 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | T-117–T-120 | none | A16 |
+| v2.2 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
 
 ### v1.1 — Finishing §10
 
@@ -1141,6 +1143,91 @@ test-client smoke test, no browser automation.
 **Gate A15.** Every UI action maps to a CLI verb with identical output; zero
 logic in templates; every gate green with the app importable.
 
+### v2.1 — The payer axis: national and regional coverage
+
+**Goal.** A request is `(payer, procedure code, state)`, and a regional tree
+may not be broader than the national coverage it operationalizes *(D112)*.
+
+**Why now and not sooner.** Resolution has widened once per round because a
+corpus forced it: by state at T-87, by state *and practice* at T-92, when
+Palmetto GBA turned out to serve the same seven states for bariatric surgery
+and for infliximab. A second **payer** collides harder — Medicare and any
+commercial plan both bind 43775 in Alabama — and `_binding_index` raises
+`resolution would depend on load order` on the first such tree, which is why
+deferring it was safe.
+
+**In scope.** `payer` on `Jurisdiction` and on the request; the binding index
+keyed by it; a tree declaring its **scope**, national or regional, and a
+regional tree naming the national tree it sits under; and the floor relation
+**checked at load**. `national_floor` has been on `Criterion` since T-01 and
+nothing asserts the relation its name claims: a MAC tree declaring
+`bmi_threshold: 30.0` would cover patients NCD 100.1 does not, and every gate
+would stay green. Both committed trees declare 35.0 — the floor exactly — so
+no behavioural test on this corpus can tell the difference, which is D65's
+shape. **Zero model calls.**
+
+**Out of scope.** Any real commercial document (v2.2 says why none can be
+committed), and plan-level variation below the regional tree.
+
+**Requirements it will mint.**
+
+- Every tree declares the payer whose coverage it compiles and whether its
+  scope is national or regional; a request resolves by payer, code and state,
+  and two payers binding one code in one state resolve to one tree each.
+- A regional tree declares the national tree it operationalizes, and every
+  constant for which a national floor is declared satisfies that floor at
+  load, in the direction the source states — equal or stricter, never looser.
+
+**Gate A16.** Every loaded tree declares a payer and a scope; every regional
+tree with a declared floor satisfies it at load; two payers binding one code
+in one state resolve to one tree each and neither by load order; every eval
+row `PASS`; zero model calls in any gate.
+
+### v2.2 — A mimicked commercial policy, and the criteria Medicare never states
+
+**Goal.** Test the engine against the shape a **private** payer writes coverage
+in, which is not the shape CMS writes it in *(D112)*.
+
+**Why it is a mimic and not a fetch.** Every document in the corpus is public,
+re-downloadable and hashed, and `verify_sources.py` exists to prove the bytes
+have not moved (D21, D29). A commercial medical policy is copyrighted, usually
+behind a login, and revised without notice: it cannot be committed, cannot be
+re-fetched by a gate, and must not be quoted at length. So this version
+**synthesizes** one in that shape and declares it synthetic in D73's shape. It
+carries no URL, is listed apart from the fetched corpus, and **may never be
+cited as evidence of what any real payer requires** — a test asserts that
+separation, because the failure it prevents is a reviewer reading a demo as a
+market claim.
+
+**What it buys.** No Medicare rheumatology LCD states a conventional-DMARD
+trial duration or a screening requirement — Part B drug LCDs restate FDA
+labelling — which is why v1.2's expected `medication_trial_duration` and
+lab-threshold kinds went unearned *(T-92, D111)*. Commercial utilisation
+management is where those criteria live: step therapy with a stated duration, a
+required screening before initiation, a lab value within a window, a
+reauthorisation interval. A mimicked policy earns those kinds against a
+document that states them rather than against a number someone chose.
+
+**In scope.** The synthetic policy and its declared provenance; the predicate
+kinds it earns, each Article II arithmetic over structured FHIR; patients or
+declared additions that exercise them; eval rows including at least one
+`NOT_MET` on a trial duration and one abstention on a screening the chart does
+not carry; the compatibility account extended to the commercial tree. Note-only
+criteria are declared unclaimed as in v1.2. **Zero model calls.**
+
+**Requirements it will mint.**
+
+- A policy the project synthesized declares itself synthetic, carries no
+  fetched-corpus provenance, and every artifact citing it says so.
+- Medication trial duration, a lab result against a threshold in a window, and
+  a reauthorisation interval are computed by Python over structured resources
+  and cited to the resource.
+
+**Gate A17.** Every criterion of the commercial tree is evaluated by a declared
+kind or declared unclaimed, zero omitted; no citation in any determination
+resolves to the synthetic policy without the artifact naming it synthetic;
+every eval row `PASS`; zero model calls in any gate.
+
 ### Gates by version
 
 | Gate | Version | Threshold |
@@ -1151,3 +1238,5 @@ logic in templates; every gate green with the app importable.
 | A13 | v1.5 | zero packets with an unjustified red suggestion; every packet citation valid; every outbox session `AWAITING_DECISION` |
 | A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors |
 | A15 | v2.0 | every UI action maps to a CLI verb with identical output; zero logic in templates |
+| A16 | v2.1 | every tree declares a payer and a scope; every declared national floor satisfied at load; two payers binding one code in one state resolve to one tree each |
+| A17 | v2.2 | every criterion of the commercial tree evaluated by a declared kind or declared unclaimed; no citation resolves to the synthetic policy without the artifact naming it synthetic |

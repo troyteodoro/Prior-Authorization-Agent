@@ -120,13 +120,16 @@ beneath them. Built before T-21 they would be rewritten after it.
 
 ---
 
-## Roadmap after v1.1 *(D105)*
+## Roadmap after v1.1 *(D105, extended by D112)*
 
 One version in progress at a time; a version opens when the previous one
 closes. Task ids are reserved here so the stories, spec §11 and this board
 name the same work; **a task record is written when its row opens**, never
 before, in D97's shape. Each version's scope and the requirements it mints
 are in spec §11; each closes on its story closing with every gate green.
+**D112 added the last two rows**, after T-92 established the two facts they
+rest on: the `(state, code)` collision recurs at the payer level, and
+`national_floor` asserts a relation nothing checks.
 
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
@@ -137,6 +140,8 @@ are in spec §11; each closes on its story closing with every gate green.
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
 | v2.0 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
+| v2.1 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | T-117–T-120 | none | A16 |
+| v2.2 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
 
 ### v1.2 — Cross-practice round one: rheumatoid arthritis, then ultrasound
 
@@ -235,6 +240,45 @@ v1.5 already test. Rows are placeholders until v1.6 closes.
 | 4 | suggestions and the form | `T-114` | pending | the three colours behave as v1.3 specified; red cannot be added without its justification |
 | 5 | submit and tracking | `T-115` | pending | the email preview, the outbox, the status transitions |
 | 6 | the smoke gate | `T-116` | pending | every UI action maps to a CLI verb with identical output; templates carry no logic, pinned by parsing (D65's shape); every gate green |
+
+### v2.1 — The payer axis: national and regional coverage *(D112)*
+
+A request becomes `(payer, code, state)`. Resolution has widened once per
+round because a corpus forced it — by state at T-87, by state *and practice*
+at T-92 — and a second payer collides harder than a second practice did:
+Medicare and any commercial plan both bind 43775 in Alabama, and the binding
+index raises on the first such tree. This round also makes `national_floor`
+mean something: it has been on `Criterion` since T-01 and nothing checks the
+relation its name claims, so a MAC tree declaring a threshold **below** the
+NCD's would cover patients CMS does not and every gate would stay green. Both
+committed trees declare 35.0, the floor exactly, so no behavioural test on
+this corpus can tell — D65's shape. **Zero model calls.**
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the payer on the tree and the request | `T-117` | pending | every loaded tree declares a payer; a tree that does not raises at load; every determination records it |
+| 2 | resolution by payer | `T-118` | pending | two payers binding one code in one state resolve to one tree each, neither by load order; an unserved payer is its own answer, distinct from an unserved state (REQ-55's shape) |
+| 3 | scope, and the floor checked | `T-119` | pending | every tree declares national or regional; a regional tree names the national tree it operationalizes; a constant looser than its declared floor **raises at load**, naming the constant, the floor and the direction |
+| 4 | the second payer's tree | `T-120` | pending | a second payer's tree loaded and resolved beside Medicare's; every eval row `PASS`; every gate green |
+
+### v2.2 — A mimicked commercial policy *(D112)*
+
+The shape a **private** payer writes coverage in, which is not CMS's shape.
+The policy is **synthesized and declared synthetic** — a commercial medical
+policy is copyrighted, usually behind a login and revised without notice, so
+it cannot be committed, cannot be re-fetched by a gate and must not be quoted
+at length (D21, D29; D73's declaration shape). It earns the predicate kinds
+v1.2 expected and could not: no Medicare rheumatology LCD states a
+conventional-DMARD trial duration or a screening requirement, which T-92
+established by fetching four of them *(D111)*. **Zero model calls.**
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the synthetic policy and its declaration | `T-121` | pending | the policy declares itself synthetic, carries no fetched-corpus provenance, and appears in no `sources.json` hash; a test fails if any artifact cites it without saying so |
+| 2 | trial duration | `T-122` | pending | step-therapy duration computed by Python over `MedicationRequest` dates and cited to the resource; a short trial is `NOT_MET`, never an abstention |
+| 3 | the screening and the lab threshold | `T-123` | pending | a required screening the chart does not carry abstains naming what to collect; a lab value against a threshold in a window is `MET`/`NOT_MET` citing the observation |
+| 4 | patients and eval rows | `T-124` | pending | patients or declared additions (D73's shape); rows for the `NOT_MET` and the abstention; `run_eval.py` green |
+| 5 | the commercial compatibility account | `T-125` | pending | `eval/report.md` covers the commercial tree beside the CMS practices; `build_report.py --verify` green; every gate green |
 
 ---
 
