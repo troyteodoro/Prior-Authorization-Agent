@@ -103,6 +103,31 @@ def test_the_recording_names_the_pinned_model(results):
     assert results["temperature"] == 0.0, "Art. II: same note, same events"
 
 
+def test_the_recording_was_measured_on_the_code_s_configuration(results):
+    """The runnable half of "re-measured" (T-89, D103). A changed call
+    configuration is a new measurement (D45), and the recording says which
+    configuration produced it; one stamped with a version the code no longer
+    has may not be quoted for the code. Every note carries its trace, so
+    every turn — the re-ask included — is counted by the aggregate and by the
+    replay (D71)."""
+    from pa_agent.extraction import PROMPT_VERSION, REASK_ROUNDS
+
+    assert results.get("prompt_version") == PROMPT_VERSION, (
+        f"measured on {results.get('prompt_version')!r}; re-run "
+        "scripts/run_extraction.py (it spends model calls)"
+    )
+    assert results["task"] == "T-89" and results["decision"] == "D103"
+    assert results["reask_rounds"] == REASK_ROUNDS
+    for record in results["notes"]:
+        assert record.get("trace"), f"{record['note_id']}: no trace"
+        assert record["trace"]["prompt_version"] == PROMPT_VERSION
+        assert "reask" in record and "raw_first_turn" in record
+        assert record["metrics"] == record["trace"]["metrics"][0]
+    assert results["aggregate"]["model_calls"] == sum(
+        len(r["trace"]["metrics"]) for r in results["notes"]
+    )
+
+
 def test_every_note_still_hashes_to_what_was_measured(results, texts):
     for record in results["notes"]:
         actual = hashlib.sha256(

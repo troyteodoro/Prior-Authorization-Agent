@@ -40,7 +40,7 @@ from typing import Protocol, runtime_checkable
 
 from pydantic import ValidationError
 
-from pa_agent.contracts import CallMetrics
+from pa_agent.contracts import CallMetrics, RunTrace
 from pa_agent.extraction import ExtractionResult, build_result, extract
 from pa_agent.model_pin import PINNED_MODEL
 
@@ -121,13 +121,13 @@ class ExtractionRunner(Protocol):
 
 
 class DirectExtractionRunner:
-    """`google-genai` with a native `response_schema` — today's `extract()`.
+    """`google-genai` with a native `response_schema` — `extract()`.
 
-    Unchanged behaviour, deliberately. D45's numbers (precision 1.000, recall
-    1.000, REQ-9 exclusion 11/11, field agreement 1.000, 171/171 spans anchored)
-    were measured through exactly this call, and this class is a thin adapter
-    over it rather than a reimplementation of it. Anything that would change the
-    request is a new measurement, not a refinement (D45's own rule).
+    A thin adapter over `pa_agent.extraction.extract`, never a reimplementation
+    of it: D45's numbers were measured through exactly that call, and T-89's
+    (D103) through its two-turn successor. Anything that would change the
+    request is a new measurement, not a refinement (D45's own rule) — which is
+    why the re-ask was a re-measurement of every extraction recording.
 
     The client is injected, so nothing here reads a credential or names a tier —
     D5 keeps AI Studio and Vertex as two credentials behind one pinned model
@@ -208,11 +208,16 @@ class RecordedExtractionRunner:
         note_hashes: dict[str, str] | None = None,
         model: str | None = None,
         metrics: dict[str, CallMetrics] | None = None,
+        traces: dict[str, RunTrace] | None = None,
     ) -> None:
         self._payloads = dict(payloads)
         self._hashes = dict(note_hashes or {})
         self._model = model
         self._metrics = dict(metrics or {})
+        # The recorded run's trace, when the recording holds one: every turn
+        # the measurement spent, so a replay reports the re-ask a note cost
+        # and not only its first turn (T-89, D103; D71's rule one layer down).
+        self._traces = dict(traces or {})
         # sha256 -> the recorded document_id that carries the payload.
         self._by_hash = {digest: document_id for document_id, digest in self._hashes.items()}
 
@@ -229,6 +234,7 @@ class RecordedExtractionRunner:
         payloads: dict[str, dict] = {}
         hashes: dict[str, str] = {}
         metrics: dict[str, CallMetrics] = {}
+        traces: dict[str, RunTrace] = {}
         for record in records:
             document_id = record.get("document_id")
             raw = record.get("raw")
@@ -239,7 +245,9 @@ class RecordedExtractionRunner:
                 hashes[document_id] = record["note_sha256"]
             if record.get("metrics"):
                 metrics[document_id] = CallMetrics.model_validate(record["metrics"])
-        return cls(payloads, hashes, model=model, metrics=metrics)
+            if record.get("trace"):
+                traces[document_id] = RunTrace.model_validate(record["trace"])
+        return cls(payloads, hashes, model=model, metrics=metrics, traces=traces)
 
     @property
     def model(self) -> str | None:
@@ -278,7 +286,7 @@ class RecordedExtractionRunner:
             # that reported zero tokens would understate what the answer cost.
             # The result is built under the *requesting* id, so spans point into
             # the document the caller handed in.
-            return build_result(
+            result = build_result(
                 document_id, text, self._payloads[recorded_id],
                 self._metrics.get(recorded_id),
             )
@@ -290,6 +298,13 @@ class RecordedExtractionRunner:
                 f"recorded payload for {document_id} no longer validates: "
                 f"{type(exc).__name__}: {exc}",
             ) from exc
+        trace = self._traces.get(recorded_id)
+        if trace is not None:
+            # Every recorded turn, under the requesting id (D102's re-addressing
+            # applied to the trace). `None` stays `None` for a record without
+            # one: a replay invents no trace (T-62).
+            result.trace = trace.model_copy(update={"document_id": document_id})
+        return result
 
 
 class NullExtractionRunner:

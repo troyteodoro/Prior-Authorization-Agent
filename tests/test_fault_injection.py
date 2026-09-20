@@ -384,7 +384,11 @@ _ALLOWED_BROAD_SWALLOWS = {
     ("pa_agent/agent/extraction_agent.py", "on_tool_error_callback"):
         "recorder hook: notes its own failure on `failures`, never kills the run",
     ("pa_agent/agent/extraction_agent.py", "_invoke"):
-        "budget loop: stores the failure, re-raises classified at exhaustion",
+        "returns the failure classified; the first turn raises it, the re-ask "
+        "records it (D103)",
+    ("pa_agent/extraction.py", "reask_turn"):
+        "the re-ask never raises: a transport fault is recorded classified on "
+        "`reask.error` and the trace, and the first turn's result stands (D103)",
     ("pa_agent/agent/retrieval_agent.py", "_run"):
         "budget loop: stores the failure, re-raises classified at exhaustion",
 }

@@ -19,12 +19,12 @@ answers the second question, once.
 **What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
 and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
 spec §10's list of known limits, P1–P8, which D97 sequenced into one task
-each — `T-85` through `T-88` are closed and `T-89` is next; `T-81` is row
-6 of that sequence.
+each — `T-85` through `T-88` are closed and `T-89` is in progress; `T-81`
+is row 6 of that sequence.
 
-Sixty-eight tasks are on this board — IDs run to T-88 but numbering is not
+Sixty-nine tasks are on this board — IDs run to T-89 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **67 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **67 are closed and 2 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -62,7 +62,7 @@ row opens; the exit named here is the one D97 fixed.
 | 2 | P5 | `T-86` | **closed** (D99) | every `NOT_MET` from c2–c5 re-derives from its own citations, as a `STEPS` entry that maps failure to `ERROR` |
 | 3 | P1, first half | `T-87` | **closed** (D100, D101) | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
 | 4 | P1, second half | `T-88` | **closed** (D102) | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
-| 5 | P2, second half | `T-89` | pending | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
+| 5 | P2, second half | `T-89` | **in progress** (D103) | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
 | 6 | P7, P3, P4 | `T-81` | pending | two notes per patient, labels re-read, every recording re-measured |
 | 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
 | 8 | P6 | entry only | pending | the v2 path for REQ-44/47 logged; the unclaimed set unchanged |
@@ -1571,6 +1571,36 @@ unchanged (T-30, D77).
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[~] T-89` A bounded verbatim re-ask in the extraction runners
+**REQ:** 8, 35, 52, 56 · **Depends:** T-85, T-63, T-71 · **Discovered in:**
+spec §10 P2 *(D97, D98)* · **Decided by:** D103 · **Timebox:** two days plus
+three extraction rounds and one verifier round
+**Status:** **in progress** — row 5 of `Path to v2`; D103 written, code next
+**Exit:**
+```
+./venv/bin/python -m pytest tests/test_reask.py tests/test_adk_agent.py tests/test_extraction.py tests/test_adk_measurement.py tests/test_build_report.py -q --color=no \
+ && ./venv/bin/python scripts/run_extraction.py --rescore \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+Green means: both live runners re-ask at most once, for the verbatim text of
+every quote the anchorer refused, and patch only the quote fields they asked
+about; a failed re-ask is recorded in the trace, never raised; all three
+extraction recordings carry the code's `prompt_version`, a per-note `trace`
+whose turns the aggregate and the replay both count, and a `reask` block
+`--rescore` re-derives from the two payloads; the report's anchoring table
+shows re-asked and recovered per recording; every gate is green on the
+re-measured recordings.
+
+**Why this is the second half of P2.** T-85 made the loss a reported figure
+for zero calls. The mechanism that recovers it changes the call
+configuration, so it cannot close without re-measuring T-15's direct
+recording and both T-63 ADK recordings (D45, D98) — and the verifier
+recording after them if any cited span's text moved, because a claim digest
+is the sliced quote (D78). *Every turn counted* names the second defect: the
+direct measurement script summed one turn per note and the replay carried
+one, which D71's fix never reached.
 
 ### `[x] T-88` The second-jurisdiction patient and the `J1` case
 **REQ:** 1, 4, 25, 42, 55 · **Depends:** T-87, T-41, T-17 · **Discovered in:**

@@ -491,12 +491,18 @@ def test_the_cli_answers_a_covered_code_end_to_end(e1_patient):
     ]
     assert printed["gap_list"] == []
     assert printed["discrepancies"] == []
-    # Art. X: recorded, not estimated. The default runner replays T-15's
-    # recording, so the counters are that call's real measurements.
-    # 1 replayed extraction + 7 replayed verifications (T-17, D78): every
-    # cited verdict is checked, and the replay carries the recorded metrics
-    # through — a zero here would understate what the answer cost (Art. X).
-    assert printed["model_calls"] == 8
+    # Art. X: recorded, not estimated. The default runner replays the direct
+    # recording, so the counters are that measurement's real figures: every
+    # extraction turn the note cost (one, or two with T-89's re-ask — read
+    # from the recording rather than assumed) + 7 replayed verifications
+    # (T-17, D78), one per cited verdict. A zero here would understate what
+    # the answer cost.
+    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    note = LocalPatientStore().get_notes(e1_patient)[0]
+    record = next(r for r in recording["notes"] if r["document_id"] == note.document_id)
+    extraction_turns = len((record.get("trace") or {}).get("metrics") or [record["metrics"]])
+    assert extraction_turns >= 1
+    assert printed["model_calls"] == extraction_turns + 7
     assert printed["total_input_tokens"] > 0
     assert printed["total_wall_time_ms"] > 0
     assert printed["coverage_claim"] is None, (

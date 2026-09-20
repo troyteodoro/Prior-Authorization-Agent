@@ -37,7 +37,13 @@ from typing import Any, AsyncGenerator
 import pytest
 
 from pa_agent.contracts import Condition, Document, Observation, ToolCall
-from pa_agent.extraction import Extraction, build_result
+from pa_agent.extraction import (
+    REASK_INSTRUCTION,
+    REASK_ROUNDS,
+    Extraction,
+    VerbatimAnswers,
+    build_result,
+)
 from pa_agent.model_pin import PINNED_MODEL
 from pa_agent.runners import (
     ExtractionFailure,
@@ -56,8 +62,11 @@ from pa_agent.agent.extraction_agent import (
     EXTRACTION_ALLOWLIST,
     OUTPUT_KEY,
     PROMPT_VERSION,
+    REASK_AGENT_NAME,
+    REASK_OUTPUT_KEY,
     AdkExtractionRunner,
     build_extraction_agent,
+    build_reask_agent,
 )
 from pa_agent.agent.patient_tools import build_patient_tools
 from pa_agent.agent.policy_tools import build_policy_tools
@@ -553,13 +562,16 @@ def test_the_tool_fetch_variant_only_prepends_a_retrieval_step(e1_note) -> None:
 
 
 def test_the_run_is_bounded_by_a_call_ceiling() -> None:
-    """REQ-46. `max_llm_calls` is ADK's only budget knob and it counts LLM calls,
-    so one tool round trip costs two — the ceiling has to leave room for a tool
-    turn and no room for a loop."""
+    """REQ-46. `max_llm_calls` is ADK's only budget knob and it counts LLM calls
+    per invocation, so one tool round trip costs two — the ceiling has to leave
+    room for a tool turn and no room for a loop. A note is at most
+    `1 + REASK_ROUNDS` invocations (T-89), so the per-note ceiling is that many
+    times this, and it is still a small number."""
     assert DEFAULT_MAX_LLM_CALLS >= 2
     assert DEFAULT_MAX_LLM_CALLS <= 10, (
         "a ceiling this high stops bounding anything a loop would do"
     )
+    assert (1 + REASK_ROUNDS) * DEFAULT_MAX_LLM_CALLS <= 20
     runner = AdkExtractionRunner(max_llm_calls=DEFAULT_MAX_LLM_CALLS)
     assert runner._max_llm_calls == DEFAULT_MAX_LLM_CALLS
 
@@ -635,7 +647,9 @@ def test_every_span_the_adk_path_produced_still_slices_back(
 def test_a_fabricated_quote_never_becomes_evidence(e1_note) -> None:
     """The model returns a quote that is not in the note. It is counted in
     `dropped[]` and produces no event — which is the failure Article III exists to
-    catch, caught on string comparison rather than on judgment."""
+    catch, caught on string comparison rather than on judgment. Since T-89 the
+    runner asks once for the verbatim text; an answer of "no such passage" leaves
+    the drop exactly where it was."""
     payload = {
         "wm_events": [
             {
@@ -647,10 +661,12 @@ def test_a_fabricated_quote_never_becomes_evidence(e1_note) -> None:
         ],
         "program_assertions": [],
     }
-    result = _run_with_fake([json.dumps(payload)], e1_note)
+    result = _run_with_fake([json.dumps(payload), json.dumps({"quotes": []})], e1_note)
     assert result.events == []
     assert len(result.dropped) == 1
     assert result.dropped[0]["reason"] == "event_quote_unanchorable"
+    assert result.trace.steps == ["adk_run", "adk_reask"]
+    assert result.reask["unrecovered"] == ["wm_events[0].quote"]
 
 
 def test_a_fabricated_bmi_quote_demotes_the_bmi_and_keeps_the_event(
@@ -663,7 +679,7 @@ def test_a_fabricated_bmi_quote_demotes_the_bmi_and_keeps_the_event(
     payload["wm_events"][0]["bmi"] = 99.9
     payload["wm_events"][0]["bmi_quote"] = "BMI 99.9"
 
-    result = _run_with_fake([json.dumps(payload)], e1_note)
+    result = _run_with_fake([json.dumps(payload), json.dumps({"quotes": []})], e1_note)
     assert len(result.events) == len(e1_payload["wm_events"])
     first = result.events[0]
     assert first.bmi is None, "an uncitable BMI must not survive"
@@ -851,11 +867,169 @@ def test_a_fresh_session_per_note_so_one_note_cannot_see_another(
     )
 
 
-def test_the_recorded_runner_carries_no_trace(recording, e1_note) -> None:
-    """`None` rather than an empty trace, because a replay made no calls to trace
-    and an empty one would imply a run that recorded nothing."""
+def test_the_recorded_runner_carries_exactly_the_recorded_trace(recording, e1_note) -> None:
+    """A replay invents nothing: the trace is the recording's when the record
+    holds one (every turn the measurement spent, T-89) and `None` when it does
+    not — never an empty trace implying a run that recorded nothing."""
+    record = next(
+        r for r in recording["notes"] if r["document_id"] == e1_note.document_id
+    )
     recorded = RecordedExtractionRunner.from_records(recording["notes"])
-    assert recorded.run(e1_note.document_id, e1_note.text).trace is None
+    trace = recorded.run(e1_note.document_id, e1_note.text).trace
+    if record.get("trace") is None:
+        assert trace is None
+    else:
+        assert trace is not None
+        assert len(trace.metrics) == len(record["trace"]["metrics"])
+
+
+# --------------------------------------------------------------------------
+# 7b. The verbatim re-ask, through the ADK (T-89, REQ-56, D103)
+# --------------------------------------------------------------------------
+
+
+def _paraphrased(e1_payload: dict) -> dict:
+    payload = json.loads(json.dumps(e1_payload))
+    payload["wm_events"][0]["quote"] = "a quote that occurs nowhere in this note"
+    return payload
+
+
+def _verbatim_answer(e1_payload: dict) -> str:
+    return json.dumps(
+        {"quotes": [{"path": "wm_events[0].quote", "verbatim": e1_payload["wm_events"][0]["quote"]}]}
+    )
+
+
+@pytest.mark.parametrize("tool_fetch", [False, True])
+def test_the_reask_agent_mirrors_the_extractor_s_flags_allowlist_and_temperature(
+    e1_note, tool_fetch
+) -> None:
+    """One constructor builds both agents, and this is what that buys: the
+    re-ask can copy text from the one note in scope and do nothing else. Same
+    `include_contents`, same transfer flags, same tools, same temperature —
+    different name, instruction, schema and output key."""
+    store = _RecordingPatientStore(notes=[e1_note])
+    kwargs = dict(patient_store=store, tool_fetch=tool_fetch, document_id=e1_note.document_id)
+    extractor = build_extraction_agent(**kwargs)
+    reasker = build_reask_agent(**kwargs)
+
+    assert reasker.name == REASK_AGENT_NAME != extractor.name
+    assert reasker.include_contents == extractor.include_contents == "none"
+    assert reasker.disallow_transfer_to_parent and reasker.disallow_transfer_to_peers
+    assert reasker.generate_content_config.temperature == 0.0
+    assert reasker.output_schema is VerbatimAnswers
+    assert reasker.output_key == REASK_OUTPUT_KEY != OUTPUT_KEY
+    assert reasker.instruction.endswith(REASK_INSTRUCTION)
+    assert ("read_note" in reasker.instruction) is tool_fetch
+    names = {tool.name for tool in asyncio.run(reasker.canonical_tools())}
+    assert names == (set(EXTRACTION_ALLOWLIST) if tool_fetch else set())
+    assert "transfer_to_agent" not in names
+
+
+def test_an_unanchorable_quote_is_re_asked_in_a_second_self_contained_invocation(
+    e1_note, e1_payload
+) -> None:
+    """`include_contents="none"` keeps the first turn out of the second as it
+    keeps note N-1 out of note N, so the re-ask is a second invocation carrying
+    the note and the failed quote itself. One `llm=` instance serves both, so the
+    fake's cursor runs across them."""
+    fake = _fake_llm([json.dumps(_paraphrased(e1_payload)), _verbatim_answer(e1_payload)])
+    runner = AdkExtractionRunner(llm=fake)
+    result = runner.run(e1_note.document_id, e1_note.text)
+
+    assert len(fake.seen) == 2
+    second = fake.seen[1]
+    text = "\n".join(
+        part.text for content in second.contents for part in content.parts if part.text
+    )
+    assert "a quote that occurs nowhere in this note" in text
+    assert e1_note.text in text, "inline: the note travels in the re-ask message"
+    assert REASK_INSTRUCTION.splitlines()[0] in (second.config.system_instruction or "")
+
+    assert len(result.events) == len(e1_payload["wm_events"])
+    assert result.dropped == []
+    assert result.reask["recovered"] == ["wm_events[0].quote"]
+    assert result.trace.steps == ["adk_run", "adk_reask"]
+    assert [m.purpose for m in result.trace.metrics] == ["extraction", "extraction_reask"]
+    assert result.metrics is result.trace.metrics[0]
+    assert runner._counter == 1, "one session counter per note, not per invocation"
+
+
+def test_the_tool_fetch_reask_reads_the_note_through_the_scoped_reader(
+    e1_note, e1_payload
+) -> None:
+    """Under `tool_fetch` the note is not in the message, so the re-ask agent
+    re-reads it through `read_note` — the same scoped tool, one more round
+    trip, every turn counted."""
+    from google.genai import types
+
+    store = _RecordingPatientStore(notes=[e1_note])
+    fetch = types.Part(
+        function_call=types.FunctionCall(name="read_note", args={"document_id": e1_note.document_id})
+    )
+    runner = AdkExtractionRunner(
+        llm=_fake_llm([fetch, json.dumps(_paraphrased(e1_payload)), fetch, _verbatim_answer(e1_payload)]),
+        patient_store=store,
+        tool_fetch=True,
+    )
+    result = runner.run(e1_note.document_id, e1_note.text)
+
+    assert [call.name for call in result.trace.tool_calls] == ["read_note", "read_note"]
+    assert len(result.trace.metrics) == 4
+    assert result.reask["recovered"] == ["wm_events[0].quote"]
+    assert store.calls.count(("get_document", e1_note.document_id)) == 2
+    assert 4 <= (1 + REASK_ROUNDS) * DEFAULT_MAX_LLM_CALLS
+
+
+def test_a_still_bad_second_answer_keeps_the_drop_and_asks_no_third_time(
+    e1_note, e1_payload
+) -> None:
+    fake = _fake_llm(
+        [
+            json.dumps(_paraphrased(e1_payload)),
+            json.dumps({"quotes": [{"path": "wm_events[0].quote", "verbatim": "still not there"}]}),
+        ]
+    )
+    result = AdkExtractionRunner(llm=fake).run(e1_note.document_id, e1_note.text)
+
+    assert fake.cursor == 1, "exactly two model turns"
+    assert [d["reason"] for d in result.dropped] == ["event_quote_unanchorable"]
+    assert result.reask["unrecovered"] == ["wm_events[0].quote"]
+    assert result.reask["error"] is None
+
+
+def test_a_reask_answer_the_schema_rejects_is_recorded_not_raised(
+    e1_note, e1_payload
+) -> None:
+    """ADK validates the second answer against `VerbatimAnswers` and raises
+    out of the run; the runner records that as the re-ask's classified error
+    and the first turn's result stands (D103)."""
+    fake = _fake_llm([json.dumps(_paraphrased(e1_payload)), json.dumps(_paraphrased(e1_payload))])
+    result = AdkExtractionRunner(llm=fake).run(e1_note.document_id, e1_note.text)
+
+    assert result.reask["error"].startswith("SCHEMA_INVALID")
+    assert result.reask["unrecovered"] == ["wm_events[0].quote"]
+    assert len(result.events) == len(e1_payload["wm_events"]) - 1
+    assert "SCHEMA_INVALID" in result.trace.termination_reason
+
+
+def test_the_reask_invocation_has_its_own_session(e1_note, e1_payload, monkeypatch) -> None:
+    """Two sessions per note when a re-ask runs — derived from one counter, so
+    the ids differ and neither is the previous note's."""
+    seen: list[str] = []
+    runner = AdkExtractionRunner(
+        llm=_fake_llm([json.dumps(_paraphrased(e1_payload)), _verbatim_answer(e1_payload)])
+    )
+    original = runner._invoke
+
+    def spy(agent, message, output_key, session_id, purpose):
+        seen.append(session_id)
+        return original(agent, message, output_key, session_id, purpose)
+
+    monkeypatch.setattr(runner, "_invoke", spy)
+    runner.run(e1_note.document_id, e1_note.text)
+    assert len(seen) == 2 and len(set(seen)) == 2
+    assert seen[1].startswith(seen[0])
 
 
 # --------------------------------------------------------------------------

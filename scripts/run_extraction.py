@@ -1,7 +1,13 @@
 """T-15 — run extraction over both note corpora and record the measurement (D45).
 
-    python scripts/run_extraction.py            # spends one model call per note
+    python scripts/run_extraction.py            # spends one model call per note, two on a re-ask
     python scripts/run_extraction.py --rescore  # re-anchors recorded payloads, no calls
+
+Since T-89 (D103) a note whose first turn returned a quote Python could not
+locate costs a second call — the verbatim re-ask — and every turn is on the
+record: per note as `trace`, and in the aggregate through `turn_metrics()`,
+which is D71's rule (count every model turn, not just the first) applied to
+the one measurement script it had not reached.
 
 `pytest tests/test_extraction.py` verifies what this writes and spends
 nothing. That split is D17's, and D45 keeps it for D17's reasons: a gate that
@@ -34,11 +40,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from pa_agent.contracts import CallMetrics  # noqa: E402
+from pa_agent.contracts import CallMetrics, RunTrace  # noqa: E402
 from pa_agent.extraction import (  # noqa: E402
     EXTRACTION_TEMPERATURE,
+    PROMPT_VERSION,
+    REASK_ROUNDS,
     build_result,
     extract,
+    reask_targets,
 )
 from pa_agent.model_pin import PINNED_MODEL  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
@@ -204,6 +213,108 @@ def score(case: dict, result) -> dict:
     }
 
 
+def turn_metrics(records: list[dict]) -> list[dict]:
+    """Every model turn's metrics, not just the first one of each note (D71).
+
+    A record carries a singular `metrics` — the `ExtractionResult`'s, which is
+    turn one — and a `trace` whose `metrics` list holds **every** turn. Since
+    T-89 a direct note can cost two (the re-ask), and summing the singular field
+    would drop the second: the 12.1x undercount D71 measured on the tool-fetch
+    path, one script over. Article X says measured, never estimated. The
+    fallback to the singular field is for a recording written before traces
+    existed, which aggregates the only thing it has.
+    """
+    out: list[dict] = []
+    for record in records:
+        turns = (record.get("trace") or {}).get("metrics") or []
+        if turns:
+            out.extend(turns)
+        elif record.get("metrics"):
+            out.append(record["metrics"])
+    return out
+
+
+def reask_figures(records: list[dict]) -> dict:
+    """What T-89's re-ask did across a recording (REQ-56, D103), from the
+    per-note `reask` blocks: notes re-asked, quotes asked about, quotes
+    recovered, and the re-ask turns spent."""
+    blocks = [r["reask"] for r in records if r.get("reask")]
+    return {
+        "reask_notes": len(blocks),
+        "reask_targets": sum(len(b["targets"]) for b in blocks),
+        "reask_recovered": sum(len(b["recovered"]) for b in blocks),
+        "reask_calls": sum(
+            1 for m in turn_metrics(records) if m.get("purpose") == "extraction_reask"
+        ),
+    }
+
+
+def _rederive_reask(result, prior: dict, document_id: str, text: str) -> None:
+    """`--rescore`'s half of the re-ask: the recovered set re-derived by
+    anchoring both payloads, never copied from the record (D18's rule applied
+    to T-89's audit). The answers, the error and the trace are the measured
+    facts and carry through unchanged."""
+    result.trace = RunTrace.model_validate(prior["trace"]) if prior.get("trace") else None
+    if not prior.get("reask"):
+        return
+    first = build_result(document_id, text, prior["raw_first_turn"])
+    targets = reask_targets(first)
+    still = {drop.get("path") for drop in result.dropped}
+    result.raw_first_turn = prior["raw_first_turn"]
+    result.reask = {
+        **prior["reask"],
+        "targets": targets,
+        "recovered": [t["path"] for t in targets if t["path"] not in still],
+        "unrecovered": [t["path"] for t in targets if t["path"] in still],
+    }
+
+
+def aggregate(records: list[dict]) -> dict:
+    """The recording's headline figures over every scored record. Token
+    and call totals sum **every** turn through `turn_metrics` (D71, D103);
+    everything else sums the per-note `score` blocks."""
+    matched = sum(r["score"]["matched_events"] for r in records)
+    extracted = sum(r["score"]["extracted_events"] for r in records)
+    labeled = sum(r["score"]["labeled_events"] for r in records)
+    req9_total = sum(r["score"]["traps_req9"] for r in records)
+    req9_taken = sum(len(r["score"]["req9_traps_extracted"]) for r in records)
+    spans_emitted = sum(r["score"]["spans_emitted"] for r in records)
+    spans_anchored = sum(r["score"]["spans_anchored"] for r in records)
+    offsets_usable = sum(r["score"]["model_offsets_usable"] for r in records)
+    field_ok = sum(r["score"]["field_agreements"] for r in records)
+    field_total = sum(r["score"]["field_total"] for r in records)
+    turns = turn_metrics(records)
+
+    return {
+        "notes": len(records),
+        "labeled_events": labeled,
+        "extracted_events": extracted,
+        "matched_events": matched,
+        "precision": round(matched / extracted, 4) if extracted else None,
+        "recall": round(matched / labeled, 4) if labeled else None,
+        "req9_traps": req9_total,
+        "req9_traps_excluded": req9_total - req9_taken,
+        "req9_exclusion_recall": (
+            round((req9_total - req9_taken) / req9_total, 4) if req9_total else None
+        ),
+        "spans_emitted": spans_emitted,
+        "spans_anchored": spans_anchored,
+        "spans_normalized": sum(r["score"]["spans_normalized"] for r in records),
+        "spans_unescaped": sum(r["score"]["spans_unescaped"] for r in records),
+        "spans_multi_occurrence": sum(r["score"]["spans_multi_occurrence"] for r in records),
+        "spans_disambiguated": sum(r["score"]["spans_disambiguated"] for r in records),
+        "model_offsets_usable": offsets_usable,
+        "field_agreement": round(field_ok / field_total, 4) if field_total else None,
+        "field_total": field_total,
+        **reask_figures(records),
+        # Every turn, not just the first (D71, D103).
+        "model_calls": len(turns),
+        "total_input_tokens": sum(m["input_tokens"] for m in turns),
+        "total_output_tokens": sum(m["output_tokens"] for m in turns),
+        "total_wall_time_ms": round(sum(m["wall_time_ms"] for m in turns), 1),
+    }
+
+
 def main() -> int:
     rescore = "--rescore" in sys.argv
     cases = spike_cases() + synthesized_cases()
@@ -243,17 +354,28 @@ def main() -> int:
                 case["document_id"], case["text"], prior["raw"],
                 CallMetrics.model_validate(prior["metrics"]) if prior["metrics"] else None,
             )
+            _rederive_reask(result, prior, case["document_id"], case["text"])
         else:
             for attempt in range(RETRIES):
                 try:
                     result = extract(case["document_id"], case["text"], client)
-                    break
                 except Exception as exc:  # noqa: BLE001 — retried, then re-raised
                     if attempt == RETRIES - 1:
                         raise
                     wait = 2 ** attempt * 5
                     print(f"  {case['note_id']}: {type(exc).__name__}, retry in {wait}s")
                     time.sleep(wait)
+                    continue
+                reask_error = (result.reask or {}).get("error") or ""
+                if reask_error.startswith("CALL_FAILED") and attempt < RETRIES - 1:
+                    # A re-ask that failed on transport is not a measurement of
+                    # the re-ask; the note is re-run whole (D103). A re-ask the
+                    # model answered badly is a finding and stays (D71).
+                    wait = 2 ** attempt * 5
+                    print(f"  {case['note_id']}: re-ask {reask_error[:60]}, retry in {wait}s")
+                    time.sleep(wait)
+                    continue
+                break
 
         scored = score(case, result)
         records.append({
@@ -288,67 +410,44 @@ def main() -> int:
                 if result.current_bmi_span else None
             ),
             "metrics": result.metrics.model_dump(mode="json") if result.metrics else None,
-            # The model's own output, kept so a future anchoring rule can be
-            # replayed without spending the corpus again (D18, D46).
+            # Every turn (D71, D103): the re-ask is the second entry when there
+            # was one. `RecordedExtractionRunner` replays this whole.
+            "trace": result.trace.model_dump(mode="json") if result.trace else None,
+            # The payload the result was built from — patched after a re-ask —
+            # kept so a future anchoring rule can be replayed without spending
+            # the corpus again (D18, D46), and the model's first answer beside
+            # it so the re-ask's effect is re-derivable (T-89).
             "raw": result.raw,
+            "raw_first_turn": result.raw_first_turn,
+            "reask": result.reask,
             "score": scored,
         })
+        reask_note = ""
+        if result.reask:
+            reask_note = (
+                f" reask {len(result.reask['recovered'])}/"
+                f"{len(result.reask['targets'])} recovered"
+                + (f" ({result.reask['error'][:40]})" if result.reask["error"] else "")
+            )
         print(
             f"  {case['note_id']:<24} events {scored['matched_events']}/"
             f"{scored['labeled_events']} extracted {scored['extracted_events']} "
             f"traps_taken {len(scored['traps_extracted'])} "
             f"assertions {scored['assertions']} "
-            f"spans {scored['spans_anchored']}/{scored['spans_emitted']}"
+            f"spans {scored['spans_anchored']}/{scored['spans_emitted']}{reask_note}"
         )
 
-    matched = sum(r["score"]["matched_events"] for r in records)
-    extracted = sum(r["score"]["extracted_events"] for r in records)
-    labeled = sum(r["score"]["labeled_events"] for r in records)
-    req9_total = sum(r["score"]["traps_req9"] for r in records)
-    req9_taken = sum(len(r["score"]["req9_traps_extracted"]) for r in records)
-    spans_emitted = sum(r["score"]["spans_emitted"] for r in records)
-    spans_anchored = sum(r["score"]["spans_anchored"] for r in records)
-    offsets_usable = sum(r["score"]["model_offsets_usable"] for r in records)
-    field_ok = sum(r["score"]["field_agreements"] for r in records)
-    field_total = sum(r["score"]["field_total"] for r in records)
-
-    aggregate = {
-        "notes": len(records),
-        "labeled_events": labeled,
-        "extracted_events": extracted,
-        "matched_events": matched,
-        "precision": round(matched / extracted, 4) if extracted else None,
-        "recall": round(matched / labeled, 4) if labeled else None,
-        "req9_traps": req9_total,
-        "req9_traps_excluded": req9_total - req9_taken,
-        "req9_exclusion_recall": (
-            round((req9_total - req9_taken) / req9_total, 4) if req9_total else None
-        ),
-        "spans_emitted": spans_emitted,
-        "spans_anchored": spans_anchored,
-        "spans_normalized": sum(r["score"]["spans_normalized"] for r in records),
-        "spans_unescaped": sum(r["score"]["spans_unescaped"] for r in records),
-        "spans_multi_occurrence": sum(r["score"]["spans_multi_occurrence"] for r in records),
-        "spans_disambiguated": sum(r["score"]["spans_disambiguated"] for r in records),
-        "model_offsets_usable": offsets_usable,
-        "field_agreement": round(field_ok / field_total, 4) if field_total else None,
-        "field_total": field_total,
-        "total_input_tokens": sum(
-            r["metrics"]["input_tokens"] for r in records if r["metrics"]
-        ),
-        "total_output_tokens": sum(
-            r["metrics"]["output_tokens"] for r in records if r["metrics"]
-        ),
-        "total_wall_time_ms": round(
-            sum(r["metrics"]["wall_time_ms"] for r in records if r["metrics"]), 1
-        ),
-    }
+    aggregate_figures = aggregate(records)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(
         json.dumps({
-            "task": "T-15",
-            "decision": "D45",
+            # T-89's measurement of the direct runner (D103), superseding
+            # T-15's (D45): same corpus, same scorer, a changed call
+            # configuration — so a new measurement, stamped as one.
+            "task": "T-89",
+            "decision": "D103",
+            "supersedes": "T-15 (D45)",
             "measured_at": (
                 previous["measured_at"] if rescore
                 else datetime.now(timezone.utc).isoformat()
@@ -356,18 +455,20 @@ def main() -> int:
             "rescored_at": datetime.now(timezone.utc).isoformat() if rescore else None,
             "model": PINNED_MODEL,
             "tier": "ai_studio",
+            "prompt_version": PROMPT_VERSION,
+            "reask_rounds": REASK_ROUNDS,
             "temperature": EXTRACTION_TEMPERATURE,
             "schema_note": (
                 "Wider than spike 001's: REQ-38 per-field diet/activity spans and "
                 "the BMI as a value with its own span. D19's numbers belong to the "
                 "narrow schema and are not re-run here (D45)."
             ),
-            "aggregate": aggregate,
+            "aggregate": aggregate_figures,
             "notes": records,
         }, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    print(json.dumps(aggregate, indent=2))
+    print(json.dumps(aggregate_figures, indent=2))
     print(f"written: {OUT_PATH.relative_to(REPO_ROOT)}")
     return 0
 

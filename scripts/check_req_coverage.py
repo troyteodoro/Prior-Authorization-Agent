@@ -61,6 +61,7 @@ MAPPING: dict[str, str] = {
     "REQ-38": "tests/test_extraction.py",
     "REQ-52": "tests/test_workflow.py",
     "REQ-53": "tests/test_adk_agent.py",
+    "REQ-56": "tests/test_reask.py",
     # Agentic orchestration
     "REQ-43": "tests/test_agentic_workflow.py",
     "REQ-45": "tests/test_agentic_workflow.py",

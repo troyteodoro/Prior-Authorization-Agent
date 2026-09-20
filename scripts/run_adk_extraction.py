@@ -123,6 +123,9 @@ COMPARED = (
     "spans_anchored",
     "spans_emitted",
     "model_offsets_usable",
+    "reask_targets",
+    "reask_recovered",
+    "model_calls",
     "total_input_tokens",
     "total_output_tokens",
     "total_wall_time_ms",
@@ -137,6 +140,9 @@ def _load_run_extraction():
     the corpus builder and the scorer must be *identical* for a comparison to mean
     anything, and identical is what one import guarantees.
     """
+    cached = sys.modules.get("run_extraction")
+    if cached is not None and getattr(cached, "turn_metrics", None) is not None:
+        return cached
     path = Path(__file__).resolve().parent / "run_extraction.py"
     spec = importlib.util.spec_from_file_location("run_extraction", path)
     assert spec is not None and spec.loader is not None
@@ -232,6 +238,7 @@ def measure(tool_fetch: bool, limit: int | None = None) -> int:
         PROMPT_VERSION,
         AdkExtractionRunner,
     )
+    from pa_agent.extraction import REASK_ROUNDS
 
     cases = base.spike_cases() + base.synthesized_cases()
     if limit is not None:
@@ -313,24 +320,35 @@ def measure(tool_fetch: bool, limit: int | None = None) -> int:
                 "metrics": (
                     result.metrics.model_dump(mode="json") if result.metrics else None
                 ),
-                # REQ-49: the tool-call sequence, attempts and termination reason.
-                # The direct recording has no equivalent, which is itself part of
-                # what the two runners differ by.
+                # REQ-49: the tool-call sequence, attempts and termination reason,
+                # every turn's metrics on it (D71) — the re-ask's included (D103).
                 "trace": trace.model_dump(mode="json") if trace else None,
                 "raw": result.raw,
+                "raw_first_turn": result.raw_first_turn,
+                "reask": result.reask,
                 "score": scored,
             }
         )
+        if result.reask:
+            print(
+                f"      reask {len(result.reask['recovered'])}/"
+                f"{len(result.reask['targets'])} recovered"
+                + (f" ({result.reask['error'][:40]})" if result.reask["error"] else "")
+            )
 
     payload = {
-        "task": "T-63",
-        "decision": "D62",
+        # T-89's measurement of the ADK runner (D103), superseding T-63's
+        # (D71): a changed call configuration is a new measurement (D45).
+        "task": "T-89",
+        "decision": "D103",
+        "supersedes": "T-63 (D71)",
         "runner": "adk",
         "tool_fetch": tool_fetch,
         "measured_at": datetime.now(timezone.utc).isoformat(),
         "model": PINNED_MODEL,
         "tier": MEASURED_TIER,
         "prompt_version": PROMPT_VERSION,
+        "reask_rounds": REASK_ROUNDS,
         "temperature": 0.0,
         "adk_version": _adk_version(),
         "schema_note": (
@@ -463,6 +481,8 @@ def _aggregate(every: list[dict], nest: bool = True) -> dict:
             else None
         ),
         "tool_calls": tool_calls,
+        **_load_run_extraction().reask_figures(scored),
+        "model_calls": len(metrics),
         "total_input_tokens": sum(m["input_tokens"] for m in metrics),
         "total_output_tokens": sum(m["output_tokens"] for m in metrics),
         "total_wall_time_ms": round(sum(m["wall_time_ms"] for m in metrics), 1),
@@ -473,32 +493,12 @@ def _aggregate(every: list[dict], nest: bool = True) -> dict:
 def _turn_metrics(scored: list[dict]) -> list[dict]:
     """Every model turn's metrics, not just the first one of each note (T-63).
 
-    A note's record carries a singular `metrics` — the `ExtractionResult`'s, which
-    is turn one — and a `trace` whose `metrics` list holds **every** turn the
-    recorder saw. Under `--tool-fetch` a note costs two turns: the model calls
-    `read_note`, and then answers. Summing the singular field counts the tool-call
-    turn and drops the one carrying the extraction.
-
-    Measured on this task's own recording: input understated 2.27x, wall 3.65x,
-    and **output tokens 12.1x** — 330 reported against 3,992 actually spent. It
-    also inverted the comparison's sign, reporting the tool path as cheaper and
-    faster than the direct runner when it is 3.6x the input tokens and slower.
-
-    Article X says cost is measured and never estimated; a total that silently
-    omits half the turns is an estimate wearing instrumentation's clothes. This is
-    the same defect commit 89d2cd1 fixed for determinations — *count every model
-    turn, not just the first* — reappearing one layer down, which is why the fallback
-    below is deliberate rather than defensive: a recording written before traces
-    existed still aggregates, and it aggregates the only thing it has.
+    The rule is D71's and since T-89 it lives in `scripts/run_extraction.py` as
+    `turn_metrics`, because the direct runner can now spend two turns on a note
+    too (D103) — one rule, one place, both recordings. Kept here by name so the
+    tests that pinned the 12.1x undercount keep pinning it.
     """
-    out: list[dict] = []
-    for record in scored:
-        turns = (record.get("trace") or {}).get("metrics") or []
-        if turns:
-            out.extend(turns)
-        elif record.get("metrics"):
-            out.append(record["metrics"])
-    return out
+    return _load_run_extraction().turn_metrics(scored)
 
 
 def _covered(recording: dict) -> dict[str, dict]:

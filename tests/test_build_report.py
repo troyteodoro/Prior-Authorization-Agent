@@ -452,8 +452,8 @@ def _recording(*notes, task="T-63", runner="adk", tool_fetch=False):
     return payload
 
 
-def _note(note_id, emitted, anchored, *, dropped=(), required=False, assertions=0):
-    return {
+def _note(note_id, emitted, anchored, *, dropped=(), required=False, assertions=0, reask=None, raw=None):
+    note = {
         "note_id": note_id,
         "score": {
             "spans_emitted": emitted,
@@ -463,6 +463,47 @@ def _note(note_id, emitted, anchored, *, dropped=(), required=False, assertions=
             "assertions": assertions,
         },
     }
+    if reask is not None:
+        note["reask"] = reask
+    if raw is not None:
+        note["raw"] = raw
+    return note
+
+
+def test_anchoring_reports_the_reask_per_recording_from_the_note_blocks(script):
+    """T-89's columns, recomputed from each note's `reask` block — never from
+    the stored aggregate (T-71) — and the recovered quote named beside its
+    note, read from the patched payload at the audited path."""
+    rows = script._anchoring_rows(
+        {
+            "x.json": _recording(
+                _note("plain", 4, 4),
+                _note(
+                    "asked", 3, 3,
+                    reask={
+                        "targets": [
+                            {"path": "program_assertions[0].quote", "reason": "assertion_quote_unanchorable", "quote": "completed a"},
+                            {"path": "wm_events[0].bmi_quote", "reason": "bmi_quote_unanchorable", "quote": "BMI 9"},
+                        ],
+                        "answers": [], "recovered": ["program_assertions[0].quote"],
+                        "unrecovered": ["wm_events[0].bmi_quote"], "error": None,
+                    },
+                    raw={"wm_events": [{"bmi_quote": "BMI 9"}],
+                         "program_assertions": [{"quote": "completing a\nsix-month program"}]},
+                ),
+            ),
+            "y.json": _recording(_note("old", 2, 2)),
+        }
+    )
+    by_file = {row["file"]: row for row in rows}
+    assert by_file["x.json"]["reask_notes"] == 1
+    assert by_file["x.json"]["reask_targets"] == 2
+    assert by_file["x.json"]["reask_recovered"] == 1
+    assert by_file["x.json"]["recovered"] == [
+        {"note_id": "asked", "path": "program_assertions[0].quote", "quote": "completing a six-month program"}
+    ]
+    assert (by_file["y.json"]["reask_targets"], by_file["y.json"]["reask_recovered"]) == (0, 0)
+    assert by_file["y.json"]["recovered"] == []
 
 
 def test_anchoring_reads_every_committed_recording(script):

@@ -20,12 +20,15 @@ zero of eighty model-emitted offset pairs usable.
 
 from __future__ import annotations
 
+import copy
 import json
+import re
 import time
 from dataclasses import dataclass, field
 from datetime import date
+from typing import Callable
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from pa_agent.anchor import AnchoredSpan, anchor
 from pa_agent.contracts import (
@@ -33,11 +36,30 @@ from pa_agent.contracts import (
     EvidenceSpan,
     ProgramAssertion,
     RunTrace,
+    ToolCall,
     WmEvent,
 )
 from pa_agent.model_pin import PINNED_MODEL
 
 EXTRACTION_TEMPERATURE = 0.0  # Art. II: the same note yields the same events
+
+#: A version identifier for the whole extraction call configuration, recorded
+#: on every trace and every recording (REQ-49). Two halves, because the
+#: configuration has two: the instruction the first turn carries, unchanged
+#: since T-15, and the verbatim re-ask T-89 added (D103). Bumped when either
+#: changes — a measurement is only attributable while the configuration it
+#: was measured on is identifiable (D20's argument about the model pin,
+#: applied to the request; D45 and D64 on what counts as a changed request).
+PROMPT_VERSION = "t15-instruction-v1/t89-reask-v1"
+
+#: How many times a note's unanchorable quotes are re-asked for their verbatim
+#: text (REQ-56, D103). One. A second answer is verbatim or it is not, and a
+#: third ask with the same note and the same quotes is a loop; the first turn
+#: already had the instruction to copy character for character. This is a
+#: different axis from `pa_agent.workflow.DEFAULT_MAX_ATTEMPTS`, which retries
+#: *failures* — this retries a partial success. Zero turns the mechanism off
+#: without removing it, which is D103's reversal condition.
+REASK_ROUNDS = 1
 
 
 # --------------------------------------------------------------------------
@@ -99,6 +121,26 @@ class Extraction(BaseModel):
             "Else empty."
         ),
     )
+
+
+class VerbatimQuote(BaseModel):
+    """One re-ask answer: the verbatim passage for a path the runner listed."""
+
+    path: str = Field(description="The path the quote was listed under, copied exactly.")
+    verbatim: str = Field(
+        description=(
+            "The passage exactly as it appears in the note, copied character "
+            "for character, or an empty string if the note has no such passage."
+        )
+    )
+
+
+class VerbatimAnswers(BaseModel):
+    """The re-ask's response schema (REQ-56, D103). `quotes` is required: a
+    payload of another shape arriving here is a schema failure, recorded as
+    one, never read as "no answers"."""
+
+    quotes: list[VerbatimQuote]
 
 
 # The spike's instruction, unchanged except for the two REQ-38 quote fields.
@@ -163,6 +205,47 @@ A BMI belonging to a listed encounter goes on that wm_event and not here. A
 note may have both, one, or neither.
 """
 
+# T-89's second turn (REQ-56, D103). Sent only when the first turn returned a
+# quote Python could not locate, with the note and the failed quotes. It asks
+# for text and nothing else: no offsets (D17, D19), no dates, no judgment.
+REASK_INSTRUCTION = """\
+You are correcting citations from a clinical note for a prior authorization
+review. Earlier, quotes were copied from this note, and the ones listed below
+do not appear in it character for character.
+
+For each listed quote, find the passage in the note it was taken from and
+return that passage exactly as it appears in the note: the same words, the
+same spelling, the same punctuation, copied contiguously. Do not paraphrase,
+shorten, summarize, or correct it. Return each answer under the path it was
+listed with.
+
+If the note contains no passage the quote could have been taken from, return
+an empty string for that path. Return nothing for paths that were not listed.
+Return only what the schema defines. Do not explain.
+"""
+
+#: The heading under which the failed quotes are listed in the re-ask message.
+REASK_QUOTES_HEADING = "QUOTES THAT DO NOT APPEAR IN THE NOTE:"
+
+
+def format_targets(targets: list[dict]) -> str:
+    """The failed quotes, listed for the model under their paths.
+
+    One rendering shared by both runners, so the two re-asks differ only by
+    how the note reaches the model — inline in the message, or through
+    `read_note` — and not by what they are asked.
+    """
+    lines = [REASK_QUOTES_HEADING]
+    for target in targets:
+        lines.append(f"- path: {target['path']}")
+        lines.append(f"  quote: {json.dumps(target['quote'], ensure_ascii=False)}")
+    return "\n".join(lines)
+
+
+def reask_contents(text: str, targets: list[dict]) -> str:
+    """The direct runner's whole second request: instruction, note, quotes."""
+    return f"{REASK_INSTRUCTION}\n\nNOTE:\n{text}\n\n{format_targets(targets)}"
+
 
 # --------------------------------------------------------------------------
 # Result
@@ -188,9 +271,22 @@ class ExtractionResult:
     current_bmi: float | None = None
     current_bmi_span: EvidenceSpan | None = None
     anchored_spans: list[AnchoredSpan] = field(default_factory=list)
+    # `{"reason", "quote", "path"}` per drop; `path` names the payload field
+    # the quote came from (`wm_events[2].bmi_quote`), which is how T-89's
+    # re-ask knows what to ask about. A drop that is not a quote — an
+    # unparseable date — carries no path and is never re-asked.
     dropped: list[dict] = field(default_factory=list)
+    # Turn one's measurement. Every turn is on `trace.metrics` (D71, D103).
     metrics: CallMetrics | None = None
+    # The payload this result was built from. After a re-ask that is the
+    # *patched* payload, so replaying `raw` through `build_result` reproduces
+    # the result exactly; the model's first answer is `raw_first_turn`.
     raw: dict | None = None
+    raw_first_turn: dict | None = None
+    # T-89 (REQ-56, D103): what was re-asked and what came of it — `targets`,
+    # `answers`, `recovered`, `unrecovered`, `error` — or `None` when the first
+    # turn left nothing to ask about.
+    reask: dict | None = None
     # T-62: how the runner reached this result — tool-call sequence, attempts,
     # termination reason (REQ-49). Optional because a replay of a recorded
     # payload made no calls to trace, and `None` says so rather than an empty
@@ -201,12 +297,14 @@ class ExtractionResult:
 def _anchor_or_drop(
     document_id: str, text: str, quote: str, m_start: int, m_end: int,
     dropped: list[dict], reason: str, spans: list[AnchoredSpan],
-    prefer_near: tuple[int, int] | None = None,
+    prefer_near: tuple[int, int] | None = None, *, path: str,
 ) -> AnchoredSpan | None:
     located = anchor(document_id, text, quote, m_start, m_end, prefer_near)
     spans.append(located)
     if not located.anchored:
-        dropped.append({"reason": reason, "quote": quote[:120]})
+        # The quote is truncated for the record; the re-ask reads the full one
+        # back out of the payload at `path` (T-89).
+        dropped.append({"reason": reason, "quote": quote[:120], "path": path})
         return None
     return located
 
@@ -222,11 +320,12 @@ def build_result(
     extraction = Extraction.model_validate(payload)
     result = ExtractionResult(document_id=document_id, metrics=metrics, raw=payload)
 
-    for raw_event in extraction.wm_events:
+    for index, raw_event in enumerate(extraction.wm_events):
+        at = f"wm_events[{index}]"
         located = _anchor_or_drop(
             document_id, text, raw_event.quote, raw_event.char_start,
             raw_event.char_end, result.dropped, "event_quote_unanchorable",
-            result.anchored_spans,
+            result.anchored_spans, path=f"{at}.quote",
         )
         if located is None:
             continue
@@ -251,6 +350,7 @@ def build_result(
             located_bmi = _anchor_or_drop(
                 document_id, text, raw_event.bmi_quote, -1, -1, result.dropped,
                 "bmi_quote_unanchorable", result.anchored_spans, near,
+                path=f"{at}.bmi_quote",
             )
             if located_bmi is None:
                 # D15: a BMI nobody can cite is not a documented BMI. Dropping
@@ -262,6 +362,7 @@ def build_result(
             located_diet = _anchor_or_drop(
                 document_id, text, raw_event.diet_quote, -1, -1, result.dropped,
                 "diet_quote_unanchorable", result.anchored_spans, near,
+                path=f"{at}.diet_quote",
             )
             if located_diet is None:
                 diet = False
@@ -271,6 +372,7 @@ def build_result(
             located_activity = _anchor_or_drop(
                 document_id, text, raw_event.activity_quote, -1, -1, result.dropped,
                 "activity_quote_unanchorable", result.anchored_spans, near,
+                path=f"{at}.activity_quote",
             )
             if located_activity is None:
                 activity = False
@@ -296,17 +398,17 @@ def build_result(
         located_current = _anchor_or_drop(
             document_id, text, extraction.current_bmi_quote, -1, -1,
             result.dropped, "current_bmi_quote_unanchorable",
-            result.anchored_spans,
+            result.anchored_spans, path="current_bmi_quote",
         )
         if located_current is not None:
             result.current_bmi = extraction.current_bmi
             result.current_bmi_span = located_current.to_span()
 
-    for raw_assertion in extraction.program_assertions:
+    for index, raw_assertion in enumerate(extraction.program_assertions):
         located = _anchor_or_drop(
             document_id, text, raw_assertion.quote, raw_assertion.char_start,
             raw_assertion.char_end, result.dropped, "assertion_quote_unanchorable",
-            result.anchored_spans,
+            result.anchored_spans, path=f"program_assertions[{index}].quote",
         )
         if located is None:
             continue
@@ -318,36 +420,257 @@ def build_result(
 
 
 # --------------------------------------------------------------------------
+# The verbatim re-ask (T-89, REQ-56, D103). Model-free: what to ask, how to
+# apply an answer, and the fixed two-step that every live runner walks.
+# --------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Turn:
+    """What one model turn produced, as a runner reports it.
+
+    `payload` is the parsed answer or `None`; `metrics` and `tool_calls` are
+    everything the turn spent (a tool round trip is two entries); `error` is a
+    classified `"REASON: detail"` string when the turn failed. A first turn
+    raises instead — the contract is `first_turn` raises, `reask_turn` never
+    does, and `Turn.error` is how the second reports.
+    """
+
+    payload: dict | None
+    metrics: list[CallMetrics] = field(default_factory=list)
+    tool_calls: list[ToolCall] = field(default_factory=list)
+    termination: str = "ok"
+    error: str | None = None
+
+
+_PATH = re.compile(r"^(wm_events|program_assertions)\[(\d+)\]\.(\w+)$|^(current_bmi_quote)$")
+
+#: The payload fields a re-ask may write. Anything else — a date, a flag, a
+#: BMI value, a claim — is not a quote and stays as the first turn left it.
+_QUOTE_FIELDS = frozenset({"quote", "bmi_quote", "diet_quote", "activity_quote"})
+
+
+def _locate(payload: dict, path: str) -> tuple[dict, str]:
+    """The container and key a path names, or `KeyError` for a path that names
+    nothing in this payload — a model-invented path is never applied."""
+    match = _PATH.match(path)
+    if match is None:
+        raise KeyError(path)
+    if match.group(4):
+        return payload, "current_bmi_quote"
+    collection, index, fieldname = match.group(1), int(match.group(2)), match.group(3)
+    if fieldname not in _QUOTE_FIELDS:
+        raise KeyError(path)
+    items = payload.get(collection) or []
+    if index >= len(items):
+        raise KeyError(path)
+    return items[index], fieldname
+
+
+def reask_targets(result: ExtractionResult) -> list[dict]:
+    """The quotes to re-ask about: every drop that is a quote Python could not
+    locate, with the full quote read back out of the payload.
+
+    Only `*_quote_unanchorable` reasons qualify. An unparseable date is not a
+    citation problem and no verbatim text would repair it.
+    """
+    if result.raw is None:
+        return []
+    targets = []
+    for drop in result.dropped:
+        path = drop.get("path")
+        if not path or not str(drop.get("reason", "")).endswith("_quote_unanchorable"):
+            continue
+        container, key = _locate(result.raw, path)
+        targets.append({"path": path, "reason": drop["reason"], "quote": container[key]})
+    return targets
+
+
+def apply_verbatim(payload: dict, targets: list[dict], answers: VerbatimAnswers) -> dict:
+    """The first turn's payload with the answered quotes replaced — at the
+    targeted paths and nowhere else.
+
+    A copy, so `raw_first_turn` stays what the model first said. An answer for
+    a path that was not asked about is ignored; so is a blank one, because an
+    empty quote would anchor at offset zero and cite nothing. Nothing here can
+    add, remove or re-date an event or an assertion: the only writes are to
+    quote fields the first turn already had.
+    """
+    patched = copy.deepcopy(payload)
+    wanted = {target["path"] for target in targets}
+    for answer in answers.quotes:
+        if answer.path not in wanted or not answer.verbatim.strip():
+            continue
+        container, key = _locate(patched, answer.path)
+        container[key] = answer.verbatim
+    return patched
+
+
+def extract_with_reask(
+    document_id: str,
+    text: str,
+    first_turn: Callable[[], Turn],
+    reask_turn: Callable[[list[dict]], Turn],
+    *,
+    runner_name: str,
+    model: str | None,
+    step_names: tuple[str, str] = ("extract", "reask"),
+) -> ExtractionResult:
+    """The fixed two-step every live runner walks (REQ-56, D103).
+
+    Turn one, then `build_result`; if Python could not locate a quote, one
+    re-ask — `REASK_ROUNDS` of them — for the verbatim text, the answer
+    patched in at the paths asked about, and `build_result` again. The
+    decision to re-ask is a Python predicate over string search, never model
+    output (Art. I), and the anchorer admits the new quote or drops it
+    exactly as it did the old one (Art. III).
+
+    A failed re-ask never raises: the first turn's result stands, `reask`
+    carries the classified reason and the trace names it. Every turn's
+    metrics land on the trace (Art. X, D71); `result.metrics` stays turn one.
+    """
+    first = first_turn()
+    assert first.payload is not None, "a first turn raises rather than returning nothing"
+    metrics = list(first.metrics)
+    tool_calls = list(first.tool_calls)
+    steps = [step_names[0]]
+    terminations = [first.termination]
+
+    result = build_result(document_id, text, first.payload, metrics[0] if metrics else None)
+    targets = reask_targets(result)
+    if targets:
+        first_payload = first.payload
+        reask: dict = {
+            "targets": targets, "answers": [], "recovered": [],
+            "unrecovered": [t["path"] for t in targets], "error": None,
+        }
+        for _ in range(REASK_ROUNDS):
+            second = reask_turn(targets)
+            metrics.extend(second.metrics)
+            tool_calls.extend(second.tool_calls)
+            steps.append(step_names[1])
+            error = second.error
+            answers: VerbatimAnswers | None = None
+            if error is None and second.payload is None:
+                error = "NO_PAYLOAD: the re-ask produced no structured output"
+            if error is None:
+                try:
+                    answers = VerbatimAnswers.model_validate(second.payload)
+                except ValidationError as exc:
+                    error = f"SCHEMA_INVALID: {exc.error_count()} error(s): {exc.errors()[0]['msg']}"
+            if answers is not None:
+                reask["answers"] = [a.model_dump() for a in answers.quotes]
+                patched = apply_verbatim(first_payload, targets, answers)
+                result = build_result(document_id, text, patched, metrics[0] if metrics else None)
+                still = {drop.get("path") for drop in result.dropped}
+                reask["recovered"] = [t["path"] for t in targets if t["path"] not in still]
+                reask["unrecovered"] = [t["path"] for t in targets if t["path"] in still]
+            reask["error"] = error
+            terminations.append(
+                f"reask {second.termination}" + (f" [{error.split(':', 1)[0]}]" if error else "")
+            )
+        result.raw_first_turn = first_payload
+        result.reask = reask
+
+    result.metrics = metrics[0] if metrics else None
+    result.trace = RunTrace(
+        runner_name=runner_name,
+        model=metrics[0].model if metrics else model,
+        prompt_version=PROMPT_VERSION,
+        document_id=document_id,
+        steps=steps,
+        tool_calls=tool_calls,
+        attempts=1,
+        termination_reason="; ".join(terminations),
+        metrics=metrics,
+    )
+    return result
+
+
+# --------------------------------------------------------------------------
 # The model call
 # --------------------------------------------------------------------------
 
 
+def _generate(client, model: str, contents: str, schema, purpose: str) -> tuple[str, CallMetrics]:
+    """One `generate_content`, measured (Art. X). Raises whatever the SDK
+    raises; the caller classifies."""
+    started = time.perf_counter()
+    response = client.models.generate_content(
+        model=model,
+        contents=contents,
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": schema,
+            "temperature": EXTRACTION_TEMPERATURE,
+        },
+    )
+    elapsed_ms = (time.perf_counter() - started) * 1000.0
+    usage = getattr(response, "usage_metadata", None)
+    metrics = CallMetrics(
+        model=model,
+        purpose=purpose,
+        input_tokens=getattr(usage, "prompt_token_count", 0) or 0,
+        output_tokens=getattr(usage, "candidates_token_count", 0) or 0,
+        wall_time_ms=elapsed_ms,
+    )
+    return response.text, metrics
+
+
 def extract(document_id: str, text: str, client, model: str = PINNED_MODEL) -> ExtractionResult:
-    """One note in, structured facts out. Exactly one model call (Art. X).
+    """One note in, structured facts out. At most `1 + REASK_ROUNDS` model
+    calls (Art. X): the extraction, and one re-ask only when a quote could
+    not be located (T-89, D103).
 
     `client` is injected rather than constructed here so nothing in this module
     reads a credential or names a tier — D5 keeps AI Studio and Vertex as two
     credentials behind one pinned identifier, and the caller chooses.
     """
-    started = time.perf_counter()
-    response = client.models.generate_content(
-        model=model,
-        contents=f"{INSTRUCTION}\n\nNOTE:\n{text}",
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": Extraction,
-            "temperature": EXTRACTION_TEMPERATURE,
-        },
-    )
-    elapsed_ms = (time.perf_counter() - started) * 1000.0
 
-    usage = getattr(response, "usage_metadata", None)
-    metrics = CallMetrics(
-        model=model,
-        purpose="extraction",
-        input_tokens=getattr(usage, "prompt_token_count", 0) or 0,
-        output_tokens=getattr(usage, "candidates_token_count", 0) or 0,
-        wall_time_ms=elapsed_ms,
+    def first_turn() -> Turn:
+        response_text, metrics = _generate(
+            client, model, f"{INSTRUCTION}\n\nNOTE:\n{text}", Extraction, "extraction"
+        )
+        return Turn(
+            payload=json.loads(response_text),
+            metrics=[metrics],
+            termination=f"ok ({metrics.wall_time_ms:.0f}ms)",
+        )
+
+    def reask_turn(targets: list[dict]) -> Turn:
+        try:
+            response_text, metrics = _generate(
+                client, model, reask_contents(text, targets), VerbatimAnswers,
+                "extraction_reask",
+            )
+        except Exception as exc:  # recorded classified, never raised (D103)
+            return Turn(
+                payload=None,
+                termination=type(exc).__name__,
+                error=f"CALL_FAILED: {type(exc).__name__}: {exc}",
+            )
+        try:
+            payload = json.loads(response_text)
+        except (json.JSONDecodeError, TypeError) as exc:
+            return Turn(
+                payload=None,
+                metrics=[metrics],
+                termination=f"unparseable ({metrics.wall_time_ms:.0f}ms)",
+                error=f"UNPARSEABLE: {exc}",
+            )
+        if not isinstance(payload, dict):
+            return Turn(
+                payload=None,
+                metrics=[metrics],
+                termination=f"schema_invalid ({metrics.wall_time_ms:.0f}ms)",
+                error=f"SCHEMA_INVALID: response is {type(payload).__name__}, not an object",
+            )
+        return Turn(
+            payload=payload,
+            metrics=[metrics],
+            termination=f"ok ({metrics.wall_time_ms:.0f}ms)",
+        )
+
+    return extract_with_reask(
+        document_id, text, first_turn, reask_turn, runner_name="direct", model=model
     )
-    payload = json.loads(response.text)
-    return build_result(document_id, text, payload, metrics)

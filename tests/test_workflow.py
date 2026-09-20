@@ -934,15 +934,65 @@ def test_every_model_turn_reaches_the_determination_not_just_the_first(
     assert run.traces[0].metrics == run.determination.metrics
 
 
+class _NoTraceRunner:
+    """A runner that reports one measurement and no trace — the shape of a
+    replay from a recording written before traces existed."""
+
+    name = "no-trace"
+
+    def __init__(self, inner) -> None:
+        self._inner = inner
+
+    def run(self, document_id: str, text: str):
+        from pa_agent.contracts import CallMetrics
+
+        result = self._inner.run(document_id, text)
+        result.metrics = CallMetrics(
+            model="no-trace-model", purpose="extraction", input_tokens=50,
+            output_tokens=5, wall_time_ms=1.0,
+        )
+        result.trace = None
+        return result
+
+
 def test_a_runner_without_a_trace_still_reports_its_one_call(
     policy_store, patient_store, runner, ref, case_patients
 ) -> None:
-    """The fallback, so the fix above cannot silently zero the replay path — the
-    recorded runner carries no trace by design and its single recorded
-    measurement must still reach the determination."""
-    run = _run(policy_store, patient_store, runner, case_patients["E1"], ref)
+    """The fallback, so the fix above cannot silently zero a runner that carries
+    no trace: its single measurement must still reach the determination."""
+    run = _run(policy_store, patient_store, _NoTraceRunner(runner), case_patients["E1"], ref)
     assert run.determination.model_calls == 1
-    assert run.determination.total_input_tokens > 0
+    assert run.determination.total_input_tokens == 50
+
+
+def test_a_replayed_re_ask_turn_reaches_the_determination(
+    policy_store, patient_store, recording, ref, case_patients
+) -> None:
+    """T-89's re-ask is a second turn on the recording, and the replay carries
+    it (D103). A determination replayed from a two-turn record counts two
+    extraction calls, which is where A6's figures come from."""
+    from pa_agent.contracts import CallMetrics
+
+    note = patient_store.get_notes(case_patients["E1"])[0]
+    record = next(r for r in recording["notes"] if r["document_id"] == note.document_id)
+    turn = CallMetrics(
+        model="replayed-model", purpose="extraction", input_tokens=100,
+        output_tokens=10, wall_time_ms=5.0,
+    ).model_dump(mode="json")
+    two_turn = {
+        **record,
+        "trace": {
+            "runner_name": "direct", "model": "replayed-model",
+            "prompt_version": "test", "document_id": note.document_id,
+            "steps": ["extract", "reask"], "tool_calls": [], "attempts": 1,
+            "termination_reason": "ok; reask ok",
+            "metrics": [turn, {**turn, "purpose": "extraction_reask"}],
+        },
+    }
+    replay = RecordedExtractionRunner.from_records([two_turn])
+    run = _run(policy_store, patient_store, replay, case_patients["E1"], ref)
+    assert run.determination.model_calls == 2
+    assert run.determination.total_input_tokens == 200
 
 
 # --------------------------------------------------------------------------

@@ -896,3 +896,91 @@ def test_the_committed_recordings_report_their_assertion_coverage(script):
         "the tool_fetch mode lost its one required assertion while reporting "
         "recall 1.000 — D71's finding, now readable from the aggregate (T-71)"
     )
+
+
+# --------------------------------------------------------------------------
+# The verbatim re-ask in the recordings (T-89, REQ-56, D103)
+# --------------------------------------------------------------------------
+
+
+def _reask_block(*, targets: int, recovered: int) -> dict:
+    paths = [f"wm_events[{i}].quote" for i in range(targets)]
+    return {
+        "targets": [{"path": p, "reason": "event_quote_unanchorable", "quote": "q"} for p in paths],
+        "answers": [{"path": p, "verbatim": "v"} for p in paths],
+        "recovered": paths[:recovered],
+        "unrecovered": paths[recovered:],
+        "error": None,
+    }
+
+
+def test_the_aggregate_reports_what_the_reask_asked_and_recovered(script):
+    """Four figures from the per-note `reask` blocks: notes re-asked, quotes
+    asked about, quotes recovered, and the re-ask turns spent — the last read
+    from the trace's per-turn `purpose`, so it is a count of calls and not of
+    blocks."""
+    records = [
+        _record(
+            "a", "synthesized", score=_score(),
+            metrics=_turn(1000, 100, 500.0),
+            trace={"tool_calls": [], "metrics": [
+                _turn(1000, 100, 500.0), {**_turn(1200, 20, 300.0), "purpose": "extraction_reask"},
+            ]},
+            reask=_reask_block(targets=2, recovered=1),
+        ),
+        _record("b", "synthesized", score=_score(), metrics=_turn(900, 90, 400.0),
+                trace={"tool_calls": [], "metrics": [_turn(900, 90, 400.0)]}, reask=None),
+    ]
+    aggregate = script._aggregate(records, nest=False)
+
+    assert aggregate["reask_notes"] == 1
+    assert aggregate["reask_targets"] == 2
+    assert aggregate["reask_recovered"] == 1
+    assert aggregate["reask_calls"] == 1
+    assert aggregate["model_calls"] == 3
+    assert aggregate["total_input_tokens"] == 1000 + 1200 + 900
+
+
+def test_a_recording_without_reask_blocks_reads_zero_not_missing(script):
+    aggregate = script._aggregate([_record("a", "synthesized", score=_score())], nest=False)
+    assert (aggregate["reask_notes"], aggregate["reask_targets"], aggregate["reask_recovered"],
+            aggregate["reask_calls"]) == (0, 0, 0, 0)
+
+
+def test_turn_metrics_is_one_rule_in_one_place(script):
+    """D71's rule moved down to `run_extraction.py` when the direct runner
+    learned to spend two turns (T-89); the ADK script delegates rather than
+    keeping a copy that could drift. Both must sum every turn."""
+    base = script._load_run_extraction()
+    record = _record(
+        "a", "synthesized", score=_score(), metrics=_turn(10, 1, 1.0),
+        trace={"tool_calls": [], "metrics": [_turn(10, 1, 1.0), _turn(20, 2, 2.0)]},
+    )
+    assert [m["input_tokens"] for m in base.turn_metrics([record])] == [10, 20]
+    assert script._turn_metrics([record]) == base.turn_metrics([record])
+    assert base.turn_metrics([_record("b", "synthesized", score=_score(), metrics=_turn(7, 1, 1.0))]) == [
+        _turn(7, 1, 1.0)
+    ]
+
+
+@pytest.mark.parametrize("name", ["adk_results_inline", "adk_results_tool_fetch"])
+def test_each_adk_recording_was_measured_on_the_code_s_configuration(name):
+    """The runnable half of "re-measured" (D103): a recording stamped with a
+    prompt version the code no longer has was measured on a different call
+    configuration, and D45 says its numbers may not be quoted for this one.
+    Every record of such a recording also carries its trace, so the aggregate
+    and the replay can count every turn."""
+    from pa_agent.extraction import PROMPT_VERSION
+
+    path = REPO_ROOT / "eval" / "extraction" / f"{name}.json"
+    recording = json.loads(path.read_text(encoding="utf-8"))
+    assert recording["prompt_version"] == PROMPT_VERSION, (
+        f"{name}: measured on {recording['prompt_version']!r}; re-run "
+        "scripts/run_adk_extraction.py (it spends model calls)"
+    )
+    assert recording["task"] == "T-89" and recording["decision"] == "D103"
+    assert recording["reask_rounds"] == 1
+    for record in recording["notes"]:
+        if record.get("score"):
+            assert record.get("trace"), f"{record['note_id']}: no trace"
+            assert "reask" in record and "raw_first_turn" in record

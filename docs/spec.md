@@ -224,6 +224,15 @@ covers this state" and "the governing tree binds this code nowhere" are
 different facts with different next actions. Every request names a state —
 explicitly, or through the patient's bundle. Deterministic. *(T-87, D100)*
 
+**REQ-56** A quote Python cannot locate is re-asked at most once for its
+verbatim text, in one batched turn per note. The re-ask replaces only the quote
+fields it was asked about — it adds, removes and re-dates nothing — and its
+answer is anchored exactly as the first turn's was; a quote still unlocatable
+after the re-ask is dropped as before. A failed re-ask leaves the first turn's
+result standing and is recorded in the trace, never raised. Every re-ask turn
+is a counted model call. The decision to re-ask is Python's, over string
+search; the model is never asked whether to retry. *(T-89, D103)*
+
 Because cost is tool-payload size times turns, an unbounded tool scales with the
 chart rather than with the question — D64 measured one patient's 3,780 observations
 as 446x the deterministic path's input tokens for an identical answer. Bounding the

@@ -54,13 +54,18 @@ import json
 import time
 from typing import Any
 
-from pa_agent.contracts import CallMetrics, RunTrace, ToolCall
+from pa_agent.contracts import CallMetrics, ToolCall
 from pa_agent.extraction import (
     EXTRACTION_TEMPERATURE,
     INSTRUCTION,
+    PROMPT_VERSION,
+    REASK_INSTRUCTION,
     Extraction,
     ExtractionResult,
-    build_result,
+    Turn,
+    VerbatimAnswers,
+    extract_with_reask,
+    format_targets,
 )
 from pa_agent.model_pin import PINNED_MODEL
 from pa_agent.runners import ExtractionFailure, ExtractionOutputError
@@ -75,11 +80,17 @@ AGENT_NAME = "wm_event_extractor"
 #: Where ADK writes the validated payload in session state.
 OUTPUT_KEY = "extraction"
 
-#: A version identifier for the prompt, recorded on every trace (REQ-49). Bumped
-#: when `INSTRUCTION` changes, because a measurement is only attributable while
-#: the prompt it was measured on is identifiable — D20's argument about the model
-#: pin, applied to the other half of the request.
-PROMPT_VERSION = "t15-instruction-v1"
+#: T-89's second agent: the verbatim re-ask (REQ-56, D103). A separate agent
+#: with a separate schema and output key, because `include_contents="none"`
+#: means a follow-up message would arrive with no history — so the re-ask is a
+#: second self-contained invocation, not a second turn of the first.
+REASK_AGENT_NAME = "wm_event_verbatim_reask"
+REASK_OUTPUT_KEY = "verbatim"
+
+#: `PROMPT_VERSION` lives beside the instruction in `pa_agent.extraction` since
+#: T-89 and names the whole configuration — both runners share it. Re-exported
+#: here so the recording script and the tests keep resolving it (D103).
+__all__ = ["PROMPT_VERSION"]
 
 #: The one tool the extraction agent may reach under `tool_fetch` (REQ-53, T-66).
 #:
@@ -100,9 +111,21 @@ PROMPT_VERSION = "t15-instruction-v1"
 #: does not need, and it took a `patient_id` this runner does not have.
 EXTRACTION_ALLOWLIST = ("read_note",)
 
-#: Hard ceiling on LLM calls per note. Two turns is a tool call and its answer;
-#: six leaves room for a retried tool call and no room for a loop.
+#: Hard ceiling on LLM calls per **invocation** — ADK's `max_llm_calls` counts
+#: one `run_async`. Two turns is a tool call and its answer; six leaves room
+#: for a retried tool call and no room for a loop. A note has at most
+#: `1 + REASK_ROUNDS` invocations (the extraction, and T-89's re-ask when a
+#: quote could not be located), so the per-note ceiling is that many times
+#: this. Not split between the two: ADK disables enforcement when the value
+#: reaches zero, so a "remaining budget" scheme would be a ceiling that
+#: vanishes exactly when it is reached (D103).
 DEFAULT_MAX_LLM_CALLS = 6
+
+
+_READ_FIRST = (
+    "First call read_note with the document_id you are given, to read the "
+    "note. Then {verb} from the text it returns.\n\n"
+)
 
 
 def _instruction(tool_fetch: bool) -> str:
@@ -114,10 +137,35 @@ def _instruction(tool_fetch: bool) -> str:
     """
     if not tool_fetch:
         return INSTRUCTION
-    return (
-        "First call read_note with the document_id you are given, to read the "
-        "note. Then extract from the text it returns.\n\n" + INSTRUCTION
-    )
+    return _READ_FIRST.format(verb="extract") + INSTRUCTION
+
+
+def _reask_instruction(tool_fetch: bool) -> str:
+    """T-89's re-ask, with the same retrieval preamble shape as the extractor's."""
+    if not tool_fetch:
+        return REASK_INSTRUCTION
+    return _READ_FIRST.format(verb="answer") + REASK_INSTRUCTION
+
+
+def _note_tools(
+    patient_store: PatientStore | None, tool_fetch: bool, document_id: str | None
+) -> list:
+    """The allowlist, built once for both agents: `read_note` scoped to the
+    document under review, or nothing (REQ-53, T-66)."""
+    if not tool_fetch:
+        return []
+    if patient_store is None:
+        raise ValueError(
+            "tool_fetch=True needs a PatientStore to build the note tools "
+            "over; the model has no other way to read a document (REQ-41)"
+        )
+    if document_id is None:
+        raise ValueError(
+            "tool_fetch=True needs the document_id under review: the note "
+            "reader's scope is fixed in Python before the run, not parsed "
+            "out of whatever id the model asks for (T-66, D66)"
+        )
+    return build_note_reader(patient_store, document_id).allowlist(*EXTRACTION_ALLOWLIST)
 
 
 def build_extraction_agent(
@@ -136,34 +184,53 @@ def build_extraction_agent(
     drives the real ADK flow with no network: ADK resolves a string through
     `LLMRegistry` and uses an instance as given.
     """
+    return _build_agent(
+        name=AGENT_NAME,
+        description="Extracts weight-management encounters from a clinical note.",
+        instruction=_instruction(tool_fetch),
+        tools=_note_tools(patient_store, tool_fetch, document_id),
+        output_schema=Extraction,
+        output_key=OUTPUT_KEY,
+        model=model,
+    )
+
+
+def build_reask_agent(
+    patient_store: PatientStore | None = None,
+    tool_fetch: bool = False,
+    model: Any = PINNED_MODEL,
+    document_id: str | None = None,
+):
+    """The verbatim re-ask agent (T-89, REQ-56, D103). Constructed, not run.
+
+    The extractor's flags, tools and temperature exactly — one constructor,
+    `_build_agent`, is what makes that true by construction rather than by
+    review — with the re-ask instruction and `VerbatimAnswers` as the schema.
+    It can copy text from the one note in scope and do nothing else.
+    """
+    return _build_agent(
+        name=REASK_AGENT_NAME,
+        description="Returns the verbatim note text for quotes that could not be located.",
+        instruction=_reask_instruction(tool_fetch),
+        tools=_note_tools(patient_store, tool_fetch, document_id),
+        output_schema=VerbatimAnswers,
+        output_key=REASK_OUTPUT_KEY,
+        model=model,
+    )
+
+
+def _build_agent(*, name, description, instruction, tools, output_schema, output_key, model):
     from google.adk.agents.llm_agent import LlmAgent
     from google.genai import types
 
-    tools: list = []
-    if tool_fetch:
-        if patient_store is None:
-            raise ValueError(
-                "tool_fetch=True needs a PatientStore to build the note tools "
-                "over; the model has no other way to read a document (REQ-41)"
-            )
-        if document_id is None:
-            raise ValueError(
-                "tool_fetch=True needs the document_id under review: the note "
-                "reader's scope is fixed in Python before the run, not parsed "
-                "out of whatever id the model asks for (T-66, D66)"
-            )
-        tools = build_note_reader(patient_store, document_id).allowlist(
-            *EXTRACTION_ALLOWLIST
-        )
-
     return LlmAgent(
-        name=AGENT_NAME,
+        name=name,
         model=model,
-        description="Extracts weight-management encounters from a clinical note.",
-        instruction=_instruction(tool_fetch),
+        description=description,
+        instruction=instruction,
         tools=tools,
-        output_schema=Extraction,
-        output_key=OUTPUT_KEY,
+        output_schema=output_schema,
+        output_key=output_key,
         # One note, no history. Art. I: nothing to steer with, and D17's finding
         # that a shared session carries note N-1 into note N.
         include_contents="none",
@@ -181,8 +248,24 @@ def build_extraction_agent(
     )
 
 
-def build_trace_recorder():
+def _classify(exc: Exception) -> ExtractionFailure:
+    """A run's exception, as REQ-27's closed set. Pydantic reports text that
+    is not JSON as a `ValidationError` of type `json_invalid`, which is
+    `UNPARSEABLE`; any other `ValidationError` is the schema refusing the
+    output; everything else is the call."""
+    if type(exc).__name__ != "ValidationError":
+        return ExtractionFailure.CALL_FAILED
+    errors = getattr(exc, "errors", lambda: [])()
+    if errors and all(e.get("type") == "json_invalid" for e in errors):
+        return ExtractionFailure.UNPARSEABLE
+    return ExtractionFailure.SCHEMA_INVALID
+
+
+def build_trace_recorder(purpose: str = "extraction"):
     """A `BasePlugin` that records tokens and the tool-call sequence (REQ-49).
+
+    `purpose` is what every `CallMetrics` this recorder writes is labelled with —
+    `"extraction"` for the first invocation, `"extraction_reask"` for T-89's.
 
     The class is defined inside the function so importing this module does not
     require ADK's plugin machinery, and **every hook body is wrapped**: ADK
@@ -226,7 +309,7 @@ def build_trace_recorder():
                 self.metrics.append(
                     CallMetrics(
                         model=self.model_name or "unknown",
-                        purpose="extraction",
+                        purpose=purpose,
                         input_tokens=getattr(usage, "prompt_token_count", 0) or 0,
                         output_tokens=(
                             getattr(usage, "candidates_token_count", 0) or 0
@@ -362,27 +445,112 @@ class AdkExtractionRunner:
         )
 
     def run(self, document_id: str, text: str) -> ExtractionResult:
-        payload, trace = self._invoke(document_id, text)
-        result = build_result(
-            document_id, text, payload, trace.metrics[0] if trace.metrics else None
+        # One session id per note, advanced once per `run()` — the re-ask
+        # invocation derives its own from it, so two notes never share one
+        # (D17) and a re-ask never shares the extraction's.
+        self._counter += 1
+        session = f"{document_id.replace('/', '_')}-{self._counter}"
+        return extract_with_reask(
+            document_id,
+            text,
+            first_turn=lambda: self._first_turn(document_id, text, session),
+            reask_turn=lambda targets: self._reask_turn(document_id, text, targets, session),
+            runner_name=self.name,
+            model=self._model_name,
+            step_names=("adk_run", "adk_reask"),
         )
-        # A declared field on `ExtractionResult`, so `pa_agent.workflow` carries
-        # the tool-call sequence onto the run without importing the ADK (REQ-49).
-        result.trace = trace
-        return result
 
-    def _invoke(self, document_id: str, text: str) -> tuple[dict, RunTrace]:
+    def _first_turn(self, document_id: str, text: str, session: str) -> Turn:
+        """The extraction invocation. Raises classified on any failure, because
+        a note that produced no extraction has nothing to build a result from
+        and returning an empty one would score as flawless (see the class
+        docstring)."""
+        if self._tool_fetch:
+            message = (
+                f"Extract the weight-management facts from document_id: "
+                f"{document_id}"
+            )
+        else:
+            message = f"Clinical note (document_id: {document_id}):\n\n{text}"
+
+        payload, metrics, tool_calls, termination, error = self._invoke(
+            self.build_agent(document_id), message, OUTPUT_KEY, session, "extraction"
+        )
+        if error is not None:
+            raise error
+        if payload is None:
+            raise ExtractionOutputError(
+                ExtractionFailure.NO_PAYLOAD,
+                f"{document_id}: the run produced no structured output at "
+                f"session state {OUTPUT_KEY!r}. An empty extraction is not the "
+                "same claim as no extraction, and returning one here would make "
+                "a transport failure score as flawless precision.",
+            )
+        try:
+            Extraction.model_validate(payload)
+        except Exception as exc:
+            raise ExtractionOutputError(
+                ExtractionFailure.SCHEMA_INVALID,
+                f"{document_id}: {type(exc).__name__}: {exc}",
+            ) from exc
+        return Turn(payload=payload, metrics=metrics, tool_calls=tool_calls, termination=termination)
+
+    def _reask_turn(
+        self, document_id: str, text: str, targets: list[dict], session: str
+    ) -> Turn:
+        """T-89's re-ask invocation (REQ-56, D103). Never raises: a failure is
+        returned classified on `Turn.error` and the first turn's result stands.
+
+        A second self-contained invocation rather than a follow-up message,
+        because `include_contents="none"` — the property that keeps note N-1
+        out of note N — also keeps the first turn out of the second, so the
+        note reaches the model again the same way it did the first time: in
+        the message, or through `read_note`.
+        """
+        if self._tool_fetch:
+            message = (
+                f"Find the verbatim text in document_id: {document_id}\n\n"
+                f"{format_targets(targets)}"
+            )
+        else:
+            message = (
+                f"Clinical note (document_id: {document_id}):\n\n{text}\n\n"
+                f"{format_targets(targets)}"
+            )
+        payload, metrics, tool_calls, termination, error = self._invoke(
+            self.build_reask_agent(document_id), message, REASK_OUTPUT_KEY,
+            f"{session}-reask", "extraction_reask",
+        )
+        return Turn(
+            payload=payload,
+            metrics=metrics,
+            tool_calls=tool_calls,
+            termination=termination,
+            error=f"{error.reason.value}: {error.message}" if error is not None else None,
+        )
+
+    def build_reask_agent(self, document_id: str | None = None):
+        return build_reask_agent(
+            patient_store=self._patient_store,
+            tool_fetch=self._tool_fetch,
+            model=self._model_argument(),
+            document_id=document_id,
+        )
+
+    def _invoke(
+        self, agent, message: str, output_key: str, session_id: str, purpose: str
+    ) -> tuple[dict | None, list[CallMetrics], list[ToolCall], str, ExtractionOutputError | None]:
+        """One agent, one fresh session, one message; what came back and what it
+        cost. Classifies a failure and returns it rather than raising, so the
+        caller decides whether that failure is fatal (`_first_turn`) or
+        recorded (`_reask_turn`)."""
         from google.adk.agents.run_config import RunConfig
         from google.adk.apps import App
         from google.adk.runners import Runner
         from google.adk.sessions import InMemorySessionService
         from google.genai import types
 
-        recorder = build_trace_recorder()
-        agent = self.build_agent(document_id)
-
-        self._counter += 1
-        session_id = f"{document_id.replace('/', '_')}-{self._counter}"
+        recorder = build_trace_recorder(purpose)
         session_service = InMemorySessionService()
         # Plugins arrive via `App`, not via `Runner(plugins=...)` — the latter is
         # deprecated in 2.8.0 and warns on every construction.
@@ -393,17 +561,9 @@ class AdkExtractionRunner:
             session_service=session_service,
         )
 
-        if self._tool_fetch:
-            message = (
-                f"Extract the weight-management facts from document_id: "
-                f"{document_id}"
-            )
-        else:
-            message = f"Clinical note (document_id: {document_id}):\n\n{text}"
-
         started = time.perf_counter()
         termination = "ok"
-        error: str | None = None
+        error: ExtractionOutputError | None = None
         try:
             asyncio.run(
                 self._drive(
@@ -412,59 +572,44 @@ class AdkExtractionRunner:
             )
         except Exception as exc:
             termination = type(exc).__name__
-            error = f"{type(exc).__name__}: {exc}"
+            # ADK validates the final answer against `output_schema` and raises
+            # pydantic's `ValidationError` out of the run: that is the model's
+            # output failing to parse or failing the schema, not the call
+            # failing (D103, on D68's precedent for a small fold).
+            reason = _classify(exc)
+            error = ExtractionOutputError(
+                reason,
+                f"{session_id}: {type(exc).__name__}: {exc}. Tool calls made: "
+                f"{[c.name for c in recorder.tool_calls]}",
+            )
 
         elapsed = (time.perf_counter() - started) * 1000.0
         metrics = recorder.metrics or []
-        if not metrics:
+        if not metrics and error is None:
             # No model response reached the recorder, so no measurement exists.
             # Recording a zero would be an estimate presented as instrumentation
             # (Art. X), so the trace carries none and the wall time rides on the
             # termination reason instead.
-            termination = termination if error else "no_model_response"
+            termination = "no_model_response"
 
-        payload = self._payload(session_service, session_id)
+        payload: dict | None = None
+        if error is None:
+            try:
+                payload = self._payload(session_service, session_id, output_key)
+            except ExtractionOutputError as exc:
+                error = exc
         if recorder.failures:
             # T-29 (D76): a hook that failed says so in the trace it produced.
             termination = (
                 f"{termination}; recorder_failures: {recorder.failures}"
             )
-        trace = RunTrace(
-            runner_name=self.name,
-            model=recorder.model_name or self._model_name,
-            prompt_version=PROMPT_VERSION,
-            document_id=document_id,
-            steps=["adk_run"],
-            tool_calls=list(recorder.tool_calls),
-            attempts=1,
-            termination_reason=f"{termination} ({elapsed:.0f}ms)",
-            metrics=metrics,
+        return (
+            payload,
+            metrics,
+            list(recorder.tool_calls),
+            f"{termination} ({elapsed:.0f}ms)",
+            error,
         )
-
-        if error is not None:
-            raise ExtractionOutputError(
-                ExtractionFailure.CALL_FAILED,
-                f"{document_id}: {error}. Tool calls made: "
-                f"{[c.name for c in recorder.tool_calls]}",
-            )
-        if payload is None:
-            raise ExtractionOutputError(
-                ExtractionFailure.NO_PAYLOAD,
-                f"{document_id}: the run produced no structured output at "
-                f"session state {OUTPUT_KEY!r}. An empty extraction is not the "
-                "same claim as no extraction, and returning one here would make "
-                "a transport failure score as flawless precision.",
-            )
-
-        try:
-            Extraction.model_validate(payload)
-        except Exception as exc:
-            raise ExtractionOutputError(
-                ExtractionFailure.SCHEMA_INVALID,
-                f"{document_id}: {type(exc).__name__}: {exc}",
-            ) from exc
-
-        return payload, trace
 
     async def _drive(
         self, runner, session_service, session_id, message, RunConfig, types
@@ -489,8 +634,8 @@ class AdkExtractionRunner:
         finally:
             await runner.close()
 
-    def _payload(self, session_service, session_id) -> dict | None:
-        """The validated payload ADK wrote to session state, or `None`.
+    def _payload(self, session_service, session_id, output_key: str) -> dict | None:
+        """The payload ADK wrote to session state under `output_key`, or `None`.
 
         Read from state rather than scraped from the final message, which works
         identically whether ADK used a native response schema or the AI Studio
@@ -507,13 +652,13 @@ class AdkExtractionRunner:
         except Exception as exc:  # re-raised classified, never swallowed (REQ-27)
             raise ExtractionOutputError(
                 ExtractionFailure.NO_PAYLOAD,
-                f"the session read for {OUTPUT_KEY!r} failed: "
+                f"the session read for {output_key!r} failed: "
                 f"{type(exc).__name__}: {exc}. Returning None here would "
                 "report a transport fault as a model that produced nothing.",
             ) from exc
         if session is None:
             return None
-        value = session.state.get(OUTPUT_KEY)
+        value = session.state.get(output_key)
         if value is None:
             return None
         if isinstance(value, str):
@@ -522,13 +667,13 @@ class AdkExtractionRunner:
             except json.JSONDecodeError as exc:
                 raise ExtractionOutputError(
                     ExtractionFailure.UNPARSEABLE,
-                    f"session state {OUTPUT_KEY!r} holds text that is not JSON: "
+                    f"session state {output_key!r} holds text that is not JSON: "
                     f"{exc}",
                 ) from exc
         if not isinstance(value, dict):
             raise ExtractionOutputError(
                 ExtractionFailure.SCHEMA_INVALID,
-                f"session state {OUTPUT_KEY!r} holds {type(value).__name__}, "
+                f"session state {output_key!r} holds {type(value).__name__}, "
                 "not an object",
             )
         return value

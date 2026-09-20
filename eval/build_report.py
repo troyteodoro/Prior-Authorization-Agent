@@ -428,6 +428,22 @@ def _anchoring_rows(recordings: dict[str, dict[str, Any]]) -> list[dict[str, Any
         ]
         required = [n for n in scored if n["score"].get("assertion_required")]
         covered = [n for n in required if n["score"].get("assertions")]
+        # T-89 (D103): what the verbatim re-ask asked about and got back, read
+        # from each note's own `reask` block — per-note, like the scores above,
+        # never the stored aggregate (T-71). A recording measured before the
+        # re-ask existed has no blocks and reads zero asked, zero recovered.
+        reasks = [(n, n["reask"]) for n in scored if n.get("reask")]
+        recovered = [
+            {
+                "note_id": n["note_id"],
+                "path": path,
+                "quote": " ".join(
+                    str(_final_quote(n, path)).split()
+                ),
+            }
+            for n, block in reasks
+            for path in block.get("recovered") or []
+        ]
         rows.append(
             {
                 "file": filename,
@@ -438,6 +454,10 @@ def _anchoring_rows(recordings: dict[str, dict[str, Any]]) -> list[dict[str, Any
                 "spans_anchored": anchored,
                 "spans_not_anchored": emitted - anchored,
                 "dropped": dropped,
+                "reask_notes": len(reasks),
+                "reask_targets": sum(len(b.get("targets") or []) for _, b in reasks),
+                "reask_recovered": sum(len(b.get("recovered") or []) for _, b in reasks),
+                "recovered": recovered,
                 "assertion_notes": len(required),
                 "assertion_notes_covered": len(covered),
                 "assertion_coverage": (
@@ -446,6 +466,21 @@ def _anchoring_rows(recordings: dict[str, dict[str, Any]]) -> list[dict[str, Any
             }
         )
     return rows
+
+
+def _final_quote(note: dict[str, Any], path: str) -> str:
+    """The quote the re-ask recovered, read from the patched payload at the
+    path the audit names. Empty when the record has no payload to read."""
+    from pa_agent.extraction import _locate
+
+    raw = note.get("raw")
+    if not raw:
+        return ""
+    try:
+        container, key = _locate(raw, path)
+    except KeyError:
+        return ""
+    return str(container.get(key, ""))
 
 
 def _anchoring_section() -> list[str]:
@@ -472,20 +507,23 @@ def _anchoring_section() -> list[str]:
     rows = _anchoring_rows(recordings)
 
     lines = [
-        "## Anchoring (Article III, D18, D88)",
+        "## Anchoring (Article III, D18, D88, D103)",
         "",
         "Every span a model emits is located by searching its verbatim quote "
         "in the note — exact first, then whitespace-normalized — and a quote "
         "that does not occur is dropped rather than approximated (D18). A "
         "dropped claim is evidence the chart holds and the determination does "
-        "not cite: fail-closed, and still a loss. Recomputed from the per-note "
-        "scores of each committed extraction recording; the recordings' own "
-        "`aggregate` blocks are a measured-day snapshot and are not read "
-        "(T-71).",
+        "not cite: fail-closed, and still a loss. Since T-89 a quote the "
+        "anchorer refused is re-asked once for its verbatim text and the "
+        "answer is anchored the same way (REQ-56, D103); *Re-asked* counts "
+        "the quotes asked about and *Recovered* the ones the second answer "
+        "anchored. Recomputed from the per-note scores and re-ask blocks of "
+        "each committed extraction recording; the recordings' own `aggregate` "
+        "blocks are a measured-day snapshot and are not read (T-71).",
         "",
         "| Recording | Notes scored | Spans emitted | Anchored | Not anchored "
-        "| Assertion coverage (D88) |",
-        "|---|---|---|---|---|---|",
+        "| Re-asked | Recovered | Assertion coverage (D88) |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for row in rows:
         coverage = (
@@ -498,14 +536,31 @@ def _anchoring_section() -> list[str]:
         lines.append(
             f"| {row['label']} (`{row['file']}`) | {row['notes_scored']}{skipped} "
             f"| {row['spans_emitted']} | {row['spans_anchored']} "
-            f"| **{row['spans_not_anchored']}** | {coverage} |"
+            f"| **{row['spans_not_anchored']}** | {row['reask_targets']} "
+            f"| **{row['reask_recovered']}** | {coverage} |"
         )
     lines.append("")
+
+    recovered = [(row, r) for row in rows for r in row["recovered"]]
+    if recovered:
+        lines.append("**Recovered by the re-ask, named.** Each is a quote the "
+                     "first turn paraphrased and the second turn returned "
+                     "verbatim; the anchorer located the second (T-89).")
+        lines.append("")
+        for row, r in recovered:
+            quote = r["quote"]
+            shown = quote if len(quote) <= 80 else quote[:77] + "…"
+            lines.append(
+                f"- {row['label']}, note `{r['note_id']}`: `{r['path']}` — "
+                f"*{shown}*"
+            )
+        lines.append("")
 
     drops = [(row, d) for row in rows for d in row["dropped"]]
     if drops:
         lines.append("**Dropped claims, named.** Each is a quote the model "
-                     "emitted that does not occur in its note.")
+                     "emitted that does not occur in its note — after the "
+                     "re-ask, where one ran.")
         lines.append("")
         for row, d in drops:
             quote = d["quote"]
@@ -519,6 +574,8 @@ def _anchoring_section() -> list[str]:
         lines.append("**No claim was dropped in any recording.**")
         lines.append("")
 
+    asked = sum(row["reask_targets"] for row in rows)
+    got = sum(row["reask_recovered"] for row in rows)
     lines += [
         "**What a drop costs.** The determination that results is well-formed "
         "and says less than the chart does — it abstains, or names a weaker "
@@ -526,7 +583,11 @@ def _anchoring_section() -> list[str]:
         "wrong approval, and it is still a failure (spec §10, P2). A "
         "similarity fallback is not the fix: a match generous enough to absorb "
         "a tense change is generous enough to absorb a negation (D18). The "
-        "bounded re-ask for the verbatim text is T-89 (D98).",
+        "fix is the bounded verbatim re-ask — one extra model call on a note "
+        "with an unanchorable quote, the answer admitted by the anchorer and "
+        "never by the model — and across these recordings it was asked about "
+        f"{asked} quote{'s' if asked != 1 else ''} and recovered {got} "
+        "(D103).",
         "",
     ]
     return lines
