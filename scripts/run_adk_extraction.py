@@ -85,7 +85,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from pa_agent.model_pin import MEASURED_TIER, PINNED_MODEL  # noqa: E402
+from pa_agent.model_pin import MEASURED_TIER, PINNED_MODEL, SECOND_TIER  # noqa: E402
 from pa_agent.runners import ExtractionOutputError  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 
@@ -99,8 +99,35 @@ DIRECT_PATH = OUT_DIR / "results.json"
 ADK_INLINE_PATH = OUT_DIR / "adk_results_inline.json"
 ADK_TOOL_FETCH_PATH = OUT_DIR / "adk_results_tool_fetch.json"
 
+#: Which task and entry own each tier's recordings (D45, D106).
+PROVENANCE: dict[str, dict[str, str | None]] = {
+    MEASURED_TIER: {"task": "T-81", "decision": "D104", "supersedes": "T-89 (D103)"},
+    SECOND_TIER: {"task": "T-90", "decision": "D106", "supersedes": None},
+}
 
-def adk_path(tool_fetch: bool) -> Path:
+
+def _tier_suffix(tier: str) -> str:
+    return "" if tier == MEASURED_TIER else f"_{tier}"
+
+
+def direct_path(tier: str) -> Path:
+    """The direct recording `--compare` reads, matched to the tier.
+
+    Tier-matched on purpose: comparing a Vertex ADK run against the AI Studio
+    direct run would move two variables at once, which is the thing `compare`'s
+    own docstring refuses (D45, D68).
+
+    Derived from the `DIRECT_PATH` global at call time, like `adk_path`, so the
+    tmp-directory redirection the tests rely on still reaches it.
+    """
+    if tier == MEASURED_TIER:
+        return DIRECT_PATH
+    return DIRECT_PATH.with_name(
+        f"{DIRECT_PATH.stem}{_tier_suffix(tier)}{DIRECT_PATH.suffix}"
+    )
+
+
+def adk_path(tool_fetch: bool, tier: str = MEASURED_TIER) -> Path:
     """The recording this mode writes and `--compare` reads.
 
     Derived, never passed in. An `--out` argument would keep one default, so the
@@ -109,9 +136,13 @@ def adk_path(tool_fetch: bool) -> Path:
     instead of in the repo (D68).
 
     The globals are read at call time so a test can point either mode at a tmp
-    directory.
+    directory. The tier appends a suffix rather than replacing the name, so the
+    AI Studio paths are exactly what they were (D106).
     """
-    return ADK_TOOL_FETCH_PATH if tool_fetch else ADK_INLINE_PATH
+    base = ADK_TOOL_FETCH_PATH if tool_fetch else ADK_INLINE_PATH
+    if tier == MEASURED_TIER:
+        return base
+    return base.with_name(f"{base.stem}{_tier_suffix(tier)}{base.suffix}")
 
 #: The headline figures the comparison reports, in the order a reader wants them.
 COMPARED = (
@@ -152,12 +183,12 @@ def _load_run_extraction():
     return module
 
 
-def _client():
+def _client(tier: str):
     base = _load_run_extraction()
     base.load_env()
-    from google import genai
+    from pa_agent.tiers import client_for
 
-    return genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+    return client_for(tier)
 
 
 def _record_base(case: dict) -> dict:
@@ -231,7 +262,7 @@ def partition(cases: list[dict], store, tool_fetch: bool) -> tuple[list, list]:
     return measurable, skipped
 
 
-def measure(tool_fetch: bool, limit: int | None = None) -> int:
+def measure(tool_fetch: bool, limit: int | None = None, tier: str = MEASURED_TIER) -> int:
     base = _load_run_extraction()
     from pa_agent.agent.extraction_agent import (
         DEFAULT_MAX_LLM_CALLS,
@@ -250,27 +281,43 @@ def measure(tool_fetch: bool, limit: int | None = None) -> int:
     order = {case["note_id"]: i for i, case in enumerate(cases)}
     cases, skipped = partition(cases, store, tool_fetch)
 
+    client = _client(tier) if cases else None
     runner = AdkExtractionRunner(
-        client=_client() if cases else None,
+        client=client,
         patient_store=store,
         tool_fetch=tool_fetch,
         model=PINNED_MODEL,
     )
+    from pa_agent.agent.extraction_agent import native_schema_enabled
+    from pa_agent.tiers import tier_of
+
+    # Asked of ADK, not inferred from the flag. This boolean is what separates
+    # the two tiers' tool-calling prompts (D62); `adk_version` and `tool_fetch`
+    # do not, so without it no reviewer can tell which prompt ran (D106).
+    native_schema = native_schema_enabled(PINNED_MODEL)
+    # Read off the client where there is one. With no measurable note there is
+    # no client to ask, and the requested tier is all the run can honestly say.
+    measured_tier = tier_of(client) if client is not None else tier
 
     print(
-        f"{len(cases)} notes · adk · model {PINNED_MODEL} · tier {MEASURED_TIER} · "
-        f"tool_fetch={tool_fetch} · max_llm_calls={DEFAULT_MAX_LLM_CALLS}"
+        f"{len(cases)} notes · adk · model {PINNED_MODEL} · tier {measured_tier} · "
+        f"tool_fetch={tool_fetch} · output_schema_and_tools={native_schema} · "
+        f"max_llm_calls={DEFAULT_MAX_LLM_CALLS}"
     )
     for case, reason in skipped:
         # Named, not silently dropped. A corpus this mode cannot address is a fact
         # about the corpus, and it belongs in the run's own output rather than only
         # in D67 (T-67).
         print(f"  SKIP {case['note_id']} ({case['corpus']}): {reason}")
-    if tool_fetch and MEASURED_TIER != "vertex":
+    if tool_fetch and not native_schema:
+        # Keyed off what ADK actually reports, not off a module constant. Keyed
+        # off the constant it would have printed the AI Studio caveat into a
+        # Vertex run, and — worse — stayed silent about a Vertex run that had
+        # quietly taken the AI Studio path anyway (D106).
         print(
-            "  NOTE: output_schema + tools is native on Vertex only. On this tier "
+            "  NOTE: output_schema + tools is native on Vertex only. On this run "
             "ADK injects a set_model_response tool and an extra instruction, so "
-            "this run's prompt differs from a Vertex run's (D62)."
+            "this run's prompt differs from a native one's (D62)."
         )
 
     records: list[dict] = [
@@ -337,16 +384,15 @@ def measure(tool_fetch: bool, limit: int | None = None) -> int:
             )
 
     payload = {
-        # T-89's measurement of the ADK runner (D103), superseding T-63's
-        # (D71): a changed call configuration is a new measurement (D45).
-        "task": "T-81",
-        "decision": "D104",
-        "supersedes": "T-89 (D103)",
+        # A changed call configuration is a new measurement (D45), and the tier
+        # changes the prompt as well as the endpoint (D62, D106).
+        **PROVENANCE[tier],
         "runner": "adk",
         "tool_fetch": tool_fetch,
         "measured_at": datetime.now(timezone.utc).isoformat(),
         "model": PINNED_MODEL,
-        "tier": MEASURED_TIER,
+        "tier": measured_tier,
+        "output_schema_and_tools": native_schema,
         "prompt_version": PROMPT_VERSION,
         "reask_rounds": REASK_ROUNDS,
         "temperature": 0.0,
@@ -359,7 +405,7 @@ def measure(tool_fetch: bool, limit: int | None = None) -> int:
         "aggregate": _aggregate(records),
         "notes": sorted(records, key=lambda r: order[r["note_id"]]),
     }
-    out_path = adk_path(tool_fetch)
+    out_path = adk_path(tool_fetch, tier)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
@@ -538,7 +584,7 @@ def _mode(tool_fetch: bool) -> str:
     return "tool_fetch" if tool_fetch else "inline"
 
 
-def compare(tool_fetch: bool = False) -> int:
+def compare(tool_fetch: bool = False, tier: str = MEASURED_TIER) -> int:
     """Compare one ADK recording with the direct one, over the notes both scored.
 
     **Recomputed, not read off.** Each file's own `aggregate` covers that file's
@@ -556,13 +602,16 @@ def compare(tool_fetch: bool = False) -> int:
 
     Spends nothing.
     """
-    adk_source = adk_path(tool_fetch)
+    adk_source = adk_path(tool_fetch, tier)
+    direct_source = direct_path(tier)
+    flag = "" if tier == MEASURED_TIER else f" --tier {tier}"
     wanted = (
-        (DIRECT_PATH, "python scripts/run_extraction.py"),
+        (direct_source, f"python scripts/run_extraction.py{flag}"),
         (
             adk_source,
             "python scripts/run_adk_extraction.py"
-            + (" --tool-fetch" if tool_fetch else ""),
+            + (" --tool-fetch" if tool_fetch else "")
+            + flag,
         ),
     )
     missing = [(path, command) for path, command in wanted if not path.exists()]
@@ -580,7 +629,7 @@ def compare(tool_fetch: bool = False) -> int:
         )
         return 2
 
-    direct = json.loads(DIRECT_PATH.read_text(encoding="utf-8"))
+    direct = json.loads(direct_source.read_text(encoding="utf-8"))
     adk = json.loads(adk_source.read_text(encoding="utf-8"))
 
     # The mode is read off the payload, and the guard below is what makes that
@@ -600,7 +649,7 @@ def compare(tool_fetch: bool = False) -> int:
         )
         return 2
 
-    print(f"  direct : {_display(DIRECT_PATH)}")
+    print(f"  direct : {_display(direct_source)}")
     print(f"           {direct['model']} · tier {direct.get('tier')} · google-genai")
     print(f"  adk    : {_display(adk_source)}")
     print(
@@ -681,11 +730,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--limit", type=int, default=None, help="measure only the first N notes"
     )
+    parser.add_argument(
+        "--tier",
+        choices=tuple(PROVENANCE),
+        default=MEASURED_TIER,
+        help="which tier to measure on (default: the development tier). The "
+        "tier changes the prompt here, not only the endpoint: `output_schema` "
+        "with `tools` is native on Vertex only (D62, D106).",
+    )
     args = parser.parse_args(argv)
 
     if args.compare:
-        return compare(args.tool_fetch)
-    return measure(args.tool_fetch, args.limit)
+        return compare(args.tool_fetch, args.tier)
+    return measure(args.tool_fetch, args.limit, args.tier)
 
 
 if __name__ == "__main__":

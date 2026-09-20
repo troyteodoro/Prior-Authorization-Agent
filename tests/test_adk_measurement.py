@@ -556,8 +556,41 @@ def _install_stub_runner(script, monkeypatch) -> list[str]:
             return build_result(document_id, text, payloads[document_id], None)
 
     monkeypatch.setattr(agent_module, "AdkExtractionRunner", _StubRunner)
-    monkeypatch.setattr(script, "_client", lambda: None)
+    monkeypatch.setattr(script, "_client", lambda tier=None: None)
     return asked
+
+
+def test_the_recording_stamps_the_capability_adk_reports_not_the_tier_asked_for(
+    script, tmp_path, monkeypatch
+):
+    """T-90 (D106): `output_schema_and_tools` is read off ADK, never derived
+    from the tier name.
+
+    The two agree on a correctly configured run, which is exactly why a
+    flag-derived stamp survives every other test here — and why it would be
+    believed. The failure it hides is the one the round exists to avoid: a
+    Vertex run whose environment never reached ADK still takes the AI Studio
+    prompt, and a recording that computed the boolean from its own `--tier`
+    would assert the native path ran when it did not, answering D71's open
+    reversal clause backwards.
+
+    So the environment is set to disagree with the tier, and the recording has
+    to follow the environment.
+    """
+    _install_stub_runner(script, monkeypatch)
+    _patch_adk_paths(tmp_path, monkeypatch, script)
+    # The enterprise switch is what ADK actually reads; `_client` is stubbed, so
+    # nothing resets it underneath this.
+    monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "1")
+    monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
+
+    assert script.measure(tool_fetch=False, tier=MEASURED_TIER) == 0
+
+    written = json.loads(script.adk_path(False, MEASURED_TIER).read_text(encoding="utf-8"))
+    assert written["output_schema_and_tools"] is True, (
+        "the recording derived the capability from its --tier instead of "
+        "asking ADK; on a real run that is a prompt claim nobody checked (D106)"
+    )
 
 
 @pytest.mark.parametrize(

@@ -21,6 +21,13 @@ against AI Studio during development and against Vertex for recorded evals and
 any demo, and the two are not interchangeable — Vertex does not train on
 submitted data and the free tier may. `MEASURED_TIER` records which one produced
 the numbers currently in `results.json`.
+
+Since T-90 both tier constants are live (D106). `MEASURED_TIER` keeps naming the
+tier every recording a gate replays was measured on; `SECOND_TIER` names the one
+measured beside it. They are separate constants rather than one that moves,
+because a single constant would have to claim two things at once: the recordings
+from both tiers are committed, and each is checked against the constant that
+produced it.
 """
 
 from __future__ import annotations
@@ -34,6 +41,14 @@ PINNED_MODEL = "gemini-3.5-flash-lite"
 # The tier D19's numbers came from (D5). A Vertex run of the same corpus is a
 # new measurement, not a confirmation of that one.
 MEASURED_TIER = "ai_studio"
+
+# The second tier, measured by T-90 (D106). A tier here is more than a
+# credential: ADK decides whether `output_schema` and `tools` take the native
+# path by reading `GOOGLE_GENAI_USE_ENTERPRISE` from the **process
+# environment**, not from the client it is handed, so the tier changes the
+# prompt and not only the endpoint (D62, measured again in D106). Setting both
+# halves is `pa_agent/tiers.py`'s job; naming them is this module's.
+SECOND_TIER = "vertex"
 
 # The second pin D20's reversal clause anticipated: Article V's verifier
 # (T-17, D78). Same value as `PINNED_MODEL` on purpose — the family has

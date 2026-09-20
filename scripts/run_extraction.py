@@ -49,7 +49,7 @@ from pa_agent.extraction import (  # noqa: E402
     extract,
     reask_targets,
 )
-from pa_agent.model_pin import PINNED_MODEL  # noqa: E402
+from pa_agent.model_pin import MEASURED_TIER, PINNED_MODEL, SECOND_TIER  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 
 SPIKE_DIR = REPO_ROOT / "spike" / "spike_001"
@@ -57,6 +57,41 @@ MANIFEST_DIR = REPO_ROOT / "eval" / "manifests"
 OUT_DIR = REPO_ROOT / "eval" / "extraction"
 OUT_PATH = OUT_DIR / "results.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
+
+#: Which task and entry own each tier's recording. A Vertex run is its own
+#: measurement, not a re-run of T-81's, so it carries its own provenance
+#: (D45, D106) — and a `--rescore` carries forward whatever the file already
+#: says rather than restamping it.
+PROVENANCE: dict[str, dict[str, str | None]] = {
+    MEASURED_TIER: {"task": "T-81", "decision": "D104", "supersedes": "T-89 (D103)"},
+    SECOND_TIER: {"task": "T-90", "decision": "D106", "supersedes": None},
+}
+
+
+def _named_tier(argv: list[str]) -> str:
+    """`--tier X` or `--tier=X`, defaulting to the development tier.
+
+    An unrecognised tier exits rather than falling back: the whole point of the
+    flag is that a recording says which tier produced it, and a silent default
+    would let a typo stamp the wrong one (D106).
+    """
+    named = None
+    for i, arg in enumerate(argv):
+        if arg == "--tier" and i + 1 < len(argv):
+            named = argv[i + 1]
+        elif arg.startswith("--tier="):
+            named = arg.split("=", 1)[1]
+    if named is None:
+        return MEASURED_TIER
+    if named not in PROVENANCE:
+        sys.exit(f"unknown tier {named!r}; one of {sorted(PROVENANCE)}")
+    return named
+
+
+def out_path_for(tier: str) -> Path:
+    """One recording per tier, side by side. The AI Studio path is unchanged,
+    so every existing invocation and every gate reads the same bytes (D106)."""
+    return OUT_DIR / ("results.json" if tier == MEASURED_TIER else f"results_{tier}.json")
 
 RETRIES = 4  # the free tier's 429/503 behavior under load (D5, D20)
 
@@ -69,7 +104,7 @@ def load_env() -> None:
     """Read the gitignored .env. No credential is ever written to a tracked
     file (working rule 10); this only moves one into the process."""
     if not ENV_PATH.exists():
-        sys.exit(f"no {ENV_PATH}; extraction needs an AI Studio key (D5)")
+        sys.exit(f"no {ENV_PATH}; a live run needs its tier's credentials (D5)")
     for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
         if "=" in line and not line.strip().startswith("#"):
             key, value = line.split("=", 1)
@@ -330,12 +365,16 @@ def aggregate(records: list[dict]) -> dict:
 
 def main() -> int:
     rescore = "--rescore" in sys.argv
+    tier = _named_tier(sys.argv)
+    out_path = out_path_for(tier)
     cases = spike_cases() + synthesized_cases()
 
     if rescore:
-        if not OUT_PATH.exists():
-            sys.exit("nothing to rescore; run without --rescore first")
-        previous = json.loads(OUT_PATH.read_text(encoding="utf-8"))
+        # Routed by tier: unrouted, `--tier vertex --rescore` would re-anchor
+        # and overwrite the AI Studio recording every gate reads (D106).
+        if not out_path.exists():
+            sys.exit(f"nothing to rescore at {out_path}; run without --rescore first")
+        previous = json.loads(out_path.read_text(encoding="utf-8"))
         recorded = {r["note_id"]: r for r in previous["notes"]}
         for case in cases:
             prior = recorded.get(case["note_id"])
@@ -348,15 +387,20 @@ def main() -> int:
                     "document it never came from (D18)."
                 )
         client = None
-        print(f"re-anchoring {len(cases)} recorded payloads, no model call")
+        print(
+            f"re-anchoring {len(cases)} recorded payloads from "
+            f"{out_path.name}, no model call"
+        )
     else:
         load_env()
-        from google import genai
+        from pa_agent.tiers import client_for
 
-        client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+        client = client_for(tier)
+        from pa_agent.tiers import tier_of
+
         print(
             f"{len(cases)} notes, model {PINNED_MODEL}, "
-            f"temperature {EXTRACTION_TEMPERATURE}"
+            f"tier {tier_of(client)}, temperature {EXTRACTION_TEMPERATURE}"
         )
 
     records = []
@@ -453,23 +497,30 @@ def main() -> int:
 
     aggregate_figures = aggregate(records)
 
+    if rescore:
+        # A rescore re-derives figures, never provenance: the recording keeps
+        # saying which task measured it.
+        provenance = {k: previous.get(k) for k in ("task", "decision", "supersedes")}
+        recorded_tier = previous["tier"]
+    else:
+        from pa_agent.tiers import tier_of
+
+        provenance = PROVENANCE[tier]
+        # Read off the client, never the flag: a mis-built client cannot launder
+        # itself into the artifact's provenance (D106).
+        recorded_tier = tier_of(client)
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUT_PATH.write_text(
+    out_path.write_text(
         json.dumps({
-            # T-81's measurement of the direct runner (D104), superseding
-            # T-89's (D103): same call configuration, same scorer, a changed
-            # corpus — two documents per chart — so a new measurement,
-            # stamped as one.
-            "task": "T-81",
-            "decision": "D104",
-            "supersedes": "T-89 (D103)",
+            **provenance,
             "measured_at": (
                 previous["measured_at"] if rescore
                 else datetime.now(timezone.utc).isoformat()
             ),
             "rescored_at": datetime.now(timezone.utc).isoformat() if rescore else None,
             "model": PINNED_MODEL,
-            "tier": "ai_studio",
+            "tier": recorded_tier,
             "prompt_version": PROMPT_VERSION,
             "reask_rounds": REASK_ROUNDS,
             "temperature": EXTRACTION_TEMPERATURE,
@@ -484,7 +535,7 @@ def main() -> int:
         encoding="utf-8",
     )
     print(json.dumps(aggregate_figures, indent=2))
-    print(f"written: {OUT_PATH.relative_to(REPO_ROOT)}")
+    print(f"written: {out_path.relative_to(REPO_ROOT)}")
     return 0
 
 

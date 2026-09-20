@@ -37,7 +37,8 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from pa_agent.determination import determine  # noqa: E402
 from pa_agent.model_pin import (  # noqa: E402
-    VERIFIER_MEASURED_TIER,
+    MEASURED_TIER,
+    SECOND_TIER,
     VERIFIER_MODEL,
 )
 from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
@@ -57,6 +58,31 @@ EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
 OUT_DIR = REPO_ROOT / "eval" / "verifier"
 OUT_PATH = OUT_DIR / "results.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
+
+#: Which task owns each tier's recording (D45: a tier change is a new
+#: measurement, never a re-run).
+PROVENANCE: dict[str, str] = {MEASURED_TIER: "T-17", SECOND_TIER: "T-90"}
+
+
+def out_path_for(tier: str) -> Path:
+    """One recording per tier. The AI Studio path is unchanged (D106)."""
+    return OUT_DIR / ("results.json" if tier == MEASURED_TIER else f"results_{tier}.json")
+
+
+def named_tier(argv: list[str]) -> str:
+    """`--tier X` / `--tier=X`; an unrecognised tier exits rather than
+    defaulting, because the default would stamp the wrong provenance."""
+    named = None
+    for i, arg in enumerate(argv):
+        if arg == "--tier" and i + 1 < len(argv):
+            named = argv[i + 1]
+        elif arg.startswith("--tier="):
+            named = arg.split("=", 1)[1]
+    if named is None:
+        return MEASURED_TIER
+    if named not in PROVENANCE:
+        sys.exit(f"unknown tier {named!r}; one of {sorted(PROVENANCE)}")
+    return named
 
 #: The harness clock (eval/run_eval.py's EVAL_AS_OF and the agentic
 #: differential's AS_OF are this same date). A case row may override it.
@@ -143,17 +169,24 @@ def enumerate_claims() -> dict[str, dict]:
     return collector.claims
 
 
-def measure() -> int:
+def measure(tier: str = MEASURED_TIER) -> int:
     load_env()
-    from google import genai
+    from pa_agent.tiers import client_for, tier_of
 
-    client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+    client = client_for(tier)
     live = LiveVerifierRunner(client, model=VERIFIER_MODEL)
 
+    # Enumerated from the **AI Studio** extraction recording on every tier, on
+    # purpose (D106). A claim digest is the criterion, the verdict and the
+    # sliced quote (D78); enumerating from a Vertex extraction would move the
+    # quotes and therefore every digest, and two recordings sharing no keys are
+    # not a column but two unrelated files. Keyed alike, the cross-tier join is
+    # exact and free.
     claims = enumerate_claims()
     print(
         f"{len(claims)} unique claims · model {VERIFIER_MODEL} · "
-        f"tier {VERIFIER_MEASURED_TIER} · prompt {PROMPT_VERSION}"
+        f"tier {tier_of(client)} · prompt {PROMPT_VERSION} · "
+        f"claims enumerated from {EXTRACTION_RESULTS.name}"
     )
 
     records: list[dict] = []
@@ -192,20 +225,23 @@ def measure() -> int:
             rejections.append(record)
 
     payload_out = {
-        "task": "T-17",
+        "task": PROVENANCE[tier],
         "model": VERIFIER_MODEL,
-        "tier": VERIFIER_MEASURED_TIER,
+        # Read off the client, never the flag (D106).
+        "tier": tier_of(client),
+        "claims_enumerated_from": EXTRACTION_RESULTS.name,
         "prompt_version": PROMPT_VERSION,
         "measured_at": datetime.now(timezone.utc).isoformat(),
         "claims": records,
         "aggregate": aggregate(records),
     }
+    out_path = out_path_for(tier)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUT_PATH.write_text(
+    out_path.write_text(
         json.dumps(payload_out, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    print(f"\nwrote {OUT_PATH.relative_to(REPO_ROOT)}")
+    print(f"\nwrote {out_path.relative_to(REPO_ROOT)}")
     report(payload_out)
 
     if rejections:
@@ -243,7 +279,7 @@ def report(payload: dict) -> None:
     )
 
 
-def rescore() -> int:
+def rescore(tier: str = MEASURED_TIER) -> int:
     """Re-derive every number from the recording. **Spends nothing.**
 
     Re-hashes every stored payload against its digest key (a tampered record
@@ -251,11 +287,21 @@ def rescore() -> int:
     the recorded model is the pin — the same three guarantees the suite
     asserts, runnable standalone.
     """
-    if not OUT_PATH.exists():
-        sys.exit(f"nothing to rescore; no recording at {OUT_PATH}")
-    payload = json.loads(OUT_PATH.read_text(encoding="utf-8"))
+    # Routed by tier: unrouted, `--tier vertex --rescore` would rewrite the AI
+    # Studio recording every gate reads (D106).
+    out_path = out_path_for(tier)
+    if not out_path.exists():
+        sys.exit(f"nothing to rescore; no recording at {out_path}")
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
 
     problems: list[str] = []
+    expected_tier = tier
+    if payload.get("tier") != expected_tier:
+        problems.append(
+            f"recording is stamped tier {payload.get('tier')!r} but was read as "
+            f"{expected_tier!r}; a recording that misstates its tier is the "
+            "failure D19 names"
+        )
     if payload.get("model") != VERIFIER_MODEL:
         problems.append(
             f"recording names {payload.get('model')!r}; the pin is "
@@ -276,7 +322,7 @@ def rescore() -> int:
             )
 
     payload["aggregate"] = aggregate(payload.get("claims", []))
-    OUT_PATH.write_text(
+    out_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
@@ -291,9 +337,10 @@ def rescore() -> int:
 
 
 def main() -> int:
+    tier = named_tier(sys.argv)
     if "--rescore" in sys.argv:
-        return rescore()
-    return measure()
+        return rescore(tier)
+    return measure(tier)
 
 
 if __name__ == "__main__":

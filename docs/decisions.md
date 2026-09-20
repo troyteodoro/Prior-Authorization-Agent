@@ -8030,3 +8030,155 @@ in the place a reader already looks.
 **Reverses if:** a version's exit turns out to need a later version's
 work, or v2.0 needs a session field the headless versions did not carry.
 The order is rewritten here, never reshuffled on the board alone.
+
+---
+
+## D106 — The second tier is an environment as well as a credential, and every recording states which one ran
+
+**Context.** P8, the last of spec §10's problems: every gate, the CLI's
+default path and every figure in `eval/report.md` replay committed
+recordings for nothing, which is what makes them checks that get run — and
+what makes every freely-reproducible number in this repo a description of
+one measured day, one pinned model, **one tier**. D97 row 7 fixed the
+mitigation as a second measurement, "everything, once", placed last so it
+measures the final configuration. D5 has required since the first week that
+final evals and any demo run on Vertex, because the free tier may train on
+submitted data. The project has no Vertex numbers at all.
+
+The round also has a question to settle rather than a box to tick. D62
+established that `output_schema` with `tools` is native on Vertex only; on
+AI Studio ADK injects a `SetModelResponseTool` and an extra instruction, so
+the tool-calling extraction path runs a **different prompt on the two
+tiers**. D71 measured that path at 3.64x the direct runner's input tokens
+and left a clause nothing has discharged: if a Vertex run shows the
+overhead is an AI Studio artifact, the ratio is a statement about the tier
+and not about tool-directed fetching.
+
+**Two facts established by running the installed SDK, which change the
+design.** Both are the kind of thing D49 says a declared environment cannot
+tell you, so they were measured rather than read.
+
+1. **The capability that D62 is about is ambient, not client-derived.**
+   `Gemini.capabilities.output_schema_and_tools` resolves through
+   `get_google_llm_variant()` → `is_enterprise_mode_enabled()`, which reads
+   the **process environment**; the injected `genai.Client` is never
+   consulted for it, and only request routing reads `api_client.vertexai`.
+   Measured: no variables → `False`; `GOOGLE_GENAI_USE_VERTEXAI=true` →
+   `True`; `GOOGLE_GENAI_USE_ENTERPRISE=0` → `False`; **both set → `False`,
+   enterprise winning silently**; `GOOGLE_GENAI_USE_ENTERPRISE=1` → `True`.
+   `pa_agent/agent/.env` holds `GOOGLE_GENAI_USE_ENTERPRISE=0` and every
+   loader `os.environ.setdefault`s it into the process. So injecting a
+   Vertex client and nothing else would route requests to Vertex, still
+   inject `SetModelResponseTool`, stamp the recording `vertex`, and answer
+   D71's clause *"it did not reverse"* from a run that never took the
+   native path — a false negative on the one question this task exists to
+   settle, with every gate green over it.
+2. **A Vertex client built without an explicit project keeps the AI Studio
+   key.** `Client(vertexai=True)` with `GOOGLE_API_KEY` in the environment
+   and no project retains the key and targets `aiplatform.googleapis.com` —
+   Vertex express mode, authenticated by the free tier's credential.
+   Passing project and location explicitly drops the key to ADC and uses
+   the regional endpoint. Since every loader puts `GOOGLE_API_KEY` into the
+   process and ADC is absent, this is what the first attempt produces: a
+   recording stamped `vertex`, measured on a path D5 names as the one that
+   may train on submitted data.
+
+**Chosen.**
+
+1. **Both tiers stand, and AI Studio remains the default replay** for the
+   CLI and every gate. The Vertex recordings are a column beside the AI
+   Studio ones, which is what §11 asks for.
+2. **Two tier constants.** `MEASURED_TIER` stays `"ai_studio"`;
+   `SECOND_TIER = "vertex"` joins it in `pa_agent/model_pin.py`.
+3. **A tier is an environment plus a client**, and one module configures
+   both. `configure_tier_env(tier)` **assigns** `GOOGLE_GENAI_USE_ENTERPRISE`
+   — assignment, not `setdefault`, so the `.env` value loses — and asserts
+   the read-back; `client_for(tier)` then builds the client.
+4. **`client_for("vertex")` requires project and location and verifies what
+   it built**, asserting `api_key is None` and `vertexai is True` before
+   returning. An unrecognised tier raises. This is D31's shape applied to
+   provenance: the well-formed wrong answers in fact 1 and fact 2 are both
+   answers every downstream gate would agree with.
+5. **Every recording states what happened, never what was asked for.** The
+   tier is read back off the client; the ADK recordings gain
+   `output_schema_and_tools`, read back off the model's own capabilities.
+   Neither `adk_version` nor `tool_fetch` distinguishes the two prompts and
+   this boolean does. The same rule retires a latent defect:
+   `scripts/run_extraction.py` wrote its tier as a string literal, so that
+   script would have stamped `ai_studio` on a Vertex run.
+6. **The Vertex verifier claims are enumerated from the AI Studio
+   extraction recording**, deliberately. A claim digest is the criterion,
+   the verdict and the sliced quote (D78); enumerating from the Vertex
+   extraction would move the quotes and therefore every digest, and two
+   recordings sharing no keys are not a column but two unrelated files.
+   Keyed alike, the per-claim cross-tier join is exact and costs nothing.
+7. **The agentic recording stamps its tier per component.** That round
+   measures Vertex *retrieval* while replaying AI Studio extraction and AI
+   Studio verification; a scalar `"tier": "vertex"` on it would be false.
+8. **No requirement is minted.** The pin and the tier have never been
+   REQ-governed — T-34 guards them with a task and D19/D20 with entries —
+   and §11 gives v1.1 nothing to mint, so §5's count is unchanged.
+
+**Rejected — promoting Vertex to the default replay.** It moves A2, A3, A5,
+A6, `eval/baseline.json` and the differential in the same commit as the
+tier change, which is the shared delta with no owner D45 forbids and D97
+rejected in as many words. D5's requirement is met by the numbers existing
+and by the demo path being runnable, not by deleting the comparison.
+
+**Rejected — flipping `MEASURED_TIER` to `"vertex"`.** One constant would
+then claim two things: the five committed recordings would fail the
+assertion the new ones pass.
+
+**Rejected — subclassing `Gemini` to override `capabilities`.** It would
+claim a capability rather than detect one. Fact 1 is a detection bug in
+this repo's configuration, and the fix that asserts its way past detection
+can be wrong in the other direction — claiming the native path on an
+endpoint that does not serve it — which is unfalsifiable from the artifact.
+
+**Rejected — adding the Vertex recordings to the report's
+`EXTRACTION_RECORDINGS`.** That section is P2's account of the measured
+day; its prose sums re-asks across its rows and asserts that no claim was
+dropped in any recording. Pooling two tiers there would make a Vertex drop
+— a *finding*, and the most interesting one the round could produce — flip
+a branch and turn the suite red. `BLOCKED` is not `FAIL` and a rejection is
+not a defect (D27, D78). The tier section owns the Vertex artifacts instead.
+
+**Rejected — mirroring the AI Studio fidelity assertions onto the Vertex
+recordings before measuring.** `tests/test_extraction.py` asserts its
+recording is perfect — every event matched, nothing dropped, every span
+anchored, precision and recall 1.000. Those are legitimate because D19,
+D45 and D47 *recorded* those figures and the test's job is that the
+recording still says what the decision says. Written ahead of a Vertex run
+they would assert that a tier nobody has measured scores 1.000, and a
+single missed event — the entire reason a second measurement is a
+measurement and not a confirmation — would make the task unclosable. The
+provenance half (model, tier, note hashes, span re-validation, digest
+recomputation, the capability flag) is written first; the fidelity half is
+written after, with the measured values, as D47's is.
+
+**Rejected — unifying the four `.env` loaders in this round.** They work,
+and one of them differs behaviourally: `run_verifier_measurement.py`
+returns early when `GOOGLE_API_KEY` is already set, which is the wrong
+predicate on a tier where the key is irrelevant. Folding a refactor of the
+live CLI path into the tier change is D45's rule at the level of code. It
+is a discovered task if it is worth one (working rule 6).
+
+**On working rule 9.** Enabling `aiplatform.googleapis.com` and obtaining
+application-default credentials is GCP setup in the rule's own words, so it
+is answered here rather than left for a reviewer to find. Rule 9 forbids
+infrastructure the project has not earned — deployment, containers, CI,
+Terraform — and none of that is added: nothing is tracked, and what is
+obtained is one credential on the machine that runs the measurement. D5
+authorised the tier in the first week and D97 row 7 scheduled the round.
+
+**Timebox.** Two days plus five measurement rounds. If Vertex access never
+arrives, the row closes `[!]` with an entry naming the blocker rather than
+being held open silently (working rule 8).
+
+**Reverses if:** the pinned model is not served on Vertex under that name,
+in which case a separate constant records the Vertex identifier on
+`VERIFIER_MODEL`'s precedent — and if the weights differ rather than the
+identifier's form, the column is a model comparison as well as a tier
+comparison, D71's clause stays unmet, and the report says so rather than
+letting the column imply otherwise. Or a later version moves development
+onto Vertex, at which point the two constants trade places.

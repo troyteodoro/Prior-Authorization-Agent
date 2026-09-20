@@ -369,6 +369,23 @@ def build_trace_recorder(purpose: str = "extraction"):
     return Recorder()
 
 
+def native_schema_enabled(model: str) -> bool:
+    """Whether ADK will pass a native response schema alongside tools.
+
+    Asked of ADK rather than inferred from a tier name. The answer comes from
+    `is_enterprise_mode_enabled()`, which reads `GOOGLE_GENAI_USE_ENTERPRISE`
+    from the **process environment** and never consults the `genai.Client` the
+    runner is handed — so a Vertex client alone leaves the injected
+    `SetModelResponseTool` in place, and a recording built on the flag would
+    claim a prompt that did not run (D62, measured again in D106).
+
+    `pa_agent/tiers.py` sets the environment half; this reports what it bought.
+    """
+    from google.adk.models.google_llm import Gemini
+
+    return bool(Gemini(model=model).capabilities.output_schema_and_tools)
+
+
 class AdkExtractionRunner:
     """`ExtractionRunner` over `google-adk` 2.8.0 (REQ-52, T-62).
 

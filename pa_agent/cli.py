@@ -56,7 +56,9 @@ from pa_agent.determination import NoJurisdictionResult, NoPolicyResult, determi
 from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.verifier import RecordedVerifierRunner
 from pa_agent.stores.patient import LocalPatientStore
+from pa_agent.model_pin import MEASURED_TIER
 from pa_agent.stores.policy import LocalPolicyStore
+from pa_agent.tiers import TIERS
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_RECORDING = REPO_ROOT / "eval" / "extraction" / "results.json"
@@ -113,7 +115,9 @@ def _load_env() -> None:
         os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
-def _build_runner(mode: str, recording: Path, tool_fetch: bool, patient_store):
+def _build_runner(
+    mode: str, recording: Path, tool_fetch: bool, patient_store, tier: str
+):
     """Construct the model leaf. The only place a runner is chosen (REQ-52)."""
     if mode == "recorded":
         if not recording.exists():
@@ -128,9 +132,9 @@ def _build_runner(mode: str, recording: Path, tool_fetch: bool, patient_store):
         )
 
     _load_env()
-    from google import genai
+    from pa_agent.tiers import client_for
 
-    client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+    client = client_for(tier)
 
     if mode == "direct":
         from pa_agent.runners import DirectExtractionRunner
@@ -149,7 +153,7 @@ def _build_runner(mode: str, recording: Path, tool_fetch: bool, patient_store):
 
 
 
-def _build_verifier(mode: str, recording: Path):
+def _build_verifier(mode: str, recording: Path, tier: str):
     """Construct Article V's checker beside the model leaf (T-17, D78).
 
     It follows `--extraction`: the recorded leaf gets the recorded verifier —
@@ -170,11 +174,11 @@ def _build_verifier(mode: str, recording: Path):
         )
 
     _load_env()
-    from google import genai
+    from pa_agent.tiers import client_for
 
     from pa_agent.verifier import LiveVerifierRunner
 
-    return LiveVerifierRunner(genai.Client(api_key=os.environ["GOOGLE_API_KEY"]))
+    return LiveVerifierRunner(client_for(tier))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -210,6 +214,14 @@ def main(argv: list[str] | None = None) -> int:
              "chart can be adjudicated under another MAC's tree (D100).",
     )
     parser.add_argument(
+        "--tier",
+        choices=TIERS,
+        default=MEASURED_TIER,
+        help="which tier a live leaf calls (default: the development tier). "
+             "Ignored by --extraction recorded, which spends nothing. D5 runs "
+             "any demo on the tier that does not train on submitted data.",
+    )
+    parser.add_argument(
         "--as-of",
         type=date.fromisoformat,
         default=None,
@@ -221,9 +233,11 @@ def main(argv: list[str] | None = None) -> int:
     store = LocalPolicyStore()
     patient_store = LocalPatientStore()
     runner = _build_runner(
-        args.extraction, args.recording, args.tool_fetch, patient_store
+        args.extraction, args.recording, args.tool_fetch, patient_store, args.tier
     )
-    verifier = _build_verifier(args.extraction, DEFAULT_VERIFIER_RECORDING)
+    verifier = _build_verifier(
+        args.extraction, DEFAULT_VERIFIER_RECORDING, args.tier
+    )
 
     try:
         result = determine(

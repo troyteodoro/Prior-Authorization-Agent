@@ -85,6 +85,30 @@ from pa_agent.workflow import WorkflowRun, run_criteria_workflow  # noqa: E402
 
 OUT_DIR = REPO_ROOT / "eval" / "agentic"
 OUT_PATH = OUT_DIR / "results.json"
+
+#: Which task owns each tier's recording (D45, D106).
+PROVENANCE: dict[str, tuple[str, str]] = {
+    "ai_studio": ("T-61", "D63"),
+    "vertex": ("T-90", "D106"),
+}
+
+
+def out_path_for(tier: str) -> Path:
+    """One recording per tier. The AI Studio path is unchanged (D106)."""
+    return OUT_DIR / ("results.json" if tier == "ai_studio" else f"results_{tier}.json")
+
+
+def committed_recordings() -> list[Path]:
+    """Every tier's recording that exists on disk.
+
+    The gate covers all of them. A recording with no zero-cost check behind it
+    drifts and only a rescore finds out — which is exactly what happened to
+    this file's own oracle columns for two whole tasks while every gate stayed
+    green (D91).
+    """
+    return [path for path in (out_path_for(t) for t in PROVENANCE) if path.exists()]
+
+
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
 VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
 NOTES_MANIFEST = REPO_ROOT / "data" / "patients" / "notes" / "manifest.json"
@@ -339,19 +363,19 @@ def _planner_tool_calls(run: WorkflowRun, planner_name: str) -> list[str]:
     ]
 
 
-def measure(limit: int | None = None) -> int:
+def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
     from pa_agent.agent.retrieval_agent import (
         DEFAULT_MAX_LLM_CALLS,
         DEFAULT_MAX_STEPS,
         PROMPT_VERSION,
         AgenticRetrievalPlanner,
     )
-    from pa_agent.model_pin import MEASURED_TIER, PINNED_MODEL
+    from pa_agent.model_pin import PINNED_MODEL
 
     _load_env()
-    from google import genai
+    from pa_agent.tiers import client_for, tier_of
 
-    client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+    client = client_for(tier)
 
     policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
     recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
@@ -463,12 +487,20 @@ def measure(limit: int | None = None) -> int:
         )
         records.append(row)
 
+    task, decision = PROVENANCE[tier]
     payload = {
-        "task": "T-61",
-        "decision": "D63",
+        "task": task,
+        "decision": decision,
         "measured_at": datetime.now(timezone.utc).isoformat(),
         "model": PINNED_MODEL,
-        "tier": MEASURED_TIER,
+        # Stamped per component, not as a scalar: this round measures retrieval
+        # on `tier` while **replaying** AI Studio extraction and AI Studio
+        # verification on both sides. A scalar tier here would be false (D106).
+        "tier": {
+            "retrieval": tier_of(client),
+            "extraction": f"replayed from {EXTRACTION_RESULTS.name}",
+            "verifier": f"replayed from {VERIFIER_RESULTS.name}",
+        },
         "prompt_version": PROMPT_VERSION,
         "procedure_code": PROCEDURE,
         "as_of": AS_OF.isoformat(),
@@ -483,13 +515,14 @@ def measure(limit: int | None = None) -> int:
         "aggregate": aggregate(records),
         "patients": records,
     }
+    out_path = out_path_for(tier)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUT_PATH.write_text(
+    out_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     print()
     print(json.dumps(payload["aggregate"], indent=2))
-    print(f"\nwrote {OUT_PATH.relative_to(REPO_ROOT)}")
+    print(f"\nwrote {out_path.relative_to(REPO_ROOT)}")
     return EXIT_OK
 
 
@@ -580,16 +613,29 @@ def verify(report_only: bool = False) -> int:
         return EXIT_HARNESS_BROKEN
     print(f"\n  scorer self-check: {len(checks)}/{len(checks)}")
 
-    if not OUT_PATH.exists():
+    recordings = committed_recordings()
+    if len(recordings) > 1:
+        # Every tier's recording is verified, not just the default one (D106).
+        worst = EXIT_OK
+        for path in recordings:
+            print(f"\n  --- {path.relative_to(REPO_ROOT)} ---")
+            code = _verify_one(path, report_only=report_only)
+            worst = code if code != EXIT_OK else worst
+        return worst
+    return _verify_one(OUT_PATH, report_only=report_only)
+
+
+def _verify_one(out_path: Path, report_only: bool = False) -> int:
+    if not out_path.exists():
         print(
-            f"\n  no measurement at {OUT_PATH.relative_to(REPO_ROOT)}.\n"
+            f"\n  no measurement at {out_path.relative_to(REPO_ROOT)}.\n"
             "  T-61's deliverable is a comparison, and none has been run.\n"
             "  `python eval/run_agentic_eval.py --measure` spends model calls and\n"
             "  writes it. This gate verifies that artifact; it does not create one.\n"
         )
         return EXIT_NO_MEASUREMENT
 
-    payload = json.loads(OUT_PATH.read_text(encoding="utf-8"))
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
     report(payload)
 
     if report_only:
@@ -606,6 +652,8 @@ def verify(report_only: bool = False) -> int:
         problems.append("no patient produced a comparable determination")
     if payload.get("model") is None:
         problems.append("the recording does not name the model it measured")
+    if payload.get("tier") is None:
+        problems.append("the recording does not name the tier it measured on")
     notes_on_file = _notes_on_file()
     seen_patients = [row["patient_id"] for row in payload.get("patients", [])]
     if len(seen_patients) != len(set(seen_patients)):
@@ -710,7 +758,7 @@ def _gathered_problems(row: dict, notes_on_file: dict[str, int] | None = None) -
     return problems
 
 
-def rescore() -> int:
+def rescore(tier: str = "ai_studio") -> int:
     """Recompute the oracle half and the aggregate. **Spends nothing.**
 
     The agentic side is what cost money and is left exactly as measured. The
@@ -720,11 +768,12 @@ def rescore() -> int:
     established this shape and D18 established why: re-deriving what is free is
     not the same act as re-measuring what is not.
     """
-    if not OUT_PATH.exists():
-        print(f"no recording at {OUT_PATH.relative_to(REPO_ROOT)}", file=sys.stderr)
+    out_path = out_path_for(tier)
+    if not out_path.exists():
+        print(f"no recording at {out_path.relative_to(REPO_ROOT)}", file=sys.stderr)
         return EXIT_NO_MEASUREMENT
 
-    payload = json.loads(OUT_PATH.read_text(encoding="utf-8"))
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
     policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
     recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
     runner = RecordedExtractionRunner.from_records(
@@ -766,7 +815,7 @@ def rescore() -> int:
 
     payload["rescored_at"] = datetime.now(timezone.utc).isoformat()
     payload["aggregate"] = aggregate(payload["patients"])
-    OUT_PATH.write_text(
+    out_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     print(f"rescored {len(payload['patients'])} patients, no model call")
@@ -840,12 +889,19 @@ def main(argv: list[str] | None = None) -> int:
         "Spends nothing: the oracle's only model call is a replayed extraction.",
     )
     parser.add_argument("--limit", type=int, default=None, help="first N patients only")
+    parser.add_argument(
+        "--tier",
+        choices=tuple(PROVENANCE),
+        default="ai_studio",
+        help="which tier the planner calls (default: the development tier). "
+        "Bare, the gate verifies every committed recording.",
+    )
     args = parser.parse_args(argv)
 
     if args.measure:
-        return measure(args.limit)
+        return measure(args.tier, args.limit)
     if args.rescore:
-        return rescore()
+        return rescore(args.tier)
     return verify(report_only=args.report)
 
 
