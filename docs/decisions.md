@@ -7860,3 +7860,68 @@ D103's round.
 bound change is a new entry and a new measurement); or a third note per
 patient is wanted — the `documents` list already generalizes, and the
 "at least two" pin is what to relax.
+
+**Result — measured 2026-09-20, `gemini-3.5-flash-lite` on AI Studio,
+`google-adk` 2.8.0, prompt version `t15-instruction-v1/t89-reask-v1`
+unchanged.** Fourteen documents over seven charts; every recording
+re-measured whole, in the order above; the agentic differential measured
+fresh rather than rescored.
+
+| | T-89 direct (D103) | **T-81 direct** | T-89 inline | **T-81 inline** | T-89 tool-fetch | **T-81 tool-fetch** |
+|---|---|---|---|---|---|---|
+| notes scored | 11 | **17** | 11 | **17** | 6 | **12** (5 skipped) |
+| precision / recall / REQ-9 / fields | 1.000 ×4 | **1.000 ×4** | 1.000 ×4 | **1.000 ×4** | 1.000 ×4 | **1.000 ×4** |
+| spans emitted / anchored | 169 / 169 | **175 / 175** | 165 / 165 | **165 / 165** | 76 / 76 | **76 / 76** |
+| quotes re-asked / recovered | 0 / 0 | **0 / 0** | 0 / 0 | **0 / 0** | 0 / 0 | **1 / 1** |
+| model calls | 11 | **17** | 11 | **17** | 13 | **26** |
+| input tokens | 12,103 | **17,051** | 12,822 | **18,266** | 26,469 | **46,334** |
+| output tokens | 9,220 | **9,981** | 8,894 | **8,630** | 4,651 | **4,697** |
+
+**The re-ask fired, on the paraphrase P2 was written from.** Under
+tool-fetch the model wrote *completed* for E8's *completing* — the one
+instance D71 recorded and D103's round did not reproduce — and the second
+turn returned the verbatim text, which the anchorer located: one asked, one
+recovered, E8's assertion cited. D103's reversal clause was *recovers
+nothing while paying the turn*; this round paid one turn and recovered one
+quote, so the mechanism has now earned its premium once. The direct and
+inline runs anchored every span on the first turn.
+
+**Verdicts held everywhere, as the split was built to guarantee.**
+`eval/run_eval.py` reads **17 of 17 `PASS`**; the only drift against the
+committed baseline was `E13` absent from it, adopted with
+`--update-baseline`. No existing label moved and no `(status, reason_class)`
+moved — the same facts in two files produced the same fourteen answers,
+which is the property the per-fact `document` scalar was chosen for.
+Assertion emission is the one visible change in the model's behaviour:
+several continuation documents drew a `program_assertions` entry from the
+assessment or continuation sentence where the single note had drawn none.
+Verdict-neutral — c3 reads assertions only on a chart with no events — and
+recorded here as D47's instability seen from another side. The verifier
+recording was re-measured whole: **30 of 30 accepted**, 22,877 input /
+1,316 output tokens.
+
+**The direct figure was measured on the first day it could fall, and did
+not.** `eval/run_agentic_eval.py --measure` over seven patients — J1 joins
+the differential now, since a fresh measurement covers the whole corpus —
+reads 7/7 outcomes, 49/49 criteria, 93/93 spans, zero errors. The planner
+gathered both notes for every patient (six tool calls each: the note list,
+two reads, and the three structured fetches), so the direct recall figure
+reads 1.000 as a measurement and `eval/report.md` now carries the
+per-patient table of notes on file against notes gathered in place of the
+construction caveat. The two charts that cite no note (E7's, E8's) are
+still gathered and uncitable. Delta: **24 model calls and 90,743 input
+tokens** the fixed planner never spent; ratio 3.6x (was 4.3x — the shared
+replayed denominator grew with the second extraction call per chart, which
+is D91's point about ratios made again).
+
+**Downstream.** A6 reads 45 calls / 36,956 input / 7,590 output / 47.7 s
+across ten determinations (was 38 / 31,118 / 6,925 / 39.6 s — one more
+extraction turn per chart). A2 precision 1.000 on `MET` against a 0.609
+base rate (14 of 23 labeled pairs); A3 zero invalid `MET` spans over 95;
+A5 abstention 4/17 = 0.235.
+
+**Labels.** Every row in the table above agreed with its re-derivation; the
+owner's review is recorded by this close.
+
+**Cost of the round.** 17 + 17 + 26 extraction calls, 30 verifier calls,
+67 agentic calls (24 of them the planner's).

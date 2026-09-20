@@ -26,7 +26,7 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-56 (plus REQ-18a), edge cases E1–E12 plus E10b and E10c, acceptance criteria A1–A9. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-56 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas. |
 | `docs/tasks.md` | The board. Tasks T-00 through T-84, each with a runnable exit condition. **`Path to v1` at the top states what to do next.** |
 | `docs/decisions.md` | D1–D94, kill criteria, open questions. Append-only. |
@@ -102,7 +102,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 ```bash
 ./venv/bin/python scripts/check_gates.py        # all 10 gates, ~25s. Required at every close.
-./venv/bin/python -m pytest -q                  # the suite alone (813 tests, ~36s)
+./venv/bin/python -m pytest -q                  # the suite alone (833 tests, ~40s)
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q          # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5    # one test
 ```
@@ -207,6 +207,18 @@ validator, which is why anchoring and validation are separate modules.
 The dangerous set. Each of these can be violated while **every test keeps
 passing**, because the tests are written in terms of the thing that broke.
 
+- **Every note-level BMI is reconciled; never select one** *(REQ-34a, D104)*.
+  `step_extract` carries every anchored current BMI in `WorkflowState.note_bmis`
+  and `reconcile_bmi` compares each to the structured value independently. It
+  was "first note wins" while the corpus had one note per patient; with two,
+  that is store order deciding a threshold question, and a second note that
+  straddles 35.0 would be hidden by the first that agrees.
+- **A fact belongs to exactly one document** *(D104)*. Every encounter,
+  assertion and trap in a fact manifest carries a scalar `document`; the
+  synthesizer renders it there and nowhere else, and `tests/test_notes.py`
+  scans each document for only its own dates. A fact rendered twice inflates
+  c1's count and cites one visit from two places, with every verdict test
+  agreeing.
 - **Never give the extraction agent structured observations** *(D62)*. Hand it
   the structured BMI while asking for the note's and T-33's two independent
   readings stop being two. E10b would quietly start agreeing, and the tests —
@@ -264,8 +276,9 @@ passing**, because the tests are written in terms of the thing that broke.
   verifier in it, while every gate stayed green because `verify()` checks the
   recording's internal coherence and not its agreement with today's code. The
   visible symptom was a cost *ratio*: D64's 13.9x became 4.3x with no change to
-  retrieval, because Article V's verifier entered the shared denominator.
-  **Quote the delta beside the ratio** — 24 model calls and 84,931 input tokens
+  retrieval, because Article V's verifier entered the shared denominator, and
+  3.6x when T-81's second extraction call per chart entered it too.
+  **Quote the delta beside the ratio** — 24 model calls and 90,743 input tokens
   the fixed planner never spent — because the delta is the figure that does not
   move when the denominator does.
 - **Never make a gate call a model** *(D45)*. Measurement scripts spend the
@@ -288,7 +301,7 @@ passing**, because the tests are written in terms of the thing that broke.
 - **Spans are located by searching the model's verbatim quote**, exact first then
   whitespace-normalized, always recording raw offsets *(D18)*. The model's own
   offsets are unusable: 0 of 80 in the spike, 0 of 171 in T-15, 0 of 169 in
-  T-89's re-measurement.
+  T-89's re-measurement, 0 of 175 on T-81's two-note corpus.
 - **`BLOCKED` is not `FAIL`, and `skipped` is not `failed`** *(D27, D67)*.
   "Answered wrongly" and "the component does not exist yet" have different next
   actions and only one names a task.
@@ -373,8 +386,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**68 of 69 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`, ~40s, 813 tests across 32 files). IDs run to T-89, but
+**69 of 69 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~45s, 833 tests across 32 files). IDs run to T-89, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -383,8 +396,8 @@ hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
-The eval set is full (T-21, D75): `eval/cases.json` holds sixteen labeled rows
-— spec §6's fourteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6, and
+The eval set is full (T-21, D75): `eval/cases.json` holds seventeen labeled rows
+— spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6, and
 `J1`, the second-jurisdiction row *(D102)* — all `PASS`, criterion-scoped,
 with every cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
@@ -407,29 +420,42 @@ D82's tolerance sweep, and **A6 38 model calls / 31,118 input / 6,925 output /
 39.6s across ten determinations** — replayed instrumentation, not the replay's
 own clock.
 
-Open: **T-81 alone**. v1 is complete — **A1–A9 all
-hold** — and what remains is spec §10's list of known limits, P1–P8, which
-**D97 sequenced into one task each**: T-85 through T-90 plus T-81, in
-`docs/tasks.md`'s `Path to v2` table. T-85 (D98) put the anchoring account in
-`eval/report.md`; T-86 (D99) made every `NOT_MET` carry a structured
-`shortfall` and added the `sufficiency` step — the ninth `STEPS` entry, between
-`criteria_c` and `verify` — which re-runs the predicate over only the cited
-evidence and maps a mismatch to `ERROR`, never an abstention. T-87 (D100,
-D101) added the second jurisdiction: `resolve(code, state)`, Palmetto GBA's
-tree `ncd-100.1-jjm-v1`, the fifth resolver type `NoJurisdictionTree`, and
-the graph generalized to what a tree declares. T-88 (D102) put a patient in
-Palmetto's territory: a declared clone of E4's chart, computed by
-`select_patients.py --clone` and recomputed by `--verify`, whose note is
-byte-identical to its source's so T-15's recording replays it by content —
-`RecordedExtractionRunner` is keyed by sha256 first — and whose eval row
-`J1` pins that the three-month run is a `c3` shortfall in Washington and not
-a criterion in Alabama. T-89 (D103) added the bounded verbatim re-ask to both
-live runners — one extra call, only on a note with a quote the anchorer
-refused, the answer admitted by the anchorer and never by the model — and
-re-measured all three extraction recordings and the verifier's: every span
-anchored on the first turn, so the re-ask fired nowhere and the paraphrase
-P2 was written from did not recur. **T-81 is next.** The runner change came
-before the corpus grows (T-81); the Vertex measurement (T-90) is last.
+Open: **nothing on the board; `Path to v2`'s row 7, the Vertex measurement
+(T-90), is next and opens its record when it starts.** v1 is complete —
+**A1–A9 all hold** — and spec §10's list of known limits, P1–P8, which
+**D97 sequenced into one task each**, is six rows closed of eight. T-85 (D98)
+put the anchoring account in `eval/report.md`; T-86 (D99) made every
+`NOT_MET` carry a structured `shortfall` and added the `sufficiency` step —
+the ninth `STEPS` entry, between `criteria_c` and `verify` — which re-runs
+the predicate over only the cited evidence and maps a mismatch to `ERROR`,
+never an abstention. T-87 (D100, D101) added the second jurisdiction:
+`resolve(code, state)`, Palmetto GBA's tree `ncd-100.1-jjm-v1`, the fifth
+resolver type `NoJurisdictionTree`, and the graph generalized to what a tree
+declares. T-88 (D102) put a patient in Palmetto's territory: a declared
+clone of E4's chart, computed by `select_patients.py --clone` and recomputed
+by `--verify`, whose notes are byte-identical to its source's so the
+extraction recording replays them by content — `RecordedExtractionRunner`
+is keyed by sha256 first — and whose eval row `J1` pins that the three-month
+run is a `c3` shortfall in Washington and not a criterion in Alabama. T-89
+(D103) added the bounded verbatim re-ask to both live runners — one extra
+call, only on a note with a quote the anchorer refused, the answer admitted
+by the anchorer and never by the model. **T-81 (D104) gave every
+note-bearing chart a second note**: a split of the facts each manifest
+already declared — every encounter, assertion and trap carries a scalar
+`document`, and the qualifying run straddles `chart_note_1.txt` and
+`chart_note_2.txt` wherever a run exists — so every existing label was
+invariant by construction and the round's one variable was the layout.
+The one deterministic-core change is REQ-34a: every note-level BMI is
+reconciled against the structured value, none selected by store order.
+`E13` pins that c3 cites two documents. Every recording was re-measured:
+175/175, 165/165 and 76/76 spans anchored, the re-ask firing once under
+tool-fetch — on E8's *completed*/*completing*, the paraphrase P2 was written
+from — and recovering it; the verifier 30 of 30; the eval set 17 of 17; the
+agentic differential measured fresh at 7/7 and 49/49 with the planner
+gathering both notes for every patient, so the direct recall figure is
+measured and reads 1.000 on the first day it could have fallen. The label
+re-read D96 deferred to this task is D104's table. The Vertex measurement
+(T-90) is last.
 Read the table rather than this paragraph *(D70, D72, D97)*.
 
 **The ratification programme is deleted** *(T-82, D92; finished by T-84, D94)*.
@@ -448,9 +474,11 @@ any of it back — files or records — a red suite rather than a quiet commit.
 would have added a formal review stamp to the eval labels; deleting it
 removed paperwork. D96 reframed the rest: the ground truth is a working first
 draft, drafted alongside the system, and further label review rides with
-later corpus expansion (T-81 and beyond) instead of standing as an open
-warning in every document. Spec §10's P4 records the reword; `README.md` and
-`eval/report.md` state the scope without the injunction *(D92, D96)*.
+later corpus expansion instead of standing as an open warning in every
+document. T-81 took that pass: every row re-derived from the manifests and
+the trees' constants, tabled in D104, reviewed at the close. Spec §10's P4
+records both; `README.md` and `eval/report.md` state the scope without the
+injunction *(D92, D96, D104)*.
 
 Worth knowing before a review: **REQ-44/REQ-47 are unclaimed on purpose** —
 Amendment 1 reserves the entire decision procedure to Python, so there is no
@@ -512,23 +540,26 @@ satisfiable *(D63, D70)*.
   system it grades** *(D19, D42; reworded in D96)*. Mechanical safeguards are
   in place, and on a corpus this small a perfect score still means only that
   the approach does not obviously fail.
-- **The measured result so far** *(D64, D66, re-measured in D91)*:
-  model-directed retrieval agrees with the deterministic oracle on 6/6 outcomes
-  and 42/42 criteria, 80/80 spans valid, zero errors — for **24 model calls and
-  84,931 input tokens** the fixed planner did not spend, 4.3x its end-to-end
+- **The measured result so far** *(D64, D66, re-measured in D91 and D104)*:
+  model-directed retrieval agrees with the deterministic oracle on 7/7 outcomes
+  and 49/49 criteria, 93/93 spans valid, zero errors — for **24 model calls and
+  90,743 input tokens** the fixed planner did not spend, 3.6x its end-to-end
   input tokens. **Quote the delta beside the ratio**: the fixed planner makes no
   model call, so the ratio's denominator is the replayed extraction-plus-verifier
   cost shared by both sides, and it moved from D64's 13.9x to 4.3x when Article
-  V's verifier entered that denominator — the delta is the figure that does not
-  move *(D91)*. Read the aggregate and the spread, never one patient's ratio.
-- **Planner recall is 1.000 over 25 citing cases, on both the cited and the
-  gathered figure** *(T-27/T-80, D86/D91)*. The gathered figure is REQ-25's and
-  it is **1.000 by construction** — one note per patient, a planner that raises
-  rather than returning less, structured facts re-read from the port — so the
-  *cited* figure beside it is the one that can still move. It settled D86's open
-  question: every patient gathered two documents and two cite only one, so a
-  non-cited document here was **gathered and uncitable, never skipped**. T-81
-  (a second note per patient) is what would let the direct figure fall.
+  V's verifier entered that denominator and to 3.6x when T-81's second
+  extraction call per chart did — the delta is the figure that does not move
+  *(D91)*. Read the aggregate and the spread, never one patient's ratio.
+- **Planner recall is 1.000 over 29 citing cases, on both the cited and the
+  gathered figure, and since T-81 the gathered figure is a measurement**
+  *(T-27/T-80/T-81, D86/D91/D104)*. The gathered figure is REQ-25's; it was
+  1.000 by construction on a one-note corpus and is now the one to quote —
+  every chart is two notes, the planner may name one, and on the measured day
+  it named both for all seven patients. `eval/report.md` carries the
+  per-patient table of notes on file against notes gathered. The two charts
+  that cite no note (E7's, E8's) are still **gathered and uncitable, never
+  skipped**. A free-tier tool loop is not reproducible at temperature 0, so one
+  day's 1.000 is a sample, re-measured and never re-run.
 
 ## Repo layout
 
@@ -554,9 +585,11 @@ data/patients/
                      (T-41, D73; E12's patient is note-free by declaration),
                      and one declared clone of E4's chart re-addressed into
                      Alabama (T-88, D102), recomputed by --verify
-  notes/             seven chart notes, one per <patient_id>/chart_note.txt,
-                     the clone's byte-identical to its source's; plus
-                     notes/manifest.json — a second, separate manifest
+  notes/             fourteen chart notes, two per note-bearing chart as
+                     <patient_id>/chart_note_1.txt and chart_note_2.txt (T-81,
+                     D104), the clone's byte-identical to its source's per
+                     document; plus notes/manifest.json — a second, separate
+                     manifest, one record per document
   work/              gitignored: the Synthea jar and the full 200-patient run
 eval/
   run_eval.py        the baseline diff (T-10). Drift in **either** direction
@@ -566,23 +599,26 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 16 labeled rows (§6's 14 + NP1 + J1; D75, D102)
+  cases.json         the eval set — 17 labeled rows (§6's 15 + NP1 + J1; D75, D102, D104)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
-  manifests/         T-06's ground truth — the system under test never reads it
-  extraction/        results.json (T-15) plus adk_results_inline.json and
-                     adk_results_tool_fetch.json — T-63's two, one per mode (D68)
+  manifests/         T-06's ground truth — the system under test never reads it;
+                     since T-81 each fact names the document it renders into
+  extraction/        results.json plus adk_results_inline.json and
+                     adk_results_tool_fetch.json — one per mode (D68), all
+                     three re-measured by T-81 on the two-note corpus (D104)
   agentic/           results.json — T-61's recording, carrying since T-80
-                     the bundle each side *gathered* beside what it cited (D91)
+                     the bundle each side *gathered* beside what it cited (D91),
+                     measured fresh by T-81 over all seven charts (D104)
   verifier/          results.json — T-17's recording, 30 claims since T-88,
-                     re-measured whole by T-89 (D78, D102, D103)
+                     re-measured whole by T-89 and T-81 (D78, D102, D103, D104)
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient
 scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               32 files, 813 tests
+tests/               32 files, 833 tests
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

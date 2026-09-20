@@ -8,11 +8,11 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Outcomes against the labels
 
-16 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
+17 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
 
 | Status | Cases | Meaning |
 |---|---|---|
-| `PASS` | 16 | matched the label on every checked dimension |
+| `PASS` | 17 | matched the label on every checked dimension |
 | `FAIL` | 0 | answered, and answered wrongly |
 | `BLOCKED` | 0 | the component under test does not exist yet |
 | `ERROR` | 0 | a classified fault; the system did not answer (REQ-28) |
@@ -21,7 +21,7 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Per-criterion precision on `MET` (A2, A3)
 
-The system emitted **56** criterion verdicts across 10 determinations. The eval set labels **22** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
+The system emitted **56** criterion verdicts across 10 determinations. The eval set labels **23** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
 
 | Criterion | Labeled pairs | System said `MET` | Correct | Precision |
 |---|---|---|---|---|
@@ -29,11 +29,11 @@ The system emitted **56** criterion verdicts across 10 determinations. The eval 
 | `b` | 1 | 1 | 1 | 1.000 |
 | `c1` | 2 | 1 | 1 | 1.000 |
 | `c2` | 3 | 2 | 2 | 1.000 |
-| `c3` | 5 | 2 | 2 | 1.000 |
+| `c3` | 6 | 3 | 3 | 1.000 |
 | `c4` | 3 | 1 | 1 | 1.000 |
 | `c5` | 2 | 2 | 2 | 1.000 |
 | `d` | 1 | 0 | 0 | n/a |
-| **all** | **22** | **13** | **13** | **1.000** |
+| **all** | **23** | **14** | **14** | **1.000** |
 
 **A2's threshold is 0.90 on `MET`.** Measured: **1.000**.
 
@@ -43,8 +43,8 @@ A precision figure without its denominators is not a result. On a set where most
 
 | Figure | Value |
 |---|---|
-| `MET` base rate (labeled pairs that are `MET`) | 13/22 = **0.591** |
-| Precision of a trivial always-`MET` baseline | **0.591** |
+| `MET` base rate (labeled pairs that are `MET`) | 14/23 = **0.609** |
+| Precision of a trivial always-`MET` baseline | **0.609** |
 | Precision measured | **1.000** |
 
 The baseline's precision *is* the base rate, by construction: a system that answers `MET` everywhere is correct exactly as often as `MET` is the right answer. The measured figure is only a result to the extent it exceeds that number.
@@ -76,17 +76,21 @@ Every span a model emits is located by searching its verbatim quote in the note 
 
 | Recording | Notes scored | Spans emitted | Anchored | Not anchored | Re-asked | Recovered | Assertion coverage (D88) |
 |---|---|---|---|---|---|---|---|
-| T-89 direct (`results.json`) | 11 | 169 | 169 | **0** | 0 | **0** | 2/2 = **1.000** |
-| T-89 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** | 0 | **0** | 2/2 = **1.000** |
-| T-89 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) | 76 | 76 | **0** | 0 | **0** | 1/1 = **1.000** |
+| T-81 direct (`results.json`) | 17 | 175 | 175 | **0** | 0 | **0** | 2/2 = **1.000** |
+| T-81 ADK inline (`adk_results_inline.json`) | 17 | 165 | 165 | **0** | 0 | **0** | 2/2 = **1.000** |
+| T-81 ADK tool-fetch (`adk_results_tool_fetch.json`) | 12 (5 skipped) | 76 | 76 | **0** | 1 | **1** | 1/1 = **1.000** |
+
+**Recovered by the re-ask, named.** Each is a quote the first turn paraphrased and the second turn returned verbatim; the anchorer located the second (T-89).
+
+- T-81 ADK tool-fetch, note `E8+E10b/1`: `program_assertions[0].quote` — *completing a six-month medically supervised weight-loss program last year*
 
 **No claim was dropped in any recording.**
 
-**What a drop costs.** The determination that results is well-formed and says less than the chart does — it abstains, or names a weaker gap, where evidence existed. The failure is fail-closed rather than a wrong approval, and it is still a failure (spec §10, P2). A similarity fallback is not the fix: a match generous enough to absorb a tense change is generous enough to absorb a negation (D18). The fix is the bounded verbatim re-ask — one extra model call on a note with an unanchorable quote, the answer admitted by the anchorer and never by the model — and across these recordings it was asked about 0 quotes and recovered 0 (D103).
+**What a drop costs.** The determination that results is well-formed and says less than the chart does — it abstains, or names a weaker gap, where evidence existed. The failure is fail-closed rather than a wrong approval, and it is still a failure (spec §10, P2). A similarity fallback is not the fix: a match generous enough to absorb a tense change is generous enough to absorb a negation (D18). The fix is the bounded verbatim re-ask — one extra model call on a note with an unanchorable quote, the answer admitted by the anchorer and never by the model — and across these recordings it was asked about 1 quote and recovered 1 (D103).
 
 ## Abstention (A5, REQ-28, REQ-31)
 
-**Abstention rate: 4/16 answered = 0.250**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
+**Abstention rate: 4/17 answered = 0.235**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
 
 An `ERROR` entering the numerator alone would let a crash *lower* the abstention rate — caution misreported as confidence (D77).
 
@@ -109,13 +113,13 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 | `discrepancy_tolerance` | Discrepancies disclosed | Abstention rate |
 |---|---|---|
-| 0 | 5 | 0.250 |
-| 0.25 | 3 | 0.250 |
-| 0.5 | 1 | 0.250 |
-| 1 ← pinned (D51) | 1 | 0.250 |
-| 2 | 1 | 0.250 |
-| 5 | 1 | 0.250 |
-| 50 | 0 | 0.250 |
+| 0 | 5 | 0.235 |
+| 0.25 | 3 | 0.235 |
+| 0.5 | 1 | 0.235 |
+| 1 ← pinned (D51) | 1 | 0.235 |
+| 2 | 1 | 0.235 |
+| 5 | 1 | 0.235 |
+| 50 | 0 | 0.235 |
 
 **Why abstention does not move.** Tolerance gates whether a disagreement is *recorded*. The abstention branch is a different test — the two values falling on opposite sides of the coverage threshold (REQ-34, `SOURCE_CONFLICT`) — and the threshold is not what is being swept.
 
@@ -127,22 +131,32 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 `FixedRetrievalPlanner` reads three stores in a fixed order; `AgenticRetrievalPlanner` lets the model choose what to fetch. Everything downstream is identical and cannot tell which planner ran, which is what makes the differential a comparison (D63). This section asks the question the outcome comparison cannot: **did the model-directed run have the evidence the deterministic one used?**
 
-Two figures over one denominator. **Direct** is containment in the bundle the agentic planner *gathered* and handed downstream — what REQ-25 asks for, recorded by T-80. **Cited** is containment in the documents that run's spans *point into* — the bound D86 had to settle for. Read both; the next two paragraphs say which one is carrying information today, and it is not the stronger one.
+Two figures over one denominator. **Direct** is containment in the bundle the agentic planner *gathered* and handed downstream — what REQ-25 asks for, recorded by T-80. **Cited** is containment in the documents that run's spans *point into* — the bound D86 had to settle for. The direct figure is the one to quote; the cited figure is the bound beneath it.
 
 | Criterion | Cases citing evidence | Covered (gathered) | Covered (cited) | Recall (direct) | Recall (cited) |
 |---|---|---|---|---|---|
-| `a` | 5 | 5 | 5 | 1.000 | 1.000 |
+| `a` | 6 | 6 | 6 | 1.000 | 1.000 |
 | `b` | 3 | 3 | 3 | 1.000 | 1.000 |
-| `c1` | 4 | 4 | 4 | 1.000 | 1.000 |
-| `c2` | 3 | 3 | 3 | 1.000 | 1.000 |
+| `c1` | 5 | 5 | 5 | 1.000 | 1.000 |
+| `c2` | 4 | 4 | 4 | 1.000 | 1.000 |
 | `c3` | 4 | 4 | 4 | 1.000 | 1.000 |
 | `c4` | 3 | 3 | 3 | 1.000 | 1.000 |
-| `c5` | 3 | 3 | 3 | 1.000 | 1.000 |
-| **all** | **25** | **25** | **25** | **1.000** | **1.000** |
+| `c5` | 4 | 4 | 4 | 1.000 | 1.000 |
+| **all** | **29** | **29** | **29** | **1.000** | **1.000** |
 
-**The direct figure is 1.000 by construction on this corpus, and that sentence travels with it.** Three facts force it: `data/patients/notes/manifest.json` holds one note per patient; `AgenticRetrievalPlanner.gather` raises rather than returning an empty bundle or an id the store does not serve; and observations, conditions and the value set are re-read from the port, never taken from the tool payload (D66). A run that did not error gathered everything there was. The number is real and it cannot fall — which is the shape D70 already threw out once, so it is reported beside the cited figure rather than in place of it (D91). **T-81** is the corpus change — a second note per patient — that would let it fall.
+**Since T-81 the direct figure can fall, and this is a measurement of whether it did.** Every note-bearing chart holds two notes and the qualifying run straddles them wherever a run exists (D104), so `AgenticRetrievalPlanner` may name one of the two and the run succeeds with a shorter chart — REQ-25's mechanism, and the thing D91's one-note corpus could not exhibit. On this run the planner gathered every note on file for **7 of 7** patients. The construction caveat D91 put here is gone because it stopped being true; the figure above is what the planner did.
 
-**What the direct figure did settle.** D86 could not tell a skipped document from a gathered one that produced no citable span, and said a below-1.000 result would need this measurement to interpret. It now reads: every patient gathered two documents, and two of the six cite only one. **Those notes reached the criteria and yielded nothing to cite** — gathered and uncitable, never skipped. That is why the cited figure is the one that can still move here.
+| Patient (cases) | Notes on file | Gathered | Cited |
+|---|---|---|---|
+| `05cc52df` (E5) | 2 | 2 | 2 |
+| `07a5f345` (E4, E9) | 2 | 2 | 2 |
+| `49092fd9` (E2, E7) | 2 | 2 | 0 |
+| `a2e49f37` (E6, E10) | 2 | 2 | 2 |
+| `afdcee59` (E1, E11, E10c, E13) | 2 | 2 | 2 |
+| `bc6748d3` (E8, E10b) | 2 | 2 | 0 |
+| `ee9d79ee` (J1) | 2 | 2 | 2 |
+
+**Gathered and uncitable, still.** 2 of 7 patients cite no note at all on the agentic side: their notes reached the criteria and yielded nothing to cite, which is what the gathered column beside the cited one shows (D86's open question, settled by D91 and unchanged here).
 
 **Containment at whole-document granularity is containment of the span.** Gathered notes come back from the store by id and are hash-verified, so the bytes the agentic run held are the bytes the oracle sliced. REQ-25's *"contains the span"* is satisfied exactly, not by proxy — the in-process re-run D86 thought it would take is not needed at this granularity.
 
@@ -155,10 +169,10 @@ Measured from each determination's own `metrics`, never estimated. **Reported, n
 | Figure | Total | Per determination |
 |---|---|---|
 | Determinations | 10 | — |
-| Model calls | 38 | 3.8 |
-| Input tokens | 31118 | 3112 |
-| Output tokens | 6925 | 692 |
-| Wall time (ms) | 39629.1 | 3962.9 |
+| Model calls | 45 | 4.5 |
+| Input tokens | 36956 | 3696 |
+| Output tokens | 7590 | 759 |
+| Wall time (ms) | 47701.5 | 4770.2 |
 
 **What the latency figure means.** These are the wall times measured *when the recordings were made*, against the pinned model on AI Studio (T-15's extraction recording and T-17's verifier recording). They are not the cost of the replay, which is microseconds and would be a meaningless number to publish. A6 asks for cost and latency from instrumentation rather than estimated; replayed instrumentation is still instrumentation, and a replay's own clock would not be.
 
@@ -172,4 +186,4 @@ The measurement context for every figure above.
 
 - **The ground truth is a working first draft, drafted alongside the system it grades** (D19, D42, D96). The manifests are written from the bundles before the notes are synthesized, the system under test never reads them, and every cited span is validated against the source rather than against a label. Re-labeling and review ride with the corpus expansion of a later version.
 - **This system determines coverage as one contractor would, for each of two contractors.** NCD 100.1 quantifies nothing — no months, no visit counts, no recency. Every constant in a criteria tree comes from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J and M — and a request resolves by procedure code and state (D21, D29, D100). These are not CMS's thresholds; they are two contractors' worth of them.
-- **The corpus is eight patients and five policy documents.** Six bundles from the base seed, E12's with its declared observation (D73), and one declared clone of E4's chart re-addressed into Palmetto's territory (T-88, D102) — the one row, `J1`, that runs under the second tree, and it shares its note's bytes with E4. Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above.
+- **The corpus is eight patients, fourteen chart notes and five policy documents.** Six bundles from the base seed, E12's with its declared observation (D73), and one declared clone of E4's chart re-addressed into Palmetto's territory (T-88, D102) — the one row, `J1`, that runs under the second tree, and it shares both its notes' bytes with E4. Every note-bearing chart is two documents since T-81, a split of the facts its manifest already declared (D104). Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above.

@@ -3,7 +3,7 @@
   "model": "gemini-3.5-flash-lite",
   "tier": "ai_studio",
   "prompt_version": "verifier-v4",
-  "measured_at": "2026-09-20T00:38:45.832196+00:00",
+  "measured_at": "2026-09-20T05:57:59.314605+00:00",
   "claims": [
     {
       "digest": "5f1f38ba429de837d96e0089fff5ea37a074c79b755013bb62de268b916e408e",
@@ -29,17 +29,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents a BMI observation of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote correctly documents a BMI value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents a BMI observation of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote correctly documents a BMI value of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 936,
-        "output_tokens": 48,
-        "wall_time_ms": 761.3690829603001
+        "output_tokens": 49,
+        "wall_time_ms": 793.9610410248861
       }
     },
     {
@@ -65,21 +65,21 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement.",
+      "reason": "The provided quote shows an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of having at least one co-morbidity.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents an active diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement."
+        "reason": "The provided quote shows an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of having at least one co-morbidity."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 977,
-        "output_tokens": 42,
-        "wall_time_ms": 741.3891250034794
+        "output_tokens": 52,
+        "wall_time_ms": 750.4492501029745
       }
     },
     {
-      "digest": "23c137a38d722258ae8dc824df7d2c53615871fbe7c1665171268c8d19a321c5",
+      "digest": "4ea5994e61e2fd39215daa1be4644f70b644e62c1673b2d866f8ec1d17aeda3d",
       "criterion_id": "c1",
       "verdict": "MET",
       "payload": {
@@ -94,30 +94,30 @@
         },
         "verdict": "MET",
         "quotes": [
-          "08/05/2024 - Monthly program visit completed. Weight 116.6 kg, BMI 39.1.\nDiscussed portion control and protein intake on the 1500 kcal plan. Reports 30\nminutes of brisk walking, five days per week.",
-          "09/02/2024 - Monthly program visit completed. Weight 115.7 kg, BMI 38.8.\nDiscussed portion control and protein intake on the 1400 kcal plan. Reports 15\nminutes of pool exercise three days per week.",
-          "03/10/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nActivity goal of 40 minutes daily met on three days this month.",
-          "04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Reports 40 minutes of\npool exercise five days per week.",
-          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1500 kcal plan. Continues\nsupervised exercise, 30 minutes, five days per week.",
-          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week."
+          "08/05/2024 - Scheduled program follow-up. No new complaints. Weight 116.6 kg,\nBMI 39.1. Dietary recall reviewed in detail against the 1400 kcal plan.\nContinues supervised exercise, 15 minutes, three days per week.",
+          "09/02/2024 - Routine supervised program visit. Weight 115.7 kg, BMI 38.8.\nDiscussed portion control and protein intake on the 1200 kcal plan. Exercise\nlog shows 20 minutes of stationary cycling, four days weekly.",
+          "03/10/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 25\nminutes of pool exercise four days per week.",
+          "04/14/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Nutrition counseling provided; meal plan held at 1800 kcal. Exercise\nlog shows 30 minutes of stationary cycling, three days weekly.",
+          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nReviewed the 1500 kcal reduced-calorie meal plan; patient adherent. Continues\nsupervised exercise, 30 minutes, three days per week.",
+          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1600 kcal plan. Activity goal of\n25 minutes daily met on four days this month."
         ]
       },
       "accept": true,
-      "reason": "The provided quotes directly document multiple monthly visits for a physician-supervised weight management program, satisfying the minimum event requirement.",
+      "reason": "The provided quotes consistently document multiple visits for a physician-supervised weight management program meeting the minimum event requirement.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes directly document multiple monthly visits for a physician-supervised weight management program, satisfying the minimum event requirement."
+        "reason": "The provided quotes consistently document multiple visits for a physician-supervised weight management program meeting the minimum event requirement."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 853,
-        "output_tokens": 39,
-        "wall_time_ms": 778.3365000505
+        "input_tokens": 856,
+        "output_tokens": 37,
+        "wall_time_ms": 682.6058749575168
       }
     },
     {
-      "digest": "3e96c3be94ffb44b9b3ca572bc574e12345d5972fa4769f78e4a0e9e5d8caae7",
+      "digest": "696b0c6a520251d3a5a8538c902f0b0b9b69fe9df8a7a4bbeb5e7555077262b1",
       "criterion_id": "c2",
       "verdict": "MET",
       "payload": {
@@ -132,25 +132,25 @@
         },
         "verdict": "MET",
         "quotes": [
-          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week."
+          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1600 kcal plan. Activity goal of\n25 minutes daily met on four days this month."
         ]
       },
       "accept": true,
-      "reason": "The provided quote is directly relevant to the criterion and shows a recent date well within the 12-month recency window.",
+      "reason": "The quote provides a recent visit date of 06/09/2026, which is within the 12-month recency window and supports the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is directly relevant to the criterion and shows a recent date well within the 12-month recency window."
+        "reason": "The quote provides a recent visit date of 06/09/2026, which is within the 12-month recency window and supports the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 506,
-        "output_tokens": 42,
-        "wall_time_ms": 747.4494579946622
+        "input_tokens": 505,
+        "output_tokens": 53,
+        "wall_time_ms": 847.8396669961512
       }
     },
     {
-      "digest": "047be73943623465e4dbf2eb5f6805323e1c83199986a14a1dfedc21c52ef6c7",
+      "digest": "526021c1a94a44ddfb9cf0e2310a7183e5efec61dcc6ff1b99ab2fbbdcc748bc",
       "criterion_id": "c3",
       "verdict": "MET",
       "payload": {
@@ -165,24 +165,24 @@
         },
         "verdict": "MET",
         "quotes": [
-          "03/10/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nActivity goal of 40 minutes daily met on three days this month.",
-          "04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Reports 40 minutes of\npool exercise five days per week.",
-          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1500 kcal plan. Continues\nsupervised exercise, 30 minutes, five days per week.",
-          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1500 kcal plan. Continues\nsupervised exercise, 20 minutes, five days per week."
+          "03/10/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 25\nminutes of pool exercise four days per week.",
+          "04/14/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Nutrition counseling provided; meal plan held at 1800 kcal. Exercise\nlog shows 30 minutes of stationary cycling, three days weekly.",
+          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nReviewed the 1500 kcal reduced-calorie meal plan; patient adherent. Continues\nsupervised exercise, 30 minutes, three days per week.",
+          "06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1600 kcal plan. Activity goal of\n25 minutes daily met on four days this month."
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document monthly supervised program visits across four consecutive months from March to June 2026, satisfying the minimum duration requirement.",
+      "reason": "The quotes document four consecutive monthly program visits demonstrating active participation and adherence.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document monthly supervised program visits across four consecutive months from March to June 2026, satisfying the minimum duration requirement."
+        "reason": "The quotes document four consecutive monthly program visits demonstrating active participation and adherence."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 720,
-        "output_tokens": 44,
-        "wall_time_ms": 731.3366669695824
+        "input_tokens": 718,
+        "output_tokens": 30,
+        "wall_time_ms": 708.0505839549005
       }
     },
     {
@@ -208,21 +208,21 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document the required BMI values to satisfy the criterion.",
+      "reason": "The quotes consistently provide BMI values matching the required criteria for every month of the run.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document the required BMI values to satisfy the criterion."
+        "reason": "The quotes consistently provide BMI values matching the required criteria for every month of the run."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 483,
-        "output_tokens": 30,
-        "wall_time_ms": 673.6502089770511
+        "output_tokens": 33,
+        "wall_time_ms": 844.9266669340432
       }
     },
     {
-      "digest": "e8b37db19c70b7c942fbbddf72b49e7ef4defdfd105b67e3dcf2061b4c40110d",
+      "digest": "fe750967270defe5775590ced5e0b5c56067b1fba9cb9632b655e2ead14de4e8",
       "criterion_id": "c5",
       "verdict": "MET",
       "payload": {
@@ -243,28 +243,28 @@
         },
         "verdict": "MET",
         "quotes": [
-          "Reviewed the 1500 kcal reduced-calorie meal plan",
-          "Activity goal of 40 minutes daily met on three days this month.",
-          "Food\ndiary reviewed; 1600 kcal plan continued without change.",
-          "Reports 40 minutes of\npool exercise five days per week.",
-          "Discussed portion control and protein intake on the 1500 kcal plan.",
-          "Continues\nsupervised exercise, 30 minutes, five days per week.",
-          "Dietary recall reviewed in detail against the 1500 kcal plan.",
-          "Continues\nsupervised exercise, 20 minutes, five days per week."
+          "Dietary recall reviewed in detail against the 1800 kcal plan.",
+          "Reports 25\nminutes of pool exercise four days per week.",
+          "Nutrition counseling provided; meal plan held at 1800 kcal.",
+          "Exercise\nlog shows 30 minutes of stationary cycling, three days weekly.",
+          "Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.",
+          "Continues\nsupervised exercise, 30 minutes, three days per week.",
+          "Dietary recall reviewed in detail against the 1600 kcal plan.",
+          "Activity goal of\n25 minutes daily met on four days this month."
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document both dietary plans and physical activity across the required interval, matching the criteria for diet and activity.",
+      "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period in accordance with the criterion requirements.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document both dietary plans and physical activity across the required interval, matching the criteria for diet and activity."
+        "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period in accordance with the criterion requirements."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 640,
-        "output_tokens": 39,
-        "wall_time_ms": 729.7714579617605
+        "input_tokens": 641,
+        "output_tokens": 38,
+        "wall_time_ms": 905.7682079728693
       }
     },
     {
@@ -301,11 +301,11 @@
         "purpose": "verification",
         "input_tokens": 957,
         "output_tokens": 48,
-        "wall_time_ms": 790.3997079702094
+        "wall_time_ms": 771.9012500019744
       }
     },
     {
-      "digest": "1280f265a74b6940c1ce3cb04f02bdc394a25c8840bab96d9960c64504e2b76a",
+      "digest": "3ec42b4bfd0fb8bf4ce25abebfd9ac8d1b35384c3b18a73ceb75a5801d3dae74",
       "criterion_id": "c1",
       "verdict": "MET",
       "payload": {
@@ -320,29 +320,29 @@
         },
         "verdict": "MET",
         "quotes": [
-          "01/13/2026 - Routine supervised program visit. Weight 84.9 kg, BMI 35.9. Food\ndiary reviewed; 1200 kcal plan continued without change. Exercise log shows 25\nminutes of stationary cycling, four days weekly.",
-          "02/10/2026 - Monthly program visit completed. Weight 84.7 kg, BMI 35.8.\nNutrition counseling provided; meal plan held at 1600 kcal. Reports 25 minutes\nof brisk walking, three days per week.",
-          "03/12/2026 - Scheduled program follow-up. No new complaints. Weight 84.4 kg,\nBMI 35.7. Discussed portion control and protein intake on the 1400 kcal plan.\nActivity goal of 20 minutes daily met on three days this month.",
-          "05/14/2026 - Routine supervised program visit. Weight 84.2 kg, BMI 35.6. Food\ndiary reviewed; 1500 kcal plan continued without change. Reports 30 minutes of\npool exercise three days per week.",
-          "06/11/2026 - Monthly program visit completed. Weight 84.2 kg, BMI 35.6.\nNutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 15 minutes, three days per week."
+          "01/13/2026 - Program visit. Interval history reviewed. Weight 84.9 kg, BMI\n35.9. Nutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 25 minutes, three days per week.",
+          "02/10/2026 - Program visit. Interval history reviewed. Weight 84.7 kg, BMI\n35.8. Nutrition counseling provided; meal plan held at 1600 kcal. Exercise log\nshows 30 minutes of stationary cycling, four days weekly.",
+          "03/12/2026 - Routine supervised program visit. Weight 84.4 kg, BMI 35.7.\nNutrition counseling provided; meal plan held at 1600 kcal. Continues\nsupervised exercise, 25 minutes, five days per week.",
+          "05/14/2026 - Routine supervised program visit. Weight 84.2 kg, BMI 35.6.\nReviewed the 1800 kcal reduced-calorie meal plan; patient adherent. Reports 15\nminutes of brisk walking, four days per week.",
+          "06/11/2026 - Scheduled program follow-up. No new complaints. Weight 84.2 kg,\nBMI 35.6. Discussed portion control and protein intake on the 1400 kcal plan.\nContinues supervised exercise, 30 minutes, three days per week."
         ]
       },
       "accept": true,
-      "reason": "All provided quotes document physician-supervised weight management program visits with consistent evidence supporting satisfaction of the criterion.",
+      "reason": "The quotes consistently document multiple physician-supervised program visits satisfying the minimum event requirement.",
       "raw": {
         "accept": true,
-        "reason": "All provided quotes document physician-supervised weight management program visits with consistent evidence supporting satisfaction of the criterion."
+        "reason": "The quotes consistently document multiple physician-supervised program visits satisfying the minimum event requirement."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 775,
-        "output_tokens": 36,
-        "wall_time_ms": 811.7693340172991
+        "input_tokens": 782,
+        "output_tokens": 32,
+        "wall_time_ms": 814.1920000780374
       }
     },
     {
-      "digest": "19e85cd355e3a67880713c661bc3d2401cdd940fc9f948dbe007e127781811ab",
+      "digest": "f2924b618616fb378a4a11d5743a2274fcc000bb3c303e58c860b1947faa0567",
       "criterion_id": "c3",
       "verdict": "NOT_MET",
       "payload": {
@@ -357,23 +357,23 @@
         },
         "verdict": "NOT_MET",
         "quotes": [
-          "01/13/2026 - Routine supervised program visit. Weight 84.9 kg, BMI 35.9. Food\ndiary reviewed; 1200 kcal plan continued without change. Exercise log shows 25\nminutes of stationary cycling, four days weekly.",
-          "02/10/2026 - Monthly program visit completed. Weight 84.7 kg, BMI 35.8.\nNutrition counseling provided; meal plan held at 1600 kcal. Reports 25 minutes\nof brisk walking, three days per week.",
-          "03/12/2026 - Scheduled program follow-up. No new complaints. Weight 84.4 kg,\nBMI 35.7. Discussed portion control and protein intake on the 1400 kcal plan.\nActivity goal of 20 minutes daily met on three days this month."
+          "01/13/2026 - Program visit. Interval history reviewed. Weight 84.9 kg, BMI\n35.9. Nutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 25 minutes, three days per week.",
+          "02/10/2026 - Program visit. Interval history reviewed. Weight 84.7 kg, BMI\n35.8. Nutrition counseling provided; meal plan held at 1600 kcal. Exercise log\nshows 30 minutes of stationary cycling, four days weekly.",
+          "03/12/2026 - Routine supervised program visit. Weight 84.4 kg, BMI 35.7.\nNutrition counseling provided; meal plan held at 1600 kcal. Continues\nsupervised exercise, 25 minutes, five days per week."
         ]
       },
       "accept": true,
-      "reason": "The claim is NOT_MET and the provided quotes are relevant to program visits, but checking the duration arithmetic is outside the scope of the verifier.",
+      "reason": "The quotes are relevant to the supervised program visits and the NOT_MET verdict must be accepted as the shortfall calculation cannot be re-adjudicated by the verifier.",
       "raw": {
         "accept": true,
-        "reason": "The claim is NOT_MET and the provided quotes are relevant to program visits, but checking the duration arithmetic is outside the scope of the verifier."
+        "reason": "The quotes are relevant to the supervised program visits and the NOT_MET verdict must be accepted as the shortfall calculation cannot be re-adjudicated by the verifier."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 648,
-        "output_tokens": 46,
-        "wall_time_ms": 751.8871669890359
+        "input_tokens": 647,
+        "output_tokens": 50,
+        "wall_time_ms": 759.9850420374423
       }
     },
     {
@@ -400,21 +400,21 @@
         ]
       },
       "accept": true,
-      "reason": "The quoted observation provides a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote correctly documents a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The quoted observation provides a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote correctly documents a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 954,
         "output_tokens": 48,
-        "wall_time_ms": 689.5387499826029
+        "wall_time_ms": 802.1474159322679
       }
     },
     {
-      "digest": "d84ef950f1c4d6aa4376eb939f5f642d833618375e6797e05185052d498bd756",
+      "digest": "8627d25b562827378a526f8508adab277932352aaceb26047f4a7b9e8185a7d6",
       "criterion_id": "c1",
       "verdict": "MET",
       "payload": {
@@ -429,28 +429,28 @@
         },
         "verdict": "MET",
         "quotes": [
-          "03/11/2025 - Scheduled program follow-up. No new complaints. Weight 124.7 kg,\nBMI 43.0. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nReports 40 minutes of brisk walking, four days per week.",
-          "04/08/2025 - Monthly program visit completed. Weight 124.1 kg, BMI 42.8.\nDiscussed portion control and protein intake on the 1800 kcal plan. Reports 30\nminutes of brisk walking, four days per week.",
-          "05/13/2025 - Program visit. Interval history reviewed. Weight 123.8 kg, BMI\n42.7. Nutrition counseling provided; meal plan held at 1500 kcal. Activity\ngoal of 15 minutes daily met on four days this month.",
-          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week."
+          "03/11/2025 - Monthly program visit completed. Weight 124.7 kg, BMI 43.0.\nNutrition counseling provided; meal plan held at 1500 kcal. Reports 30 minutes\nof brisk walking, three days per week.",
+          "04/08/2025 - Scheduled program follow-up. No new complaints. Weight 124.1 kg,\nBMI 42.8. Reviewed the 1200 kcal reduced-calorie meal plan; patient adherent.\nExercise log shows 30 minutes of stationary cycling, five days weekly.",
+          "05/13/2025 - Scheduled program follow-up. No new complaints. Weight 123.8 kg,\nBMI 42.7. Nutrition counseling provided; meal plan held at 1800 kcal. Exercise\nlog shows 25 minutes of stationary cycling, three days weekly.",
+          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Exercise log shows 15\nminutes of stationary cycling, three days weekly."
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document multiple physician-supervised weight management program visits with corresponding dates, weights, BMIs, and lifestyle counseling.",
+      "reason": "The provided quotes directly document multiple physician-supervised weight management program visits which satisfy the minimum required events.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document multiple physician-supervised weight management program visits with corresponding dates, weights, BMIs, and lifestyle counseling."
+        "reason": "The provided quotes directly document multiple physician-supervised weight management program visits which satisfy the minimum required events."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 715,
-        "output_tokens": 41,
-        "wall_time_ms": 722.5521670188755
+        "input_tokens": 718,
+        "output_tokens": 36,
+        "wall_time_ms": 919.8110830038786
       }
     },
     {
-      "digest": "b3b99768e4da4cdfcc233c70d402f3b68c0b7bbd35ecbf713c24f8541132eda1",
+      "digest": "5230a5092cdb55dbc8cecf2f37c2bdbac0861239fb31936d0551663b1198b52b",
       "criterion_id": "c2",
       "verdict": "NOT_MET",
       "payload": {
@@ -465,25 +465,25 @@
         },
         "verdict": "NOT_MET",
         "quotes": [
-          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week."
+          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Exercise log shows 15\nminutes of stationary cycling, three days weekly."
         ]
       },
       "accept": true,
-      "reason": "The provided quote is relevant to the criterion and, as a NOT_MET claim, should be accepted since it does not directly show the threshold as already satisfied without needing arithmetic.",
+      "reason": "The quote provided is relevant to the record and does not directly show the recency window requirement as met without access to the full date arithmetic.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is relevant to the criterion and, as a NOT_MET claim, should be accepted since it does not directly show the threshold as already satisfied without needing arithmetic."
+        "reason": "The quote provided is relevant to the record and does not directly show the recency window requirement as met without access to the full date arithmetic."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 506,
-        "output_tokens": 51,
-        "wall_time_ms": 602.4758330313489
+        "input_tokens": 508,
+        "output_tokens": 44,
+        "wall_time_ms": 828.3052078913897
       }
     },
     {
-      "digest": "2b6eca69f607ec835927fbc70cef4400ff0b3d7c5865ba892497f1b5702c65ce",
+      "digest": "70f882fa19f88ea60d885131d3c303b140ff42fc06746caac11fddc7dc793c11",
       "criterion_id": "c3",
       "verdict": "MET",
       "payload": {
@@ -498,28 +498,28 @@
         },
         "verdict": "MET",
         "quotes": [
-          "03/11/2025 - Scheduled program follow-up. No new complaints. Weight 124.7 kg,\nBMI 43.0. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nReports 40 minutes of brisk walking, four days per week.",
-          "04/08/2025 - Monthly program visit completed. Weight 124.1 kg, BMI 42.8.\nDiscussed portion control and protein intake on the 1800 kcal plan. Reports 30\nminutes of brisk walking, four days per week.",
-          "05/13/2025 - Program visit. Interval history reviewed. Weight 123.8 kg, BMI\n42.7. Nutrition counseling provided; meal plan held at 1500 kcal. Activity\ngoal of 15 minutes daily met on four days this month.",
-          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6.\nDietary recall reviewed in detail against the 1800 kcal plan. Reports 15\nminutes of pool exercise four days per week."
+          "03/11/2025 - Monthly program visit completed. Weight 124.7 kg, BMI 43.0.\nNutrition counseling provided; meal plan held at 1500 kcal. Reports 30 minutes\nof brisk walking, three days per week.",
+          "04/08/2025 - Scheduled program follow-up. No new complaints. Weight 124.1 kg,\nBMI 42.8. Reviewed the 1200 kcal reduced-calorie meal plan; patient adherent.\nExercise log shows 30 minutes of stationary cycling, five days weekly.",
+          "05/13/2025 - Scheduled program follow-up. No new complaints. Weight 123.8 kg,\nBMI 42.7. Nutrition counseling provided; meal plan held at 1800 kcal. Exercise\nlog shows 25 minutes of stationary cycling, three days weekly.",
+          "06/10/2025 - Routine supervised program visit. Weight 123.5 kg, BMI 42.6. Food\ndiary reviewed; 1600 kcal plan continued without change. Exercise log shows 15\nminutes of stationary cycling, three days weekly."
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document monthly supervised program visits across four consecutive months (March through June 2025), satisfying the criterion.",
+      "reason": "The quotes consistently document monthly supervised program visits spanning four consecutive months from March to June 2025, directly supporting the MET verdict for the duration criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document monthly supervised program visits across four consecutive months (March through June 2025), satisfying the criterion."
+        "reason": "The quotes consistently document monthly supervised program visits spanning four consecutive months from March to June 2025, directly supporting the MET verdict for the duration criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 719,
-        "output_tokens": 43,
-        "wall_time_ms": 689.7505830274895
+        "input_tokens": 722,
+        "output_tokens": 48,
+        "wall_time_ms": 778.2456249697134
       }
     },
     {
-      "digest": "48f672cf5f0d716d5c6c2dff2ce0797e4447a450a284a1e0bde310d5b1615a9d",
+      "digest": "7387609142672c0012e2e03cff714b75e9490d01aac59ce8ab23c1b5115f6790",
       "criterion_id": "c4",
       "verdict": "MET",
       "payload": {
@@ -536,26 +536,26 @@
         "quotes": [
           "BMI 43.0",
           "BMI 42.8",
-          "BMI\n42.7",
+          "BMI 42.7",
           "BMI 42.6"
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document valid BMI values that correspond to the claimed satisfaction of monthly documentation.",
+      "reason": "The provided quotes consistently document the patient's BMI values, supporting the claim that the criterion is met.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document valid BMI values that correspond to the claimed satisfaction of monthly documentation."
+        "reason": "The provided quotes consistently document the patient's BMI values, supporting the claim that the criterion is met."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 484,
-        "output_tokens": 33,
-        "wall_time_ms": 716.2872090702876
+        "input_tokens": 483,
+        "output_tokens": 37,
+        "wall_time_ms": 817.6515001105145
       }
     },
     {
-      "digest": "94a9378afbcc5d8d250464ea6dd0b7dd71a2e961b031e8704da4688e7b5b2a24",
+      "digest": "71f6c627dbe6b217387779e255d163fc608539333418a587ee79165dd9573e60",
       "criterion_id": "c5",
       "verdict": "MET",
       "payload": {
@@ -576,28 +576,28 @@
         },
         "verdict": "MET",
         "quotes": [
-          "Reviewed the 1500 kcal reduced-calorie meal plan",
-          "Reports 40 minutes of brisk walking, four days per week",
-          "Discussed portion control and protein intake on the 1800 kcal plan",
-          "Reports 30\nminutes of brisk walking, four days per week",
-          "Nutrition counseling provided; meal plan held at 1500 kcal",
-          "Activity\ngoal of 15 minutes daily met on four days this month",
-          "Dietary recall reviewed in detail against the 1800 kcal plan",
-          "Reports 15\nminutes of pool exercise four days per week"
+          "Nutrition counseling provided; meal plan held at 1500 kcal.",
+          "30 minutes\nof brisk walking, three days per week",
+          "Reviewed the 1200 kcal reduced-calorie meal plan",
+          "30 minutes of stationary cycling, five days weekly",
+          "Nutrition counseling provided; meal plan held at 1800 kcal.",
+          "Exercise\nlog shows 25 minutes of stationary cycling, three days weekly.",
+          "Food\ndiary reviewed; 1600 kcal plan continued without change.",
+          "Exercise log shows 15\nminutes of stationary cycling, three days weekly."
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both diet and physical activity across the required timeframe as evidence for the MET verdict.",
+      "reason": "The provided quotes explicitly document both diet and activity across multiple instances, consistent with the claimed satisfaction of the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both diet and physical activity across the required timeframe as evidence for the MET verdict."
+        "reason": "The provided quotes explicitly document both diet and activity across multiple instances, consistent with the claimed satisfaction of the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 636,
-        "output_tokens": 37,
-        "wall_time_ms": 676.5468339435756
+        "input_tokens": 631,
+        "output_tokens": 38,
+        "wall_time_ms": 877.1437500836328
       }
     },
     {
@@ -624,21 +624,21 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote shows a BMI observation of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote is an official observation showing a BMI value of 39.23 kg/m2, which successfully meets or exceeds the required threshold of 35.0.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote shows a BMI observation of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote is an official observation showing a BMI value of 39.23 kg/m2, which successfully meets or exceeds the required threshold of 35.0."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 958,
-        "output_tokens": 48,
-        "wall_time_ms": 675.3170000156388
+        "output_tokens": 54,
+        "wall_time_ms": 894.9664159445092
       }
     },
     {
-      "digest": "f4b81c9abc2c9be82259d73267e32a9eda0a596dcc0ef26f2e41ddc52214252c",
+      "digest": "66467e35ec19248031cf3aea2de72633cfe8a9c76833cda5e593c8a896591ce0",
       "criterion_id": "c1",
       "verdict": "MET",
       "payload": {
@@ -653,28 +653,28 @@
         },
         "verdict": "MET",
         "quotes": [
-          "03/09/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1500 kcal.\nContinues supervised exercise, 40 minutes, three days per week.",
-          "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week.",
-          "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1600 kcal. Activity\ngoal of 30 minutes daily met on three days this month.",
-          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+          "03/09/2026 - Program visit. Interval history reviewed. Weight 124.0 kg, BMI\n45.0. Dietary recall reviewed in detail against the 1800 kcal plan. Reports 40\nminutes of brisk walking, four days per week.",
+          "04/13/2026 - Scheduled program follow-up. No new complaints. Weight 110.2 kg.\nBMI not calculated at this visit. Discussed portion control and protein intake\non the 1600 kcal plan. Reports 30 minutes of pool exercise five days per week.",
+          "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Reviewed the 1400 kcal reduced-calorie meal plan; patient adherent.\nContinues supervised exercise, 20 minutes, four days per week.",
+          "06/08/2026 - Scheduled program follow-up. No new complaints. Weight 110.2 kg.\nBMI not calculated at this visit. Reviewed the 1800 kcal reduced-calorie meal\nplan; patient adherent. Exercise log shows 30 minutes of stationary cycling,\nfive days weekly."
         ]
       },
       "accept": true,
-      "reason": "The provided quotes explicitly document multiple physician-supervised weight management program visits meeting the required minimum event count.",
+      "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes explicitly document multiple physician-supervised weight management program visits meeting the required minimum event count."
+        "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event threshold."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 717,
-        "output_tokens": 36,
-        "wall_time_ms": 709.4633330125362
+        "input_tokens": 727,
+        "output_tokens": 34,
+        "wall_time_ms": 715.2249159989879
       }
     },
     {
-      "digest": "bae009f36ef35c514130a0cb2e719dcd53a4cc60b7b194f998d39a7e0a5bf22f",
+      "digest": "8d9a7f90d752160ee43fc2c20f1447212fa2035ed8d21610493edc3842ce71d8",
       "criterion_id": "c2",
       "verdict": "MET",
       "payload": {
@@ -689,25 +689,25 @@
         },
         "verdict": "MET",
         "quotes": [
-          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+          "06/08/2026 - Scheduled program follow-up. No new complaints. Weight 110.2 kg.\nBMI not calculated at this visit. Reviewed the 1800 kcal reduced-calorie meal\nplan; patient adherent. Exercise log shows 30 minutes of stationary cycling,\nfive days weekly."
         ]
       },
       "accept": true,
-      "reason": "The provided quote is relevant to the qualifying run and falls within the acceptable recency window based on the date present.",
+      "reason": "The quote directly supports the MET verdict by documenting a recent program follow-up within the required recency window and showing patient adherence to the lifestyle intervention.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is relevant to the qualifying run and falls within the acceptable recency window based on the date present."
+        "reason": "The quote directly supports the MET verdict by documenting a recent program follow-up within the required recency window and showing patient adherence to the lifestyle intervention."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 505,
-        "output_tokens": 39,
-        "wall_time_ms": 704.6337079955265
+        "input_tokens": 513,
+        "output_tokens": 46,
+        "wall_time_ms": 818.8534170622006
       }
     },
     {
-      "digest": "278250177b64605fff9092f21af04085c41c3fc2658a8b70ed2788872add01d3",
+      "digest": "6316f65b7ec3e555f74a813dbf60967362761f5e85fcab92e8fb7d63408b1bc8",
       "criterion_id": "c3",
       "verdict": "MET",
       "payload": {
@@ -722,28 +722,28 @@
         },
         "verdict": "MET",
         "quotes": [
-          "03/09/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1500 kcal.\nContinues supervised exercise, 40 minutes, three days per week.",
-          "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week.",
-          "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Nutrition counseling provided; meal plan held at 1600 kcal. Activity\ngoal of 30 minutes daily met on three days this month.",
-          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+          "03/09/2026 - Program visit. Interval history reviewed. Weight 124.0 kg, BMI\n45.0. Dietary recall reviewed in detail against the 1800 kcal plan. Reports 40\nminutes of brisk walking, four days per week.",
+          "04/13/2026 - Scheduled program follow-up. No new complaints. Weight 110.2 kg.\nBMI not calculated at this visit. Discussed portion control and protein intake\non the 1600 kcal plan. Reports 30 minutes of pool exercise five days per week.",
+          "05/11/2026 - Scheduled program follow-up. No new complaints. Weight 124.0 kg,\nBMI 45.0. Reviewed the 1400 kcal reduced-calorie meal plan; patient adherent.\nContinues supervised exercise, 20 minutes, four days per week.",
+          "06/08/2026 - Scheduled program follow-up. No new complaints. Weight 110.2 kg.\nBMI not calculated at this visit. Reviewed the 1800 kcal reduced-calorie meal\nplan; patient adherent. Exercise log shows 30 minutes of stationary cycling,\nfive days weekly."
         ]
       },
       "accept": true,
-      "reason": "The provided quotes document continuous supervised program visits spanning from March through June 2026, satisfying the minimum consecutive months criterion.",
+      "reason": "The quotes document sequential monthly program visits spanning from March to June 2026, which are consistent with the satisfaction of the four-month duration criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes document continuous supervised program visits spanning from March through June 2026, satisfying the minimum consecutive months criterion."
+        "reason": "The quotes document sequential monthly program visits spanning from March to June 2026, which are consistent with the satisfaction of the four-month duration criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 721,
-        "output_tokens": 42,
-        "wall_time_ms": 864.5620830357075
+        "input_tokens": 731,
+        "output_tokens": 48,
+        "wall_time_ms": 818.2005000999197
       }
     },
     {
-      "digest": "43046f7d9a2f9e6bc12792682759fd4e0caa03674173af7688be17538ca248b7",
+      "digest": "721ec4f4f5b340842445afaf9cef5a8ddf95a6b1fbf05cf4984747f4bcf2d41f",
       "criterion_id": "c4",
       "verdict": "NOT_MET",
       "payload": {
@@ -758,26 +758,26 @@
         },
         "verdict": "NOT_MET",
         "quotes": [
-          "04/13/2026 - Program visit. Interval history reviewed. Weight 110.2 kg. BMI\nnot calculated at this visit. Nutrition counseling provided; meal plan held at\n1800 kcal. Reports 30 minutes of pool exercise five days per week.",
-          "06/08/2026 - Routine supervised program visit. Weight 110.2 kg. BMI not\ncalculated at this visit. Discussed portion control and protein intake on the\n1800 kcal plan. Reports 30 minutes of pool exercise five days per week."
+          "04/13/2026 - Scheduled program follow-up. No new complaints. Weight 110.2 kg.\nBMI not calculated at this visit. Discussed portion control and protein intake\non the 1600 kcal plan. Reports 30 minutes of pool exercise five days per week.",
+          "06/08/2026 - Scheduled program follow-up. No new complaints. Weight 110.2 kg.\nBMI not calculated at this visit. Reviewed the 1800 kcal reduced-calorie meal\nplan; patient adherent. Exercise log shows 30 minutes of stationary cycling,\nfive days weekly."
         ]
       },
       "accept": true,
-      "reason": "The quotes provided are directly related to the monthly documentation criterion and correctly support the NOT_MET verdict due to missing BMI calculations.",
+      "reason": "The claim is NOT_MET, and the provided quotes are relevant documentation showing missing BMI values during the visits, which is consistent with the verdict without directly showing the criterion as satisfied.",
       "raw": {
         "accept": true,
-        "reason": "The quotes provided are directly related to the monthly documentation criterion and correctly support the NOT_MET verdict due to missing BMI calculations."
+        "reason": "The claim is NOT_MET, and the provided quotes are relevant documentation showing missing BMI values during the visits, which is consistent with the verdict without directly showing the criterion as satisfied."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 581,
-        "output_tokens": 41,
-        "wall_time_ms": 777.8900419361889
+        "input_tokens": 593,
+        "output_tokens": 52,
+        "wall_time_ms": 740.8069589873776
       }
     },
     {
-      "digest": "a882ed7de02d1516dfd77647333856a47f74c2d70bc4cf43cda34d1d2e6a158a",
+      "digest": "53c3f4d29015aec34820b234d13a6f7ed8aeabddc79b16d85616a66f855282dd",
       "criterion_id": "c5",
       "verdict": "MET",
       "payload": {
@@ -798,28 +798,28 @@
         },
         "verdict": "MET",
         "quotes": [
-          "Nutrition counseling provided; meal plan held at 1500 kcal.",
-          "Continues supervised exercise, 40 minutes, three days per week.",
-          "Nutrition counseling provided; meal plan held at\n1800 kcal.",
+          "Dietary recall reviewed in detail against the 1800 kcal plan",
+          "Reports 40\nminutes of brisk walking, four days per week.",
+          "Discussed portion control and protein intake\non the 1600 kcal plan.",
           "Reports 30 minutes of pool exercise five days per week.",
-          "Nutrition counseling provided; meal plan held at 1600 kcal.",
-          "Activity\ngoal of 30 minutes daily met on three days this month.",
-          "Discussed portion control and protein intake on the\n1800 kcal plan.",
-          "Reports 30 minutes of pool exercise five days per week."
+          "Reviewed the 1400 kcal reduced-calorie meal plan",
+          "Continues supervised exercise, 20 minutes, four days per week.",
+          "Reviewed the 1800 kcal reduced-calorie meal\nplan",
+          "Exercise log shows 30 minutes of stationary cycling,\nfive days weekly."
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document both diet and activity across the qualifying period as required by the criterion.",
+      "reason": "The quotes consistently document both dietary reviews and physical activity across multiple months, supporting the MET verdict for the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document both diet and activity across the qualifying period as required by the criterion."
+        "reason": "The quotes consistently document both dietary reviews and physical activity across multiple months, supporting the MET verdict for the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 634,
-        "output_tokens": 34,
-        "wall_time_ms": 768.8351250253618
+        "input_tokens": 636,
+        "output_tokens": 38,
+        "wall_time_ms": 712.89695892483
       }
     },
     {
@@ -846,17 +846,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote correctly pertains to the BMI criterion and shows a value of 34.26, which is below the threshold of 35.0, thereby supporting the NOT_MET verdict without directly demonstrating satisfaction.",
+      "reason": "The quote correctly pertains to the BMI criterion and shows a value of 34.26, which is below the threshold of 35.0, consistent with the NOT_MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The quote correctly pertains to the BMI criterion and shows a value of 34.26, which is below the threshold of 35.0, thereby supporting the NOT_MET verdict without directly demonstrating satisfaction."
+        "reason": "The quote correctly pertains to the BMI criterion and shows a value of 34.26, which is below the threshold of 35.0, consistent with the NOT_MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 957,
-        "output_tokens": 60,
-        "wall_time_ms": 834.2257080366835
+        "output_tokens": 56,
+        "wall_time_ms": 697.2934999503195
       }
     },
     {
@@ -883,17 +883,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes document active and confirmed diagnoses of type 2 diabetes mellitus and essential hypertension, which are established obesity-related co-morbidities satisfying the criterion.",
+      "reason": "The provided quotes document active, confirmed diagnoses of Type 2 diabetes mellitus and essential hypertension, which are recognized obesity-related co-morbidities supporting the MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes document active and confirmed diagnoses of type 2 diabetes mellitus and essential hypertension, which are established obesity-related co-morbidities satisfying the criterion."
+        "reason": "The provided quotes document active, confirmed diagnoses of Type 2 diabetes mellitus and essential hypertension, which are recognized obesity-related co-morbidities supporting the MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 1533,
-        "output_tokens": 49,
-        "wall_time_ms": 726.3732081046328
+        "output_tokens": 50,
+        "wall_time_ms": 742.2522080596536
       }
     },
     {
@@ -919,17 +919,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents an active confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the criterion.",
+      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents an active confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the criterion."
+        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 1000,
-        "output_tokens": 43,
-        "wall_time_ms": 692.403084016405
+        "output_tokens": 49,
+        "wall_time_ms": 676.4824589481577
       }
     },
     {
@@ -956,17 +956,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote directly demonstrates a BMI value of 35.0, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote directly documents a BMI value of 35.0 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote directly demonstrates a BMI value of 35.0, which satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote directly documents a BMI value of 35.0 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 860,
-        "output_tokens": 44,
-        "wall_time_ms": 739.606250077486
+        "output_tokens": 48,
+        "wall_time_ms": 730.6100829737261
       }
     },
     {
@@ -992,17 +992,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement.",
+      "reason": "The provided quote is an active and confirmed condition of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote documents an active and confirmed diagnosis of essential hypertension, which is a recognized obesity-related co-morbidity satisfying the requirement."
+        "reason": "The provided quote is an active and confirmed condition of essential hypertension, which is a recognized obesity-related comorbidity that satisfies the requirement of at least one comorbidity."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 883,
-        "output_tokens": 44,
-        "wall_time_ms": 703.724000020884
+        "output_tokens": 49,
+        "wall_time_ms": 735.9697089996189
       }
     },
     {
@@ -1029,21 +1029,21 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote directly indicates a BMI value of 35.89, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The quoted BMI observation of 35.89 kg/m2 directly supports the criterion requiring a BMI at or above the threshold of 35.0.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote directly indicates a BMI value of 35.89, which satisfies the threshold of 35.0 or greater."
+        "reason": "The quoted BMI observation of 35.89 kg/m2 directly supports the criterion requiring a BMI at or above the threshold of 35.0."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 862,
-        "output_tokens": 45,
-        "wall_time_ms": 787.6485410379246
+        "output_tokens": 50,
+        "wall_time_ms": 902.3869580123574
       }
     },
     {
-      "digest": "48bccbc612626ca5ba42183ad024b8f7006c3fd6ecf7045a41891a033c8485e2",
+      "digest": "dcc57313dcafa5f32984cd94a888786e4a7432dfd4af14de95173c6606e35be1",
       "criterion_id": "c2",
       "verdict": "MET",
       "payload": {
@@ -1058,25 +1058,25 @@
         },
         "verdict": "MET",
         "quotes": [
-          "03/12/2026 - Scheduled program follow-up. No new complaints. Weight 84.4 kg,\nBMI 35.7. Discussed portion control and protein intake on the 1400 kcal plan.\nActivity goal of 20 minutes daily met on three days this month."
+          "03/12/2026 - Routine supervised program visit. Weight 84.4 kg, BMI 35.7.\nNutrition counseling provided; meal plan held at 1600 kcal. Continues\nsupervised exercise, 25 minutes, five days per week."
         ]
       },
       "accept": true,
-      "reason": "The provided quote is relevant to the recency and clinical criteria and is consistent with the MET verdict.",
+      "reason": "The quote directly supports the criterion by providing a recent visit with a BMI measurement satisfying the condition.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is relevant to the recency and clinical criteria and is consistent with the MET verdict."
+        "reason": "The quote directly supports the criterion by providing a recent visit with a BMI measurement satisfying the condition."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 510,
-        "output_tokens": 36,
-        "wall_time_ms": 709.9205410340801
+        "input_tokens": 504,
+        "output_tokens": 35,
+        "wall_time_ms": 840.2026660041884
       }
     },
     {
-      "digest": "8cec975c8d66dcbec02c384bc2ded6cc6bcde44b17f3b229ee957c365a886a30",
+      "digest": "6e082e493d66ae1585d33aee89482aa2a7d8348285811e3bcb1fcdd7396d7e75",
       "criterion_id": "c5",
       "verdict": "MET",
       "payload": {
@@ -1097,26 +1097,26 @@
         },
         "verdict": "MET",
         "quotes": [
-          "Food\ndiary reviewed; 1200 kcal plan continued without change",
-          "Exercise log shows 25\nminutes of stationary cycling, four days weekly",
-          "Nutrition counseling provided; meal plan held at 1600 kcal",
-          "Reports 25 minutes\nof brisk walking, three days per week",
-          "Discussed portion control and protein intake on the 1400 kcal plan",
-          "Activity goal of 20 minutes daily met on three days this month"
+          "Nutrition counseling provided; meal plan held at 1400 kcal.",
+          "Continues\nsupervised exercise, 25 minutes, three days per week.",
+          "Nutrition counseling provided; meal plan held at 1600 kcal.",
+          "Exercise log\nshows 30 minutes of stationary cycling, four days weekly.",
+          "Nutrition counseling provided; meal plan held at 1600 kcal.",
+          "Continues\nsupervised exercise, 25 minutes, five days per week."
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period.",
+      "reason": "The quotes consistently document both diet and activity across multiple entries matching the requirements of the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both dietary management and physical activity across the qualifying period."
+        "reason": "The quotes consistently document both diet and activity across multiple entries matching the requirements of the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
         "input_tokens": 602,
-        "output_tokens": 32,
-        "wall_time_ms": 727.9759999364614
+        "output_tokens": 34,
+        "wall_time_ms": 842.432584031485
       }
     }
   ],
@@ -1125,8 +1125,8 @@
     "accepted": 30,
     "rejected": 0,
     "model_calls": 30,
-    "input_tokens": 22832,
-    "output_tokens": 1260,
-    "wall_time_ms": 22037.1
+    "input_tokens": 22877,
+    "output_tokens": 1316,
+    "wall_time_ms": 23771.6
   }
 }

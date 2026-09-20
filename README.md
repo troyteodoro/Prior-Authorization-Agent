@@ -137,7 +137,8 @@ Article II's arithmetic over a chart the verifier deliberately cannot see.
 
 **Evidence is mechanical throughout.** Model-reported character offsets proved
 unusable (0 of 80 correct in the spike; 0 of 171 in the first full-corpus run;
-0 of 169 in its re-measurement), so spans are located by searching for the
+0 of 169 in its re-measurement; 0 of 175 on the two-note corpus), so spans
+are located by searching for the
 model's verbatim quote — exact match first, then whitespace-normalized —
 always recording raw offsets. A quote the search cannot find is re-asked
 once, for its verbatim text, and the answer is searched the same way: the
@@ -234,7 +235,7 @@ means here. Four lanes:
 | Disease severity markers | Structured observations *and* the note | The note's BMI reading is extracted by the model | The BMI threshold, the discrepancy tolerance | Criteria (a) and (b); reconciliation of the two independent BMI readings | Live |
 | Urgency indicator | Input flag | — | Could be a tree field (a different SLA, not a different rule) | Routing — Article I keeps prioritization out of the model | Not in v1 |
 | **Supporting documents** | | | | | |
-| Recent provider notes | Input documents | The model reads the note — its *only* tool | — | Quote anchoring, span validation, and the blind verifier's replay | Live (one note per patient; a second is the open task) |
+| Recent provider notes | Input documents | The model reads the note — its *only* tool | — | Quote anchoring, span validation, and the blind verifier's replay | Live (two notes per patient since T-81; the extractor reads one at a time) |
 | Diagnostic imaging / lab reports | Input documents | Same extraction lane: unstructured → cited claims | Criteria naming them would be tree data | Identical span validation — the mechanism does not care what kind of document it slices | Not in v1 |
 | Letter of medical necessity (LOMN) | **Output**, not input | Drafting narrative prose would be a model leaf | — | Every claim in it would carry a validated span; the verdicts it summarizes stay Python's | Not in v1 — the emitted packet (seven verdicts + gap list + citations) is the deterministic equivalent |
 
@@ -303,11 +304,12 @@ the real ADK flow on every run, as described under *Testing the ADK path*
 below.
 
 **The measured result so far:** model-directed retrieval agrees with the
-deterministic oracle on **6/6 outcomes and 42/42 criterion verdicts, with
-80/80 spans valid and zero errors.** It cost **24 model calls and 84,931 input
-tokens** across six patients that the fixed planner spent nothing on — 4.3× the
-deterministic path's end-to-end input tokens, on a comparison where extraction
-and verification are the same replayed payload on both sides. Quote the delta
+deterministic oracle on **7/7 outcomes and 49/49 criterion verdicts, with
+93/93 spans valid and zero errors**, on the two-note corpus (D104). It cost
+**24 model calls and 90,743 input tokens** across seven patients that the fixed
+planner spent nothing on — 3.6× the deterministic path's end-to-end input
+tokens, on a comparison where extraction and verification are the same
+replayed payload on both sides. Quote the delta
 beside the ratio: the fixed planner makes no model call, so the ratio's
 denominator is the shared replayed cost and it moves when that cost changes,
 while the delta does not. Read the aggregate and the spread, never one patient's
@@ -384,9 +386,10 @@ stated plainly:
 
 Patient data is entirely synthetic: eight Synthea v4.0.0 FHIR bundles
 (pinned by manifest hashes; one carries a declared synthetic observation and
-one is a declared clone re-addressed into Palmetto's territory) and seven
-synthesized chart notes, the clone's byte-identical to its source's by
-declaration. No real or de-identified patient data of any kind is in scope.
+one is a declared clone re-addressed into Palmetto's territory) and fourteen
+synthesized chart notes — two per note-bearing chart since T-81, a split of
+the facts each manifest declares — the clone's byte-identical to its source's
+by declaration. No real or de-identified patient data of any kind is in scope.
 
 ---
 
@@ -574,23 +577,27 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
 - **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
   quoting produces a claim nobody can anchor, so the system abstains where
   evidence existed. Fail-closed, and still a loss. The bounded re-ask is the
-  standing answer; re-measured, it had nothing to ask about, so what remains
-  is a claim the model never quoted at all.
-- **P3 — Small everything.** Eight patients (one a declared clone), five
-  documents, sixteen cases:
-  every rate moves in large steps, and one case outweighs a percentage point.
+  standing answer; on the two-note corpus it fired once, on the very
+  paraphrase P2 was written from, and recovered it. What remains is a claim
+  the model never quoted at all.
+- **P3 — Small everything.** Eight patients (one a declared clone), fourteen
+  chart notes, five policy documents, seventeen cases: every rate moves in
+  large steps, and one case outweighs a percentage point.
 - **P4 — The ground truth is a first draft.** The labels were drafted
-  alongside the system and labeled once; re-labeling and review ride with
-  the corpus expansion of a later version, alongside P3's set size.
+  alongside the system; the second pass was taken with T-81, every row
+  re-derived from the manifests and the trees' constants and recorded in
+  D104. P3's set size is the bound that remains.
 - **P5 — The blind verifier cannot check arithmetic.** It sees one claim and
   one quote, so shortfall claims ("only three months") are checked by Python,
   not by the verifier.
 - **P6 — The model's judgment is never on the hook.** Model adjudication is
   deliberately unclaimed; the agentic path decides what to *read*, never what
   the answer is.
-- **P7 — Retrieval recall cannot currently fall.** With one note per patient
-  the gathered-recall figure is 1.000 by construction; a second note per
-  patient — the one open task — is what would make it a real test.
+- **P7 — Retrieval recall is one measured day.** Since T-81 every chart is
+  two notes and the planner can skip one, so the direct figure is measured
+  rather than constructed; on the first measurement it gathered every note.
+  A free-tier tool loop is not reproducible at temperature 0, so that is a
+  sample, re-measured and never re-run.
 - **P8 — Every free number is a replay.** The reproducible figures describe
   one measured day, one pinned model, one API tier. Any configuration change
   is a new measurement, never a re-run.
@@ -613,21 +620,21 @@ gate rather than a plausible-looking table.
 
 | Gate | Result |
 |---|---|
-| A1 | 16 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.591** base rate and an always-`MET` baseline scoring exactly that |
+| A1 | 17 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.609** base rate and an always-`MET` baseline scoring exactly that |
 | A3 | **zero** `MET` verdicts with an invalid span, over 95 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.250**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
-| A6 | 38 model calls / 31,118 in / 6,925 out / 39.6s across ten determinations, from instrumentation |
+| A5 | abstention **0.235**, accounted for per `gap_reason`, swept against `discrepancy_tolerance` |
+| A6 | 45 model calls / 36,956 in / 7,590 out / 47.7s across ten determinations, from instrumentation |
 | A7 | 56 requirements: 54 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 
-**One task is open, and it is not on the path to the acceptance gates:** a
-second note per patient, which is what would let the direct retrieval-recall
-figure fall. It costs a new extraction recording and a new verifier recording —
-both are keyed by note content — and therefore most of the repo's committed
-numbers.
+**One row of the v2 path is open, and it is not on the path to the acceptance
+gates:** the Vertex measurement (T-90), the second tier's numbers beside the
+AI Studio ones. The second note per patient landed with T-81 (D104): every
+recording re-measured on a corpus where a skipped note is reachable, and the
+direct retrieval-recall figure is now measured rather than constructed.
 
 **Nothing else is outstanding — including the one thing a reader might assume
 is.** An earlier board carried a programme to add a formal review stamp to the
@@ -655,7 +662,7 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      __init__.py imports neither, on purpose
 data/policies/       five source documents, the SNOMED value set, and two
                      criteria trees (ncd-100.1-jf-v1, ncd-100.1-jjm-v1)
-data/patients/       eight Synthea bundles + seven synthesized notes, hash-pinned
+data/patients/       eight Synthea bundles + fourteen synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free
 spike/spike_001/     the founding extraction spike — still a gate and a

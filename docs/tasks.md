@@ -19,12 +19,12 @@ answers the second question, once.
 **What to do next: `Path to v2`, below.** Acceptance gates A1–A9 all hold
 and US-1 through US-7 and US-9 are delivered; v1 is complete. What remains is
 spec §10's list of known limits, P1–P8, which D97 sequenced into one task
-each — `T-85` through `T-89` are closed and `T-81` is next, row 6 of that
-sequence.
+each — `T-85` through `T-89` and `T-81` are closed; `T-90`, row 7 of that
+sequence, is next and opens its record when it starts.
 
 Sixty-nine tasks are on this board — IDs run to T-89 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **68 are closed and 1 is open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **69 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -63,7 +63,7 @@ row opens; the exit named here is the one D97 fixed.
 | 3 | P1, first half | `T-87` | **closed** (D100, D101) | `resolve(code, state)`, a fifth resolver type for an unserved state, and the Palmetto tree loaded beside Noridian's |
 | 4 | P1, second half | `T-88` | **closed** (D102) | a declared clone in a Palmetto state, eval row `J1`, verifier recording re-measured |
 | 5 | P2, second half | `T-89` | **closed** (D103) | a bounded verbatim re-ask in the runners, both extraction recordings re-measured, every turn counted |
-| 6 | P7, P3, P4 | `T-81` | pending | two notes per patient, labels re-read, every recording re-measured |
+| 6 | P7, P3, P4 | `T-81` | **closed** (D104) | two notes per patient, labels re-read, every recording re-measured |
 | 7 | P8 | `T-90` | pending | a Vertex measurement recorded beside the AI Studio one, rendered as a second column |
 | 8 | P6 | entry only | pending | the v2 path for REQ-44/47 logged; the unclaimed set unchanged |
 
@@ -1853,14 +1853,46 @@ dropped from `render` (`--verify` drifts), the coverage denominator widened
 to all scored notes, `None` collapsed to 1.0, the dropped list emptied, a
 skipped note counted as a zero row, and the not-anchored figure zeroed.
 
-### `[ ] T-81` A second note per patient, so retrieval recall can fall
-**REQ:** 25 · **Depends:** T-80 · **Discovered in:** D91 ·
-**Status:** not sequenced; **spends model calls across most of the repo's
-recordings**, so it is in no gate
-**Exit:** every patient in `data/patients/notes/manifest.json` has at least two
-notes, and `eval/report.md`'s direct planner-recall figure is measured against a
-corpus where a skipped note is reachable — the construction caveat D91 put in
-the report comes out because it has stopped being true.
+### `[x] T-81` A second note per patient, so retrieval recall can fall
+**REQ:** 25, 34, 34a · **Depends:** T-80, T-89 · **Discovered in:** D91 ·
+**Decided by:** D104 · **Timebox:** two days plus three extraction rounds,
+one verifier round and one agentic round
+**Status:** **closed** (D104) — row 6 of `Path to v2`; the exit ran green
+and every gate with it, on four re-measured recordings and a measured
+agentic differential
+**Exit:**
+```
+./venv/bin/python scripts/synthesize_notes.py --verify \
+ && ./venv/bin/python -m pytest tests/test_manifests.py tests/test_notes.py tests/test_reconciliation.py tests/test_workflow.py tests/test_extraction.py tests/test_adk_measurement.py tests/test_build_report.py -q --color=no \
+ && env -u GOOGLE_API_KEY ./venv/bin/python -m pa_agent.cli --patient afdcee59-dfdd-4bc5-37f1-cf7f909ede3d --procedure 43775 | python3 -c "import json,sys; d=json.load(sys.stdin); c3=next(c for c in d['criterion_results'] if c['criterion_id']=='c3'); assert c3['verdict']=='MET'; assert len({s['document_id'] for s in c3['spans']})==2" \
+ && ./venv/bin/python scripts/run_extraction.py --rescore \
+ && ./venv/bin/python eval/run_agentic_eval.py --rescore \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+Green means: every note-bearing patient has two hash-verified documents and
+the qualifying run straddles them wherever a run exists; every note-level
+BMI is reconciled (REQ-34a) and no note is preferred by store order; `E13`
+pins that c3 cites two documents; every recording is re-measured on the
+new corpus and carries `T-81`/`D104`; `eval/report.md` quotes the direct
+recall figure as the one that can fall, and D91's construction caveat is
+gone from it because it stopped being true; every gate is green.
+
+**Closed by D104.** Fourteen documents over seven charts, the run straddling
+them for E1, E4, E5 and E6; the direct extraction recording 175/175 spans
+anchored over 17 notes, the ADK inline 165/165, the ADK tool-fetch 76/76
+with the re-ask firing once — on E8's assertion, the paraphrase P2 was
+written from — and recovering it; the verifier 30 of 30; the eval set 17 of
+17 `PASS` with every existing label unchanged and `E13` adopted into the
+baseline; the agentic differential measured fresh at 7/7 outcomes, 49/49
+criteria, 93/93 spans, with the planner gathering both notes for every
+patient — the direct figure is measured, and reads 1.000 on the day it could
+first have fallen. Delta 24 calls and 90,743 input tokens beside a 3.6x
+ratio. Mutations caught: first-wins restored; a `document` field dropped; a
+fact moved to the other document; the oracle notes-on-file check deleted;
+`_patients()` dedupe removed; `distinct_documents` check deleted; the
+per-document date scan collapsed to the chart.
 
 **Why the direct figure needs this to mean anything.** D91 measured it and it
 reads 1.000 by construction: one note per patient, `AgenticRetrievalPlanner`
@@ -1868,6 +1900,14 @@ raises rather than returning an empty bundle, and observations and conditions
 are re-read from the port (D66). A run that does not error gathered everything
 there was. The number is real and it cannot fall, which is the shape D70 threw
 out — so the *cited* figure beside it is the one carrying information today.
+
+**What it changes, and what it deliberately does not.** The second note is
+a split of facts the manifests already declare — a `documents` list and a
+scalar `document` on every fact — so every existing label is invariant by
+construction and the measurement's one variable is the layout (D104). The
+one deterministic-core change is REQ-34a: `step_extract`'s "first note
+wins" on the note-level BMI becomes every note reconciled against the
+structured value. The extraction prompt does not change.
 
 **Why it is not folded into T-80, and what it actually costs.** Notes are keyed
 by content. A new note is a note `eval/extraction/results.json` has never seen,
