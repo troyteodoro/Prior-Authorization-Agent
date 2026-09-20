@@ -190,6 +190,50 @@ class PolicyConstant(BaseModel):
         return self
 
 
+class PredicateKind(str, Enum):
+    """What arithmetic a criterion is evaluated by — the engine's closed
+    vocabulary (T-91, REQ-57, D110).
+
+    A criterion's **id** is a label: the variable `decision_expression` and
+    `scoped_to` name, and the key a verdict is reported under. It is not a
+    statement about what the criterion means. Both committed trees letter
+    their criteria `a`, `b`, `c1`…, because NCD 100.1's MACs do, and coverage
+    documents from other practices letter theirs the same way. Dispatching on
+    the id therefore evaluates a rheumatology criterion `a` with BMI
+    arithmetic and rheumatology constants, produces a verdict, cites a span,
+    and passes every test in this repo (D110). So the tree declares the kind
+    and the engine dispatches on that.
+
+    **The names are deliberately narrow.** `evaluate_criterion_a` hardcodes
+    `BMI_LOINC` and `evaluate_c4` reads `WmEvent.bmi`; the kinds say so.
+    A member called `observation_value_threshold` would claim a generality
+    the predicate does not have, and the next tree declaring a lab threshold
+    under it would silently be measured against BMI's LOINC code. A kind is
+    a promise about what the engine computes, and an overstated one is worse
+    than a missing one because a tree can be written against it.
+
+    Adding a member is adding a predicate: `criteria.PREDICATES` must map it
+    and `workflow.STEP_KINDS` must assign it to a step, both required by
+    `tests/test_predicate_kinds.py`, so a member with neither is a red suite
+    rather than a criterion that evaluates to nothing.
+    """
+
+    #: Most recent BMI observation within a lookback, against a threshold.
+    BMI_OBSERVATION_THRESHOLD = "bmi_observation_threshold"
+    #: Active conditions intersected with a named value set, against a minimum.
+    CONDITION_VALUE_SET_MEMBERSHIP = "condition_value_set_membership"
+    #: Extracted encounters counted, against a minimum.
+    NOTE_EVENT_COUNT = "note_event_count"
+    #: The qualifying run's length in consecutive months, against a minimum.
+    NOTE_EVENT_RUN_LENGTH = "note_event_run_length"
+    #: Months between the run's last encounter and the clock, against a window.
+    NOTE_EVENT_RUN_RECENCY = "note_event_run_recency"
+    #: A documented BMI in every month of the run, at a declared rate.
+    NOTE_EVENT_RUN_BMI_RATE = "note_event_run_bmi_rate"
+    #: Diet and activity documented in every month of the run, at that rate.
+    NOTE_EVENT_RUN_BEHAVIOR_RATE = "note_event_run_behavior_rate"
+
+
 class Criterion(BaseModel):
     """The compiled criterion — the one object that crosses the plane boundary.
 
@@ -207,6 +251,12 @@ class Criterion(BaseModel):
     #: `NOT_EVALUATED_BY_THIS_SYSTEM` — the policy requires it, the system says
     #: so, and never omits it (T-87, D101).
     evaluation: str = "deterministic"
+    #: The predicate that evaluates this criterion (T-91, REQ-57, D110).
+    #: Required when `evaluation` is `"deterministic"`, forbidden when it is
+    #: `"unclaimed"` — the two are different claims and neither may borrow the
+    #: other's outcome. An unknown name fails here, at `model_validate`, which
+    #: is where a tree is loaded.
+    kind: PredicateKind | None = None
     constants: dict[str, PolicyConstant] = Field(default_factory=dict)
     scoped_to: str | None = None
     national_floor: EvidenceSpan | None = None
@@ -226,6 +276,24 @@ class Criterion(BaseModel):
                 f"criterion {self.id}: unclaimed without a note saying why; a "
                 "criterion the system will not evaluate has to say so where a "
                 "reviewer reads the tree (D101)"
+            )
+        # T-91 (REQ-57, D110): unbuilt is not unclaimed. A declared limit is
+        # reviewed in the tree and stated in the determination
+        # (`NOT_EVALUATED_BY_THIS_SYSTEM`); a missing predicate is a fact about
+        # the system, and it may not borrow that abstention.
+        if self.evaluation == "deterministic" and self.kind is None:
+            raise ValueError(
+                f"criterion {self.id}: deterministic without a kind. The engine "
+                "chooses a predicate from the declared kind, never from the "
+                "criterion id — an id means 'BMI threshold' only inside one "
+                "policy (REQ-57, D110)"
+            )
+        if self.evaluation == "unclaimed" and self.kind is not None:
+            raise ValueError(
+                f"criterion {self.id}: unclaimed and declaring kind "
+                f"{self.kind.value!r}. Unbuilt is not unclaimed: a criterion the "
+                "engine can evaluate is evaluated, and one it cannot is declared "
+                "unclaimed with a note, never both (REQ-57, REQ-58, D110)"
             )
         return self
 
@@ -510,6 +578,44 @@ class CriteriaTree(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def _scoped_to_resolves_and_does_not_chain(self) -> CriteriaTree:
+        """T-91 (D110): `scoped_to` names a criterion, and one that is not itself
+        scoped.
+
+        Before this the graph compared `scoped_to` to the literal `"c3"`, so a
+        tree scoping a criterion to anything else was silently scoped to the
+        run-length criterion regardless of what it said. Resolving it instead
+        means an id that names nothing has to fail, and it fails here rather
+        than as a missing verdict. The chain is refused because
+        `step_criteria_c` evaluates unscoped criteria and then scoped ones —
+        the topological order a depth of one admits — and a longer chain would
+        be evaluated against a result that did not exist yet.
+        """
+        by_id = {c.id: c for c in self.criteria}
+        for criterion in self.criteria:
+            target = criterion.scoped_to
+            if target is None:
+                continue
+            if target not in by_id:
+                raise ValueError(
+                    f"criterion {criterion.id} is scoped to {target!r}, which "
+                    f"{self.policy_version_id} does not define"
+                )
+            if by_id[target].evaluation != "deterministic":
+                raise ValueError(
+                    f"criterion {criterion.id} is scoped to {target!r}, which "
+                    "this tree does not evaluate; gating a criterion on a "
+                    "verdict nobody computes can only ever abstain (D110)"
+                )
+            if by_id[target].scoped_to is not None:
+                raise ValueError(
+                    f"criterion {criterion.id} is scoped to {target!r}, which is "
+                    "itself scoped; the graph evaluates unscoped criteria and "
+                    "then scoped ones, so a chain has no order (D110)"
+                )
+        return self
+
     def criterion(self, criterion_id: str) -> Criterion:
         for criterion in self.criteria:
             if criterion.id == criterion_id:
@@ -517,6 +623,33 @@ class CriteriaTree(BaseModel):
         raise KeyError(
             f"{self.policy_version_id} defines no criterion {criterion_id!r}"
         )
+
+    def criteria_of_kind(self, kind: PredicateKind) -> tuple[Criterion, ...]:
+        """Every criterion this tree declares for `kind`, in tree order.
+
+        The general lookup, and the one the graph's steps use: a tree may
+        declare two criteria of the same kind with different constants, and
+        evaluating both is the correct answer (T-91, D110).
+        """
+        return tuple(c for c in self.criteria if c.kind is kind)
+
+    def only_criterion_of_kind(self, kind: PredicateKind) -> Criterion:
+        """The single criterion of `kind`, raising on none and on more than one.
+
+        Used where the engine needs *the* criterion rather than all of them —
+        the value set retrieval fetches, sc2's lookback window. Both are places
+        where a second criterion of the same kind means the engine would have to
+        choose, and choosing the first is the silent wrong answer D31 is about.
+        Raising names the duplicate instead.
+        """
+        found = self.criteria_of_kind(kind)
+        if len(found) != 1:
+            raise KeyError(
+                f"{self.policy_version_id} declares {len(found)} criteria of kind "
+                f"{kind.value!r}; this call needs exactly one. A tree with two "
+                "would need the engine to choose, and it will not choose (D110)"
+            )
+        return found[0]
 
     def reconciled_fact(self, fact: str) -> ReconciledFact:
         for reconciled in self.reconciled_facts:

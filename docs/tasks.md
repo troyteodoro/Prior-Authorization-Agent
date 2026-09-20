@@ -17,20 +17,24 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: open `v1.2`, in `Roadmap after v1.1` below.** Acceptance
-gates A1–A9 all hold and US-1 through US-7 and US-9 are delivered; **v1 and
-v1.1 are both complete.** v1.1 — the round D97 opened as "v2" and D105 renamed
-— was spec §10's list of known limits, P1–P8, sequenced into one task each,
+**What to do next: `T-92`, row 2 of `v1.2` in `Roadmap after v1.1` below.**
+**v1.2 is open**: `T-91` closed it row 1 and minted REQ-57 and REQ-58 *(D109,
+D110)*. Acceptance gates A1–A9 all hold and US-1 through US-7 and US-9 are
+delivered; **v1 and v1.1 are both complete.** v1.1 — the round D97 opened as
+"v2" and D105 renamed — was spec §10's list of known limits, P1–P8,
+sequenced into one task each,
 and **all eight rows are closed**: `T-85` through `T-90` and `T-81`, then P6's
 entry *(D107)*. §11's closing condition is met — the Vertex column renders in
 `eval/report.md` *(T-90, D106)* and P6's path is logged — with A1–A9 still
-holding. **v1.2 is next**, cross-practice round one, and opens when `T-91`
-does, minting its requirements in the same commit *(D105 rule 2)*. The
-versions after it are in `Roadmap after v1.1` *(D105)*, further down.
+holding. **v1.2 — cross-practice round one — opened with `T-91`**, which
+minted REQ-57 and REQ-58; a statement is minted by the task whose close
+checks it, not by the version's opening commit *(D109, refining D105 rule
+2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
+down.
 
-Seventy tasks are on this board — IDs run to T-90 but numbering is not
+Seventy-one tasks are on this board — IDs run to T-91 but numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **70 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **71 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -141,7 +145,7 @@ declared unclaimed and abstain; their extraction is v1.6's.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the predicate vocabulary is explicit | `T-91` | pending | every tree predicate declares its kind; a kind the engine lacks raises at load, never abstains (D31's shape); every gate green |
+| 1 | the predicate vocabulary is explicit | `T-91` | **closed** (D110) | every tree predicate declares its kind; a kind the engine lacks raises at load, never abstains (D31's shape); every gate green |
 | 2 | rheumatoid arthritis: source and tree | `T-92` | pending | governing document chosen by fetching its header (D97's Palmetto correction), hashed into `sources.json`, `verify_sources.py --offline` green; tree compiled; judgment-shaped criteria declared unclaimed, none omitted |
 | 3 | rheumatoid arthritis: patients and eval rows | `T-93` | pending | Synthea patients or declared additions (D73's shape); rows for `MET`, `NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen; `run_eval.py` green |
 | 4 | ultrasound: source, tree, patients and rows | `T-94` | pending | as rows 2 and 3; rows for `MET`, `NOT_MET` on a frequency limit, `NO_POLICY_FOUND` for an unlisted code |
@@ -1736,6 +1740,60 @@ there was a crash.
 carrying an `ERROR` unconstructible (T-26), the workflow aborts instead of
 emitting one (T-29, D76), and a seeded `ERROR` leaves the abstention rate
 unchanged (T-30, D77).
+
+---
+
+## `US-10` Take a new practice's coverage rules without a rewrite
+
+### `[x] T-91` The predicate vocabulary is explicit
+
+**REQ:** 57, 58 · **Depends:** T-87 *(D101)* · **Blocks:** T-92, T-94 ·
+**Decided by:** D109, D110 · **Opens:** v1.2 · **Gates:** A10 (first of five
+rows) · **Timebox:** one day
+**Status:** **closed** (D110) — the exit ran green and every gate with it. No
+verdict, span, eval row or recording moved: the seven predicates are the same
+arithmetic, reached by a declared kind instead of a letter.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_predicate_kinds.py tests/test_criteria_tree.py tests/test_workflow.py tests/test_schemas.py -q --color=no \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: every criterion both committed trees declare `deterministic`
+names a `kind` from the engine's closed set and every criterion they declare
+`unclaimed` names none; a tree naming a kind the engine lacks **raises at
+load**, naming the tree, the criterion and the kind, and never abstains past
+it; `criteria.PREDICATES` covers `PredicateKind` exactly and
+`workflow.STEP_KINDS` partitions it, so a kind with no predicate or no step
+is a red suite rather than a criterion that evaluates to nothing; no module
+under `pa_agent/` selects a predicate from a criterion id, asserted by
+parsing (D65's shape, because both trees use the ids the old code hardcoded
+and every behavioural test passes either way); and every determination,
+span, verdict, eval row and recording is unchanged.
+
+**What it delivers.** `PredicateKind` on the contract and `kind` on
+`Criterion`, with `deterministic` requiring one and `unclaimed` forbidding
+one; `criteria.PREDICATES`, a binder per kind that names the inputs its
+predicate receives, and `UnknownPredicateKind`; `workflow.STEP_KINDS`, the
+assignment of each kind to the step that evaluates it; `scoped_to` resolved
+against the tree instead of compared to `"c3"` — a target the tree does not
+declare, does not evaluate, or itself scopes is refused at load; kind-keyed
+re-derivation in `check_citation_sufficiency`; the two committed trees
+annotated; and `tests/test_predicate_kinds.py`, eighteen tests, most of them
+pins on absence.
+
+**Why it is row 1.** Rows 2 through 5 compile trees from two unrelated
+practices. Until dispatch reads a declared kind, a rheumatology criterion
+lettered `a` — and coverage documents letter criteria `a`, `b`, `c` as a
+matter of course — is evaluated by BMI arithmetic against rheumatology
+constants, answers, cites a span, and passes every test in this repo
+*(D110)*. The version's question cannot be asked before that is closed.
+
+**What it mints.** REQ-57 and REQ-58, the two of v1.2's five statements that
+have a check at this close; the other three stay §11 statements until
+T-92, T-94 and T-95 open *(D109)*.
 
 ---
 

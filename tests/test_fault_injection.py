@@ -36,23 +36,33 @@ from pa_agent.contracts import (
     CriterionVerdict,
     DeterminationAborted,
     ErrorCode,
+    PredicateKind,
 )
 from pa_agent.runners import (
     ExtractionFailure,
     ExtractionOutputError,
     RecordedExtractionRunner,
 )
+from pa_agent import criteria
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
 from conftest import AcceptAllVerifier
 from pa_agent.workflow import (
     DEFAULT_MAX_ATTEMPTS,
     ERROR_CODE_FOR,
-    EXTRACTION_CRITERIA,
-    RETRIEVAL_CRITERIA,
+    _all_criteria,
+    _extraction_criteria,
     _RETRYABLE_FAILURES,
     run_criteria_workflow,
 )
+
+#: The ids Noridian's tree errors on, written out rather than derived. Since
+#: T-91 the sets are a property of the tree — the note-consuming *kinds* it
+#: declares, and all of its criteria — so `test_the_error_sets_are_the_tree_s`
+#: below checks the derivation against these literals. Asserting the
+#: derivation against itself would pass on an empty tree (D110).
+EXTRACTION_CRITERIA = ("c1", "c2", "c3", "c4", "c5")
+RETRIEVAL_CRITERIA = ("a", "b", *EXTRACTION_CRITERIA)
 
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
 NOTES_MANIFEST = REPO_ROOT / "data" / "patients" / "notes" / "manifest.json"
@@ -323,7 +333,10 @@ def test_a_raising_predicate_errors_its_criterion_and_only_its_criterion(
         calls["n"] += 1
         raise RuntimeError("injected predicate fault")
 
-    monkeypatch.setattr("pa_agent.workflow.evaluate_c1", boom)
+    # T-91 (D110): the fault is injected where dispatch happens — the kind's
+    # entry in the registry — because that is the only route from a criterion
+    # to its arithmetic. Patching a name in `workflow` would now miss.
+    monkeypatch.setitem(criteria.PREDICATES, PredicateKind.NOTE_EVENT_COUNT, boom)
     with pytest.raises(DeterminationAborted) as caught:
         _run(policy_store, patient_store, runner, e1_patient, ref)
 
@@ -549,12 +562,33 @@ def test_retrieval_failure_errors_every_criterion_and_aborts(
     assert [r.criterion_id for r in caught.value.results] == list(
         RETRIEVAL_CRITERIA
     ), "nothing was gathered, so no criterion was evaluated (D90)"
-    assert list(RETRIEVAL_CRITERIA) == ["a", "b", "c1", "c2", "c3", "c4", "c5"]
 
     for result in caught.value.results:
         assert result.verdict is CriterionVerdict.ERROR
         assert result.error_code is ErrorCode.SOURCE_UNAVAILABLE
         assert planner.message in result.error_detail
+
+
+def test_the_error_sets_are_the_tree_s_criteria_not_a_constant(policy_store) -> None:
+    """T-91 (D110): which criteria a fault errors is read off the tree.
+
+    It used to be two module-level id tuples, which named Noridian's seven and
+    would have errored a rheumatology tree's criteria `c1`–`c5` whatever they
+    meant. The derivation is checked against the literals above, because a
+    derivation checked against itself passes on a tree with no criteria.
+    """
+    jf = policy_store.get_tree("ncd-100.1-jf-v1")
+    assert _extraction_criteria(jf) == EXTRACTION_CRITERIA
+    assert _all_criteria(jf) == RETRIEVAL_CRITERIA
+
+    # Palmetto's tree declares no run length and two unclaimed criteria, so
+    # both sets differ — which is the property a constant could not have.
+    jjm = policy_store.get_tree("ncd-100.1-jjm-v1")
+    assert _extraction_criteria(jjm) == ("c1", "c2", "c5")
+    assert _all_criteria(jjm) == ("a", "b", "c1", "c2", "c4", "c5", "d"), (
+        "an unclaimed criterion is errored by a retrieval fault like any "
+        "other: nothing was gathered for it either (D90)"
+    )
 
 
 def test_a_retrieval_failure_is_an_error_and_never_an_abstention(
@@ -651,9 +685,8 @@ def test_an_under_cited_not_met_errors_its_criterion_and_reaches_exit_three(
     shortfall says two were claimed. Article IV: the criterion is `ERROR`,
     not an abstention — the specialist has nothing to collect, the code
     cited less than it counted."""
-    from pa_agent import criteria
-
-    real = criteria.evaluate_c4
+    kind = PredicateKind.NOTE_EVENT_RUN_BMI_RATE
+    real = criteria.PREDICATES[kind]
 
     def under_cite(*args, **kwargs):
         result = real(*args, **kwargs)
@@ -661,7 +694,7 @@ def test_an_under_cited_not_met_errors_its_criterion_and_reaches_exit_three(
             return result.model_copy(update={"spans": result.spans[:1]})
         return result
 
-    monkeypatch.setattr("pa_agent.workflow.evaluate_c4", under_cite)
+    monkeypatch.setitem(criteria.PREDICATES, kind, under_cite)
     with pytest.raises(DeterminationAborted) as caught:
         _run(policy_store, patient_store, runner, e6_patient, ref)
 

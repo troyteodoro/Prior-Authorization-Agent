@@ -63,13 +63,16 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1 and v1.1 are both complete.** 70 of 70 tasks closed, 0 open, all ten
-zero-cost gates green, and acceptance gates A1–A9 holding. The suite collects
-882 tests (3 skip). v1 delivered the determination end to end; v1.1 closed
-spec §10's eight known limits — a second jurisdiction, a bounded re-ask for
-unanchorable quotes, a second note per chart, a citation-sufficiency check, a
-second measured tier, and the written-down path for the one limit that stays
-open on purpose.
+**v1 and v1.1 are both complete, and v1.2 is under way.**
+71 of 71 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A9 holding. The suite collects 901 tests (3 skip). v1 delivered the
+determination end to end; v1.1 closed spec §10's eight known limits — a
+second jurisdiction, a bounded re-ask for unanchorable quotes, a second note
+per chart, a citation-sufficiency check, a second measured tier, and the
+written-down path for the one limit that stays open on purpose. v1.2 opened
+with the predicate vocabulary: every criterion a tree declares names the
+arithmetic that evaluates it, and a tree naming one the engine lacks fails to
+load instead of abstaining past it *(T-91, D110)*.
 
 Measured figures live in `eval/report.md`, which is generated and gate-verified
 rather than written; *Status in detail* below carries them, and
@@ -85,7 +88,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 |---|---|---|---|
 | v1 | bariatric determination end to end, two implementations graded against one oracle | US-1–US-9 | **complete** |
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
-| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **next** |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **in progress** |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | planned |
 | v1.4 | sessions and intake, headless | US-12 | planned |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
@@ -98,6 +101,18 @@ the predicate vocabulary the engine already has, and where a criterion cannot
 be expressed the engine must say so — declared unclaimed and abstaining, never
 quietly omitted, because omitting a criterion approves where a payer would
 not. It spends zero model calls.
+
+Its first row made that vocabulary explicit. Until `T-91` the engine chose a
+criterion's arithmetic from the criterion's **id**: `a` was the BMI
+threshold, `c3` the run length. Coverage documents letter their criteria `a`,
+`b`, `c` as a matter of course, so a rheumatology tree would have been
+evaluated by bariatric arithmetic against rheumatology constants, answered,
+and cited a span — passing every test in the repo. A tree now declares each
+criterion's `kind` from a closed set, the engine dispatches on that, and a
+kind it does not implement fails at load naming the tree, the criterion and
+the kind. **Unbuilt is not unclaimed:** a limit the tree declares is reviewed
+and reported as an abstention; a predicate nobody wrote is not allowed to
+borrow it *(REQ-57, REQ-58, D110)*.
 
 ---
 

@@ -68,7 +68,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from pa_agent.contracts import Document, RunTrace
-from pa_agent.contracts import CriteriaTree
+from pa_agent.contracts import CriteriaTree, PredicateKind
 from pa_agent.model_pin import PINNED_MODEL
 from pa_agent.retrieval import RetrievalError, RetrievalResult
 from pa_agent.stores.patient import PatientStore
@@ -312,7 +312,12 @@ class AgenticRetrievalPlanner:
                 "well-formed."
             )
 
-        value_set_id = tree.criterion("b").require("value_set_id")
+        # The value set's id comes from the membership criterion's own constant,
+        # so no caller writes a code-system literal and the policy names what it
+        # needs (D52). Found by kind, never by id (D110).
+        value_set_id = tree.only_criterion_of_kind(
+            PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP
+        ).require("value_set_id")
         return RetrievalResult(
             observations=patient_store.get_observations(patient_id),
             conditions=patient_store.get_conditions(patient_id),

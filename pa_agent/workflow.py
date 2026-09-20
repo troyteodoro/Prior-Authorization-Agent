@@ -30,7 +30,7 @@ edge. See D62 for the rejected alternative in full.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 
 from pa_agent.aggregate import assemble
@@ -49,20 +49,16 @@ from pa_agent.contracts import (
     GapReason,
     NoteBmi,
     Observation,
+    PredicateKind,
     ProgramAssertion,
     RunTrace,
     WmEvent,
 )
 from pa_agent.criteria import (
+    PredicateInputs,
     QualifyingRun,
     check_citation_sufficiency,
-    evaluate_c1,
-    evaluate_c2,
-    evaluate_c3,
-    evaluate_c4,
-    evaluate_c5,
-    evaluate_criterion_a,
-    evaluate_criterion_b,
+    evaluate,
     qualifying_run,
 )
 from pa_agent.index import DocumentIndex
@@ -118,55 +114,121 @@ _RETRYABLE_FAILURES = tuple(
     failure.value for failure, code in ERROR_CODE_FOR.items() if code.retryable
 )
 
-#: The criteria that consume extraction — what `step_qualifying_run` and
+#: T-91 (REQ-57, D110): which step evaluates which kind. A criterion is
+#: dispatched by the **kind it declares**, never by its id — both committed
+#: trees letter their criteria `a`, `b`, `c1`… because NCD 100.1's MACs do,
+#: and a tree from another practice that letters them the same way would
+#: otherwise be evaluated by bariatric arithmetic and pass every test here.
+#:
+#: The assignment is a partition of `PredicateKind`, required by
+#: `tests/test_predicate_kinds.py`: a kind no step claims is a criterion that
+#: silently produces no verdict, which is an approval past a criterion the
+#: policy requires.
+OBSERVATION_KINDS: tuple[PredicateKind, ...] = (
+    PredicateKind.BMI_OBSERVATION_THRESHOLD,
+)
+CONDITION_KINDS: tuple[PredicateKind, ...] = (
+    PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP,
+)
+#: The kinds that consume extraction — what `step_qualifying_run` and
 #: `step_criteria_c` evaluate over `state.events`. On an extraction failure
-#: these resolve to `ERROR`; (a) and (b) read structured FHIR and never touched
+#: these resolve to `ERROR`; the structured kinds read FHIR and never touched
 #: the model, so a fault they never saw is not theirs to report (D76).
-EXTRACTION_CRITERIA = ("c1", "c2", "c3", "c4", "c5")
+NOTE_EVENT_KINDS: tuple[PredicateKind, ...] = (
+    PredicateKind.NOTE_EVENT_COUNT,
+    PredicateKind.NOTE_EVENT_RUN_LENGTH,
+    PredicateKind.NOTE_EVENT_RUN_RECENCY,
+    PredicateKind.NOTE_EVENT_RUN_BMI_RATE,
+    PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE,
+)
 
-#: T-77 (D90): a retrieval fault errors **every** criterion. `step_gather`
-#: produces the entire evidentiary input — observations, conditions, the value
-#: set and the notes — so there is no subset that was evaluated. (a) has no
-#: observations to compare, (b) no conditions and no value set, c1–c5 no notes.
-#: Reporting a fault on five of seven would state that (a) and (b) were
-#: evaluated, and they were not.
-RETRIEVAL_CRITERIA = ("a", "b", *EXTRACTION_CRITERIA)
+#: step name -> the kinds it evaluates. The steps read the tuples above
+#: directly; this is the same fact in the shape the partition is checked in.
+STEP_KINDS: dict[str, tuple[PredicateKind, ...]] = {
+    "criterion_a": OBSERVATION_KINDS,
+    "criterion_b": CONDITION_KINDS,
+    "criteria_c": NOTE_EVENT_KINDS,
+}
+
+#: The kinds whose verdict depends on the qualifying run, so the run is
+#: computed iff a tree declares one of them. Written out rather than sliced
+#: off `NOTE_EVENT_KINDS`: a reorder there would silently change which kinds
+#: need a run, and `tests/test_predicate_kinds.py` pins the relationship.
+RUN_KINDS: tuple[PredicateKind, ...] = (
+    PredicateKind.NOTE_EVENT_RUN_LENGTH,
+    PredicateKind.NOTE_EVENT_RUN_RECENCY,
+    PredicateKind.NOTE_EVENT_RUN_BMI_RATE,
+    PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE,
+)
 
 
-def _declared(tree: CriteriaTree, criterion_id: str) -> Criterion | None:
-    """The criterion if the tree declares it for deterministic evaluation.
+def _declared(
+    tree: CriteriaTree, kinds: tuple[PredicateKind, ...]
+) -> tuple[Criterion, ...]:
+    """The criteria this tree declares deterministic for any of `kinds`.
 
-    T-87 (D101): a second tree declares a different set — Palmetto's has no
-    `c3` and declares `c4` and `d` unclaimed — so every step reads what the
-    tree says rather than assuming Noridian's seven. This is tree data, a
-    deterministic product of the policy plane, and never model output.
+    T-87 (D101) made every step read what the tree declares rather than
+    assuming Noridian's seven; T-91 (D110) made *what* it declares a kind
+    rather than an id. Tree data throughout — a deterministic product of the
+    policy plane, never model output. Tree order is preserved, so a tree with
+    two criteria of one kind evaluates both, in the order it states them.
     """
-    for criterion in tree.criteria:
-        if criterion.id == criterion_id and criterion.evaluation == "deterministic":
-            return criterion
-    return None
+    return tuple(
+        criterion
+        for criterion in tree.criteria
+        if criterion.evaluation == "deterministic" and criterion.kind in kinds
+    )
+
+
+def _sole(tree: CriteriaTree, kind: PredicateKind) -> Criterion | None:
+    """The one criterion of `kind` the tree declares deterministic, or `None`.
+
+    `None` means the tree does not declare it — Palmetto's L34576 states no run
+    length (D101). More than one raises through `only_criterion_of_kind`
+    rather than taking the first, because choosing would be the engine
+    deciding what the policy meant.
+    """
+    found = _declared(tree, (kind,))
+    if not found:
+        return None
+    return tree.only_criterion_of_kind(kind)
 
 
 def _extraction_criteria(tree: CriteriaTree) -> tuple[str, ...]:
-    """`EXTRACTION_CRITERIA` restricted to what this tree declares."""
-    return tuple(cid for cid in EXTRACTION_CRITERIA if _declared(tree, cid) is not None)
+    """The ids of the note-consuming criteria this tree declares."""
+    return tuple(criterion.id for criterion in _declared(tree, NOTE_EVENT_KINDS))
 
 
 def _all_criteria(tree: CriteriaTree) -> tuple[str, ...]:
-    """Every criterion the tree declares, unclaimed ones included (D90)."""
+    """Every criterion the tree declares, unclaimed ones included (D90).
+
+    T-77 (D90): a retrieval fault errors **every** criterion. `step_gather`
+    produces the entire evidentiary input — observations, conditions, the value
+    set and the notes — so there is no subset that was evaluated. Reporting a
+    fault on the note criteria alone would state that the structured ones were
+    evaluated, and they were not.
+    """
     return tuple(criterion.id for criterion in tree.criteria)
 
 
-def _run_established(criterion: Criterion, c3_met: bool, run: QualifyingRun) -> bool:
+def _run_established(
+    criterion: Criterion, results: list[CriterionResult], run: QualifyingRun
+) -> bool:
     """REQ-15's gate for a run-scoped criterion, read from its own `scoped_to`.
 
-    Under Noridian's tree c2, c4 and c5 scope to `c3` and abstain unless c3 is
-    met. Under a tree with no run-length criterion the run is established by
-    having events at all (D101).
+    Under Noridian's tree c2, c4 and c5 scope to c3 and abstain unless c3 is
+    met; under a tree with no run-length criterion the run is established by
+    having events at all (D101). T-91 (D110) resolves `scoped_to` to *that
+    criterion's result* instead of comparing the string to `"c3"` — the tree
+    validator has already required it to name a declared criterion — so a tree
+    scoping to something else is scoped to what it said.
     """
-    if criterion.scoped_to == "c3":
-        return c3_met
-    return run.length > 0
+    if criterion.scoped_to is None:
+        return run.length > 0
+    return any(
+        r.criterion_id == criterion.scoped_to and r.verdict is CriterionVerdict.MET
+        for r in results
+    )
 
 #: T-17 (D78): what a verifier fault means for the criterion under check.
 #: Same shape as `ERROR_CODE_FOR` and the same D8 test for the replay faults:
@@ -364,16 +426,17 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
 
 
 def step_criterion_a(state: WorkflowState, ctx: _Context) -> None:
-    """REQ-11: a numeric comparison. No model call, before or after (Art. II)."""
-    state.results.append(
-        _predicate(
-            "a",
-            evaluate_criterion_a,
-            state.tree.criterion("a"),
-            state.observations,
-            state.as_of,
-        )
+    """REQ-11: a numeric comparison. No model call, before or after (Art. II).
+
+    Evaluates whatever the tree declares for `OBSERVATION_KINDS`, which on both
+    committed trees is the criterion lettered `a`. The letter is not what
+    selects the arithmetic (D110).
+    """
+    inputs = PredicateInputs(
+        as_of=state.as_of, observations=tuple(state.observations)
     )
+    for criterion in _declared(state.tree, OBSERVATION_KINDS):
+        state.results.append(_predicate(criterion.id, evaluate, criterion, inputs))
 
 
 def step_reconcile(state: WorkflowState, ctx: _Context) -> None:
@@ -384,8 +447,12 @@ def step_reconcile(state: WorkflowState, ctx: _Context) -> None:
     comparison is Python: the model supplied a number and a quote, and which side
     of 35.0 that number falls on is not its judgment.
     """
+    criterion_a = _sole(state.tree, PredicateKind.BMI_OBSERVATION_THRESHOLD)
+    if criterion_a is None:
+        # A tree with no BMI criterion has no note-vs-structured BMI to
+        # reconcile. The step visits, produces nothing, and says so.
+        return
     fact = state.tree.reconciled_fact("bmi")
-    criterion_a = state.tree.criterion("a")
     index = next(
         (i for i, r in enumerate(state.results) if r.criterion_id == criterion_a.id),
         None,
@@ -407,14 +474,41 @@ def step_reconcile(state: WorkflowState, ctx: _Context) -> None:
 def step_criterion_b(state: WorkflowState, ctx: _Context) -> None:
     """REQ-12: set intersection. `MET` or abstention, never `NOT_MET` — a chart
     cannot prove a comorbidity absent (D40)."""
-    state.results.append(
-        _predicate(
-            "b",
-            evaluate_criterion_b,
-            state.tree.criterion("b"),
-            state.conditions,
-            state.value_set,
+    inputs = PredicateInputs(
+        as_of=state.as_of,
+        conditions=tuple(state.conditions),
+        value_set=state.value_set,
+    )
+    for criterion in _declared(state.tree, CONDITION_KINDS):
+        state.results.append(_predicate(criterion.id, evaluate, criterion, inputs))
+
+
+def _select_run(
+    tree: CriteriaTree, events: list[WmEvent], as_of: date
+) -> QualifyingRun:
+    """The qualifying run, with both of D84's constants read off this tree.
+
+    The recency window is required — selection needs it (D84) — so a tree that
+    declares run-scoped criteria and no `note_event_run_recency` criterion
+    raises here, naming both. Defaulting the window to "no preference" is the
+    defect D84 removed, and every test would agree with it. A tree declaring no
+    run-length criterion passes `None` explicitly (D101).
+    """
+    recency = _sole(tree, PredicateKind.NOTE_EVENT_RUN_RECENCY)
+    if recency is None:
+        raise ValueError(
+            f"{tree.policy_version_id} declares run-scoped criteria and no "
+            f"criterion of kind {PredicateKind.NOTE_EVENT_RUN_RECENCY.value!r}; "
+            "the run cannot be selected without a recency window (REQ-32, D84)"
         )
+    length = _sole(tree, PredicateKind.NOTE_EVENT_RUN_LENGTH)
+    return qualifying_run(
+        events,
+        min_consecutive_months=(
+            length.require("min_consecutive_months") if length is not None else None
+        ),
+        recency_window_months=recency.require("recency_window_months"),
+        as_of=as_of,
     )
 
 
@@ -427,72 +521,64 @@ def step_qualifying_run(state: WorkflowState, ctx: _Context) -> None:
     disagreement would surface as a verdict about a period no other criterion
     adjudicated.
     """
-    # D84: selection is joint, so it reads c3's length *and* c2's window and the
-    # clock. Both constants come from the tree and are never hardcoded (Art. VII).
-    # T-87 (D101): a tree with no c3 declares no run length, and passes
-    # `None` explicitly — the data decides, the argument stays required.
-    c3 = _declared(state.tree, "c3")
+    # D84: selection is joint, so it reads the run-length criterion's minimum
+    # *and* the recency criterion's window and the clock. Both constants come
+    # from the tree and are never hardcoded (Art. VII). T-87 (D101): a tree
+    # declaring no run length passes `None` explicitly — the data decides, the
+    # argument stays required.
+    run_criteria = _declared(state.tree, RUN_KINDS)
+    if not run_criteria:
+        # No criterion is scoped to a run, so there is no run to select and no
+        # window to select it by. The step visits and produces the empty run
+        # rather than reaching for a constant no tree declared (D110).
+        state.run = QualifyingRun(months=(), events=())
+        return
+    length = _sole(state.tree, PredicateKind.NOTE_EVENT_RUN_LENGTH)
+    # The fault belongs to the run-length criterion where there is one, and to
+    # the first run-scoped criterion where the tree declares none (D101).
+    reported = length.id if length is not None else run_criteria[0].id
     state.run = _predicate(
-        "c3" if c3 is not None else "c2",
-        qualifying_run,
+        reported,
+        _select_run,
+        state.tree,
         state.events,
-        min_consecutive_months=(
-            c3.require("min_consecutive_months") if c3 is not None else None
-        ),
-        recency_window_months=state.tree.criterion("c2").require(
-            "recency_window_months"
-        ),
-        as_of=state.as_of,
+        state.as_of,
     )
 
 
 def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
-    """c1 through c5 (REQ-13, REQ-36, REQ-32, REQ-14, REQ-40, REQ-37, REQ-15).
+    """The note-consuming criteria (REQ-13, REQ-36, REQ-32, REQ-14, REQ-40,
+    REQ-37, REQ-15).
 
-    `c3_met` gates c2, c4 and c5 per REQ-15: with no qualifying period there is
-    nothing for them to be scoped to, so they abstain rather than answering
-    `NOT_MET` about a run that does not exist.
+    Every criterion the tree declares for a `NOTE_EVENT_KINDS` kind is
+    evaluated by the predicate that kind names, in the tree's own order
+    (T-91, D110). A run-scoped criterion is gated by REQ-15: with no
+    qualifying period there is nothing for it to be scoped to, so it abstains
+    rather than answering `NOT_MET` about a run that does not exist.
+
+    **Unscoped first, then scoped.** `_run_established` reads the *result* of
+    the criterion a scoped one names, and the tree validator has already
+    refused a chain, so two passes are a topological order.
     """
     assert state.run is not None, "step_qualifying_run must precede this step"
-    run = state.run
-    tree = state.tree
+    base = PredicateInputs(
+        as_of=state.as_of,
+        events=tuple(state.events),
+        assertions=tuple(state.assertions),
+        run=state.run,
+    )
     produced: list[CriterionResult] = []
-
-    # T-87 (D101): each predicate runs iff the tree declares its criterion for
-    # deterministic evaluation. Every branch below reads tree data.
-    c1 = _declared(tree, "c1")
-    if c1 is not None:
-        produced.append(
-            _predicate("c1", evaluate_c1, c1, state.events, state.assertions)
-        )
-
-    c3 = _declared(tree, "c3")
-    c3_met = False
-    if c3 is not None:
-        c3_result = _predicate(
-            "c3", evaluate_c3, c3, state.events, state.assertions, run
-        )
-        c3_met = c3_result.verdict is CriterionVerdict.MET
-        produced.append(c3_result)
-
-    c2 = _declared(tree, "c2")
-    if c2 is not None:
-        produced.append(
-            _predicate(
-                "c2", evaluate_c2, c2, run, state.as_of,
-                _run_established(c2, c3_met, run),
+    for scoped in (False, True):
+        for criterion in _declared(state.tree, NOTE_EVENT_KINDS):
+            if (criterion.scoped_to is not None) != scoped:
+                continue
+            inputs = replace(
+                base,
+                run_established=_run_established(
+                    criterion, state.results + produced, state.run
+                ),
             )
-        )
-    c4 = _declared(tree, "c4")
-    if c4 is not None:
-        produced.append(
-            _predicate("c4", evaluate_c4, c4, run, _run_established(c4, c3_met, run))
-        )
-    c5 = _declared(tree, "c5")
-    if c5 is not None:
-        produced.append(
-            _predicate("c5", evaluate_c5, c5, run, _run_established(c5, c3_met, run))
-        )
+            produced.append(_predicate(criterion.id, evaluate, criterion, inputs))
 
     # Appended in the tree's own criterion order, so the gap list reads the way
     # the policy reads rather than the way this function happened to compute.
@@ -543,10 +629,6 @@ def step_sufficiency(state: WorkflowState, ctx: _Context) -> None:
     branch count is untouched; the event filtering lives in `criteria.py`.
     """
     assert state.run is not None, "step_qualifying_run must precede this step"
-    c3_met = any(
-        r.criterion_id == "c3" and r.verdict is CriterionVerdict.MET
-        for r in state.results
-    )
     for result in state.results:
         if result.verdict is not CriterionVerdict.NOT_MET:
             continue
@@ -559,7 +641,7 @@ def step_sufficiency(state: WorkflowState, ctx: _Context) -> None:
             observations=state.observations,
             run=state.run,
             as_of=state.as_of,
-            c3_met=_run_established(criterion, c3_met, state.run),
+            c3_met=_run_established(criterion, state.results, state.run),
         )
 
 

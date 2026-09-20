@@ -44,6 +44,7 @@
       "id": "a",
       "label": "BMI at or above the coverage threshold",
       "evaluation": "deterministic",
+      "kind": "bmi_observation_threshold",
       "constants": {
         "bmi_threshold": {
           "value": 35.0,
@@ -74,6 +75,7 @@
       "id": "b",
       "label": "At least one co-morbidity related to obesity",
       "evaluation": "deterministic",
+      "kind": "condition_value_set_membership",
       "constants": {
         "min_comorbidity_count": {
           "value": 1,
@@ -96,6 +98,7 @@
       "id": "c1",
       "label": "A physician-supervised weight management program is documented",
       "evaluation": "deterministic",
+      "kind": "note_event_count",
       "constants": {
         "min_events": {
           "value": 1,
@@ -114,6 +117,7 @@
       "id": "c2",
       "label": "The qualifying run is recent enough",
       "evaluation": "deterministic",
+      "kind": "note_event_run_recency",
       "constants": {
         "recency_window_months": {
           "value": 12,
@@ -162,6 +166,7 @@
       "id": "c5",
       "label": "Diet and activity documented across the qualifying run",
       "evaluation": "deterministic",
+      "kind": "note_event_run_behavior_rate",
       "constants": {
         "documentation_rate": {
           "value": "every_month_of_run",

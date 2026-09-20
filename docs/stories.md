@@ -285,10 +285,11 @@ never needed.
 - **Given** a criteria tree compiled from a rheumatology coverage document
   **When** it is loaded **Then** every predicate names a kind the engine has,
   or the load fails naming the kind it lacks — it never abstains past an
-  unbuilt predicate · *(REQ minted at v1.2 open; A10)*
+  unbuilt predicate · *(REQ-57, T-91; A10)*
 - **Given** a criterion the document states as a judgment **When** the tree
   declares it unclaimed **Then** the determination abstains on it with
-  `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it · *(D101; A10)*
+  `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it · *(REQ-58, T-91; D101;
+  A10)*
 - **Given** a patient whose conventional DMARD trial is shorter than the
   document requires **When** the determination runs **Then** that criterion is
   `NOT_MET` with the medication resource cited, computed by Python over the

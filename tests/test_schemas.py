@@ -36,6 +36,7 @@ from pa_agent.contracts import (
     Jurisdiction,
     Observation,
     PolicyConstant,
+    PredicateKind,
     ProcedureEntry,
     ProcedureSets,
     ProgramAssertion,
@@ -72,6 +73,7 @@ def test_the_seven_models_exist_and_construct() -> None:
     criterion = Criterion(
         id="c1",
         label="Supervised program",
+        kind=PredicateKind.NOTE_EVENT_COUNT,
         constants={"min_events": PolicyConstant(value=1, type="integer")},
     )
     assert criterion.require("min_events") == 1
@@ -361,6 +363,7 @@ def test_requiring_a_provisional_constant_raises_rather_than_defaulting(
     flagged = Criterion(
         id="z",
         label="synthetic",
+        kind=PredicateKind.NOTE_EVENT_RUN_RECENCY,
         constants={
             "window": PolicyConstant(
                 value=None, type="integer_months", provisional=True, open_question=5
@@ -656,7 +659,12 @@ def test_a_jurisdiction_does_not_repeat_a_state() -> None:
 
 def test_a_criterion_is_deterministic_or_unclaimed_and_nothing_else() -> None:
     with pytest.raises(ValidationError, match="nothing else"):
-        Criterion(id="z", label="z", evaluation="model")
+        Criterion(
+            id="z",
+            label="z",
+            evaluation="model",
+            kind=PredicateKind.NOTE_EVENT_COUNT,
+        )
 
 
 def test_an_unclaimed_criterion_says_why() -> None:

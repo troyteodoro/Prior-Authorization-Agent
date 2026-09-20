@@ -759,8 +759,10 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
 
     A loop over `state.events` would make the number of iterations depend on what
     the model returned, which is how an agent system spends an unbounded amount of
-    money on one request. Listing the four iterables rather than pattern-matching
-    them means a fifth loop has to be justified.
+    money on one request. Listing the iterables rather than pattern-matching them
+    means the next loop has to be justified. Since T-91 three of them are
+    `_declared(...)` — the criteria a tree declares for a step's kinds, which is
+    policy data and a deterministic product of the policy plane (D110).
     """
     tree = _module_tree("workflow.py")
     iterables = sorted(
@@ -769,7 +771,12 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
         if isinstance(node, (ast.For, ast.AsyncFor))
     )
     assert iterables == [
+        "(False, True)",                  # T-91: unscoped criteria, then scoped
+                                          # ones — a two-element Python literal
         "STEPS",                          # the declared graph
+        "_declared(state.tree, CONDITION_KINDS)",   # T-91: the criteria the tree
+        "_declared(state.tree, NOTE_EVENT_KINDS)",  # declares for each step's
+        "_declared(state.tree, OBSERVATION_KINDS)", # kinds — policy data (D110)
         "cited",                          # T-17: the cited verdicts, a filtered
                                           # Python list — never model output
         "enumerate(tree.criteria)",       # the policy's own criterion order
@@ -783,8 +790,6 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
                                           # deterministic verdicts (D99)
         "state.tree.criteria",            # T-87: the unclaimed criteria the
                                           # tree declares — policy data (D101)
-        "tree.criteria",                  # T-87: `_declared`, which reads what
-                                          # the tree declares for each step
     ], f"workflow.py loops over {iterables}"
 
 

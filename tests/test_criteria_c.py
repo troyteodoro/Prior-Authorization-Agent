@@ -522,7 +522,10 @@ def test_no_model_is_reachable_from_the_predicates():
             imported.update(a.name for a in node.names)
         elif isinstance(node, ast.ImportFrom):
             imported.add(node.module or "")
-    assert imported == {"__future__", "dataclasses", "datetime", "pa_agent.contracts"}, (
+    assert imported == {
+        "__future__", "collections.abc", "dataclasses", "datetime",
+        "pa_agent.contracts",
+    }, (
         f"pa_agent/criteria.py imports {sorted(imported)}; the predicates are "
         "arithmetic over contracts and nothing else (REQ-13, Art. II)"
     )

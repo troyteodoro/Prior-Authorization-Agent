@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1 complete, A1–A9 hold *(D104)*; v1.1 in progress; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1 and v1.1 complete, A1–A9 hold *(D104, D106)*; **v1.2 in progress** *(T-91)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -337,6 +337,22 @@ threshold resolves the criterion `INSUFFICIENT_EVIDENCE` with `gap_reason`
 `discrepancies[]` entry citing the note that stated it. Note-vs-note
 disagreement is not adjudicated: the structured value is authoritative and
 each note is measured against it. *(Art. IV, D50, D104)*
+
+**REQ-57** Every criterion a tree declares for deterministic evaluation names
+a `kind` from the engine's closed set of predicate kinds, and the engine
+chooses the predicate by that kind and never by the criterion's id — an id is
+the variable the decision expression names, not a statement about what the
+criterion means. A tree naming a kind the engine does not implement **fails to
+load**, naming the tree, the criterion and the kind. It never abstains past it
+and is never read as unclaimed: **unbuilt is not unclaimed**. *(T-91, D110)*
+
+**REQ-58** A tree may declare any criterion `evaluation: "unclaimed"`, with a
+note saying why. The determination abstains on it with
+`INSUFFICIENT_EVIDENCE` and `NOT_EVALUATED_BY_THIS_SYSTEM` and **never omits
+it** — omitting a criterion the policy requires approves where the policy
+would not. An unclaimed criterion declares no kind; the declaration and the
+abstention are one statement, and a criterion the engine can evaluate is
+evaluated. *(T-87, T-91, D101, D110)*
 
 ### Verification
 
@@ -852,14 +868,17 @@ changed is that the replayed numbers are no longer from a single tier.
 
 ## 11. Versions after v1
 
-v1 is complete and v1.1 — the §10 round D97 opened as "v2" and D105
-renamed — is in progress. This section fixes what follows: one version at a
-time, each with a goal, a scope, the story it closes, the tasks it reserves,
-what it spends, and the gate it must hold *(D105)*. **Requirements here are
-statements, not ids.** A version mints its REQ ids when its first task
-opens, by moving its statements into §5 with numbers; the coverage mapping
-and the pinned count move in the same commit. §1's rule stands: a
-requirement with no check is a wish, and a wish is not given a number.
+v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
+is closed, and **v1.2 is in progress** *(T-91)*. This section fixes what
+follows: one version at a time, each with a goal, a scope, the story it
+closes, the tasks it reserves, what it spends, and the gate it must hold
+*(D105)*. **Requirements here are
+statements, not ids.** A statement is minted by **the task whose close checks
+it**, by moving into §5 with a number; the coverage mapping and the pinned
+count move in the same commit *(D109, refining D105 rule 2 — v1.2 is the first
+version whose statements do not all acquire a check on its opening day)*. §1's
+rule is why: a requirement with no check is a wish, and a wish is not given a
+number.
 
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
@@ -875,8 +894,8 @@ requirement with no check is a wish, and a wish is not given a number.
 
 **Closed.** The path D97 fixed ran unchanged: T-85 through T-90 and T-81, then
 P6's entry. The Vertex column renders in `eval/report.md` *(T-90, D106)* and
-P6's path is logged *(D107)*; A1–A9 all hold. **v1.2 is next** and opens when
-its first task does, minting its requirements then *(D105 rule 2)*.
+P6's path is logged *(D107)*; A1–A9 all hold. **v1.2 opened with `T-91`**,
+which minted REQ-57 and REQ-58 *(D109, D110)*.
 
 ### v1.2 — Cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound
 
@@ -912,20 +931,22 @@ criteria are declared unclaimed and abstain with
 because a new extraction schema is a measurement round (D45) and this version
 asks a question about the engine. **Zero model calls.**
 
-**Requirements it will mint.**
+**Requirements, and the task that mints each** *(D109: a statement is minted
+by the task whose close checks it, not by the version's opening commit)*.
 
-- Every predicate in a criteria tree declares its kind from a closed set;
-  a tree naming a kind the engine lacks raises at load. Unbuilt is not
-  unclaimed.
-- A tree may declare any criterion `evaluation: "unclaimed"`; the graph
-  abstains on it with `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it
-  *(generalising D101)*.
-- A value set declares the code system of every entry; membership is
-  tested within the declared system.
-- Medication trial duration, lab thresholds and prior-procedure counts are
-  computed by Python over structured resources, cited to the resource.
-- `eval/report.md` carries the compatibility account, generated and
-  verified.
+- **REQ-57**, minted by `T-91`. Every predicate in a criteria tree declares
+  its kind from a closed set; a tree naming a kind the engine lacks raises at
+  load. Unbuilt is not unclaimed.
+- **REQ-58**, minted by `T-91`. A tree may declare any criterion
+  `evaluation: "unclaimed"`; the graph abstains on it with
+  `NOT_EVALUATED_BY_THIS_SYSTEM` and never omits it *(generalising D101)*.
+- *Awaiting `T-92`.* A value set declares the code system of every entry;
+  membership is tested within the declared system.
+- *Awaiting `T-92` and `T-94`.* Medication trial duration, lab thresholds and
+  prior-procedure counts are computed by Python over structured resources,
+  cited to the resource.
+- *Awaiting `T-95`.* `eval/report.md` carries the compatibility account,
+  generated and verified.
 
 **Gate A10.** Every criterion of every loaded tree is evaluated by a declared
 predicate kind or declared unclaimed, zero omitted; every eval row `PASS`;

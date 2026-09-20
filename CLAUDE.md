@@ -26,9 +26,9 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-56 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. §11 is the versions after v1, with the requirements each will mint — statements, not ids, until the version opens *(D105)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-58 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-15 are the roadmap's, one per version *(D105)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-89, each with a runnable exit condition; T-90 through T-116 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/tasks.md` | The board. Task records T-00 through T-91, each with a runnable exit condition; T-92 through T-116 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
 | `docs/decisions.md` | D1–D105, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
@@ -172,7 +172,11 @@ calls. Anything surviving both enters `workflow.py`.
 is a module-level tuple of named callables — gather, extract, criterion_a,
 reconcile, criterion_b, qualifying_run, criteria_c, unclaimed, sufficiency,
 verify — and a driver walks it and records what it visited. Every criteria
-step evaluates what the **tree declares**, not Noridian's seven (D101). An ADK `Workflow` would put `google.adk` on the import
+step evaluates what the **tree declares** (D101), and since T-91 it dispatches
+on the **kind** each criterion declares rather than on its id (D110). The step
+names are still bariatric-shaped and deliberately unchanged: they are the
+graph's, no step's identity depends on a tree, and renaming them churns
+recordings for nothing. An ADK `Workflow` would put `google.adk` on the import
 path of every deterministic test, and the three `sys.modules` assertions that
 would catch that are the ones that would have to be deleted to allow it. The
 graph has one conditional — whether a short circuit fired — and that is a
@@ -216,9 +220,15 @@ REQ-41, Article VI). `stores/__init__.py` imports neither submodule on purpose �
 a package-level re-export would be the module that reaches both planes.
 Production is a second adapter, which is the whole reason the ports exist *(D25)*.
 
-**Adjudication is seven criteria.** (a) BMI and (b) comorbidity read structured
-FHIR (`criteria.py`); c1–c5 are pure predicates over extracted `wm_events`. c3
-computes the qualifying run **once** and c2, c4 and c5 scope to it. `reconcile.py`
+**Adjudication is seven predicate kinds.** `PredicateKind` (contracts) is the
+closed vocabulary, `criteria.PREDICATES` maps each kind to a binder naming the
+inputs its predicate receives, and `workflow.STEP_KINDS` assigns each kind to
+the step that evaluates it — a partition, checked (T-91, D110). Under both
+NCD 100.1 trees that resolves to (a) BMI and (b) comorbidity over structured
+FHIR and c1–c5 over extracted `wm_events`, but the letters are labels: the
+`kind` chooses the arithmetic. The run-length criterion computes the
+qualifying run **once** and every criterion whose `scoped_to` names it scopes
+to that run. `reconcile.py`
 then runs REQ-34 across the structured and note BMIs. `aggregate.py` parses the
 policy's own `decision_expression` — parsed, never `eval()`'d and never
 hardcoded as `all(...)`.
@@ -281,6 +291,20 @@ passing**, because the tests are written in terms of the thing that broke.
   observations, conditions and the value set from the port, which is what makes
   `MAX_ROWS` truncation a cost control rather than a quiet second filter free to
   disagree with criterion (a).
+- **A criterion's arithmetic comes from its declared `kind`, never from its
+  id** *(REQ-57, D110)*. Both trees letter their criteria `a`, `b`, `c1`…
+  because NCD 100.1's MACs do, and coverage documents from other practices
+  letter theirs the same way — so id-keyed dispatch hands a rheumatology
+  criterion `a` to the BMI comparison, which answers, cites a span, and passes
+  every test in this repo. `tests/test_predicate_kinds.py` parses `pa_agent/`
+  for a criterion-id literal, because no behavioural test can tell the two
+  dispatches apart on a corpus whose ids match. **Unbuilt is not unclaimed:** a
+  kind the engine lacks raises at load; only a tree's *declared* limit
+  (`evaluation: "unclaimed"`, with a note) becomes
+  `NOT_EVALUATED_BY_THIS_SYSTEM` *(REQ-58)*. A kind in the enum with no
+  predicate, or none a step claims, is a red suite — it would otherwise be a
+  criterion that silently produces no verdict, which approves past a
+  requirement.
 - **`NOT_MET` / `INSUFFICIENT_EVIDENCE` / `ERROR` never collapse** (Article IV,
   D7, D9). An abstention cites nothing and carries a `gap_reason`; a `MET` or
   `NOT_MET` carries a span and no reason. Both directions are validators. **A
@@ -438,6 +462,16 @@ wrong silently:
   code at all, which is why that guard is asserted by parsing rather than by
   spawning *(D69)*.
 
+- **A mutation run can delete the note corpus.**
+  `tests/test_notes.py::test_regenerating_the_corpus_is_byte_identical` runs
+  `synthesize_notes.py --generate`, which `rmtree`s `data/patients/notes/`
+  before rebuilding it — so a mutation that breaks the engine leaves the
+  tracked corpus half-deleted, and the next suite run reports failures that
+  have nothing to do with the mutation. Deselect that test in a mutation run,
+  and `git checkout -- data/patients/notes` plus
+  `select_patients.py --verify` before trusting any result *(T-91)*. Restoring
+  from git is exact; regenerating is not byte-stable *(D73)*.
+
 Related: **when a behavioural test cannot catch a mutation, parse the AST
 instead.** A resolver that branches on an id's shape and *then* falls through to
 the record answers identically on every input the corpus can produce *(D65)*; a
@@ -446,9 +480,9 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**70 of 70 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~45s; the suite collects 882 tests across 34 files, 3 of
-which skip). IDs run to T-90, but
+**71 of 71 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~45s; the suite collects 901 tests across 35 files, 3 of
+which skip). IDs run to T-91, but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -482,9 +516,15 @@ D82's tolerance sweep, and **A6 45 model calls / 36,956 input / 7,590 output /
 own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **nothing on the board. v1 and v1.1 are both complete** — §11's closing
-condition is met and A1–A9 hold — **and `v1.2` is next, opening when `T-91`
-does and minting its requirements in the same commit** *(D105 rule 2)*. Row 8
+Open: **nothing on the board. v1 and v1.1 are complete and `v1.2` is under
+way** — §11's closing condition for v1.1 is met and A1–A9 hold. **`T-91`
+opened v1.2** (D110): every criterion a tree declares deterministic names a
+`kind` from `PredicateKind`, the engine dispatches on that and on no
+criterion id, and a kind it does not implement fails at load. It minted
+REQ-57 and REQ-58 — **a statement is minted by the task whose close checks
+it**, not by the version's opening commit, because three of v1.2's five have
+no check until T-92, T-94 and T-95 *(D109, refining D105 rule 2)*. **`T-92`
+is next**, row 2. Row 8 of v1.1
 closed with D107: P6's path for REQ-44/47 is written down and deliberately not
 taken. The candidate that looks like it claims model adjudication does not —
 Palmetto's `d` decomposes into extraction plus set membership plus a window,
@@ -710,7 +750,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               34 files
+tests/               35 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

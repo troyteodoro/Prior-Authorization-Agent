@@ -8444,3 +8444,209 @@ the point, and it is the friction the sweep's findings argue for.
 rather than the document — a `# noqa`-shaped habit. The signal would be a
 commit that changes only the test's expectations, and the answer then is to
 delete the copy rather than loosen the check.
+
+---
+
+## D109 — A version's requirements are minted by the task that checks them, not by the version that opens
+
+**T-91, opening v1.2.** D105 rule 2 says a version's requirements are minted
+when its first task opens: §11's statements move into §5 with numbers, and
+the coverage mapping moves in the same commit. Applied literally to v1.2 that
+mints five requirements today, and **three of them have no check** — the value
+set's code systems land in T-92, the new predicate kinds in T-92 and T-94, the
+compatibility account in T-95. `scripts/check_req_coverage.py` would then need
+either a mapping pointing at a file that does not exist, a mapping pointing at
+a file that does not check the thing, or a fourth state meaning "scheduled".
+
+The first is a red gate. The second is buying a passing check, which is the
+move D107 named and refused. The third is the alternative D105 itself
+rejected — teaching a gate a state so a document can be tidy.
+
+**The rule, refined.** A requirement is minted by the task whose close checks
+it. Opening a version moves *its first task's* statements into §5 with
+numbers; the rest stay statements in §11 until the task that checks them
+opens. Everything else in D105 rule 2 stands: the coverage mapping and the
+pinned count move in the same commit as the mint, and a statement in §11 is
+never given a number early.
+
+**Why this is a refinement and not a reversal.** D105 rule 2 exists because
+"a wish with a number is one the board will start referencing", quoting spec
+§1: *a requirement with no check is a wish, and a wish is not given a
+number*. §1 is the reason and it is in the spec, which outranks this log.
+D105 assumed a version's requirements all acquire checks at its open; v1.2
+is the first version where they do not, and the rule's own reason decides
+the case.
+
+**What T-91 mints.** Two of v1.2's five statements, both checked at this
+close: the predicate vocabulary (REQ-57) and the unclaimed declaration
+(REQ-58), which D101 already built and `tests/test_workflow.py` already
+checks — T-91 generalises it from "Palmetto's two criteria" to "any
+criterion of any tree" and pins the boundary against REQ-57, which is what
+makes *unbuilt is not unclaimed* a sentence with a check behind it. The
+other three stay §11 statements with the task that will mint them named.
+
+**Rejected — minting all five and mapping the three unchecked ones to the
+test files that will eventually hold them.** `check_req_coverage.py` verifies
+the file exists, not that it checks the requirement, so three mappings would
+pass today and mean nothing. The gate would be green on a claim nobody had
+made yet, which is worse than an absent number because it reads as coverage.
+
+**Rejected — minting all five and adding them to §5's *Unclaimed in v1*
+table.** That table is a closed list of two, and its meaning is
+*constitutionally* unclaimable, not *not built yet* — REQ-44 and REQ-47 are
+there because Amendment 1 reserves the decision procedure to Python (D107).
+Putting scheduled work in it would make the one table that states a real
+limit read like a backlog.
+
+**Reverses if:** a version opens whose statements all have checks on day one,
+in which case the literal reading of D105 rule 2 and this one agree and
+nothing is lost either way.
+
+---
+
+## D110 — The engine publishes a closed set of predicate kinds, and dispatch reads the kind rather than the criterion id
+
+**T-91, v1.2 row 1.** D101 made the graph evaluate *what the tree declares*
+rather than Noridian's seven criteria, and that is true of which criteria
+run. It is not true of **which arithmetic each one gets**. Every choice of
+predicate in this engine was keyed on the criterion's **id**:
+
+- `workflow._declared(tree, "c1")` through `"c5"`, one literal per predicate;
+- `tree.criterion("a")` in `step_criterion_a`, `step_reconcile` and
+  `determination.py`'s sc2 lookback;
+- `tree.criterion("b")` in `retrieval.py` and `agent/retrieval_agent.py`, for
+  the value set to fetch;
+- `_run_established`'s `criterion.scoped_to == "c3"`;
+- `step_sufficiency`'s `r.criterion_id == "c3"`;
+- `check_citation_sufficiency`'s five-way branch on `criterion.id`;
+- `EXTRACTION_CRITERIA = ("c1", "c2", "c3", "c4", "c5")`, the set a model
+  fault errors.
+
+Those ids mean "BMI threshold", "comorbidity set" and "run length" only
+because both trees are NCD 100.1 and were compiled by the same hand. A
+rheumatology tree that letters its criteria the same way — and coverage
+documents letter criteria `a`, `b`, `c` as a matter of course — gets
+bariatric arithmetic applied to rheumatology constants, produces a verdict,
+cites a span, and passes every test in this repo. That is the failure this
+version exists to find, and it would have been found by a wrong number in a
+determination rather than by a raise.
+
+**The change.** Every criterion a tree declares `deterministic` declares a
+`kind` from a closed set the engine publishes, and every dispatch reads the
+kind. The id keeps the two jobs it should have had all along: it is the
+variable `decision_expression` and `scoped_to` name, and the key a verdict is
+reported under. Seven kinds, one per predicate that exists:
+
+| kind | predicate | today |
+|---|---|---|
+| `bmi_observation_threshold` | `evaluate_criterion_a` | a |
+| `condition_value_set_membership` | `evaluate_criterion_b` | b |
+| `note_event_count` | `evaluate_c1` | c1 |
+| `note_event_run_length` | `evaluate_c3` | c3 |
+| `note_event_run_recency` | `evaluate_c2` | c2 |
+| `note_event_run_bmi_rate` | `evaluate_c4` | c4 |
+| `note_event_run_behavior_rate` | `evaluate_c5` | c5 |
+
+**The names are deliberately not generalised.** `evaluate_criterion_a`
+hardcodes `BMI_LOINC` and `evaluate_c4` reads `WmEvent.bmi`, so the kinds are
+named for that. Calling the first `observation_value_threshold` would claim a
+generality the code does not have, and the next tree that declared a lab
+threshold under it would get BMI's LOINC code silently. §11 expects a
+lab-result threshold to be a *new* kind, which is the same judgment: a kind
+is a promise about what the engine computes, and an overstated promise is
+worse than a missing one because a tree can be written against it.
+
+**Unbuilt is not unclaimed.** `deterministic` requires a kind;
+`unclaimed` forbids one. The two failure modes they separate are a criterion
+whose limit was declared, reviewed in the tree and stated in the
+determination (`NOT_EVALUATED_BY_THIS_SYSTEM`, D101), and a criterion whose
+predicate was never written. The second may not borrow the first's
+abstention: it raises at load, naming the tree, the criterion and the kind.
+An abstention there would be the system reporting a fact about the chart when
+the fact is about itself — D90's distinction, and Article IV's.
+
+**Three checks, and none of them is unreachable.**
+
+1. `PredicateKind` is an enum on the contract, so an unknown *name* fails in
+   `CriteriaTree.model_validate_json` — which is the load, at
+   `LocalPolicyStore`'s first read, before any determination.
+2. `criteria.PREDICATES` maps each kind to its predicate, and
+   `workflow.STEP_KINDS` assigns each kind to the step that evaluates it.
+   `tests/test_predicate_kinds.py` requires both to cover the enum exactly and
+   the step assignment to be a partition, so a kind added without a predicate,
+   or without a step, is a red suite at the moment the enum grows — not a
+   criterion that quietly evaluates to nothing.
+3. Dispatch resolves through `PREDICATES` and raises `UnknownPredicateKind`
+   on a miss. That is the backstop for 1 and 2 both being bypassed, and
+   deleting an entry from `PREDICATES` is the mutation that proves it fires.
+
+**Why binders rather than one uniform signature.** The obvious uniform
+dispatch gives every predicate the same argument — a bundle of observations,
+conditions, value set, events, run and clock — and that would delete the
+property that `evaluate_c4(criterion, run, c3_met)` **cannot read the
+structured BMI**. E10b depends on criterion (a) and the note reading being
+two independent readings (D62); today the signatures are what make that
+structural. So `PREDICATES` maps a kind to a binder that names the fields its
+predicate receives, and the predicates keep their narrow signatures. The
+binder table reads as the specification of what each kind consumes.
+
+**`scoped_to` is resolved, not compared.** It names a criterion id in the
+same tree; the tree validator now requires it to resolve and forbids a chain,
+and `_run_established` reads *that criterion's result*. `step_criteria_c`
+evaluates unscoped criteria first and scoped ones second, which is the
+topological order a depth of one admits. The old code compared the string to
+`"c3"`, so a tree that scoped `c5` to anything else would have been scoped to
+c3's run regardless of what it said.
+
+**Rejected — leaving dispatch on ids and adding `kind` as a declared field.**
+That is the version of this task that passes its exit and changes nothing: a
+field every tree carries, that no code reads, whose first real use is T-92
+discovering it was never wired. A declaration nothing dispatches on is a
+comment.
+
+**Rejected — the vocabulary as bare strings validated only at the store.**
+One vocabulary instead of an enum plus a registry, but the tree contract
+would then admit any string, and `CriteriaTree` is the object that crosses the
+plane boundary. What a tree may say belongs in the contract.
+
+**Rejected — renaming the `STEPS` entries.** `criterion_a`, `criterion_b` and
+`criteria_c` are bariatric-shaped names too. They are the graph's step names,
+recorded in traces and asserted against `STEPS` by `tests/test_workflow.py`;
+renaming them churns recordings and buys nothing the kind dispatch has not
+already bought, because no step's identity or order depends on a tree. If
+v1.6 makes a step's membership tree-dependent, that is when the names have to
+say something true.
+
+**Known limit, stated rather than fixed.** `step_qualifying_run` needs a
+recency window to select a run, so a tree declaring note-event criteria must
+declare a `note_event_run_recency` criterion; a tree declaring **no**
+note-event criteria at all skips the step with an empty run, which is the
+shape v1.2's two trees take. A tree with run criteria and no recency raises
+where the lookup happens, naming both. Encoding "this kind requires a run" in
+the contract would put the engine's dependency graph in the plane object, and
+no tree needs it before v1.6.
+
+**Cost.** Both trees gain a field per deterministic criterion; five inline
+`Criterion(...)` constructions in `tests/test_schemas.py` gain a `kind`. The
+sixteen predicate call sites move behind seven binders. No recording, no
+label and no verdict changes — which is the claim the gates check, since
+every eval row, span and verifier claim is replayed against the same
+recordings.
+
+**A fourth trap in the mutation method, found by this close.**
+`tests/test_notes.py::test_regenerating_the_corpus_is_byte_identical` runs
+`synthesize_notes.py --generate`, which `rmtree`s `data/patients/notes/` and
+rebuilds it. Under a mutation that breaks the engine the script deletes the
+corpus and then fails part-way through rebuilding it, so the suite's next run
+reports a hundred and sixty errors about a missing manifest and none of them
+is the mutation. Deselect that test in a mutation run, and restore with
+`git checkout -- data/patients/notes` — never by regenerating, which is not
+byte-stable (D73) — then confirm with `select_patients.py --verify`. Recorded
+in `CLAUDE.md`'s method note beside D68's and D69's.
+
+**Reverses if:** a tree needs two criteria of the same kind that must be
+distinguished by the engine rather than by their constants — then the kind is
+carrying identity it should not, and the answer is a constant, not a second
+kind. `only_criterion_of_kind` raising on a duplicate is the signal; it is
+raised by the value-set fetch and the sc2 lookback, and T-92 is the first
+task that could hit it.

@@ -39,7 +39,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from datetime import date
 
-from pa_agent.contracts import Determination, DeterminationOutcome
+from pa_agent.contracts import (
+    Determination,
+    DeterminationOutcome,
+    PredicateKind,
+)
 from pa_agent.criteria import evaluate_sc2
 from pa_agent.resolver import (
     NoJurisdictionTree,
@@ -174,7 +178,11 @@ def determine(
     # the LSG delegation, so contractor requests skip it (D41).
     if patient_id is not None and patient_store is not None and as_of is not None:
         tree = store.get_tree(resolution.policy_ref.policy_version_id)
-        lookback = tree.criterion("a").require("lookback_months")
+        # The window comes from the tree's BMI criterion, found by the kind it
+        # declares: an id means "BMI threshold" only inside one policy (D110).
+        lookback = tree.only_criterion_of_kind(
+            PredicateKind.BMI_OBSERVATION_THRESHOLD
+        ).require("lookback_months")
         observations = patient_store.get_observations(patient_id)
         conditions = patient_store.get_conditions(patient_id)
         for exclusion in tree.categorical_exclusions:

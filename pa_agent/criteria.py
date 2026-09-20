@@ -25,7 +25,8 @@ No model is imported here and never will be (Art. II, REQ-11, REQ-12).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, replace
 from datetime import date
 
 from pa_agent.contracts import (
@@ -34,9 +35,11 @@ from pa_agent.contracts import (
     Criterion,
     CriterionResult,
     CriterionVerdict,
+    EvidenceSpan,
     ExclusionMatch,
     GapReason,
     Observation,
+    PredicateKind,
     ProgramAssertion,
     Shortfall,
     WmEvent,
@@ -581,6 +584,122 @@ def evaluate_c5(
 
 
 # --------------------------------------------------------------------------
+# T-91 (REQ-57, D110): the engine's vocabulary
+#
+# One entry per predicate above. The dict is what "the engine can evaluate
+# this kind" *means* — `workflow` resolves every criterion through it, so a
+# kind with no entry cannot be dispatched, and a predicate with no entry
+# cannot be reached. `tests/test_predicate_kinds.py` requires the coverage to
+# be exact in both directions.
+# --------------------------------------------------------------------------
+
+
+class UnknownPredicateKind(LookupError):
+    """A criterion declaring a kind this engine does not implement.
+
+    Raised rather than abstained on. An abstention would say the *chart* did
+    not support the criterion, when the fact is about the system — D90's
+    distinction, and the reason the tree has a separate way to declare a limit
+    it has reviewed (`evaluation: "unclaimed"`, REQ-58). Unbuilt is not
+    unclaimed.
+    """
+
+
+@dataclass(frozen=True)
+class PredicateInputs:
+    """Everything a predicate could need, bound to the fields it actually gets.
+
+    Predicates keep their narrow signatures on purpose: `evaluate_c4(criterion,
+    run, run_established)` **cannot** read the structured BMI, and E10b depends
+    on criterion (a)'s reading and the note's being two independent readings
+    (D62). Handing every predicate one bundle would turn that from a signature
+    into a convention. So this object is the *dispatcher's* argument, and each
+    binder in `PREDICATES` names the slice its predicate receives.
+    """
+
+    as_of: date
+    observations: tuple[Observation, ...] = ()
+    conditions: tuple[Condition, ...] = ()
+    value_set: frozenset[str] = frozenset()
+    events: tuple[WmEvent, ...] = ()
+    assertions: tuple[ProgramAssertion, ...] = ()
+    run: QualifyingRun | None = None
+    #: Whether the criterion under evaluation has a run to be scoped to
+    #: (REQ-15). Computed per criterion from its `scoped_to`, by the graph.
+    run_established: bool = False
+
+
+Predicate = Callable[[Criterion, PredicateInputs], CriterionResult]
+
+
+def _require_run(inputs: PredicateInputs) -> QualifyingRun:
+    """The run, or a raise naming the step that was skipped.
+
+    `step_qualifying_run` precedes every run-scoped criterion in `STEPS`. A
+    `None` here means the graph changed shape, and a predicate that invented an
+    empty run would answer `NOT_MET` about a period nothing computed.
+    """
+    if inputs.run is None:
+        raise ValueError(
+            "this predicate is scoped to the qualifying run, which "
+            "step_qualifying_run computes before criteria_c (D48, D84)"
+        )
+    return inputs.run
+
+
+#: kind -> the call. Read this as the specification of what each kind consumes.
+PREDICATES: dict[PredicateKind, Predicate] = {
+    PredicateKind.BMI_OBSERVATION_THRESHOLD: lambda c, i: evaluate_criterion_a(
+        c, list(i.observations), i.as_of
+    ),
+    PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP: lambda c, i: evaluate_criterion_b(
+        c, list(i.conditions), i.value_set
+    ),
+    PredicateKind.NOTE_EVENT_COUNT: lambda c, i: evaluate_c1(
+        c, list(i.events), list(i.assertions)
+    ),
+    PredicateKind.NOTE_EVENT_RUN_LENGTH: lambda c, i: evaluate_c3(
+        c, list(i.events), list(i.assertions), _require_run(i)
+    ),
+    PredicateKind.NOTE_EVENT_RUN_RECENCY: lambda c, i: evaluate_c2(
+        c, _require_run(i), i.as_of, i.run_established
+    ),
+    PredicateKind.NOTE_EVENT_RUN_BMI_RATE: lambda c, i: evaluate_c4(
+        c, _require_run(i), i.run_established
+    ),
+    PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: lambda c, i: evaluate_c5(
+        c, _require_run(i), i.run_established
+    ),
+}
+
+
+def evaluate(criterion: Criterion, inputs: PredicateInputs) -> CriterionResult:
+    """Run the predicate the criterion declares.
+
+    The single dispatch point, and the backstop for the two checks in front of
+    it: the contract rejects an unknown kind at load, and the suite rejects a
+    kind `PREDICATES` does not cover. Deleting an entry from `PREDICATES` is
+    the mutation that proves this raise fires rather than a criterion silently
+    evaluating to nothing.
+    """
+    if criterion.kind is None:
+        raise UnknownPredicateKind(
+            f"criterion {criterion.id} declares no kind; only a criterion the "
+            "tree declares deterministic is dispatched (REQ-57, D110)"
+        )
+    try:
+        predicate = PREDICATES[criterion.kind]
+    except KeyError:
+        raise UnknownPredicateKind(
+            f"criterion {criterion.id} declares kind {criterion.kind.value!r}, "
+            "which this engine does not implement. Unbuilt is not unclaimed: "
+            "either write the predicate or declare the criterion unclaimed with "
+            "a note (REQ-57, REQ-58, D110)"
+        ) from None
+    return predicate(criterion, inputs)
+
+
+# --------------------------------------------------------------------------
 # T-86 (D99): a NOT_MET must re-derive from what it cites
 # --------------------------------------------------------------------------
 
@@ -606,6 +725,34 @@ def restricted_run(run: QualifyingRun, cited: list[EvidenceSpan]) -> QualifyingR
     events = tuple(e for e in run.events if e.span in cited)
     months = tuple(sorted({_month(e.event_date) for e in events}))
     return QualifyingRun(months=months, events=events)
+
+
+def _cited_observations(
+    inputs: PredicateInputs, cited: list[EvidenceSpan]
+) -> PredicateInputs:
+    return replace(
+        inputs, observations=tuple(o for o in inputs.observations if o.span in cited)
+    )
+
+
+def _cited_run(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateInputs:
+    narrowed = restricted_run(_require_run(inputs), cited)
+    return replace(inputs, run=narrowed, events=tuple(narrowed.events))
+
+
+#: kind -> how to reduce the inputs to what a verdict cited (T-86, D99; D110).
+#: `NOTE_EVENT_COUNT` and `CONDITION_VALUE_SET_MEMBERSHIP` are absent because
+#: neither can answer `NOT_MET` — both abstain instead (D13, D40) — so a
+#: `NOT_MET` from either is already a defect, and it is reported as one.
+NARROWERS: dict[
+    PredicateKind, Callable[[PredicateInputs, list[EvidenceSpan]], PredicateInputs]
+] = {
+    PredicateKind.BMI_OBSERVATION_THRESHOLD: _cited_observations,
+    PredicateKind.NOTE_EVENT_RUN_LENGTH: _cited_run,
+    PredicateKind.NOTE_EVENT_RUN_RECENCY: _cited_run,
+    PredicateKind.NOTE_EVENT_RUN_BMI_RATE: _cited_run,
+    PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: _cited_run,
+}
 
 
 def _span_keys(spans: list[EvidenceSpan]) -> list[tuple[str, int, int]]:
@@ -647,24 +794,26 @@ def check_citation_sufficiency(
         )
 
     cited = list(result.spans)
-    if criterion.id == "a":
-        again = evaluate_criterion_a(
-            criterion, [o for o in observations if o.span in cited], as_of
-        )
-    elif criterion.id == "c2":
-        again = evaluate_c2(criterion, restricted_run(run, cited), as_of, c3_met)
-    elif criterion.id == "c3":
-        narrowed = restricted_run(run, cited)
-        again = evaluate_c3(criterion, list(narrowed.events), None, narrowed)
-    elif criterion.id == "c4":
-        again = evaluate_c4(criterion, restricted_run(run, cited), c3_met)
-    elif criterion.id == "c5":
-        again = evaluate_c5(criterion, restricted_run(run, cited), c3_met)
-    else:
+    inputs = PredicateInputs(
+        as_of=as_of,
+        observations=tuple(observations),
+        events=tuple(run.events),
+        run=run,
+        run_established=c3_met,
+    )
+    # T-91 (D110): narrowing is declared per kind, like the predicate itself.
+    # A kind that can answer `NOT_MET` and has no narrower would otherwise
+    # re-derive over the full chart and agree with itself — a check that passes
+    # because it checked nothing, which is the shape D31 refuses.
+    narrow = NARROWERS.get(criterion.kind) if criterion.kind is not None else None
+    if narrow is None:
         raise CitationInsufficient(
-            f"{criterion.id}: NOT_MET on a criterion with no re-derivation "
-            "defined; D99 names the exception or the check does not pass it"
+            f"{criterion.id}: NOT_MET on a criterion of kind "
+            f"{criterion.kind.value if criterion.kind else None!r} with no "
+            "re-derivation defined; D99 names the exception or the check does "
+            "not pass it"
         )
+    again = evaluate(criterion, narrow(inputs, cited))
 
     before = (result.verdict, _span_keys(result.spans), result.shortfall)
     after = (again.verdict, _span_keys(again.spans), again.shortfall)
