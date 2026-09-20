@@ -108,6 +108,9 @@ class ReasonClass(str, Enum):
     WRONG_POLICY_VERSION = "WRONG_POLICY_VERSION"
     WRONG_CRITERION = "WRONG_CRITERION"
     WRONG_GAP_REASON = "WRONG_GAP_REASON"
+    # T-81 (D104): a criterion's spans must name as many distinct documents
+    # as the label says — E13's claim is that the run was cited from both.
+    WRONG_DOCUMENT_COUNT = "WRONG_DOCUMENT_COUNT"
     WRONG_DISCREPANCIES = "WRONG_DISCREPANCIES"
     INVALID_SPAN = "INVALID_SPAN"
     MODEL_CALLS_EXCEEDED = "MODEL_CALLS_EXCEEDED"
@@ -300,6 +303,20 @@ def score(
                     ReasonClass.WRONG_GAP_REASON,
                     f"criterion {criterion_id}: expected gap_reason "
                     f"{expected['gap_reason']}, got {observed_reason}",
+                    **measured,
+                )
+        if "distinct_documents" in expected:
+            # T-81 (D104): the label says how many documents the criterion's
+            # evidence spans, counted exactly — a run cited from one file
+            # when the chart holds it in two is E13's failure.
+            cited = len({span.document_id for span in observed.spans})
+            if cited != expected["distinct_documents"]:
+                return CaseResult(
+                    case_id,
+                    CaseStatus.FAIL,
+                    ReasonClass.WRONG_DOCUMENT_COUNT,
+                    f"criterion {criterion_id}: spans cite {cited} distinct "
+                    f"document(s), expected {expected['distinct_documents']}",
                     **measured,
                 )
 
@@ -684,13 +701,21 @@ def self_check() -> list[tuple[str, bool, str]]:
         text=doc_text,
         sha256=hashlib.sha256(doc_text.encode("utf-8")).hexdigest(),
     )
+    doc_2 = Document(
+        document_id="self-doc-2",
+        text=doc_text,
+        sha256=doc.sha256,
+    )
 
     def resolve_synthetic(document_id: str) -> Document:
         if document_id == doc.document_id:
             return doc
+        if document_id == doc_2.document_id:
+            return doc_2
         raise KeyError(document_id)
 
     good_span = EvidenceSpan(document_id="self-doc", char_start=0, char_end=8)
+    second_doc_span = EvidenceSpan(document_id="self-doc-2", char_start=0, char_end=8)
     bad_span = EvidenceSpan(document_id="self-doc", char_start=0, char_end=10_000)
 
     def _cited(criterion_id: str, verdict: CriterionVerdict, span: EvidenceSpan):
@@ -757,6 +782,41 @@ def self_check() -> list[tuple[str, bool, str]]:
             ),
         ),
         ("FAIL", "WRONG_GAP_REASON"),
+    )
+    # T-81 (D104): the document-count expectation, both directions.
+    record(
+        "a criterion cited from two documents matches distinct_documents 2",
+        score(
+            _criteria_case({"c3": {"verdict": "MET", "distinct_documents": 2}}, outcome="MET"),
+            _synthetic_determination(
+                DeterminationOutcome.MET,
+                criterion_results=[
+                    CriterionResult(
+                        criterion_id="c3", verdict=CriterionVerdict.MET,
+                        spans=[good_span, second_doc_span],
+                    )
+                ],
+            ),
+            resolve_synthetic,
+        ),
+        ("PASS", None),
+    )
+    record(
+        "a criterion cited from one document against distinct_documents 2 is FAIL/WRONG_DOCUMENT_COUNT",
+        score(
+            _criteria_case({"c3": {"verdict": "MET", "distinct_documents": 2}}, outcome="MET"),
+            _synthetic_determination(
+                DeterminationOutcome.MET,
+                criterion_results=[
+                    CriterionResult(
+                        criterion_id="c3", verdict=CriterionVerdict.MET,
+                        spans=[good_span, EvidenceSpan(document_id="self-doc", char_start=9, char_end=19)],
+                    )
+                ],
+            ),
+            resolve_synthetic,
+        ),
+        ("FAIL", "WRONG_DOCUMENT_COUNT"),
     )
     record(
         "a missing discrepancy entry is FAIL/WRONG_DISCREPANCIES",

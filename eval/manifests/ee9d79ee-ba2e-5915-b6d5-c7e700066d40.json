@@ -6,6 +6,10 @@
   "cases": [
     "J1"
   ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
   "wm_programs": [
     {
       "program_id": "georgette-2026-supervised",
@@ -17,7 +21,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.9
+          "note_bmi": 35.9,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-02-10",
@@ -25,7 +30,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.8
+          "note_bmi": 35.8,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-03-12",
@@ -33,7 +39,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.7
+          "note_bmi": 35.7,
+          "document": "chart_note_2.txt"
         },
         {
           "date": "2026-05-14",
@@ -41,7 +48,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.6
+          "note_bmi": 35.6,
+          "document": "chart_note_2.txt"
         },
         {
           "date": "2026-06-11",
@@ -49,7 +57,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.6
+          "note_bmi": 35.6,
+          "document": "chart_note_2.txt"
         }
       ]
     }
@@ -59,12 +68,14 @@
     {
       "type": "missed_visit",
       "date": "2026-04-09",
-      "description": "no-show for scheduled weight-management visit"
+      "description": "no-show for scheduled weight-management visit",
+      "document": "chart_note_2.txt"
     },
     {
       "type": "unsuccessful_contact",
       "date": "2026-04-23",
-      "description": "two phone attempts to reschedule, no answer"
+      "description": "two phone attempts to reschedule, no answer",
+      "document": "chart_note_2.txt"
     }
   ],
   "rationale": "J1 (T-88, D102): E4's chart re-addressed into Palmetto GBA's territory. The facts are the source manifest's, copied and pinned equal by test, and `cloned_from` seeds the note synthesizer so the note is byte-identical to the source's. Under Noridian's tree the January-March run is a c3 shortfall of three against four; under Palmetto's tree, compiled from L34576, no run-length criterion exists, so c2 and c5 evaluate on the same run and are MET, and the determination abstains only on the criteria the tree declares unclaimed (c4, d) and on b, which the chart lacks under either tree. The same bytes, two jurisdictions, two shapes of answer."

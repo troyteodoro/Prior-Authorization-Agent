@@ -39,8 +39,9 @@ SPIKE_NOTE_IDS = {
     "n01_clean_run", "n02_gap_month_missed_visits", "n03_assertion_only",
     "n04_unsupervised_prior_attempts", "n05_two_programs_sparse_bmi",
 }
-# T-15's exit asks for three synthesized notes; the corpus has six and all are
-# scored. E8 is required by name — it is the refusal test.
+# T-15's exit asks for three synthesized notes; the corpus has twelve documents
+# over six charts since T-81 and all are scored. E8 is required by name — it
+# is the refusal test.
 MIN_SYNTHESIZED = 3
 
 
@@ -61,8 +62,7 @@ def texts(results) -> dict[str, str]:
         if record["corpus"] == "spike_001":
             text = (SPIKE_NOTES / f"{record['document_id']}.txt").read_text(encoding="utf-8")
         else:
-            patient_id = record["document_id"].split("/")[0]
-            text = store.get_notes(patient_id)[0].text
+            text = store.get_document(record["document_id"]).text
         out[record["document_id"]] = text
     return out
 
@@ -116,7 +116,7 @@ def test_the_recording_was_measured_on_the_code_s_configuration(results):
         f"measured on {results.get('prompt_version')!r}; re-run "
         "scripts/run_extraction.py (it spends model calls)"
     )
-    assert results["task"] == "T-89" and results["decision"] == "D103"
+    assert results["task"] == "T-81" and results["decision"] == "D104"
     assert results["reask_rounds"] == REASK_ROUNDS
     for record in results["notes"]:
         assert record.get("trace"), f"{record['note_id']}: no trace"
@@ -253,11 +253,15 @@ def test_every_per_field_span_sits_nearest_its_own_event(results):
 def test_e8s_note_yields_zero_events_and_an_assertion(results):
     """The exit condition names this case. D12's detection is *zero events
     plus at least one assertion*, which is why both halves are asserted."""
-    records = [r for r in results["notes"] if "E8" in r.get("cases", [])]
-    assert records, "E8 is not in the recording"
+    records = _records(results, "E8")
     for record in records:
         assert record["events"] == [], f"{record['note_id']} extracted an encounter"
-        assert len(record["assertions"]) >= 1, "no program_assertions span"
+    # The claim lives in the consultation document; the chart's other document
+    # is prior history only (T-81, D104), so the assertion is asserted where
+    # the manifest put it and nowhere else is required to carry one.
+    carrying = [r for r in records if r["labels"]["assertion_required"]]
+    assert len(carrying) == 1, "exactly one of E8's documents carries the claim"
+    assert len(carrying[0]["assertions"]) >= 1, "no program_assertions span"
 
 
 def test_the_spikes_assertion_note_behaves_the_same_way(results):
@@ -434,16 +438,27 @@ def test_a_single_occurrence_is_unaffected_by_the_window():
 # --------------------------------------------------------------------------
 
 
-def _record(results: dict, case: str) -> dict:
+def _records(results: dict, case: str) -> list[dict]:
+    """The rows carrying a case: one per document of the chart since T-81
+    (D104), so a case is at least two rows."""
     matching = [n for n in results["notes"] if case in (n.get("cases") or [])]
-    assert len(matching) == 1, f"expected exactly one note carrying {case}"
-    return matching[0]
+    assert len(matching) >= 2, f"expected a row per document carrying {case}"
+    return matching
+
+
+def _consultation_record(results: dict) -> dict:
+    """E10b's clinic line lives in exactly one of its chart's documents."""
+    stating = [r for r in _records(results, "E10b") if r.get("current_bmi") is not None]
+    assert len(stating) == 1, (
+        f"exactly one of E10b's documents states a current BMI; {len(stating)} do"
+    )
+    return stating[0]
 
 
 def test_e10b_yields_a_current_bmi_from_its_own_clinic_line(results, texts):
     """The case T-60 exists for. Its patient has no encounters by design (it is
     also E8), so this value is reachable only as a note-level fact (D50)."""
-    record = _record(results, "E10b")
+    record = _consultation_record(results)
     assert record["current_bmi"] == 36.2, (
         f"E10b's note states BMI 36.2 outside any encounter; recorded "
         f"{record['current_bmi']!r}. Without it REQ-34 has nothing to "
@@ -458,7 +473,8 @@ def test_e10b_yields_a_current_bmi_from_its_own_clinic_line(results, texts):
 def test_e10b_still_yields_zero_events(results):
     """E8 and E10b share a note. Reaching E10b must not manufacture an
     encounter, which would silently retire E8's refusal test."""
-    assert _record(results, "E10b")["events"] == []
+    for record in _records(results, "E10b"):
+        assert record["events"] == [], record["note_id"]
 
 
 def test_a_note_without_a_standalone_bmi_records_none(results):
@@ -467,7 +483,7 @@ def test_a_note_without_a_standalone_bmi_records_none(results):
     ones with per-encounter BMIs are exactly where borrowing would show."""
     borrowed = [
         n["note_id"] for n in results["notes"]
-        if n["note_id"] != _record(results, "E10b")["note_id"]
+        if n["note_id"] != _consultation_record(results)["note_id"]
         and n.get("current_bmi") is not None
     ]
     assert not borrowed, (

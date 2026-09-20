@@ -772,8 +772,22 @@ def test_the_same_gathered_evidence_yields_the_same_verdicts(
     """REQ-51, and the property the whole differential rests on: when the planner
     gathers what the fixed one gathers, the criteria cannot tell them apart —
     because it is the same criteria code reading the same bundle."""
-    patient_id, document_id = e1
+    patient_id, _document_id = e1
     ref = policy_store.resolve(CONTRACTOR_CODE, "WA")
+    # "What the fixed one gathers" is every note the chart holds — two since
+    # T-81 (D104) — so the well-behaved plan reads and names both.
+    document_ids = [n.document_id for n in patient_store.get_notes(patient_id)]
+    assert len(document_ids) >= 2
+    well_behaved = [
+        _call("get_patient_notes", patient_id=patient_id),
+        *[
+            _call("get_patient_document", patient_id=patient_id, document_id=d)
+            for d in document_ids
+        ],
+        _call("get_patient_observations", patient_id=patient_id),
+        _call("get_patient_conditions", patient_id=patient_id),
+        _plan(document_ids),
+    ]
 
     fixed = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
@@ -783,7 +797,7 @@ def test_the_same_gathered_evidence_yields_the_same_verdicts(
     agentic = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
         extraction_runner=runner, policy_ref=ref, patient_id=patient_id,
-        as_of=AS_OF, planner=_planner(_full_run(patient_id, document_id)),
+        as_of=AS_OF, planner=_planner(well_behaved),
         verifier=AcceptAllVerifier(),
     ).determination
 
@@ -1086,6 +1100,44 @@ def test_the_two_sides_must_agree_on_what_the_port_served():
         "tool payload has become the evidence path" in p
         for p in module._gathered_problems(truncated)
     )
+
+
+def test_an_oracle_that_gathered_fewer_notes_than_the_store_holds_is_an_instrument_fault():
+    """T-81 (D104). The fixed planner reads every note (D63); on a two-note
+    corpus an oracle row recording one note gathered would grade the agentic
+    side against a shorter chart than the chart, and `verify` must say so."""
+    module = _eval_module()
+    row = {
+        "patient_id": "p1",
+        "oracle": {"gathered": {"document_ids": ["d1", "p1/n1"], "notes": 1,
+                                "observations": 3, "conditions": 2, "value_set": 9}},
+        "agentic": {
+            "document_ids": ["d1"],
+            "gathered": {"document_ids": ["d1", "p1/n1", "p1/n2"], "notes": 2,
+                         "observations": 3, "conditions": 2, "value_set": 9},
+        },
+    }
+    assert module._gathered_problems(row, {"p1": 1}) == []
+    short = [p for p in module._gathered_problems(row, {"p1": 2}) if "instrumentation fault" in p]
+    assert short, "an oracle short of a note passed the gate"
+    assert module._gathered_problems(row) == [], "no store count, no claim"
+
+
+def test_the_measurement_runs_each_patient_once_whatever_the_note_count():
+    """T-81 (D104). The notes manifest lists one record per document and a
+    chart is two of them; `_patients()` deduplicates, or every chart would be
+    measured — and paid for — twice."""
+    module = _eval_module()
+    manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
+    distinct = {r["patient_id"] for r in manifest["notes"]}
+    assert len(manifest["notes"]) > len(distinct), "the corpus is two notes per chart"
+    patients = module._patients()
+    ids = [p["patient_id"] for p in patients]
+    assert len(ids) == len(set(ids)) == len(distinct)
+    for entry in patients:
+        assert entry["cases"] == next(
+            r["cases"] for r in manifest["notes"] if r["patient_id"] == entry["patient_id"]
+        )
 
 
 def test_rescore_leaves_the_measured_half_alone():

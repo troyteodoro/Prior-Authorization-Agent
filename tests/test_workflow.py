@@ -404,7 +404,10 @@ def test_a_retryable_fault_is_retried_within_the_budget(
     run = _run(
         policy_store, patient_store, flaky, case_patients["E1"], ref, max_attempts=3
     )
-    assert flaky.attempts == 3
+    notes = len(patient_store.get_notes(case_patients["E1"]))
+    assert flaky.attempts == 3 + (notes - 1), (
+        "two failures and a success on the first note, one call per note after"
+    )
     assert run.traces[0].attempts == 3, (
         "the attempt count is recorded; Article X says measured, not estimated"
     )
@@ -513,7 +516,9 @@ def test_an_honestly_empty_extraction_is_an_answer_and_not_a_fault(
     """
     empty = _EmptyPayloadRunner()
     run = _run(policy_store, patient_store, empty, case_patients["E1"], ref)
-    assert empty.calls == 1
+    assert empty.calls == len(patient_store.get_notes(case_patients["E1"])), (
+        "one extraction per note, however many the chart holds (T-81)"
+    )
     by_id = {r.criterion_id: r for r in run.determination.criterion_results}
     assert by_id["c1"].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
     assert by_id["c1"].gap_reason.value == "NO_EVIDENCE_RETRIEVED"
@@ -645,6 +650,7 @@ _MODEL_DERIVED = frozenset(
         "assertions",
         "current_bmi",
         "current_bmi_span",
+        "note_bmis",
         "wm_events",
         "program_assertions",
         "raw",
@@ -657,12 +663,13 @@ _MODEL_DERIVED = frozenset(
 #: The one place in the graph a branch legitimately reads model output, named so
 #: that a second one is a visible failure rather than a silent addition.
 #:
-#: `step_extract` merges the note-level BMI with a first-non-null rule, and
-#: selecting a value out of model output cannot avoid comparing it to `None`. That
-#: is data handling, not routing: it changes no step, no iteration count, and no
-#: model call. The distinction is the whole of Article I — the article prohibits
-#: *routing, branching, looping and terminating* on model output, and a
-#: null-coalesce does none of those.
+#: `step_extract` carries a note's current BMI only when the anchorer proved
+#: it (D15), and filtering a value out of model output cannot avoid comparing
+#: it to `None`. That is data handling, not routing: it changes no step, no
+#: iteration count, and no model call, and since T-81 it selects nothing
+#: between notes (REQ-34a, D104). The distinction is the whole of Article I —
+#: the article prohibits *routing, branching, looping and terminating* on model
+#: output, and an anchoredness filter does none of those.
 #:
 #: Pinned as a count rather than allowed by pattern, the way D51 pinned the
 #: provisional-constant count at zero: the number is the check.
@@ -925,13 +932,56 @@ def test_every_model_turn_reaches_the_determination_not_just_the_first(
     two_turn = _TwoTurnRunner(runner)
     run = _run(policy_store, patient_store, two_turn, case_patients["E1"], ref)
 
-    assert run.determination.model_calls == 2, (
+    notes = len(patient_store.get_notes(case_patients["E1"]))
+    assert run.determination.model_calls == 2 * notes, (
         "only one turn reached the determination; a tool-calling run costs two "
         "and the second was dropped at the workflow boundary"
     )
-    assert run.determination.total_input_tokens == 200
-    assert run.determination.total_output_tokens == 20
-    assert run.traces[0].metrics == run.determination.metrics
+    assert run.determination.total_input_tokens == 200 * notes
+    assert run.determination.total_output_tokens == 20 * notes
+    assert [m for t in run.traces for m in t.metrics] == run.determination.metrics, (
+        "every turn of every note, in note order"
+    )
+
+
+class _StatedBmiRunner:
+    """Each document states its own current BMI, anchored to a phrase every
+    document carries. What the two documents *say* is the test's input."""
+
+    name = "stated-bmi"
+
+    def __init__(self, by_document: dict[str, float]) -> None:
+        self._by_document = by_document
+
+    def run(self, document_id: str, text: str):
+        from pa_agent.extraction import build_result
+
+        return build_result(document_id, text, {
+            "wm_events": [], "program_assertions": [],
+            "current_bmi": self._by_document[document_id],
+            "current_bmi_quote": "ASSESSMENT",
+        })
+
+
+def test_a_second_note_that_straddles_the_threshold_is_a_conflict_not_a_loser(
+    policy_store, patient_store, ref, case_patients
+) -> None:
+    """REQ-34a (T-81, D104). E1's structured BMI is 37.65. Note one says 38.0
+    — same side, inside tolerance — and note two says 34.0, across 35.0.
+    "First note wins" would read the agreeing note and pass (a) as `MET`;
+    every note reconciled reads the straddle and abstains with
+    `SOURCE_CONFLICT`. The order the store serves them in must not matter."""
+    patient_id = case_patients["E1"]
+    notes = patient_store.get_notes(patient_id)
+    assert len(notes) == 2
+    first, second = (n.document_id for n in notes)
+
+    for stated in ({first: 38.0, second: 34.0}, {first: 34.0, second: 38.0}):
+        run = _run(policy_store, patient_store, _StatedBmiRunner(stated), patient_id, ref)
+        by_id = {r.criterion_id: r for r in run.determination.criterion_results}
+        assert by_id["a"].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE, stated
+        assert by_id["a"].gap_reason.value == "SOURCE_CONFLICT"
+        assert "34.0" in (by_id["a"].detail or "")
 
 
 class _NoTraceRunner:
@@ -961,8 +1011,9 @@ def test_a_runner_without_a_trace_still_reports_its_one_call(
     """The fallback, so the fix above cannot silently zero a runner that carries
     no trace: its single measurement must still reach the determination."""
     run = _run(policy_store, patient_store, _NoTraceRunner(runner), case_patients["E1"], ref)
-    assert run.determination.model_calls == 1
-    assert run.determination.total_input_tokens == 50
+    notes = len(patient_store.get_notes(case_patients["E1"]))
+    assert run.determination.model_calls == notes
+    assert run.determination.total_input_tokens == 50 * notes
 
 
 def test_a_replayed_re_ask_turn_reaches_the_determination(
@@ -973,26 +1024,28 @@ def test_a_replayed_re_ask_turn_reaches_the_determination(
     extraction calls, which is where A6's figures come from."""
     from pa_agent.contracts import CallMetrics
 
-    note = patient_store.get_notes(case_patients["E1"])[0]
-    record = next(r for r in recording["notes"] if r["document_id"] == note.document_id)
+    notes = patient_store.get_notes(case_patients["E1"])
     turn = CallMetrics(
         model="replayed-model", purpose="extraction", input_tokens=100,
         output_tokens=10, wall_time_ms=5.0,
     ).model_dump(mode="json")
-    two_turn = {
-        **record,
-        "trace": {
-            "runner_name": "direct", "model": "replayed-model",
-            "prompt_version": "test", "document_id": note.document_id,
-            "steps": ["extract", "reask"], "tool_calls": [], "attempts": 1,
-            "termination_reason": "ok; reask ok",
-            "metrics": [turn, {**turn, "purpose": "extraction_reask"}],
-        },
-    }
-    replay = RecordedExtractionRunner.from_records([two_turn])
+    two_turn_records = []
+    for note in notes:
+        record = next(r for r in recording["notes"] if r["document_id"] == note.document_id)
+        two_turn_records.append({
+            **record,
+            "trace": {
+                "runner_name": "direct", "model": "replayed-model",
+                "prompt_version": "test", "document_id": note.document_id,
+                "steps": ["extract", "reask"], "tool_calls": [], "attempts": 1,
+                "termination_reason": "ok; reask ok",
+                "metrics": [turn, {**turn, "purpose": "extraction_reask"}],
+            },
+        })
+    replay = RecordedExtractionRunner.from_records(two_turn_records)
     run = _run(policy_store, patient_store, replay, case_patients["E1"], ref)
-    assert run.determination.model_calls == 2
-    assert run.determination.total_input_tokens == 200
+    assert run.determination.model_calls == 2 * len(notes)
+    assert run.determination.total_input_tokens == 200 * len(notes)
 
 
 # --------------------------------------------------------------------------

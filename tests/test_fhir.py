@@ -201,7 +201,7 @@ def test_get_document_and_get_notes_serve_the_same_bytes(store, manifest_records
         for note in store.get_notes(record["patient_id"]):
             assert store.get_document(note.document_id) == note
             seen += 1
-    assert seen == 7, f"expected the seven-note corpus, walked {seen}"
+    assert seen == 14, f"expected the fourteen-document corpus (T-81), walked {seen}"
 
 
 def test_the_namespace_is_the_union_of_both_records(

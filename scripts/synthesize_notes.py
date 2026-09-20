@@ -26,9 +26,20 @@ Two properties the gate depends on, both deliberate:
   production.
 
 A manifest that declares `cloned_from` (T-88, D102) is rendered from its own
-facts but seeded from the *source* patient's id, so the clone's note is
+facts but seeded from the *source* patient's id, so the clone's notes are
 byte-identical to its source's — which is what lets T-15's recording answer
-it for zero calls. `--verify` asserts that identity by hash.
+them for zero calls. `--verify` asserts that identity by hash, per document.
+
+Since T-81 (D104) a manifest declares `documents`, a list of basenames, and
+every encounter, assertion and trap names the one document it is rendered
+into. One scalar per fact means a fact cannot appear in two documents. The
+practice, MRN and supervisor are drawn once per patient; each document's
+prose comes from its own RNG stream, so a patient's two documents read
+differently and editing one document's facts cannot reshuffle the other's.
+A later document whose program also has visits in an earlier one is headed
+as a continuation. `--verify` refuses a note-bearing manifest with fewer than
+two records and any two non-clone documents with the same bytes, because a
+digest-keyed replay maps one digest to one id.
 """
 
 from __future__ import annotations
@@ -196,26 +207,75 @@ def _trap_line(rng, trap: dict) -> str:
     return wrap(f"{us(trap['date'])} - {description.capitalize()}.")
 
 
-def render(manifest: dict, demo: dict, height_m: float, rng: random.Random) -> str:
+def _identity(rng: random.Random) -> dict:
+    """The per-patient randomness: one practice, one MRN, one supervisor,
+    shared by every document of the chart (D104)."""
+    return {
+        "practice": rng.choice(PRACTICES),
+        "mrn": rng.randrange(200000, 899999),
+        "supervisor": rng.choice(SUPERVISORS),
+    }
+
+
+def _in(facts: list[dict], basename: str) -> list[dict]:
+    return [f for f in facts if f["document"] == basename]
+
+
+def render_document(
+    manifest: dict,
+    basename: str,
+    demo: dict,
+    height_m: float,
+    identity: dict,
+    rng: random.Random,
+) -> str:
+    """One document of a chart: the facts the manifest assigns to `basename`,
+    and nothing else. Every section branches on this document's facts."""
+    documents = manifest["documents"]
+    ordinal = documents.index(basename) + 1
+    earlier = documents[:ordinal - 1]
+
     lines: list[str] = []
-    lines.append(rng.choice(PRACTICES))
+    lines.append(identity["practice"])
     lines.append(
         f"Patient: {demo['family']}, {demo['given']}"
         f"{' ' * max(1, 38 - len(demo['family']) - len(demo['given']))}"
-        f"MRN: {rng.randrange(200000, 899999)}"
+        f"MRN: {identity['mrn']}"
     )
     lines.append(f"DOB: {demo['birth_date']}                       Sex: {demo['sex']}")
+    lines.append(f"Document {ordinal} of {len(documents)}")
     lines.append("")
 
-    programs = manifest["wm_programs"]
+    programs = [
+        {**p, "encounters": _in(p["encounters"], basename)}
+        for p in manifest["wm_programs"]
+    ]
+    programs = [p for p in programs if p["encounters"]]
+    continued = any(
+        e["document"] in earlier
+        for p in manifest["wm_programs"] if any(
+            e["document"] == basename for e in p["encounters"]
+        )
+        for e in p["encounters"]
+    )
     series_traps = [
-        t for t in manifest["traps"]
+        t for t in _in(manifest["traps"], basename)
         if t["type"] in ("missed_visit", "unsuccessful_contact")
     ]
+    assertions = _in(manifest["program_assertions"], basename)
 
     if programs:
-        lines.append("MEDICAL WEIGHT MANAGEMENT PROGRAM - CONSOLIDATED VISIT RECORD")
-        lines.append(wrap(f"Physician-supervised program directed by {rng.choice(SUPERVISORS)}."))
+        heading = "MEDICAL WEIGHT MANAGEMENT PROGRAM - CONSOLIDATED VISIT RECORD"
+        if continued:
+            heading += " (CONTINUED)"
+        lines.append(heading)
+        supervisor = f"Physician-supervised program directed by {identity['supervisor']}."
+        if continued:
+            supervisor += (
+                " Earlier visits in this program are held in a separate "
+                "export of this record."
+            )
+        lines.append(wrap(supervisor))
         lines.append("")
         # Entries and in-series traps interleave in date order, the way a
         # consolidated record reads. The gap month is where the traps land.
@@ -229,7 +289,7 @@ def render(manifest: dict, demo: dict, height_m: float, rng: random.Random) -> s
             lines.append(block)
             lines.append("")
 
-    for assertion in manifest["program_assertions"]:
+    for assertion in assertions:
         lines.append("BARIATRIC SURGERY CONSULTATION")
         lines.append("")
         lines.append("HISTORY OF PRESENT ILLNESS")
@@ -247,7 +307,7 @@ def render(manifest: dict, demo: dict, height_m: float, rng: random.Random) -> s
             ))
         lines.append("")
 
-    other_traps = [t for t in manifest["traps"] if t not in series_traps]
+    other_traps = [t for t in _in(manifest["traps"], basename) if t not in series_traps]
     unsupervised = [t for t in other_traps if t["type"] == "unsupervised_attempt"]
     unrelated = [t for t in other_traps if t["type"] == "unrelated_section_date"]
 
@@ -269,7 +329,7 @@ def render(manifest: dict, demo: dict, height_m: float, rng: random.Random) -> s
             "Obesity with continued participation in the supervised weight "
             "management program documented above."
         ))
-    elif manifest["program_assertions"]:
+    elif assertions:
         lines.append(wrap(
             "Obesity. Candidate pending documentation of the weight management "
             "program described above."
@@ -277,7 +337,7 @@ def render(manifest: dict, demo: dict, height_m: float, rng: random.Random) -> s
     else:
         lines.append(wrap(
             "Obesity. No weight management program documentation is present in "
-            "the record at this time."
+            "this record at this time."
         ))
     return "\n".join(lines).rstrip() + "\n"
 
@@ -305,28 +365,33 @@ def generate() -> int:
         # and MRN are the only per-patient randomness, and the clone's note
         # must be its source's bytes.
         seed_patient_id = manifest.get("cloned_from") or patient_id
-        rng = random.Random(f"{SEED}:{seed_patient_id}")
-        text = render(manifest, demo, height_m, rng)
+        identity = _identity(random.Random(f"{SEED}:{seed_patient_id}"))
 
         out_dir = NOTES_DIR / patient_id
         out_dir.mkdir()
-        note_path = out_dir / "chart_note.txt"
-        note_path.write_text(text, encoding="utf-8")
-        record = {
-            "patient_id": patient_id,
-            "document_id": f"{patient_id}/chart_note.txt",
-            "sha256": sha256(note_path),
-            "cases": manifest["cases"],
-            "characters": len(text),
-        }
-        if manifest.get("cloned_from"):
-            record["cloned_from"] = manifest["cloned_from"]
-        records.append(record)
-        print(f"  {manifest['cases']} -> {note_path.relative_to(REPO_ROOT)} ({len(text)} chars)")
+        for basename in manifest["documents"]:
+            # One stream per (patient, document): the two documents read
+            # differently, and a fact moved between them cannot reshuffle
+            # the other's prose (D104).
+            rng = random.Random(f"{SEED}:{seed_patient_id}:{basename}")
+            text = render_document(manifest, basename, demo, height_m, identity, rng)
+            note_path = out_dir / basename
+            note_path.write_text(text, encoding="utf-8")
+            record = {
+                "patient_id": patient_id,
+                "document_id": f"{patient_id}/{basename}",
+                "sha256": sha256(note_path),
+                "cases": manifest["cases"],
+                "characters": len(text),
+            }
+            if manifest.get("cloned_from"):
+                record["cloned_from"] = manifest["cloned_from"]
+            records.append(record)
+            print(f"  {manifest['cases']} -> {note_path.relative_to(REPO_ROOT)} ({len(text)} chars)")
 
     NOTES_MANIFEST.write_text(
         json.dumps(
-            {"task": "T-07", "decision": "D43", "seed": SEED, "wrap_columns": WRAP,
+            {"task": "T-81", "decision": "D104", "seed": SEED, "wrap_columns": WRAP,
              "notes": records},
             indent=2, ensure_ascii=False,
         ) + "\n",
@@ -355,27 +420,62 @@ def verify() -> int:
     if on_disk != listed:
         print(f"  FAIL notes on disk {sorted(on_disk ^ listed)} not in the manifest")
         failures.append("stray")
-    # A declared clone's note is its source's bytes (T-88, D102). Checked from
-    # the fact manifests, not from the notes manifest's own `cloned_from`, so a
-    # clone whose record dropped the field is still held to it.
-    by_patient = {r["patient_id"]: r for r in manifest["notes"]}
+    by_id = {r["document_id"]: r for r in manifest["notes"]}
+    by_patient: dict[str, list[dict]] = {}
+    for r in manifest["notes"]:
+        by_patient.setdefault(r["patient_id"], []).append(r)
+    clone_of: dict[str, str] = {}
     for path in sorted(MANIFEST_DIR.glob("*.json")):
         facts = json.loads(path.read_text(encoding="utf-8"))
-        source_id = facts.get("cloned_from")
-        if not source_id:
+        patient_id = facts["patient_id"]
+        if facts.get("note") is False:
             continue
-        clone_record = by_patient.get(facts["patient_id"])
-        source_record = by_patient.get(source_id)
-        ok = (
-            clone_record is not None
-            and source_record is not None
-            and clone_record["sha256"] == source_record["sha256"]
-            and clone_record.get("cloned_from") == source_id
-        )
+        # T-81 (D104): every note-bearing chart is at least two documents,
+        # exactly the ones the fact manifest declares.
+        expected = {f"{patient_id}/{b}" for b in facts["documents"]}
+        served = {r["document_id"] for r in by_patient.get(patient_id, [])}
+        ok = len(expected) >= 2 and served == expected
         print(("  ok   " if ok else "  FAIL ")
-              + f"{facts['patient_id'][:12]} note is byte-identical to its source {source_id[:12]}")
+              + f"{patient_id[:12]} has {len(served)} documents, {len(expected)} declared")
         if not ok:
-            failures.append(f"clone {facts['patient_id']}")
+            failures.append(f"documents {patient_id}")
+        if facts.get("cloned_from"):
+            clone_of[patient_id] = facts["cloned_from"]
+    # A declared clone's documents are its source's bytes, per basename
+    # (T-88, D102). Checked from the fact manifests, not from the notes
+    # manifest's own `cloned_from`, so a clone whose record dropped the field
+    # is still held to it.
+    for clone_id, source_id in clone_of.items():
+        for record in by_patient.get(clone_id, []):
+            basename = record["document_id"].split("/", 1)[1]
+            source_record = by_id.get(f"{source_id}/{basename}")
+            ok = (
+                source_record is not None
+                and record["sha256"] == source_record["sha256"]
+                and record.get("cloned_from") == source_id
+            )
+            print(("  ok   " if ok else "  FAIL ")
+                  + f"{clone_id[:12]}/{basename} is byte-identical to its source {source_id[:12]}")
+            if not ok:
+                failures.append(f"clone {record['document_id']}")
+    # No two documents share bytes unless they are a clone's and its source's:
+    # the recorded runner keys its replay by digest, and one digest names one
+    # id (D102, D104).
+    by_hash: dict[str, list[str]] = {}
+    for r in manifest["notes"]:
+        by_hash.setdefault(r["sha256"], []).append(r["document_id"])
+    for digest, ids in by_hash.items():
+        if len(ids) == 1:
+            continue
+        patients = {i.split("/", 1)[0] for i in ids}
+        basenames = {i.split("/", 1)[1] for i in ids}
+        legitimate = (
+            len(ids) == 2 and len(basenames) == 1
+            and any(clone_of.get(a) == b for a in patients for b in patients)
+        )
+        if not legitimate:
+            print(f"  FAIL identical bytes across {sorted(ids)}")
+            failures.append(f"duplicate {digest[:12]}")
     if failures:
         print(f"{len(failures)} check(s) failed")
         return 1

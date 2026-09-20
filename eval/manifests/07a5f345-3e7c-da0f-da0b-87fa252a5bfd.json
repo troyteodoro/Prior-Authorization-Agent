@@ -6,6 +6,10 @@
     "E4",
     "E9"
   ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
   "wm_programs": [
     {
       "program_id": "georgette-2026-supervised",
@@ -17,7 +21,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.9
+          "note_bmi": 35.9,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-02-10",
@@ -25,7 +30,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.8
+          "note_bmi": 35.8,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-03-12",
@@ -33,7 +39,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.7
+          "note_bmi": 35.7,
+          "document": "chart_note_2.txt"
         },
         {
           "date": "2026-05-14",
@@ -41,7 +48,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.6
+          "note_bmi": 35.6,
+          "document": "chart_note_2.txt"
         },
         {
           "date": "2026-06-11",
@@ -49,7 +57,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 35.6
+          "note_bmi": 35.6,
+          "document": "chart_note_2.txt"
         }
       ]
     }
@@ -59,12 +68,14 @@
     {
       "type": "missed_visit",
       "date": "2026-04-09",
-      "description": "no-show for scheduled weight-management visit"
+      "description": "no-show for scheduled weight-management visit",
+      "document": "chart_note_2.txt"
     },
     {
       "type": "unsuccessful_contact",
       "date": "2026-04-23",
-      "description": "two phone attempts to reschedule, no answer"
+      "description": "two phone attempts to reschedule, no answer",
+      "document": "chart_note_2.txt"
     }
   ],
   "rationale": "E4: the longest consecutive run is three (Jan-Mar); the gap is April. E9: the missed-visit and contact dates sit inside the gap month, and counting either as an encounter would wrongly bridge the run to five."

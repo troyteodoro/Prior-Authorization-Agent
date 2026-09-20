@@ -1,0 +1,20 @@
+SOUND VIEW PRIMARY CARE
+Patient: Swaniawski813, Felipe97                 MRN: 864635
+DOB: 1987-06-16                       Sex: M
+Document 2 of 2
+
+MEDICAL WEIGHT MANAGEMENT PROGRAM - CONSOLIDATED VISIT RECORD (CONTINUED)
+Physician-supervised program directed by T. Nakashima, DO. Earlier visits in
+this program are held in a separate export of this record.
+
+05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.
+Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent. Continues
+supervised exercise, 30 minutes, three days per week.
+
+06/09/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.
+Dietary recall reviewed in detail against the 1600 kcal plan. Activity goal of
+25 minutes daily met on four days this month.
+
+ASSESSMENT
+Obesity with continued participation in the supervised weight management
+program documented above.

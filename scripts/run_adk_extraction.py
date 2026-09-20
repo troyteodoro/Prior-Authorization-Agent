@@ -339,9 +339,9 @@ def measure(tool_fetch: bool, limit: int | None = None) -> int:
     payload = {
         # T-89's measurement of the ADK runner (D103), superseding T-63's
         # (D71): a changed call configuration is a new measurement (D45).
-        "task": "T-89",
-        "decision": "D103",
-        "supersedes": "T-63 (D71)",
+        "task": "T-81",
+        "decision": "D104",
+        "supersedes": "T-89 (D103)",
         "runner": "adk",
         "tool_fetch": tool_fetch,
         "measured_at": datetime.now(timezone.utc).isoformat(),

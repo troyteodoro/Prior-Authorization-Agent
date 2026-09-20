@@ -612,6 +612,19 @@ class WmEvent(BaseModel):
         return self
 
 
+
+class NoteBmi(BaseModel):
+    """A BMI a note states as the patient's current one, with the span that
+    proves it (T-60, D50). One per document that states one; the workflow
+    carries every one it finds and reconciliation compares each to the
+    structured value independently (REQ-34a, D104) — no note is preferred by
+    the order the store served it in."""
+
+    model_config = ConfigDict(frozen=True)
+
+    value: float
+    span: EvidenceSpan
+
 class ProgramAssertion(BaseModel):
     """A claim of program participation with no encounter behind it (REQ-35).
 

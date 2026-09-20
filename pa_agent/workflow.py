@@ -14,7 +14,7 @@ on anything a model produced: the fan-out over notes is a `for` loop over what
 The model is asked one question per note and its answer goes into a list.
 
 Read the state object below and notice what extraction can reach: `events`,
-`assertions`, `current_bmi`, `current_bmi_span`, `traces`. Nothing else. No step
+`assertions`, `note_bmis`, `traces`. Nothing else. No step
 predicate reads any of those, and `tests/test_workflow.py` asserts it on the AST
 rather than trusting this paragraph.
 
@@ -43,10 +43,11 @@ from pa_agent.contracts import (
     CriterionVerdict,
     Determination,
     DeterminationAborted,
+    Document,
     ErrorCode,
     EvidenceSpan,
     GapReason,
-    Document,
+    NoteBmi,
     Observation,
     ProgramAssertion,
     RunTrace,
@@ -197,7 +198,7 @@ class WorkflowState:
 
     Split into what came from where on purpose. The two BMI readings T-33
     reconciles live on opposite halves of this object — `observations` from the
-    patient plane's FHIR bundles, `current_bmi` from the note — and keeping them
+    patient plane's FHIR bundles, `note_bmis` from the notes — and keeping them
     apart here is the same discipline that keeps them apart in the tools the model
     can see (REQ-53).
     """
@@ -218,8 +219,7 @@ class WorkflowState:
     notes: list[Document] = field(default_factory=list)
     events: list[WmEvent] = field(default_factory=list)
     assertions: list[ProgramAssertion] = field(default_factory=list)
-    current_bmi: float | None = None
-    current_bmi_span: EvidenceSpan | None = None
+    note_bmis: list[NoteBmi] = field(default_factory=list)
 
     # Deterministic products
     run: QualifyingRun | None = None
@@ -349,12 +349,15 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
             ) from exc
         state.events.extend(result.events)
         state.assertions.extend(result.assertions)
-        # T-60: the note's current BMI belongs to no encounter. First one wins,
-        # and with one note per patient in this corpus that is not yet a real
-        # choice — recorded as a known narrowing rather than an invisible one.
-        if state.current_bmi is None and result.current_bmi is not None:
-            state.current_bmi = result.current_bmi
-            state.current_bmi_span = result.current_bmi_span
+        # T-60: a note's current BMI belongs to no encounter. Every note that
+        # states one is carried (REQ-34a, D104) — this was "first note wins"
+        # while the corpus had one note per patient, and with two it would be
+        # store order deciding a threshold question. The only branch here is
+        # on anchoredness: a BMI nobody can cite is not a documented BMI (D15).
+        if result.current_bmi is not None and result.current_bmi_span is not None:
+            state.note_bmis.append(
+                NoteBmi(value=result.current_bmi, span=result.current_bmi_span)
+            )
         state.traces.append(trace)
 
     state.events.sort(key=lambda e: e.event_date)
@@ -397,8 +400,7 @@ def step_reconcile(state: WorkflowState, ctx: _Context) -> None:
         state.results[index],
         state.observations,
         state.events,
-        state.current_bmi,
-        state.current_bmi_span,
+        state.note_bmis,
     )
 
 

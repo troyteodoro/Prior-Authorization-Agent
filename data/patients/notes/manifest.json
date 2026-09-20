@@ -1,77 +1,149 @@
 {
-  "task": "T-07",
-  "decision": "D43",
+  "task": "T-81",
+  "decision": "D104",
   "seed": 7,
   "wrap_columns": 78,
   "notes": [
     {
       "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
-      "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note.txt",
-      "sha256": "4992084dddc702116c7814b03d7ef31d249f8cf30d39eb8fe9693761420f3821",
+      "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_1.txt",
+      "sha256": "b92da8d9dc849a88424f509f5e6875d099f3a5f5bd292fd7682444abe2cc413f",
       "cases": [
         "E5"
       ],
-      "characters": 1180
+      "characters": 804
+    },
+    {
+      "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
+      "document_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f/chart_note_2.txt",
+      "sha256": "ff520b95f9b5edbe3b8f1fa2f041118e0eb5a518d330fb03ad4d522a3eba1052",
+      "cases": [
+        "E5"
+      ],
+      "characters": 903
     },
     {
       "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
-      "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note.txt",
-      "sha256": "1c5fb0a834246efe8195aa10a98decc96a7f7beb6125700860f5e7f60c8efcf0",
+      "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+      "sha256": "f5e943fa21ad8beb52d03aea7062707605219eff20394d1a3cc25c9f1686e8a8",
       "cases": [
         "E4",
         "E9"
       ],
-      "characters": 1654
+      "characters": 804
+    },
+    {
+      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+      "sha256": "6ab7561ec365778644dad6e4de1020ffd8b70a17729e95546c405244c059eb42",
+      "cases": [
+        "E4",
+        "E9"
+      ],
+      "characters": 1353
     },
     {
       "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
-      "document_id": "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note.txt",
-      "sha256": "a2e35e7f36a534f0070f205a4572c58c689b68d7a5fd17df3cbccd96617bc2db",
+      "document_id": "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note_1.txt",
+      "sha256": "19b4eae7ad5d3e15d4d642b7488732a4b7118bc9143ebad112266fb6096caf63",
       "cases": [
         "E2",
         "E7"
       ],
-      "characters": 326
+      "characters": 306
+    },
+    {
+      "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+      "document_id": "49092fd9-d5bf-24e2-474b-00041a279a47/chart_note_2.txt",
+      "sha256": "538dfb98dc75b09ad8149398cbfa1c12b940158848a4fade70fc7673f4c45e83",
+      "cases": [
+        "E2",
+        "E7"
+      ],
+      "characters": 307
     },
     {
       "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
-      "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note.txt",
-      "sha256": "ac4e68e1b9696398f24dd732d4eaaa426b29461c9ab3fc103f3ea8b6e93553f8",
+      "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+      "sha256": "0dd65bb07cc23a9509736f983376123e480f49efa2b23285e41f4c6805be8fc7",
       "cases": [
         "E6",
         "E10"
       ],
-      "characters": 1241
+      "characters": 824
+    },
+    {
+      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
+      "document_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt",
+      "sha256": "70fec8f4a331a18fd3c792448ebac66fee60e30cc612efd0f236088f0dd22989",
+      "cases": [
+        "E6",
+        "E10"
+      ],
+      "characters": 946
     },
     {
       "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
-      "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note.txt",
-      "sha256": "05128f2f3548a47dbdf9c977d69de76acced4aa99388e26b6be7dd95e1b63d5a",
+      "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+      "sha256": "9612cfc8e92e70b508877725a90c30e62488af130e306ce914f8910e16ff7fdd",
       "cases": [
         "E1",
         "E11",
-        "E10c"
+        "E10c",
+        "E13"
       ],
-      "characters": 1772
+      "characters": 1414
+    },
+    {
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "document_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt",
+      "sha256": "94cdd4f682456fe6d3f0503bba357196ea0041f397b3025bb1254e92aa5109e4",
+      "cases": [
+        "E1",
+        "E11",
+        "E10c",
+        "E13"
+      ],
+      "characters": 874
     },
     {
       "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
-      "document_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note.txt",
-      "sha256": "edef80a1a715609bcc8174ad02f42b362c5d05ca832d30357439af556051a328",
+      "document_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note_1.txt",
+      "sha256": "3e0d37e464cd83abb27a177dd9ea7d67dadcf7ac5cb0f0b6eea0cee075deeca9",
       "cases": [
         "E8",
         "E10b"
       ],
-      "characters": 808
+      "characters": 631
+    },
+    {
+      "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+      "document_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb/chart_note_2.txt",
+      "sha256": "cc0395c8f1030b2ea06d68f6e9fab6cf313fb2d84a50f60d98ee3e7085891a6d",
+      "cases": [
+        "E8",
+        "E10b"
+      ],
+      "characters": 450
     },
     {
       "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
-      "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note.txt",
-      "sha256": "1c5fb0a834246efe8195aa10a98decc96a7f7beb6125700860f5e7f60c8efcf0",
+      "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+      "sha256": "f5e943fa21ad8beb52d03aea7062707605219eff20394d1a3cc25c9f1686e8a8",
       "cases": [
         "J1"
       ],
-      "characters": 1654,
+      "characters": 804,
+      "cloned_from": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd"
+    },
+    {
+      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
+      "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt",
+      "sha256": "6ab7561ec365778644dad6e4de1020ffd8b70a17729e95546c405244c059eb42",
+      "cases": [
+        "J1"
+      ],
+      "characters": 1353,
       "cloned_from": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd"
     }
   ]

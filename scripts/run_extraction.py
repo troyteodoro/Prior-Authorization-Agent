@@ -115,28 +115,41 @@ def synthesized_cases() -> list[dict]:
             # by content. Skipped by declaration rather than by duplicate
             # hash, so which row "owns" the bytes never depends on sort order.
             continue
-        documents = store.get_notes(manifest["patient_id"])
-        assert len(documents) == 1, manifest["patient_id"]
-        document = documents[0]
-        events = [
-            {"date": e["date"],
-             "bmi_documented": bool(e.get("bmi_documented")),
-             "diet_documented": bool(e.get("diet_documented")),
-             "activity_documented": bool(e.get("activity_documented"))}
-            for program in manifest["wm_programs"]
-            for e in program["encounters"]
-        ]
-        cases.append({
-            "note_id": "+".join(manifest["cases"]),
-            "corpus": "synthesized",
-            "document_id": document.document_id,
-            "text": document.text,
-            "sha256": document.sha256,
-            "cases": manifest["cases"],
-            "events": sorted(events, key=lambda e: e["date"]),
-            "traps": [{"date": t["date"], "reason": t["type"]} for t in manifest["traps"]],
-            "assertion_required": bool(manifest["program_assertions"]),
-        })
+        # T-81 (D104): a chart is the documents its manifest declares, and
+        # every fact names the one it is rendered into. One recording row per
+        # document, labeled with that document's facts only, keyed by the
+        # case list and the document's ordinal so no two rows share an id.
+        served = {
+            d.document_id: d for d in store.get_notes(manifest["patient_id"])
+        }
+        for ordinal, basename in enumerate(manifest["documents"], 1):
+            document = served[f"{manifest['patient_id']}/{basename}"]
+            events = [
+                {"date": e["date"],
+                 "bmi_documented": bool(e.get("bmi_documented")),
+                 "diet_documented": bool(e.get("diet_documented")),
+                 "activity_documented": bool(e.get("activity_documented"))}
+                for program in manifest["wm_programs"]
+                for e in program["encounters"]
+                if e["document"] == basename
+            ]
+            cases.append({
+                "note_id": f"{'+'.join(manifest['cases'])}/{ordinal}",
+                "corpus": "synthesized",
+                "document_id": document.document_id,
+                "document": basename,
+                "text": document.text,
+                "sha256": document.sha256,
+                "cases": manifest["cases"],
+                "events": sorted(events, key=lambda e: e["date"]),
+                "traps": [
+                    {"date": t["date"], "reason": t["type"]}
+                    for t in manifest["traps"] if t["document"] == basename
+                ],
+                "assertion_required": any(
+                    a["document"] == basename for a in manifest["program_assertions"]
+                ),
+            })
     return cases
 
 
@@ -382,6 +395,7 @@ def main() -> int:
             "note_id": case["note_id"],
             "corpus": case["corpus"],
             "document_id": case["document_id"],
+            "document": case.get("document"),
             "note_sha256": case["sha256"],
             "cases": case.get("cases", []),
             "labels": {"events": case["events"], "traps": case["traps"],
@@ -442,12 +456,13 @@ def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(
         json.dumps({
-            # T-89's measurement of the direct runner (D103), superseding
-            # T-15's (D45): same corpus, same scorer, a changed call
-            # configuration — so a new measurement, stamped as one.
-            "task": "T-89",
-            "decision": "D103",
-            "supersedes": "T-15 (D45)",
+            # T-81's measurement of the direct runner (D104), superseding
+            # T-89's (D103): same call configuration, same scorer, a changed
+            # corpus — two documents per chart — so a new measurement,
+            # stamped as one.
+            "task": "T-81",
+            "decision": "D104",
+            "supersedes": "T-89 (D103)",
             "measured_at": (
                 previous["measured_at"] if rescore
                 else datetime.now(timezone.utc).isoformat()

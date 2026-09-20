@@ -284,7 +284,10 @@ def test_a_span_past_the_document_end_errors_on_first_occurrence(
     with pytest.raises(DeterminationAborted) as caught:
         _run(policy_store, patient_store, tampering, e1_patient, ref)
 
-    assert tampering.calls == 1
+    assert tampering.calls == len(patient_store.get_notes(e1_patient)), (
+        "one call per note and no retry: the fault surfaces where the span is "
+        "validated, after extraction has read the chart"
+    )
     assert caught.value.attempts is None, (
         "no model call failed; the fault is downstream of extraction"
     )

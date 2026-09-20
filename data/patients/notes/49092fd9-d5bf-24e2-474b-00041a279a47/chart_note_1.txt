@@ -1,0 +1,11 @@
+SOUND VIEW PRIMARY CARE
+Patient: Sanford861, Rayford811                  MRN: 627716
+DOB: 1970-10-23                       Sex: M
+Document 1 of 2
+
+HEALTH MAINTENANCE
+02/11/2026 - Screening colonoscopy.
+
+ASSESSMENT
+Obesity. No weight management program documentation is present in this record
+at this time.

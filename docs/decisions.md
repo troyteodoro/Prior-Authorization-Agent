@@ -7691,3 +7691,172 @@ replayed extraction is what moved).
 
 **Cost of the round.** 11 + 11 + 13 extraction calls, 30 verifier calls,
 no agentic re-measurement.
+
+---
+
+## D104 — A second note per patient splits the declared facts, and every note-level BMI is reconciled
+
+**Context.** T-81, row 6 of `Path to v2` (D97): P7, P3 and P4 together.
+D91 measured REQ-25's direct planner-recall figure and found it 1.000 by
+construction — one note per patient, a planner that raises rather than
+returning less, structured facts re-read from the port — so the *cited*
+figure beside it was the only one carrying information. REQ-25 names the
+mechanism this task exists to make measurable: a skipped note leaves c3
+measuring a shorter run while producing a determination that is entirely
+well-formed. D96 said the labels' second pass rides with this task, and
+D97 fixed its place after the runner change (T-89) and before the Vertex
+measurement (T-90), so that the corpus is this round's one variable.
+
+**Chosen, with the owner (2026-09-19).**
+
+1. **The second note is a split of facts the manifest already declares,
+   never a new fact.** Every encounter, program assertion and trap in a
+   note-bearing manifest is assigned to exactly one of two documents, and
+   the qualifying run straddles the two wherever a run exists. Events merge
+   and sort before any predicate runs, so every verdict is a function of the
+   fact set and not of the layout: every existing label is invariant by
+   construction, and whatever the re-measurement moves is attributable to
+   the layout alone (D45). E8's existing prior-history trap moves to its
+   second document; E7's two unrelated dates split one per document. No
+   manifest gains a fact.
+2. **The manifest carries the assignment: a `documents` list of basenames,
+   and a scalar `document` on every fact.** One scalar per fact means a
+   fact cannot be rendered into two documents, so c1's event count cannot
+   inflate and a visit cannot be cited twice. Documents are
+   `<patient_id>/chart_note_1.txt` and `<patient_id>/chart_note_2.txt` —
+   symmetric on purpose, so nothing may treat one of them as *the* note.
+   The note-free manifest (D73) declares no documents. The clone (D102)
+   copies its source's fact lists wholesale, so the assignment rides along.
+3. **The synthesizer renders one document per entry, from one identity and
+   one RNG stream per document.** Practice, MRN and supervisor are drawn
+   once per patient; each document's prose comes from
+   `Random(f"{SEED}:{seed_patient_id}:{basename}")`, so a patient's two
+   documents read differently, editing one document's facts cannot
+   reshuffle the other's prose, and the clone — seeded from `cloned_from` —
+   reproduces its source byte for byte per document, which is what keeps
+   D102's free replay. A later document whose program also has visits in
+   an earlier one is headed *continued* and says the earlier visits are held
+   in a separate export of the record. No new date is introduced anywhere;
+   D43's scan still refuses any date the manifest does not declare, and now
+   refuses it per document. `--verify` pins at least two records per
+   note-bearing manifest, distinct hashes for every non-clone pair (a
+   digest-keyed replay maps one digest to one id), and clone identity per
+   basename.
+4. **REQ-34 generalizes to every source (REQ-34a).** `step_extract`'s
+   note-level current BMI was "first note wins" — a narrowing D50 recorded
+   as not yet a real choice because the corpus had one note. With two it is
+   store order deciding a threshold question, invisibly. From here every
+   note-level current BMI is carried (`WorkflowState.note_bmis`) and each
+   is compared to the structured value independently: any pair across the
+   threshold resolves `SOURCE_CONFLICT`, each remaining pair at or beyond
+   tolerance is its own `discrepancies[]` entry citing the note that
+   stated it, and entries are ordered by span so the result is independent
+   of store order. Note-vs-note disagreement is not adjudicated — the
+   structured value is authoritative and each note is measured against it.
+   D50's fallback stands: when no note states a current BMI, the latest
+   dated event BMI is the one note-side value. `Extraction.current_bmi`
+   does not change, so the extraction prompt does not change.
+5. **One new eval row, `E13`, pins the cross-document property.** On E1's
+   patient, c3 is `MET` and its cited spans name two distinct documents. It
+   shares E1's determination and adds one expectation the scorer did not
+   have — `distinct_documents` on a criterion, counted exactly and failed
+   as `WRONG_DOCUMENT_COUNT` — because "the run spans two documents" should
+   be a labeled fact rather than a side effect the recall section happens
+   to show. Spec §6 appends; nothing renumbers.
+6. **The labels are re-derived here and the owner reviews them at close.**
+   The table below is drafted from the fact manifests and the two trees'
+   constants, never from an observed run (spec §8). No ledger, no gate, no
+   stamp (rule 11, D92): the review is recorded as the fact that the close
+   happened.
+7. **Every recording is re-measured whole, in dependency order, on AI
+   Studio**, with `PROMPT_VERSION` unchanged: the direct extraction
+   recording, both ADK recordings, the verifier recording after the labels
+   (claims are enumerated from `cases.json`), then the baseline, then a real
+   agentic `--measure` — a rescore cannot show a planner skipping a note.
+   Recordings carry `task: "T-81"`, `decision: "D104"` and
+   `supersedes: "T-89 (D103)"`. `select_patients.py --generate` is never run
+   (D73). Planner bounds stay where they are; a bound hit is a REQ-28 error
+   row and a finding, not a reason to raise the bound before measuring.
+   `max_model_calls` rises by exactly one per note-bearing row — the one
+   extra extraction turn — and if a re-ask fires the budget rises by the
+   measured turn afterwards (D103's precedent), never padded in advance.
+
+**The split.** Document 1 / document 2, by patient:
+
+| Patient | Cases | Document 1 | Document 2 |
+|---|---|---|---|
+| `05cc52df` | E5 | 2025-03-11, 2025-04-08 | 2025-05-13, 2025-06-10 |
+| `07a5f345` | E4, E9 | 2026-01-13, 2026-02-10 | 2026-03-12, traps 2026-04-09 and 2026-04-23, 2026-05-14, 2026-06-11 |
+| `ee9d79ee` | J1 | as its source | as its source |
+| `49092fd9` | E2, E7 | unrelated 2026-02-11 | unrelated 2025-10-03 |
+| `a2e49f37` | E6, E10 | 2026-03-09 (BMI), 2026-04-13 (weight only) | 2026-05-11 (BMI), 2026-06-08 (weight only) |
+| `afdcee59` | E1, E11, E10c, E13 | 2024-08-05, 2024-09-02, unsupervised 2025-01-15, 2026-03-10, 2026-04-14 | 2026-05-12, 2026-06-09 |
+| `bc6748d3` | E8, E10b | assertion 2026-07-02 with BMI 36.2 | unsupervised 2026-01-20 |
+| `a8edc52e` | E12 | note-free (D73) | — |
+
+**Labels, re-derived from the manifests and the trees** (JF: threshold
+35.0, lookback 12, recency 12, run 4, every month of the run; JJ/JM: no
+run length, `c4` and `d` unclaimed). Owner reviews at close.
+
+| Row | Facts it rests on | Derived expectation | Against the committed label |
+|---|---|---|---|
+| E1 | structured BMI 37.65 in window, active value-set comorbidity; 2026-03..06 run, every month fully documented, ended 3 months before as-of | `MET`; a, b, c1–c5 all `MET` | agrees |
+| E2 | structured BMI 34.26 dated 2024-03, active T2DM, as-of 2024-12-01 | `NOT_COVERED` via sc2, zero calls | agrees |
+| E3 | 43842 named non-covered for all beneficiaries, no date qualifier | `NOT_COVERED` via sc1, zero calls | agrees |
+| E4 | longest run Jan–Mar 2026 = 3 < 4 | c3 `NOT_MET`, overall `NOT_MET` | agrees |
+| E5 | run of 4 ended 2025-06-10, 14 months before as-of | c2 `NOT_MET`, c3 `MET`, overall `NOT_MET` | agrees |
+| E6 | run of 4, BMI documented in 2 of 4 months, diet and activity every month | c4 `NOT_MET`, overall `NOT_MET` | agrees |
+| E7 | no program, no assertion; structured BMI dated 2024-03 outside lookback | c1 `INSUFFICIENT_EVIDENCE`/`NO_EVIDENCE_RETRIEVED`; overall `NOT_MET` on (a)'s stale value (Art. IV: exists, outside window) | agrees |
+| E8 | one assertion, zero encounters | c3 `INSUFFICIENT_EVIDENCE`/`UNSUBSTANTIATED_ASSERTION`, overall `INSUFFICIENT_EVIDENCE` | agrees |
+| E9 | traps 2026-04-09, 2026-04-23 in the gap month | c3 `NOT_MET`, run stays 3 | agrees |
+| E10 | structured 39.23, latest note BMI 45.0 (2026-05-11), gap 5.77 ≥ 1.0, same side | a `MET`, one discrepancy; overall E6's `NOT_MET` | agrees |
+| E10b | structured 34.6, note 36.2, straddles 35.0 | a `INSUFFICIENT_EVIDENCE`/`SOURCE_CONFLICT` | agrees |
+| E10c | structured 37.65, note 37.6, gap 0.05 < 1.0 | a `MET`, zero discrepancies | agrees |
+| E11 | 2024-08..09 run of 2 beside the 2026 run of 4 | c3 `MET` on the 2026 run | agrees |
+| E12 | structured BMI exactly 35.0 in window, no note | a `MET`; every note criterion abstains; overall `INSUFFICIENT_EVIDENCE` | agrees |
+| E13 | E1's run assigned across two documents | c3 `MET` citing two distinct documents; overall `MET` | new row |
+| NP1 | 99213 in no policy's set | `NO_POLICY_FOUND`, zero calls | agrees |
+| J1 | E4's facts under `ncd-100.1-jjm-v1` | c2 `MET`, c5 `MET`, c4 and d `NOT_EVALUATED_BY_THIS_SYSTEM`, no c3; overall `INSUFFICIENT_EVIDENCE` | agrees |
+
+Budgets: one extraction turn per note plus the recorded claim count, so
+E1, E10c, E11 and E13 read 9; E4 and E9 5; E5, E6 and E10 8; E7 4; E8 and
+E10b 3; J1 6; E2, E3, E12 and NP1 unchanged.
+
+**Rejected — a distractor-only second note.** The direct figure could
+then fall without consequence: no criterion depends on the second
+document, so a planner that skipped it would change no verdict, and the
+number would move while measuring nothing REQ-25 asks about.
+
+**Rejected — new facts in the second note.** A second variable inside one
+measurement (D45, D97) and a relabel of every affected row, with the
+corpus growth and the label change sharing one delta.
+
+**Rejected — keeping "first note wins" behind a corpus gate.** The
+narrowing would stay in the code for every chart outside this corpus, and
+which note wins would be store order.
+
+**Rejected — selecting the most recent note-level BMI by date.**
+`Extraction.current_bmi` carries no date, adding one changes the prompt
+and the schema inside a corpus task, and choosing one value hides a
+straddle the other note states — Article IV's collapse in a new place.
+
+**Rejected — two new health-maintenance dates for E8's second
+document.** A manifest addition the split does not need; the existing
+prior-history trap gives the same uncitable second document.
+
+**Rejected — nested `documents[{...facts}]` in the manifest.** It repeats
+every date in a second place and lets a fact appear in zero or two
+documents, so the scalar form's guarantee would have to become a test.
+
+**Rejected — raising the planner's step or call bound before measuring.**
+Two notes fit inside the current bound; a hit is a result.
+
+**Cost.** Seventeen direct extraction calls, seventeen ADK inline, twelve
+plus skips under tool-fetch, one whole verifier round, and one agentic
+measurement over the six base patients — roughly two to three times
+D103's round.
+
+**Reverses if:** the planner errors on its bound for most patients (then a
+bound change is a new entry and a new measurement); or a third note per
+patient is wanted — the `documents` list already generalizes, and the
+"at least two" pin is what to relax.

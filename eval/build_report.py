@@ -735,13 +735,16 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
               D86 had to settle for, kept because on this corpus it is the one
               that can still move.
 
-    The direct figure is **1.000 by construction here** and the section says so
-    in its own text: one note per patient, `AgenticRetrievalPlanner` raises
-    rather than returning an empty bundle, and observations and conditions are
-    re-read from the port (D66), so a run that did not error gathered everything
-    there was. Reporting it alone would replace an informative number with an
-    uninformative one, which is why both are here (D91). T-81 is the corpus
-    change that inverts which one carries information.
+    Until T-81 the direct figure was 1.000 by construction — one note per
+    patient, a planner that raises rather than returning less, structured
+    facts re-read from the port (D66) — and the cited figure was the one that
+    could move (D91). Since T-81 every note-bearing chart is two documents
+    (D104): the planner may name one of them and the run succeeds with a
+    shorter chart, which is REQ-25's mechanism, so the direct figure is
+    measured and is the one to quote. The cited figure stays as the bound
+    beneath it, and the per-patient table says how many notes each run
+    gathered against how many the store holds — read from the notes manifest,
+    never from the oracle's own row.
     """
     recording_path = EVAL_DIR / "agentic" / "results.json"
     if not recording_path.exists():
@@ -750,6 +753,12 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
             "and the recall section reads it. This is a checkout problem."
         )
     recording = json.loads(recording_path.read_text(encoding="utf-8"))
+    notes_manifest = json.loads(
+        (REPO_ROOT / "data" / "patients" / "notes" / "manifest.json").read_text(encoding="utf-8")
+    )
+    notes_on_file: dict[str, list[str]] = {}
+    for record in notes_manifest["notes"]:
+        notes_on_file.setdefault(record["patient_id"], []).append(record["document_id"])
     gathered_by_patient = {
         row["patient_id"]: set(row["agentic"]["gathered"]["document_ids"])
         for row in recording["patients"]
@@ -797,6 +806,25 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
     direct_overall = direct_hits / total if total else None
     bound_overall = bound_hits / total if total else None
 
+    # T-81 (D104): per patient, what the agentic run gathered against what the
+    # store holds. This is the table that can show a skipped note.
+    patient_rows = []
+    gathered_every_note = cited_no_note = 0
+    for row in recording["patients"]:
+        if not row.get("agentic"):
+            continue
+        patient_id = row["patient_id"]
+        on_file = notes_on_file.get(patient_id, [])
+        gathered_notes = [d for d in gathered_by_patient[patient_id] if d in on_file]
+        cited_notes = [d for d in cited_by_patient[patient_id] if d in on_file]
+        gathered_every_note += set(gathered_notes) == set(on_file)
+        cited_no_note += not cited_notes
+        patient_rows.append(
+            f"| `{patient_id[:8]}` ({', '.join(row.get('cases') or [])}) | "
+            f"{len(on_file)} | {len(gathered_notes)} | {len(cited_notes)} |"
+        )
+    measured = len(patient_rows)
+
     return [
         "## Planner recall against the oracle's evidence (REQ-25, D4, D86, D91)",
         "",
@@ -811,8 +839,8 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
         "bundle the agentic planner *gathered* and handed downstream — what "
         "REQ-25 asks for, recorded by T-80. **Cited** is containment in the "
         "documents that run's spans *point into* — the bound D86 had to settle "
-        "for. Read both; the next two paragraphs say which one is carrying "
-        "information today, and it is not the stronger one.",
+        "for. The direct figure is the one to quote; the cited figure is the "
+        "bound beneath it.",
         "",
         "| Criterion | Cases citing evidence | Covered (gathered) | Covered (cited) "
         "| Recall (direct) | Recall (cited) |",
@@ -821,25 +849,26 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
         f"| **all** | **{total}** | **{direct_hits}** | **{bound_hits}** | "
         f"**{_fmt(direct_overall)}** | **{_fmt(bound_overall)}** |",
         "",
-        "**The direct figure is 1.000 by construction on this corpus, and that "
-        "sentence travels with it.** Three facts force it: "
-        "`data/patients/notes/manifest.json` holds one note per patient; "
-        "`AgenticRetrievalPlanner.gather` raises rather than returning an empty "
-        "bundle or an id the store does not serve; and observations, conditions "
-        "and the value set are re-read from the port, never taken from the tool "
-        "payload (D66). A run that did not error gathered everything there was. "
-        "The number is real and it cannot fall — which is the shape D70 already "
-        "threw out once, so it is reported beside the cited figure rather than "
-        "in place of it (D91). **T-81** is the corpus change — a second note per "
-        "patient — that would let it fall.",
+        "**Since T-81 the direct figure can fall, and this is a measurement "
+        "of whether it did.** Every note-bearing chart holds two notes and the "
+        "qualifying run straddles them wherever a run exists (D104), so "
+        "`AgenticRetrievalPlanner` may name one of the two and the run "
+        "succeeds with a shorter chart — REQ-25's mechanism, and the thing "
+        "D91's one-note corpus could not exhibit. On this run the planner "
+        f"gathered every note on file for **{gathered_every_note} of "
+        f"{measured}** patients. The construction caveat D91 put here is gone "
+        "because it stopped being true; the figure above is what the planner "
+        "did.",
         "",
-        "**What the direct figure did settle.** D86 could not tell a skipped "
-        "document from a gathered one that produced no citable span, and said a "
-        "below-1.000 result would need this measurement to interpret. It now "
-        "reads: every patient gathered two documents, and two of the six cite "
-        "only one. **Those notes reached the criteria and yielded nothing to "
-        "cite** — gathered and uncitable, never skipped. That is why the cited "
-        "figure is the one that can still move here.",
+        "| Patient (cases) | Notes on file | Gathered | Cited |",
+        "|---|---|---|---|",
+        *patient_rows,
+        "",
+        f"**Gathered and uncitable, still.** {cited_no_note} of {measured} "
+        "patients cite no note at all on the agentic side: their notes reached "
+        "the criteria and yielded nothing to cite, which is what the gathered "
+        "column beside the cited one shows (D86's open question, settled by "
+        "D91 and unchanged here).",
         "",
         "**Containment at whole-document granularity is containment of the "
         "span.** Gathered notes come back from the store by id and are "
@@ -927,13 +956,15 @@ def _caveats_section() -> list[str]:
         "for Palmetto GBA Jurisdictions J and M — and a request resolves by "
         "procedure code and state (D21, D29, D100). These are not CMS's "
         "thresholds; they are two contractors' worth of them.",
-        "- **The corpus is eight patients and five policy documents.** Six "
-        "bundles from the base seed, E12's with its declared observation "
-        "(D73), and one declared clone of E4's chart re-addressed into "
-        "Palmetto's territory (T-88, D102) — the one row, `J1`, that runs "
-        "under the second tree, and it shares its note's bytes with E4. "
-        "Rates over a set this size move by large steps; one case is worth "
-        "more than a percentage point in every table above.",
+        "- **The corpus is eight patients, fourteen chart notes and five "
+        "policy documents.** Six bundles from the base seed, E12's with its "
+        "declared observation (D73), and one declared clone of E4's chart "
+        "re-addressed into Palmetto's territory (T-88, D102) — the one row, "
+        "`J1`, that runs under the second tree, and it shares both its "
+        "notes' bytes with E4. Every note-bearing chart is two documents "
+        "since T-81, a split of the facts its manifest already declared "
+        "(D104). Rates over a set this size move by large steps; one case is "
+        "worth more than a percentage point in every table above.",
         "",
     ]
 

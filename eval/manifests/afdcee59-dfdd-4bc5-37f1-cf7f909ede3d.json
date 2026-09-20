@@ -5,7 +5,12 @@
   "cases": [
     "E1",
     "E11",
-    "E10c"
+    "E10c",
+    "E13"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
   ],
   "wm_programs": [
     {
@@ -18,7 +23,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 37.6
+          "note_bmi": 37.6,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-04-14",
@@ -26,7 +32,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 37.6
+          "note_bmi": 37.6,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-05-12",
@@ -34,7 +41,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 37.6
+          "note_bmi": 37.6,
+          "document": "chart_note_2.txt"
         },
         {
           "date": "2026-06-09",
@@ -42,7 +50,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 37.6
+          "note_bmi": 37.6,
+          "document": "chart_note_2.txt"
         }
       ]
     },
@@ -56,7 +65,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 39.1
+          "note_bmi": 39.1,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2024-09-02",
@@ -64,7 +74,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 38.8
+          "note_bmi": 38.8,
+          "document": "chart_note_1.txt"
         }
       ]
     }
@@ -74,8 +85,9 @@
     {
       "type": "unsupervised_attempt",
       "date": "2025-01-15",
-      "description": "patient reports trying a self-directed diet last winter"
+      "description": "patient reports trying a self-directed diet last winter",
+      "document": "chart_note_1.txt"
     }
   ],
-  "rationale": "E1: the only patient whose structured record can approve — in-window BMI >= 35 and an active value-set comorbidity (D42). E11: the 2024 two-month program must not be mistaken for the qualifying run. E10c: note BMI 37.6 vs structured 37.65, below any sane tolerance, discrepancies stay empty."
+  "rationale": "E1: the only patient whose structured record can approve — in-window BMI >= 35 and an active value-set comorbidity (D42). E11: the 2024 two-month program must not be mistaken for the qualifying run. E10c: note BMI 37.6 vs structured 37.65, below any sane tolerance, discrepancies stay empty. E13 (T-81, D104): the 2026 run's March and April visits are assigned to chart_note_1.txt and its May and June visits to chart_note_2.txt, so c3 MET must cite spans in both documents."
 }

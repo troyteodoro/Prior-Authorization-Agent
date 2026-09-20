@@ -6,6 +6,10 @@
     "E6",
     "E10"
   ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
   "wm_programs": [
     {
       "program_id": "linn-2026-supervised",
@@ -17,14 +21,16 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 45.0
+          "note_bmi": 45.0,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-04-13",
           "weight_documented": true,
           "bmi_documented": false,
           "diet_documented": true,
-          "activity_documented": true
+          "activity_documented": true,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2026-05-11",
@@ -32,14 +38,16 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 45.0
+          "note_bmi": 45.0,
+          "document": "chart_note_2.txt"
         },
         {
           "date": "2026-06-08",
           "weight_documented": true,
           "bmi_documented": false,
           "diet_documented": true,
-          "activity_documented": true
+          "activity_documented": true,
+          "document": "chart_note_2.txt"
         }
       ]
     }

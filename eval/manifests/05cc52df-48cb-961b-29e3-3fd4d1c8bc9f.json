@@ -5,6 +5,10 @@
   "cases": [
     "E5"
   ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
   "wm_programs": [
     {
       "program_id": "christeen-2025-supervised",
@@ -16,7 +20,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 43.0
+          "note_bmi": 43.0,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2025-04-08",
@@ -24,7 +29,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 42.8
+          "note_bmi": 42.8,
+          "document": "chart_note_1.txt"
         },
         {
           "date": "2025-05-13",
@@ -32,7 +38,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 42.7
+          "note_bmi": 42.7,
+          "document": "chart_note_2.txt"
         },
         {
           "date": "2025-06-10",
@@ -40,7 +47,8 @@
           "bmi_documented": true,
           "diet_documented": true,
           "activity_documented": true,
-          "note_bmi": 42.6
+          "note_bmi": 42.6,
+          "document": "chart_note_2.txt"
         }
       ]
     }

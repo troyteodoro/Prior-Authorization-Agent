@@ -498,10 +498,15 @@ def test_the_cli_answers_a_covered_code_end_to_end(e1_patient):
     # (T-17, D78), one per cited verdict. A zero here would understate what
     # the answer cost.
     recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
-    note = LocalPatientStore().get_notes(e1_patient)[0]
-    record = next(r for r in recording["notes"] if r["document_id"] == note.document_id)
-    extraction_turns = len((record.get("trace") or {}).get("metrics") or [record["metrics"]])
-    assert extraction_turns >= 1
+    notes = LocalPatientStore().get_notes(e1_patient)
+    assert len(notes) >= 2, "E1's chart is two documents since T-81 (D104)"
+    extraction_turns = 0
+    for note in notes:
+        record = next(r for r in recording["notes"] if r["document_id"] == note.document_id)
+        extraction_turns += len(
+            (record.get("trace") or {}).get("metrics") or [record["metrics"]]
+        )
+    assert extraction_turns >= len(notes)
     assert printed["model_calls"] == extraction_turns + 7
     assert printed["total_input_tokens"] > 0
     assert printed["total_wall_time_ms"] > 0

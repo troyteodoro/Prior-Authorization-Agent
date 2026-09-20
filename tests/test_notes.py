@@ -73,22 +73,41 @@ def _note_free(manifest: dict) -> bool:
 
 
 @pytest.fixture(scope="module")
-def notes(store, manifests) -> dict[str, str]:
-    """patient_id -> note text, served through the port and hash-verified.
-    Declared note-free patients are checked the other way — no note may
-    exist for them — and excluded from the dict."""
-    text_by_patient = {}
+def documents(store, manifests) -> dict[str, dict[str, str]]:
+    """patient_id -> {basename: text}, served through the port and
+    hash-verified. Since T-81 (D104) every note-bearing chart is at least two
+    documents, exactly the ones its manifest declares. Declared note-free
+    patients are checked the other way — no note may exist for them — and
+    excluded from the dict."""
+    by_patient: dict[str, dict[str, str]] = {}
     for patient_id, manifest in manifests.items():
-        documents = store.get_notes(patient_id)
+        served = store.get_notes(patient_id)
         if _note_free(manifest):
-            assert documents == [], (
+            assert served == [], (
                 f"{patient_id}: declared note-free (D73) yet the store "
                 "serves a note for it"
             )
             continue
-        assert len(documents) == 1, f"{patient_id}: expected one chart note"
-        text_by_patient[patient_id] = documents[0].text
-    return text_by_patient
+        texts = {
+            d.document_id.split("/", 1)[1]: d.text for d in served
+        }
+        assert set(texts) == set(manifest["documents"]), (
+            f"{patient_id}: the store serves {sorted(texts)}, the manifest "
+            f"declares {manifest['documents']}"
+        )
+        assert len(texts) >= 2, f"{patient_id}: expected at least two documents (T-81)"
+        by_patient[patient_id] = texts
+    return by_patient
+
+
+@pytest.fixture(scope="module")
+def notes(documents) -> dict[str, str]:
+    """patient_id -> the chart's documents joined, for the checks that are
+    about the chart as a whole (every declared fact is somewhere in it)."""
+    return {
+        patient_id: "\n\n".join(texts[b] for b in sorted(texts))
+        for patient_id, texts in documents.items()
+    }
 
 
 def _iso(match: re.Match) -> str:
@@ -103,15 +122,20 @@ def _dates_in(text: str) -> set[str]:
     return {_iso(m) for m in ANY_DATE.finditer(text)}
 
 
-def _declared_dates(manifest: dict) -> set[str]:
-    dates = {
-        e["date"]
-        for p in manifest["wm_programs"]
-        for e in p["encounters"]
+def _facts(manifest: dict) -> list[dict]:
+    facts = [e for p in manifest["wm_programs"] for e in p["encounters"]]
+    facts += manifest["traps"]
+    facts += manifest["program_assertions"]
+    return facts
+
+
+def _declared_dates(manifest: dict, basename: str | None = None) -> set[str]:
+    """The dates the manifest declares — for the whole chart, or for one
+    document when `basename` is given (D104: every fact names its document)."""
+    return {
+        f["date"] for f in _facts(manifest)
+        if basename is None or f["document"] == basename
     }
-    dates |= {t["date"] for t in manifest["traps"]}
-    dates |= {a["date"] for a in manifest["program_assertions"]}
-    return dates
 
 
 def _birth_date(manifest: dict) -> str:
@@ -147,18 +171,68 @@ def _block_for(text: str, iso_date: str) -> str:
 
 
 # --------------------------------------------------------------------------
-# The corpus exists, verified, one note per manifest
+# The corpus exists, verified, two documents per note-bearing manifest
 # --------------------------------------------------------------------------
 
 
-def test_one_hash_verified_note_per_manifest(notes, manifests):
+def test_hash_verified_documents_per_manifest(documents, manifests):
     note_bearing = {
         pid for pid, m in manifests.items() if not _note_free(m)
     }
-    assert set(notes) == note_bearing
+    assert set(documents) == note_bearing
     recorded = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
     assert recorded["seed"] is not None, "the corpus records the seed that made it"
     assert {r["patient_id"] for r in recorded["notes"]} == note_bearing
+    listed = {r["document_id"] for r in recorded["notes"]}
+    assert listed == {
+        f"{pid}/{b}" for pid, texts in documents.items() for b in texts
+    }, "the notes manifest lists exactly the documents the store serves"
+
+
+def test_a_patients_documents_differ_in_bytes(documents, manifests):
+    """`RecordedExtractionRunner` keys its replay by digest and one digest
+    names one id (D102), so two documents with the same bytes would replay
+    one payload for both. Only a declared clone may share bytes with its
+    source, per basename."""
+    clone_of = {
+        pid: m["cloned_from"] for pid, m in manifests.items() if m.get("cloned_from")
+    }
+    import hashlib
+    seen: dict[str, str] = {}
+    for patient_id, texts in documents.items():
+        for basename, text in texts.items():
+            digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+            if digest in seen:
+                other_patient, other_basename = seen[digest].split("/", 1)
+                assert other_basename == basename and (
+                    clone_of.get(patient_id) == other_patient
+                    or clone_of.get(other_patient) == patient_id
+                ), (
+                    f"{patient_id}/{basename} and {seen[digest]} are byte-identical "
+                    "and are not a clone and its source"
+                )
+            seen[digest] = f"{patient_id}/{basename}"
+
+
+def test_the_clone_is_byte_identical_per_document(documents, manifests):
+    for patient_id, manifest in manifests.items():
+        source = manifest.get("cloned_from")
+        if not source:
+            continue
+        assert documents[patient_id] == documents[source], (
+            f"{patient_id}: a clone's documents are its source's, per basename (D102)"
+        )
+
+
+def test_every_document_names_its_place_in_the_chart(documents):
+    """A reader of one export sees that it is one of several. The line
+    carries no date, so D43's scan has nothing to refuse."""
+    for patient_id, texts in documents.items():
+        for basename, text in texts.items():
+            ordinal = sorted(texts).index(basename) + 1
+            assert f"Document {ordinal} of {len(texts)}" in text, (
+                f"{patient_id}/{basename} does not say which document it is"
+            )
 
 
 def test_every_note_wraps_like_an_ehr_export(notes):
@@ -258,19 +332,88 @@ def test_the_assertion_note_makes_its_claim_in_prose(notes, manifests):
 # --------------------------------------------------------------------------
 
 
-def test_no_note_contains_a_date_the_manifest_does_not_declare(notes, manifests):
-    """The assertion that makes this corpus usable as ground truth (D43)."""
+def test_no_document_contains_a_date_the_manifest_does_not_assign_to_it(
+    documents, manifests
+):
+    """The assertion that makes this corpus usable as ground truth (D43),
+    per document since T-81 (D104): a date assigned to one document appearing
+    in the other is a fact rendered twice, which would inflate c1's count and
+    cite one visit from two places."""
     for patient_id, manifest in manifests.items():
         if _note_free(manifest):
             continue
-        allowed = _declared_dates(manifest) | {_birth_date(manifest)}
-        found = _dates_in(notes[patient_id])
-        unaccounted = found - allowed
-        assert not unaccounted, (
-            f"{patient_id}: note contains {sorted(unaccounted)}, which the "
-            "manifest does not declare. Extraction would surface it and it "
-            "would be scored as a model failure that was really a corpus one."
-        )
+        for basename, text in documents[patient_id].items():
+            allowed = _declared_dates(manifest, basename) | {_birth_date(manifest)}
+            found = _dates_in(text)
+            unaccounted = found - allowed
+            assert not unaccounted, (
+                f"{patient_id}/{basename} contains {sorted(unaccounted)}, which "
+                "the manifest does not assign to it. Extraction would surface it "
+                "and it would be scored as a model failure that was really a "
+                "corpus one."
+            )
+
+
+def test_each_assigned_date_is_rendered_in_its_document_and_no_other(
+    documents, manifests
+):
+    for patient_id, manifest in manifests.items():
+        if _note_free(manifest):
+            continue
+        for fact in _facts(manifest):
+            for basename, text in documents[patient_id].items():
+                present = fact["date"] in _dates_in(text)
+                assert present == (fact["document"] == basename), (
+                    f"{patient_id}: {fact['date']} is assigned to "
+                    f"{fact['document']} and {'is' if present else 'is not'} in "
+                    f"{basename}"
+                )
+
+
+def test_a_later_visit_record_reads_as_a_continuation(documents, manifests):
+    """A second export of a program's record says it is one, and the first
+    does not — a copy-paste second file would read as a second program."""
+    checked = 0
+    for patient_id, manifest in manifests.items():
+        if _note_free(manifest):
+            continue
+        order = manifest["documents"]
+        programs_by_document: dict[str, set[str]] = {b: set() for b in order}
+        for program in manifest["wm_programs"]:
+            for encounter in program["encounters"]:
+                programs_by_document[encounter["document"]].add(program["program_id"])
+        for index, basename in enumerate(order):
+            text = documents[patient_id][basename]
+            earlier = set().union(*(programs_by_document[b] for b in order[:index]))
+            continued = bool(programs_by_document[basename] & earlier)
+            assert ("(CONTINUED)" in text) == continued, (
+                f"{patient_id}/{basename}: continuation heading "
+                f"{'missing' if continued else 'present'}"
+            )
+            checked += continued
+    assert checked >= 4, "the four run-bearing patients each continue a program"
+
+
+def test_the_distractor_documents_carry_no_weight_management_content(
+    documents, manifests
+):
+    """E7's and E8's charts cite nothing today, and the second document must
+    not change that (D104): every document of theirs beyond the one carrying
+    an assertion holds traps only."""
+    checked = 0
+    for manifest in manifests.values():
+        if not ({"E7", "E8"} & set(manifest["cases"])):
+            continue
+        carrying = {a["document"] for a in manifest["program_assertions"]}
+        for basename, text in documents[manifest["patient_id"]].items():
+            if basename in carrying:
+                continue
+            lowered = _norm(text).lower()
+            assert "program visit" not in lowered
+            assert "supervised" not in lowered or "without clinical supervision" in lowered
+            assert not re.search(r"BMI [\d.]+", text)
+            checked += 1
+    assert checked >= 2
 
 
 def test_no_note_leaks_a_trap_label(notes):

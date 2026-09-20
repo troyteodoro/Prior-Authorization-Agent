@@ -1,6 +1,6 @@
 {
   "eval_set_id": "us1-v1",
-  "note": "Labeled acceptance cases: spec §6's fourteen plus NP1 (REQ-1, outside §6 per D75) and J1 (the second jurisdiction, outside §6 per D102). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, never from an observed run. Row semantics: D75.",
+  "note": "Labeled acceptance cases: spec §6's fifteen plus NP1 (REQ-1, outside §6 per D75) and J1 (the second jurisdiction, outside §6 per D102). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, never from an observed run. Row semantics: D75.",
   "cases": [
     {
       "case_id": "E3",
@@ -58,7 +58,7 @@
       "note": "'All criteria met' is E1's label, so all seven are pinned - the one row where that is transcription from §6 rather than labeling from the observed run (D75, spec §8).",
       "expect": {
         "outcome": "MET",
-        "max_model_calls": 8,
+        "max_model_calls": 9,
         "criteria": {
           "a": {
             "verdict": "MET"
@@ -109,7 +109,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 4,
+        "max_model_calls": 5,
         "criteria": {
           "c3": {
             "verdict": "NOT_MET"
@@ -128,7 +128,7 @@
       "note": "NOT_MET, never INSUFFICIENT_EVIDENCE: the evidence exists and falls outside the recency window (REQ-16, REQ-32, Art. IV).",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 7,
+        "max_model_calls": 8,
         "criteria": {
           "c2": {
             "verdict": "NOT_MET"
@@ -146,7 +146,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 7,
+        "max_model_calls": 8,
         "criteria": {
           "c4": {
             "verdict": "NOT_MET"
@@ -165,7 +165,7 @@
       "note": "Same chart as E2, at the harness clock: the BMI that fires sc2 in 2024 is stale here, so the criteria path runs and c1 abstains. The overall NOT_MET is criterion (a)'s - the stale BMI is outside its lookback (REQ-16) - and c1's abstention is the labeled claim.",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 3,
+        "max_model_calls": 4,
         "criteria": {
           "c1": {
             "verdict": "INSUFFICIENT_EVIDENCE",
@@ -185,7 +185,7 @@
       "note": "The refusal test: an assertion is never counted as an event (REQ-35), so zero wm_events reach c3 and the gap names what to collect - the visit notes behind the claim.",
       "expect": {
         "outcome": "INSUFFICIENT_EVIDENCE",
-        "max_model_calls": 2,
+        "max_model_calls": 3,
         "criteria": {
           "c3": {
             "verdict": "INSUFFICIENT_EVIDENCE",
@@ -205,7 +205,7 @@
       "note": "The honesty test: the trap dates in the gap month are non-encounters (REQ-9) and must not bridge the run. Shares E4's chart and run; the label is that c3 stays NOT_MET with the traps present.",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 4,
+        "max_model_calls": 5,
         "criteria": {
           "c3": {
             "verdict": "NOT_MET"
@@ -224,7 +224,7 @@
       "note": "Criterion-scoped (D72): the structured value stands, criterion (a) is MET, and the disagreement is one discrepancies[] entry, never a gap. The overall NOT_MET is E6's - same patient, same run.",
       "expect": {
         "outcome": "NOT_MET",
-        "max_model_calls": 7,
+        "max_model_calls": 8,
         "criteria": {
           "a": {
             "verdict": "MET"
@@ -243,7 +243,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "INSUFFICIENT_EVIDENCE",
-        "max_model_calls": 2,
+        "max_model_calls": 3,
         "criteria": {
           "a": {
             "verdict": "INSUFFICIENT_EVIDENCE",
@@ -262,7 +262,7 @@
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "MET",
-        "max_model_calls": 8,
+        "max_model_calls": 9,
         "criteria": {
           "a": {
             "verdict": "MET"
@@ -282,7 +282,7 @@
       "note": "MET on the qualifying run: the non-qualifying program on the same chart must not drag c3 down.",
       "expect": {
         "outcome": "MET",
-        "max_model_calls": 8,
+        "max_model_calls": 9,
         "criteria": {
           "c3": {
             "verdict": "MET"
@@ -305,6 +305,26 @@
         "criteria": {
           "a": {
             "verdict": "MET"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E13",
+      "story": "US-4",
+      "spec_ref": "docs/spec.md §6, E13",
+      "description": "Qualifying run documented across two chart notes",
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "Shares E1's determination (same patient, procedure, as_of). The labeled claim is the citation spread: the manifest assigns the four-month run's March and April visits to chart_note_1.txt and its May and June visits to chart_note_2.txt (T-81, D104), so c3 MET must cite spans in both documents.",
+      "expect": {
+        "outcome": "MET",
+        "max_model_calls": 9,
+        "criteria": {
+          "c3": {
+            "verdict": "MET",
+            "distinct_documents": 2
           }
         }
       }
@@ -336,7 +356,7 @@
       "expect": {
         "outcome": "INSUFFICIENT_EVIDENCE",
         "policy_version_id": "ncd-100.1-jjm-v1",
-        "max_model_calls": 5,
+        "max_model_calls": 6,
         "criteria": {
           "c2": {
             "verdict": "MET"

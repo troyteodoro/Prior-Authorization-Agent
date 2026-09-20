@@ -250,9 +250,10 @@ def test_the_report_says_it_is_generated():
 def _stubbed_recall(script, tmp_path, monkeypatch, mutate):
     """Run `_recall_section` against a recording `mutate` has edited.
 
-    The live corpus cannot produce a miss on either figure — one note per
-    patient, and `AgenticRetrievalPlanner` raises rather than returning less
-    (D91) — so the only way to show the section can see one is to build it.
+    The committed recording may or may not carry a miss — since T-81 a planner
+    can skip one of a chart's two notes (D104), and on the measured day it did
+    not — so the way to show the section can *see* one, whatever the day
+    produced, is to build it.
     """
     recording = json.loads(
         (REPO_ROOT / "eval" / "agentic" / "results.json").read_text(encoding="utf-8")
@@ -315,8 +316,8 @@ def test_a_skipped_document_resolves_below_one_on_the_direct_figure(
 ):
     """T-80's half of the same guard (D91).
 
-    The direct figure cannot fall on this corpus, so nothing a real run does
-    can exercise the comparison behind it. Without this, `_recall_section`
+    The measured recording gathered every note, so nothing in it exercises
+    the comparison behind the direct column. Without this, `_recall_section`
     could compute the direct column as a constant and every gate would agree.
     """
 
@@ -409,20 +410,66 @@ def test_recall_requires_every_cited_document_not_merely_one():
     )
 
 
-def test_the_recall_section_names_what_the_direct_figure_cannot_do():
-    """D91, and D85's rule about where a caveat lives.
+def test_dropping_one_of_a_charts_two_notes_moves_the_direct_figure(
+    script, tmp_path, monkeypatch
+):
+    """T-81 (D104): the behavioural twin of the parse pin below. E13's
+    criterion cites both of its chart's notes, so dropping *one* of them from
+    the gathered set must lower c3's direct figure — an intersection reading
+    would keep it at 1.000 because the other note is still there."""
 
-    The direct figure is 1.000 by construction on this corpus. A reader who
-    quotes it without that sentence is quoting something else, and a caveat
-    that lives in a decisions entry is a caveat that does not travel.
-    """
-    text = REPORT.read_text(encoding="utf-8")
-    assert "1.000 by construction on this corpus" in text
-    assert "one note per patient" in text
-    assert "T-81" in text, (
-        "the report reports a figure that cannot fall without naming the task "
-        "that would let it"
+    def mutate(recording):
+        victim = next(
+            row for row in recording["patients"] if "E13" in (row.get("cases") or [])
+        )
+        notes = [
+            d for d in victim["agentic"]["gathered"]["document_ids"]
+            if d.endswith(".txt")
+        ]
+        assert len(notes) == 2, "E13's chart is two notes"
+        victim["agentic"]["gathered"]["document_ids"] = [
+            d for d in victim["agentic"]["gathered"]["document_ids"] if d != notes[-1]
+        ]
+
+    overall = _stubbed_recall(script, tmp_path, monkeypatch, mutate)
+    direct = overall.rsplit("|", 3)[1]
+    assert "1.000" not in direct, (
+        f"direct recall stayed at 1.000 ({overall.strip()}) with one of E13's "
+        "two notes un-gathered; a criterion cited from two documents is exactly "
+        "the case `wanted <= gathered` and `wanted & gathered` disagree on"
     )
+
+
+def test_the_oracle_gathered_every_note_on_file():
+    """The fixed planner reads every note (D63). If its gathered count ever
+    falls short of the store's, the oracle is no longer the regression oracle
+    and the recall figures are against a shorter chart than the chart."""
+    recording = json.loads(
+        (REPO_ROOT / "eval" / "agentic" / "results.json").read_text(encoding="utf-8")
+    )
+    manifest = json.loads(
+        (REPO_ROOT / "data" / "patients" / "notes" / "manifest.json").read_text(encoding="utf-8")
+    )
+    on_file: dict[str, int] = {}
+    for record in manifest["notes"]:
+        on_file[record["patient_id"]] = on_file.get(record["patient_id"], 0) + 1
+    for row in recording["patients"]:
+        assert row["oracle"]["gathered"]["notes"] == on_file[row["patient_id"]], row["patient_id"]
+        assert on_file[row["patient_id"]] >= 2, "every measured chart is two notes (T-81)"
+
+
+def test_the_recall_section_says_the_direct_figure_can_fall():
+    """D91's reversal, taken by D104: the construction caveat comes out of the
+    report because it stopped being true, and the report says instead what the
+    planner did against a corpus where a skipped note is reachable."""
+    text = REPORT.read_text(encoding="utf-8")
+    section = text[text.index("## Planner recall") : text.index("## Cost and latency")]
+    assert "by construction" not in section, (
+        "the caveat D91 wrote for a one-note corpus is still in the report"
+    )
+    assert "the direct figure can fall" in section
+    assert "gathered every note on file for" in section
+    assert "| Patient (cases) | Notes on file | Gathered | Cited |" in section
     assert "D4's reversal condition now reads against a number" in text
 
 
@@ -508,25 +555,29 @@ def test_anchoring_reports_the_reask_per_recording_from_the_note_blocks(script):
 
 def test_anchoring_reads_every_committed_recording(script):
     """The figures the section exists to carry, pinned to the recordings as
-    committed. T-89's three re-measurements (D103) anchored every span on the
-    first turn — E8's assertion included, the quote T-63's tool-fetch run had
-    paraphrased (D71, D98) — so the re-ask had nothing to ask about and the
-    columns read zero asked, zero recovered."""
+    committed. T-81's three re-measurements on the two-note corpus (D104)
+    anchored every span on the first turn in the direct and inline runs; the
+    tool-fetch run paraphrased E8's assertion once more — *completed* for
+    *completing*, the instance P2 was written from (D71, D98) — and the
+    re-ask recovered it, so that column reads one asked, one recovered."""
     text = "\n".join(script._anchoring_section())
     assert (
-        "| T-89 direct (`results.json`) | 11 | 169 | 169 | **0** | 0 | **0** "
+        "| T-81 direct (`results.json`) | 17 | 175 | 175 | **0** | 0 | **0** "
         "| 2/2 = **1.000** |"
     ) in text
     assert (
-        "| T-89 ADK inline (`adk_results_inline.json`) | 11 | 165 | 165 | **0** "
+        "| T-81 ADK inline (`adk_results_inline.json`) | 17 | 165 | 165 | **0** "
         "| 0 | **0** | 2/2 = **1.000** |"
     ) in text
     assert (
-        "| T-89 ADK tool-fetch (`adk_results_tool_fetch.json`) | 6 (5 skipped) "
-        "| 76 | 76 | **0** | 0 | **0** | 1/1 = **1.000** |"
+        "| T-81 ADK tool-fetch (`adk_results_tool_fetch.json`) | 12 (5 skipped) "
+        "| 76 | 76 | **0** | 1 | **1** | 1/1 = **1.000** |"
     ) in text
     assert "**No claim was dropped in any recording.**" in text
-    assert "asked about 0 quotes and recovered 0 (D103)" in text
+    assert "asked about 1 quote and recovered 1 (D103)" in text
+    assert "completing a six-month" in text, (
+        "the recovered quote is named, per recording and per note"
+    )
 
 
 def test_anchoring_is_in_the_committed_report():

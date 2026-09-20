@@ -23,11 +23,12 @@ from pa_agent.contracts import (
     DeterminationOutcome,
     EvidenceSpan,
     GapReason,
+    NoteBmi,
     Observation,
     WmEvent,
 )
 from pa_agent.criteria import evaluate_criterion_a, most_recent_bmi
-from pa_agent.reconcile import note_bmi, reconcile_bmi
+from pa_agent.reconcile import note_bmis, reconcile_bmi
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
 
@@ -60,41 +61,46 @@ def patients():
 
 @pytest.fixture(scope="module")
 def extracted() -> dict[str, dict]:
-    """Case id -> the note side T-15/T-60 actually recorded."""
+    """Case id -> the note side T-15/T-60 actually recorded, merged across the
+    chart's documents the way `step_extract` merges it (T-81, D104): events
+    from every document, and every stated current BMI carried."""
     results = json.loads(RESULTS_PATH.read_text(encoding="utf-8"))
     by_case: dict[str, dict] = {}
     for record in results["notes"]:
-        payload = {
-            "events": [
-                WmEvent(
-                    event_date=date.fromisoformat(e["date"]),
-                    span=EvidenceSpan.model_validate(e["span"]),
-                    bmi=e["bmi"],
-                    bmi_span=(
-                        EvidenceSpan.model_validate(e["bmi_span"])
-                        if e["bmi_span"] else None
-                    ),
-                    diet_documented=e["diet_documented"],
-                    diet_span=(
-                        EvidenceSpan.model_validate(e["diet_span"])
-                        if e["diet_span"] else None
-                    ),
-                    activity_documented=e["activity_documented"],
-                    activity_span=(
-                        EvidenceSpan.model_validate(e["activity_span"])
-                        if e["activity_span"] else None
-                    ),
-                )
-                for e in record["events"]
-            ],
-            "current_bmi": record.get("current_bmi"),
-            "current_bmi_span": (
-                EvidenceSpan.model_validate(record["current_bmi_span"])
-                if record.get("current_bmi_span") else None
-            ),
-        }
+        events = [
+            WmEvent(
+                event_date=date.fromisoformat(e["date"]),
+                span=EvidenceSpan.model_validate(e["span"]),
+                bmi=e["bmi"],
+                bmi_span=(
+                    EvidenceSpan.model_validate(e["bmi_span"])
+                    if e["bmi_span"] else None
+                ),
+                diet_documented=e["diet_documented"],
+                diet_span=(
+                    EvidenceSpan.model_validate(e["diet_span"])
+                    if e["diet_span"] else None
+                ),
+                activity_documented=e["activity_documented"],
+                activity_span=(
+                    EvidenceSpan.model_validate(e["activity_span"])
+                    if e["activity_span"] else None
+                ),
+            )
+            for e in record["events"]
+        ]
+        stated = []
+        if record.get("current_bmi") is not None and record.get("current_bmi_span"):
+            stated.append(NoteBmi(
+                value=record["current_bmi"],
+                span=EvidenceSpan.model_validate(record["current_bmi_span"]),
+            ))
         for case in record.get("cases", []):
-            by_case[case] = payload
+            payload = by_case.setdefault(case, {"events": [], "stated": []})
+            payload["events"].extend(events)
+            payload["stated"].extend(stated)
+    for payload in by_case.values():
+        payload["events"].sort(key=lambda e: e.event_date)
     return by_case
 
 
@@ -106,7 +112,7 @@ def _reconciled(case, tree, fact, patients, extracted) -> CriterionResult:
     note = extracted[case]
     return reconcile_bmi(
         fact, tree.criterion("a"), produced, observations,
-        note["events"], note["current_bmi"], note["current_bmi_span"],
+        note["events"], note["stated"],
     )
 
 
@@ -274,18 +280,102 @@ def test_the_tolerance_actually_governs(tree, fact):
 # --------------------------------------------------------------------------
 
 
-def test_the_note_level_bmi_wins_over_an_encounter(extracted):
-    """T-60's rule (D50): current_bmi is the patient's BMI now, an event BMI is
-    dated in the past."""
-    span = EvidenceSpan(document_id="n", char_start=0, char_end=4, quote="1111")
+def _span(document_id: str, start: int = 0) -> EvidenceSpan:
+    return EvidenceSpan(
+        document_id=document_id, char_start=start, char_end=start + 4, quote="1111"
+    )
+
+
+def _structured(value: float, span: EvidenceSpan) -> list[Observation]:
+    return [Observation(code="39156-5", value=value, unit="kg/m2",
+                        effective_date=date(2026, 6, 1), span=span)]
+
+
+def test_a_stated_bmi_wins_over_an_encounter():
+    """T-60's rule (D50): a stated current BMI is the patient's BMI now, an
+    event BMI is dated in the past."""
+    span = _span("n")
     events = [WmEvent(event_date=date(2026, 8, 1), span=span, bmi=30.0, bmi_span=span)]
-    assert note_bmi(events, 44.0, span) == (44.0, span)
+    stated = [NoteBmi(value=44.0, span=span)]
+    assert note_bmis(events, stated) == stated
 
 
-def test_an_unanchored_note_bmi_is_no_note_bmi():
+def test_event_bmis_are_the_fallback_only_when_no_note_states_one():
+    """D50's fallback, kept under REQ-34a: the latest dated event BMI is the
+    one note-side value when no document states a current one — never one
+    more value beside the stated ones."""
+    a, b = _span("n", 0), _span("n", 10)
+    events = [
+        WmEvent(event_date=date(2026, 5, 1), span=a, bmi=30.0, bmi_span=a),
+        WmEvent(event_date=date(2026, 8, 1), span=b, bmi=31.0, bmi_span=b),
+    ]
+    assert note_bmis(events, []) == [NoteBmi(value=31.0, span=b)]
+    assert note_bmis(events, [NoteBmi(value=44.0, span=a)]) == [NoteBmi(value=44.0, span=a)]
+
+
+def test_no_stated_bmi_and_no_event_bmi_is_no_note_bmi():
     """D15: a BMI nobody can cite is not a documented BMI, so it cannot found a
     discrepancy or a conflict."""
-    assert note_bmi([], 44.0, None) is None
+    assert note_bmis([], []) == []
+
+
+# --------------------------------------------------------------------------
+# REQ-34a (T-81, D104): every note-level value is reconciled, none is chosen
+# --------------------------------------------------------------------------
+
+
+def test_two_note_values_beyond_tolerance_record_two_entries(tree, fact):
+    """"First note wins" would record one entry and lose the other."""
+    span = _span("bundle")
+    obs = _structured(40.0, span)
+    produced = evaluate_criterion_a(tree.criterion("a"), obs, AS_OF)
+    stated = [NoteBmi(value=45.0, span=_span("p/chart_note_1.txt")),
+              NoteBmi(value=36.0, span=_span("p/chart_note_2.txt"))]
+    result = reconcile_bmi(fact, tree.criterion("a"), produced, obs, [], stated)
+    assert result.verdict is CriterionVerdict.MET
+    assert [d.other_value for d in result.discrepancies] == [45.0, 36.0]
+    assert [d.other_span.document_id for d in result.discrepancies] == [
+        "p/chart_note_1.txt", "p/chart_note_2.txt"
+    ], "each entry cites the note that stated its value"
+
+
+def test_a_conflict_in_any_note_value_abstains_even_when_another_agrees(tree, fact):
+    """Selecting the agreeing note — by position or by date — would pass a
+    chart that contradicts itself across the threshold as MET."""
+    span = _span("bundle")
+    obs = _structured(36.0, span)
+    produced = evaluate_criterion_a(tree.criterion("a"), obs, AS_OF)
+    agreeing = NoteBmi(value=36.2, span=_span("p/chart_note_1.txt"))
+    straddling = NoteBmi(value=34.8, span=_span("p/chart_note_2.txt"))
+    for stated in ([agreeing, straddling], [straddling, agreeing]):
+        result = reconcile_bmi(fact, tree.criterion("a"), produced, obs, [], stated)
+        assert result.verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
+        assert result.gap_reason is GapReason.SOURCE_CONFLICT
+        assert result.spans == []
+        assert "34.8" in (result.detail or "")
+
+
+def test_reconciliation_is_independent_of_note_order(tree, fact):
+    span = _span("bundle")
+    obs = _structured(40.0, span)
+    produced = evaluate_criterion_a(tree.criterion("a"), obs, AS_OF)
+    first = NoteBmi(value=45.0, span=_span("p/chart_note_1.txt"))
+    second = NoteBmi(value=36.0, span=_span("p/chart_note_2.txt"))
+    forward = reconcile_bmi(fact, tree.criterion("a"), produced, obs, [], [first, second])
+    reverse = reconcile_bmi(fact, tree.criterion("a"), produced, obs, [], [second, first])
+    assert forward == reverse
+
+
+def test_a_second_note_inside_tolerance_records_nothing_for_itself(tree, fact):
+    """Materiality is per value (REQ-39): one note beyond tolerance, one
+    within it — one entry, not two and not zero."""
+    span = _span("bundle")
+    obs = _structured(40.0, span)
+    produced = evaluate_criterion_a(tree.criterion("a"), obs, AS_OF)
+    stated = [NoteBmi(value=45.0, span=_span("p/chart_note_1.txt")),
+              NoteBmi(value=40.5, span=_span("p/chart_note_2.txt"))]
+    result = reconcile_bmi(fact, tree.criterion("a"), produced, obs, [], stated)
+    assert [d.other_value for d in result.discrepancies] == [45.0]
 
 
 def test_a_note_with_no_bmi_leaves_the_verdict_alone(tree, fact, patients):

@@ -81,9 +81,19 @@ def extracted() -> dict[str, dict]:
             for a in record["assertions"]
         ]
         payload = {"events": events, "assertions": assertions, "note": record["note_id"]}
-        for case in record.get("cases", []):
-            by_case[case] = payload
         by_case[record["note_id"]] = payload
+        # A chart is two documents since T-81 (D104) and the criteria read
+        # the merged, date-ordered event list `step_extract` builds — so a
+        # case's payload is the union of its documents' records.
+        for case in record.get("cases", []):
+            merged = by_case.setdefault(
+                case, {"events": [], "assertions": [], "note": []}
+            )
+            merged["events"].extend(events)
+            merged["assertions"].extend(assertions)
+            merged["note"].append(record["note_id"])
+    for payload in by_case.values():
+        payload["events"].sort(key=lambda e: e.event_date)
     return by_case
 
 

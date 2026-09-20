@@ -322,6 +322,16 @@ criterion instead resolves `INSUFFICIENT_EVIDENCE` with `gap_reason`
 extraction and may downgrade a verdict criterion (a) already produced; criterion
 (a)'s own evaluation stays model-free. *(Art. II, D11)*
 
+**REQ-34a** When more than one note-extracted value exists for the fact — a
+chart is several documents since T-81, and each may state a current BMI —
+every one is compared to the structured value independently, and no note
+value is selected over another by position or date. Any pair across the
+threshold resolves the criterion `INSUFFICIENT_EVIDENCE` with `gap_reason`
+`SOURCE_CONFLICT`; each remaining pair at or beyond tolerance is one
+`discrepancies[]` entry citing the note that stated it. Note-vs-note
+disagreement is not adjudicated: the structured value is authoritative and
+each note is measured against it. *(Art. IV, D50, D104)*
+
 ### Verification
 
 **REQ-17** Each accepted verdict is checked by a verifier receiving only the
@@ -444,6 +454,7 @@ Each becomes a labeled eval case. This list is the eval set's outline.
 | E10c | Structured 37.65, note 37.6 — below tolerance | `MET`, `discrepancies[]` empty |
 | E11 | Two supervised programs, one qualifying, one not | `MET` on the qualifying run |
 | E12 | BMI exactly 35.0 | c(a) `MET`, boundary inclusive |
+| E13 | Qualifying run documented across two chart notes | c3 `MET`, cited spans in two distinct `document_id`s *(T-81, D104)* |
 
 E8 is the refusal test. E9 and E10b are the honesty tests. E2 and E3 are the
 determinism tests and should complete in milliseconds.
@@ -704,7 +715,12 @@ than a percentage point in every table. A precision of 1.000 over thirteen
 says the approach does not obviously fail, and nothing more. Since T-88 the
 set is sixteen rows over eight bundles, one of them a declared clone that
 shares its note's bytes with its source *(D102)*; the count moved by one row
-and the bound did not.
+and the bound did not. Since T-81 it is seventeen rows over fourteen chart
+notes *(D104)*: every note-bearing chart is two documents, a split of the
+facts its manifest already declared, so the document count doubled while
+the fact set — and therefore every existing label — stayed as it was. The
+row that moved is `E13`, the one labeled claim the split creates. More
+patients is a separate decision, taken after T-81's numbers landed *(D97)*.
 
 ### P4 — The ground truth is a first draft
 
@@ -713,11 +729,12 @@ creation and reviewed as they were written; they are a working first draft.
 The mechanical safeguards are what carry the weight: manifests are written
 from the bundles *before* the notes are synthesized, the system under test
 never reads them, and every cited span is validated against the source rather
-than against a label. What the labels have not had is a second full pass, and
-that is deferred rather than open — re-labeling and review ride with the
-corpus work of a later version, and T-81's second note per patient, which
-re-measures everything downstream, is the natural point to take it *(D96)*.
-Until then P3's set size, not provenance, is the real bound on the numbers.
+than against a label. The second full pass was taken with T-81 *(D96, D104)*:
+every row's expected verdicts were re-derived from the fact manifests and
+the two trees' constants — never from an observed run — and the per-row
+table sits in D104 with the owner's review of it recorded by the close.
+Every label agreed with its re-derivation; the one addition is `E13`. P3's
+set size, not provenance, is the real bound on the numbers.
 
 ### P5 — The verifier is blind on purpose, and that costs recall of a certain kind
 
@@ -756,9 +773,19 @@ tool payload. A run that did not error gathered everything there was. So the
 *cited* figure beside it is the one still carrying information — and it did
 settle the question the bound could not: every patient gathered two documents
 and two of the six cite only one, which means those notes reached the criteria
-and yielded nothing to cite. Gathered and uncitable, never skipped. A second
-note per patient (T-81) is what would let the direct figure fall, and it is on
-the board.
+and yielded nothing to cite. Gathered and uncitable, never skipped.
+
+Since T-81 every note-bearing chart is two documents and the qualifying run
+straddles them wherever a run exists *(D104)*, so the planner may name one
+of the two and the run succeeds with a shorter chart — the direct figure
+can fall, and `eval/report.md` reports whether it did as a per-patient table
+of notes on file against notes gathered. On the first measurement it did
+not: the planner gathered both notes for every patient, and the two charts
+that cite no note are still gathered-and-uncitable. The direct figure is
+now the one to quote and the cited figure the bound beneath it, which is
+D91's reversal condition met. What remains true is that one run is a sample:
+a free-tier tool loop is not reproducible at temperature 0 (D91), and the
+figure is re-measured, never re-run.
 
 ### P8 — Everything free is a replay
 

@@ -235,10 +235,16 @@ def self_check() -> list[tuple[str, bool, str]]:
 
 
 def _patients() -> list[dict]:
+    """One row per patient. The notes manifest lists one record per document
+    and a chart is two of them since T-81 (D104); a patient measured once per
+    record would be measured twice."""
     manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
-    return [
-        {"patient_id": r["patient_id"], "cases": r["cases"]} for r in manifest["notes"]
-    ]
+    patients: dict[str, dict] = {}
+    for r in manifest["notes"]:
+        patients.setdefault(
+            r["patient_id"], {"patient_id": r["patient_id"], "cases": r["cases"]}
+        )
+    return list(patients.values())
 
 
 def _load_env() -> None:
@@ -600,6 +606,10 @@ def verify(report_only: bool = False) -> int:
         problems.append("no patient produced a comparable determination")
     if payload.get("model") is None:
         problems.append("the recording does not name the model it measured")
+    notes_on_file = _notes_on_file()
+    seen_patients = [row["patient_id"] for row in payload.get("patients", [])]
+    if len(seen_patients) != len(set(seen_patients)):
+        problems.append("a patient appears in more than one row")
     for row in payload.get("patients", []):
         if row.get("agentic") and row["disagreement"] is None:
             problems.append(f"{row['patient_id']}: scored with no differential computed")
@@ -609,7 +619,7 @@ def verify(report_only: bool = False) -> int:
                     f"{row['patient_id']}: {row['agentic']['spans_total'] - row['agentic']['spans_valid']} "
                     "span(s) did not slice back (Art. III)"
                 )
-        problems.extend(_gathered_problems(row))
+        problems.extend(_gathered_problems(row, notes_on_file))
 
     if problems:
         print("  recording is not usable as a measurement:")
@@ -625,8 +635,18 @@ def verify(report_only: bool = False) -> int:
     return EXIT_OK
 
 
-def _gathered_problems(row: dict) -> list[str]:
-    """T-80's three checks on one patient's row (D91).
+def _notes_on_file() -> dict[str, int]:
+    """patient_id -> how many notes the store serves, from the notes manifest
+    (which the store itself reads), so the check needs no port construction."""
+    manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
+    counts: dict[str, int] = {}
+    for r in manifest["notes"]:
+        counts[r["patient_id"]] = counts.get(r["patient_id"], 0) + 1
+    return counts
+
+
+def _gathered_problems(row: dict, notes_on_file: dict[str, int] | None = None) -> list[str]:
+    """T-80's three checks on one patient's row (D91), plus T-81's fourth.
 
     Split out of `verify` because each is a separate claim about the recording
     and a reader should be able to see which one failed without reading a
@@ -642,6 +662,17 @@ def _gathered_problems(row: dict) -> list[str]:
             f"{patient_id}: the oracle side records no gathered bundle. REQ-25 is "
             "about what the planner gathered, and a recording that only holds "
             "what was cited is the recording D86 had to settle for."
+        )
+    # T-81 (D104): the fixed planner gathers every note the store serves. A
+    # shortfall is an instrument fault, not a finding — the oracle is the
+    # regression oracle only while it reads the whole chart, and on a two-note
+    # corpus a one-note oracle would grade the agentic side against less.
+    on_file = (notes_on_file or {}).get(patient_id)
+    if oracle and on_file is not None and oracle.get("notes") != on_file:
+        problems.append(
+            f"{patient_id}: the oracle gathered {oracle.get('notes')} note(s) "
+            f"and the store serves {on_file}; the fixed planner reads every "
+            "note (D63), so this is an instrumentation fault"
         )
     if row.get("agentic") is None:
         return problems

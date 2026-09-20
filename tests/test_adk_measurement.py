@@ -86,12 +86,14 @@ def store() -> LocalPatientStore:
 # --------------------------------------------------------------------------
 
 
-def test_the_eleven_notes_split_six_addressable_and_five_not(cases, store, script):
-    """D67's finding, pinned against the real store and the real corpus."""
+def test_the_seventeen_notes_split_twelve_addressable_and_five_not(cases, store, script):
+    """D67's finding, pinned against the real store and the real corpus: the
+    five spike notes have no address on the patient plane; the synthesized
+    documents — twelve since T-81 gave each chart two (D104) — do."""
     measurable, skipped = script.partition(cases, store, tool_fetch=True)
 
-    assert len(cases) == 11, "T-63 measures eleven notes"
-    assert len(measurable) == 6
+    assert len(cases) == 17, "T-81 measures seventeen notes"
+    assert len(measurable) == 12
     assert len(skipped) == 5
     assert {c["corpus"] for c in measurable} == {"synthesized"}
     assert {c["corpus"] for c, _ in skipped} == {"spike_001"}
@@ -440,7 +442,7 @@ def test_an_addressable_note_runs_end_to_end_through_the_scoped_reader(
     from pa_agent.agent.extraction_agent import AdkExtractionRunner
 
     measurable, _ = script.partition(cases, store, tool_fetch=True)
-    case = next(c for c in measurable if c["note_id"] == "E1+E11+E10c")
+    case = next(c for c in measurable if c["note_id"] == "E1+E11+E10c+E13/1")
 
     recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
     payload = next(
@@ -560,7 +562,7 @@ def _install_stub_runner(script, monkeypatch) -> list[str]:
 
 @pytest.mark.parametrize(
     "tool_fetch, expected",
-    [(False, (10, 1, 0)), (True, (5, 1, 5))],
+    [(False, (16, 1, 0)), (True, (11, 1, 5))],
     ids=["inline", "tool_fetch"],
 )
 def test_the_whole_measure_path_runs_without_a_model(
@@ -583,7 +585,7 @@ def test_the_whole_measure_path_runs_without_a_model(
     written = json.loads(script.adk_path(tool_fetch).read_text(encoding="utf-8"))
     aggregate = written["aggregate"]
     assert (aggregate["notes"], aggregate["failed"], aggregate["skipped"]) == expected
-    assert len(written["notes"]) == 11, "every note is recorded, whatever happened"
+    assert len(written["notes"]) == 17, "every note is recorded, whatever happened"
     assert written["tool_fetch"] is tool_fetch
 
     out = capsys.readouterr().out
@@ -630,7 +632,7 @@ def test_each_mode_writes_its_own_recording_and_the_pair_survives(
         "the --tool-fetch run overwrote the recording the plain run just made"
     )
     assert tool_fetch.exists()
-    for path, mode, reached in ((inline, False, 11), (tool_fetch, True, 6)):
+    for path, mode, reached in ((inline, False, 17), (tool_fetch, True, 12)):
         payload = json.loads(path.read_text(encoding="utf-8"))
         aggregate = payload["aggregate"]
         assert payload["tool_fetch"] is mode, f"{path.name} records the other mode"
@@ -982,7 +984,7 @@ def test_each_adk_recording_was_measured_on_the_code_s_configuration(name):
         f"{name}: measured on {recording['prompt_version']!r}; re-run "
         "scripts/run_adk_extraction.py (it spends model calls)"
     )
-    assert recording["task"] == "T-89" and recording["decision"] == "D103"
+    assert recording["task"] == "T-81" and recording["decision"] == "D104"
     assert recording["reask_rounds"] == 1
     for record in recording["notes"]:
         if record.get("score"):

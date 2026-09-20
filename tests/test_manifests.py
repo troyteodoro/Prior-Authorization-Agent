@@ -33,11 +33,13 @@ VALUE_SET_CODES = {"44054006", "59621000"}
 
 EXPECTED_CASES = {
     "E1", "E2", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E10b", "E10c",
-    "E11", "E12", "J1",
+    "E11", "E12", "E13", "J1",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
 # J1 is the second jurisdiction (T-88, D102): a declared clone of E4's chart.
+# E13 (T-81, D104) is E1's chart with its qualifying run split across two
+# documents.
 DELIBERATELY_ABSENT = {"E3"}
 
 
@@ -137,7 +139,7 @@ def test_a_declared_clone_carries_its_source_facts_unchanged(manifests):
     (patient_id, body), = clones.items()
     source = manifests[body["cloned_from"]]
     assert source.get("cloned_from") is None, "a clone of a clone is not declared"
-    for field in ("wm_programs", "traps", "program_assertions", "as_of"):
+    for field in ("wm_programs", "traps", "program_assertions", "as_of", "documents"):
         assert body[field] == source[field], f"{field} drifted from the source's"
     assert body["cases"] == ["J1"]
     assert not set(body["cases"]) & set(source["cases"])
@@ -363,3 +365,120 @@ def test_e10b_crosses_the_threshold(manifests, store):
     assert structured < 35.0 < note_bmi, (
         "the disagreement must cross 35.0 for SOURCE_CONFLICT to be the label"
     )
+
+
+# --------------------------------------------------------------------------
+# Two documents per chart (T-81, D104)
+# --------------------------------------------------------------------------
+
+
+def _facts(manifest: dict) -> list[dict]:
+    return (
+        _encounters(manifest) + manifest["traps"] + manifest["program_assertions"]
+    )
+
+
+def _note_bearing(manifests: dict[str, dict]) -> list[dict]:
+    return [m for m in manifests.values() if m.get("note") is not False]
+
+
+def test_every_note_bearing_manifest_declares_at_least_two_documents(manifests):
+    """One document per chart is the corpus D91 measured recall against and
+    found it could not fall; two is what T-81 exists to provide."""
+    for body in _note_bearing(manifests):
+        documents = body["documents"]
+        assert len(documents) >= 2, body["patient_id"]
+        assert len(set(documents)) == len(documents), "duplicate basename"
+        assert all("/" not in d for d in documents), "a basename, not a path"
+
+
+def test_every_declared_fact_is_assigned_to_a_declared_document(manifests):
+    """A scalar `document` per fact makes 'exactly one document' structural;
+    this makes it 'a declared one', so a misspelling cannot leave a fact
+    unrendered."""
+    for body in _note_bearing(manifests):
+        for fact in _facts(body):
+            assert fact.get("document") in body["documents"], (
+                f"{body['patient_id']}: {fact['date']} is assigned to "
+                f"{fact.get('document')!r}, not a declared document"
+            )
+
+
+def test_every_declared_document_carries_at_least_one_fact(manifests):
+    for body in _note_bearing(manifests):
+        carrying = {f["document"] for f in _facts(body)}
+        assert carrying == set(body["documents"]), (
+            f"{body['patient_id']}: {sorted(set(body['documents']) - carrying)} "
+            "would render as a header and an assessment with nothing between"
+        )
+
+
+def test_the_longest_run_straddles_documents_wherever_a_run_exists(manifests):
+    """REQ-25's mechanism: a skipped document must be able to shorten a run.
+    A split that leaves the whole run in one file leaves the direct recall
+    figure unable to fall for that patient."""
+    checked = 0
+    for body in _note_bearing(manifests):
+        for program in body["wm_programs"]:
+            months = _months(program["encounters"])
+            if _longest_run(months) < 2:
+                continue
+            # The encounters of the longest consecutive run, by month.
+            best: list[tuple[int, int]] = []
+            run: list[tuple[int, int]] = []
+            previous = None
+            for year, month in months:
+                index = year * 12 + month
+                run = run + [(year, month)] if previous is not None and index == previous + 1 else [(year, month)]
+                if len(run) > len(best):
+                    best = run
+                previous = index
+            in_run = [
+                e for e in program["encounters"]
+                if (int(e["date"][:4]), int(e["date"][5:7])) in best
+            ]
+            spread = {e["document"] for e in in_run}
+            if len(best) >= 4 or len(in_run) >= 3:
+                assert len(spread) >= 2, (
+                    f"{body['patient_id']} {program['program_id']}: the run "
+                    f"{best[0]}..{best[-1]} sits entirely in {spread}"
+                )
+                checked += 1
+    assert checked >= 4, "E1, E4, E5 and E6 each carry a run that must straddle"
+
+
+def test_the_no_evidence_charts_extra_document_is_a_pure_distractor(manifests):
+    """E7 and E8 cite nothing today (D91), and their second document must
+    not change that: beyond the document carrying an assertion, only traps."""
+    by_case = _by_case(manifests)
+    for case in ("E7", "E8"):
+        body = by_case[case]
+        carrying = {a["document"] for a in body["program_assertions"]}
+        for document in body["documents"]:
+            if document in carrying:
+                continue
+            facts = [f for f in _facts(body) if f["document"] == document]
+            assert facts, f"{case}: {document} carries nothing"
+            assert all("type" in f for f in facts), (
+                f"{case}: {document} carries an encounter or an assertion"
+            )
+
+
+def test_e13_is_e1s_run_split_across_two_documents(manifests):
+    body = _by_case(manifests)["E13"]
+    assert "E1" in body["cases"], "E13 shares E1's chart and determination"
+    qualifying = next(
+        p for p in body["wm_programs"]
+        if _longest_run(_months(p["encounters"])) >= 4
+    )
+    assert {e["document"] for e in qualifying["encounters"]} == set(body["documents"]), (
+        "c3's cited spans must name both documents"
+    )
+
+
+def test_a_note_free_manifest_declares_no_documents(manifests):
+    for body in manifests.values():
+        if body.get("note") is False:
+            assert "documents" not in body, (
+                f"{body['patient_id']}: note-free (D73) yet declares documents"
+            )
