@@ -127,6 +127,16 @@ the kind. **Unbuilt is not unclaimed:** a limit the tree declares is reviewed
 and reported as an abstention; a predicate nobody wrote is not allowed to
 borrow it *(REQ-57, REQ-58, D110)*.
 
+Its second and third rows put that to work on a real practice: **infliximab
+for rheumatoid arthritis**, compiled from Palmetto GBA's L35677 and A56432,
+which loads beside the bariatric trees over the same seven states and needed
+exactly one predicate kind the engine did not have *(T-92, D111)*; then that
+practice's patients and eval rows, which needed **no engine change at all**
+*(T-93, D113)*. **Diagnostic ultrasound is the next practice to be tested**,
+and the version closes on a compatibility account that classes every
+criterion of every tree as evaluated by an existing predicate kind, by a new
+one, or unclaimed. The measured results are in *Status in detail* below.
+
 ---
 
 ## The problem this design answers
@@ -522,14 +532,51 @@ real key ever appears in a tracked file).
 
 ```bash
 ./venv/bin/python scripts/check_gates.py      # all ten zero-cost gates, ~35s
-./venv/bin/python -m pytest -q                # the suite alone, ~25s
+./venv/bin/python -m pytest -q                # the suite alone, ~55s
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q         # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
+1006 tests across 37 files, 27 of them skipped — the skips are a per-tree
+constant matrix, which skips the pairs a given tree does not declare.
+
 Nothing in the gates spends a model call or touches the network — that is a
 membership rule enforced by a test, not a habit. The commands that do spend
 model calls each carry a free replay flag (below).
+
+#### Testing a practice's rules
+
+Each practice gets two files, and the split is deliberate: one drives the
+tree over charts **written in the test**, the other drives it over the
+**committed bundles**. A tree that loads and evaluates says nothing about
+whether a real chart exercises it, and a corpus that answers correctly says
+nothing about the cases the corpus does not contain.
+
+```bash
+# bariatric surgery — NCD 100.1 as two contractors operationalize it
+./venv/bin/python -m pytest tests/test_criteria_tree.py tests/test_criteria_c.py -q
+
+# rheumatoid arthritis — Palmetto GBA's L35677, the second practice
+./venv/bin/python -m pytest tests/test_infliximab_tree.py -q          # the tree
+./venv/bin/python -m pytest tests/test_rheumatology_corpus.py -q      # the charts
+```
+
+`tests/test_infliximab_tree.py` (23 tests) pins resolution, dispatch by
+declared kind, the declared-unclaimed criteria and the exclusion.
+`tests/test_rheumatology_corpus.py` (15 tests) pins the committed charts: that
+the value sets admit exactly what each chart carries in its declared code
+system, that the three labeled determinations answer as `eval/cases.json`
+says, that the denial cites the prescription that fired it, and that the
+generated pair differs by exactly the one fact criterion (b) turns on. It also
+states what it **cannot** catch and where that claim lives instead — no
+committed chart carries a finished course of a drug in either value set, so
+the "a completed order is not an active one" rule is held by the tree file,
+on charts written for it.
+
+**Diagnostic ultrasound is the next practice to be tested** — `T-94`, row 4
+of v1.2 — and it arrives as the same pair: a tree compiled from a fetched MAC
+document, then patients and rows over the committed corpus, with `MET`,
+`NOT_MET` on a frequency limit, and `NO_POLICY_FOUND` for an unlisted code.
 
 ### Testing the ADK path
 
@@ -563,7 +610,8 @@ the installed framework still discovers the agent.
 ./venv/bin/python eval/run_eval.py --update-baseline   # adopt drift, as a reviewed diff
 ```
 
-Fifteen labeled cases, every cited span re-validated by the scorer. The gate
+Twenty labeled cases across two practices, every cited span re-validated by
+the scorer. The gate
 fails on drift in **either** direction, so a case that *starts* passing is
 adopted explicitly with `--update-baseline` and a commit. Four result statuses
 stay distinct: `PASS`, `FAIL`, `BLOCKED` (the component does not exist yet —
@@ -721,14 +769,63 @@ gate rather than a plausible-looking table.
 | A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 
+### What the second practice measured (T-92, T-93)
+
+v1.2's question is whether the engine is bariatric-shaped, and the first
+three rows answer it with numbers rather than with an opinion.
+
+| Figure | Result |
+|---|---|
+| Predicate kinds the rheumatology tree needed that the engine lacked | **1** of 8 (`medication_value_set_active`) |
+| Its criteria evaluated deterministically / declared unclaimed | **2** / **3** — none unclaimed for want of a predicate |
+| Engine changes needed to give it patients and rows | **none** — no predicate, step, contract or tree moved |
+| Eval rows, and their result | **3** (`RA1`, `RA2`, `RA3`), all `PASS` |
+| Model calls spent by those rows | **3** — one replayed verifier call per cited verdict, no extraction at all |
+| Verifier claims, both tiers | **33** of 33 accepted, zero verdicts moved between tiers |
+| Bariatric verdicts, spans, rows or recordings that moved | **zero** |
+
+Three of five criteria are declared unclaimed, and that ratio is the finding
+rather than a shortfall: NYHA class is not in ICD-10, *"untreated"* is a
+judgment about the record, and disease activity is a clinical assessment no
+diagnosis code grades. A system reporting five deterministic verdicts here
+would be reporting three it cannot support. Each is unclaimed because of the
+**document or the chart**, never because a predicate is missing — the
+distinction `REQ-57` exists to keep, and the one this tree was most able to
+blur.
+
+The corpus half came out the same way. Synthea's own rheumatoid arthritis
+module supplies the diagnosis and methotrexate and **no biologic or JAK
+inhibitor at any population size**, so two of the three charts are generated
+patients and the third — the one the policy's combination limitation denies —
+is a declared clone of the first carrying one declared prescription, in the
+same shape the BMI-boundary observation has been declared since T-41. What a
+second practice cost, in the end, was corpus work and not engine work
+*(T-93, D113)*.
+
+Two costs are recorded rather than smoothed away. **An eval row with a cited
+verdict is a verifier measurement**: a claim digest is the criterion, the
+verdict and the sliced quote, so three new `MET` verdicts are three claims
+the recording must hold, re-measured on both tiers — v1.2's plan said zero
+model calls, which was true of extraction and never true of a cited row.
+And a tree declaring **no** note criterion still pays to read a chart's
+notes, because the extraction step is unconditional; it changes no verdict,
+so it is a cost and not a defect, and it is scheduled where extraction
+becomes tree-declared.
+
+**Diagnostic ultrasound is next** — row 4, a MAC document fetched and
+compiled, then patients and rows for a `MET`, a `NOT_MET` on a frequency
+limit and a `NO_POLICY_FOUND` for an unlisted code. Row 5 closes the version
+with the compatibility account: per practice, every criterion classed as
+evaluated by an existing predicate kind, by a new one, or unclaimed.
+
 **v1.1 is complete (D107).** Its last row was an entry rather than code: P6's
 path for model adjudication, written down and deliberately not taken. **The
 second tier landed with T-90 (D106).** The whole corpus was measured a second time on
 **Vertex** and committed beside the AI Studio recordings, which did not move;
 `eval/report.md` renders the two as columns. Fidelity did not change:
 precision, recall, REQ-9 exclusion and field agreement are 1.000 on both
-tiers, every span anchors, the verifier accepts the same thirty claims with no
-verdict moving, and 0 of 169, 0 of 165 and 0 of 76 model-emitted character
+tiers, every span anchors, the verifier accepted the same thirty claims the
+recording held at that round with no verdict moving, and 0 of 169, 0 of 165 and 0 of 76 model-emitted character
 offsets were usable — the fourth independent reproduction of that finding. The
 tool-calling path is where the tier bites: the ADK's injected
 `set_model_response` round trip is an AI Studio artifact and disappears on
