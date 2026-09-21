@@ -1,6 +1,7 @@
 {
   "policy_version_id": "ncd-100.1-jjm-v1",
   "title": "Bariatric surgery coverage, NCD 100.1 as operationalized by Palmetto GBA (Jurisdictions J and M)",
+  "practice": "bariatric_surgery",
   "compiled_by": "T-87, hand-compiled from the T-02 corpus as extended by D101",
   "jurisdiction": {
     "authority": "mac_jurisdiction_jj_jm",

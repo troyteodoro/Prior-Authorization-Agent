@@ -87,6 +87,26 @@ DECLARED: dict[str, dict[str, str | None]] = {
         "c5": "note_event_run_behavior_rate",
         "d": None,  # unclaimed: a multidisciplinary evaluation (D101)
     },
+    # T-95 (D116) extended this table from the two bariatric trees to all four.
+    # It was written at T-91, when those two were the only trees, and the two
+    # practices that arrived after it were never added — so REQ-57's assertion
+    # ran over exactly the trees whose ids and kinds line up, which is the
+    # coincidence D110 says proves nothing. The letters below are the
+    # documents' own and mean something different in each file.
+    "infliximab_ra_jjm.json": {
+        "a": "condition_value_set_membership",
+        "b": "medication_value_set_active",
+        "c": None,  # unclaimed: NYHA class is not in the coded record (D111)
+        "d": None,  # unclaimed: "untreated", and a screening result (D111)
+        "e": None,  # unclaimed: disease activity is an assessment (D111)
+    },
+    "us_abdominal_visceral_j5_j8.json": {
+        "a": "condition_value_set_membership",
+        "b": "procedure_value_set_interval",
+        "c": None,  # unclaimed: no resource records why a study was ordered (D114)
+        "d": None,  # unclaimed: a plan is not in the coded record (D114)
+        "e": None,  # unclaimed: "a high index of suspicion" (D114)
+    },
 }
 
 
@@ -109,7 +129,7 @@ def _criterion(tree: dict, criterion_id: str) -> dict:
 
 
 def test_every_deterministic_criterion_declares_a_kind_and_no_other_does(store):
-    """REQ-57 on the two trees that exist, against the table above."""
+    """REQ-57 on every committed tree, against the table above (D116)."""
     for filename, expected in DECLARED.items():
         tree = CriteriaTree.model_validate(_tree_dict(filename))
         found = {c.id: (c.kind.value if c.kind else None) for c in tree.criteria}

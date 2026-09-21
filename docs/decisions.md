@@ -9628,3 +9628,249 @@ point membership becomes checkable blind and this paragraph is the wrong
 instruction; or a measured round rejects a `MET` whose quote really is about
 another subject and v5's wording is found to have suppressed it, which is the
 failure this change could cause and the one to watch for.
+
+---
+
+## D116 — The compatibility account is generated from the trees, and a tree declares the practice it belongs to
+
+**Context.** T-95 is row 5 of v1.2 and closes the version. Rows 1 through 4
+answered v1.2's question — *how much of this engine was bariatric surgery's* —
+by building: an explicit predicate vocabulary (T-91), then two trees from
+unrelated practices, each needing exactly one kind its predecessors did not
+(T-92, T-94). Row 5 is where the system reports that answer **about itself**,
+in `eval/report.md`, generated and diffed rather than asserted in prose. It is
+also the evidence for **A10**: *every criterion of every loaded tree evaluated
+by a declared predicate kind or declared unclaimed, zero omitted; every eval
+row `PASS`; zero model calls in any gate.* It adds no document, no patient and
+no eval row, and per D109 it mints no requirement — what it checks is REQ-57
+through REQ-61 over the whole corpus at once rather than one tree at a time.
+
+**Chosen — a tree declares its `practice`, as a required slug.** D111 named
+this field and deferred it to exactly this row: *"T-95's compatibility account
+groups by practice and will need one; two trees of one practice (JF and JJM
+bariatric) cannot be grouped by `policy_version_id`."* That is still the whole
+argument. `ncd-100.1-jf-v1` and `ncd-100.1-jjm-v1` are one practice under two
+contractors; `infliximab-ra-jjm-v1` is a different practice under one of the
+same contractors. No field the tree already carries separates those two
+groupings — `jurisdiction.contractor` puts Palmetto's bariatric and
+rheumatology trees together, and `policy_version_id` puts the two bariatric
+trees apart. The field is required and has no default, which is D31's shape:
+a tree that forgot to say would otherwise be grouped under whatever the
+default is, silently, and every count in the account would still add up.
+
+**Rejected — a closed `Practice` enum.** `PredicateKind` and `ExclusionKind`
+are closed because the engine **dispatches** on them, and `PredicateKind`'s
+docstring is careful that a member is a promise about what the engine
+computes. Nothing under `pa_agent/` reads `practice` and nothing will: it is a
+grouping key for a report. An enum would make every future practice a
+`contracts.py` edit — v1.6 brings two more — and would claim a vocabulary the
+engine does not have. *Reverses if* anything under `pa_agent/` ever dispatches
+on practice; v1.6's tree-declared extraction schema is the candidate, and on
+the day a step selects behaviour by practice it becomes a closed vocabulary
+like the other two.
+
+**Rejected — a bare `str` with no shape.** The field's only job is to be a
+grouping key, which is exactly the kind of field a typo destroys invisibly:
+`"bariatric"` in one file and `"bariatric_surgery"` in the other renders
+**four** practice groups instead of three, and every other check in this task
+still passes — twenty-four criterion rows, the row set equal to the policy
+directory's own, zero omitted. That is D65's and D67's fallthrough on a new
+surface: an answer that is wrong in a way no behavioural test can see. So the
+field carries a slug pattern, and `tests/test_criteria_tree.py` pins the
+practice **multiset** as a literal beside `EXPECTED_CRITERIA_BY_TREE` — two
+bariatric, one rheumatology, one diagnostic ultrasound. A near-miss slug moves
+that multiset and nothing else.
+
+**Verified, not assumed: the field does not reach a measured prompt.**
+`get_policy_context` builds its return value field by field
+(`pa_agent/agent/policy_tools.py`), so a new model field cannot leak into the
+payload, and D45 is not triggered by this commit. Recording it because the
+protection is structural rather than intentional: if that constructor is ever
+replaced by a `tree.model_dump(...)`, every field added to `CriteriaTree`
+thereafter becomes a changed prompt, and the change would be silent.
+
+**Chosen — provenance is per kind, and it names the practice that earned it.**
+The account's middle column is *was this kind already in the engine when this
+practice arrived*, and that needs a record of where each kind came from.
+`KIND_ORIGIN` maps every `PredicateKind` to the practice and the task that
+earned it: the seven that T-91 named for the one practice that then existed,
+`medication_value_set_active` to rheumatology at T-92, and
+`procedure_value_set_interval` to diagnostic ultrasound at T-94. A criterion's
+kind is *reused* when its origin practice is not the criterion's own, and
+*earned here* when it is.
+
+**Rejected — a single `KINDS_BEFORE_V1_2` frozenset.** The obvious shape: name
+the seven kinds the engine had before this version, and classify against the
+set. It is a cut at one instant, and it fails in the worst available
+direction. The natural way to pin it is to derive the same set from today's
+bariatric trees and assert equality — but that asserts a **historical** claim
+against a **present** derivation, so a bariatric tree revision that declares
+`procedure_value_set_interval` (a re-operation frequency limit is an entirely
+plausible LCD) turns the test red, and the only way back to green is to edit
+the literal, rewriting the history the literal exists to preserve. `KIND_ORIGIN`
+is pinned against the **enum** instead — `set(KIND_ORIGIN) == set(PredicateKind)`,
+the shape `set(PREDICATES) == set(PredicateKind)` and the `STEP_KINDS` partition
+already use. A kind added without an origin is a red suite; a tree revision
+cannot move one. It also renders **A14** — v1.6's *"A10 over four practices"* —
+with no second constant, where the frozenset would have needed one per version.
+
+**Chosen — the generator reads the trees, and the tests hold the literals.**
+The account globs `data/policies/*.json` for the file set and resolves each
+through the policy port, so it describes what the engine **loads**; the tests
+carry a hand-written twenty-four-row classification and the practice multiset.
+This is the direction `tests/test_predicate_kinds.py` already states —
+*"Deriving this from the file would make every assertion below agree with
+whatever the file says"* — and it matters more here than usual, because the
+account's entire claim is that nothing was omitted. A generator that read a
+hand-written list of trees would answer "zero omitted" about the list rather
+than about the directory.
+
+**Two of A10's three clauses turned out to be unheld, and this task owes
+them.** Writing the account meant reading A10 closely enough to notice that
+only the first clause was about to acquire a check.
+
+*Every eval row `PASS`.* `eval/run_eval.py` is a **baseline diff** — drift in
+either direction fails — and `--update-baseline` exists so that a changed
+status is adopted as a reviewed diff (D27). That is the right design for a
+harness and it is not a check on the statuses themselves: a row that starts
+answering `FAIL`, adopted and committed, leaves all ten gates green. "Every
+eval row `PASS`" was a claim no command returned zero for, which is D108's
+failure one artifact over. The check goes beside the figure it protects, in
+`tests/test_build_report.py`: no committed baseline status is anything but
+`PASS`, and the report's own Outcomes table reads zero `FAIL`, `BLOCKED` and
+`ERROR`. Naming the location because it is a judgment call — the alternative
+home is `tests/test_metrics_error_accounting.py`, which owns harness
+accounting rather than the baseline's contents.
+
+*Zero model calls in any gate.* `tests/test_check_gates.py` pinned this
+against a hand-written set of two scripts, and there are **three** that spend
+model calls: `run_verifier_measurement.py` was kept out of the gates only by
+its `EXCLUDED` entry, so adding it bare to `GATES` passed the test. The set is
+now derived from the `EXCLUDED` reasons that say a script spends model calls,
+which is the same rule the prose has stated since D69 — a command is a gate
+iff some task's exit names it *and* it spends no model call — expressed once
+instead of twice.
+
+**Chosen — the unclaimed criteria are quoted, never classified.** Eight of the
+twenty-four criteria are declared unclaimed, and the interesting fact about
+them is *why*, which the tree already says in each criterion's `note`. The
+account renders those notes verbatim rather than sorting them into categories
+of its own. That keeps the tree the owner of the reason, mints no vocabulary,
+and still lets a reader see unaided what the categories would have been:
+Palmetto bariatric's `c4` and `d` are limits of **this pipeline** — *"claimed
+when the extraction schema gains a weight field, which is a new measurement"*
+— while rheumatology's and ultrasound's three apiece are limits of **the
+record**, facts no coded resource carries. *Rejected — an `unclaimed_because`
+enum on the criterion.* More machine-checkable, and it mints a declared
+vocabulary for a distinction nothing evaluates; v1.6 is the version that turns
+the pipeline-limited ones into verdicts, and it can earn the field then if it
+still wants one.
+
+**Rejected — categorical exclusions in the criterion table.** They are
+rendered, in a table of their own. A10 counts *criteria*, an exclusion is not
+one — REQ-60 exists because an exclusion written as a criterion would have to
+answer `MET` with no span — and folding them in would make the account's total
+twenty-six, breaking the arithmetic its zero-omitted check rests on.
+
+**The README paragraph is not a `P9`.** The degradation section's bullets are
+keyed one-to-one to spec §10's problems, §10 stops at P8, and D97 sequenced
+those eight into one task each, all closed. A ninth bullet would invent a
+known limit with no §10 entry and no task, which is working rule 6 arriving
+through the back door. It is a free-standing paragraph after the list.
+
+**What the documents owe, beyond the exit.** The account becomes the generated
+owner of figures `README.md` states by hand, so rule 12 applies to them: its
+per-practice table is re-derived from the report and named as a copy. Two
+figures in the degradation section were already stale against their owners —
+P3's corpus counts, and P1's *two jurisdictions* where there have been three
+contractors since T-94 — and they are corrected here rather than left for a
+task of their own, because they are inside the section this task edits and
+`eval/report.md` has rendered the corrected sentence since T-93.
+`tests/test_docs_consistency.py` gains a pin on P3's counts, and its
+`## Cost and latency` slice — unbounded to the end of the report, which this
+task's new section now sits inside — is bounded at the heading that follows it.
+
+**What it costs.** Nothing. No document is fetched, no patient is added, no
+eval row is written, no claim digest changes, and **no model call is spent** —
+which is A10's third clause and the reason this row was scheduled last rather
+than first: it reports on four trees, so it could not be written until the
+fourth existed.
+
+**Reverses if:** something under `pa_agent/` dispatches on `practice`, at
+which point it becomes a closed enum like the other two declared vocabularies;
+or a practice arrives whose criteria are not the unit the account should count
+— a tree declaring one criterion that decomposes into five would make
+*fourteen criteria, twelve by a kind* an accounting of the wrong thing, and
+the column to add then is the one this entry chose not to guess at.
+
+---
+
+## D117 — The README leads with what was measured, and the architecture is a diagram the suite checks
+
+**Context.** T-95 closed v1.2 and, in doing so, added a fourth place the
+README states its results. The file had grown to 960 lines with its findings
+in three sections — *Where the project stands*, *Status in detail*, and *What
+v1.2 measured* — and its architecture in two, *How the policy file drives the
+engine* and *Two implementations, one oracle*. A reader arriving cold met the
+project's history before its results and its results before the thing that
+produced them. **This is a separate numbered task from T-95** (working rule
+6): nothing about v1.2 needed it, T-95's exit condition did not name it, and
+folding a document rewrite into the row that closes a version would make the
+close mean two things. It is off the path, in the table `T-81` sat in.
+
+**Chosen — order the document by what a reader needs first.** Project
+description, then the most recent results and what they mean, then everything
+else in an order that follows from them. The results section leads because
+this is a system whose claim — *the rules engine is dynamic; the policy is
+data, not code* — is now a measured claim rather than an assertion, and the
+compatibility account is the measurement. **Rejected — chronological order**,
+which is what the file had drifted into: each version's narrative appended
+below the last, so the oldest framing came first and the newest finding came
+on line 827.
+
+**Chosen — the architecture is a diagram, and the diagram is checked.** The
+two prose sections described the same graph twice, at different levels, and
+neither could be compared to the code. A mermaid flowchart states it once:
+the two short circuits, `workflow.STEPS` as the fixed tuple it is, the three
+ports at the model boundary and the two storage planes. What makes it worth
+having is `tests/test_readme_structure.py`, which **parses the diagram and
+asserts its step nodes are `pa_agent.workflow.STEPS`, in order**, and its
+short-circuit nodes the resolver's declared result types. A renamed step is
+then a red suite rather than a diagram that quietly describes last month's
+graph.
+
+That is this task's exit condition, and it is the reason a documentation task
+is allowed to exist at all under Article VIII. **Rejected — a rendered image**,
+which cannot be diffed, cannot be parsed, and goes stale invisibly, which is
+the failure this repo already has a working rule about. **Rejected — a prose
+description kept alongside the diagram**, which reintroduces the duplication
+the diagram removes; the prose that survives is what the diagram cannot say,
+which is *why* each edge is the shape it is.
+
+**Chosen — the heading order is pinned as a literal.** A restructure that
+nothing checks is a restructure that drifts back. The `##` sequence is
+asserted against a written-out list, so re-ordering the document is a
+deliberate diff rather than an accident of where someone appended a section.
+*Rejected — checking only that every old section survives*, which permits the
+ordering this task exists to fix.
+
+**What is deliberately not condensed.** The measured figures stay in the
+README in full, per the owner's instruction and because they are the
+deliverable a reviewer reads: the per-practice table, the acceptance-gate
+table and the cost figures are what show the engine taking a document from a
+practice it was not written for. Condensing them would save a screen and cost
+the document its point. Rule 12 still applies to every one of them — the
+report owns them and the README copies them, with
+`tests/test_docs_consistency.py` holding the copies that drifted before.
+
+**What it costs.** Nothing measurable: no model call, no recording, no
+verdict, no eval row. The risk it carries is the one every large prose edit
+carries — a claim silently dropped in the move — which is why the heading pin
+lists every section and why the suite, the gates and `--verify` all run at the
+close unchanged.
+
+**Reverses if:** the diagram outgrows what a flowchart can state without
+lying — the honest failure here is a picture that stays green because the
+test only checks node *names* while an edge points somewhere the code does
+not — at which point the edges are pinned too, or the diagram is cut back to
+the part that is checkable.

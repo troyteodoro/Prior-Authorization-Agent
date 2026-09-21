@@ -12,12 +12,16 @@ and compares to the generator's own output would pass on any arithmetic at all.
 
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import sys
 from pathlib import Path
 
 import pytest
+
+from pa_agent.contracts import PredicateKind
+from pa_agent.stores.policy import LocalPolicyStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "eval" / "build_report.py"
@@ -718,3 +722,292 @@ def test_anchoring_refuses_a_missing_recording(script, tmp_path, monkeypatch):
     monkeypatch.setattr(script, "EVAL_DIR", tmp_path)
     with pytest.raises(SystemExit, match="results.json is missing"):
         script._anchoring_section()
+
+
+# --------------------------------------------------------------------------
+# T-95 (D116) — the compatibility account, and the rest of gate A10
+# --------------------------------------------------------------------------
+
+#: Every criterion of every committed tree and how it is evaluated, written
+#: out. The account's whole claim is that nothing was omitted, so the
+#: expectation cannot be derived from the trees the account itself reads —
+#: that would assert the generator agrees with itself. Same rule as
+#: `tests/test_predicate_kinds.py`'s `DECLARED`, one artifact along.
+#:
+#: `reused` means the kind's origin practice is not this criterion's; `earned`
+#: means it is; `unclaimed` means the tree declared it so (REQ-58).
+EXPECTED_ACCOUNT: dict[tuple[str, str], str] = {
+    ("ncd-100.1-jf-v1", "a"): "earned",
+    ("ncd-100.1-jf-v1", "b"): "earned",
+    ("ncd-100.1-jf-v1", "c1"): "earned",
+    ("ncd-100.1-jf-v1", "c2"): "earned",
+    ("ncd-100.1-jf-v1", "c3"): "earned",
+    ("ncd-100.1-jf-v1", "c4"): "earned",
+    ("ncd-100.1-jf-v1", "c5"): "earned",
+    ("ncd-100.1-jjm-v1", "a"): "earned",
+    ("ncd-100.1-jjm-v1", "b"): "earned",
+    ("ncd-100.1-jjm-v1", "c1"): "earned",
+    ("ncd-100.1-jjm-v1", "c2"): "earned",
+    ("ncd-100.1-jjm-v1", "c4"): "unclaimed",
+    ("ncd-100.1-jjm-v1", "c5"): "earned",
+    ("ncd-100.1-jjm-v1", "d"): "unclaimed",
+    ("infliximab-ra-jjm-v1", "a"): "reused",
+    ("infliximab-ra-jjm-v1", "b"): "earned",
+    ("infliximab-ra-jjm-v1", "c"): "unclaimed",
+    ("infliximab-ra-jjm-v1", "d"): "unclaimed",
+    ("infliximab-ra-jjm-v1", "e"): "unclaimed",
+    ("us-abdominal-visceral-j5-j8-v1", "a"): "reused",
+    ("us-abdominal-visceral-j5-j8-v1", "b"): "earned",
+    ("us-abdominal-visceral-j5-j8-v1", "c"): "unclaimed",
+    ("us-abdominal-visceral-j5-j8-v1", "d"): "unclaimed",
+    ("us-abdominal-visceral-j5-j8-v1", "e"): "unclaimed",
+}
+
+
+def _compatibility(text: str) -> str:
+    """The rendered section, sliced out of the committed report."""
+    start = text.index("## Cross-practice compatibility")
+    return text[start : text.index("## Scope of these numbers", start)]
+
+
+def _criterion_rows(section: str) -> dict[tuple[str, str], str]:
+    """`(tree, criterion) -> the 'Evaluated by' cell`, from the rendered table."""
+    body = section[section.index("### Every criterion of every loaded tree") :]
+    body = body[: body.index("### Why each unclaimed")]
+    rows = {}
+    for line in body.splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 5 or cells[0] in ("Practice", "---"):
+            continue
+        rows[(cells[1].strip("`"), cells[2].strip("`"))] = cells[4]
+    return rows
+
+
+def test_the_account_covers_every_criterion_of_every_tree_on_disk(script):
+    """A10's first clause: **zero omitted**.
+
+    Set equality against the policy directory, not a row count — a count
+    matches while naming the wrong twenty-four, and the one thing this
+    account claims is that it left nothing out. The expected set is read
+    straight from the JSON files here rather than through the generator's own
+    `_trees()`, so a generator reading a hand-written list of trees fails.
+    """
+    on_disk = set()
+    for path in sorted((REPO_ROOT / "data" / "policies").glob("*.json")):
+        tree = json.loads(path.read_text(encoding="utf-8"))
+        for criterion in tree["criteria"]:
+            on_disk.add((tree["policy_version_id"], criterion["id"]))
+
+    rendered = set(_criterion_rows(_compatibility(REPORT.read_text(encoding="utf-8"))))
+    assert rendered == on_disk
+    assert rendered == set(EXPECTED_ACCOUNT), (
+        "the trees on disk no longer match the account this test asserts; a "
+        "new tree or criterion is a deliberate diff here (D116)"
+    )
+
+
+def test_every_criterion_is_classed_the_way_the_table_above_says(script):
+    """The classification itself, against the literal rather than the trees."""
+    rows = _criterion_rows(_compatibility(REPORT.read_text(encoding="utf-8")))
+    for key, expected in EXPECTED_ACCOUNT.items():
+        cell = rows[key]
+        if expected == "unclaimed":
+            assert cell == "*declared unclaimed*", key
+        else:
+            assert expected in cell and "unclaimed" not in cell, key
+
+
+def test_the_account_groups_by_practice_and_not_by_tree(script):
+    """What the `practice` field is for (D111, D116).
+
+    Four trees, three practices: the two bariatric trees are one practice
+    under two contractors, and Palmetto's rheumatology tree is a different
+    practice under one of those same contractors. Grouping by
+    `policy_version_id` renders four rows and grouping by
+    `jurisdiction.contractor` renders three *wrong* ones — this is the
+    assertion that tells the three apart.
+    """
+    section = _compatibility(REPORT.read_text(encoding="utf-8"))
+    per_practice = section[section.index("### Per practice") :]
+    per_practice = per_practice[: per_practice.index("**24 criteria")]
+    names = [
+        line.strip().strip("|").split("|")[0].strip()
+        for line in per_practice.splitlines()
+        if line.startswith("| ") and not line.startswith("| Practice")
+        and "---" not in line
+    ]
+    assert names == ["bariatric surgery", "diagnostic ultrasound", "rheumatology"], (
+        "the practice rows moved; the order is sorted and pinned, because an "
+        "unsorted set iteration renders a report that differs between "
+        "processes and `--verify` would fail on a later day rather than here"
+    )
+
+    counts = {
+        tree: practice
+        for tree, practice in (
+            ("ncd-100.1-jf-v1", "bariatric surgery"),
+            ("ncd-100.1-jjm-v1", "bariatric surgery"),
+            ("infliximab-ra-jjm-v1", "rheumatology"),
+            ("us-abdominal-visceral-j5-j8-v1", "diagnostic ultrasound"),
+        )
+    }
+    body = section[section.index("### Every criterion") :]
+    for tree, practice in counts.items():
+        assert f"| {practice} | `{tree}` |" in body, (tree, practice)
+
+
+def test_exclusions_are_counted_apart_from_criteria(script):
+    """A10 counts criteria, and an exclusion is not one (REQ-60, D111).
+
+    Folding the three committed exclusions in would make the total 27, and
+    the zero-omitted check above rests on that arithmetic.
+    """
+    section = _compatibility(REPORT.read_text(encoding="utf-8"))
+    assert "**24 criteria across 4 trees and 3 practices, zero omitted.**" in section
+
+    exclusions = section[section.index("### Categorical exclusions") :]
+    assert "`bmi_below_bound_with_active_condition`" in exclusions
+    assert "`active_medication_value_set`" in exclusions
+    assert exclusions.count("\n| ") == 3 + 1, (
+        "three committed exclusions plus the header separator; an exclusion "
+        "silently dropped from this table approves past a denial (D111)"
+    )
+    criteria_table = section[
+        section.index("### Every criterion") : section.index("### Why each unclaimed")
+    ]
+    assert "bmi_below_bound_with_active_condition" not in criteria_table
+
+
+def test_every_unclaimed_criterion_is_quoted_not_summarized(script):
+    """The tree owns the reason and the report quotes it (D116).
+
+    A paraphrase here would be this report deciding what a tree meant, which
+    is the same move `_criterion_class` refuses when it indexes `KIND_ORIGIN`
+    rather than guessing.
+    """
+    section = _compatibility(REPORT.read_text(encoding="utf-8"))
+    reasons = section[section.index("### Why each unclaimed") :]
+    reasons = reasons[: reasons.index("### Categorical exclusions")]
+
+    unclaimed = [key for key, cls in EXPECTED_ACCOUNT.items() if cls == "unclaimed"]
+    assert len(unclaimed) == 8
+    for tree, criterion_id in unclaimed:
+        assert f"- **`{tree}` `{criterion_id}`**" in reasons, (tree, criterion_id)
+
+    store = LocalPolicyStore()
+    for tree_id, criterion_id in unclaimed:
+        note = store.get_tree(tree_id).criterion(criterion_id).note
+        assert note in reasons, (
+            f"{tree_id} {criterion_id}: the note was not rendered verbatim"
+        )
+
+
+def test_every_predicate_kind_has_a_recorded_origin(script):
+    """Pinned against the **enum**, never against the corpus (D116).
+
+    `set(PREDICATES) == set(PredicateKind)`'s shape. A kind added without an
+    origin is a red suite here, and — this is the part a corpus-derived
+    constant could not give — a criteria tree revision cannot move an origin,
+    because no tree is consulted.
+    """
+    assert set(script.KIND_ORIGIN) == set(PredicateKind)
+    practices = {practice for practice, _ in script.KIND_ORIGIN.values()}
+    assert practices == {"bariatric_surgery", "rheumatology", "diagnostic_ultrasound"}
+    earned_after_the_first = {
+        kind.value
+        for kind, (practice, _) in script.KIND_ORIGIN.items()
+        if practice != "bariatric_surgery"
+    }
+    assert earned_after_the_first == {
+        "medication_value_set_active",
+        "procedure_value_set_interval",
+    }, "each practice after the first earned exactly one kind (T-92, T-94)"
+
+
+def test_kind_origin_is_a_literal_and_not_derived_from_the_trees(script):
+    """Parsed, because the mutation is invisible (D116, D65's move).
+
+    Replacing `KIND_ORIGIN` with a comprehension over the bariatric trees'
+    declared kinds renders a byte-identical report today, satisfies
+    `--verify`, and passes every assertion above. It is also the shape this
+    task rejected: a historical claim derived from a present corpus can only
+    be kept green by rewriting the history it records.
+    """
+    module = ast.parse(SCRIPT.read_text(encoding="utf-8"))
+    assigned = [
+        node
+        for node in module.body
+        if isinstance(node, ast.AnnAssign)
+        and isinstance(node.target, ast.Name)
+        and node.target.id == "KIND_ORIGIN"
+    ]
+    assert len(assigned) == 1, "KIND_ORIGIN is one module-level literal"
+    assert isinstance(assigned[0].value, ast.Dict)
+    # `PredicateKind.BMI_OBSERVATION_THRESHOLD` is an `Attribute` and is what
+    # the keys are; a `Call` or a comprehension is a derivation.
+    for node in ast.walk(assigned[0].value):
+        assert not isinstance(node, (ast.Call, ast.comprehension, ast.Subscript)), (
+            "KIND_ORIGIN is derived rather than written out; a constant "
+            "computed from the corpus agrees with the corpus by construction "
+            "(D116)"
+        )
+
+
+def test_the_account_computes_its_totals_rather_than_stating_them(script):
+    """The mutation `--verify` cannot see (D116).
+
+    Hard-coding the per-practice summary produces identical bytes, so the
+    committed report is satisfied and every figure above still matches. This
+    is `test_recall_reads_the_agentic_side_not_the_oracles`' guard one
+    section along, and `eval/` is scanned by nothing else.
+    """
+    source = SCRIPT.read_text(encoding="utf-8")
+    section = source[source.index("def _compatibility_section") :]
+    section = section[: section.index("def _caveats_section")]
+    assert "KIND_ORIGIN[" in section, "the account must index the origin table"
+    assert "_criterion_class(" in section
+    assert ".criteria" in section, "the account must read each tree's criteria"
+    for literal in ("bariatric_surgery", "rheumatology", "diagnostic_ultrasound"):
+        assert f'"{literal}"' not in section, (
+            f"{literal!r} is named in the section body; the practices come "
+            "from the trees, and a literal here is a summary that agrees with "
+            "itself"
+        )
+
+
+def test_the_account_reads_the_directory_rather_than_a_list_of_trees(script):
+    """`_trees()` globs; a hand-written list would answer 'zero omitted'
+    about the list rather than about `data/policies/`."""
+    source = SCRIPT.read_text(encoding="utf-8")
+    body = source[source.index("def _trees") : source.index("def _criterion_class")]
+    assert '.glob("*.json")' in body
+    assert "get_tree(" in body, "the objects come back through the policy port"
+
+
+def test_no_committed_eval_row_is_anything_but_pass(script):
+    """**A10's second clause**, which nothing checked (T-95, D116).
+
+    `eval/run_eval.py` is a baseline *diff*: drift in either direction fails,
+    and `--update-baseline` exists so a changed status is adopted as a
+    reviewed diff (D27). That is right for a harness and it is not a check on
+    the statuses themselves — a row that starts answering `FAIL`, adopted and
+    committed, leaves all ten gates green. A10 says every row `PASS`, so
+    something has to say it.
+    """
+    baseline = json.loads(
+        (REPO_ROOT / "eval" / "baseline.json").read_text(encoding="utf-8")
+    )
+    failures = {
+        case: row["status"]
+        for case, row in baseline["cases"].items()
+        if row["status"] != "PASS"
+    }
+    assert not failures, (
+        f"{failures} — a non-`PASS` row may be committed only with a decision "
+        "entry that reverses A10, never by `--update-baseline` alone"
+    )
+
+    outcomes = REPORT.read_text(encoding="utf-8")
+    outcomes = outcomes[outcomes.index("## Outcomes") : outcomes.index("## Per-criterion")]
+    for status in ("FAIL", "BLOCKED", "ERROR"):
+        assert f"| `{status}` | 0 |" in outcomes, f"{status} is no longer zero"

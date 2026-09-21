@@ -903,7 +903,7 @@ changed is that the replayed numbers are no longer from a single tier.
 ## 11. Versions after v1
 
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
-is closed, and **v1.2 is in progress** *(T-91)*. This section fixes what
+is closed, **v1.2 is closed** *(T-95, D116)*, and **v1.3 is next**. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are
@@ -917,7 +917,7 @@ number.
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
 | v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
-| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted | US-11 | T-96–T-99 | one recording round | A11 |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
@@ -940,6 +940,15 @@ every criteria step evaluates what the tree declares, so the question is
 whether two trees from unrelated practices compile into the predicate
 vocabulary the engine has — and where a criterion cannot be expressed,
 whether the engine says so rather than approving past it.
+
+**Row 5 closed the version.** The compatibility account renders 24 criteria
+across four trees and three practices, zero omitted, each classed as
+evaluated by a kind an earlier practice earned, by a kind this practice
+earned, or declared unclaimed — and it is generated from the policy directory
+rather than from a list, so *zero omitted* is a claim about the engine (D116).
+A tree now declares the `practice` it belongs to, which D111 named and
+deferred to this row: two bariatric trees under two contractors are one
+practice, and no field the tree already carried could say so.
 
 **Row 4 is closed.** The ultrasound document is WPS's **L35755** with
 **A57591**, chosen by fetching four candidates and reading what they say
@@ -1014,8 +1023,20 @@ by the task whose close checks it, not by the version's opening commit)*.
   **a kind is earned by a document that states it, not by a task that was
   promised one** — and T-95 adds no document, so v1.2 closes without either
   *(T-94, D114)*.
-- *Awaiting `T-95`.* `eval/report.md` carries the compatibility account,
-  generated and verified.
+- *`T-95` minted none either, and that is the version's closing argument.*
+  `eval/report.md` carries the compatibility account, generated from the
+  trees the engine loads and verified byte-exact — and the two statements
+  above stayed unminted because no committed document states them. A version
+  that mints four of its six predicted requirements and says plainly why the
+  other two were not earned is the outcome §1's rule is for: a requirement
+  with no check is a wish.
+
+**v1.2 is closed and A10 holds** *(T-95, D116)*. Two of A10's three clauses
+turned out to be held by **no command** and were closed in the same row:
+`eval/run_eval.py` is a baseline diff, so *every eval row `PASS`* survived
+`--update-baseline` adopting a `FAIL`; and *zero model calls in any gate* was
+pinned against two of the three scripts that spend them. Both now return
+zero, which is what makes this gate a gate.
 
 **Gate A10.** Every criterion of every loaded tree is evaluated by a declared
 predicate kind or declared unclaimed, zero omitted; every eval row `PASS`;

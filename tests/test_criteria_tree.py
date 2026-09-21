@@ -19,6 +19,9 @@ import re
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
+
+from pa_agent.contracts import CriteriaTree
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TREE_PATH = REPO_ROOT / "data" / "policies" / "ncd_100_1_jf.json"
@@ -58,6 +61,20 @@ EXPECTED_CRITERIA_BY_TREE = {
     "us-abdominal-visceral-j5-j8-v1": ["a", "b", "c", "d", "e"],
 }
 EXPECTED_CRITERIA = EXPECTED_CRITERIA_BY_TREE["ncd-100.1-jf-v1"]
+
+# The practice each tree declares (T-95, D116) — written out as a **multiset**,
+# because the compatibility account in `eval/report.md` groups by this field and
+# a near-miss slug is the one error nothing else can see. `"bariatric"` in one
+# file and `"bariatric_surgery"` in the other renders four practice groups
+# instead of three, and every other check in that account still passes: twenty-
+# four criterion rows, the row set equal to this directory's own, zero omitted.
+# Two trees of one practice under two contractors is the case the field exists
+# for (D111).
+EXPECTED_PRACTICES = {
+    "bariatric_surgery": 2,
+    "diagnostic_ultrasound": 1,
+    "rheumatology": 1,
+}
 
 # Constants the exit condition names explicitly, as (criterion_id, constant_name).
 REQUIRED_CONSTANTS_BY_TREE = {
@@ -169,6 +186,43 @@ def test_every_tree_file_in_the_directory_is_asserted():
     """A dropped-in tree would be loaded by the store and checked by nothing."""
     on_disk = sorted(p.name for p in (REPO_ROOT / "data" / "policies").glob("*.json"))
     assert on_disk == sorted(p.name for p in TREE_PATHS.values())
+
+
+def test_every_tree_declares_the_practice_it_belongs_to():
+    """T-95 (D116). The grouping key the compatibility account is defined over.
+
+    Asserted as a multiset rather than per tree, because what the account
+    needs is that the two bariatric trees land in **one** group while the
+    rheumatology tree — same contractor, same seven states — lands in
+    another. No field the tree already carried separates those two groupings.
+    """
+    counts: dict[str, int] = {}
+    for path in TREE_PATHS.values():
+        practice = json.loads(path.read_text(encoding="utf-8"))["practice"]
+        counts[practice] = counts.get(practice, 0) + 1
+    assert counts == EXPECTED_PRACTICES
+
+
+def test_a_tree_without_a_practice_fails_to_load():
+    """Required, never defaulted (D31's shape, D116).
+
+    A default would group a tree that forgot to say under whatever the
+    default is, and every count in the account would still add up — which is
+    the failure this field is most able to produce.
+    """
+    raw = json.loads(TREE_PATH.read_text(encoding="utf-8"))
+    del raw["practice"]
+    with pytest.raises(ValidationError):
+        CriteriaTree.model_validate(raw)
+
+
+def test_a_practice_that_is_not_a_slug_fails_to_load():
+    """The shape is load-bearing: the account groups on this string, so a
+    display form (`"Bariatric Surgery"`) and a slug are two groups."""
+    raw = json.loads(TREE_PATH.read_text(encoding="utf-8"))
+    raw["practice"] = "Bariatric Surgery"
+    with pytest.raises(ValidationError):
+        CriteriaTree.model_validate(raw)
 
 
 @pytest.fixture(scope="module")

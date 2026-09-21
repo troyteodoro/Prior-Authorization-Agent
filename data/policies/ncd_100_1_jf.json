@@ -1,6 +1,7 @@
 {
   "policy_version_id": "ncd-100.1-jf-v1",
   "title": "Bariatric surgery coverage, NCD 100.1 as operationalized by Noridian Jurisdiction F",
+  "practice": "bariatric_surgery",
   "compiled_by": "T-01, hand-compiled from the T-02 corpus",
   "jurisdiction": {
     "authority": "mac_jurisdiction_f",

@@ -1,6 +1,7 @@
 {
   "policy_version_id": "infliximab-ra-jjm-v1",
   "title": "Infliximab for rheumatoid arthritis, as operationalized by Palmetto GBA (Jurisdictions J and M)",
+  "practice": "rheumatology",
   "compiled_by": "T-92, hand-compiled from L35677 and A56432 (D111)",
   "jurisdiction": {
     "authority": "mac_jurisdiction_jj_jm",

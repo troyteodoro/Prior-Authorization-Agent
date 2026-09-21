@@ -17,15 +17,25 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-95`, row 5 of `v1.2` in `Roadmap after v1.1` below** —
-the compatibility account, which closes the version.
-**v1.2 is open**: `T-91` closed row 1 and minted REQ-57 and REQ-58 *(D109,
+**What to do next: `T-96`, row 1 of `v1.3` in `Roadmap after v1.1` below** —
+the medication-effects knowledge table and its sources, which opens the
+version.
+**v1.2 is closed**: `T-91` closed row 1 and minted REQ-57 and REQ-58 *(D109,
 D110)*; `T-92` closed row 2 and minted REQ-59 and REQ-60 *(D111)*; `T-93`
 closed row 3 and minted nothing *(D109)*; **`T-94` closed row 4 and minted
 REQ-61** *(D114)*, and settled the version's two remaining statements by
 **not** minting them: no committed document quantifies a laboratory
 threshold or a medication trial duration, and a kind is earned by a document
-that states it rather than by a task that was promised one. Row 3's
+that states it rather than by a task that was promised one. **`T-95` closed
+row 5 and the version** *(D116)*: `eval/report.md` carries the cross-practice
+compatibility account, generated from the trees the engine loads, and **A10
+holds**. It minted nothing, which is what a version's last row looks like
+when every statement it was promised turned out to be unearned. It also found
+that **two of A10's three clauses were held by no command** — every eval row
+`PASS` was a claim `run_eval.py`'s baseline diff does not make, and *zero
+model calls in any gate* was pinned against two of the three scripts that
+spend them — and closed both, because a row cannot close on a gate
+two-thirds of which nothing checks. Row 3's
 exit was rewritten at T-92's close, because the document chosen by fetching
 its header states no trial duration and no screening requirement and no
 Medicare rheumatology LCD does *(D111)*. **Row 3 cost a verifier measurement
@@ -45,9 +55,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-four tasks are on this board — IDs run to T-94 but numbering is not
-contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **74 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+Seventy-six tasks are on this board — IDs run to T-126, which is off the path
+and above the roadmap's reservations; numbering is not contiguous and D92 and
+D94 deleted six records between them, so the highest id is well above the
+count. **76 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -72,6 +83,7 @@ Off the path. Real work, nothing waiting on it:
 | Task | Why it is not sequenced | When |
 |---|---|---|
 | `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | row 6 of `Path to v1.1` *(D91, D97)* |
+| `T-126` | the README restructured behind a checked architecture diagram; no version needs it, and its id sits above the roadmap's reservations, which run to T-125 | after `T-95` *(D117)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -144,7 +156,7 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
 | v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
-| v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence | US-11 | T-96–T-99 | one recording round | A11 |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
@@ -164,13 +176,19 @@ round per row that cites**, which this version's plan did not budget and
 T-93 paid — a cited verdict is a claim `RecordedVerifierRunner` must hold, on
 both tiers *(D113)*. Every gate still replays, which is what A10 asserts.
 
+**All five rows are closed; v1.2 is closed and A10 holds** *(T-95, D116)*.
+The answer to the version's question is generated rather than argued, in
+`eval/report.md`'s *Cross-practice compatibility* section: 24 criteria across
+four trees and three practices, zero omitted, and each practice after the
+first reused a kind the engine already had and earned exactly one it lacked.
+
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the predicate vocabulary is explicit | `T-91` | **closed** (D110) | every tree predicate declares its kind; a kind the engine lacks raises at load, never abstains (D31's shape); every gate green |
 | 2 | rheumatoid arthritis: source and tree | `T-92` | **closed** (D111) | governing document chosen by fetching its header (D97's Palmetto correction), hashed into `sources.json`, `verify_sources.py --offline` green; tree compiled; judgment-shaped criteria declared unclaimed, none omitted |
 | 3 | rheumatoid arthritis: patients and eval rows | `T-93` | **closed** (D113) | Synthea patients or declared additions (D73's shape); rows for a criterion `MET`, a `NOT_COVERED` on the combination limitation, and an abstention; `run_eval.py` green. **Rewritten by D111** from "`NOT_MET` on trial duration, `INSUFFICIENT_EVIDENCE` on a missing screen": L35677 states neither, and no Medicare rheumatology LCD does |
 | 4 | ultrasound: source, tree, patients and rows | `T-94` | **closed** (D114, D115) | as rows 2 and 3; rows for `MET`, `NOT_MET` on a frequency limit, `NO_POLICY_FOUND` for an unlisted code |
-| 5 | the compatibility account | `T-95` | pending | `eval/report.md` renders, per practice, each criterion as evaluated by an existing kind / a new kind / unclaimed; `build_report.py --verify` green; README's degradation section gains the paragraph |
+| 5 | the compatibility account | `T-95` | **closed** (D116) | `eval/report.md` renders, per practice, each criterion as evaluated by an existing kind / a new kind / unclaimed; `build_report.py --verify` green; README's degradation section gains the paragraph. **Also closed A10's other two clauses**, which no command held: every eval row `PASS`, and zero model calls in any gate |
 
 ### v1.3 — Medical-history review: ICD suggestions with evidence
 
@@ -1805,6 +1823,93 @@ unchanged (T-30, D77).
 
 ## `US-10` Take a new practice's coverage rules without a rewrite
 
+### `[x] T-95` The compatibility account, and the rest of gate A10
+
+**REQ:** none — *mints nothing, by argument* · **Depends:** T-91 *(D110)*,
+T-92 *(D111)*, T-93 *(D113)*, T-94 *(D114)* · **Blocks:** — ·
+**Decided by:** D116 · **Gates:** A10 (fifth of five rows; closes v1.2) ·
+**Timebox:** one day
+**Status:** **closed** (D116) — the exit ran green and every gate with it.
+**v1.2 is closed and A10 holds.** No verdict, span, eval row, recording or
+claim digest moved, and no model call was spent: this row reports on what the
+four preceding ones built. It found two of A10's three clauses unheld by any
+command and closed them, which was not in its exit as written and is recorded
+rather than smoothed away.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_build_report.py tests/test_criteria_tree.py tests/test_predicate_kinds.py tests/test_check_gates.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: all four committed trees load declaring a `practice` from the
+pinned multiset, and a tree that declares none — or declares one that is not
+a slug — fails to load rather than being grouped under a default;
+`eval/report.md` carries the cross-practice compatibility account, whose
+`(tree, criterion)` row set **equals the policy directory's own**, whose
+twenty-four rows each class their criterion as evaluated by a kind an earlier
+practice earned, by a kind this practice earned, or declared unclaimed, and
+whose eight unclaimed criteria are quoted from the tree verbatim; the account
+is computed rather than stated, pinned by parsing because a hardcoded summary
+renders identical bytes; `KIND_ORIGIN` is exhaustive against `PredicateKind`
+and is a literal, pinned by parsing for the same reason; no committed eval row
+is anything but `PASS`; no gate names a script whose exclusion reason says it
+spends model calls; `eval/build_report.py --verify` is byte-exact; and every
+figure `README.md` and `CLAUDE.md` copy re-derives from the artifact that owns
+it.
+
+**What it delivers.** `## Cross-practice compatibility` in `eval/report.md`:
+a per-practice summary, every criterion of every loaded tree with its class,
+each unclaimed criterion's own words, and the categorical exclusions counted
+apart. Underneath it, `CriteriaTree.practice` — the grouping key D111 named
+and deferred to this row, because two bariatric trees under two contractors
+are one practice and `policy_version_id` cannot say so — and `KIND_ORIGIN`,
+which records for each predicate kind the practice and task that earned it.
+The account is generated from the directory and read back through the policy
+port, so *zero omitted* is a claim about `data/policies/` rather than about a
+list the generator holds.
+
+**What it mints.** Nothing, and the argument is the deliverable. §11 paired
+this version's prior-procedure counts with a **lab threshold** and a
+**medication trial duration**; no committed document quantifies either, and
+D111's rule is that a kind is earned by a document that states it rather than
+by a task that was promised one. T-95 adds no document, so v1.2 closes
+without them — the third application of that rule, and the one where it was
+cheapest to instead write a statement and point it at this row's own report
+section. `scripts/check_req_coverage.py` and the pinned count of 63 are
+untouched, which is D109's test of a task that mints nothing.
+
+**What it found that was already broken.** Writing the account meant reading
+A10 closely enough to notice that only its first clause was about to acquire
+a check.
+
+*Every eval row `PASS`* — `eval/run_eval.py` is a baseline **diff**, and
+`--update-baseline` exists so a changed status is adopted as a reviewed diff
+(D27). That is the right design for a harness and it is not a check on the
+statuses: a row that starts answering `FAIL`, adopted and committed, left all
+ten gates green. D108's failure, one artifact over.
+
+*Zero model calls in any gate* — pinned against a hand-written set of two
+scripts when there are **three**; `run_verifier_measurement.py` was kept out
+of the gates only by its `EXCLUDED` entry, so adding it bare to `GATES`
+passed the check. The set is now derived from the exclusion reasons, which
+states D69's membership rule once instead of twice.
+
+**Why neither is a new numbered task.** Working rule 6 makes discovered work
+a numbered task, and the rule it is in tension with is Article VIII: A10 is
+this row's gate, and a row cannot close on a gate two-thirds of which no
+command returns zero for. Closing them here is closing the exit condition,
+not widening it. The README restructure found in the same pass **is** a
+separate task, because nothing about v1.2 needs it — see `T-126`.
+
+**What it costs.** Nothing. No document fetched, no patient added, no eval
+row written, no recording re-measured, **zero model calls** — which is A10's
+third clause, and the reason this row was scheduled last: it reports on four
+trees and could not be written until the fourth existed.
+
 ### `[x] T-94` Diagnostic ultrasound: the source, the tree, the patients and the rows
 
 **REQ:** 61 · **Depends:** T-91 *(D110)*, T-92 *(D111)* · **Blocks:** T-95 ·
@@ -2077,6 +2182,64 @@ T-92, T-94 and T-95 open *(D109)*.
 ## Attached to no story
 
 Real work with a runnable exit that delivers no user outcome.
+
+### `[x] T-126` The README, reordered behind a checked architecture diagram
+
+**REQ:** none · **Depends:** T-95 *(D116)* · **Blocks:** — ·
+**Discovered in:** T-95's documentation pass · **Decided by:** D117 ·
+**Gates:** none — no acceptance criterion covers prose · **Timebox:** one day
+**Status:** **closed** (D117) — the exit ran green and every gate with it.
+No code under `pa_agent/` moved, no figure changed, no recording was touched.
+**Why it is its own task:** working rule 6. T-95's exit named a paragraph in
+one section; this is a document rewrite that nothing about v1.2 needed, and
+folding it into the row that closes a version would make that close mean two
+things. Its id sits above the roadmap's reservations, which run to `T-125`.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_readme_structure.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: the README's `##` sequence equals the order `EXPECTED_SECTIONS`
+declares; the one mermaid block's step nodes are `pa_agent.workflow.STEPS`
+**in order**, its short-circuit edge labels name all five of the resolver's
+declared result types, all three model-boundary ports appear, and neither
+storage plane has an edge to the other; the two architecture sections the
+diagram replaced are not top-level sections again; and every figure the
+README copies still re-derives from the artifact that owns it.
+
+**What it delivers.** The document reordered to *what it is → where it stands
+→ what it measured → where it breaks → where it is going → everything that
+explains those*, in place of the chronological order it had drifted into, in
+which the newest finding sat 800 lines down. Three results sections merged
+into one, two architecture sections replaced by a single **mermaid flowchart**
+with the prose the diagram cannot say, and the roadmap's retrospective prose
+cut where the table above it already said the same thing. The measured
+figures stay in full: they are what a reviewer reads.
+
+**Why a documentation task has a runnable exit at all.** Article VIII does
+not exempt prose, and the diagram is what made an exit available:
+`tests/test_readme_structure.py` parses the mermaid block and compares it to
+the engine, so a renamed step is a red suite rather than a picture that
+quietly describes last month's graph. The heading order is pinned as a
+literal for the same reason — a restructure nothing checks is a restructure
+that drifts back.
+
+**What it corrected on the way.** Three claims in the README had gone stale
+against the code rather than against a figure, so no existing pin caught
+them: the opening described a two-tree system over one policy; the envelope
+paragraph still said a new tree evaluates "as long as its criterion **ids**
+map to implemented predicates", which `T-91` replaced with dispatch on the
+declared **kind** and is the precise error D110 exists to prevent; and the
+acceptance table listed A1–A9 under a heading claiming A1–A10. Recorded here
+rather than as three more tasks, because each is one sentence inside the
+section this task rewrites.
+
+**What it does not check.** The diagram's **edges**. Node names are compared
+to the code; an arrow pointing somewhere the engine does not go would still
+pass. That is stated in `D117`'s reversal condition and in the test file's
+own docstring rather than left as a silence.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

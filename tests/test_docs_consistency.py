@@ -165,7 +165,15 @@ def test_the_acceptance_figures_in_claude_md_come_from_the_report(claude, report
 
     # Scoped to A6's own section: the tier comparison above it has rows with
     # the same labels, and an unscoped search reads the wrong table.
-    cost_section = report[report.index("## Cost and latency"):]
+    #
+    # Bounded at the **end** of that section too, since T-95 (D116). It used
+    # to run to the end of the file, which was safe only because `## Cost and
+    # latency` was the last section with a table; a section after it lands
+    # inside the slice, and a non-greedy match that starts in the cost table
+    # and finishes in a later one would pair figures across the boundary.
+    cost_start = report.index("## Cost and latency")
+    cost_end = report.index("\n## ", cost_start + 1)
+    cost_section = report[cost_start:cost_end]
     cost = re.search(
         r"\| Model calls \| (\d+) \|.*?\| Input tokens \| (\d+) \|.*?"
         r"\| Output tokens \| (\d+) \|",
@@ -217,3 +225,70 @@ def test_the_readme_roadmap_agrees_with_the_spec(readme):
         f"  spec  : {spec_rows}\n"
         "Spec §11 is the source; reordering versions is a decision entry (D105)."
     )
+
+
+def test_the_readmes_corpus_figures_come_from_the_report(readme, report):
+    """P3's counts, which were stale for two tasks (T-95, D116).
+
+    `Where this system degrades` said *eleven patients … seven policy
+    documents, twenty cases* while the corpus was fourteen, nine and
+    twenty-four, and the README contradicted its own A1 row twenty lines
+    later. The report has rendered the corrected sentence since T-93 — it is
+    computed by `_corpus_counts` from the three manifests that own it — so
+    this was a copy nothing compared, which is exactly what D108 is about.
+    """
+    corpus = re.search(
+        r"The corpus is (\d+) patients, (\d+) chart notes and (\d+) policy documents\.",
+        report,
+    )
+    assert corpus, "the report's corpus sentence moved; re-read it here"
+    patients, notes, documents = corpus.groups()
+
+    cases = re.search(r"(\d+) labeled cases\.", report)
+    assert cases, "the report's case count moved"
+
+    degrades = readme[readme.index("## Where this system degrades") :]
+    degrades = degrades[: degrades.index("\n## ", 1)]
+    problem = degrades[degrades.index("- **P3") :]
+    problem = problem[: problem.index("\n- **P4")]
+
+    for label, value in (
+        ("patients", patients),
+        ("chart notes", notes),
+        ("policy documents", documents),
+        ("cases", cases.group(1)),
+    ):
+        assert value in problem, (
+            f"P3 does not carry the report's {label} figure ({value}); the "
+            "report owns it and this bullet is a copy (rule 12)"
+        )
+
+
+def test_the_readmes_per_practice_table_comes_from_the_report(readme, report):
+    """The compatibility account owns the classification; README copies it.
+
+    T-95 generated the figures README had been stating by hand, so rule 12
+    applies to them from that moment: the copy is re-derived from the owner,
+    never the reverse. Each rendered row is required verbatim, which is the
+    cheapest form the pin can take and the one that cannot drift by a digit.
+    """
+    section = report[report.index("## Cross-practice compatibility") :]
+    per_practice = section[section.index("### Per practice") :]
+    per_practice = per_practice[: per_practice.index("**")]
+
+    rows = [
+        line.strip()
+        for line in per_practice.splitlines()
+        if line.startswith("| ") and "---" not in line and not line.startswith("| Practice")
+    ]
+    assert len(rows) == 3, "the report renders one row per practice"
+
+    for row in rows:
+        cells = [cell.strip() for cell in row.strip("|").split("|")]
+        practice, trees, criteria = cells[0], cells[1], cells[2]
+        reused, earned, unclaimed = cells[3], cells[4], cells[5]
+        copy = f"| {practice} | {trees} | {criteria} | {reused} | {earned} | {unclaimed} |"
+        assert copy in readme, (
+            f"README's per-practice table does not carry the report's row for "
+            f"{practice!r}: expected {copy!r} (rule 12, D116)"
+        )

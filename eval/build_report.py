@@ -38,9 +38,11 @@ sys.path.insert(0, str(EVAL_DIR))
 import run_eval as harness  # noqa: E402
 
 from pa_agent.contracts import (  # noqa: E402
+    CriteriaTree,
     CriterionVerdict,
     Determination,
     GapReason,
+    PredicateKind,
 )
 from pa_agent.index import DocumentIndex  # noqa: E402
 from pa_agent.spans import SpanValidationError, validate  # noqa: E402
@@ -52,6 +54,35 @@ REPORT_PATH = EVAL_DIR / "report.md"
 #: D82's grid. The pinned 1.0 sits inside it deliberately, so the committed
 #: choice is visible on the curve rather than asserted beside it.
 TOLERANCE_GRID: tuple[float, ...] = (0.0, 0.25, 0.5, 1.0, 2.0, 5.0, 50.0)
+
+#: Where every predicate kind came from: the practice that first needed it and
+#: the task that earned it (T-95, D116). `PredicateKind` is the engine's closed
+#: vocabulary; this is the closed account of its provenance, and the
+#: compatibility account's middle column is computed from it — a criterion's
+#: kind is *reused* when its origin practice is not the criterion's own.
+#:
+#: T-91 named the seven it found, wrapping predicates built across T-13 to T-42
+#: for the one practice that then existed; the two after it arrived with the
+#: practices that needed them.
+#:
+#: **A literal, and pinned against the enum rather than against the corpus**
+#: (`set(KIND_ORIGIN) == set(PredicateKind)`, the shape `PREDICATES` and
+#: `STEP_KINDS` already use). The rejected alternative was one frozenset of
+#: "the kinds that predate v1.2", derived from today's bariatric trees to pin
+#: it — which asserts a historical claim against a present derivation, so a
+#: bariatric tree revision declaring an existing kind could only be made green
+#: by rewriting the history the constant exists to preserve (D116).
+KIND_ORIGIN: dict[PredicateKind, tuple[str, str]] = {
+    PredicateKind.BMI_OBSERVATION_THRESHOLD: ("bariatric_surgery", "T-91"),
+    PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP: ("bariatric_surgery", "T-91"),
+    PredicateKind.NOTE_EVENT_COUNT: ("bariatric_surgery", "T-91"),
+    PredicateKind.NOTE_EVENT_RUN_LENGTH: ("bariatric_surgery", "T-91"),
+    PredicateKind.NOTE_EVENT_RUN_RECENCY: ("bariatric_surgery", "T-91"),
+    PredicateKind.NOTE_EVENT_RUN_BMI_RATE: ("bariatric_surgery", "T-91"),
+    PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: ("bariatric_surgery", "T-91"),
+    PredicateKind.MEDICATION_VALUE_SET_ACTIVE: ("rheumatology", "T-92"),
+    PredicateKind.PROCEDURE_VALUE_SET_INTERVAL: ("diagnostic_ultrasound", "T-94"),
+}
 
 EXIT_OK = 0
 EXIT_DRIFT = 1
@@ -1309,6 +1340,182 @@ def _cost_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
     ]
 
 
+def _trees() -> list[CriteriaTree]:
+    """Every criteria tree the engine loads, read through the policy port.
+
+    The **file set** comes from the directory and the objects come from the
+    port. That is what makes the account's claim a claim about
+    `data/policies/` rather than about a list written here: a generator
+    reading its own list of trees would answer "zero omitted" about the list
+    (D116). `_corpus_counts` reads `REPO_ROOT` the same way.
+    """
+    store = LocalPolicyStore()
+    paths = sorted((REPO_ROOT / "data" / "policies").glob("*.json"))
+    ids = [
+        json.loads(path.read_text(encoding="utf-8"))["policy_version_id"]
+        for path in paths
+    ]
+    trees = [store.get_tree(policy_version_id) for policy_version_id in ids]
+    return sorted(trees, key=lambda tree: (tree.practice, tree.policy_version_id))
+
+
+def _criterion_class(tree: CriteriaTree, criterion: Any) -> tuple[str, str]:
+    """How one criterion is evaluated: `(class, detail)` (T-95, D116).
+
+    Three classes and no fourth. A tree naming a kind the engine lacks fails
+    at load rather than abstaining, so "unbuilt" cannot appear here — that is
+    the distinction REQ-57 exists to keep. `KIND_ORIGIN` is indexed rather
+    than consulted with a default: a kind with no recorded origin raises here
+    instead of being quietly classed as something.
+    """
+    if criterion.evaluation == "unclaimed":
+        return "unclaimed", ""
+    origin_practice, origin_task = KIND_ORIGIN[criterion.kind]
+    earned_here = origin_practice == tree.practice
+    return ("earned" if earned_here else "reused"), origin_task
+
+
+def _practice_name(practice: str) -> str:
+    """The declared slug, read back as prose."""
+    return practice.replace("_", " ")
+
+
+def _compatibility_section() -> list[str]:
+    """A10's first clause, rendered: every criterion, classed, zero omitted."""
+    trees = _trees()
+    practices = sorted({tree.practice for tree in trees})
+
+    lines = [
+        "## Cross-practice compatibility (A10, REQ-57, REQ-58, D110, D111, D114)",
+        "",
+        "v1.2 asked how much of this engine was bariatric surgery's. The "
+        "answer is generated here rather than asserted in prose: every "
+        "criterion of every tree the policy directory holds, classed by where "
+        "the arithmetic that evaluates it came from. A criterion is evaluated "
+        "by a predicate kind **an earlier practice earned**, by a kind **this "
+        "practice earned**, or it is **declared unclaimed** and abstained on "
+        "with `NOT_EVALUATED_BY_THIS_SYSTEM` (REQ-58).",
+        "",
+        "There is no fourth class, and that is the point. A tree naming a "
+        "kind the engine lacks **fails at load** rather than abstaining, so "
+        "*unbuilt* cannot appear in this table — which is the distinction "
+        "REQ-57 exists to keep, and the one a tree from an unrelated practice "
+        "is most able to blur (D110).",
+        "",
+        "### Per practice",
+        "",
+        "| Practice | Trees | Criteria | By a kind an earlier practice earned "
+        "| By a kind it earned itself | Declared unclaimed | Kinds first "
+        "earned here |",
+        "|---|---|---|---|---|---|---|",
+    ]
+
+    for practice in practices:
+        owned = [tree for tree in trees if tree.practice == practice]
+        classes = [
+            _criterion_class(tree, criterion)[0]
+            for tree in owned
+            for criterion in tree.criteria
+        ]
+        first_earned = {
+            criterion.kind
+            for tree in owned
+            for criterion in tree.criteria
+            if criterion.kind is not None
+            and KIND_ORIGIN[criterion.kind][0] == practice
+        }
+        lines.append(
+            f"| {_practice_name(practice)} | {len(owned)} | {len(classes)} "
+            f"| {classes.count('reused')} | {classes.count('earned')} "
+            f"| {classes.count('unclaimed')} | {len(first_earned)} |"
+        )
+
+    total = sum(len(tree.criteria) for tree in trees)
+    lines += [
+        "",
+        f"**{total} criteria across {len(trees)} trees and {len(practices)} "
+        "practices, zero omitted.** The rows below are the policy directory's "
+        "own: the file set is globbed and each tree is read back through the "
+        "policy port, so a criterion missing from this table is a criterion "
+        "missing from the engine.",
+        "",
+        "The practices that arrived after the first reused what the engine "
+        "already had and earned what it lacked; the last column is what each "
+        "one cost the vocabulary. Nothing here is unclaimed for want of a "
+        "predicate — every abstention below is a limit of the **document or "
+        "the chart**, which is the finding rather than a shortfall.",
+        "",
+        "### Every criterion of every loaded tree",
+        "",
+        "| Practice | Tree | Id | Criterion | Evaluated by |",
+        "|---|---|---|---|---|",
+    ]
+
+    for tree in trees:
+        for criterion in tree.criteria:
+            klass, origin_task = _criterion_class(tree, criterion)
+            if klass == "unclaimed":
+                evaluated_by = "*declared unclaimed*"
+            else:
+                earned = "earned here" if klass == "earned" else "reused"
+                evaluated_by = f"`{criterion.kind.value}` ({earned}, {origin_task})"
+            lines.append(
+                f"| {_practice_name(tree.practice)} | `{tree.policy_version_id}` "
+                f"| `{criterion.id}` | {criterion.label} | {evaluated_by} |"
+            )
+
+    lines += [
+        "",
+        "### Why each unclaimed criterion is unclaimed",
+        "",
+        "The tree's own words, quoted rather than sorted into categories of "
+        "this report's invention (D116). Read together they separate "
+        "themselves: some name a limit of **this pipeline**, which a later "
+        "version lifts, and the rest name a limit of **the record**, which no "
+        "amount of engineering reaches.",
+        "",
+    ]
+
+    for tree in trees:
+        for criterion in tree.criteria:
+            if criterion.evaluation != "unclaimed":
+                continue
+            lines.append(
+                f"- **`{tree.policy_version_id}` `{criterion.id}`** — "
+                f"{criterion.label}. {criterion.note}"
+            )
+
+    exclusions = [
+        (tree, exclusion)
+        for tree in trees
+        for exclusion in tree.categorical_exclusions
+    ]
+    lines += [
+        "",
+        "### Categorical exclusions",
+        "",
+        "Counted apart, because A10 counts criteria and an exclusion is not "
+        "one: written as a criterion it would have to answer `MET` with no "
+        "span on every chart that does not trigger it, and REQ-5 refuses "
+        "that (REQ-60, D111). One that does not fire produces nothing. The "
+        "same rule reaches them — an `ExclusionKind` the engine lacks fails "
+        "at load, because an exclusion silently skipped **approves** past a "
+        "denial the policy states.",
+        "",
+        "| Practice | Tree | Exclusion | Procedure scope | Evaluated by |",
+        "|---|---|---|---|---|",
+    ]
+    for tree, exclusion in exclusions:
+        lines.append(
+            f"| {_practice_name(tree.practice)} | `{tree.policy_version_id}` "
+            f"| {exclusion.label} | `{exclusion.procedure_scope}` "
+            f"| `{exclusion.kind.value}` |"
+        )
+    lines.append("")
+
+    return lines
+
+
 def _caveats_section() -> list[str]:
     return [
         "## Scope of these numbers",
@@ -1383,6 +1590,7 @@ def render() -> str:
         *_sweep_section(),
         *_recall_section(cache),
         *_cost_section(results, cache),
+        *_compatibility_section(),
         *_caveats_section(),
     ]
     return "\n".join(lines).rstrip("\n") + "\n"

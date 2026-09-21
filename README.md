@@ -4,10 +4,13 @@ A prior authorization determination system built to work across doctors'
 practices. Given a patient record and a requested procedure code, it produces
 a reviewable determination: a verdict for every criterion in the governing
 policy, a citation for every verdict, and a gap list naming exactly what the
-chart is missing. The control case it is currently tested against is
-bariatric surgery under CMS NCD 100.1, as two MACs implement it — Noridian
-Jurisdiction F and Palmetto GBA — one policy chosen to exercise every part of
-the engine, not a boundary of the design.
+chart is missing. It runs today over **four criteria trees from three
+clinical practices and three Medicare contractors**: bariatric surgery under
+CMS NCD 100.1 as Noridian Jurisdiction F and Palmetto GBA each implement it,
+infliximab for rheumatoid arthritis under Palmetto's L35677, and non-invasive
+abdominal and visceral vascular ultrasound under WPS's L35755. The first was
+chosen to exercise every part of the engine; the other two were chosen
+because they are nothing like it.
 
 The system does not submit, does not decide, and does not adjudicate on a
 payer's behalf. It prepares a packet for a human specialist — and the primary
@@ -22,12 +25,15 @@ lives in a reviewed JSON file, the aggregator parses the policy's own
 `decision_expression` rather than hardcoding one, and the resolver maps
 procedure codes to policies by set membership. A new specialty, payer policy,
 or jurisdiction is therefore a new policy file and value set over the same
-engine — a change to data under review, not a change to Python. Two trees are
-loaded today over the same NCD — Noridian's and Palmetto's — and they differ
-in **shape**, not only in constants: Palmetto states no run length and adds a
-criterion the pipeline cannot evaluate, which the engine declares unclaimed
-and abstains on rather than approving past. *Where this system degrades*
-below is explicit about what that does and does not prove.
+engine — a change to data under review, not a change to Python. **That claim
+is measured rather than asserted.** The four loaded trees differ in *shape*,
+not only in constants — one states no run length, another counts a diagnosis
+set, a third measures the interval to a prior procedure — and each practice
+after the first reused a predicate the engine already had and needed exactly
+one it did not. Where a criterion cannot be expressed at all, the engine
+declares it unclaimed and abstains rather than approving past it.
+*What it measures* below has the account, and *Where this system degrades* is
+explicit about what it does and does not prove.
 
 **And it is modular enough to sit inside a practice's back office.** The
 application is ports and adapters end to end: two storage ports keep the
@@ -63,39 +69,269 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1 and v1.1 are both complete, and v1.2 is under way.**
-74 of 74 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A9 holding. The suite collects 1120 tests (58 skip). v1 delivered the
-determination end to end; v1.1 closed spec §10's eight known limits — a
-second jurisdiction, a bounded re-ask for unanchorable quotes, a second note
-per chart, a citation-sufficiency check, a second measured tier, and the
-written-down path for the one limit that stays open on purpose. v1.2 opened
-with the predicate vocabulary: every criterion a tree declares names the
-arithmetic that evaluates it, and a tree naming one the engine lacks fails to
-load instead of abstaining past it *(T-91, D110)*. Its second row added the
-first tree from an unrelated practice — **infliximab for rheumatoid
-arthritis**, compiled from Palmetto GBA's L35677 and A56432 — which loads
-beside the bariatric trees, resolves by its own J-code in the same seven
-states, and needed one predicate kind the engine did not have *(T-92,
-D111)*. Its third row gave that practice patients: two Synthea charts
-carrying rheumatoid arthritis in Palmetto's territory, one of them cloned and
-given the drug the policy's limitation excludes — because the generator
-writes no biologic for this disease at any population size — and three eval
-rows over them. **The engine needed nothing**: the same code that closed
-T-92 produced every labeled verdict, so what a second practice cost here was
-corpus work and not engine work *(T-93, D113)*. Its fourth row took the whole
-of that again in one task — **non-invasive abdominal and visceral vascular
-ultrasound**, compiled from WPS's L35755 and A57591, a third contractor with
-its own six states plus one the document's own table adds — and needed one
-predicate kind the engine lacked: the interval to the most recent prior
-procedure, which is how a frequency limit compiles when an absence has no
-span to cite *(T-94, D114)*.
+**v1, v1.1 and v1.2 are all complete.**
+76 of 76 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A10 holding. The suite collects 1135 tests (58 skip).
 
-Measured figures live in `eval/report.md`, which is generated and gate-verified
-rather than written; *Status in detail* below carries them, and
-*Where this system degrades* carries the limits.
+- **v1** delivered the determination end to end: two short circuits, seven
+  criterion verdicts over structured FHIR and extracted note events, a gap
+  list, a blind verifier, and an eval harness that grades the whole thing
+  against labels.
+- **v1.1** closed spec §10's eight known limits — a second jurisdiction, a
+  bounded re-ask for unanchorable quotes, a second note per chart, a
+  citation-sufficiency check, a second measured API tier, and the written-down
+  path for the one limit that stays open on purpose.
+- **v1.2** asked the question this design exists to answer: **is the engine
+  bariatric-shaped?** It made the predicate vocabulary explicit *(T-91)*, then
+  compiled two trees from practices the engine had never seen — infliximab for
+  rheumatoid arthritis from Palmetto GBA's L35677 *(T-92, T-93)* and
+  non-invasive abdominal and visceral vascular ultrasound from WPS's L35755
+  *(T-94)* — and closed by generating the account of what that cost
+  *(T-95)*. **The answer is in the next section, and it is measured.**
 
-### The road from here
+Every figure below is re-derived from `eval/report.md`, which is generated and
+gate-verified rather than written.
+
+---
+
+## What it measures, and what that means
+
+This is the section to read. Everything else in this file explains how these
+numbers were produced or what they do not cover.
+
+`eval/report.md` owns every measured figure here: it is **generated**, and
+`python eval/build_report.py --verify` recomputes each number from the
+committed recordings and fails on any that no longer matches — so a stale
+figure in this repo is a red gate rather than a plausible-looking table. What
+follows is a copy, pinned by `tests/test_docs_consistency.py`.
+
+### Can the engine take a practice it was not written for?
+
+That is the question v1.2 exists to answer, and its five rows answer it with
+numbers rather than with an opinion. The account below is generated from the
+trees the engine actually loads, in `eval/report.md`'s *Cross-practice
+compatibility* section *(T-95, D116)*.
+
+| Practice | Trees | Criteria | By a kind an earlier practice earned | By a kind it earned itself | Declared unclaimed |
+|---|---|---|---|---|---|
+| bariatric surgery | 2 | 14 | 0 | 12 | 2 |
+| diagnostic ultrasound | 1 | 5 | 1 | 1 | 3 |
+| rheumatology | 1 | 5 | 1 | 1 | 3 |
+
+**24 criteria across four trees and three practices, zero omitted** — which is
+gate A10's first clause, and the reason the account is generated rather than
+asserted: a criterion missing from that table is a criterion missing from the
+engine. There is no fourth class in it. A tree naming a predicate kind the
+engine lacks **fails at load** rather than abstaining, so *unbuilt* cannot
+appear beside *unclaimed* — the distinction `REQ-57` exists to keep, and the
+one a tree from an unrelated practice is most able to blur.
+
+What the two new practices cost, in detail:
+
+| Figure | Rheumatology | Ultrasound |
+|---|---|---|
+| Predicate kinds the tree needed that the engine lacked | **1** (`medication_value_set_active`) | **1** (`procedure_value_set_interval`) |
+| Its criteria evaluated deterministically / declared unclaimed | **2** / **3** | **2** / **3** |
+| …any of them unclaimed for want of a predicate | **none** | **none** |
+| Engine changes needed to give it patients and rows | **none** | one port read and one narrower, both the new kind's |
+| Eval rows, and their result | **3** (`RA1`–`RA3`), all `PASS` | **4** (`US1`–`US4`), all `PASS` |
+| Model calls spent by those rows | **3** | **5** — one replayed verifier call per cited verdict, no extraction at all |
+| Bariatric verdicts, spans, rows or recordings that moved | **zero** | **zero** |
+| Verifier claims, both tiers | **38** of 38 accepted under `verifier-v6`, zero verdicts moving between tiers |
+
+Three of five criteria are declared unclaimed, and that ratio is the finding
+rather than a shortfall: NYHA class is not in ICD-10, *"untreated"* is a
+judgment about the record, and disease activity is a clinical assessment no
+diagnosis code grades. A system reporting five deterministic verdicts here
+would be reporting three it cannot support. Each is unclaimed because of the
+**document or the chart**, never because a predicate is missing — the
+distinction `REQ-57` exists to keep, and the one this tree was most able to
+blur.
+
+The corpus half came out the same way. Synthea's own rheumatoid arthritis
+module supplies the diagnosis and methotrexate and **no biologic or JAK
+inhibitor at any population size**, so two of the three charts are generated
+patients and the third — the one the policy's combination limitation denies —
+is a declared clone of the first carrying one declared prescription, in the
+same shape the BMI-boundary observation has been declared since T-41. What a
+second practice cost, in the end, was corpus work and not engine work
+*(T-93, D113)*.
+
+Two costs are recorded rather than smoothed away. **An eval row with a cited
+verdict is a verifier measurement**: a claim digest is the criterion, the
+verdict and the sliced quote, so three new `MET` verdicts are three claims
+the recording must hold, re-measured on both tiers — v1.2's plan said zero
+model calls, which was true of extraction and never true of a cited row.
+And a tree declaring **no** note criterion still pays to read a chart's
+notes, because the extraction step is unconditional; it changes no verdict,
+so it is a cost and not a defect, and it is scheduled where extraction
+becomes tree-declared.
+
+**Two of the third practice's findings are about the checker, not the
+tree.** A frequency limit cannot compile as a *count*: "at most one study a
+year" would have to answer `MET` on a chart with no prior study, and REQ-5
+refuses a `MET` with no span, so it compiles as the interval to the most
+recent prior study — `NOT_MET` citing a study inside the window, `MET` citing
+the most recent one outside it, and an **abstention** when the chart
+documents none, because a chart that records no study has not recorded that
+none was performed elsewhere. And the blind verifier turned out to be
+re-deriving **set membership** — judging whether quoted conditions belong to
+a value set the claim names and never shows it — which is the same class of
+error that made it re-do date arithmetic two rounds earlier. Two more prompt
+versions and a full re-measurement on both tiers fixed it; every round is in
+the log rather than only the clean one *(D115)*.
+
+**Row 5 closed the version** by generating that account rather than asserting
+it, and by closing the two clauses of its own gate that no command held: a
+baseline diff does not assert that every row is `PASS`, and *zero model calls
+in any gate* had been pinned against two of the three scripts that spend them
+*(T-95, D116)*.
+
+
+### Every acceptance gate, and what it reads
+
+**Acceptance gates A1–A10 all hold.**
+
+| Gate | Result |
+|---|---|
+| A1 | 24 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.467** base rate and an always-`MET` baseline scoring exactly that |
+| A3 | **zero** `MET` verdicts with an invalid span, over 104 spans checked |
+| A4 | E2 and E3 complete with zero model calls |
+| A5 | abstention **0.333**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across sixteen determinations, from instrumentation |
+| A7 | 63 requirements: 61 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
+| A9 | zero determinations presented with a criterion in `ERROR` |
+| A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
+
+### How the project got here
+
+**v1.1 is complete (D107).** Its last row was an entry rather than code: P6's
+path for model adjudication, written down and deliberately not taken. **The
+second tier landed with T-90 (D106).** The whole corpus was measured a second time on
+**Vertex** and committed beside the AI Studio recordings, which did not move;
+`eval/report.md` renders the two as columns. Fidelity did not change:
+precision, recall, REQ-9 exclusion and field agreement are 1.000 on both
+tiers, every span anchors, the verifier accepted the same thirty claims the
+recording held at that round with no verdict moving, and 0 of 169, 0 of 165 and 0 of 76 model-emitted character
+offsets were usable — the fourth independent reproduction of that finding. The
+tool-calling path is where the tier bites: the ADK's injected
+`set_model_response` round trip is an AI Studio artifact and disappears on
+Vertex's native schema path (tool calls 26 → 12, unescaped spans 4 → 0), while
+the token overhead only halves, 4.12x to 2.14x against each tier's own direct
+runner. **Cost figures do not transfer between tiers** — the direct runner
+spends markedly more input tokens on Vertex for an identical prompt — so only
+the within-tier comparisons are quoted. The second note per patient landed
+earlier with T-81 (D104): every recording re-measured on a corpus where a
+skipped note is reachable, and the direct retrieval-recall figure is now
+measured rather than constructed.
+
+**Nothing else is outstanding — including the one thing a reader might assume
+is.** An earlier board carried a programme to add a formal review stamp to the
+eval labels; it was deleted, with the full record kept in the decision log.
+The labels stand as a working first draft — every cited span is validated
+against the source by the scorer — and further label review rides with the
+corpus expansion of a later version rather than sitting on this board.
+
+Two requirements are **unclaimed on purpose**: model-performed adjudication
+is reserved out of v1, because Amendment 1 keeps the entire decision procedure
+in Python and there is no verdict a model could determine without doing
+something reserved. Declaring that explicitly rather than quietly not doing it
+is what makes the coverage gate satisfiable, and **P6 below** states what it
+would take to claim them and why nothing on the roadmap does *(D107)*.
+
+---
+
+## Where this system degrades
+
+Accuracy is not where this breaks — the measured rates are perfect on a set
+small enough that perfection mostly means "did not obviously fail." The real
+failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
+(*Problems to address*, P1–P8); the short version:
+
+- **P1 — Three contractors, and the thresholds are still not CMS's.** A
+  request resolves by procedure code and state: Noridian's tree for its ten
+  states, Palmetto's two for its seven, WPS's for its own seven, and
+  `NO_JURISDICTION_TREE` for the rest — every other MAC is a tree nobody has
+  compiled, and each one compiled so far showed that MACs differ in shape as
+  much as in number. A state is served by one tree *per practice*, so Alabama
+  is served by three. One eval row runs on the second jurisdiction: `J1`,
+  E4's chart cloned into Alabama, where the three-month run that is a
+  shortfall in Washington is not a criterion at all.
+- **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
+  quoting produces a claim nobody can anchor, so the system abstains where
+  evidence existed. Fail-closed, and still a loss. The bounded re-ask is the
+  standing answer; on the two-note corpus it fired once, on the very
+  paraphrase P2 was written from, and recovered it. What remains is a claim
+  the model never quoted at all.
+- **P3 — Small everything.** 14 patients (four of them declared clones), 14
+  chart notes, 9 policy documents, 24 cases: every rate moves in large steps,
+  and one case outweighs a percentage point. The figures are `eval/report.md`'s,
+  which computes them from the three manifests that own them — this bullet
+  read *eleven, fourteen, seven, twenty* for two tasks after the corpus grew
+  past it, with every gate green, so it is pinned now (D108, D116).
+- **P4 — The ground truth is a first draft.** The labels were drafted
+  alongside the system; the second pass was taken with T-81, every row
+  re-derived from the manifests and the trees' constants and recorded in
+  D104. P3's set size is the bound that remains.
+- **P5 — The blind verifier cannot check arithmetic.** It sees one claim and
+  one quote, so shortfall claims ("only three months") are checked by Python,
+  not by the verifier.
+- **P6 — The model's judgment is never on the hook.** Model adjudication is
+  deliberately unclaimed; the agentic path decides what to *read*, never what
+  the answer is. What would change that is written down rather than left
+  vague: not a criterion that is merely hard to extract — the second
+  contractor's multidisciplinary-evaluation requirement looks like one and
+  decomposes into extraction plus set membership plus a date window — but a
+  criterion whose *predicate* cannot be compiled at all, of the kind a policy
+  asks for when it wants a "diligent effort" rather than a threshold. Three
+  things follow, and they are why it stays unclaimed: a model verdict is not
+  reproducible run to run, which is what this project's own second article
+  forbids; the deterministic path stops being the regression oracle for a
+  criterion it cannot compute; and the differential that grades the agentic
+  path could not cover it.
+- **P7 — Retrieval recall is one measured day.** Since T-81 every chart is
+  two notes and the planner can skip one, so the direct figure is measured
+  rather than constructed; on the first measurement it gathered every note.
+  A free-tier tool loop is not reproducible at temperature 0, so that is a
+  sample, re-measured and never re-run.
+- **P8 — Every free number is a replay.** The reproducible figures describe
+  one measured day against one pinned model. That is still true, and the
+  *one tier* half no longer is: the whole corpus was measured a second time
+  on Vertex and both sets are committed, rendered as columns in
+  `eval/report.md`. Fidelity is identical across the two; **cost is not**, and
+  the direct runner spends markedly more input tokens on Vertex for an
+  identical prompt, so token figures are only quoted within a tier. Any
+  configuration change is still a new measurement, never a re-run.
+
+**And one more, which is not a P-number.** P1 through P8 are spec §10's list,
+each closed by a task of its own; this one is what v1.2 measured rather than
+what it left undone, so it is written here instead of added to a list that is
+finished. **Three practices is not three hundred.** `eval/report.md`'s
+cross-practice compatibility account says exactly what the engine has been
+shown to take: 24 criteria across four trees and three practices, every one
+evaluated by a declared predicate kind or declared unclaimed, zero omitted.
+Each practice after the first reused a kind the engine already had and earned
+exactly one it lacked — which is a real finding and a small sample, and the
+honest reading of a sample of two is that the next practice needs *about* one
+new predicate, not that it needs one.
+
+The sharper limit is what *unclaimed* is doing. Eight of those 24 criteria
+abstain, and the account quotes each tree's own reason so a reader can sort
+them: two are limits of **this pipeline** — Palmetto's `c4` wants a weight the
+extraction schema has no field for — and six are limits of **the record**, facts
+like NYHA class or a suspicion of vascular pain that no coded resource carries
+at all. The first kind a later version lifts; the second kind nothing lifts,
+and a system that reported verdicts on them would be reporting judgments it
+cannot support. A third of this system's criteria are questions it hands back
+to a human, and that ratio is the finding, not a shortfall — but it does mean
+that "the engine takes a new practice's document" is a claim about the
+two-thirds it can compute.
+
+---
+
+## The road from here
 
 One version at a time; a version opens when the previous one closes. Each
 names one story and one acceptance gate, and mints its requirements when its
@@ -105,7 +341,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 |---|---|---|---|
 | v1 | bariatric determination end to end, two implementations graded against one oracle | US-1–US-9 | **complete** |
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
-| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **in progress** (four of five rows closed) |
+| v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | planned |
 | v1.4 | sessions and intake, headless | US-12 | planned |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
@@ -114,37 +350,28 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v2.1 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | planned |
 | v2.2 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
 
-**v1.2 asks the question this design is built to answer:** whether the engine
-is bariatric-shaped. Two trees from unrelated practices are compiled against
-the predicate vocabulary the engine already has, and where a criterion cannot
-be expressed the engine must say so — declared unclaimed and abstaining, never
-quietly omitted, because omitting a criterion approves where a payer would
-not. It spends zero model calls.
+**What v1.2 established, and why the rest of the roadmap depends on it.**
+The two rows that matter are in *What it measures* above; the point here is
+what they license. Until `T-91` the engine chose a criterion's arithmetic
+from the criterion's **id** — `a` was the BMI threshold, `c3` the run length
+— and since coverage documents letter their criteria `a`, `b`, `c` as a
+matter of course, a rheumatology tree would have been evaluated by bariatric
+arithmetic against rheumatology constants, answered, cited a span, and passed
+every test in this repo. A tree now declares each criterion's `kind` from a
+closed set and a kind the engine lacks fails at load. **Unbuilt is not
+unclaimed:** a limit the tree declares is reviewed and reported as an
+abstention; a predicate nobody wrote may not borrow it *(REQ-57, REQ-58,
+D110)*. That is the property every version below rests on — v1.6 adds two
+more practices, and v2.2 adds a payer whose policy states the criteria
+Medicare never does.
 
-Its first row made that vocabulary explicit. Until `T-91` the engine chose a
-criterion's arithmetic from the criterion's **id**: `a` was the BMI
-threshold, `c3` the run length. Coverage documents letter their criteria `a`,
-`b`, `c` as a matter of course, so a rheumatology tree would have been
-evaluated by bariatric arithmetic against rheumatology constants, answered,
-and cited a span — passing every test in the repo. A tree now declares each
-criterion's `kind` from a closed set, the engine dispatches on that, and a
-kind it does not implement fails at load naming the tree, the criterion and
-the kind. **Unbuilt is not unclaimed:** a limit the tree declares is reviewed
-and reported as an abstention; a predicate nobody wrote is not allowed to
-borrow it *(REQ-57, REQ-58, D110)*.
-
-Its second and third rows put that to work on a real practice: **infliximab
-for rheumatoid arthritis**, compiled from Palmetto GBA's L35677 and A56432,
-which loads beside the bariatric trees over the same seven states and needed
-exactly one predicate kind the engine did not have *(T-92, D111)*; then that
-practice's patients and eval rows, which needed **no engine change at all**
-*(T-93, D113)*. Its fourth row did both halves again for a third practice and
-a third contractor — **abdominal and visceral vascular ultrasound**, from
-WPS's L35755 and A57591 — for one more predicate kind: the interval to the
-most recent prior procedure, which is what a frequency limit becomes once you
-notice that "no prior study" has no span to cite *(T-94, D114)*. The version
-closes on a compatibility account that classes every criterion of every tree
-as evaluated by an existing predicate kind, by a new one, or unclaimed. The measured results are in *Status in detail* below.
+**Next is v1.3**, which leaves coverage rules alone and adds a second kind of
+help: from the medications and conditions already on the chart, surface
+conditions the chart *supports* but does not carry — a corticosteroid and a
+low bone density, an anticoagulant and a low blood pressure — each tied to
+evidence and sorted by how much of it there is. Codes come only from a
+reviewed table, the tri-state is Python, and the model quotes the note and
+nothing else.
 
 ---
 
@@ -238,7 +465,72 @@ cannot launder its bugs through the validator.
 
 ---
 
-## How the policy file drives the engine
+## How it works
+
+A request goes in — a patient, a procedure code and a state — and a reviewable
+determination comes out. Between them are two short circuits and one fixed
+graph. **No model decides any of it**: the model reads notes and proposes
+citations, and Python decides everything that can change a verdict.
+
+```mermaid
+flowchart TD
+    REQ(["request · patient, procedure code, state"]) --> CLI
+    CLI["cli.py — the one place an adapter is constructed"] --> SC1
+
+    SC1{"resolver.py · short circuit 1<br/>procedure-set membership"}
+    SC1 -->|NotCovered · NoPolicyFound · NoJurisdictionTree| OUT
+    SC1 -->|Resolved · ResolvedByContractor| SC2
+
+    SC2{"determination.py · short circuit 2<br/>the NCD's categorical exclusion"}
+    SC2 -->|exclusion fires| OUT
+    SC2 --> STEPS
+
+    subgraph STEPS["workflow.py — STEPS, a fixed tuple walked in order"]
+        direction TB
+        gather --> extract --> criterion_a --> reconcile --> criterion_b
+        criterion_b --> qualifying_run --> criteria_c --> unclaimed
+        unclaimed --> sufficiency --> verify
+    end
+
+    STEPS --> AGG["aggregate.py — parses the tree's own decision_expression"]
+    AGG --> OUT(["determination · verdicts, spans, gap list, cost counters"])
+
+    gather -.-> PLAN["RetrievalPlanner<br/><i>what to fetch</i>"]
+    extract -.-> EXTR["ExtractionRunner<br/><i>who reads the note</i>"]
+    verify -.-> VERI["VerifierRunner<br/><i>who checks the citations</i>"]
+
+    PLAN -.-> PAT[("patient plane<br/>stores/patient.py")]
+    EXTR -.-> PAT
+    gather -.-> POL[("policy plane<br/>stores/policy.py")]
+
+    classDef port fill:#eef,stroke:#88a,stroke-width:1px;
+    classDef plane fill:#efe,stroke:#8a8,stroke-width:1px;
+    class PLAN,EXTR,VERI port;
+    class PAT,POL plane;
+```
+
+Three things in that picture are the whole design.
+
+**`STEPS` is a tuple, not a framework graph.** The ten steps are named Python
+callables walked by a driver that records what it visited. The one conditional
+in the graph is whether a short circuit fired, and that is a `return`, not an
+edge. An agent framework's workflow object was available and was rejected: its
+edges can route on model output, and adopting it would put the model SDK on
+the import path of every determination that spends no model calls.
+
+**The two planes never meet.** The policy plane has no read access to patient
+data and the patient plane holds no policy corpus. The only object that
+crosses is a compiled criterion. That is enforced by the import graph —
+`stores/__init__.py` imports neither half, and the tool modules that reach
+each plane are separate files that nothing imports together.
+
+**The three ports at the model boundary are what make the measurement
+possible.** Each has a live implementation and a recorded one that replays a
+committed recording for zero cost, which is why the entire test suite and the
+eval harness exercise the full chain end to end for free — and why every
+figure in this README is a replay rather than a fresh bill.
+
+### The policy file is the policy
 
 The criteria tree (`data/policies/ncd_100_1_jf.json`) is not configuration
 *about* the code — it is the policy itself, and the engine is deliberately
@@ -276,73 +568,25 @@ implementations — what "consecutive months" or "documented" *means* — the
 workflow's step order, reconciliation, all date and count arithmetic
 (Article II), and span validation.
 
-**The envelope for a new jurisdiction.** A second MAC's tree — different
-constants, different code bindings, a different boolean structure including
-`OR`s — evaluates with zero code changes, as long as its criterion ids map to
-implemented predicates and its operators are `AND`/`OR`. An unknown criterion
-id or an unimplemented operator (`NOT`, `XOR`, …) raises rather than being
-approximated: the rule is applied as written or refused. A genuinely new *kind*
-of requirement — say, a psychological evaluation within six months — needs a
-new predicate in reviewed Python, and that is the design working as intended:
+**The envelope for a new practice.** Another tree — different constants,
+different code bindings, a different boolean structure including `OR`s —
+evaluates with zero code changes, as long as every criterion it declares
+deterministic names a **predicate kind** the engine implements and its
+operators are `AND`/`OR`. Note the *kind*, not the id: coverage documents
+letter their criteria `a`, `b`, `c` as a matter of course, so three of the
+four committed trees have a criterion `a` and mean three different things by
+it — a BMI comparison, a diagnosis set and a diagnosis set over a different
+value set. Dispatching on the letter would evaluate a rheumatology criterion
+with bariatric arithmetic, answer, cite a span and pass every test in this
+repo, so the tree declares the kind and the engine reads that *(T-91)*. An
+unknown kind or an unimplemented operator (`NOT`, `XOR`, …) raises rather than
+being approximated: the rule is applied as written or refused. A genuinely new *kind*
+of requirement needs a new predicate in reviewed Python — and that is the
+design working as intended:
 a new piece of clinical logic should arrive as a diff a reviewer reads, not as
 an expression a generic engine improvises over.
 
----
-
-## A full prior-auth form, mapped to these lanes
-
-A complete prior authorization request carries more than this build
-implements — this build is three procedure families, three jurisdictions, chart
-notes as the only unstructured evidence. But the architecture's rules assign *every*
-field of a full form to a lane mechanically, and the assignment is worth
-seeing whole, because it is what "applies to a different modality" actually
-means here. Four lanes:
-
-- **Input** — arrives with the request. Never trusted as evidence directly;
-  the workflow re-reads everything through the ports.
-- **Agentic (model leaf)** — a declared model call: turning unstructured text
-  into structured claims, planning retrieval, or blind-checking a citation.
-  Never control flow, never arithmetic.
-- **Dynamic (policy JSON)** — swappable per jurisdiction or modality:
-  constants, the boolean rule, code sets, value sets. A new modality is
-  chiefly a new file here.
-- **Python (deterministic)** — fixed, reviewed code: resolution, dates,
-  counting, set membership, aggregation, span validation.
-
-| Form field | Enters as | Agentic part | Dynamic (policy JSON) | Python (deterministic) | In this build |
-|---|---|---|---|---|---|
-| **Administrative** | | | | | |
-| Patient data | Input — a FHIR bundle | None — the extractor is *barred* from structured data, so the note reading stays independent | — | Structured observations and conditions read from the patient port | Live |
-| Requesting provider | Input | — | — | Identity pass-through and validation | Not in v1 |
-| Servicing provider | Input | — | — | Identity pass-through and validation | Not in v1 |
-| **Code alignment (code request)** | | | | | |
-| Diagnosis codes (ICD / SNOMED) | Input — inside the bundle | — | The comorbidity value set (543 codes) and the exclusion's condition binding | Set membership: criterion (b), and the national T2DM exclusion (sc2) | Live (SNOMED, per the corpus) |
-| CPT / HCPCS procedure code | Input — `--procedure` | — | The tree's three procedure sets: covered, non-covered, contractor-determined | sc1 resolution to one of four typed answers, zero model calls | Live |
-| Medication | Input | — | The tree already records "pharmacological management alone is insufficient" as policy — no predicate consumes it yet | Would be value-set membership, like (b) | Constant recorded; no predicate in v1 |
-| **Clinical justification & evidence** | | | | | |
-| Step-therapy / prior-treatment log | Inside the chart note | The model extracts treatment encounters (`wm_events`) with verbatim quotes | Months required, recency window — A53028's constants | Qualifying-run selection, consecutive-month counting, recency arithmetic (c1–c5) | **Live — the weight-management program history is exactly this shape** |
-| Disease severity markers | Structured observations *and* the note | The note's BMI reading is extracted by the model | The BMI threshold, the discrepancy tolerance | Criteria (a) and (b); reconciliation of the two independent BMI readings | Live |
-| Urgency indicator | Input flag | — | Could be a tree field (a different SLA, not a different rule) | Routing — Article I keeps prioritization out of the model | Not in v1 |
-| **Supporting documents** | | | | | |
-| Recent provider notes | Input documents | The model reads the note — its *only* tool | — | Quote anchoring, span validation, and the blind verifier's replay | Live (two notes per patient since T-81; the extractor reads one at a time) |
-| Diagnostic imaging / lab reports | Input documents | Same extraction lane: unstructured → cited claims | Criteria naming them would be tree data | Identical span validation — the mechanism does not care what kind of document it slices | Not in v1 |
-| Letter of medical necessity (LOMN) | **Output**, not input | Drafting narrative prose would be a model leaf | — | Every claim in it would carry a validated span; the verdicts it summarizes stay Python's | Not in v1 — the emitted packet (seven verdicts + gap list + citations) is the deterministic equivalent |
-
-Two things the table is really saying. First, **the lane is decided by the
-field's nature, not by engineering taste**: anything quantified by policy goes
-in the JSON, anything computable goes in Python (Article II), and the model
-touches a field only where unstructured text has to become a structured,
-citable claim (Article I). Second, **a new modality mostly fills existing
-lanes rather than adding new ones** — an oncology drug PA swaps in a different
-tree (different value sets, different constants, a step-therapy expression
-with `OR`s) and different attached documents, while the resolver, the
-expression evaluator, the anchoring, and the verifier run unchanged. What it
-*cannot* do without a reviewed code change is introduce a new kind of
-predicate — which is the point.
-
----
-
-## Two implementations, one oracle
+### Two implementations, one oracle
 
 The same determination runs two ways, and the difference between them is the
 project's central measurement.
@@ -488,30 +732,56 @@ by declaration. No real or de-identified patient data of any kind is in scope.
 
 ---
 
-## What the spike taught, and where it landed
+## A full prior-auth form, mapped to these lanes
 
-Before anything was built, `spike/spike_001/` tested the assumption the whole
-design rests on: can a single model call read a chart note and return correct
-weight-management encounters, with citable spans, without counting the things
-the spec excludes — unsupervised attempts, missed visits, failed contact
-attempts? Five hand-written notes, three runs at temperature 0, scored entirely
-by Python. It is still alive: `--verify` is one of the gates, and the five
-notes are permanent regression cases.
+A complete prior authorization request carries more than this build
+implements — this build is three procedure families, three jurisdictions, chart
+notes as the only unstructured evidence. But the architecture's rules assign *every*
+field of a full form to a lane mechanically, and the assignment is worth
+seeing whole, because it is what "applies to a different modality" actually
+means here. Four lanes:
 
-| The spike found | What shipped because of it |
-|---|---|
-| Extraction held: event precision and recall 1.000, 21/21 on the hard exclusion traps — on the *first* prompt formulation, no tuning spent | The prompt and schema were promoted **verbatim** to `pa_agent/extraction.py`. Rewriting a measured prompt would restart its history at zero. |
-| Model-emitted character offsets: **0 of 80 usable** — not one sliced back to its own quote | Quote anchoring became mandatory and its own module, `pa_agent/anchor.py`, kept separate from span *validation* so a locator bug cannot launder itself through the check meant to catch it |
-| Three real quotes failed exact matching only because the notes hard-wrap at ~76 columns, as EHR exports do | Anchoring is whitespace-normalized but still records raw offsets into the unmodified document. Fuzzy matching was rejected: a threshold generous enough to absorb a line wrap is generous enough to absorb a changed date. |
-| A gate that re-runs the model answers differently on every invocation and spends quota on every check | The measure / `--rescore` / `--verify` split — spend calls once, re-derive and re-check from the recording for free — which became the pattern behind **every** recording in the repo |
-| A shared ADK session carried note N−1 into note N's context | One fresh context per note, preserved in the ADK runner as `include_contents="none"` |
-| Three model-name literals sat in two files disagreeing with each other and with the recording, while every gate stayed green | `pa_agent/model_pin.py` — the only tracked Python file permitted to name a model, enforced by test |
-| Multi-occurrence quotes (a quote appearing twice, anchoring to the wrong place): measured **zero** | The one number the spike got wrong. Its hand-written notes gave the patient a different BMI every month; real charts plateau. The first real corpus measured 12 of 169, seven anchoring to the *wrong encounter* — spans true about the document and false about the claim. Fixed deterministically: per-field spans anchor to the occurrence nearest their own event. |
+- **Input** — arrives with the request. Never trusted as evidence directly;
+  the workflow re-reads everything through the ports.
+- **Agentic (model leaf)** — a declared model call: turning unstructured text
+  into structured claims, planning retrieval, or blind-checking a citation.
+  Never control flow, never arithmetic.
+- **Dynamic (policy JSON)** — swappable per jurisdiction or modality:
+  constants, the boolean rule, code sets, value sets. A new modality is
+  chiefly a new file here.
+- **Python (deterministic)** — fixed, reviewed code: resolution, dates,
+  counting, set membership, aggregation, span validation.
 
-The last row carries the method lesson the rest of the repo quotes: **a clean
-spike number can be a property of the spike's corpus, not of the mechanism** —
-which is why the spike's own caveats (owner-authored notes, owner-authored
-labels, small n) still travel with every 1.000 in this README.
+| Form field | Enters as | Agentic part | Dynamic (policy JSON) | Python (deterministic) | In this build |
+|---|---|---|---|---|---|
+| **Administrative** | | | | | |
+| Patient data | Input — a FHIR bundle | None — the extractor is *barred* from structured data, so the note reading stays independent | — | Structured observations and conditions read from the patient port | Live |
+| Requesting provider | Input | — | — | Identity pass-through and validation | Not in v1 |
+| Servicing provider | Input | — | — | Identity pass-through and validation | Not in v1 |
+| **Code alignment (code request)** | | | | | |
+| Diagnosis codes (ICD / SNOMED) | Input — inside the bundle | — | The comorbidity value set (543 codes) and the exclusion's condition binding | Set membership: criterion (b), and the national T2DM exclusion (sc2) | Live (SNOMED, per the corpus) |
+| CPT / HCPCS procedure code | Input — `--procedure` | — | The tree's three procedure sets: covered, non-covered, contractor-determined | sc1 resolution to one of four typed answers, zero model calls | Live |
+| Medication | Input | — | The tree already records "pharmacological management alone is insufficient" as policy — no predicate consumes it yet | Would be value-set membership, like (b) | Constant recorded; no predicate in v1 |
+| **Clinical justification & evidence** | | | | | |
+| Step-therapy / prior-treatment log | Inside the chart note | The model extracts treatment encounters (`wm_events`) with verbatim quotes | Months required, recency window — A53028's constants | Qualifying-run selection, consecutive-month counting, recency arithmetic (c1–c5) | **Live — the weight-management program history is exactly this shape** |
+| Disease severity markers | Structured observations *and* the note | The note's BMI reading is extracted by the model | The BMI threshold, the discrepancy tolerance | Criteria (a) and (b); reconciliation of the two independent BMI readings | Live |
+| Urgency indicator | Input flag | — | Could be a tree field (a different SLA, not a different rule) | Routing — Article I keeps prioritization out of the model | Not in v1 |
+| **Supporting documents** | | | | | |
+| Recent provider notes | Input documents | The model reads the note — its *only* tool | — | Quote anchoring, span validation, and the blind verifier's replay | Live (two notes per patient since T-81; the extractor reads one at a time) |
+| Diagnostic imaging / lab reports | Input documents | Same extraction lane: unstructured → cited claims | Criteria naming them would be tree data | Identical span validation — the mechanism does not care what kind of document it slices | Not in v1 |
+| Letter of medical necessity (LOMN) | **Output**, not input | Drafting narrative prose would be a model leaf | — | Every claim in it would carry a validated span; the verdicts it summarizes stay Python's | Not in v1 — the emitted packet (seven verdicts + gap list + citations) is the deterministic equivalent |
+
+Two things the table is really saying. First, **the lane is decided by the
+field's nature, not by engineering taste**: anything quantified by policy goes
+in the JSON, anything computable goes in Python (Article II), and the model
+touches a field only where unstructured text has to become a structured,
+citable claim (Article I). Second, **a new modality mostly fills existing
+lanes rather than adding new ones** — an oncology drug PA swaps in a different
+tree (different value sets, different constants, a step-therapy expression
+with `OR`s) and different attached documents, while the resolver, the
+expression evaluator, the anchoring, and the verifier run unchanged. What it
+*cannot* do without a reviewed code change is introduce a new kind of
+predicate — which is the point.
 
 ---
 
@@ -551,7 +821,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1120 tests across 39 files, 58 of them skipped — the skips are per-tree
+1135 tests across 39 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -704,208 +974,30 @@ the AST instead.
 
 ---
 
-## Where this system degrades
+## What the spike taught, and where it landed
 
-Accuracy is not where this breaks — the measured rates are perfect on a set
-small enough that perfection mostly means "did not obviously fail." The real
-failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
-(*Problems to address*, P1–P8); the short version:
+Before anything was built, `spike/spike_001/` tested the assumption the whole
+design rests on: can a single model call read a chart note and return correct
+weight-management encounters, with citable spans, without counting the things
+the spec excludes — unsupervised attempts, missed visits, failed contact
+attempts? Five hand-written notes, three runs at temperature 0, scored entirely
+by Python. It is still alive: `--verify` is one of the gates, and the five
+notes are permanent regression cases.
 
-- **P1 — Two jurisdictions, and the thresholds are still not CMS's.** A
-  request resolves by procedure code and state: Noridian's tree for its ten
-  states, Palmetto's for its seven, and `NO_JURISDICTION_TREE` for the rest —
-  every other MAC is a tree nobody has compiled, and Palmetto's showed that
-  MACs differ in shape as much as number. One eval row runs under it: `J1`,
-  E4's chart cloned into Alabama, where the three-month run that is a
-  shortfall in Washington is not a criterion at all.
-- **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
-  quoting produces a claim nobody can anchor, so the system abstains where
-  evidence existed. Fail-closed, and still a loss. The bounded re-ask is the
-  standing answer; on the two-note corpus it fired once, on the very
-  paraphrase P2 was written from, and recovered it. What remains is a claim
-  the model never quoted at all.
-- **P3 — Small everything.** Eleven patients (two of them declared
-  clones), fourteen chart notes, seven policy documents, twenty cases: every
-  rate moves in large steps, and one case outweighs a percentage point.
-- **P4 — The ground truth is a first draft.** The labels were drafted
-  alongside the system; the second pass was taken with T-81, every row
-  re-derived from the manifests and the trees' constants and recorded in
-  D104. P3's set size is the bound that remains.
-- **P5 — The blind verifier cannot check arithmetic.** It sees one claim and
-  one quote, so shortfall claims ("only three months") are checked by Python,
-  not by the verifier.
-- **P6 — The model's judgment is never on the hook.** Model adjudication is
-  deliberately unclaimed; the agentic path decides what to *read*, never what
-  the answer is. What would change that is written down rather than left
-  vague: not a criterion that is merely hard to extract — the second
-  contractor's multidisciplinary-evaluation requirement looks like one and
-  decomposes into extraction plus set membership plus a date window — but a
-  criterion whose *predicate* cannot be compiled at all, of the kind a policy
-  asks for when it wants a "diligent effort" rather than a threshold. Three
-  things follow, and they are why it stays unclaimed: a model verdict is not
-  reproducible run to run, which is what this project's own second article
-  forbids; the deterministic path stops being the regression oracle for a
-  criterion it cannot compute; and the differential that grades the agentic
-  path could not cover it.
-- **P7 — Retrieval recall is one measured day.** Since T-81 every chart is
-  two notes and the planner can skip one, so the direct figure is measured
-  rather than constructed; on the first measurement it gathered every note.
-  A free-tier tool loop is not reproducible at temperature 0, so that is a
-  sample, re-measured and never re-run.
-- **P8 — Every free number is a replay.** The reproducible figures describe
-  one measured day against one pinned model. That is still true, and the
-  *one tier* half no longer is: the whole corpus was measured a second time
-  on Vertex and both sets are committed, rendered as columns in
-  `eval/report.md`. Fidelity is identical across the two; **cost is not**, and
-  the direct runner spends markedly more input tokens on Vertex for an
-  identical prompt, so token figures are only quoted within a tier. Any
-  configuration change is still a new measurement, never a re-run.
-
----
-
-## Status in detail, and what it measured
-
-The summary and the roadmap are at the top of this file; this section is the
-measured substance behind them.
-
-Delivered: US-1 through US-7 and US-9 — instant screening of non-covered
-procedures, cited structured criteria, the categorical exclusion, note-only
-criteria with two independent BMI readings, the gap list, the blind verifier,
-the metrics report, and full `ERROR`-state accounting.
-
-**Acceptance gates A1–A9 all hold.** The measured figures live in
-`eval/report.md`, which is generated rather than written: `python
-eval/build_report.py --verify` recomputes every number from the committed
-recordings and fails on any that no longer matches, so a stale figure is a red
-gate rather than a plausible-looking table.
-
-| Gate | Result |
+| The spike found | What shipped because of it |
 |---|---|
-| A1 | 24 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.467** base rate and an always-`MET` baseline scoring exactly that |
-| A3 | **zero** `MET` verdicts with an invalid span, over 104 spans checked |
-| A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.333**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
-| A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across sixteen determinations, from instrumentation |
-| A7 | 63 requirements: 61 mapped to a check, 2 declared unclaimed with a decision entry behind each |
-| A8 | the failure-modes summary above; full analysis in `docs/spec.md` §10 |
-| A9 | zero determinations presented with a criterion in `ERROR` |
+| Extraction held: event precision and recall 1.000, 21/21 on the hard exclusion traps — on the *first* prompt formulation, no tuning spent | The prompt and schema were promoted **verbatim** to `pa_agent/extraction.py`. Rewriting a measured prompt would restart its history at zero. |
+| Model-emitted character offsets: **0 of 80 usable** — not one sliced back to its own quote | Quote anchoring became mandatory and its own module, `pa_agent/anchor.py`, kept separate from span *validation* so a locator bug cannot launder itself through the check meant to catch it |
+| Three real quotes failed exact matching only because the notes hard-wrap at ~76 columns, as EHR exports do | Anchoring is whitespace-normalized but still records raw offsets into the unmodified document. Fuzzy matching was rejected: a threshold generous enough to absorb a line wrap is generous enough to absorb a changed date. |
+| A gate that re-runs the model answers differently on every invocation and spends quota on every check | The measure / `--rescore` / `--verify` split — spend calls once, re-derive and re-check from the recording for free — which became the pattern behind **every** recording in the repo |
+| A shared ADK session carried note N−1 into note N's context | One fresh context per note, preserved in the ADK runner as `include_contents="none"` |
+| Three model-name literals sat in two files disagreeing with each other and with the recording, while every gate stayed green | `pa_agent/model_pin.py` — the only tracked Python file permitted to name a model, enforced by test |
+| Multi-occurrence quotes (a quote appearing twice, anchoring to the wrong place): measured **zero** | The one number the spike got wrong. Its hand-written notes gave the patient a different BMI every month; real charts plateau. The first real corpus measured 12 of 169, seven anchoring to the *wrong encounter* — spans true about the document and false about the claim. Fixed deterministically: per-field spans anchor to the occurrence nearest their own event. |
 
-### What the second and third practices measured (T-92 – T-94)
-
-v1.2's question is whether the engine is bariatric-shaped, and its first four
-rows answer it with numbers rather than with an opinion.
-
-| Figure | Rheumatology | Ultrasound |
-|---|---|---|
-| Predicate kinds the tree needed that the engine lacked | **1** (`medication_value_set_active`) | **1** (`procedure_value_set_interval`) |
-| Its criteria evaluated deterministically / declared unclaimed | **2** / **3** | **2** / **3** |
-| …any of them unclaimed for want of a predicate | **none** | **none** |
-| Engine changes needed to give it patients and rows | **none** | one port read and one narrower, both the new kind's |
-| Eval rows, and their result | **3** (`RA1`–`RA3`), all `PASS` | **4** (`US1`–`US4`), all `PASS` |
-| Model calls spent by those rows | **3** | **5** — one replayed verifier call per cited verdict, no extraction at all |
-| Bariatric verdicts, spans, rows or recordings that moved | **zero** | **zero** |
-| Verifier claims, both tiers | **38** of 38 accepted under `verifier-v6`, zero verdicts moving between tiers |
-
-Three of five criteria are declared unclaimed, and that ratio is the finding
-rather than a shortfall: NYHA class is not in ICD-10, *"untreated"* is a
-judgment about the record, and disease activity is a clinical assessment no
-diagnosis code grades. A system reporting five deterministic verdicts here
-would be reporting three it cannot support. Each is unclaimed because of the
-**document or the chart**, never because a predicate is missing — the
-distinction `REQ-57` exists to keep, and the one this tree was most able to
-blur.
-
-The corpus half came out the same way. Synthea's own rheumatoid arthritis
-module supplies the diagnosis and methotrexate and **no biologic or JAK
-inhibitor at any population size**, so two of the three charts are generated
-patients and the third — the one the policy's combination limitation denies —
-is a declared clone of the first carrying one declared prescription, in the
-same shape the BMI-boundary observation has been declared since T-41. What a
-second practice cost, in the end, was corpus work and not engine work
-*(T-93, D113)*.
-
-Two costs are recorded rather than smoothed away. **An eval row with a cited
-verdict is a verifier measurement**: a claim digest is the criterion, the
-verdict and the sliced quote, so three new `MET` verdicts are three claims
-the recording must hold, re-measured on both tiers — v1.2's plan said zero
-model calls, which was true of extraction and never true of a cited row.
-And a tree declaring **no** note criterion still pays to read a chart's
-notes, because the extraction step is unconditional; it changes no verdict,
-so it is a cost and not a defect, and it is scheduled where extraction
-becomes tree-declared.
-
-**Two of the third practice's findings are about the checker, not the
-tree.** A frequency limit cannot compile as a *count*: "at most one study a
-year" would have to answer `MET` on a chart with no prior study, and REQ-5
-refuses a `MET` with no span, so it compiles as the interval to the most
-recent prior study — `NOT_MET` citing a study inside the window, `MET` citing
-the most recent one outside it, and an **abstention** when the chart
-documents none, because a chart that records no study has not recorded that
-none was performed elsewhere. And the blind verifier turned out to be
-re-deriving **set membership** — judging whether quoted conditions belong to
-a value set the claim names and never shows it — which is the same class of
-error that made it re-do date arithmetic two rounds earlier. Two more prompt
-versions and a full re-measurement on both tiers fixed it; every round is in
-the log rather than only the clean one *(D115)*.
-
-**Row 5 closes the version** with the compatibility account: per practice,
-every criterion classed as evaluated by an existing predicate kind, by a new
-one, or unclaimed.
-
-**v1.1 is complete (D107).** Its last row was an entry rather than code: P6's
-path for model adjudication, written down and deliberately not taken. **The
-second tier landed with T-90 (D106).** The whole corpus was measured a second time on
-**Vertex** and committed beside the AI Studio recordings, which did not move;
-`eval/report.md` renders the two as columns. Fidelity did not change:
-precision, recall, REQ-9 exclusion and field agreement are 1.000 on both
-tiers, every span anchors, the verifier accepted the same thirty claims the
-recording held at that round with no verdict moving, and 0 of 169, 0 of 165 and 0 of 76 model-emitted character
-offsets were usable — the fourth independent reproduction of that finding. The
-tool-calling path is where the tier bites: the ADK's injected
-`set_model_response` round trip is an AI Studio artifact and disappears on
-Vertex's native schema path (tool calls 26 → 12, unescaped spans 4 → 0), while
-the token overhead only halves, 4.12x to 2.14x against each tier's own direct
-runner. **Cost figures do not transfer between tiers** — the direct runner
-spends markedly more input tokens on Vertex for an identical prompt — so only
-the within-tier comparisons are quoted. The second note per patient landed
-earlier with T-81 (D104): every recording re-measured on a corpus where a
-skipped note is reachable, and the direct retrieval-recall figure is now
-measured rather than constructed.
-
-**What follows v1.1 is fixed in spec §11 *(D105)*:** two rounds of testing
-the rules engine against other practices' coverage rules (rheumatoid
-arthritis and ultrasound first; two more, notes included, later), a
-medical-history review that suggests ICD codes the chart supports but does
-not carry, sessions and a simulated submission path built headless, and a
-reviewer's UI as v2.0 over ports that by then already have tests.
-
-**Nothing else is outstanding — including the one thing a reader might assume
-is.** An earlier board carried a programme to add a formal review stamp to the
-eval labels; it was deleted, with the full record kept in the decision log.
-The labels stand as a working first draft — every cited span is validated
-against the source by the scorer — and further label review rides with the
-corpus expansion of a later version rather than sitting on this board.
-
-Two requirements are **unclaimed on purpose**: model-performed adjudication
-is reserved out of v1 because Amendment 1 keeps the entire
-decision procedure in Python — there is no verdict a model could determine
-without doing something reserved. Declaring that explicitly, rather than quietly
-not doing it, is what makes the coverage gate satisfiable.
-
-**What it would take to claim them is written down, and nothing on the roadmap
-does (D107).** The criterion that looks like the candidate — a multidisciplinary
-evaluation within six months, which the second contractor's policy requires —
-turns out to decompose into extraction plus set membership plus a date window,
-so building it would add an extractor and leave Python deciding. Claiming model
-adjudication needs a criterion whose *predicate* cannot be compiled at all, of
-the kind one MAC's policy asks for when it requires a "diligent effort" rather
-than a threshold. Three consequences follow, and they are why it stays
-unclaimed: a model verdict is not reproducible run to run, which is precisely
-what Article II's own test forbids; the deterministic implementation stops
-being the regression oracle for a criterion it cannot compute; and the
-differential that grades the agentic path could not cover it. The limit is
-recorded rather than engineered around.
+The last row carries the method lesson the rest of the repo quotes: **a clean
+spike number can be a property of the spike's corpus, not of the mechanism** —
+which is why the spike's own caveats (owner-authored notes, owner-authored
+labels, small n) still travel with every 1.000 in this README.
 
 ---
 

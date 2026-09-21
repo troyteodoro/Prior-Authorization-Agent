@@ -316,6 +316,14 @@ never needed.
 **Covers:** A10
 **Ships:** the compatibility account in `eval/report.md`, and the first
 predicate kinds bariatric surgery never used.
+**Status:** **closed** — all five of v1.2's rows are done and **A10 holds**
+*(T-91 through T-95; D110, D111, D113, D114, D116)*. The last bullet is the
+account itself: 24 criteria across four trees and three practices, zero
+omitted, generated from the policy directory. What the story asked — *which
+of the engine's assumptions were bariatric surgery's* — has a measured
+answer: each practice after the first reused a kind the engine already had
+and earned exactly one it lacked, and none of the eight unclaimed criteria is
+unclaimed for want of a predicate.
 
 ---
 

@@ -279,6 +279,76 @@ Every gate in this repo, this report included, spends **zero** model calls and t
 
 **Counting note.** A tool round trip is two LLM calls, and a note's singular `metrics` is turn one only. Summing the wrong one understated T-63's output tokens by 12.1x and inverted a comparison's sign, using figures that were each individually real (D71). These totals sum the full list.
 
+## Cross-practice compatibility (A10, REQ-57, REQ-58, D110, D111, D114)
+
+v1.2 asked how much of this engine was bariatric surgery's. The answer is generated here rather than asserted in prose: every criterion of every tree the policy directory holds, classed by where the arithmetic that evaluates it came from. A criterion is evaluated by a predicate kind **an earlier practice earned**, by a kind **this practice earned**, or it is **declared unclaimed** and abstained on with `NOT_EVALUATED_BY_THIS_SYSTEM` (REQ-58).
+
+There is no fourth class, and that is the point. A tree naming a kind the engine lacks **fails at load** rather than abstaining, so *unbuilt* cannot appear in this table — which is the distinction REQ-57 exists to keep, and the one a tree from an unrelated practice is most able to blur (D110).
+
+### Per practice
+
+| Practice | Trees | Criteria | By a kind an earlier practice earned | By a kind it earned itself | Declared unclaimed | Kinds first earned here |
+|---|---|---|---|---|---|---|
+| bariatric surgery | 2 | 14 | 0 | 12 | 2 | 7 |
+| diagnostic ultrasound | 1 | 5 | 1 | 1 | 3 | 1 |
+| rheumatology | 1 | 5 | 1 | 1 | 3 | 1 |
+
+**24 criteria across 4 trees and 3 practices, zero omitted.** The rows below are the policy directory's own: the file set is globbed and each tree is read back through the policy port, so a criterion missing from this table is a criterion missing from the engine.
+
+The practices that arrived after the first reused what the engine already had and earned what it lacked; the last column is what each one cost the vocabulary. Nothing here is unclaimed for want of a predicate — every abstention below is a limit of the **document or the chart**, which is the finding rather than a shortfall.
+
+### Every criterion of every loaded tree
+
+| Practice | Tree | Id | Criterion | Evaluated by |
+|---|---|---|---|---|
+| bariatric surgery | `ncd-100.1-jf-v1` | `a` | BMI at or above the coverage threshold | `bmi_observation_threshold` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jf-v1` | `b` | At least one co-morbidity related to obesity | `condition_value_set_membership` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jf-v1` | `c1` | A physician-supervised weight management program is documented | `note_event_count` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jf-v1` | `c2` | The qualifying run is recent enough | `note_event_run_recency` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jf-v1` | `c3` | The program ran for a minimum number of consecutive months | `note_event_run_length` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jf-v1` | `c4` | BMI documented in every month of the qualifying run | `note_event_run_bmi_rate` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jf-v1` | `c5` | Diet and activity documented across the qualifying run | `note_event_run_behavior_rate` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jjm-v1` | `a` | BMI at or above the coverage threshold | `bmi_observation_threshold` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jjm-v1` | `b` | At least one co-morbidity related to obesity | `condition_value_set_membership` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jjm-v1` | `c1` | A physician-supervised weight management program is documented | `note_event_count` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jjm-v1` | `c2` | The qualifying run is recent enough | `note_event_run_recency` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jjm-v1` | `c4` | Weight documented in every month of the qualifying run | *declared unclaimed* |
+| bariatric surgery | `ncd-100.1-jjm-v1` | `c5` | Diet and activity documented across the qualifying run | `note_event_run_behavior_rate` (earned here, T-91) |
+| bariatric surgery | `ncd-100.1-jjm-v1` | `d` | A multidisciplinary evaluation within the previous six months | *declared unclaimed* |
+| diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `a` | A diagnosis A57591 lists as supporting medical necessity for 93975/93976 | `condition_value_set_membership` (reused, T-91) |
+| diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `b` | Not performed more than once in a year | `procedure_value_set_interval` (earned here, T-94) |
+| diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `c` | The information is necessary for appropriate medical and/or surgical management | *declared unclaimed* |
+| diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `d` | The test is not redundant of other diagnostic procedures that must be performed | *declared unclaimed* |
+| diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `e` | Not the initial diagnostic modality for abdominal pain, absent a high index of suspicion that the pain is vascular | *declared unclaimed* |
+| rheumatology | `infliximab-ra-jjm-v1` | `a` | A rheumatoid arthritis diagnosis this LCD supports | `condition_value_set_membership` (reused, T-91) |
+| rheumatology | `infliximab-ra-jjm-v1` | `b` | Used in combination with methotrexate | `medication_value_set_active` (earned here, T-92) |
+| rheumatology | `infliximab-ra-jjm-v1` | `c` | No Class III or IV congestive heart failure | *declared unclaimed* |
+| rheumatology | `infliximab-ra-jjm-v1` | `d` | No untreated active or latent tuberculosis | *declared unclaimed* |
+| rheumatology | `infliximab-ra-jjm-v1` | `e` | Moderately to severely active rheumatoid arthritis | *declared unclaimed* |
+
+### Why each unclaimed criterion is unclaimed
+
+The tree's own words, quoted rather than sorted into categories of this report's invention (D116). Read together they separate themselves: some name a limit of **this pipeline**, which a later version lifts, and the rest name a limit of **the record**, which no amount of engineering reaches.
+
+- **`ncd-100.1-jjm-v1` `c4`** — Weight documented in every month of the qualifying run. Unclaimed (D101): the extractor reads a documented BMI and has no weight field (D15, T-15's schema). A BMI proxy would be sound and incomplete — a documented BMI implies a documented weight, but a month documenting weight without a BMI would read NOT_MET. Claimed when the extraction schema gains a weight field, which is a new measurement (D45).
+- **`ncd-100.1-jjm-v1` `d`** — A multidisciplinary evaluation within the previous six months. Unclaimed (D101): the pipeline extracts weight-management encounters and program assertions, and has no extractor for a multidisciplinary evaluation. Abstains with NOT_EVALUATED_BY_THIS_SYSTEM so the determination names what a reviewer still owes. An evaluator is REQ-44's territory (P6).
+- **`us-abdominal-visceral-j5-j8-v1` `c`** — The information is necessary for appropriate medical and/or surgical management. Unclaimed because it is a claim about why the study was ordered, and no coded resource records an intention. The document restates it as Limitation 4 -- 'The outcome must impact the clinical management of the patient.' -- and that is the same requirement said twice, not a sixth criterion: declaring both would abstain twice on one question and read as two things a reviewer owes. A reviewer evaluates it against the record (REQ-58, D114).
+- **`us-abdominal-visceral-j5-j8-v1` `d`** — The test is not redundant of other diagnostic procedures that must be performed. Unclaimed because redundancy is a claim about what else is planned for this patient, and a plan is not in the coded record: the chart carries procedures that happened, never the ones a clinician has decided to order instead. This is a limit of the record, not of the engine -- criterion (b) reads the same resource type and is evaluated (REQ-57, REQ-58, D114).
+- **`us-abdominal-visceral-j5-j8-v1` `e`** — Not the initial diagnostic modality for abdominal pain, absent a high index of suspicion that the pain is vascular. Unclaimed because 'a high index of suspicion' is a clinical judgment, and because the antecedent is too: whether this study is the initial modality for a patient's abdominal pain depends on what the workup has been, which the chart records as procedures without recording what they were for. Declared and abstained on rather than omitted, because omitting it approves where this MAC might not (REQ-58, D101's rule).
+- **`infliximab-ra-jjm-v1` `c`** — No Class III or IV congestive heart failure. Unclaimed because the New York Heart Association class is not in the coded record: ICD-10 I50.x records heart failure and says nothing about which class, and no other structured resource carries it. A tree reading I50.x as Class III/IV would deny patients this document covers; one reading it as not-Class-III/IV would approve patients it excludes. Both are wrong verdicts, which is D101's test. This is a limit of the record, not of the engine (REQ-57, REQ-58, D111).
+- **`infliximab-ra-jjm-v1` `d`** — No untreated active or latent tuberculosis. Unclaimed on two counts. *Untreated* is a judgment about the record rather than a coded fact, and latent tuberculosis is established by a screening result -- a tuberculin test or an interferon-gamma release assay -- that the structured plane does not carry. A reviewer evaluates it against the chart (REQ-58, D111).
+- **`infliximab-ra-jjm-v1` `e`** — Moderately to severely active rheumatoid arthritis. Unclaimed: disease activity is a clinical assessment. The chart carries no DAS28, CDAI or SDAI score, and a diagnosis code grades nothing -- the same code serves a patient in remission. Declared and abstained on, never omitted, because omitting it approves where this MAC would not (REQ-58, D101's rule, D111).
+
+### Categorical exclusions
+
+Counted apart, because A10 counts criteria and an exclusion is not one: written as a criterion it would have to answer `MET` with no span on every chart that does not trigger it, and REQ-5 refuses that (REQ-60, D111). One that does not fire produces nothing. The same rule reaches them — an `ExclusionKind` the engine lacks fails at load, because an exclusion silently skipped **approves** past a denial the policy states.
+
+| Practice | Tree | Exclusion | Procedure scope | Evaluated by |
+|---|---|---|---|---|
+| bariatric surgery | `ncd-100.1-jf-v1` | Bariatric surgery for T2DM with BMI below 35 is nationally non-covered | `nationally_covered` | `bmi_below_bound_with_active_condition` |
+| bariatric surgery | `ncd-100.1-jjm-v1` | Bariatric surgery for T2DM with BMI below 35 is nationally non-covered | `nationally_covered` | `bmi_below_bound_with_active_condition` |
+| rheumatology | `infliximab-ra-jjm-v1` | Infliximab combined with another biologic or a JAK inhibitor is not covered | `contractor_determined` | `active_medication_value_set` |
+
 ## Scope of these numbers
 
 The measurement context for every figure above.

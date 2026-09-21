@@ -13,8 +13,10 @@ with its D-number *(D70)*.
 
 ## Project
 
-A prior authorization determination agent for bariatric surgery under CMS
-NCD 100.1. Built as a proof-of-skill project; authorship is recorded at the
+A prior authorization determination agent. Its control case is bariatric
+surgery under CMS NCD 100.1; it also runs two trees from unrelated practices
+— infliximab for rheumatoid arthritis and abdominal/visceral vascular
+ultrasound — which is what v1.2 measured. Built as a proof-of-skill project; authorship is recorded at the
 git level. Every decision in this repo has to be defensible in a live review,
 so the reasoning matters as much as the code.
 
@@ -26,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-60 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A9. §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-15 are the roadmap's, one per version *(D105)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-92, each with a runnable exit condition; T-93 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D112, kill criteria, open questions. Append-only. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-61 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A10 (A10 is v1.2's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
+| `docs/tasks.md` | The board. Task records T-00 through T-95 plus T-126, each with a runnable exit condition; T-96 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D117, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -237,7 +239,14 @@ to the most recent prior procedure. The letters are labels: the `kind`
 chooses the arithmetic, and three practices now letter their criteria `a` and
 mean three different things by it. The run-length criterion computes the
 qualifying run **once** and every criterion whose `scoped_to` names it scopes
-to that run. `reconcile.py`
+to that run. **A tree also declares the `practice` it belongs to** *(T-95,
+D116)* — required, slug-shaped, and read by **nothing under `pa_agent/`**. It
+is the key `eval/report.md`'s compatibility account groups by, and it exists
+because no field the tree already carried could say that two bariatric trees
+under two contractors are one practice while Palmetto's rheumatology tree is
+not. It is deliberately absent from `get_policy_context`'s payload, which is
+built field by field so a new field cannot become a changed prompt (D45).
+`reconcile.py`
 then runs REQ-34 across the structured and note BMIs. `aggregate.py` parses the
 policy's own `decision_expression` — parsed, never `eval()`'d and never
 hardcoded as `all(...)`.
@@ -558,17 +567,17 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**74 of 74 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~50s; the suite collects 1120 tests across 39 files, 58 of
+**76 of 76 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~50s; the suite collects 1135 tests across 39 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
-IDs run to T-94, but
+IDs run to T-126 (T-126 is off the path, above the roadmap's reservations), but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
-Delivered: **US-1 through US-7 and US-9**, and **acceptance gates A1–A9 all
-hold**. `python -m pa_agent.cli --patient
+Delivered: **US-1 through US-7, US-9 and US-10**, and **acceptance gates
+A1–A10 all hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
@@ -603,8 +612,8 @@ tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **nothing on the board. v1 and v1.1 are complete and `v1.2` is under
-way** — §11's closing condition for v1.1 is met and A1–A9 hold. **`T-91`
+Open: **nothing on the board. v1, v1.1 and v1.2 are all complete** — A1–A10
+all hold, and **`v1.3` is next**, opening with `T-96`. **`T-91`
 opened v1.2** (D110): every criterion a tree declares deterministic names a
 `kind` from `PredicateKind`, the engine dispatches on that and on no
 criterion id, and a kind it does not implement fails at load. It minted
@@ -642,8 +651,36 @@ which is tooling, changed. What it did cost is a **verifier measurement**:
 an eval row with a cited verdict is a claim `RecordedVerifierRunner` must
 hold, so 30 claims became 33 on both tiers and v1.2's *zero model calls*
 column is corrected rather than worked around — A10's claim is zero model
-calls **in any gate**, and every gate still replays. **`T-94` is next**, row
-4: diagnostic ultrasound — source, tree, patients and rows.
+calls **in any gate**, and every gate still replays.
+
+**`T-94` closed row 4** (D114, D115): the third practice in one row —
+`us-abdominal-visceral-j5-j8-v1`, compiled from WPS's **L35755** and
+**A57591**, a third contractor. One predicate kind the engine lacked
+(`procedure_value_set_interval`), three criteria unclaimed because of the
+document, one Synthea chart in Iowa and two declared clones, and rows
+`US1`–`US4`. It minted REQ-61 and re-measured the verifier to 38 claims a
+tier under `verifier-v6`, after two false-rejection rounds forced the
+set-membership rule (D115).
+
+**`T-95` closed row 5 and the version** (D116). `eval/report.md` carries
+`## Cross-practice compatibility`: **24 criteria across four trees and three
+practices, zero omitted**, each classed as evaluated by a kind an earlier
+practice earned, by a kind this practice earned, or declared unclaimed, with
+every unclaimed criterion's own note quoted and the categorical exclusions
+counted apart. A tree now declares its **`practice`** — the grouping key
+D111 deferred to this row, because two bariatric trees under two contractors
+are one practice and `policy_version_id` cannot say so — and `KIND_ORIGIN`
+in `build_report.py` records which practice and task earned each kind,
+pinned against the **enum** rather than against the corpus so a tree
+revision cannot rewrite it. **It minted nothing**, which is the version's
+closing argument: §11 predicted a lab threshold and a medication trial
+duration, no committed document states either, and a kind is earned by a
+document rather than by a task that was promised one. It also found **two of
+A10's three clauses held by no command** — `run_eval.py` is a baseline diff,
+so *every row `PASS`* survived `--update-baseline` adopting a `FAIL`, and
+*zero model calls in any gate* was pinned against two of the three scripts
+that spend them — and closed both, because a row cannot close on a gate
+two-thirds of which nothing checks.
 
 Row 8 of v1.1
 closed with D107: P6's path for REQ-44/47 is written down and deliberately not

@@ -608,6 +608,20 @@ class CriteriaTree(BaseModel):
 
     policy_version_id: str = Field(min_length=1)
     title: str
+    #: The clinical practice this tree's document governs — the key the
+    #: compatibility account in `eval/report.md` groups by (T-95, D116).
+    #: Required and never defaulted: no field the tree already carries
+    #: separates the two groupings that matter, since `jurisdiction.contractor`
+    #: puts Palmetto's bariatric and rheumatology trees together and
+    #: `policy_version_id` puts the two bariatric trees apart (D111).
+    #:
+    #: **Nothing under `pa_agent/` dispatches on it**, which is why it is a
+    #: slug rather than a closed enum like `PredicateKind` — a kind is a
+    #: promise about what the engine computes, and this is a grouping key for
+    #: a report. It is also deliberately absent from `get_policy_context`'s
+    #: payload, which is built field by field so that a new field here cannot
+    #: become a changed prompt (D45, D116).
+    practice: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9_]*$")
     compiled_by: str | None = None
     jurisdiction: Jurisdiction
     sources: list[SourceRef]

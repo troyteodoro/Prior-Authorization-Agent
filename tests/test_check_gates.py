@@ -269,13 +269,30 @@ def test_the_suite_is_the_first_gate(script):
 
 
 def test_no_gate_spends_a_model_call_or_reaches_the_network(script):
-    """The membership rule's second half, pinned against the commands the board
-    itself marks as costly. `verify_sources.py` is in the list *only* with
-    `--offline`; without it, it re-downloads (T-02)."""
+    """The membership rule's second half, and **A10's third clause**: zero
+    model calls in any gate.
+
+    `verify_sources.py` is in the list *only* with `--offline`; without it, it
+    re-downloads (T-02).
+
+    The costly set is **derived from `EXCLUDED`'s own reasons** rather than
+    written out here (T-95, D116). It used to be a hand-written pair, and
+    there are three such scripts — `run_verifier_measurement.py` was kept out
+    of the gates only by its exclusion entry, so adding it bare to `GATES`
+    passed this test. The membership rule has read the same since D69: a
+    command is a gate iff some task's exit names it *and* it spends no model
+    call. Deriving it states that rule once instead of twice.
+    """
     costly = {
-        "scripts/run_extraction.py",
-        "scripts/run_adk_extraction.py",
+        path
+        for path, reason in script.EXCLUDED.items()
+        if "spends model calls" in reason
     }
+    assert len(costly) >= 3, (
+        f"only {sorted(costly)} are marked as spending model calls; the "
+        "measurement scripts have to say so in their exclusion reason or this "
+        "check stops reaching them"
+    )
     for _, argv in script.GATES:
         assert argv[0] not in costly, f"{argv[0]} spends model calls"
         if argv[0] == "scripts/verify_sources.py":

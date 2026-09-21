@@ -1,6 +1,7 @@
 {
   "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
   "title": "Non-invasive abdominal/visceral vascular studies of the abdominal, retroperitoneal and pelvic organs, as operationalized by WPS (Jurisdictions J-5 and J-8)",
+  "practice": "diagnostic_ultrasound",
   "compiled_by": "T-94, hand-compiled from L35755 and A57591 (D114)",
   "jurisdiction": {
     "authority": "mac_jurisdiction_j5_j8",
