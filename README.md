@@ -71,7 +71,7 @@ replays a committed recording.
 
 **v1, v1.1 and v1.2 are all complete.**
 77 of 77 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1151 tests (58 skip).
+gates A1–A10 holding. The suite collects 1153 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -684,7 +684,14 @@ Guardrails that keep the differential honest:
 
 ## The policy corpus, and what it took to get right
 
-Nine documents, three jurisdictions, three practices:
+Nine documents, three jurisdictions, three practices. **There is a second
+hashed corpus and it is deliberately not this one**: `data/knowledge/` holds
+five FDA drug labels, which say what a *drug* does, while everything below
+says what a *payer covers*. They are separate manifests — "nine policy
+documents" is a claim about what this system adjudicates against, and drug
+labels must not be able to raise it — verified by the same
+`verify_sources.py --offline`. Nothing in either corpus may be cited for the
+other's kind of claim.
 
 | Document | What it is | What it may be cited for |
 |---|---|---|
@@ -821,13 +828,13 @@ real key ever appears in a tracked file).
 ### Gates and tests
 
 ```bash
-./venv/bin/python scripts/check_gates.py      # all ten zero-cost gates, ~35s
-./venv/bin/python -m pytest -q                # the suite alone, ~55s
+./venv/bin/python scripts/check_gates.py      # all ten zero-cost gates
+./venv/bin/python -m pytest -q                # the suite alone
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q         # one file
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1151 tests across 40 files, 58 of them skipped — the skips are per-tree
+1153 tests across 40 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -891,7 +898,8 @@ is faked is the network, and nothing else. (ADK ships a `MockModel` for its
 own CLI conformance runner, but nothing in it is public API — the pattern was
 copied, not imported.)
 
-Ninety tests across these two files run that way, and they sit in the
+`tests/test_adk_agent.py` (51 tests) and `tests/test_agentic_workflow.py`
+(48 tests) run that way, and they sit in the
 main suite rather than behind a marker — so every `pytest` run, and therefore
 every gate close, exercises the real framework for zero model calls and no
 credential. That is what keeps the structural rules honest: the tool
@@ -1021,6 +1029,9 @@ data/policies/       nine source documents, six value sets (SNOMED and
                      (ncd-100.1-jf-v1, ncd-100.1-jjm-v1), one rheumatology
                      (infliximab-ra-jjm-v1) and one ultrasound
                      (us-abdominal-visceral-j5-j8-v1)
+data/knowledge/      the second hashed corpus — five FDA drug labels and the
+                     reviewed medication-effects table. **Not** the policy
+                     corpus, and a separate manifest for that reason
 data/patients/       fourteen Synthea bundles + fourteen synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free — one set per

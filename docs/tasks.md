@@ -54,8 +54,8 @@ Medicare rheumatology LCD does *(D111)*. **Row 3 cost a verifier measurement
 round the version's plan did not budget** — an eval row with a cited verdict
 is a claim the recording must hold — so the `Model calls` column below is
 corrected rather than worked around, and T-94's rows will cost the same
-*(D113)*. Acceptance gates A1–A9 all hold and US-1 through US-7 and US-9 are
-delivered; **v1 and v1.1 are both complete.** v1.1 — the round D97 opened as
+*(D113)*. Acceptance gates A1–A10 all hold and US-1 through US-7, US-9 and
+US-10 are delivered; **v1, v1.1 and v1.2 are all complete.** v1.1 — the round D97 opened as
 "v2" and D105 renamed — was spec §10's list of known limits, P1–P8,
 sequenced into one task each,
 and **all eight rows are closed**: `T-85` through `T-90` and `T-81`, then P6's
