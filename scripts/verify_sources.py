@@ -15,6 +15,21 @@ bindings and for nothing else, because its coverage content predates the 2012
 LSG delegation (D29). It is a static PDF, stored as pypdf-extracted text with
 the raw PDF hash recorded alongside.
 
+Since T-96 this script verifies **two corpora**, not one. The policy corpus
+above is what the system determines coverage from. The second is the
+**knowledge corpus** under `data/knowledge/` -- FDA drug labeling, fetched from
+DailyMed as SPL XML, which is where `medication_effects.json` quotes its claim
+that a drug is known to cause a condition. They are separate manifests on
+purpose: "nine policy documents" is a checked claim about what this system
+adjudicates against, and five drug labels are not that (D118). One verifier,
+one gate, two manifests.
+
+This script owns the **documents** -- present, hashing to what was recorded,
+re-downloadable to the same hash. `tests/test_medication_effects.py` owns the
+**table** -- its rows, their spans and whether each source resolves into the
+manifest. Those are different claims with different evidence, and merging them
+is the merge D28 refused.
+
 Nothing here calls a model. The answers were read by a human from the source and
 are checked mechanically by slicing the document (Article III).
 """
@@ -26,8 +41,10 @@ import hashlib
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
+import xml.etree.ElementTree as ElementTree
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -37,6 +54,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SOURCE_DIR = REPO_ROOT / "data" / "policies" / "source"
 MANIFEST_PATH = SOURCE_DIR / "sources.json"
 ANSWERS_PATH = SOURCE_DIR / "answers.json"
+
+# The knowledge corpus (T-96, D118). A second directory and a second manifest,
+# verified by the same run of this script.
+KNOWLEDGE_DIR = REPO_ROOT / "data" / "knowledge" / "source"
+KNOWLEDGE_MANIFEST = REPO_ROOT / "data" / "knowledge" / "sources.json"
 
 # Bumping this changes every offset in answers.json. It is recorded in the
 # manifest so a changed extractor fails the gate instead of silently re-anchoring
@@ -51,6 +73,29 @@ PDF_EXTRACTOR = "pypdf 6.18.0"
 
 USER_AGENT = "Prior-Authorization-Agent/0.1 (T-02 policy source verification)"
 TIMEOUT_SECONDS = 60
+
+# DailyMed answers a 500 intermittently under no load at all -- measured while
+# selecting T-96's labels, on two of six requests. A transient 500 reported as
+# "the published document changed" is the diagnosis this script exists to make
+# correctly, so 5xx is retried and everything else is raised on the first try.
+RETRY_ON_5XX = 4
+RETRY_BACKOFF_SECONDS = 2
+
+# The SPL sections a drug-effect claim may be quoted from, by LOINC code. A
+# section allowlist is the same move `_SectionText` makes on the MCD: the rest
+# of an SPL is packaging, pricing and display panels, which revise without the
+# clinical content changing, so quoting only these sections keeps the hash
+# tracking the thing the table actually cites (D118).
+SPL_SECTIONS: dict[str, str] = {
+    "34066-1": "BOXED WARNING",
+    "34070-3": "CONTRAINDICATIONS",
+    "34071-1": "WARNINGS",
+    "42232-9": "PRECAUTIONS",
+    "43685-7": "WARNINGS AND PRECAUTIONS",
+    "34084-4": "ADVERSE REACTIONS",
+}
+
+SPL_URL = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/{setid}.xml"
 
 
 # --------------------------------------------------------------------------
@@ -175,6 +220,76 @@ DOCUMENTS: list[dict[str, str]] = [
         "note": "the CPT/HCPCS table is behind the licence modal, but the "
                 "ICD-10-CM group paragraphs name 93975/93976, 93978/93979 and "
                 "93980/93981 in prose (D114)",
+    },
+]
+
+
+# --------------------------------------------------------------------------
+# The knowledge corpus (T-96, D118)
+#
+# FDA labeling, one document per RxNorm ingredient the knowledge table has a
+# row for. These are not coverage documents and do not belong to any
+# jurisdiction: they are where the claim "this drug is known to cause this
+# condition" is quoted from, and nothing else in this repo cites them.
+#
+# **Which SPL.** DailyMed lists hundreds of SPLs per ingredient, most of them
+# repackagers reprinting the same text. The one pinned here is the application
+# holder's -- the brand label where one is current -- so the quote traces to
+# the originator's text rather than to a repackager's copy. Any FDA-approved
+# labeling for the ingredient states the same adverse reactions, because a
+# generic's labeling must match the reference listed drug's; the choice is
+# about provenance, not content.
+#
+# A republication upstream makes the online run fail. That is D21's discipline
+# working: a label that changed under us must fail here rather than quietly
+# re-anchor the table's spans.
+# --------------------------------------------------------------------------
+
+DRUG_LABELS: list[dict[str, str]] = [
+    {
+        "document_id": "spl_prednisone",
+        "ingredient": "prednisone",
+        "ingredient_rxcui": "8640",
+        "title": "DELTASONE (prednisone) tablet - FDA labeling",
+        "setid": "d0acd7fb-8401-424f-9acc-a74dcd9b14f6",
+        "labeler": "Sonoma Pharmaceuticals, Inc.",
+        "filename": "spl_prednisone.txt",
+    },
+    {
+        "document_id": "spl_apixaban",
+        "ingredient": "apixaban",
+        "ingredient_rxcui": "1364430",
+        "title": "ELIQUIS (apixaban) tablet, film coated - FDA labeling",
+        "setid": "e9481622-7cc6-418a-acb6-c5450daae9b0",
+        "labeler": "E.R. Squibb & Sons, L.L.C.",
+        "filename": "spl_apixaban.txt",
+    },
+    {
+        "document_id": "spl_lisinopril",
+        "ingredient": "lisinopril",
+        "ingredient_rxcui": "29046",
+        "title": "ZESTRIL (lisinopril) tablet - FDA labeling",
+        "setid": "838c2d78-d2d8-4981-9ec9-e50ef9e1a5d8",
+        "labeler": "Upsher-Smith Laboratories, LLC",
+        "filename": "spl_lisinopril.txt",
+    },
+    {
+        "document_id": "spl_hydrochlorothiazide",
+        "ingredient": "hydrochlorothiazide",
+        "ingredient_rxcui": "5487",
+        "title": "HYDROCHLOROTHIAZIDE tablet - FDA labeling",
+        "setid": "e2270db4-2930-4ec5-ac96-2b4542aed367",
+        "labeler": "Teva Pharmaceuticals USA, Inc.",
+        "filename": "spl_hydrochlorothiazide.txt",
+    },
+    {
+        "document_id": "spl_methotrexate",
+        "ingredient": "methotrexate",
+        "ingredient_rxcui": "6851",
+        "title": "TREXALL (methotrexate) tablet, film coated - FDA labeling",
+        "setid": "e942f8db-510f-44d6-acb5-b822196f5e8c",
+        "labeler": "Teva Women's Health LLC",
+        "filename": "spl_methotrexate.txt",
     },
 ]
 
@@ -494,9 +609,24 @@ def sha256(text: str) -> str:
 
 
 def download_bytes(url: str) -> bytes:
+    """Fetch `url`, retrying only a 5xx and only a bounded number of times.
+
+    A 4xx is the server saying the document is not there, which must surface
+    immediately. A 5xx is the server saying it failed, which on DailyMed it
+    does intermittently under no load -- and retrying it is the difference
+    between this script reporting "the published document changed" and
+    reporting nothing at all.
+    """
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
-        return response.read()
+    for attempt in range(RETRY_ON_5XX + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+                return response.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code < 500 or attempt == RETRY_ON_5XX:
+                raise
+            time.sleep(RETRY_BACKOFF_SECONDS * (attempt + 1))
+    raise AssertionError("unreachable: the loop either returns or raises")
 
 
 def download(url: str) -> str:
@@ -521,6 +651,48 @@ def _require_pinned_pypdf() -> "object":
             "rather than re-fetching under a new one."
         )
     return pypdf
+
+
+def _collect_spl_sections(node: "ElementTree.Element", chunks: list[str]) -> None:
+    """Append each outermost kept section's text, in document order.
+
+    Recursive rather than `findall(".//section")` because the rule is about
+    ancestry -- a kept section inside a kept section is already collected --
+    and ElementTree elements carry no parent pointer to ask after the fact.
+    """
+    for child in node:
+        if child.tag == "{urn:hl7-org:v3}section":
+            code = child.find("{urn:hl7-org:v3}code")
+            if code is not None and code.get("code") in SPL_SECTIONS:
+                chunks.append("\n\n")
+                chunks.append(" ".join("".join(child.itertext()).split()))
+                continue
+        _collect_spl_sections(child, chunks)
+
+
+def extract_spl_text(data: bytes) -> str:
+    """SPL XML to the plain text a knowledge-table row anchors into (T-96).
+
+    Keeps only the sections in `SPL_SECTIONS`, in document order, joined the
+    same unconditional way `extract_text` joins the MCD's -- nothing here
+    depends on the content, so the same bytes always yield the same text.
+
+    **A kept section is never descended into.** `itertext()` on a section
+    already carries its numbered subsections, and whether those subsections
+    carry a code of their own is a per-label formatting choice: warfarin's
+    *5.1 Hemorrhage* is an unclassified section, while Zestril's is a
+    `WARNINGS AND PRECAUTIONS` section in its own right. Collecting matches
+    flat would therefore emit Zestril's 5.1 through 6.2 twice -- once inside
+    their parent and once on their own -- which doubles a quote that should
+    occur exactly once and moves every offset after it. This is the same
+    guard `_SectionText.depth` applies to a nested `document-view-section`.
+    """
+    chunks: list[str] = []
+    _collect_spl_sections(ElementTree.fromstring(data), chunks)
+    text = "".join(chunks).replace("\r\n", "\n").replace("\r", "\n").replace("\u00a0", " ")
+    text = "\n".join(re.sub(r"[ \t]+", " ", line).strip() for line in text.split("\n"))
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    return text + "\n"
 
 
 def extract_pdf_text(data: bytes) -> str:
@@ -662,6 +834,90 @@ def fetch(only: set[str] | None = None) -> int:
     return 0
 
 
+def fetch_labels(only: set[str] | None = None) -> int:
+    """Download and extract the knowledge corpus (T-96, D118).
+
+    Separate from `fetch` and not folded into it, for the reason `--only`
+    exists: re-fetching a policy document re-anchors every span into it, and
+    adding a drug label must not be able to do that by accident. The two
+    corpora are fetched by two commands and verified by one.
+    """
+    KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
+    records: list[dict[str, Any]] = []
+    existing: dict[str, dict[str, Any]] = {}
+    if only is not None:
+        unknown = only - {d["document_id"] for d in DRUG_LABELS}
+        if unknown:
+            print(f"FAIL  --only names labels not in DRUG_LABELS: {sorted(unknown)}",
+                  file=sys.stderr)
+            return 1
+        if not KNOWLEDGE_MANIFEST.is_file():
+            print("FAIL  --only needs an existing manifest to carry the others forward",
+                  file=sys.stderr)
+            return 1
+        manifest = json.loads(KNOWLEDGE_MANIFEST.read_text(encoding="utf-8"))
+        existing = {d["document_id"]: d for d in manifest["documents"]}
+
+    for label in DRUG_LABELS:
+        doc_id = label["document_id"]
+        if only is not None and doc_id not in only:
+            record = existing.get(doc_id)
+            path = KNOWLEDGE_DIR / label["filename"]
+            if record is None or not path.is_file():
+                print(f"FAIL  {doc_id} is not in the committed corpus; name it in "
+                      "--only or run a full --fetch --labels", file=sys.stderr)
+                return 1
+            records.append(record)
+            print(f"  keeping  {doc_id} as committed, sha256 {record['sha256'][:12]}")
+            continue
+        url = SPL_URL.format(setid=label["setid"])
+        print(f"  fetching {doc_id} ... ", end="", flush=True)
+        try:
+            raw = download_bytes(url)
+        except (urllib.error.URLError, TimeoutError) as exc:
+            print("FAILED")
+            print(f"FAIL  {doc_id}: {exc}", file=sys.stderr)
+            return 1
+        text = extract_spl_text(raw)
+        records.append({
+            **label,
+            "url": url,
+            "authority": "fda_labeling",
+            "publisher": "DailyMed, U.S. National Library of Medicine",
+            "format": "spl_xml",
+            # D29's shape. These documents say what a drug does, never what a
+            # payer covers, and nothing may cite them for a coverage claim.
+            "scope": "drug_effects_only",
+            "retrieved_at": datetime.now(timezone.utc).isoformat(),
+            "extractor_version": EXTRACTOR_VERSION,
+            "sections": sorted(SPL_SECTIONS),
+            "sha256": sha256(text),
+            "char_count": len(text),
+        })
+        (KNOWLEDGE_DIR / label["filename"]).write_text(text, encoding="utf-8")
+        print(f"{len(text)} chars, sha256 {sha256(text)[:12]}")
+
+    KNOWLEDGE_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+    KNOWLEDGE_MANIFEST.write_text(
+        json.dumps(
+            {
+                "corpus": "knowledge",
+                "purpose": "FDA labeling quoted by data/knowledge/medication_effects.json. "
+                           "Not a coverage corpus: nothing here may be cited for what a "
+                           "payer covers (T-96, D118).",
+                "extractor_version": EXTRACTOR_VERSION,
+                "documents": records,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    print(f"\nWrote {KNOWLEDGE_MANIFEST.relative_to(REPO_ROOT)}. "
+          "Now run without --fetch.")
+    return 0
+
+
 # --------------------------------------------------------------------------
 # Verify — T-02's exit condition
 # --------------------------------------------------------------------------
@@ -747,6 +1003,55 @@ def verify(offline: bool) -> int:
             else:
                 ok(f"{doc_id} re-downloaded and re-extracted to the same hash")
 
+    # 3b. The knowledge corpus (T-96, D118). Same three questions as the policy
+    #     corpus -- present, hashing to what was recorded, re-downloadable to
+    #     the same hash -- against a second manifest, because "nine policy
+    #     documents" is a claim five drug labels must not be able to change.
+    if not KNOWLEDGE_MANIFEST.is_file():
+        bad(f"{KNOWLEDGE_MANIFEST.relative_to(REPO_ROOT)} is absent. "
+            "Run with --fetch --labels first.")
+    else:
+        knowledge = json.loads(KNOWLEDGE_MANIFEST.read_text(encoding="utf-8"))
+        label_records = {d["document_id"]: d for d in knowledge["documents"]}
+        expected_labels = {d["document_id"] for d in DRUG_LABELS}
+        if set(label_records) != expected_labels:
+            bad(f"knowledge manifest {sorted(label_records)} does not match "
+                f"DRUG_LABELS {sorted(expected_labels)}")
+        if knowledge.get("extractor_version") != EXTRACTOR_VERSION:
+            bad(
+                f"knowledge manifest was written by extractor version "
+                f"{knowledge.get('extractor_version')}, this is {EXTRACTOR_VERSION}"
+            )
+        for doc_id, record in sorted(label_records.items()):
+            path = KNOWLEDGE_DIR / record["filename"]
+            if not path.is_file():
+                bad(f"{doc_id}: {record['filename']} is absent")
+                continue
+            text = path.read_text(encoding="utf-8")
+            if sha256(text) != record["sha256"]:
+                bad(f"{doc_id}: on-disk content does not match its recorded hash")
+            elif len(text) != record["char_count"]:
+                bad(f"{doc_id}: char_count {record['char_count']} but file holds "
+                    f"{len(text)}")
+            else:
+                ok(f"{doc_id} present, {len(text)} chars, hash matches "
+                   f"({record['ingredient']}, {record['authority']})")
+            if offline:
+                continue
+            try:
+                raw = download_bytes(record["url"])
+            except (urllib.error.URLError, TimeoutError) as exc:
+                bad(f"{doc_id}: re-download failed: {exc}")
+                continue
+            if sha256(extract_spl_text(raw)) != record["sha256"]:
+                bad(
+                    f"{doc_id}: re-download extracts to a different hash. The "
+                    "labeler republished this SPL, and every span the knowledge "
+                    "table records against it is suspect."
+                )
+            else:
+                ok(f"{doc_id} re-downloaded and re-extracted to the same hash")
+
     # 4. Three answers, each carrying a span that slices back to its quote.
     #    Article III applied to policy constants: a criteria-tree number traces
     #    to source text the same way a determination's claims do.
@@ -809,6 +1114,12 @@ def main() -> int:
              "document is carried forward as committed (T-87)",
     )
     parser.add_argument(
+        "--labels",
+        action="store_true",
+        help="with --fetch: fetch the knowledge corpus (FDA labeling) instead of "
+             "the policy corpus. Verification always covers both (T-96).",
+    )
+    parser.add_argument(
         "--offline",
         action="store_true",
         help="skip the re-download check. Does not close T-02.",
@@ -816,8 +1127,13 @@ def main() -> int:
     args = parser.parse_args()
     if args.only and not args.fetch:
         parser.error("--only only means something with --fetch")
+    if args.labels and not args.fetch:
+        parser.error("--labels only means something with --fetch; "
+                     "verification always covers both corpora")
     only = {d.strip() for d in args.only.split(",") if d.strip()} if args.only else None
-    return fetch(only) if args.fetch else verify(args.offline)
+    if args.fetch:
+        return fetch_labels(only) if args.labels else fetch(only)
+    return verify(args.offline)
 
 
 if __name__ == "__main__":

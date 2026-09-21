@@ -58,7 +58,9 @@ GATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("the skeleton and adk web", ("scripts/check_skeleton.py",)),  # T-03
     # T-02's exit is this without `--offline`, which re-downloads. The offline
     # form re-hashes what is committed and deliberately **does not close T-02**.
-    ("the policy corpus hashes", ("scripts/verify_sources.py", "--offline")),  # T-02
+    # Two corpora since T-96: the nine policy documents and the five FDA
+    # labels, under separate manifests and one verifier (D118).
+    ("the hashed corpora", ("scripts/verify_sources.py", "--offline")),  # T-02, T-96
     ("the patient bundles", ("scripts/select_patients.py", "--verify")),  # T-04
     ("spike 001's recording", ("spike/spike_001/run.py", "--verify")),  # T-00
     ("the eval baseline", ("eval/run_eval.py",)),  # T-10

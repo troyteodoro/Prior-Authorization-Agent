@@ -17,9 +17,21 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-96`, row 1 of `v1.3` in `Roadmap after v1.1` below** —
-the medication-effects knowledge table and its sources, which opens the
-version.
+**What to do next: `T-97`, row 2 of `v1.3` in `Roadmap after v1.1` below** —
+`history.py`, the deterministic candidates and the tri-state.
+**`T-96` closed row 1 and opened v1.3** *(D118)*: a second hashed corpus at
+`data/knowledge/`, five FDA labels fetched from DailyMed as SPL XML and
+verified by the same `verify_sources.py --offline`, and a five-row table in
+which each row names a source for all four of its claims — the effect, the
+ICD-10 code, the SNOMED codes that mean a chart already carries the
+condition, and the structured signal. It minted **REQ-62**, the half of the
+version's first statement its close checks; *a suggested code comes only from
+a row of the table* stays unminted until `T-97`, because nothing suggests
+anything yet *(D109)*. What it found is that **a row is the size its documents
+make it**: warfarin was dropped because no section of its label states
+hypotension, clopidogrel because its label states aplastic anemia rather than
+the anemia a low haemoglobin would support, and §11's anticoagulant example
+survived only by changing the drug to apixaban.
 **v1.2 is closed**: `T-91` closed row 1 and minted REQ-57 and REQ-58 *(D109,
 D110)*; `T-92` closed row 2 and minted REQ-59 and REQ-60 *(D111)*; `T-93`
 closed row 3 and minted nothing *(D109)*; **`T-94` closed row 4 and minted
@@ -55,10 +67,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-six tasks are on this board — IDs run to T-126, which is off the path
+Seventy-seven tasks are on this board — IDs run to T-126, which is off the path
 and above the roadmap's reservations; numbering is not contiguous and D92 and
 D94 deleted six records between them, so the highest id is well above the
-count. **76 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+count. **77 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -157,7 +169,7 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 |---|---|---|---|---|---|
 | v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
-| v1.3 | medical-history review: ICD suggestions with evidence | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.3 | medical-history review: ICD suggestions with evidence · **in progress** | US-11 | T-96–T-99 | one recording round | A11 |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
@@ -201,7 +213,7 @@ table; the tri-state is Python; the model quotes the note and nothing else.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the knowledge table and its sources | `T-96` | pending | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test |
+| 1 | the knowledge table and its sources | `T-96` | **closed** (D118) | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test. **Five rows, not the six planned**: warfarin's label states no hypotension and clopidogrel's states aplastic anemia, so §11's anticoagulant example is written against **apixaban** *(D118)* |
 | 2 | deterministic candidates and the tri-state | `T-97` | pending | `history.py`; eval rows E14–E16 (green via a structured signal, yellow via a note quote, red with nothing); `run_eval.py` green |
 | 3 | note quotes, recorded and verified | `T-98` | pending | recording committed, every quote slices back, verifier claims added and re-measured; every gate green |
 | 4 | the CLI surface | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph |
@@ -2176,6 +2188,59 @@ constants, answers, cites a span, and passes every test in this repo
 **What it mints.** REQ-57 and REQ-58, the two of v1.2's five statements that
 have a check at this close; the other three stay §11 statements until
 T-92, T-94 and T-95 open *(D109)*.
+
+---
+
+## `US-11` Show me what the chart implies but does not code
+
+### `[x] T-96` The medication-effects knowledge table and its sources
+
+**REQ:** 62 · **Depends:** — · **Blocks:** T-97, T-98, T-99 ·
+**Decided by:** D118 · **Gates:** A11 (first of four rows; opens v1.3) ·
+**Timebox:** one day
+**Status:** **closed** (D118) — the exit ran green and every gate with it.
+**v1.3 is open.** The table is five rows over five FDA labels, and the size is
+the documents': **warfarin and clopidogrel were dropped rather than written**,
+because no section of the warfarin label states hypotension and clopidogrel's
+states *aplastic anemia and pancytopenia*, which is not the claim a low
+haemoglobin would support. Spec §11's anticoagulant example survived with the
+drug changed to **apixaban**, whose label does state it. The online
+`verify_sources.py` was run once, deliberately: all fourteen documents — the
+nine policy and the five labels — re-download and re-extract to the same hash.
+**Twelve of twelve mutations caught.**
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_medication_effects.py -q --color=no \
+ && ./venv/bin/python scripts/verify_sources.py --offline \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: `data/knowledge/medication_effects.json` loads, and every row of
+it names a source the offline verifier covers — the effect it asserts carries
+a span into a hashed document that slices back to its quote, and a row whose
+`document_id` names nothing in the manifest, or whose span does not slice,
+**fails** rather than loading with an unresolvable citation. Every row's
+ICD-10 code, SNOMED codes and threshold each say where they came from; a row
+whose `already_coded` list is empty **and** carries no `unsourced_reason`
+fails, because an unsourceable claim is declared in the row and never absent
+from it. Every threshold names a declared constant, and the constant count
+matches a pinned number, so a new constant is a visible diff *(D51's shape)*.
+`verify_sources.py --offline` re-hashes both corpora — the nine policy
+documents and the five drug labels — under the same argv, so v1.3 opens
+without a new gate; the gate's *label* is renamed from *the policy corpus
+hashes* to *the hashed corpora*, because it now verifies both.
+
+**What is deliberately not built.** `pa_agent/history.py`, the tri-state, the
+`would_affect` computation, the model's note quotes and `--suggest` are T-97
+through T-99. Nothing under `pa_agent/` reads this file at this close, and the
+ingredient-to-prescription expansion — the corpus prescribes clinical-drug
+concepts and a row declares an ingredient — is named in D118 as T-97's.
+
+**What it mints.** REQ-62, the half of v1.3's first statement this close
+checks. *A suggested code comes only from a row of the table* stays a §11
+statement until `T-97`, because nothing suggests anything yet *(D109)*.
 
 ---
 

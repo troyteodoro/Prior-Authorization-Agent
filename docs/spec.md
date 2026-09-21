@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1 and v1.1 complete, A1–A9 hold *(D104, D106)*; **v1.2 in progress** *(T-91)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1 and v1.2 complete, A1–A10 hold *(D104, D106, D116)*; **v1.3 in progress** *(T-96)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -134,6 +134,16 @@ not yield non-empty text. Rejection is by string comparison, no model. *(Art. II
 
 **REQ-7** Source documents are immutable once indexed. A document whose content
 hash changes invalidates every span into it.
+
+**REQ-62** Every row of the medication-effects knowledge table names a source
+the offline verifier covers, and a row that does not **fails to load**. The
+effect a row asserts carries a span into a hashed document that slices back to
+its quote; its ICD-10 code, the SNOMED codes that mean a chart already carries
+the condition, and the threshold its structured signal is measured against
+each name where they came from. A claim with no source this project can
+re-read is **declared in the row**, never omitted from it and never supplied
+from memory — an unsourced code in a lookup table is a citation the system
+cannot honour and a suggestion nobody can trace. *(T-96, D36, D51, D118)*
 
 ### Extraction
 
@@ -1078,8 +1088,13 @@ measurement script in `EXCLUDED`.
 
 **Requirements it will mint.**
 
-- A suggested code comes only from a row of the knowledge table, and every
-  row names a source the offline verifier covers.
+- **REQ-62**, minted by `T-96`. Every row of the knowledge table names a
+  source the offline verifier covers, its effect span slices back, and a
+  claim with no re-readable source is declared in the row rather than
+  omitted or supplied from memory. **The other half of this version's first
+  statement — *a suggested code comes only from a row of the table* — stays
+  unminted until `T-97`**, because nothing suggests anything yet and a
+  statement is minted by the task whose close checks it *(D109)*.
 - The tri-state is assigned by Python over structured thresholds and span
   presence; the model is never asked which colour, or which code.
 - A suggestion is never a code assignment. It enters no determination
@@ -1090,6 +1105,16 @@ measurement script in `EXCLUDED`.
 - `would_affect` is computed by set membership against the governing tree's
   value sets and changes nothing.
 - The model turn is recorded, replayed and counted like every other.
+
+**The two worked examples above survived the source check, one of them with
+its drug changed** *(T-96, D118)*. The steroid pairing is sourceable end to
+end: prednisone's label states the effect, and the pinned Synthea jar supplies
+both the osteoporosis SNOMED code and the DXA T-score LOINC. The anticoagulant
+pairing is **not** sourceable from warfarin — its label never states
+hypotension, and its one use of *anemia* names it as a risk factor for
+bleeding rather than as an effect the drug causes. Apixaban's label does state
+it, so the example is written against apixaban. The pairing was right; the
+drug was an assumption.
 
 **Gate A11.** Suggestion precision against manifest labels at or above A2's
 bar on `MET`; zero suggestions without a source row; zero yellow without a

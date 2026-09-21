@@ -70,8 +70,8 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1 and v1.2 are all complete.**
-76 of 76 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1135 tests (58 skip).
+77 of 77 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A10 holding. The suite collects 1151 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -88,6 +88,12 @@ gates A1–A10 holding. The suite collects 1135 tests (58 skip).
   non-invasive abdominal and visceral vascular ultrasound from WPS's L35755
   *(T-94)* — and closed by generating the account of what that cost
   *(T-95)*. **The answer is in the next section, and it is measured.**
+- **v1.3** is in progress. `T-96` opened it with a second hashed corpus:
+  five FDA drug labels under `data/knowledge/`, and a reviewed table of
+  (drug, effect) rows that is the only place a suggested ICD-10 code may come
+  from. Every row names a source for each of its four claims, and a claim
+  with no source this project can re-read is declared in the row rather than
+  omitted from it. Nothing in the engine reads the table yet.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -821,7 +827,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1135 tests across 39 files, 58 of them skipped — the skips are per-tree
+1151 tests across 40 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

@@ -124,7 +124,8 @@ deterministic path is usable as a regression oracle *(D62)*.
 ```
 
 The ten gates, all zero-cost: `pytest`, then `check_env.py`,
-`check_skeleton.py`, `verify_sources.py --offline`, `select_patients.py
+`check_skeleton.py`, `verify_sources.py --offline` (**two corpora since
+T-96** — the nine policy documents and the five FDA labels), `select_patients.py
 --verify`, `spike/spike_001/run.py --verify`, `eval/run_eval.py`,
 `eval/run_agentic_eval.py`, `eval/build_report.py --verify` *(D85)*,
 `check_req_coverage.py` *(D87)*. **Membership is a
@@ -335,6 +336,27 @@ passing**, because the tests are written in terms of the thing that broke.
   observations, conditions and the value set from the port, which is what makes
   `MAX_ROWS` truncation a cost control rather than a quiet second filter free to
   disagree with criterion (a).
+- **A knowledge-table row declares what it could not source; it never omits
+  it and never fills it from memory** *(REQ-62, T-96, D118)*. A row is four
+  claims — effect, ICD-10 code, the SNOMED codes meaning *already on the
+  chart*, and the structured signal — and each names where it came from.
+  `already_coded: []` is legal only with an `unsourced_reason`, and
+  `tests/test_medication_effects.py` fails on an empty list without one. The
+  failure this prevents is not a wrong verdict: it is a code in a packet that
+  traces to nothing, which is the one thing a suggestion must never be.
+- **A kept SPL section is never descended into** *(T-96, D118)*. Whether a
+  label's numbered subsections carry codes of their own is a per-label
+  formatting choice, so `findall(".//section")` collects Zestril's 5.1
+  through 6.2 twice and warfarin's not at all — doubling a quote and moving
+  every offset after it, in a document whose hash still verifies. No
+  behavioural check on the committed corpus separates the two collectors
+  except a quote happening to be non-unique, so it is pinned by a unit test
+  on a hand-written nested document *(D65's shape)*.
+- **A threshold in the knowledge table is a decision, not a span** *(T-96,
+  D118)*. Synthea emits no `referenceRange` on any of these observations, so
+  there is nothing on a chart to derive one from and no corpus document
+  states one. Each carries a name, a unit, a comparator, a date and a
+  rationale, and the count is pinned at five — D51's move, on a second file.
 - **A value set's system is declared, and membership is tested inside it**
   *(REQ-59, T-92, D111)*. Conditions are SNOMED and medications are RxNorm, so
   a bare code comparison is two vocabularies colliding on short numeric
@@ -567,8 +589,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**76 of 76 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`, ~50s; the suite collects 1135 tests across 39 files, 58 of
+**77 of 77 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`, ~50s; the suite collects 1151 tests across 40 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -613,7 +635,21 @@ replay's own clock. Read them from `eval/report.md`, which is generated; these a
 copy and the report is the source.
 
 Open: **nothing on the board. v1, v1.1 and v1.2 are all complete** — A1–A10
-all hold, and **`v1.3` is next**, opening with `T-96`. **`T-91`
+all hold — and **`v1.3` is in progress**, opened by `T-96`; **`T-97` is
+next**.
+
+**`T-96` opened v1.3** (D118): `data/knowledge/` is a **second hashed
+corpus** — five FDA labels fetched from DailyMed as SPL XML, verified by the
+same `verify_sources.py --offline` under a **separate manifest**, because
+*nine policy documents* is a checked claim about what this system adjudicates
+against and five drug labels are not that. `medication_effects.json` is five
+rows, each naming a source for all four of its claims: the effect (a span
+into a hashed label), the ICD-10 code (NLM Clinical Tables), the SNOMED codes
+a chart already carrying the condition would hold (the pinned Synthea jar's
+own modules), and the structured signal (a LOINC code with a declared
+threshold). It minted REQ-62. Nothing under `pa_agent/` reads the file yet —
+`history.py`, the tri-state and `--suggest` are T-97 through T-99, and a test
+asserts the engine still does not. **`T-91`
 opened v1.2** (D110): every criterion a tree declares deterministic names a
 `kind` from `PredicateKind`, the engine dispatches on that and on no
 criterion id, and a kind it does not implement fails at load. It minted
@@ -783,6 +819,34 @@ would buy a passing check rather than a capability.
 
 ### Domain facts that took work to establish
 
+- **The knowledge corpus is five FDA labels, and it is not the policy
+  corpus** *(T-96, D118)*. `data/knowledge/` holds what a *drug* is known to
+  do; `data/policies/` holds what a *payer* covers. Separate manifests,
+  because "nine policy documents" is a claim
+  `tests/test_docs_consistency.py` checks and five drug labels must not be
+  able to raise it. Both are verified by one
+  `verify_sources.py --offline`. The labels are **DailyMed SPL XML fetched by
+  setid** — measured byte-stable, credential-free, stdlib-parseable, and the
+  extractor keeps six LOINC-coded sections and **never descends into a kept
+  one**, because a label's numbered subsections may carry codes of their own
+  (Zestril's do; warfarin's do not) and a flat collector doubles half the
+  document. Two routes were tried and rejected on measurement:
+  `accessdata.fda.gov` serves an abuse-detection page to any non-browser
+  User-Agent, and **MED-RT has no `induces` relation** for any of these
+  drugs — the RxClass query returns 11 KB of `may_treat` rows and looks like
+  it worked.
+- **Some clinical claims have no source this project can re-read, and the
+  table says so** *(T-96, D118)*. D36 was re-checked a third time: SNOMED's
+  browser and Snowstorm both answer *Access Denied* and NLM Clinical Tables
+  carries no SNOMED identifier, so the route that works is reading the code
+  out of the pinned Synthea jar's own modules — which is also the code a
+  chart in this corpus actually carries. Hypotension is in none of them, so
+  that row declares an empty `already_coded` with its reason rather than
+  being dropped or invented. **Three of four module attributions written by
+  hand were wrong** (the hyperglycemia code is in
+  `metabolic_syndrome_care.json`, not a module named for it; the CKD stages
+  are not in `chronic_kidney_disease.json`), which is why the provenance is
+  derived from the jar rather than asserted.
 - **The policy corpus is nine documents, three jurisdictions and three
   practices** *(D21, D29, D100, D101, D111, D114)*. The two added by T-94 are
   WPS's **L35755** (*Non-Invasive Abdominal / Visceral Vascular Studies*) and
@@ -946,6 +1010,14 @@ data/patients/
                      manifest, one record per document
   work/              gitignored: the Synthea jar and whichever full run a
                      --generate mode last wrote (three are declared)
+data/knowledge/      the knowledge corpus (T-96, D118) — **not** the policy
+                     corpus, and a separate manifest for that reason
+  sources.json       five FDA labels, hashed; verified by the same
+                     verify_sources.py --offline that verifies the policy nine
+  source/            the extracted SPL text, one file per RxNorm ingredient
+  medication_effects.json
+                     the reviewed table: five (ingredient, effect) rows, each
+                     naming a source for all four of its claims
 eval/
   run_eval.py        the baseline diff (T-10). Drift in **either** direction
                      fails; a case that starts passing is adopted with
@@ -977,7 +1049,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               39 files
+tests/               40 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

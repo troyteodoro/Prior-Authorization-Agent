@@ -9874,3 +9874,139 @@ lying — the honest failure here is a picture that stays green because the
 test only checks node *names* while an edge points somewhere the code does
 not — at which point the edges are pinned too, or the diagram is cut back to
 the part that is checkable.
+
+---
+
+## D118 — The medication-effects table is sourced to FDA labeling, and a row states the claims it cannot source
+
+**Context.** T-96 opens v1.3, whose subject is the one thing this system has
+not had a source class for: not *what a payer covers*, but *what a drug is
+known to do*. Spec §11 fixes the design — a reviewed lookup table is the only
+place a suggested code may come from, `history.py` is deterministic, and the
+model's role is confined to quoting a note. This row builds the table and
+nothing that reads it.
+
+The board's exit is *every row names a source `verify_sources.py --offline`
+covers; a row without one fails a test.* Four things had to be settled before
+a row could be written: where the effect claim comes from, where the codes
+come from, where the threshold comes from, and what happens when one of the
+four has no source this project can re-read.
+
+**Chosen — DailyMed SPL XML, fetched by setid.** Measured this session:
+`…/services/v2/spls/{setid}.xml` answers the project's own User-Agent,
+returns byte-identical bytes on repeated requests, runs 45–325 KB, and parses
+with stdlib `xml.etree.ElementTree` — no new pin, which `check_env.py` would
+otherwise have to carry. Its `<section>` elements are LOINC-coded, so the
+extractor anchors on a section allowlist — boxed warning, contraindications,
+warnings, precautions, warnings-and-precautions, adverse reactions — exactly
+the discipline `_SectionText` already applies to the MCD's
+`document-view-section`, and for the same reason: everything outside those
+sections is packaging, pricing and display panels that revise without the
+clinical content changing.
+
+**Rejected — `accessdata.fda.gov` label PDFs**, which would have reused the
+pinned-pypdf path for free and whose URLs are genuinely immutable archives.
+Measured: the host serves an abuse-detection page to any non-browser
+User-Agent, and that page's bytes differ per request. The only way through is
+to send a browser User-Agent this project is not, which would put a
+WAF-evasion string in a gate's fetch path. A source that can only be fetched
+by lying about who is fetching it is not a source this repo can keep.
+
+**Rejected — RxClass / MED-RT `induces`.** It looked like the machine-readable
+answer, and T-92 had already established RxNav as a route this project uses.
+Measured: prednisone and warfarin carry `may_treat`, `may_prevent`, `ci_with`,
+`has_moa` and `has_pe` — and **no `induces` rows at all**. `has_pe` is
+mechanism ("Decreased Prostaglandin Activity"), not an adverse effect. The
+relation the design needed is not populated for these drugs, which is a
+different finding from the API being unsuitable, and worth writing down
+because the query looks like it works: it returns 11 KB of rows, none of them
+the relation asked for.
+
+**Chosen — a second manifest, at `data/knowledge/sources.json`, verified by
+the same script.** `verify_sources.py` gains a second corpus and the gate's
+name and argv do not change, so there is no new gate, no `EXCLUDED` entry and
+no third thing to remember to run. **Rejected — one manifest with a `corpus`
+field per document**, which is less machinery and was the first choice.
+`tests/test_docs_consistency.py` checks a README sentence reading *"N
+patients, M chart notes and K policy documents"*, and **nine policy documents
+is a claim about the coverage corpus** — the thing this system determines
+coverage from. Five drug labels are not that, and letting them raise the count
+to fourteen would make a checked sentence true and meaningless on the same
+day. Two manifests, one verifier, one gate.
+
+**Chosen — a row is written only when each of its four claims has a source
+this project can re-read, and a claim without one is declared in the row.** A
+row asserts four separate things: that the drug is known to cause the effect
+(an SPL span), that the effect is denoted by an ICD-10 code (NLM Clinical
+Tables, credential-free), that a chart already carrying it would carry a
+SNOMED code (the pinned Synthea jar's own modules — the code a chart in *this*
+corpus actually holds, T-92's route), and that a structured observation
+corroborates it (a LOINC code). `already_coded: []` is legal **only** with a
+non-null `unsourced_reason`, and the test fails on an empty list without one.
+**Rejected — omitting a row whose SNOMED code cannot be sourced**, which
+hides the gap in a file nobody diffs; **rejected — inventing the code from
+memory**, which is D36's failure with the safety removed. REQ-58's shape, one
+layer along: unbuilt is not unclaimed, and an unsourceable claim is declared
+rather than silently absent.
+
+**D36 re-checked, and still blocking** — the third reproduction.
+`browser.ihtsdotools.org` and `snowstorm.ihtsdotools.org` both redirect to
+*SNOMED International Access Denied*, and NLM Clinical Tables has no SNOMED
+endpoint. That is why the hypotension row declares an empty `already_coded`.
+
+**Chosen — every threshold is a declared decision constant**, D40's and D51's
+shape: a name, a value, a unit, a comparator, a date and a rationale, with the
+count pinned so a new one is a visible diff. Measured: **Synthea emits no
+`referenceRange`** on any of these observations, so there is nothing on the
+chart to derive one from, and an undeclared number in a lookup table is the
+`provisional constant` D51 pinned at zero for the criteria tree.
+
+**What §11's two worked examples cost, and what they changed.** §11 named a
+steroid with a low bone density and an anticoagulant with a low blood
+pressure. The committed bundles prescribe neither drug, and the owner's
+decision was to keep both examples rather than write only rows the corpus
+already exercises. Keeping them found something:
+
+- The steroid example is sourceable end to end. Prednisone's label states the
+  effect in its Musculoskeletal warning; the pinned jar's `osteoporosis.json`
+  supplies both SNOMED `64859006` and the DXA T-score LOINC `38265-5`; and
+  Synthea's `rheumatoid_arthritis` and `lupus` modules prescribe prednisone,
+  so T-97 can reach the chart.
+- **The anticoagulant example is not sourceable from warfarin.** The JANTOVEN
+  label — boxed warning, contraindications, warnings and precautions, adverse
+  reactions, all read — **never states hypotension**. Its one use of *anemia*
+  names it as a risk factor *for* bleeding, not as an effect warfarin causes,
+  and quoting it would have made the table say the opposite of its source.
+  **ELIQUIS (apixaban) does state it**, under Adverse Reactions: *Vascular
+  disorders: hypotension (including procedural hypotension)*. So §11's example
+  survives with the drug changed, which is the outcome the four-claims rule
+  exists to produce — the pairing was right and the drug was an assumption.
+
+Warfarin and clopidogrel were both dropped for the same reason and are worth
+naming: clopidogrel's label states *aplastic anemia/pancytopenia*, and
+suggesting *anemia, unspecified* from a low haemoglobin on a clopidogrel chart
+would be a different claim than the label's. The table is five rows because
+five rows are what five documents state.
+
+**The ingredient-to-prescription expansion is T-97's, not this row's.** A row
+declares `ingredient_rxcui`; the corpus prescribes clinical-drug concepts
+(`310798`, *Hydrochlorothiazide 25 MG Oral Tablet*), so something has to
+resolve one to the other, and T-92's pinned RxNav expansion is the shape
+available. That is the matcher's question and it is named here so it is not
+discovered late.
+
+**D109 applied: this task mints one requirement, not two.** §11's statement is
+*"A suggested code comes only from a row of the knowledge table, and every row
+names a source the offline verifier covers."* Nothing suggests anything until
+T-97, so T-96 mints **REQ-62** for the clause its close checks and leaves the
+first clause unminted. The requirement is split, never renumbered.
+
+**What it costs.** No model call, no recording, no verdict, no eval row, and
+no change under `pa_agent/` — nothing in the engine reads this file until
+T-97. The corpus grows by five documents on a plane the coverage corpus does
+not share.
+
+**Reverses if:** a drug label revises upstream often enough that the online
+`verify_sources.py` becomes noise rather than signal — at which point the
+right move is to pin an archived label rather than to stop checking, and the
+archive that was rejected above becomes worth the fetch problem it carries.

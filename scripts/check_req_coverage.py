@@ -53,6 +53,7 @@ MAPPING: dict[str, str] = {
     "REQ-5": "tests/test_schemas.py",
     "REQ-6": "tests/test_spans.py",
     "REQ-7": "tests/test_index.py",
+    "REQ-62": "tests/test_medication_effects.py",
     # Extraction
     "REQ-8": "tests/test_extraction.py",
     "REQ-9": "tests/test_extraction.py",

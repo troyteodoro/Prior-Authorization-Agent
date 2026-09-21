@@ -1,0 +1,371 @@
+{
+  "table_id": "medication_effects",
+  "task": "T-96",
+  "decision": "D118",
+  "status": "VERIFIED",
+  "sources": [
+    {
+      "document_id": "spl_apixaban",
+      "sha256": "b34d1f25e8260507ef7bb81615dfe0711020750ab4b3527b87aecbb47ca74ae7"
+    },
+    {
+      "document_id": "spl_hydrochlorothiazide",
+      "sha256": "51818bdfb7e55d7f91704dda9142b872121d4e7e74edf513e4cd43e25ab0cbc4"
+    },
+    {
+      "document_id": "spl_lisinopril",
+      "sha256": "d469a7ded215caf32fb5504601daad11fd70a88dccae80d7885d32409a2788fe"
+    },
+    {
+      "document_id": "spl_methotrexate",
+      "sha256": "49a2c5c4bb2f083e4b9ed78687c66d7a8bb4100871b33e6dd2f41452092bafa1"
+    },
+    {
+      "document_id": "spl_prednisone",
+      "sha256": "ca3d45c4c78bbc3885e05213a9a2b56d14f8fe004690532aee04770d9aa6a4d2"
+    }
+  ],
+  "compiled_from": "One row per (RxNorm ingredient, effect condition) pair that FDA labeling states outright. A row is written only when each of its four claims has a source this project can re-read: the effect (a span into a hashed SPL), the ICD-10 code (NLM Clinical Tables), the SNOMED codes a chart already carrying the condition would hold (the pinned Synthea jar's own modules), and the structured signal (a LOINC code with a declared threshold). A claim with no such source is declared in the row, never omitted and never supplied from memory (REQ-62, D118).",
+  "declared_constants": 5,
+  "known_limit": "Five rows. Two drugs were dropped rather than written: warfarin, because no section of its label states hypotension, and clopidogrel, because its label states aplastic anemia and pancytopenia -- suggesting anemia, unspecified from a low haemoglobin on a clopidogrel chart would be a different claim than the source makes. One row carries an empty already_coded with its reason. The table is the size the documents make it, not the size the version's plan asked for. The SNOMED provenance names every Synthea module that declares each code, but the jar is 200 MB and gitignored, so that provenance is checkable by hand against the pinned hash and not by any gate -- the gate checks that a source block is present and well formed.",
+  "rows": [
+    {
+      "row_id": "prednisone-osteoporosis",
+      "ingredient": {
+        "rxcui": "8640",
+        "name": "prednisone",
+        "source": {
+          "origin": "RxNav, U.S. National Library of Medicine",
+          "query": "GET https://rxnav.nlm.nih.gov/REST/rxcui.json?name=prednisone&search=1",
+          "retrieved_at": "2026-09-20"
+        }
+      },
+      "effect": {
+        "display": "osteoporosis",
+        "document_id": "spl_prednisone",
+        "char_start": 8329,
+        "char_end": 8796,
+        "quote": "Corticosteroids decrease bone formation and increase bone resorption both through their effect on calcium regulation (i.e., decreasing absorption and increasing excretion) and inhibition of osteoblast function. This, together with a decrease in the protein matrix of the bone secondary to an increase in protein catabolism, and reduced sex hormone production, may lead to inhibition of bone growth in pediatric patients and the development of osteoporosis at any age."
+      },
+      "icd10": {
+        "system": "ICD-10-CM",
+        "code": "M81.8",
+        "title": "Other osteoporosis without current pathological fracture",
+        "source": {
+          "origin": "NLM Clinical Tables, U.S. National Library of Medicine",
+          "query": "GET https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?terms=M81.8",
+          "retrieved_at": "2026-09-20"
+        },
+        "note": "M81.8 and not M81.0: M81.0 is age-related osteoporosis, and the condition this row suggests is drug-induced."
+      },
+      "already_coded": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "64859006",
+          "display": "Osteoporosis (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/cerebral_palsy.json",
+              "modules/encounter/fall_risk_screening.json",
+              "modules/injuries.json",
+              "modules/injuries/broken_jaw.json",
+              "modules/osteoporosis.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        }
+      ],
+      "unsourced_reason": null,
+      "signal": {
+        "system": "http://loinc.org",
+        "code": "38265-5",
+        "display": "DXA Radius and Ulna [T-score] Bone density",
+        "comparator": "lte",
+        "threshold": -2.5,
+        "unit": "{T-score}",
+        "constant_name": "osteoporosis_t_score_threshold",
+        "decided_on": "2026-09-20",
+        "rationale": "The WHO operational definition of osteoporosis, which is what a DXA report is read against. No document in either corpus states it, so it is a declared constant and not a span (D40, D51). The LOINC code is the one the pinned Synthea jar emits for a T-score."
+      },
+      "note": null
+    },
+    {
+      "row_id": "apixaban-hypotension",
+      "ingredient": {
+        "rxcui": "1364430",
+        "name": "apixaban",
+        "source": {
+          "origin": "RxNav, U.S. National Library of Medicine",
+          "query": "GET https://rxnav.nlm.nih.gov/REST/rxcui.json?name=apixaban&search=1",
+          "retrieved_at": "2026-09-20"
+        }
+      },
+      "effect": {
+        "display": "hypotension",
+        "document_id": "spl_apixaban",
+        "char_start": 18420,
+        "char_end": 18486,
+        "quote": "Vascular disorders: hypotension (including procedural hypotension)"
+      },
+      "icd10": {
+        "system": "ICD-10-CM",
+        "code": "I95.9",
+        "title": "Hypotension, unspecified",
+        "source": {
+          "origin": "NLM Clinical Tables, U.S. National Library of Medicine",
+          "query": "GET https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?terms=I95.9",
+          "retrieved_at": "2026-09-20"
+        },
+        "note": null
+      },
+      "already_coded": [],
+      "unsourced_reason": "No SNOMED code for hypotension is reachable. The pinned Synthea jar declares none in any of its 111 modules, and no credential-free SNOMED source exists -- browser.ihtsdotools.org and snowstorm.ihtsdotools.org both answer Access Denied, and NLM Clinical Tables carries no SNOMED identifier (D36, re-checked for T-96). The consequence, stated rather than hidden: a chart that already codes hypotension in SNOMED will be suggested it again, and this row's would_affect is empty by construction. Both are false suggestions, never false verdicts.",
+      "signal": {
+        "system": "http://loinc.org",
+        "code": "8480-6",
+        "display": "Systolic blood pressure",
+        "comparator": "lt",
+        "threshold": 90,
+        "unit": "mm[Hg]",
+        "constant_name": "hypotension_systolic_threshold",
+        "decided_on": "2026-09-20",
+        "rationale": "The conventional adult threshold for hypotension. Declared, not read from a source: the ELIQUIS label names the effect and quantifies nothing (D40, D51)."
+      },
+      "note": "Spec section 11's anticoagulant example, written against apixaban rather than warfarin. The JANTOVEN warfarin label states no hypotension anywhere in its boxed warning, contraindications, warnings or adverse reactions; its one use of anemia names it as a risk factor for bleeding rather than an effect the drug causes (D118)."
+    },
+    {
+      "row_id": "lisinopril-renal-impairment",
+      "ingredient": {
+        "rxcui": "29046",
+        "name": "lisinopril",
+        "source": {
+          "origin": "RxNav, U.S. National Library of Medicine",
+          "query": "GET https://rxnav.nlm.nih.gov/REST/rxcui.json?name=lisinopril&search=1",
+          "retrieved_at": "2026-09-20"
+        }
+      },
+      "effect": {
+        "display": "renal impairment",
+        "document_id": "spl_lisinopril",
+        "char_start": 11358,
+        "char_end": 11579,
+        "quote": "Creatinine, Blood Urea Nitrogen: Minor increases in blood urea nitrogen and serum creatinine, reversible upon discontinuation of therapy, were observed in about 2% of patients with hypertension treated with Zestril alone."
+      },
+      "icd10": {
+        "system": "ICD-10-CM",
+        "code": "N28.9",
+        "title": "Disorder of kidney and ureter, unspecified",
+        "source": {
+          "origin": "NLM Clinical Tables, U.S. National Library of Medicine",
+          "query": "GET https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?terms=N28.9",
+          "retrieved_at": "2026-09-20"
+        },
+        "note": null
+      },
+      "already_coded": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "431855005",
+          "display": "Chronic kidney disease stage 1 (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/kidney_transplant.json",
+              "modules/metabolic_syndrome/kidney_conditions.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        },
+        {
+          "system": "http://snomed.info/sct",
+          "code": "431856006",
+          "display": "Chronic kidney disease stage 2 (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/kidney_transplant.json",
+              "modules/metabolic_syndrome/kidney_conditions.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        },
+        {
+          "system": "http://snomed.info/sct",
+          "code": "433144002",
+          "display": "Chronic kidney disease stage 3 (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/kidney_transplant.json",
+              "modules/metabolic_syndrome/kidney_conditions.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        },
+        {
+          "system": "http://snomed.info/sct",
+          "code": "431857002",
+          "display": "Chronic kidney disease stage 4 (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/kidney_transplant.json",
+              "modules/metabolic_syndrome/kidney_conditions.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        },
+        {
+          "system": "http://snomed.info/sct",
+          "code": "46177005",
+          "display": "End-stage renal disease (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/chronic_kidney_disease.json",
+              "modules/kidney_transplant.json",
+              "modules/metabolic_syndrome/kidney_conditions.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        }
+      ],
+      "unsourced_reason": null,
+      "signal": {
+        "system": "http://loinc.org",
+        "code": "2160-0",
+        "display": "Creatinine [Mass/volume] in Serum or Plasma",
+        "comparator": "gt",
+        "threshold": 1.3,
+        "unit": "mg/dL",
+        "constant_name": "renal_impairment_creatinine_threshold",
+        "decided_on": "2026-09-20",
+        "rationale": "The upper limit of the adult serum-creatinine reference interval. Synthea emits no referenceRange on this observation, so there is nothing on the chart to derive it from (D51). Chosen from the reference interval before any chart was checked against it."
+      },
+      "note": "already_coded lists chronic kidney disease and end-stage renal disease rather than a code for renal impairment itself: a chart carrying any of them has the kidney impairment documented, so the suggestion would be redundant."
+    },
+    {
+      "row_id": "hydrochlorothiazide-hyperglycemia",
+      "ingredient": {
+        "rxcui": "5487",
+        "name": "hydrochlorothiazide",
+        "source": {
+          "origin": "RxNav, U.S. National Library of Medicine",
+          "query": "GET https://rxnav.nlm.nih.gov/REST/rxcui.json?name=hydrochlorothiazide&search=1",
+          "retrieved_at": "2026-09-20"
+        }
+      },
+      "effect": {
+        "display": "hyperglycemia",
+        "document_id": "spl_hydrochlorothiazide",
+        "char_start": 3520,
+        "char_end": 3643,
+        "quote": "Hyperglycemia may occur with thiazide diuretics. Thus latent diabetes mellitus may become manifest during thiazide therapy."
+      },
+      "icd10": {
+        "system": "ICD-10-CM",
+        "code": "R73.9",
+        "title": "Hyperglycemia, unspecified",
+        "source": {
+          "origin": "NLM Clinical Tables, U.S. National Library of Medicine",
+          "query": "GET https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?terms=R73.9",
+          "retrieved_at": "2026-09-20"
+        },
+        "note": null
+      },
+      "already_coded": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "80394007",
+          "display": "Hyperglycemia (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/metabolic_syndrome_care.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        }
+      ],
+      "unsourced_reason": null,
+      "signal": {
+        "system": "http://loinc.org",
+        "code": "2345-7",
+        "display": "Glucose [Mass/volume] in Serum or Plasma",
+        "comparator": "gte",
+        "threshold": 126,
+        "unit": "mg/dL",
+        "constant_name": "hyperglycemia_glucose_threshold",
+        "decided_on": "2026-09-20",
+        "rationale": "The fasting plasma glucose at which glucose is diagnostically abnormal. Declared, not read from a source: the label names the effect and quantifies nothing (D40, D51). Synthea does not record whether a glucose was fasting, which is this row's known limit."
+      },
+      "note": null
+    },
+    {
+      "row_id": "methotrexate-neutropenia",
+      "ingredient": {
+        "rxcui": "6851",
+        "name": "methotrexate",
+        "source": {
+          "origin": "RxNav, U.S. National Library of Medicine",
+          "query": "GET https://rxnav.nlm.nih.gov/REST/rxcui.json?name=methotrexate&search=1",
+          "retrieved_at": "2026-09-20"
+        }
+      },
+      "effect": {
+        "display": "neutropenia",
+        "document_id": "spl_methotrexate",
+        "char_start": 4451,
+        "char_end": 4593,
+        "quote": "TREXALL suppresses hematopoiesis and can cause severe and life-threatening pancytopenia, anemia, leukopenia, neutropenia, and thrombocytopenia"
+      },
+      "icd10": {
+        "system": "ICD-10-CM",
+        "code": "D70.2",
+        "title": "Other drug-induced agranulocytosis",
+        "source": {
+          "origin": "NLM Clinical Tables, U.S. National Library of Medicine",
+          "query": "GET https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?terms=D70.2",
+          "retrieved_at": "2026-09-20"
+        },
+        "note": "D70.2 and not D70.1: D70.1 is agranulocytosis secondary to cancer chemotherapy, and this row's indication is rheumatoid arthritis."
+      },
+      "already_coded": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "47318007",
+          "display": "Drug-induced neutropenia (disorder)",
+          "source": {
+            "origin": "Synthea module, read from the pinned jar",
+            "modules": [
+              "modules/acute_myeloid_leukemia.json"
+            ],
+            "jar_sha256": "ed43c20ad40ba5c3bc724503a5af032715fe3c491620b766148e7c2361e6ecc1",
+            "note": "The code a chart in this corpus actually carries. No credential-free SNOMED source exists (D36, re-checked for T-96), so the codes here are the ones the generator emits. Every module that declares this code is listed; the jar is not committed, so this provenance is checkable by hand and not by a gate."
+          }
+        }
+      ],
+      "unsourced_reason": null,
+      "signal": {
+        "system": "http://loinc.org",
+        "code": "751-8",
+        "display": "Neutrophils [#/volume] in Blood by Automated count",
+        "comparator": "lt",
+        "threshold": 1.5,
+        "unit": "10*3/uL",
+        "constant_name": "neutropenia_absolute_neutrophil_threshold",
+        "decided_on": "2026-09-20",
+        "rationale": "The conventional absolute-neutrophil-count threshold for neutropenia. Declared, not read from a source: the label names the effect and quantifies nothing (D40, D51)."
+      },
+      "note": "The drug the second practice's tree already turns on (T-92, D111), so this row's ingredient is one the committed corpus prescribes."
+    }
+  ]
+}
