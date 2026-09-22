@@ -21,6 +21,13 @@ that follow *(D105)*.
 the model's note quotes, recorded and anchored, and the eval row `H4`: red on
 a note-bearing chart with the quotes consulted, because no committed note can
 produce a yellow and the measured yellow is v1.6's *(D120)*.
+**`T-128`, off the path, closed** *(D121)*: `tests/test_readme_structure.py`,
+which `T-126`'s exit named and no commit had added — `pytest` on the path
+returned 4. The README's diagram is now parsed and compared to
+`workflow.STEPS` in order, to the resolver's own return annotation and how
+each result routes, to the three `Protocol`s at the model boundary and to
+the store adapters; every check refuses a diagram wrong in one place, and
+the real rename was watched go red before the close.
 **`T-127`, off the path, closed** *(D120)*: README's *Where this system
 degrades* re-read against its owners. No figure had drifted; two documents
 disagreed. The eight unclaimed criteria now sort **three ways** —
@@ -93,10 +100,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-nine tasks are on this board — IDs run to T-127; T-126 and T-127 are
+Eighty tasks are on this board — IDs run to T-128; T-126 through T-128 are
 off the path and above the roadmap's reservations; numbering is not contiguous
 and D92 and D94 deleted six records between them, so the highest id is well
-above the count. **79 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+above the count. **80 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -123,6 +130,7 @@ Off the path. Real work, nothing waiting on it:
 | `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | row 6 of `Path to v1.1` *(D91, D97)* |
 | `T-126` | the README restructured behind a checked architecture diagram; no version needs it, and its id sits above the roadmap's reservations, which run to T-125 | after `T-95` *(D117)* |
 | `T-127` | *Where this system degrades* re-read: the unclaimed criteria sorted three ways, corpus growth assigned to v1.6's round, Palmetto's `d` note corrected to D107, the measured yellow's deferral recorded — documents only, zero model calls | after `T-97` *(D120)* |
+| `T-128` | the README-structure test `T-126`'s exit named and no commit added: the diagram compared to `workflow.STEPS`, the resolver's result types, the three ports and the store adapters, every check refusing a mutant; zero model calls | after `T-127` *(D121)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -2493,6 +2501,64 @@ tests` has no such file and `pytest` on it returns exit code 4 — so that
 exit never returned zero as written, and D117's *the diagram is checked*
 is a claim no test holds. Its own numbered task, with its own entry; the
 record and D117 stay as written.
+
+### `[x] T-128` The README-structure test `T-126` named
+
+**REQ:** none · **Depends:** T-126 *(D117)*, T-127 *(D120)* · **Blocks:** — ·
+**Discovered in:** `T-127`'s close · **Decided by:** D121 · **Gates:** none —
+no acceptance criterion covers prose · **Timebox:** half a day
+**Status:** **closed** (D121) — the exit ran green and every gate with it.
+No code under `pa_agent/` moved; no recording, bundle, note, baseline or
+verifier claim was touched; no model was called.
+**Why it is its own task:** working rule 6. `T-126`'s exit names
+`tests/test_readme_structure.py`; no commit added it and `pytest` on the path
+returns 4. The record and D117 stay as written; this task writes the file
+they describe. Its id sits above the roadmap's reservations, beside `T-126`
+and `T-127`.
+**Exit** — `T-126`'s, run:
+
+```
+./venv/bin/python -m pytest tests/test_readme_structure.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: the README's `##` sequence equals `EXPECTED_SECTIONS`; the one
+mermaid block's `STEPS` subgraph walks `pa_agent.workflow.STEPS` **in
+order**; short circuit 1's edge labels name every class in `resolve_sc1`'s
+return annotation and route each by whether it carries a `policy_ref` — a
+tree continues to short circuit 2, no tree ends at the determination; every
+`Protocol` the three model-boundary modules declare is drawn as a port and
+reached by an edge from a step; every drawn plane names an adapter under
+`pa_agent/stores/` and no edge joins two planes; the two sections the diagram
+replaced are not `##` again; and every copy the consistency suite pins still
+re-derives from its owner.
+
+**What it delivers.** Seventeen tests in one file. Seven compare the README
+to the engine, with every comparand read at test time — `STEPS`, the
+resolver's own return annotation through `typing.get_type_hints`, the
+`Protocol` classes by the attribute the typing module sets, the store modules
+by glob — and the heading list as the one literal, D117's choice. Ten are
+mutants: the same checks on the README's diagram with one thing wrong — a
+renamed step, a reordered step, a missing subgraph, a dropped result type, a
+result routed the wrong way, a port reached from no step, a port not drawn, an
+edge between the planes, a plane naming no adapter, no planes at all — and
+each must be refused, because a parser that matches nothing passes for free
+(D65's shape).
+
+**The mutation observed at close.** `sufficiency` renamed to `sufficient` in
+the README's own block: `test_the_diagram_walks_workflow_steps_in_order` red,
+the README restored from git, bytecode cleared. On the way the sink derivation
+was wrong twice and the real diagram said so: over all edges the ports and
+planes are sinks too, and over the solid edges alone `verify` is one, because
+the chain inside the subgraph ends there and the subgraph node carries the
+flow on. The sink is derived over the solid edges **outside any subgraph**,
+which is the determination's own flow; the two wrong readings stay here
+because they are what the real diagram refused.
+
+**What it does not check.** Which step owns which port — that `gather`
+reaches the planner, `extract` the extraction runner and `verify` the
+verifier. Deriving that means parsing `workflow.py`'s step bodies, and D121
+says why it is not earned; D117's reversal condition stands for it.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

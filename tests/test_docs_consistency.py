@@ -529,7 +529,7 @@ def test_the_precedence_table_states_the_real_id_ranges(claude):
     _every_range_claim(claude, r"D1\u2013D(\d+)", max(decisions), "decision")
 
     cell = re.search(
-        r"Task records T-00 through T-(\d+) plus ([^,]+?), each with a runnable "
+        r"Task records T-00 through T-(\d+) plus (.+?), each with a runnable "
         r"exit condition; T-(\d+) through T-(\d+) are reserved",
         claude,
     )

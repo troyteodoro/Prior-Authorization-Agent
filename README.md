@@ -70,8 +70,8 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1 and v1.2 are all complete.**
-79 of 79 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1223 tests (58 skip).
+80 of 80 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A10 holding. The suite collects 1240 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -538,6 +538,12 @@ flowchart TD
     class PAT,POL plane;
 ```
 
+The picture is checked. `tests/test_readme_structure.py` parses it and
+compares the step chain to `workflow.STEPS`, the short-circuit labels to the
+resolver's declared result types and how each routes, the ports to the three
+`Protocol`s at the model boundary and each plane to a store adapter — and it
+refuses a diagram wrong in any one of those *(D117, D121)*.
+
 Three things in that picture are the whole design.
 
 **`STEPS` is a tuple, not a framework graph.** The ten steps are named Python
@@ -857,7 +863,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1223 tests across 42 files, 58 of them skipped — the skips are per-tree
+1240 tests across 43 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

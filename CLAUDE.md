@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-66 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-97 plus T-126 and T-127, each with a runnable exit condition; T-98 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D120, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-97 plus T-126, T-127 and T-128, each with a runnable exit condition; T-98 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D121, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -655,14 +655,24 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**79 of 79 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1223 tests across 42 files, 58 of
+**80 of 80 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1240 tests across 43 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
-IDs run to T-127 (T-126 and T-127 are off the path, above the roadmap's reservations), but
+IDs run to T-128 (T-126 through T-128 are off the path, above the roadmap's reservations), but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
+
+**`T-127` and `T-128` are off the path** *(D120, D121)*. `T-127` re-read
+*Where this system degrades*: the eight unclaimed criteria sort three ways
+— pipeline-limited, fact-shaped, judgment-shaped — corpus growth rides with
+v1.6's round, Palmetto's `d` note reads as D107 found it, and the measured
+yellow's deferral is on the board. `T-128` wrote
+`tests/test_readme_structure.py`, which `T-126`'s exit named and no commit
+had added: the README's diagram is compared to `workflow.STEPS`, the
+resolver's result types and their routing, the three ports and the store
+adapters, and a renamed step is a red suite.
 
 Delivered: **US-1 through US-7, US-9 and US-10**, and **acceptance gates
 A1–A10 all hold**. `python -m pa_agent.cli --patient
@@ -1141,7 +1151,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               42 files
+tests/               43 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

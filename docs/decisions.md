@@ -10376,3 +10376,84 @@ fourth time — in which case that criterion changes class by an entry at that
 open; or no committed note states any fact-class fact, in which case those
 three abstentions stand and `T-110`'s exit records that they do. Either way
 the sort moves by an entry, not by an edit to this one.
+
+---
+
+## D121 — The README-structure test exists, and every check in it is derived from the engine or refuses a hand-written mutant
+
+**Context.** `T-127`'s close (D120) found that `T-126`'s exit condition names
+`tests/test_readme_structure.py`, that no commit added the file — no revision
+tracks that path — and that `pytest` on it returns exit code 4, the
+collector's *file not found*. D117 justified a documentation task under
+Article VIII on exactly that test: "the diagram is checked … a renamed step
+is then a red suite rather than a diagram that quietly describes last month's
+graph." For two closes nothing held the claim. The record and the entry stay
+as written, because the log is append-only and a reversal is a new entry;
+the log records the fact and not a cause, since none is recoverable from the
+history. `T-128` writes the file they describe, off the path beside `T-126`
+and `T-127`, and its exit is `T-126`'s exit, run.
+
+**Chosen — every comparand is derived from the engine, and the one literal
+is the one D117 chose.** The heading sequence is a written-out list, because
+D117 decided that re-ordering the document should be a deliberate diff, and a
+check that only requires each section to survive permits the ordering the
+task existed to fix. Everything else is read from code at test time: the
+`STEPS` chain inside the diagram's subgraph is compared to `[name for name, _
+in workflow.STEPS]`, in order; short circuit 1's edge labels are compared to
+the five classes in `resolve_sc1`'s own return annotation, read through
+`typing.get_type_hints` rather than listed; the ports are the `Protocol`
+classes `runners.py`, `retrieval.py` and `verifier.py` define, found by the
+attribute the typing module sets rather than by name; and each drawn storage
+plane must name an adapter that exists under `pa_agent/stores/`. **Rejected —
+a literal list of step names beside the diagram.** It is a second copy of
+`STEPS`, and a copy is drift surface (D108): the test would then compare the
+README to the test rather than to the engine, and a renamed step would go red
+in two places or in neither.
+
+**Chosen — the edges that can be derived are checked, and the entry says
+which cannot.** D117 named its own hole: node names only. Three edge facts
+cost nothing to derive and are checked. A result type that carries a
+`policy_ref` continues to short circuit 2 and one that does not ends the
+determination, so the label on each `SC1` edge is checked against its
+target; every port is attached by an edge whose source is a `STEPS` name; and
+no edge, solid or dotted, joins two planes — Article VI's rule, drawn. The
+`STEPS` chain is an edge check by construction, because order is the arrows.
+What stays unchecked is **which** step owns which port — that `gather`
+reaches the planner, `extract` the extraction runner and `verify` the
+verifier — because deriving it means parsing the step bodies in
+`workflow.py`, and a check that expensive for a fact that has not moved since
+`T-17` is not earned. D117's reversal condition stands for it.
+
+**Chosen — each check is a function over text with a hand-written diagram
+it refuses.** A parser that matches nothing passes for free: a regex that
+finds no subgraph compares an empty chain to nothing, and a check for "no
+plane-to-plane edge" holds on a diagram with no planes. So every check is
+pinned by a mutant it must reject — a renamed step, a reordered step, a
+dropped result type, a result type routed to the wrong target, a port with
+no edge into it, a solid edge between the planes — in D65's shape, and the
+close also runs the real mutation on the README once and records it.
+**Rejected — asserting on the README alone**, which is the shape that let
+`T-126` close green on a file that did not exist.
+
+**Chosen — no parser dependency.** A flowchart of this size parses with
+`re`; a mermaid library would be a pin the project has not earned (working
+rule 9), and the failure mode of an expression that stops matching is a red
+suite, not a quiet pass.
+
+**Noted.** The diagram draws two planes and `pa_agent/stores/` holds three
+adapters since `T-97`. That is correct: the diagram is the determination's
+graph, and `history.py` reads the knowledge port beside the determination
+rather than inside it (D119). The test therefore requires every drawn plane
+to be a real adapter and does not require every adapter to be drawn; if D119
+reverses and the review becomes a step, the knowledge plane enters the
+diagram and this check follows it.
+
+**Also chosen.** `tests/test_docs_consistency.py`'s precedence-table pin read
+the off-path list with `[^,]+?`, which admitted "T-126 and T-127" and refuses
+a third id written as English; the pattern now reads to the sentence's own
+", each with a runnable", so the list may carry commas.
+
+**Reverses if:** the diagram outgrows what these expressions parse — a second
+subgraph, another arrow style, a node whose label carries a bracket — at
+which point the parser grows or the diagram is cut back to the part that is
+checkable, which is D117's condition restated one level down.
