@@ -1526,6 +1526,336 @@ class Determination(BaseModel):
 
 
 # --------------------------------------------------------------------------
+# Medical-history review (T-97, D119)
+# --------------------------------------------------------------------------
+
+
+class SuggestionColour(str, Enum):
+    """How much evidence the chart holds for a suggested condition (REQ-64).
+
+    Closed at three, and the order is the evidence order: `GREEN` is
+    corroborated by a structured measurement, `YELLOW` by an anchored note
+    quote, `RED` by the drug's labeling alone. Python assigns it; the model is
+    never asked which colour, and there is no fourth value for "the system did
+    not look" because that is not a colour — it is a fault, and the review
+    raises rather than reporting it as `RED` (D90, D119).
+    """
+
+    GREEN = "green"
+    YELLOW = "yellow"
+    RED = "red"
+
+
+class SourceQuery(BaseModel):
+    """Where one claim in a knowledge-table row came from (REQ-62).
+
+    Carried rather than dropped at the port, because a suggestion's whole
+    defence is that every part of it traces somewhere, and a reviewer asking
+    *where does M81.8 come from* is asking about this object.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    origin: str = Field(min_length=1)
+    query: str | None = None
+    retrieved_at: str | None = None
+
+
+class CodedConcept(BaseModel):
+    """A code in a named system, with its display. Not a value set of one.
+
+    Used for the codes that mean *the chart already carries this condition* and
+    for the prescription a candidate came from. It carries a system because
+    membership is tested inside one (REQ-59) and a bare code is what D52 is
+    about.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    system: str = Field(min_length=1)
+    code: str = Field(min_length=1)
+    display: str | None = None
+
+
+class EffectSignal(BaseModel):
+    """The structured measurement that corroborates an effect, and its bound.
+
+    The comparator vocabulary is closed here rather than being whatever a row
+    typed, and `satisfied_by` is the **one** place the comparison happens —
+    Article II's arithmetic, done once, for the reason `CodedValueSet.admits`
+    gives for membership.
+
+    `system` is LOINC and is carried, but the comparison against an
+    `Observation` is by code alone: the patient port's `Observation` has no
+    `system` field (T-97 measured it), so a system-qualified test here would be
+    comparing against something the plane does not serve. Stated in D119 as a
+    known asymmetry with REQ-59 rather than papered over with a default.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    system: str = Field(min_length=1)
+    code: str = Field(min_length=1)
+    display: str | None = None
+    comparator: Literal["lt", "lte", "gt", "gte"]
+    threshold: float
+    unit: str | None = None
+    constant_name: str = Field(min_length=1)
+
+    def satisfied_by(self, value: float) -> bool:
+        """Whether `value` crosses this signal's declared bound."""
+        if self.comparator == "lt":
+            return value < self.threshold
+        if self.comparator == "lte":
+            return value <= self.threshold
+        if self.comparator == "gt":
+            return value > self.threshold
+        return value >= self.threshold
+
+
+class MedicationEffectRow(BaseModel):
+    """One `(ingredient, effect)` row of the knowledge table, as the engine sees it.
+
+    T-96 built the file; this is the shape the port serves it in (REQ-62,
+    REQ-63). `effect` is an `EvidenceSpan` into a hashed FDA label, so the
+    claim *this drug is known to cause this* slices back to its source the same
+    way every other claim in this system does — the row is the only place a
+    suggested code may come from, and a row that cannot cite its effect is not
+    a row.
+
+    `already_coded` empty is legal **only** with an `unsourced_reason`, which is
+    the rule T-96 put in the file and this model re-states so a hand-built row
+    in a test cannot skip it either.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    row_id: str = Field(min_length=1)
+    ingredient: CodedConcept
+    ingredient_source: SourceQuery
+    effect_display: str = Field(min_length=1)
+    effect: EvidenceSpan
+    icd10_code: str = Field(min_length=1)
+    icd10_title: str = Field(min_length=1)
+    icd10_source: SourceQuery
+    already_coded: tuple[CodedConcept, ...] = ()
+    unsourced_reason: str | None = None
+    signal: EffectSignal
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def _an_empty_already_coded_declares_why(self) -> "MedicationEffectRow":
+        if not self.already_coded and not self.unsourced_reason:
+            raise ValueError(
+                f"row {self.row_id} lists no already-coded concept and declares "
+                "no unsourced_reason; an unsourceable claim is declared in the "
+                "row, never absent from it (REQ-62)"
+            )
+        return self
+
+
+class IcdSuggestion(BaseModel):
+    """One condition the chart supports and does not carry (REQ-63, REQ-65).
+
+    Not a verdict and not a code assignment: it enters no `CriterionResult` and
+    no `Determination`, and nothing downstream may read it as either.
+
+    Two span fields, deliberately distinct. `effect` is provenance — the
+    sentence in the drug's label that says the drug causes this — and every
+    suggestion carries it at every colour. `citations` is **chart** evidence,
+    and it follows REQ-5's shape one layer along: `GREEN` cites the observation
+    that crossed the threshold, `YELLOW` cites the anchored note quote, and
+    `RED` cites nothing, because there is nothing on the chart to cite. A red
+    suggestion with a citation, or a green without one, cannot be constructed.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    row_id: str = Field(min_length=1)
+    colour: SuggestionColour
+    icd10_code: str = Field(min_length=1)
+    icd10_title: str = Field(min_length=1)
+    effect_display: str = Field(min_length=1)
+    effect: EvidenceSpan
+    #: The active prescription that made this a candidate, and the row's
+    #: ingredient it was matched to through the pinned expansion (REQ-63).
+    medication: CodedConcept
+    ingredient: CodedConcept
+    citations: tuple[EvidenceSpan, ...] = ()
+    #: Green only: what was measured, when, and against which declared bound.
+    #: The date rides here because the review applies no lookback window — none
+    #: is stated by the table or by any corpus document (D40's rule, D119).
+    signal: EffectSignal | None = None
+    observed_value: float | None = None
+    observed_on: date | None = None
+    #: Criteria of the governing tree whose value set admits a code this
+    #: condition would be carried as (REQ-66). Empty is a real answer, and
+    #: `would_affect_note` says which kind of empty it is.
+    would_affect: tuple[str, ...] = ()
+    would_affect_note: str | None = None
+
+    @model_validator(mode="after")
+    def _the_colour_matches_the_evidence(self) -> "IcdSuggestion":
+        if self.colour is SuggestionColour.RED:
+            if self.citations:
+                raise ValueError(
+                    f"{self.row_id} is red and cites {len(self.citations)} span(s); "
+                    "red means nothing on the chart supports it"
+                )
+            if self.signal is not None or self.observed_value is not None:
+                raise ValueError(
+                    f"{self.row_id} is red and carries a measurement; a crossed "
+                    "signal is green by definition (REQ-64)"
+                )
+        else:
+            if not self.citations:
+                raise ValueError(
+                    f"{self.row_id} is {self.colour.value} and cites nothing; a "
+                    "colour above red is a claim about the chart and carries "
+                    "its evidence (REQ-5's shape)"
+                )
+        if self.colour is SuggestionColour.GREEN and (
+            self.signal is None
+            or self.observed_value is None
+            or self.observed_on is None
+        ):
+            raise ValueError(
+                f"{self.row_id} is green without the measurement that made it "
+                "green; green is a threshold comparison and says which one"
+            )
+        if self.colour is SuggestionColour.GREEN and not self.signal.satisfied_by(
+            self.observed_value
+        ):
+            raise ValueError(
+                f"{self.row_id} is green on a measurement of {self.observed_value} "
+                f"that does not cross {self.signal.comparator} "
+                f"{self.signal.threshold}; green **is** the comparison, and a "
+                "candidate the chart answered no to is withheld (REQ-64)"
+            )
+        if self.colour is SuggestionColour.YELLOW and self.signal is not None:
+            raise ValueError(
+                f"{self.row_id} is yellow and carries a signal; a candidate with "
+                "a crossed signal is green, and one without has no signal to name"
+            )
+        return self
+
+
+class WithholdReason(str, Enum):
+    """Why a candidate produced no suggestion (REQ-65).
+
+    Closed at two, and each value is a different thing the chart said. Neither
+    is a colour: a candidate that produces no suggestion has none to assign,
+    which is what keeps `SuggestionColour` closed at three.
+
+    `GapReason`'s discipline applies — two values producing the same next action
+    would be one value — and these do not: `ALREADY_CODED` means the packet
+    already carries the code, and `SIGNAL_NOT_CROSSED` means the chart measured
+    the thing and answered no.
+    """
+
+    ALREADY_CODED = "ALREADY_CODED"
+    SIGNAL_NOT_CROSSED = "SIGNAL_NOT_CROSSED"
+
+
+class WithheldCandidate(BaseModel):
+    """A candidate the review declines to suggest, and what the chart said.
+
+    Recorded rather than dropped (REQ-65). An empty suggestion list and a chart
+    with no candidate at all are different facts, and a review that returns the
+    same object for both is one no check can tell apart — D31's shape, on a
+    report instead of a store. It is also what makes a broken ingredient
+    expansion visible: with nothing matching, every chart yields no candidates
+    and an eval row expecting no suggestions would pass.
+
+    The evidence is validated per reason, in both directions. `ALREADY_CODED`
+    names the coded conditions and carries no measurement; `SIGNAL_NOT_CROSSED`
+    names the measurement and no conditions. A row's `signal` is carried so the
+    reader can see the bound the value was held to.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    row_id: str = Field(min_length=1)
+    reason: WithholdReason
+    icd10_code: str = Field(min_length=1)
+    effect_display: str = Field(min_length=1)
+    medication: CodedConcept
+    ingredient: CodedConcept
+    #: ALREADY_CODED only: the active conditions that mean the chart carries it.
+    suppressed_by: tuple[CodedConcept, ...] = ()
+    #: SIGNAL_NOT_CROSSED only: what was measured, and the bound it missed.
+    signal: EffectSignal | None = None
+    observed_value: float | None = None
+    observed_on: date | None = None
+    citations: tuple[EvidenceSpan, ...] = ()
+
+    @model_validator(mode="after")
+    def _the_reason_matches_the_evidence(self) -> "WithheldCandidate":
+        if self.reason is WithholdReason.ALREADY_CODED:
+            if not self.suppressed_by:
+                raise ValueError(
+                    f"{self.row_id} is withheld as already coded and names no "
+                    "code that carries it; the codes are the whole claim"
+                )
+            if self.signal is not None or self.observed_value is not None:
+                raise ValueError(
+                    f"{self.row_id} is withheld as already coded and carries a "
+                    "measurement; the chart's own code is the reason, not a lab"
+                )
+        else:
+            if self.suppressed_by:
+                raise ValueError(
+                    f"{self.row_id} is withheld on its signal and names coded "
+                    "conditions; a coded condition is the other reason"
+                )
+            if (
+                self.signal is None
+                or self.observed_value is None
+                or self.observed_on is None
+            ):
+                raise ValueError(
+                    f"{self.row_id} is withheld on its signal without saying what "
+                    "was measured; 'the chart answered no' names the answer"
+                )
+            if self.signal.satisfied_by(self.observed_value):
+                raise ValueError(
+                    f"{self.row_id} is withheld on a signal of "
+                    f"{self.observed_value} that **crosses** "
+                    f"{self.signal.comparator} {self.signal.threshold}; a crossed "
+                    "signal is green (REQ-64)"
+                )
+        return self
+
+
+class HistoryReview(BaseModel):
+    """The `icd_suggestions` block, beside a determination and never inside one.
+
+    Its own object rather than a field on `Determination` (D119): the
+    determination is what a human reviews and this is a report about the chart,
+    and spec §11's *no verdict changes in v1.3* is then structural — there is no
+    field through which a suggestion could reach a verdict.
+
+    `policy_version_id` is carried because `would_affect` is computed against
+    one tree's value sets and means nothing without saying which tree.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    patient_id: str = Field(min_length=1)
+    policy_version_id: str = Field(min_length=1)
+    suggestions: tuple[IcdSuggestion, ...] = ()
+    withheld: tuple[WithheldCandidate, ...] = ()
+
+    @property
+    def by_colour(self) -> dict[str, int]:
+        """A count per colour, for the report and for a reviewer's eye."""
+        counts = {colour.value: 0 for colour in SuggestionColour}
+        for suggestion in self.suggestions:
+            counts[suggestion.colour.value] += 1
+        return counts
+
+
+# --------------------------------------------------------------------------
 # The abort (T-29, D76)
 # --------------------------------------------------------------------------
 

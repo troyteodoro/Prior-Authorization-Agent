@@ -276,20 +276,27 @@ def test_the_table_declares_what_it_is_and_what_it_leaves_out(table):
     )
 
 
-def test_nothing_under_pa_agent_reads_the_table_yet():
-    """T-96 builds the table and nothing that consumes it (working rule 1).
+def test_exactly_one_module_under_pa_agent_reads_the_table():
+    """T-96 built the table and nothing that consumed it; T-97 is its reader.
 
-    `history.py`, the tri-state and `--suggest` are T-97 through T-99. If this
-    starts failing, the row that made it fail owns this assertion.
+    This assertion's predecessor said *nothing* under `pa_agent/` names the
+    table, with the note that the row which made it fail owns it. That row is
+    T-97, and what it owes is not the deletion of the check but its successor:
+    the table is read **through the port**, in one module, and a second reader
+    would be a second adapter nobody declared (REQ-41, D25, D119).
+
+    `history.py` in particular must not appear here. It receives its facts, which
+    is what keeps it off both planes and out of `tests/test_planes.py`'s
+    both-planes list.
     """
-    offenders = [
-        path.relative_to(REPO_ROOT)
+    readers = sorted(
+        str(path.relative_to(REPO_ROOT))
         for path in (REPO_ROOT / "pa_agent").rglob("*.py")
         if "medication_effects" in path.read_text(encoding="utf-8")
-    ]
-    assert not offenders, (
-        f"{offenders} read the knowledge table; at T-96's close nothing under "
-        "pa_agent/ does"
+    )
+    assert readers == ["pa_agent/stores/knowledge.py"], (
+        f"{readers} read the knowledge table; exactly one module does, and it is "
+        "the port"
     )
 
 

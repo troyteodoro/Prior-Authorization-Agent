@@ -35,6 +35,7 @@ EXPECTED_CASES = {
     "E1", "E2", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E10b", "E10c",
     "E11", "E12", "E13", "J1", "RA1", "RA2", "RA3",
     "US1", "US2", "US3", "US4",
+    "H1", "H2", "H3",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
@@ -47,6 +48,13 @@ EXPECTED_CASES = {
 # declared clones of it that differ by the date of one re-coded procedure,
 # also note-free, and US3 and US4 are two rows over the one chart — the
 # frequency criterion's abstention and an unlisted code.
+# H1-H3 are the medical-history review (T-97, D119) and are the first rows that
+# label something other than a verdict: H2 and H3 add no criterion claim at all
+# and share US1's and RA1's determinations, so the review is what they grade.
+# H1's chart is the one chart in the corpus that can carry a green suggestion,
+# and it carries two declared resources for that reason — the measurement is in
+# D119, and the resources are declared in the population manifest rather than
+# here, because one artifact owns a fact.
 DELIBERATELY_ABSENT = {"E3"}
 
 

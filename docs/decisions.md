@@ -10010,3 +10010,240 @@ not share.
 `verify_sources.py` becomes noise rather than signal — at which point the
 right move is to pin an archived label rather than to stop checking, and the
 archive that was rejected above becomes worth the fetch problem it carries.
+
+---
+
+## D119 — The suggestion engine sits beside the determination, and the tri-state is arithmetic over declared codes
+
+**Context.** T-97 is row 2 of v1.3. T-96 built `medication_effects.json` and
+deliberately built nothing that reads it; this row is the reader. Spec §11 fixes
+the design — a reviewed table is the only place a code may come from,
+`history.py` is deterministic, and the model's role is confined to quoting a
+note — so what this entry decides is everything §11 left to the implementation:
+where the review runs, what the tri-state reads, which code `would_affect`
+compares, how an ingredient becomes a prescription, and what to do about the
+fact that **no chart in this corpus can produce a green suggestion**.
+
+**Chosen — the review is a pure function returning its own object, called
+beside the determination.** `pa_agent/history.py` takes facts and returns a
+`HistoryReview`; `Determination`, `workflow.STEPS`, `aggregate.assemble` and
+every recording are untouched. §11's *no verdict changes in v1.3* and A11's
+*zero verdict drift* are then **structural** rather than measured: there is no
+path by which a suggestion could reach a verdict.
+
+**Rejected — a field on `Determination`.** `workflow.py`'s own argument for
+`WorkflowRun` being two objects rather than one applies unchanged: the
+determination is what a human reviews and the trace is what an engineer reads,
+and Article X wanted the second recorded without the first growing a tool log
+(D62). A suggestion block is the same kind of growth, and it would widen
+`assemble()`'s signature — the single construction site on the criteria path.
+
+**Rejected — an eleventh `STEPS` entry.** It reads well and is wrong three
+ways. Every determination would compute suggestions, including the eleven
+charts no row asks about; the visited-step list every recording carries would
+churn for a feature that changes no verdict; and on a **note-bearing** chart a
+candidate that fails its structured signal needs a quote that does not exist
+until T-98, so the graph would raise on `bc6748d3` — a chart six committed eval
+rows run through. A step that cannot run for most of the corpus is not a step.
+
+**Chosen — yellow lands in T-98, and row 2's exit is rewritten to say so.** The
+board asked this row for *green via a structured signal, yellow via a note
+quote, red with nothing*. A yellow **is** a model measurement: the quote is the
+model's, anchored by `anchor.py`, and Article V then has to verify it — which is
+precisely row 3's exit. Shipping it here would either spend the version's
+recording round a row early or fake it with a recording no measurement
+produced. So T-97 delivers **green, red, and a third state the board did not
+name** — a candidate suppressed because the chart already codes the condition —
+and T-98 adds the yellow row as `H4`. D111's precedent: a row's exit is
+rewritten when the row opens and the document it rests on says otherwise. Here
+the thing that says otherwise is the corpus.
+
+**Chosen — `quotes=None` raises rather than colouring red.** The tri-state is
+closed at three and red means *pharmacological plausibility only; nothing on
+the chart*. "Nobody looked at the notes" is a different claim, and collapsing
+it into red is D90's failure in a new place: `RetrievalError` exists to keep
+*the system did not look* apart from *the chart does not say*. So a candidate
+that reaches the quote step on a chart that **has** notes, with no quote source
+supplied, raises and names T-98. A chart with **no notes** needs no quote
+source at all — red is then a fact about the chart, and all three of this row's
+rows are on note-free charts or never reach the step.
+
+**Chosen — `would_affect` is set membership over the row's `already_coded`
+SNOMED codes, not over its ICD-10 code.** Measured across every committed value
+set: the table's codes are `M81.8`, `I95.9`, `N28.9`, `R73.9`, `D70.2`, and the
+eight `icd10_anchor`s any value set carries are `I10`, `N18.1`, `N18.2`,
+`N18.30` and `N18.4` on `abdominal_visceral_vascular_indications`, `E11.9` and
+`I10` on `obesity_comorbidities`, and `M06.9` on `rheumatoid_arthritis`.
+Nothing matches, in either direction, so an ICD-keyed `would_affect` returns an
+empty list on all five rows **and passes every behavioural test this corpus can
+produce**. **Four** of the lisinopril row's five `already_coded` codes are in the
+indications set — end-stage renal disease is not, because A57591's Group 1 stops
+at N18.5 and that set's own `known_limit` says so — so the SNOMED reading is both
+non-empty and the honest one: the
+question `would_affect` answers is *if this condition were coded the way this
+corpus codes it, which criteria would see it*. **Rejected — an ICD-10 to SNOMED
+crosswalk**, which is D36's blocker for the fourth time: no credential-free
+source binds the two systems, and the value sets already say so in their own
+`mapping.basis` fields.
+
+**Chosen — a pinned RxNorm ingredient→product expansion, in the knowledge
+corpus.** `data/knowledge/rxnorm_ingredient_products.json`, one record per row's
+ingredient, in `data/policies/value_sets/methotrexate.json`'s shape, compared
+through `CodedValueSet.admits` so membership is tested inside a declared system
+(REQ-59). Measured this session: all five ingredients resolve, the five
+`related.json?tty=IN+SCD+SBD` responses run 1.5–33 KB and **274 entries**
+together, a repeat fetch returns byte-identical bytes, and every clinical-drug
+code the committed bundles actually prescribe — `310798`, `314076`, `105585` —
+is admitted by its own ingredient's set. **Multi-ingredient products are
+included** (149 of hydrochlorothiazide's 156 entries, 6 of lisinopril's 23), and
+that is correct rather than tolerated: a patient on Zestoretic is on both
+lisinopril and hydrochlorothiazide, and both rows should fire.
+
+**Rejected — comparing `row.ingredient.rxcui` against `Medication.code`.**
+Measured: **zero hits in all fourteen bundles.** Synthea codes
+`MedicationRequest` at clinical-drug level and a row declares an ingredient, so
+the comparison loads cleanly, compares cleanly and matches nobody — D52's
+failure, which REQ-59 gave a mechanism and which a *missing* expansion
+reintroduces one layer up. It is on the mutation list for exactly that reason.
+**Rejected — reusing `value_sets/methotrexate.json`**, which already holds
+6851's expansion: it is a policy artifact compiled from L35677 for a coverage
+criterion, and the knowledge plane reading the policy corpus's sets is the
+coupling D118 split two manifests to avoid. Same query, different corpus,
+different reason to exist.
+
+**Chosen — the knowledge table is served by a third port.**
+`pa_agent/stores/knowledge.py`, constructed in `cli.py` (REQ-41), because
+`tests/test_planes.py` forbids any module under `pa_agent/` outside `stores/`
+from naming a storage location and `history.py` would otherwise open its own
+path — D25's second adapter nobody declared. The port raises on an unknown
+ingredient, a row citing a document the knowledge manifest does not cover, a
+comparator outside `{lt, lte, gt, gte}` and an expansion whose entries are not
+all RxNorm; it never returns `None` and never returns `[]` (D31, D39, D63).
+`stores/__init__.py` still imports nothing. `history.py` imports neither plane
+and receives its facts, so `BOTH_PLANES` does not grow.
+
+**Green needed declared data, and the measurement is why.** Across all fourteen
+bundles, every candidate whose signal crosses its threshold **already codes the
+condition** — `49092fd9` at creatinine 2.04 with CKD1 and CKD2, and the three
+ultrasound charts at 2.80 with CKD2–4 and ESRD. Of the candidates that are not
+already coded, three have **no observation of that analyte at all** —
+`a8edc52e` on hydrochlorothiazide with no glucose, `42a430ab` on methotrexate
+with no neutrophil count, `bc6748d3` on lisinopril with no creatinine — and one
+is **measured and does not cross**: the three ultrasound charts carry
+hydrochlorothiazide, 67 glucose results topping out at 98.74 mg/dL against a
+threshold of 126, and no hyperglycemia code. No note in the corpus mentions any
+of the five effects either. So red is free, green is unreachable, and the
+distribution is the rule working correctly.
+
+**Chosen — a measured signal that does not cross withholds the suggestion; it
+is not red.** Red means *pharmacological plausibility only; nothing on the
+chart*, and US-11's own third criterion says so — *an active medication in the
+table and **nothing on the chart***. A glucose of 76 is not nothing on the
+chart: it is the chart answering the question, and putting R73.9 in front of a
+reviewer over it is a false suggestion the record already refutes. So a
+candidate is **withheld** for one of two declared reasons — the chart already
+codes the condition, or the signal was measured and did not cross — and a
+withheld candidate carries no colour, exactly as a suppressed one does. The
+tri-state stays closed at three, because a candidate that produces no
+suggestion has no colour to assign.
+
+**Rejected — colouring it red anyway.** It is the smaller diff and it is
+wrong twice: it makes *the lab says no* indistinguishable from *nobody
+measured*, which is the same collapse this entry refuses one paragraph above,
+and it would give every hypertensive chart in this corpus a standing
+hyperglycemia suggestion. **Rejected — one list of candidates with a
+disposition enum** in `CriterionResult`'s shape; the two withholding reasons
+carry different evidence (suppressing codes versus a measurement), and the
+resolver's rule — four types, never one type with a field — is the one that
+keeps a reader from having to know which fields are live for which value. The
+reason is an enum on one type because both reasons *are* "no suggestion, and
+here is what the chart said"; the evidence each carries is validated per
+reason, in both directions.
+
+**Chosen — two declared resources on `455d3f7d`.** A declared lisinopril
+`MedicationRequest`, a copy of that chart's own active order with the code
+swapped (T-93's `copy_of_code` shape), and a declared creatinine `Observation`,
+a copy of its own most recent mg/dL serum chemistry with the code and value
+replaced (T-41's shape). Both **appended** at the end of `entry`, both declared
+in `data/patients/manifest.json`, both recomputed by `select_patients.py
+--verify`.
+
+**The append is textual and tail-only, because a committed verifier claim
+quotes those bytes.** Found by building it the obvious way first: the writer
+that appends an entry parses and re-serializes the bundle, which is what T-41's
+did, and the bundles it has touched are compact one-liners where Synthea's are
+pretty-printed. Re-serializing `455d3f7d` turned RA3 from `PASS` to `ERROR` in
+one run — `build_claim_payload` carries no offsets, but it carries the **quote**,
+and a quote is the raw slice of the resource, so reformatting the file changes
+every claim digest into it and `RecordedVerifierRunner` raises on all of them.
+The fix is to leave every existing byte alone: the two entries are rendered
+compactly and spliced in before the array's closing bracket, the writer refuses
+a bundle whose tail it does not recognise rather than guessing, and the same
+render/strip pair makes the operation idempotent — so `--verify` asserts that
+re-applying the declaration reproduces the committed bytes, which is the
+byte-level recomputation a clone gets from its source and this chart has no
+pristine copy to get any other way. The record also pins the **base** hash, the
+bundle without its declared entries, so D73's "restore from git" stays operable
+and a drift in the Synthea bytes underneath is still a red gate.
+
+**The copy source is named by resource id, not by code** — `_declared_procedure_entry`'s
+rule rather than `_declared_medication_entry`'s, and this chart is why: it
+carries twelve orders for the code a first-match lookup would find, and the
+first of them is `completed`. A completed copy source produces a declared
+prescription no candidate is ever drawn from, on a chart whose declaration reads
+correctly, and the eval row would then pass with zero suggestions for the wrong
+reason. The declaration restates the copy source's own status, code and unit, so
+a wrong id fails at write time. That chart is in Alabama, which L35755's own contractor table serves,
+so `93975` resolves to the ultrasound tree; it carries no indication code and no
+prior study, so **every criterion abstains** — and an abstention cites nothing,
+so this row adds **no verifier claim and no model call**. The green suggestion's
+`would_affect` then names criterion (a), which is abstaining for want of the
+very code being suggested. That is the feature's own argument, on a real tree.
+
+**Rejected — a clone of the ultrasound chart with its four coded kidney
+conditions removed.** It would have produced the same green with a richer
+determination, and it is the one clone shape this repo has not used: T-88
+re-addressed, T-93 added a prescription, T-94 re-coded a procedure, and all
+three *added* a declared fact. Deleting four coded conditions to manufacture a
+documentation gap edits away the evidence a determination is built on, and the
+declaration would have to be read as *these conditions are absent* on a chart
+whose creatinine says otherwise. **Rejected — a fresh Synthea run** hunting a
+chart with the drug, the crossing lab and no code: `--generate` is not
+byte-stable (D73), and the generator codes the condition in the same module
+that emits the lab, so the chart being hunted is one it is built not to produce.
+
+**Chosen — no lookback window on the signal.** Neither the knowledge table nor
+any corpus document states one, and inventing one here would be D40's mistake
+without D40's decision entry. The observation's **date rides on the suggestion**
+and the reviewer sees it. A window later is a declared constant with a name and
+a date, the way `a.lookback_months` and `discrepancy_tolerance` are.
+
+**Two asymmetries stated rather than hidden.** `Observation` carries no `system`
+field, so the LOINC comparison is a bare code comparison while every other
+membership test in this system is system-qualified (REQ-59) — narrowing it means
+giving the patient port a field it does not have, which is a task, not a line.
+And **three of the five rows cannot fire on this corpus**: apixaban and
+prednisone are prescribed nowhere, and apixaban's systolic signal could not be
+read even if it were, because `LocalPatientStore.get_observations` skips
+component-valued observations and Synthea writes blood pressure as a panel.
+D118 stated the table's size in the table; this states its reach in the log.
+
+**What it mints.** REQ-63 through REQ-66 — the four of §11's v1.3 statements
+whose checks land at this close: a suggested code comes only from a row of the
+table, the tri-state is Python's, a suggestion is never a code assignment, and
+`would_affect` is set membership that changes nothing. The remaining two —
+every yellow carries a verified span, and the model turn is recorded and
+counted — stay §11 statements until T-98 (D109).
+
+**What it costs.** No model call, no recording, no new verifier claim, no
+verdict, no span, no predicate kind, no criteria tree and no change to any
+committed baseline status. The eval set grows from twenty-four rows to
+twenty-seven, so `eval/report.md`'s outcome, abstention and cost figures move
+and every prose copy of them is re-derived from the regenerated report
+(rule 12).
+
+**Reverses if:** a second consumer of the knowledge table appears that needs
+suggestions *inside* the graph — a criterion whose verdict depends on a
+suggestion being accepted, which v1.5's form deliberately does not do. At that
+point the review becomes a step and the argument above is the one to answer,
+starting with what a note-bearing chart does when nobody has looked.

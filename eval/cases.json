@@ -1,6 +1,6 @@
 {
   "eval_set_id": "us1-v1",
-  "note": "Labeled acceptance cases: spec §6's fifteen plus NP1 (REQ-1, outside §6 per D75), J1 (the second jurisdiction, outside §6 per D102) and RA1-RA3 (the second practice, outside §6 per D113). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, never from an observed run. Row semantics: D75.",
+  "note": "Labeled acceptance cases: spec §6's fifteen plus NP1 (REQ-1, outside §6 per D75), J1 (the second jurisdiction, outside §6 per D102), RA1-RA3 (the second practice, outside §6 per D113), US1-US4 (the third, outside §6 per D114) and H1-H3 (the medical-history review, outside §6 per D119). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, and suggestion expectations from the knowledge table and the chart's coded facts, never from an observed run. Row semantics: D75.",
   "cases": [
     {
       "case_id": "E3",
@@ -599,6 +599,111 @@
       "expect": {
         "outcome": "NO_POLICY_FOUND",
         "max_model_calls": 0
+      }
+    },
+    {
+      "case_id": "H1",
+      "story": "US-11",
+      "spec_ref": "REQ-63, REQ-64, REQ-66; outside §6 (D119)",
+      "description": "A drug's known effect the chart measures and does not code: the green suggestion",
+      "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
+      "procedure_code": "93975",
+      "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+      "note": "The medical-history review's own row, and the only chart in the corpus that can carry it: measured across all fourteen bundles, every candidate whose signal crossed its threshold already coded the condition and every uncoded one had no observation of that analyte at all (D119). So this chart carries two declared resources -- an active lisinopril order copied from its own active order with the code swapped, and a creatinine copied from its own lipid panel with the code and value swapped -- both appended, both recomputed by select_patients.py --verify. Transcribed from the knowledge table and the chart's coded facts, never from a run: ZESTRIL's label states renal impairment, the row's ICD-10 code is N28.9 from NLM Clinical Tables, the declared creatinine of 2.1 mg/dL crosses the row's declared 1.3, and the chart codes none of the five SNOMED concepts that would mean the condition is already carried -- so Python colours it green and cites the observation. would_affect names criterion (a) because that criterion's value set admits the CKD codes a chart carrying this condition would hold, which is the one non-empty would_affect this corpus can produce (REQ-66). The chart is in Alabama, which L35755's own contractor table serves, so 93975 resolves to the ultrasound tree; it carries no indication code and no prior study, so every criterion abstains and none cites anything. The budget is therefore zero: an abstention is not a verifier claim, and this tree declares no note criterion.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+        "max_model_calls": 0,
+        "criteria": {
+          "a": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "b": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ],
+        "suggestions": [
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "code": "N28.9",
+            "colour": "green",
+            "would_affect": [
+              "a"
+            ]
+          }
+        ],
+        "withheld": []
+      }
+    },
+    {
+      "case_id": "H2",
+      "story": "US-11",
+      "spec_ref": "REQ-64, REQ-65; outside §6 (D119)",
+      "description": "One chart, both reasons a candidate is withheld: already coded, and measured but not crossed",
+      "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
+      "procedure_code": "93975",
+      "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+      "note": "US1's chart and US1's determination -- the row adds no verdict claim and shares the cached run, so the criteria stay labeled once (D75). What it labels is the review, and this chart is the pair H1 turns on: the **same drug** at a **crossing** creatinine of 2.80 mg/dL, withheld because the chart codes chronic kidney disease stages 2, 3 and 4 and end-stage renal disease, citing all four. Its hydrochlorothiazide is the second reason, and a different one: 67 glucose results topping out at 98.74 against the row's declared 126, so the chart measured the thing and answered no. That is withheld and not red -- red means nothing on the chart, and a suggestion the record refutes is a false suggestion (D119). Zero suggestions is therefore the claim, and the withheld list is what makes it mean something: with a broken ingredient expansion nothing matches, every chart yields no candidates, and an empty-suggestions row would pass while the feature did nothing.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+        "max_model_calls": 2,
+        "suggestions": [],
+        "withheld": [
+          {
+            "row_id": "hydrochlorothiazide-hyperglycemia",
+            "reason": "SIGNAL_NOT_CROSSED"
+          },
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "reason": "ALREADY_CODED"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "H3",
+      "story": "US-11",
+      "spec_ref": "REQ-63, REQ-64; outside §6 (D119)",
+      "description": "A drug's known effect with nothing on the chart either way: the red suggestion",
+      "patient_id": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+      "procedure_code": "J1745",
+      "procedure": "Injection, infliximab, excludes biosimilar, 10 mg",
+      "note": "RA1's chart and RA1's determination, shared from the cache; this row labels only the review. The active methotrexate order the infliximab tree's criterion (b) turns on is also a row of the knowledge table, so the same prescription that satisfies a coverage criterion raises a documentation question: the label states neutropenia, the chart carries no neutrophil count anywhere, and no condition coding drug-induced neutropenia. Nothing on the chart supports it and nothing refutes it, so the colour is red and the suggestion cites nothing -- the prescription is what makes it a candidate and is never evidence of the condition (D119). Red is honest here without any quote source because the chart is note-free by declaration (RA1's reason): there is no note to read, so this is the chart saying nothing rather than the system not looking. A note-bearing chart in the same state raises instead, which is T-98's row. would_affect is empty and says why: no value set this tree names admits 47318007.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "infliximab-ra-jjm-v1",
+        "max_model_calls": 2,
+        "suggestions": [
+          {
+            "row_id": "methotrexate-neutropenia",
+            "code": "D70.2",
+            "colour": "red",
+            "would_affect": []
+          }
+        ],
+        "withheld": []
       }
     }
   ]

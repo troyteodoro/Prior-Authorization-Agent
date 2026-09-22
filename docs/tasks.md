@@ -17,8 +17,24 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-97`, row 2 of `v1.3` in `Roadmap after v1.1` below** —
-`history.py`, the deterministic candidates and the tri-state.
+**What to do next: `T-98`, row 3 of `v1.3` in `Roadmap after v1.1` below** —
+the model's note quotes, recorded, anchored and verified, and the yellow eval
+row `H4` that row 2 could not measure.
+**`T-97` closed row 2** *(D119)*: `pa_agent/history.py` reads the table through a
+third port and Python assigns the tri-state — green from a declared threshold,
+red from nothing, and a candidate the chart **already codes** recorded as
+suppressed rather than silently absent. It minted **REQ-63** through **REQ-66**.
+Three things it found. **No chart in the corpus could produce a green**: every
+candidate whose signal crossed already coded the condition and every uncoded one
+had no observation of that analyte at all, so `455d3f7d` carries a declared
+lisinopril order and a declared creatinine, and the green row is its own. **An
+ingredient never matches a prescription**: zero of fourteen bundles carry an
+ingredient RxCUI, so the match runs through a pinned RxNav expansion — 274
+entries over five ingredients, multi-ingredient products included. And
+**`would_affect` had to read the SNOMED codes a chart would carry**, because the
+table's ICD-10 codes match no value set in this corpus in either direction, a
+reading that returns an empty list on all five rows while passing every
+behavioural test the corpus can produce.
 **`T-96` closed row 1 and opened v1.3** *(D118)*: a second hashed corpus at
 `data/knowledge/`, five FDA labels fetched from DailyMed as SPL XML and
 verified by the same `verify_sources.py --offline`, and a five-row table in
@@ -67,10 +83,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-seven tasks are on this board — IDs run to T-126, which is off the path
+Seventy-eight tasks are on this board — IDs run to T-126, which is off the path
 and above the roadmap's reservations; numbering is not contiguous and D92 and
 D94 deleted six records between them, so the highest id is well above the
-count. **77 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+count. **78 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -214,8 +230,8 @@ table; the tri-state is Python; the model quotes the note and nothing else.
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the knowledge table and its sources | `T-96` | **closed** (D118) | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test. **Five rows, not the six planned**: warfarin's label states no hypotension and clopidogrel's states aplastic anemia, so §11's anticoagulant example is written against **apixaban** *(D118)* |
-| 2 | deterministic candidates and the tri-state | `T-97` | pending | `history.py`; eval rows E14–E16 (green via a structured signal, yellow via a note quote, red with nothing); `run_eval.py` green |
-| 3 | note quotes, recorded and verified | `T-98` | pending | recording committed, every quote slices back, verifier claims added and re-measured; every gate green |
+| 2 | deterministic candidates and the tri-state | `T-97` | **closed** (D119) | `history.py` and the knowledge port; eval rows `H1`–`H3` — green via a structured signal, **silent because the chart already codes the condition**, red with nothing; `run_eval.py` green. **Rewritten at open** from "eval rows E14–E16 … yellow via a note quote": a yellow is a model measurement and belongs to row 3, and no chart in the corpus could produce a green without declared data *(D119)*. Ids are `H`-prefixed because these rows are outside §6, as NP1, J1, RA1–RA3 and US1–US4 are |
+| 3 | note quotes, recorded and verified | `T-98` | pending | recording committed, every quote slices back, verifier claims added and re-measured; every gate green. **Gains row 2's yellow**: the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today rather than colouring red *(D119)* |
 | 4 | the CLI surface | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph |
 
 ### v1.4 — Sessions and intake, headless
@@ -2241,6 +2257,109 @@ concepts and a row declares an ingredient — is named in D118 as T-97's.
 **What it mints.** REQ-62, the half of v1.3's first statement this close
 checks. *A suggested code comes only from a row of the table* stays a §11
 statement until `T-97`, because nothing suggests anything yet *(D109)*.
+
+---
+
+### `[x] T-97` Deterministic candidates and the tri-state
+
+**REQ:** 63, 64, 65, 66 · **Depends:** T-96 · **Blocks:** T-98, T-99 ·
+**Decided by:** D119 · **Gates:** A11 (second of four rows) ·
+**Timebox:** two days
+**Status:** **closed** (D119) — the exit ran green and every gate with it.
+`pa_agent/history.py` reads `medication_effects.json` through a third port and
+returns its own object; **nothing about a verdict moved**, because there is no
+path by which a suggestion could reach one — `Determination`, `STEPS`,
+`assemble()`, `PredicateKind` and every recording are untouched.
+**Twelve of twelve mutations caught**, one of them only after a test was
+tightened: the port's comparator guard is redundant with `EffectSignal`'s closed
+`Literal`, so deleting it left the row unloadable anyway and a test matching on
+*comparator* passed either way. What the guard earns is the **message** — which
+row of which file — so that is what the test asserts now.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_history.py tests/test_knowledge_store.py \
+      tests/test_medication_effects.py tests/test_planes.py \
+      tests/test_rheumatology_corpus.py -q --color=no \
+ && ./venv/bin/python scripts/select_patients.py --verify \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: a suggested code resolves to exactly one row of the table and
+carries the span the effect is asserted from; Python assigns the colour from a
+declared comparator against a declared threshold; `H1` is green citing an
+observation with `would_affect` naming criterion (a); `H2` suggests **nothing**
+and records **two withheld candidates for two different declared reasons**;
+`H3` is red on a note-free chart; and every gate still replays for zero model
+calls.
+
+**What the exit was, and why it changed.** The board asked for *eval rows
+E14–E16 (green via a structured signal, yellow via a note quote, red with
+nothing)*. Two halves of that could not run here. A **yellow** is a model
+measurement — the quote is the model's, and Article V then verifies it, which is
+row 3's exit — so it moved to `T-98` as `H4`. And **no committed chart could
+produce a green**: every candidate whose signal crossed its threshold already
+coded the condition, and every candidate that did not had no observation of that
+analyte at all. The third row is therefore the state the board did not name, and
+there turned out to be **two** of them: a candidate is **withheld** either
+because the chart already codes the condition or because its signal was
+**measured and did not cross**, and neither is red, because red means *nothing
+on the chart* and a suggestion the record refutes is a false one. `H2` carries
+both on one chart — the same drug as `H1` at a crossing creatinine the chart
+already codes, and a hydrochlorothiazide whose 67 glucose results top out at
+98.74 against a threshold of 126 — so `H1` and `H2` differ by nothing except
+whether the condition is coded. Ids are `H`-prefixed: these rows are outside §6,
+as NP1, J1, RA1–RA3 and US1–US4 are *(D119)*.
+
+**What it cost the corpus.** Two declared resources on `455d3f7d`, both appended
+and both recomputed by `--verify`: a lisinopril `MedicationRequest` copied from
+that chart's own active order with the code swapped (T-93's shape) and a
+creatinine `Observation` copied from its own most recent serum chemistry (T-41's
+shape). The chart is in Alabama, which L35755's contractor table serves, so
+`93975` resolves to the ultrasound tree; it carries no indication code and no
+prior study, so **every criterion abstains** — and an abstention cites nothing,
+so the row added **no verifier claim and no model call**. `would_affect` then
+names criterion (a), which is abstaining for want of the very code being
+suggested.
+
+**What the corpus change cost to get right.** The first writer parsed the
+bundle and re-serialized it, which is what T-41's did, and **RA3 went from
+`PASS` to `ERROR` in one run**: a recorded verifier claim carries no offsets but
+it carries the *quote*, and a quote is the raw slice of a cited resource, so
+reformatting the file moved every claim digest into it. The append is therefore
+textual and tail-only — every pre-existing byte preserved, the two entries
+spliced in before the array closes — and `--verify` pins it three ways: the
+declaration re-applies to the committed bytes idempotently, the base bundle
+underneath still hashes to the recorded hash, and the declared resources are the
+last two entries. The copy source is also named **by resource id with its status
+restated**, not by code: this chart carries twelve orders for the code a
+first-match lookup would find and the first of them is `completed`, which would
+have declared a prescription no candidate is ever drawn from while every
+declaration read correctly.
+
+**Three known limits, stated here rather than discovered later.** `Observation`
+carries no `system` field, so the LOINC signal comparison is a bare code
+comparison while every other membership test in this system is system-qualified
+(REQ-59) — narrowing it is a change to the patient port, not a line here. Three
+of the table's five rows cannot fire on this corpus: apixaban and prednisone are
+prescribed nowhere, and apixaban's systolic signal could not be read even if
+they were, because the port skips component-valued observations and Synthea
+writes blood pressure as a panel. And the suggestion applies **no lookback
+window** to the signal, because neither the table nor any corpus document states
+one; the observation's date rides on the suggestion instead.
+
+**What is deliberately not built.** The model's note quotes, the recording at
+`eval/history/results.json`, the verifier claims for a yellow and the `H4` row
+are `T-98`'s; `--suggest` and A11's suggestion-precision section in
+`eval/report.md` are `T-99`'s. `pa_agent/cli.py` gains no flag at this close,
+and a test asserts the CLI still emits no suggestions block.
+
+**What it mints.** REQ-63 through REQ-66 — the four of v1.3's statements whose
+checks land at this close. *Every yellow carries a verified span* and *the model
+turn is recorded and counted* stay §11 statements until `T-98` *(D109)*.
 
 ---
 

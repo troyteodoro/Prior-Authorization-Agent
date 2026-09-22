@@ -71,6 +71,11 @@ RXNORM = "http://www.nlm.nih.gov/research/umls/rxnorm"
 RA_SNOMED = "69896004"
 METHOTREXATE_TABLET = "105585"
 ETANERCEPT_SYRINGE = "802652"
+LISINOPRIL_TABLET = "314076"  # T-97's declared order on RA3's chart (D119)
+#: The clinical-drug codes the knowledge table's rows reach in this corpus. Read
+#: here for the same reason the two above are: a drug the review reads must not
+#: be able to hide behind an order the adapter does not follow.
+KNOWLEDGE_TABLE_DRUGS = frozenset({"105585", "310798", "314076"})
 
 #: The three charts by the row each one carries. Written here rather than
 #: derived, so a chart swapped underneath the eval set fails this file first.
@@ -266,6 +271,40 @@ def test_no_unreadable_order_hides_a_drug_a_criterion_reads(patients, population
         assert not ({METHOTREXATE_TABLET, ETANERCEPT_SYRINGE} & set(hidden)), (
             f"{patient_id[:12]}: a drug a criterion reads sits behind a "
             f"medicationReference the adapter does not follow: {hidden}"
+        )
+        # T-97 (D119): the same argument for the medical-history review. A
+        # knowledge-table drug hidden behind a reference would make a red
+        # suggestion an artifact of the adapter rather than a fact about the
+        # chart — H3's row is exactly that claim on RA1's chart.
+        assert not (KNOWLEDGE_TABLE_DRUGS & set(hidden)), (
+            f"{patient_id[:12]}: a drug the knowledge table pairs with an effect "
+            f"sits behind a medicationReference the adapter does not follow: "
+            f"{hidden}"
+        )
+
+
+def test_the_declared_lisinopril_is_admitted_by_neither_drug_value_set(
+    patients, policies
+):
+    """T-97 appended an active lisinopril order to RA3's chart (D119).
+
+    RA3's row says criterion (b) abstains because no methotrexate order exists,
+    so an added drug that either value set admitted would make that abstention
+    mean something else. Asserted through `admits` in both sets rather than by
+    eye, because a code that collided across vocabularies would look fine here.
+    """
+    store, _ = patients, policies
+    medications = store.get_medications(RA3)
+    lisinopril = [m for m in medications if m.code == LISINOPRIL_TABLET]
+    assert len(lisinopril) == 1 and lisinopril[0].status == "active", (
+        "RA3's chart carries exactly one active lisinopril order, declared by "
+        "T-97 in data/patients/manifest.json"
+    )
+    for value_set_id in ("methotrexate", "biologic_dmards_and_jak_inhibitors"):
+        value_set = policies.get_value_set(value_set_id)
+        assert not value_set.admits(lisinopril[0].code, lisinopril[0].system), (
+            f"{value_set_id} admits the declared lisinopril; RA3's abstention "
+            "would then be about the wrong drug"
         )
 
 

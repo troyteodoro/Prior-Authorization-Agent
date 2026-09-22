@@ -66,6 +66,7 @@ from pa_agent.contracts import (  # noqa: E402
     EvidenceSpan,
     GapReason,
 )
+from pa_agent import history  # noqa: E402
 from pa_agent.determination import NoPolicyResult, determine  # noqa: E402
 from pa_agent.index import DocumentIndex  # noqa: E402
 from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
@@ -73,6 +74,7 @@ from pa_agent.verifier import RecordedVerifierRunner  # noqa: E402
 from pa_agent.spans import SpanValidationError  # noqa: E402
 from pa_agent.spans import validate as validate_span  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
+from pa_agent.stores.knowledge import LocalKnowledgeStore  # noqa: E402
 from pa_agent.stores.policy import LocalPolicyStore  # noqa: E402
 
 EVAL_DIR = Path(__file__).resolve().parent
@@ -112,6 +114,11 @@ class ReasonClass(str, Enum):
     # as the label says — E13's claim is that the run was cited from both.
     WRONG_DOCUMENT_COUNT = "WRONG_DOCUMENT_COUNT"
     WRONG_DISCREPANCIES = "WRONG_DISCREPANCIES"
+    # T-97 (D119): the medical-history review's advisory channel. One member for
+    # one channel, covering both of its claims — the suggestions and the
+    # candidates it withheld — because a mislabeled colour and a candidate that
+    # should have been withheld have the same next action: read the row.
+    WRONG_SUGGESTION = "WRONG_SUGGESTION"
     INVALID_SPAN = "INVALID_SPAN"
     MODEL_CALLS_EXCEEDED = "MODEL_CALLS_EXCEEDED"
     UNEXPECTED_EXCEPTION = "UNEXPECTED_EXCEPTION"
@@ -183,6 +190,7 @@ def score(
     case: dict[str, Any],
     result: Determination | NoPolicyResult,
     resolve_document: Any = None,
+    review: Any = None,
 ) -> CaseResult:
     """Compare a determination (or a `NoPolicyResult`) against its label.
 
@@ -197,6 +205,12 @@ def score(
     `resolve_document` maps a `document_id` to a `Document` for the span check;
     when it is None the span check is skipped — `main()` always supplies one,
     and the self-check pins the branch with a synthetic resolver.
+
+    `review` is the medical-history review for this chart (T-97), supplied only
+    for rows that label it. It is checked **after** the determination's own
+    claims and before the span walk: a suggestion enters no verdict, so it can
+    never be the graver finding, and an Article III failure inside one is graver
+    than a mislabeled colour and belongs to the walk that reports it.
     """
     case_id = case["case_id"]
     expect = case["expect"]
@@ -352,28 +366,108 @@ def score(
                 **measured,
             )
 
+    # T-97 (D119): the review's two claims, both exact in both directions.
+    #
+    # `withheld` is not decoration. With a broken ingredient expansion nothing
+    # matches, every chart yields no candidates, and a row expecting no
+    # suggestions passes while the feature does nothing — which is the mutation
+    # D119 puts on the list, measured to produce zero hits in all fourteen
+    # bundles. The withheld claim is what makes that row fail.
+    expected_suggestions = expect.get("suggestions")
+    expected_withheld = expect.get("withheld")
+    if expected_suggestions is not None or expected_withheld is not None:
+        if review is None:
+            return CaseResult(
+                case_id,
+                CaseStatus.FAIL,
+                ReasonClass.WRONG_SUGGESTION,
+                "the row labels a medical-history review and none was run; a row "
+                "with no chart cannot carry the claim",
+                **measured,
+            )
+        if expected_suggestions is not None:
+            observed = [
+                {
+                    "row_id": s.row_id,
+                    "code": s.icd10_code,
+                    "colour": s.colour.value,
+                    "would_affect": list(s.would_affect),
+                }
+                for s in review.suggestions
+            ]
+            wanted = [
+                {
+                    "row_id": s["row_id"],
+                    "code": s["code"],
+                    "colour": s["colour"],
+                    "would_affect": list(s.get("would_affect") or []),
+                }
+                for s in expected_suggestions
+            ]
+            if observed != wanted:
+                return CaseResult(
+                    case_id,
+                    CaseStatus.FAIL,
+                    ReasonClass.WRONG_SUGGESTION,
+                    f"expected suggestions {wanted}, got {observed}",
+                    **measured,
+                )
+        if expected_withheld is not None:
+            observed_withheld = [
+                {"row_id": w.row_id, "reason": w.reason.value} for w in review.withheld
+            ]
+            wanted_withheld = [
+                {"row_id": w["row_id"], "reason": w["reason"]}
+                for w in expected_withheld
+            ]
+            if observed_withheld != wanted_withheld:
+                return CaseResult(
+                    case_id,
+                    CaseStatus.FAIL,
+                    ReasonClass.WRONG_SUGGESTION,
+                    f"expected withheld {wanted_withheld}, got {observed_withheld}",
+                    **measured,
+                )
+
     # A3, on every case: every span carried by a cited verdict must validate
     # against the unmodified source (Art. III — not scoped to MET; A3's gate
     # reads the MET subset). The index is built lazily from exactly the
     # documents the spans name.
     if resolve_document is not None:
         index = DocumentIndex()
-        for criterion in determination.criterion_results:
-            for span in criterion.spans:
-                try:
-                    if span.document_id not in index:
-                        index.add(resolve_document(span.document_id))
-                    validate_span(span, index)
-                except (SpanValidationError, KeyError) as exc:
-                    return CaseResult(
-                        case_id,
-                        CaseStatus.FAIL,
-                        ReasonClass.INVALID_SPAN,
-                        f"criterion {criterion.criterion_id}: "
-                        f"{span.document_id}[{span.char_start}:{span.char_end}] "
-                        f"failed validation: {exc}",
-                        **measured,
-                    )
+        cited: list[tuple[str, Any]] = [
+            (f"criterion {criterion.criterion_id}", span)
+            for criterion in determination.criterion_results
+            for span in criterion.spans
+        ]
+        if review is not None:
+            # A suggestion's citations are held to the same rule (Art. III):
+            # its `effect` span slices a hashed drug label and its `citations`
+            # slice the chart. One walk, one `ReasonClass`, so A3's figure does
+            # not split across two.
+            cited += [
+                (f"suggestion {item.row_id}", span)
+                for item in (*review.suggestions, *review.withheld)
+                for span in (
+                    *(getattr(item, "citations", ()) or ()),
+                    *((item.effect,) if getattr(item, "effect", None) else ()),
+                )
+            ]
+        for where, span in cited:
+            try:
+                if span.document_id not in index:
+                    index.add(resolve_document(span.document_id))
+                validate_span(span, index)
+            except (SpanValidationError, KeyError) as exc:
+                return CaseResult(
+                    case_id,
+                    CaseStatus.FAIL,
+                    ReasonClass.INVALID_SPAN,
+                    f"{where}: "
+                    f"{span.document_id}[{span.char_start}:{span.char_end}] "
+                    f"failed validation: {exc}",
+                    **measured,
+                )
 
     budget = expect.get("max_model_calls")
     if budget is not None and calls > budget:
@@ -475,6 +569,59 @@ def _determine(
     return result
 
 
+#: The claims that make a row a medical-history row. Named once, because
+#: `run_case` and `score` must agree about which rows carry a review.
+REVIEW_CLAIMS = ("suggestions", "withheld")
+
+
+def _labels_a_review(case: dict[str, Any]) -> bool:
+    return any(case["expect"].get(claim) is not None for claim in REVIEW_CLAIMS)
+
+
+def _review(
+    case: dict[str, Any],
+    result: Determination | NoPolicyResult,
+    policy_store: Any,
+    patient_store: Any,
+    knowledge_store: Any,
+) -> Any:
+    """The medical-history review for one chart, under the tree that answered.
+
+    Computed **only for rows that label it**, and that is load-bearing rather
+    than an optimization: `bc6748d3` carries an active lisinopril, no creatinine
+    and notes that mention nothing renal, so its candidate can only be separated
+    from yellow by reading them — and with no quote source the review raises
+    (D90, D119). Six committed rows run through that chart. Reviewing every case
+    would make this gate red today, and the row that fixes it is T-98.
+    """
+    tree = policy_store.get_tree(result.policy_version_id)
+    value_sets = {}
+    for criterion in tree.criteria:
+        constant = criterion.constants.get(history.VALUE_SET_CONSTANT)
+        if constant is not None:
+            value_sets[str(constant.value)] = policy_store.get_value_set(
+                str(constant.value)
+            )
+    rows = knowledge_store.get_medication_effect_rows()
+    return history.review(
+        patient_id=case["patient_id"],
+        policy_version_id=tree.policy_version_id,
+        rows=rows,
+        products={
+            row.ingredient.code: knowledge_store.get_ingredient_products(
+                row.ingredient.code
+            )
+            for row in rows
+        },
+        medications=patient_store.get_medications(case["patient_id"]),
+        conditions=patient_store.get_conditions(case["patient_id"]),
+        observations=patient_store.get_observations(case["patient_id"]),
+        criteria=tree.criteria,
+        value_sets=value_sets,
+        notes=patient_store.get_notes(case["patient_id"]),
+    )
+
+
 def run_case(
     case: dict[str, Any],
     policy_store: Any,
@@ -484,6 +631,7 @@ def run_case(
     cache: dict[tuple[Any, ...], Determination | NoPolicyResult] | None = None,
     resolve_document: Any = None,
     verifier: Any = None,
+    knowledge_store: Any = None,
 ) -> CaseResult:
     """Run one labeled case and classify the result.
 
@@ -525,7 +673,26 @@ def run_case(
             case_id, CaseStatus.FAIL, ReasonClass.UNEXPECTED_EXCEPTION, detail
         )
 
-    scored = score(case, result, resolve_document)
+    review = None
+    if (
+        knowledge_store is not None
+        and case.get("patient_id")
+        and not isinstance(result, NoPolicyResult)
+        and _labels_a_review(case)
+    ):
+        try:
+            review = _review(
+                case, result, policy_store, patient_store, knowledge_store
+            )
+        except Exception as exc:  # noqa: BLE001 — same rule as the handler above
+            detail = "".join(
+                traceback.format_exception_only(type(exc), exc)
+            ).strip()
+            return CaseResult(
+                case_id, CaseStatus.FAIL, ReasonClass.UNEXPECTED_EXCEPTION, detail
+            )
+
+    scored = score(case, result, resolve_document, review)
     outcome = (
         NO_POLICY_EXPECTATION
         if isinstance(result, NoPolicyResult)
@@ -1162,14 +1329,21 @@ def main(argv: list[str] | None = None) -> int:
     policy_store = LocalPolicyStore()
     patient_store = LocalPatientStore()
 
+    knowledge_store = LocalKnowledgeStore()
+
     def resolve_document(document_id: str) -> Document:
-        """Either plane's document, for A3's span check. The scorer reads both
-        because spans legitimately point into both — criterion spans into the
-        patient's bundle and notes, coverage spans into the corpus."""
+        """Any corpus's document, for A3's span check. The scorer reads all three
+        because spans legitimately point into all three — criterion spans into the
+        patient's bundle and notes, coverage spans into the policy corpus, and
+        since T-97 a suggestion's effect span into a hashed drug label."""
         try:
             return patient_store.get_document(document_id)
         except KeyError:
+            pass
+        try:
             return policy_store.get_document(document_id)
+        except KeyError:
+            return knowledge_store.get_document(document_id)
     # REQ-52: the harness supplies the model leaf, and supplies the free one. A
     # replay of T-15's recording answers every note in the corpus for zero calls,
     # so `run_eval.py` stays a command anyone can run — which is what makes D27's
@@ -1193,6 +1367,7 @@ def main(argv: list[str] | None = None) -> int:
             cache,
             resolve_document,
             verifier,
+            knowledge_store,
         )
         for case in cases
     ]

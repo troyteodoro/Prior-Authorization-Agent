@@ -212,6 +212,119 @@ EXCLUDED_ENCOUNTER_CLASSES = ("EMER", "IMP")
 US_OUTSIDE_MIN_MONTHS = 24
 US_INSIDE_MAX_MONTHS = 6
 
+# The medical-history review's chart (T-97, D119). The knowledge table pairs a
+# drug with a condition its FDA labeling states it causes, and Python colours
+# the pairing by what the chart holds. Measured across all fourteen committed
+# bundles: **no chart could produce a green.** Every candidate whose signal
+# crossed its threshold already coded the condition, and every candidate that
+# did not had no observation of that analyte at all. So one chart carries two
+# declared resources.
+#
+# RA3's chart is the host because of what it already is: Alabama, which
+# L35755's own contractor table serves, so `93975` resolves to the ultrasound
+# tree; no indication code and no prior study, so every criterion of that tree
+# abstains; and an abstention cites nothing, so the row costs no verifier claim
+# and no model call. `would_affect` then names criterion (a) — which is
+# abstaining for want of the very code the suggestion proposes.
+#
+# Both resources are **copies** of orders and results the chart already carries,
+# in the shape T-41 used for E12's observation and T-93 for the excluded drug:
+# the subject, encounter, requester and dates are the source resource's, and the
+# declaration lists everything that differs. Both are **appended**, which is not
+# cosmetic — `LocalPatientStore` computes spans into the bundle text, and an
+# insertion ahead of an existing resource moves every offset after it.
+#
+# These are the *clinical-drug* codes the corpus actually prescribes, not the
+# ingredient codes the knowledge table declares. That gap is the whole reason
+# the engine needs a pinned expansion: comparing a row's ingredient against a
+# prescription matches nothing here (D119).
+LOINC_SYSTEM = "http://loinc.org"
+RXNORM_LISINOPRIL = "314076"
+RXNORM_HYDROCHLOROTHIAZIDE = "310798"
+LOINC_CREATININE = "2160-0"
+#: The exact bytes a pretty-printed Synthea bundle ends with: the last entry's
+#: close, the array's close, the object's close. The append is a splice at this
+#: tail and the writer refuses a bundle that does not end this way rather than
+#: guessing where the array stops.
+BUNDLE_TAIL = "\n  } ]\n}\n"
+DECLARED_ADDITIONS = [
+    {
+        "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
+        "task": "T-97",
+        "decision": "D119",
+        "rationale": (
+            "The green suggestion's chart. An active lisinopril order makes the "
+            "lisinopril-renal-impairment row a candidate; a creatinine above its "
+            "declared threshold colours it green; and the chart codes no kidney "
+            "disease, so nothing withholds it. Every criterion of the tree that "
+            "governs 93975 in Alabama abstains on this chart, so the row cites "
+            "no verdict and costs no verifier claim."
+        ),
+        "appends": [
+            {
+                "resource_type": "MedicationRequest",
+                "copy_of_resource_id": "455d3f7d-3b99-dad6-c1ff-8899fe6c3fb5",
+                "copy_of_code": "209387",
+                "copy_of_display": "Acetaminophen 325 MG Oral Tablet [Tylenol]",
+                "copy_of_status": "active",
+                "coding_field": "medicationCodeableConcept",
+                "resource_id_suffix": "-hx-lisinopril-synthetic",
+                "system": RXNORM_SYSTEM,
+                "code": RXNORM_LISINOPRIL,
+                "display": "lisinopril 10 MG Oral Tablet",
+                "source_note": (
+                    "Named by resource id and its status restated, not by code: "
+                    "this chart carries twelve orders for 209387 and the first "
+                    "in bundle order is completed. A completed copy source would "
+                    "declare a prescription no candidate is ever drawn from, on "
+                    "a declaration that reads correctly, and the eval row would "
+                    "then pass with no suggestion for the wrong reason "
+                    "(_declared_procedure_entry's rule, D119)."
+                ),
+            },
+            {
+                "resource_type": "Observation",
+                "copy_of_resource_id": "455d3f7d-3b99-dad6-cbfe-005f4bd8b1f4",
+                "copy_of_code": "2571-8",
+                "copy_of_display": "Triglyceride [Mass/volume] in Serum or Plasma",
+                "copy_of_unit": "mg/dL",
+                "copy_of_effective_date": "2024-04-11",
+                "coding_field": "code",
+                "resource_id_suffix": "-hx-creatinine-synthetic",
+                "system": LOINC_SYSTEM,
+                "code": LOINC_CREATININE,
+                "display": "Creatinine [Mass/volume] in Serum or Plasma",
+                "value": 2.1,
+                "source_note": (
+                    "The copy source is chosen for its unit: a creatinine is "
+                    "reported in mg/dL and so is this lipid panel result, so "
+                    "exactly two fields move -- the code and the value -- and "
+                    "the unit, subject, encounter, issuer, date, time-of-day and "
+                    "offset are the source result's."
+                ),
+                "value_note": (
+                    "Above the table's declared 1.3 mg/dL and in the band the "
+                    "other charts measure (2.04 and 2.80), so the row turns on "
+                    "the threshold rather than on an extreme. A decision, not a "
+                    "measurement; the comparison against the table's constant is "
+                    "the engine's and is asserted in tests/test_history.py, not "
+                    "here, so each check sits with its owner."
+                ),
+                "date_note": (
+                    "The copy source's own date is kept. The review applies no "
+                    "lookback window -- none is stated by the table or by any "
+                    "corpus document -- so moving the date would be a third "
+                    "moved field justified by a requirement that does not exist, "
+                    "and leaving it makes that decision visible: the green "
+                    "suggestion cites a two-year-old creatinine and says so "
+                    "(D40's rule, D119)."
+                ),
+            },
+        ],
+    },
+]
+
+
 # The second-jurisdiction patient (T-88, D102). One committed bundle cloned
 # and re-addressed into Palmetto GBA's territory, so a determination can run
 # under `ncd-100.1-jjm-v1` on a chart whose note T-15's recording already
@@ -470,6 +583,172 @@ def _declared_procedure_entry(bundle: dict, declaration: dict) -> dict:
     return entry
 
 
+def _declared_append_entry(bundle: dict, declaration: dict) -> dict:
+    """One resource, copied from one the chart already carries, by **resource id**.
+
+    `_declared_procedure_entry`'s rule rather than `_declared_medication_entry`'s,
+    and D119 records why: naming a copy source by code takes the first match, and
+    a chart can carry twelve orders for one code whose first is `completed`. So
+    the declaration names the id and **restates the facts it relies on** — the
+    source's code, and its status, unit or date as applicable — and a wrong id
+    fails here rather than producing a chart that quietly answers the other way.
+
+    Exactly what the declaration lists moves: the resource id (and `fullUrl`),
+    the coding, and a value where one is declared. Subject, encounter, requester,
+    issuer, dates, time-of-day and offset are the source resource's, which is
+    what keeps the chart reading as a chart (T-41's shape, D73's).
+    """
+    wanted_id = declaration["copy_of_resource_id"]
+    source = None
+    for entry in bundle["entry"]:
+        resource = entry.get("resource", {})
+        if resource.get("resourceType") != declaration["resource_type"]:
+            continue
+        if declaration["code"] in [
+            c.get("code") for c in _codings(resource, declaration["coding_field"])
+        ]:
+            sys.exit(
+                f"the chart already carries {declaration['code']} on a "
+                f"{declaration['resource_type']}; the declared addition would "
+                "not be the difference it claims to be"
+            )
+        if resource.get("id") == wanted_id:
+            source = entry
+    if source is None:
+        sys.exit(
+            f"the chart carries no {declaration['resource_type']} {wanted_id} to "
+            "copy"
+        )
+
+    resource = source["resource"]
+    restated = {
+        "code": declaration["copy_of_code"]
+        in [c.get("code") for c in _codings(resource, declaration["coding_field"])],
+    }
+    if "copy_of_status" in declaration:
+        restated["status"] = resource.get("status") == declaration["copy_of_status"]
+    if "copy_of_unit" in declaration:
+        restated["unit"] = (
+            resource.get("valueQuantity", {}).get("unit") == declaration["copy_of_unit"]
+        )
+    if "copy_of_effective_date" in declaration:
+        restated["effective_date"] = str(
+            resource.get("effectiveDateTime", "")
+        ).startswith(declaration["copy_of_effective_date"])
+    wrong = sorted(name for name, ok in restated.items() if not ok)
+    if wrong:
+        sys.exit(
+            f"{wanted_id} does not match the declaration's restated {wrong}; the "
+            "restatement is what makes a wrong copy source fail at write time"
+        )
+
+    entry = copy.deepcopy(source)
+    resource = entry["resource"]
+    resource["id"] = resource["id"] + declaration["resource_id_suffix"]
+    entry["fullUrl"] = f"urn:uuid:{resource['id']}"
+    resource[declaration["coding_field"]] = {
+        "coding": [
+            {
+                "system": declaration["system"],
+                "code": declaration["code"],
+                "display": declaration["display"],
+            }
+        ],
+        "text": declaration["display"],
+    }
+    if "value" in declaration:
+        resource["valueQuantity"]["value"] = declaration["value"]
+    return entry
+
+
+def render_appended_entries(bundle: dict, declaration: dict) -> str:
+    """The exact text the declared entries occupy inside the entry array."""
+    entries = [
+        _declared_append_entry(bundle, append) for append in declaration["appends"]
+    ]
+    return "".join(", " + json.dumps(entry, ensure_ascii=False) for entry in entries)
+
+
+def insert_appended_entries(text: str, rendered: str) -> str:
+    """Splice `rendered` in before the entry array closes, touching nothing else.
+
+    **Every pre-existing byte is preserved, and that is the point.** A committed
+    verifier claim carries the *quote* of a cited resource — the raw slice of
+    these bytes — so a writer that parsed and re-serialized the bundle would
+    change every claim digest into it and make `RecordedVerifierRunner` raise on
+    all of them. Measured: doing it that way turned RA3 from `PASS` to `ERROR`
+    in one run (D119).
+
+    Refuses a bundle whose tail it does not recognise rather than guessing where
+    the array ends — the compact bundles this script's other writers produce end
+    differently, and only the one declared chart is appended to. The identity
+    `insert_appended_entries(text, "") == text` holds and is asserted.
+    """
+    if not text.endswith(BUNDLE_TAIL):
+        sys.exit(
+            "the bundle does not end with the pretty-printed tail this writer "
+            "splices into; re-serializing it would move every committed span's "
+            "offsets and every verifier claim's quote (D119)"
+        )
+    return text[: len(text) - len(BUNDLE_TAIL)] + "\n  }" + rendered + " ]\n}\n"
+
+
+def strip_appended_entries(text: str, rendered: str) -> str:
+    """`insert_appended_entries`' inverse: the bundle without its declared entries.
+
+    Exact rather than structural — the rendered text is removed once — so the
+    result is the byte-for-byte base bundle, which is what lets `--verify` pin
+    the base hash and keeps D73's "restore from git" operable.
+    """
+    if not rendered:
+        return text
+    if text.count(rendered) != 1:
+        sys.exit(
+            "the declared entries do not occur exactly once in the committed "
+            "text as this writer renders them; the bundle has been edited by "
+            "something else"
+        )
+    return text.replace(rendered, "", 1)
+
+
+def rendered_declared_entries(text: str, declaration: dict) -> str:
+    """The text the declaration's entries currently occupy in `text`, or `""`.
+
+    Rendered from the parsed entries rather than rebuilt from the declaration,
+    because rebuilding requires copy sources the augmented chart refuses to
+    supply — it already carries the declared codes, which is the guard that
+    keeps a second application from doubling them.
+    """
+    suffixes = tuple(append["resource_id_suffix"] for append in declaration["appends"])
+    existing = [
+        entry
+        for entry in json.loads(text)["entry"]
+        if str(entry.get("resource", {}).get("id", "")).endswith(suffixes)
+    ]
+    return "".join(", " + json.dumps(entry, ensure_ascii=False) for entry in existing)
+
+
+def base_text(text: str, declaration: dict) -> str:
+    """`text` without its declared entries: the bundle as Synthea wrote it."""
+    return strip_appended_entries(text, rendered_declared_entries(text, declaration))
+
+
+def apply_declared_additions(source_text: str, declaration: dict) -> str:
+    """The committed bytes for a chart carrying its declared additions (T-97, D119).
+
+    Pure and **idempotent**: the declared entries are stripped and rebuilt, so
+    applying this to the committed bundle returns the committed bundle.
+    `--verify` asserts exactly that, and it is the byte-level recomputation
+    available here — unlike a clone there is no pristine source on disk to
+    re-derive from, so idempotence plus the pinned base hash is what makes the
+    declaration a claim about bytes rather than a note beside the file.
+    """
+    base = base_text(source_text, declaration)
+    return insert_appended_entries(
+        base, render_appended_entries(json.loads(base), declaration)
+    )
+
+
 def clone_filename(source_filename: str, declaration: dict) -> str:
     """Synthea's `<names>_<uuid>.json`, with the uuid swapped — the names stay,
     because the clone is the same chart re-addressed, not a new person."""
@@ -513,6 +792,8 @@ def read_bundle(path: Path) -> dict:
     has_active_ra = False
     has_active_methotrexate = False
     has_active_excluded_biologic = False
+    has_active_lisinopril = False
+    has_active_hydrochlorothiazide = False
     methotrexate_orders = 0
     active_indications: set[str] = set()
     prior_study_dates: list[str] = []
@@ -556,6 +837,16 @@ def read_bundle(path: Path) -> dict:
                 has_active_methotrexate = True
             if active and RXNORM_ETANERCEPT in codes:
                 has_active_excluded_biologic = True
+            # T-97 (D119): the two drugs the knowledge table pairs with an
+            # effect that this corpus actually prescribes. Code comparisons,
+            # like every other fact here: these are the *clinical-drug* codes
+            # Synthea writes, and the ingredient codes a table row declares
+            # reach them only through the pinned expansion, which is the
+            # policy-shaped question the suite asks and not this reader's.
+            if active and RXNORM_LISINOPRIL in codes:
+                has_active_lisinopril = True
+            if active and RXNORM_HYDROCHLOROTHIAZIDE in codes:
+                has_active_hydrochlorothiazide = True
         elif rtype == "Procedure":
             # T-94 (D114): every abdominal/visceral vascular study on the
             # chart, by date. The interval criterion reads the dates, so the
@@ -576,6 +867,8 @@ def read_bundle(path: Path) -> dict:
         "has_active_ra": has_active_ra,
         "has_active_methotrexate": has_active_methotrexate,
         "has_active_excluded_biologic": has_active_excluded_biologic,
+        "has_active_lisinopril": has_active_lisinopril,
+        "has_active_hydrochlorothiazide": has_active_hydrochlorothiazide,
         "methotrexate_orders": methotrexate_orders,
         "active_indication_codes": sorted(active_indications),
         "prior_study_dates": sorted(prior_study_dates),
@@ -918,6 +1211,8 @@ def _record(path: Path, cohort: str) -> dict:
         "has_active_ra": info["has_active_ra"],
         "has_active_methotrexate": info["has_active_methotrexate"],
         "has_active_excluded_biologic": info["has_active_excluded_biologic"],
+        "has_active_lisinopril": info["has_active_lisinopril"],
+        "has_active_hydrochlorothiazide": info["has_active_hydrochlorothiazide"],
         "methotrexate_orders": info["methotrexate_orders"],
         "active_indication_codes": info["active_indication_codes"],
         "prior_study_dates": info["prior_study_dates"],
@@ -1292,11 +1587,71 @@ def clone() -> int:
 #: The coded facts a record carries beyond the BMI, re-derived by `--verify`
 #: (D113). Named once so a fact added to `read_bundle` and forgotten here is a
 #: fact nothing checks.
+def declare_additions() -> int:
+    """Apply every declared addition to its committed chart and re-record it.
+
+    Re-runnable, because `apply_declared_additions` is idempotent: the declared
+    resources are dropped and rebuilt, so running this twice writes the same
+    bytes. The manifest record is replaced rather than appended, for the reason
+    `clone()` replaces its own — two records for one chart under one id collapse
+    into whichever the reader looked at first.
+    """
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    by_patient = {r["patient_id"]: r for r in manifest["bundles"]}
+    declared = []
+    for declaration in DECLARED_ADDITIONS:
+        patient_id = declaration["patient_id"]
+        record = by_patient.get(patient_id)
+        if record is None:
+            sys.exit(f"{patient_id} is not in the committed population")
+        path = BUNDLES_DIR / record["filename"]
+        path.write_text(
+            apply_declared_additions(path.read_text(encoding="utf-8"), declaration),
+            encoding="utf-8",
+        )
+        # Replaced **in place**, unlike `clone()`'s append: this chart already
+        # has a position in the generated order, and moving it would make the
+        # manifest diff a reordering a reviewer has to read past.
+        rewritten = _record(path, record.get("cohort", BARIATRIC_COHORT))
+        manifest["bundles"] = [
+            rewritten if r["patient_id"] == patient_id else r
+            for r in manifest["bundles"]
+        ]
+        declared.append(
+            {
+                "patient_id": patient_id,
+                "bundle": path.name,
+                "task": declaration["task"],
+                "decision": declaration["decision"],
+                "rationale": declaration["rationale"],
+                # The bundle **without** its declared entries. Pins that the
+                # Synthea bytes underneath have not drifted, so D73's "restore a
+                # drifted base bundle from git" stays operable on the one chart
+                # that is no longer purely generated (D119).
+                "base_sha256": hashlib.sha256(
+                    base_text(
+                        path.read_text(encoding="utf-8"), declaration
+                    ).encode("utf-8")
+                ).hexdigest(),
+                "appends": [dict(append) for append in declaration["appends"]],
+            }
+        )
+        print(f"  declared additions applied to {path.name}")
+    manifest["declared_additions"] = declared
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"manifest written: {MANIFEST_PATH.relative_to(REPO_ROOT)}")
+    return verify()
+
+
 _DERIVED_FACTS = (
     "has_active_t2dm",
     "has_active_ra",
     "has_active_methotrexate",
     "has_active_excluded_biologic",
+    "has_active_lisinopril",
+    "has_active_hydrochlorothiazide",
     "methotrexate_orders",
 )
 
@@ -1550,6 +1905,111 @@ def verify() -> int:
                 failures,
             )
 
+    # The declared additions (T-97, D119): declared as many times as the script
+    # declares them, applied to the chart the declaration names, byte-identical
+    # to re-applying the declaration, and sitting on the base bundle the record
+    # pins. Unconditional, like the two blocks above: deleting the declaration
+    # cannot quietly re-launder an augmented chart as generated.
+    additions = manifest.get("declared_additions")
+    _check(
+        isinstance(additions, list) and len(additions) == len(DECLARED_ADDITIONS),
+        f"{len(DECLARED_ADDITIONS)} declared addition record(s), as many as are "
+        "declared here (D119)",
+        failures,
+    )
+    if isinstance(additions, list) and len(additions) == len(DECLARED_ADDITIONS):
+        by_patient = {r["patient_id"]: r for r in records}
+        for declaration, declared in zip(DECLARED_ADDITIONS, additions):
+            patient_id = declaration["patient_id"]
+            _check(
+                declared.get("patient_id") == patient_id
+                and declared.get("appends") == declaration["appends"],
+                f"the addition record for {patient_id[:12]} carries every declared "
+                "append verbatim",
+                failures,
+            )
+            record = by_patient.get(patient_id)
+            path = BUNDLES_DIR / record["filename"] if record else None
+            if path is None or not path.exists():
+                _check(False, f"{patient_id[:12]}'s bundle is on disk", failures)
+                continue
+            text = path.read_text(encoding="utf-8")
+            _check(
+                apply_declared_additions(text, declaration) == text,
+                f"{path.name}: re-applying the declaration reproduces the "
+                "committed bytes exactly",
+                failures,
+            )
+            base = base_text(text, declaration)
+            rendered = rendered_declared_entries(text, declaration)
+            _check(
+                insert_appended_entries(base, rendered) == text,
+                f"{path.name}: the committed bytes are the base bundle with the "
+                "declared entries spliced at its tail, and nothing else",
+                failures,
+            )
+            _check(
+                hashlib.sha256(base.encode("utf-8")).hexdigest()
+                == declared.get("base_sha256"),
+                f"{path.name}: the bundle under the declared entries still hashes "
+                "to the recorded base (D73 stays operable)",
+                failures,
+            )
+            entries = json.loads(text)["entry"]
+            tail = [str(e.get("resource", {}).get("id", "")) for e in entries[-len(declaration["appends"]) :]]
+            _check(
+                len(tail) == len(declaration["appends"])
+                and all(
+                    got.endswith(append["resource_id_suffix"])
+                    for got, append in zip(tail, declaration["appends"])
+                ),
+                f"{path.name}: the declared resources are the last "
+                f"{len(declaration['appends'])} entries, in declared order — "
+                "appended, so no committed span's offsets moved (D119)",
+                failures,
+            )
+            for append in declaration["appends"]:
+                matches = [
+                    e["resource"]
+                    for e in entries
+                    if e.get("resource", {}).get("resourceType")
+                    == append["resource_type"]
+                    and any(
+                        c.get("code") == append["code"]
+                        for c in _codings(e["resource"], append["coding_field"])
+                    )
+                ]
+                ok = (
+                    len(matches) == 1
+                    and matches[0]["id"].endswith(append["resource_id_suffix"])
+                )
+                if ok and "copy_of_status" in append:
+                    ok = matches[0].get("status") == append["copy_of_status"]
+                if ok and "value" in append:
+                    ok = matches[0]["valueQuantity"]["value"] == append["value"]
+                if ok and "copy_of_unit" in append:
+                    ok = (
+                        matches[0]["valueQuantity"].get("unit")
+                        == append["copy_of_unit"]
+                    )
+                if ok and "copy_of_effective_date" in append:
+                    ok = str(matches[0].get("effectiveDateTime", "")).startswith(
+                        append["copy_of_effective_date"]
+                    )
+                _check(
+                    ok,
+                    f"{path.name}: exactly one {append['resource_type']} carrying "
+                    f"{append['code']}, under the declared suffix and with every "
+                    "restated fact of its copy source",
+                    failures,
+                )
+                _check(
+                    base.count(append["resource_id_suffix"]) == 0,
+                    f"{path.name}: {append['resource_id_suffix']} appears nowhere "
+                    "in the base bundle",
+                    failures,
+                )
+
     # The rheumatology cohort (T-93, D113). The selection rule re-applied to
     # the committed charts: it is the rule that decides which criterion
     # abstains, so a chart that stopped satisfying it would move an eval label
@@ -1705,6 +2165,11 @@ def main() -> int:
         help="re-derive every committed bundle's manifest facts from its bytes",
     )
     mode.add_argument("--clone", action="store_true", help="recompute the declared clones from their committed sources")
+    mode.add_argument(
+        "--declare-additions",
+        action="store_true",
+        help="apply the declared resource additions to their committed charts (T-97)",
+    )
     mode.add_argument("--verify", action="store_true", help="verify the committed bundles (default)")
     args = parser.parse_args()
     if args.generate:
@@ -1717,6 +2182,8 @@ def main() -> int:
         return rerecord()
     if args.clone:
         return clone()
+    if args.declare_additions:
+        return declare_additions()
     return verify()
 
 

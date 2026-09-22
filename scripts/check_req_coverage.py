@@ -54,6 +54,13 @@ MAPPING: dict[str, str] = {
     "REQ-6": "tests/test_spans.py",
     "REQ-7": "tests/test_index.py",
     "REQ-62": "tests/test_medication_effects.py",
+    # T-97 (D119). The medical-history review: a suggested code comes only
+    # from a row of the table, Python assigns the tri-state, a suggestion is
+    # never a code assignment, and `would_affect` changes nothing.
+    "REQ-63": "tests/test_history.py",
+    "REQ-64": "tests/test_history.py",
+    "REQ-65": "tests/test_history.py",
+    "REQ-66": "tests/test_history.py",
     # Extraction
     "REQ-8": "tests/test_extraction.py",
     "REQ-9": "tests/test_extraction.py",

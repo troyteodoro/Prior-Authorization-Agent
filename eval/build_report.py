@@ -46,6 +46,7 @@ from pa_agent.contracts import (  # noqa: E402
 )
 from pa_agent.index import DocumentIndex  # noqa: E402
 from pa_agent.spans import SpanValidationError, validate  # noqa: E402
+from pa_agent.stores.knowledge import LocalKnowledgeStore  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 from pa_agent.stores.policy import LocalPolicyStore  # noqa: E402
 
@@ -138,12 +139,20 @@ def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
     """
     cases = json.loads((EVAL_DIR / "cases.json").read_text(encoding="utf-8"))["cases"]
     patient_store = LocalPatientStore()
+    # T-97 (D119): the same three stores `run_eval.main` composes, for the same
+    # reason — a row that labels a medical-history review and is scored without
+    # one fails, and this report would then describe a system the gate passes.
+    knowledge_store = LocalKnowledgeStore()
 
     def resolve_document(document_id: str) -> Any:
         try:
             return patient_store.get_document(document_id)
         except KeyError:
+            pass
+        try:
             return policy_store.get_document(document_id)
+        except KeyError:
+            return knowledge_store.get_document(document_id)
 
     runner = harness._recorded_runner()
     verifier = harness._recorded_verifier()
@@ -165,6 +174,7 @@ def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
             cache,
             resolve_document,
             verifier,
+            knowledge_store,
         )
         for case in cases
     ]
@@ -1552,7 +1562,12 @@ def _caveats_section() -> list[str]:
         "clone of one of them holding the drug L35677 excludes (T-93, D113), "
         "then one Synthea chart in WPS's territory and two declared clones of "
         "it that differ only in the date of one re-coded procedure, which is "
-        "what L35755's frequency limit turns on (T-94, D114). Rates "
+        "what L35755's frequency limit turns on (T-94, D114). One of the "
+        "rheumatology charts also carries two resources declared by T-97 "
+        "(D119) — an active lisinopril order and a creatinine above the "
+        "knowledge table's threshold, each copied from one the chart already "
+        "held with one or two fields swapped — because no chart in the corpus "
+        "could otherwise produce a green suggestion. Rates "
         "over a set this size move by large steps; one case is worth more "
         "than a percentage point in every table above.",
         "",

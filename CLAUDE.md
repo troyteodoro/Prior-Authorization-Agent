@@ -28,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-62 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A10 (A10 is v1.2's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-66 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-96 plus T-126, each with a runnable exit condition; T-97 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D118, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-97 plus T-126, each with a runnable exit condition; T-98 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D119, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -218,13 +218,32 @@ tier land without touching them.
 **`build_result()` is the trust boundary.** Every runner returns through it. ADK
 output is untrusted model output and there is no private route to a `WmEvent`.
 
-**Two storage ports, two planes** (`stores/policy.py`, `stores/patient.py`,
-REQ-41, Article VI). The patient port serves observations, conditions,
+**Three storage ports, three corpora** (`stores/policy.py`,
+`stores/patient.py`, `stores/knowledge.py`, REQ-41, Article VI). The patient port serves observations, conditions,
 **medications** (T-92), **procedures** (T-94, each carrying the care setting
 it was performed in), notes, the jurisdiction state and documents; the
 policy port serves resolution, trees, documents and value sets. `stores/__init__.py` imports neither submodule on purpose —
 a package-level re-export would be the module that reaches both planes.
-Production is a second adapter, which is the whole reason the ports exist *(D25)*.
+The knowledge port
+serves `data/knowledge/` — what a **drug** is known to do, which is neither
+what a payer covers nor what one chart says — as reviewed rows plus the pinned
+RxNorm expansion that lets a row's ingredient reach a prescription *(T-97,
+D119)*. Production is a second adapter, which is the whole reason the ports
+exist *(D25)*.
+
+**`pa_agent/history.py` is the medical-history review, and it sits beside the
+determination rather than inside it** *(T-97, D119)*. A pure function: it takes
+facts and returns a `HistoryReview`, so `Determination`, `STEPS`,
+`aggregate.assemble` and every recording are untouched and spec §11's *no
+verdict changes in v1.3* is structural rather than measured. An active
+prescription matching a table row is a **candidate**; Python then either
+suggests it — **green** on a declared threshold crossed, **yellow** on an
+anchored note quote, **red** on the drug's labeling alone — or **withholds** it
+for one of two declared reasons, because the chart already codes the condition
+or because the signal was measured and did not cross. `would_affect` names the
+criteria of the governing tree whose value set admits the codes a chart
+carrying the condition would hold, and changes nothing. The model is asked for
+a note quote and nothing else, and not even that until T-98.
 
 **Adjudication is nine predicate kinds and two exclusion kinds.**
 `PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
@@ -326,6 +345,44 @@ passing**, because the tests are written in terms of the thing that broke.
   it produces a `NOT_MET` the reviewer lifts with the documentation the
   policy itself asks for — and no committed chart can tell the two behaviours
   apart, so `tests/test_ultrasound_tree.py` holds it on charts written there.
+- **A declared resource is appended to a committed bundle as text, never by
+  re-serializing it** *(T-97, D119)*. `build_claim_payload` carries no offsets
+  but it carries the **quote**, and a quote is the raw slice of the resource, so
+  reformatting a bundle changes every claim digest into it and
+  `RecordedVerifierRunner` raises on all of them. Measured: writing it the
+  obvious way turned RA3 from `PASS` to `ERROR` in one run. `--verify` asserts
+  that re-applying the declaration reproduces the committed bytes and that the
+  base bundle underneath still hashes to the recorded hash, which is the
+  byte-level recomputation a clone gets from its source and this chart has no
+  pristine copy to get any other way.
+- **An ingredient never matches a prescription; the pinned expansion is the
+  match** *(REQ-63, T-97, D119)*. Rows declare RxNorm **ingredients** (`8640`,
+  `29046`) and Synthea writes **clinical drugs** (`310798`, `314076`,
+  `105585`): measured, zero hits in all fourteen bundles. So a comparison
+  without `data/knowledge/rxnorm_ingredient_products.json` loads cleanly,
+  compares cleanly and suggests nothing on every chart forever — D52's failure
+  one layer up, and the reason an eval row pins the **withheld** list and not
+  just the suggestions.
+- **A candidate the chart answers is withheld, and withheld is not red**
+  *(REQ-64, T-97, D119)*. Red means *nothing on the chart*, which is US-11's own
+  wording. A glucose of 76 against a threshold of 126 is the chart answering, so
+  that candidate is withheld with its measurement; suggesting the condition over
+  it is a claim the record refutes, and it would make *the lab says no*
+  indistinguishable from *nobody measured*.
+- **`quotes=None` raises on a chart that carries notes** *(T-97, D119)*. D90's
+  rule on a second wire: "the system did not look" and "the chart does not say"
+  are the two things the fault exists to keep apart, and red is the second. A
+  note-free chart needs no quote source, which is why all three of T-97's rows
+  sit on note-free charts and why the review is computed **only for rows that
+  label one** — `bc6748d3` is note-bearing, carries an active lisinopril and no
+  creatinine, and six committed rows run through it.
+- **`would_affect` compares the row's already-coded SNOMED codes, never its
+  ICD-10 code** *(REQ-66, T-97, D119)*. Measured across every committed value
+  set: the eight `icd10_anchor`s any set carries are `I10`, `N18.1`, `N18.2`,
+  `N18.30`, `N18.4`, `E11.9` and `M06.9`, and the table's codes are `M81.8`,
+  `I95.9`, `N28.9`, `R73.9` and `D70.2`. Nothing matches either way, so the
+  ICD-keyed reading returns an empty list on all five rows **and passes every
+  behavioural test this corpus can produce**.
 - **Never return `None` or `[]` from an unimplemented store half or planner**
   *(D31, D39, D63)*. A policy store returning `None` reports `NO_POLICY_FOUND`
   for all of Medicare; a patient store returning `[]` manufactures E7 for every
@@ -581,6 +638,15 @@ wrong silently:
   `select_patients.py --verify` before trusting any result *(T-91)*. Restoring
   from git is exact; regenerating is not byte-stable *(D73)*.
 
+- **A mutation run can edit a committed bundle.** Since T-97
+  `select_patients.py` has a mode that **writes** one —
+  `--declare-additions` — so a mutation in the append path that the harness
+  executes leaves the corpus edited and every later result meaningless. Same
+  class as `synthesize_notes.py --generate`'s `rmtree`, one file over. After any
+  mutation run: `git checkout -- data/patients/bundles data/patients/manifest.json`
+  as well as the notes, then `select_patients.py --verify` before trusting a
+  result *(D119)*.
+
 Related: **when a behavioural test cannot catch a mutation, parse the AST
 instead.** A resolver that branches on an id's shape and *then* falls through to
 the record answers identically on every input the corpus can produce *(D65)*; a
@@ -589,8 +655,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**77 of 77 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1153 tests across 40 files, 58 of
+**78 of 78 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1217 tests across 42 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -603,7 +669,7 @@ A1–A10 all hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
-The eval set is full (T-21, D75): `eval/cases.json` holds twenty-four labeled
+The eval set is full (T-21, D75): `eval/cases.json` holds twenty-seven labeled
 rows — spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6,
 `J1`, the second-jurisdiction row *(D102)*, `RA1`–`RA3`, the second
 practice's *(D113)*, and `US1`–`US4`, the third's *(D114)* — all `PASS`,
@@ -625,18 +691,34 @@ history — two false-rejection rounds forcing the verdict-asymmetry rule, then
 forced the set-membership rule *(D115)* — is
 D78's substance. US-7's measurements are in `eval/report.md`
 (T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
-against a 0.467 base rate** (the always-`MET` baseline scores exactly the base
+against a 0.420 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
-104 checked**, **A5 abstention 0.333** with the per-`gap_reason` account, its
+104 checked**, **A5 abstention 0.407** with the per-`gap_reason` account, its
 per-tree split of the declared-unclaimed abstentions *(D113)* and D82's
 tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
-52.4s across sixteen determinations** — replayed instrumentation, not the
+52.4s across seventeen determinations** — replayed instrumentation, not the
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
 Open: **nothing on the board. v1, v1.1 and v1.2 are all complete** — A1–A10
-all hold — and **`v1.3` is in progress**, opened by `T-96`; **`T-97` is
-next**.
+all hold — and **`v1.3` is in progress**: `T-96` opened it and `T-97` closed
+row 2; **`T-98` is next**.
+
+**`T-97` closed row 2** (D119): `pa_agent/history.py` reads the knowledge table
+through a third port and **Python assigns the tri-state**. It minted REQ-63
+through REQ-66 and moved no verdict, span, recording or baseline status — there
+is no field through which a suggestion could reach one. Three things it found,
+each of which changed the design. **No chart in the corpus could produce a
+green**: every candidate whose signal crossed already coded the condition, and
+every uncoded one had no observation of that analyte at all — so `455d3f7d`
+carries a declared lisinopril order and a declared creatinine, appended as text
+because re-serializing the bundle turned RA3 from `PASS` to `ERROR` in one run.
+**An ingredient never matches a prescription**, so the match runs through a
+pinned RxNav expansion of 274 concepts. And a candidate whose signal was
+**measured and did not cross** is neither green nor red but **withheld**, which
+is the third state the board's exit did not name and the one H2 turns on. Row
+2's exit was rewritten at open: a yellow is a model measurement and belongs to
+`T-98`, which adds the recording, the verifier claims and the `H4` row.
 
 **`T-96` opened v1.3** (D118): `data/knowledge/` is a **second hashed
 corpus** — five FDA labels fetched from DailyMed as SPL XML, verified by the
@@ -964,11 +1046,12 @@ would buy a passing check rather than a capability.
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      retrieval, runners, extraction, verifier, reconcile,
-                     aggregate, determination, contracts, model_pin, tiers, cli
+                     aggregate, determination, history, contracts, model_pin,
+                     tiers, cli
   agent/             ADK: extraction_agent, retrieval_agent, patient_tools,
                      policy_tools, tool_bounds, agent (adk web entry point)
-  stores/            policy.py and patient.py — the two ports and their
-                     file-backed adapters. __init__ imports neither.
+  stores/            policy.py, patient.py and knowledge.py — the three ports
+                     and their file-backed adapters. __init__ imports none.
 data/policies/
   source/            ncd_100_1, a53028, r931cp, l34576, a56852, l35677, a56432,
                      l35755, a57591 + sources.json, answers.json (q1–q13)
@@ -1018,6 +1101,10 @@ data/knowledge/      the knowledge corpus (T-96, D118) — **not** the policy
   medication_effects.json
                      the reviewed table: five (ingredient, effect) rows, each
                      naming a source for all four of its claims
+  rxnorm_ingredient_products.json
+                     the pinned RxNav expansion (T-97, D119) — 274 concepts over
+                     the five ingredients, which is how a row's ingredient
+                     reaches the clinical-drug codes Synthea prescribes
 eval/
   run_eval.py        the baseline diff (T-10). Drift in **either** direction
                      fails; a case that starts passing is adopted with
@@ -1026,8 +1113,9 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 24 labeled rows (§6's 15 + NP1 + J1 +
-                     RA1-RA3 + US1-US4; D75, D102, D104, D113, D114)
+  cases.json         the eval set — 27 labeled rows (§6's 15 + NP1 + J1 +
+                     RA1-RA3 + US1-US4 + H1-H3; D75, D102, D104, D113,
+                     D114, D119)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it;
@@ -1049,7 +1137,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement
-tests/               40 files
+tests/               42 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

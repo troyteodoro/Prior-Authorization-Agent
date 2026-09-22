@@ -105,6 +105,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 0,
       "active_indication_codes": [
         "431855005",
@@ -124,6 +126,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 0,
       "active_indication_codes": [
         "59621000"
@@ -141,6 +145,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 0,
       "active_indication_codes": [],
       "prior_study_dates": []
@@ -156,6 +162,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 0,
       "active_indication_codes": [
         "59621000"
@@ -173,6 +181,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 0,
       "active_indication_codes": [],
       "prior_study_dates": []
@@ -188,6 +198,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 0,
       "active_indication_codes": [],
       "prior_study_dates": []
@@ -203,6 +215,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": true,
       "methotrexate_orders": 0,
       "active_indication_codes": [
         "59621000"
@@ -220,22 +234,9 @@
       "has_active_ra": true,
       "has_active_methotrexate": true,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 1,
-      "active_indication_codes": [],
-      "prior_study_dates": []
-    },
-    {
-      "filename": "Altagracia629_Torp761_455d3f7d-3b99-dad6-c0b2-d5405144e793.json",
-      "sha256": "bd483842634a187b024cb2ab10f28cdf33965bb33feb7f3c8cf45fa5c808374e",
-      "cohort": "rheumatology",
-      "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
-      "latest_bmi": 27.76,
-      "latest_bmi_date": "2026-04-23T12:50:12-07:00",
-      "has_active_t2dm": false,
-      "has_active_ra": true,
-      "has_active_methotrexate": false,
-      "has_active_excluded_biologic": false,
-      "methotrexate_orders": 0,
       "active_indication_codes": [],
       "prior_study_dates": []
     },
@@ -250,6 +251,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": true,
       "methotrexate_orders": 0,
       "active_indication_codes": [
         "431856006",
@@ -270,6 +273,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 0,
       "active_indication_codes": [],
       "prior_study_dates": []
@@ -285,6 +290,8 @@
       "has_active_ra": true,
       "has_active_methotrexate": true,
       "has_active_excluded_biologic": true,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
       "methotrexate_orders": 1,
       "active_indication_codes": [],
       "prior_study_dates": []
@@ -300,6 +307,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": true,
       "methotrexate_orders": 0,
       "active_indication_codes": [
         "431856006",
@@ -322,6 +331,8 @@
       "has_active_ra": false,
       "has_active_methotrexate": false,
       "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": true,
       "methotrexate_orders": 0,
       "active_indication_codes": [
         "431856006",
@@ -332,6 +343,23 @@
       "prior_study_dates": [
         "2026-05-25T17:06:52-07:00"
       ]
+    },
+    {
+      "filename": "Altagracia629_Torp761_455d3f7d-3b99-dad6-c0b2-d5405144e793.json",
+      "sha256": "27b5aec6e3109e78e4958eb9d4cd463ea955894c2e10ae8168f6b6bc9abaf2cb",
+      "cohort": "rheumatology",
+      "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
+      "latest_bmi": 27.76,
+      "latest_bmi_date": "2026-04-23T12:50:12-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [],
+      "prior_study_dates": []
     }
   ],
   "synthetic_patients": [
@@ -493,5 +521,47 @@
       "study_code": "709640007",
       "rule": "the chart carries at least one active Condition coded in ['59621000', '431855005', '431856006', '433144002', '431857002'] and no Procedure coded SNOMED 709640007, and it carries a Procedure at least 24 months before 20260901 and another at most 6 months before it, both at encounters outside ['EMER', 'IMP'] — the two copy sources the declared clones name. Condition codes read from modules/hypertension.json and modules/metabolic_syndrome/kidney_conditions.json, the study code from modules/spina_bifida.json, all in the pinned jar (D114)."
     }
-  }
+  },
+  "declared_additions": [
+    {
+      "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
+      "bundle": "Altagracia629_Torp761_455d3f7d-3b99-dad6-c0b2-d5405144e793.json",
+      "task": "T-97",
+      "decision": "D119",
+      "rationale": "The green suggestion's chart. An active lisinopril order makes the lisinopril-renal-impairment row a candidate; a creatinine above its declared threshold colours it green; and the chart codes no kidney disease, so nothing withholds it. Every criterion of the tree that governs 93975 in Alabama abstains on this chart, so the row cites no verdict and costs no verifier claim.",
+      "base_sha256": "bd483842634a187b024cb2ab10f28cdf33965bb33feb7f3c8cf45fa5c808374e",
+      "appends": [
+        {
+          "resource_type": "MedicationRequest",
+          "copy_of_resource_id": "455d3f7d-3b99-dad6-c1ff-8899fe6c3fb5",
+          "copy_of_code": "209387",
+          "copy_of_display": "Acetaminophen 325 MG Oral Tablet [Tylenol]",
+          "copy_of_status": "active",
+          "coding_field": "medicationCodeableConcept",
+          "resource_id_suffix": "-hx-lisinopril-synthetic",
+          "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+          "code": "314076",
+          "display": "lisinopril 10 MG Oral Tablet",
+          "source_note": "Named by resource id and its status restated, not by code: this chart carries twelve orders for 209387 and the first in bundle order is completed. A completed copy source would declare a prescription no candidate is ever drawn from, on a declaration that reads correctly, and the eval row would then pass with no suggestion for the wrong reason (_declared_procedure_entry's rule, D119)."
+        },
+        {
+          "resource_type": "Observation",
+          "copy_of_resource_id": "455d3f7d-3b99-dad6-cbfe-005f4bd8b1f4",
+          "copy_of_code": "2571-8",
+          "copy_of_display": "Triglyceride [Mass/volume] in Serum or Plasma",
+          "copy_of_unit": "mg/dL",
+          "copy_of_effective_date": "2024-04-11",
+          "coding_field": "code",
+          "resource_id_suffix": "-hx-creatinine-synthetic",
+          "system": "http://loinc.org",
+          "code": "2160-0",
+          "display": "Creatinine [Mass/volume] in Serum or Plasma",
+          "value": 2.1,
+          "source_note": "The copy source is chosen for its unit: a creatinine is reported in mg/dL and so is this lipid panel result, so exactly two fields move -- the code and the value -- and the unit, subject, encounter, issuer, date, time-of-day and offset are the source result's.",
+          "value_note": "Above the table's declared 1.3 mg/dL and in the band the other charts measure (2.04 and 2.80), so the row turns on the threshold rather than on an extreme. A decision, not a measurement; the comparison against the table's constant is the engine's and is asserted in tests/test_history.py, not here, so each check sits with its owner.",
+          "date_note": "The copy source's own date is kept. The review applies no lookback window -- none is stated by the table or by any corpus document -- so moving the date would be a third moved field justified by a requirement that does not exist, and leaving it makes that decision visible: the green suggestion cites a two-year-old creatinine and says so (D40's rule, D119)."
+        }
+      ]
+    }
+  ]
 }

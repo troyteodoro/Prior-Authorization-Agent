@@ -493,6 +493,43 @@ reversal condition now reads against.
 **REQ-28** The eval harness counts `ERROR` separately. `ERROR` is never folded
 into the abstention rate or into any `INSUFFICIENT_EVIDENCE` count.
 
+### Medical-history review
+
+**REQ-63** Every suggested code resolves to exactly **one row** of the
+medication-effects knowledge table, and the suggestion carries that row's id,
+its ICD-10 code and the span into the hashed label the effect is asserted from.
+No other route to a code exists: not a crosswalk, not a model, not a name match.
+An ingredient is matched to a prescription through a **declared, pinned**
+expansion and membership is tested inside the declared code system (REQ-59) — a
+row's ingredient code compared against a prescription's code matches nothing in
+any chart this corpus holds, which is REQ-59's failure one layer up and not a
+match. *(T-97, D119)*
+
+**REQ-64** The tri-state is assigned by **Python**, over declared thresholds and
+span presence. A candidate is *green* when an observation carrying the row's
+signal code satisfies the row's declared comparator against its declared
+threshold, and the suggestion cites that observation; *yellow* when there is no
+such observation and an anchored note quote documents the effect; *red*
+otherwise. The model is never asked which colour and never asked which code. A
+candidate that would be coloured by a quote on a chart that **has** notes, where
+no quote source has been consulted, **raises** rather than answering red:
+"nobody looked" and "the chart does not say" are the two things a fault exists
+to keep apart, and red is the second (D90). *(T-97, D119)*
+
+**REQ-65** A suggestion is never a code assignment. It carries no criterion
+verdict, enters no determination, and no suggestion at any colour changes any
+verdict, span or gap entry. A candidate whose condition the chart **already
+codes** produces no suggestion at all and is recorded as *suppressed*, citing
+the codes that suppressed it — an empty suggestion list and a chart with no
+candidate are different facts, and a review that cannot tell them apart is one
+no check can either. *(T-97, D119)*
+
+**REQ-66** `would_affect` names the criteria of the **governing tree** whose
+value set admits the code a chart carrying the condition would carry, by set
+membership in that set's declared system, and it changes nothing. A row that
+declares no such code — REQ-62's `unsourced_reason` — reports an empty list and
+the reason it is empty, never an empty list alone. *(T-97, D119)*
+
 ---
 
 ## 6. Edge cases
@@ -1091,20 +1128,30 @@ measurement script in `EXCLUDED`.
 - **REQ-62**, minted by `T-96`. Every row of the knowledge table names a
   source the offline verifier covers, its effect span slices back, and a
   claim with no re-readable source is declared in the row rather than
-  omitted or supplied from memory. **The other half of this version's first
-  statement — *a suggested code comes only from a row of the table* — stays
-  unminted until `T-97`**, because nothing suggests anything yet and a
+  omitted or supplied from memory.
+- **REQ-63**, minted by `T-97`. The other half of this version's first
+  statement: a suggested code comes only from a row of the table, through a
+  pinned ingredient expansion compared inside its declared code system. It
+  stayed unminted through T-96 because nothing suggested anything yet, and a
   statement is minted by the task whose close checks it *(D109)*.
-- The tri-state is assigned by Python over structured thresholds and span
-  presence; the model is never asked which colour, or which code.
-- A suggestion is never a code assignment. It enters no determination
-  verdict, and no form without a human action; red enters no form without
-  a written justification.
+- **REQ-64**, minted by `T-97`. The tri-state is assigned by Python over
+  structured thresholds and span presence; the model is never asked which
+  colour, or which code. Where no quote source has been consulted on a chart
+  that has notes, the review raises rather than answering red *(D90, D119)*.
+- **REQ-65**, minted by `T-97`. A suggestion is never a code assignment. It
+  enters no determination verdict, and no form without a human action; red
+  enters no form without a written justification — the form half is v1.5's.
+  A candidate the chart already codes is recorded as suppressed rather than
+  silently absent.
+- **REQ-66**, minted by `T-97`. `would_affect` is computed by set membership
+  against the governing tree's value sets and changes nothing. It compares the
+  codes a chart carrying the condition would carry; the row's ICD-10 code
+  matches no value set in this corpus, in either direction *(D119)*.
 - Every yellow suggestion carries a verified span; a suggestion whose quote
-  fails to anchor is red, never yellow.
-- `would_affect` is computed by set membership against the governing tree's
-  value sets and changes nothing.
+  fails to anchor is red, never yellow. **Unminted until `T-98`**, which
+  measures the quote.
 - The model turn is recorded, replayed and counted like every other.
+  **Unminted until `T-98`**, for the same reason.
 
 **The two worked examples above survived the source check, one of them with
 its drug changed** *(T-96, D118)*. The steroid pairing is sourceable end to

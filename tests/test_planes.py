@@ -40,6 +40,14 @@ PACKAGE = REPO_ROOT / "pa_agent"
 POLICY_ROOTS = ("pa_agent.stores.policy", "pa_agent.resolver", "pa_agent.agent.policy_tools")
 PATIENT_ROOTS = ("pa_agent.stores.patient", "pa_agent.agent.patient_tools")
 
+#: The third corpus (T-97, D119). `data/knowledge/` is what a *drug* is known to
+#: do — neither what a payer covers nor what one chart says — so its adapter is
+#: a root of its own and must reach neither plane. It is declared here rather
+#: than folded into one of the two above precisely because folding it in would
+#: make "the policy plane cannot read a chart" true of a module that reads
+#: neither, which is a weaker claim wearing the same words.
+KNOWLEDGE_ROOTS = ("pa_agent.stores.knowledge",)
+
 #: Modules that legitimately reach both planes, and why. Asserted as an exact
 #: set (D83) — a subset check would have hidden `retrieval`, which nobody's list
 #: had until the graph was parsed.
@@ -208,6 +216,32 @@ def test_exactly_the_declared_modules_reach_both_planes(graph):
         f"{sorted(stale)} are declared as both-planes modules and no longer "
         "reach both; drop them, or the whitelist is documenting a shape the "
         "code left behind"
+    )
+
+
+@pytest.mark.parametrize("root", KNOWLEDGE_ROOTS)
+def test_the_knowledge_plane_reaches_neither_of_the_other_two(graph, root):
+    """The knowledge corpus holds no patient data and no policy (D119).
+
+    Both directions matter and both are asserted: a knowledge adapter that could
+    read a chart would be a third route around Article VI, and one that could
+    read the policy corpus would be the coupling D118 split two manifests to
+    avoid.
+    """
+    assert not _reaches(graph, root, POLICY_ROOTS), (
+        f"{root} reaches the policy plane"
+    )
+    assert not _reaches(graph, root, PATIENT_ROOTS), (
+        f"{root} reaches the patient plane"
+    )
+
+
+@pytest.mark.parametrize("root", POLICY_ROOTS + PATIENT_ROOTS)
+def test_no_plane_root_reaches_the_knowledge_corpus(graph, root):
+    """And neither plane reaches it. A criteria tree that could read what a drug
+    is known to do would be a policy artifact with a second source of truth."""
+    assert not _reaches(graph, root, KNOWLEDGE_ROOTS), (
+        f"{root} reaches the knowledge corpus"
     )
 
 
