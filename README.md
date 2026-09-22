@@ -70,8 +70,8 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1 and v1.2 are all complete.**
-78 of 78 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1222 tests (58 skip).
+79 of 79 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A10 holding. The suite collects 1223 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -104,7 +104,9 @@ gates A1–A10 holding. The suite collects 1222 tests (58 skip).
   corpus could produce a green suggestion at all** — every candidate whose lab
   crossed already carried the code, and every uncoded one had never been
   measured — which is a fact about real charts worth more than the row it cost.
-  The model's note quotes, and the yellow they produce, are `T-98`.
+  The model's note quotes are `T-98`; the measured yellow is v1.6's, because
+  no committed note mentions a table drug and a new note re-measures six
+  recordings *(D120)*.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -287,7 +289,11 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   and one case outweighs a percentage point. The figures are `eval/report.md`'s,
   which computes them from the three manifests that own them — this bullet
   read *eleven, fourteen, seven, twenty* for two tasks after the corpus grew
-  past it, with every gate green, so it is pinned now (D108, D116).
+  past it, with every gate green, so it is pinned now (D108, D116). Growth
+  rides with a version that re-measures anyway — a note-bearing chart
+  re-measures six extraction recordings and the differential, and every
+  citing row costs a verifier round on both tiers — so v1.6's round is where
+  patients are added, never a task of their own *(D120)*.
 - **P4 — The ground truth is a first draft.** The labels were drafted
   alongside the system; the second pass was taken with T-81, every row
   re-derived from the manifests and the trees' constants and recorded in
@@ -335,16 +341,22 @@ honest reading of a sample of two is that the next practice needs *about* one
 new predicate, not that it needs one.
 
 The sharper limit is what *unclaimed* is doing. Eight of those 24 criteria
-abstain, and the account quotes each tree's own reason so a reader can sort
-them: two are limits of **this pipeline** — Palmetto's `c4` wants a weight the
-extraction schema has no field for — and six are limits of **the record**, facts
-like NYHA class or a suspicion of vascular pain that no coded resource carries
-at all. The first kind a later version lifts; the second kind nothing lifts,
-and a system that reported verdicts on them would be reporting judgments it
-cannot support. A third of this system's criteria are questions it hands back
-to a human, and that ratio is the finding, not a shortfall — but it does mean
-that "the engine takes a new practice's document" is a claim about the
-two-thirds it can compute.
+abstain, and the account quotes each tree's own reason rather than sorting
+it. Read together, the reasons sort three ways *(D120)*:
+
+| The limit is | Criteria | What lifts it |
+|---|---|---|
+| **this pipeline** | `ncd-100.1-jjm-v1` `c4` — a weight the extraction schema has no field for; `d` — four documented components, then set membership and a six-month window *(D107)* | v1.6's declared extraction schema |
+| **a fact the coded record does not carry** | `infliximab-ra-jjm-v1` `c` — NYHA class; `d` — a tuberculosis screening result, with its treatment on the medication list; `e` — a DAS28, CDAI or SDAI score | v1.6, where a note states the fact; where no committed note does, the abstention stands |
+| **a judgment** | `us-abdominal-visceral-j5-j8-v1` `c` — necessary for management; `d` — not redundant of what is planned; `e` — a high index of suspicion | nothing through v2.0 *(D107)*; the reviewer |
+
+So v1.6 can lift five of the eight at most, and three of those only on a
+chart whose note states the fact. The last three are the shape D107 says
+would claim model adjudication, and a system that reported verdicts on them
+would be reporting judgments it cannot support. Today a third of this
+system's criteria are questions it hands back to a human, and that ratio is
+the finding, not a shortfall — but it does mean that "the engine takes a new
+practice's document" is a claim about the two-thirds it can compute.
 
 ---
 
@@ -845,7 +857,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1222 tests across 42 files, 58 of them skipped — the skips are per-tree
+1223 tests across 42 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

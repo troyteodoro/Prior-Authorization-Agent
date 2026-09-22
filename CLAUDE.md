@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-66 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-97 plus T-126, each with a runnable exit condition; T-98 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D119, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-97 plus T-126 and T-127, each with a runnable exit condition; T-98 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D120, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -655,12 +655,12 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**78 of 78 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1222 tests across 42 files, 58 of
+**79 of 79 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1223 tests across 42 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
-IDs run to T-126 (T-126 is off the path, above the roadmap's reservations), but
+IDs run to T-127 (T-126 and T-127 are off the path, above the roadmap's reservations), but
 numbering is not contiguous and D92 and D94 deleted six records between them,
 so the highest id is well above the count.
 
@@ -719,7 +719,9 @@ pinned RxNav expansion of 274 concepts. And a candidate whose signal was
 **measured and did not cross** is neither green nor red but **withheld**, which
 is the third state the board's exit did not name and the one H2 turns on. Row
 2's exit was rewritten at open: a yellow is a model measurement and belongs to
-`T-98`, which adds the recording, the verifier claims and the `H4` row.
+`T-98`, which adds the recording and the `H4` row — red with the quotes
+consulted and zero verifier claims, because the measured yellow is v1.6's
+*(D120)*.
 
 **`T-96` opened v1.3** (D118): `data/knowledge/` is a **second hashed
 corpus** — five FDA labels fetched from DailyMed as SPL XML, verified by the

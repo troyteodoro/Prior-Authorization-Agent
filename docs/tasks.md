@@ -18,8 +18,18 @@ that follow *(D105)*.
 ## Path to v1
 
 **What to do next: `T-98`, row 3 of `v1.3` in `Roadmap after v1.1` below** —
-the model's note quotes, recorded, anchored and verified, and the yellow eval
-row `H4` that row 2 could not measure.
+the model's note quotes, recorded and anchored, and the eval row `H4`: red on
+a note-bearing chart with the quotes consulted, because no committed note can
+produce a yellow and the measured yellow is v1.6's *(D120)*.
+**`T-127`, off the path, closed** *(D120)*: README's *Where this system
+degrades* re-read against its owners. No figure had drifted; two documents
+disagreed. The eight unclaimed criteria now sort **three ways** —
+pipeline-limited, fact-shaped, judgment-shaped — in README, in `T-110`'s
+row, in US-14 and in spec §11, and a docs pin holds the sort complete against
+the policy directory; Palmetto's `d` note reads as D107 found it and the
+report is regenerated, for no measurement; §10's P3 has its decision —
+growth rides with v1.6's round; and the measured yellow's deferral is on the
+board, so row 3 above is red with the quotes consulted.
 **`T-97` closed row 2** *(D119)*: `pa_agent/history.py` reads the table through a
 third port and Python assigns the tri-state — green from a declared threshold,
 red from nothing, and a candidate the chart **already codes** recorded as
@@ -83,10 +93,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Seventy-eight tasks are on this board — IDs run to T-126, which is off the path
-and above the roadmap's reservations; numbering is not contiguous and D92 and
-D94 deleted six records between them, so the highest id is well above the
-count. **78 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+Seventy-nine tasks are on this board — IDs run to T-127; T-126 and T-127 are
+off the path and above the roadmap's reservations; numbering is not contiguous
+and D92 and D94 deleted six records between them, so the highest id is well
+above the count. **79 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -112,6 +122,7 @@ Off the path. Real work, nothing waiting on it:
 |---|---|---|
 | `T-81` | a second note per patient; re-measures T-15's extraction and T-17's verifier recordings, and every figure downstream | row 6 of `Path to v1.1` *(D91, D97)* |
 | `T-126` | the README restructured behind a checked architecture diagram; no version needs it, and its id sits above the roadmap's reservations, which run to T-125 | after `T-95` *(D117)* |
+| `T-127` | *Where this system degrades* re-read: the unclaimed criteria sorted three ways, corpus growth assigned to v1.6's round, Palmetto's `d` note corrected to D107, the measured yellow's deferral recorded — documents only, zero model calls | after `T-97` *(D120)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -231,7 +242,7 @@ table; the tri-state is Python; the model quotes the note and nothing else.
 |---|---|---|---|---|
 | 1 | the knowledge table and its sources | `T-96` | **closed** (D118) | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test. **Five rows, not the six planned**: warfarin's label states no hypotension and clopidogrel's states aplastic anemia, so §11's anticoagulant example is written against **apixaban** *(D118)* |
 | 2 | deterministic candidates and the tri-state | `T-97` | **closed** (D119) | `history.py` and the knowledge port; eval rows `H1`–`H3` — green via a structured signal, **silent because the chart already codes the condition**, red with nothing; `run_eval.py` green. **Rewritten at open** from "eval rows E14–E16 … yellow via a note quote": a yellow is a model measurement and belongs to row 3, and no chart in the corpus could produce a green without declared data *(D119)*. Ids are `H`-prefixed because these rows are outside §6, as NP1, J1, RA1–RA3 and US1–US4 are |
-| 3 | note quotes, recorded and verified | `T-98` | pending | recording committed, every quote slices back, verifier claims added and re-measured; every gate green. **Gains row 2's yellow**: the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today rather than colouring red *(D119)* |
+| 3 | note quotes, recorded and anchored | `T-98` | pending | recording committed on both tiers, every quote anchored or recorded as refused, the model turn counted; the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today — **red with the quotes consulted**, the recording being the proof the model looked; **zero new verifier claims**, because a red cites nothing; every gate green. **Rewritten before open** from "gains row 2's yellow … verifier claims added and re-measured": no committed note mentions a table drug, and a note edit re-measures six extraction recordings, so the measured yellow is `T-110`'s *(D120)* |
 | 4 | the CLI surface | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph |
 
 ### v1.4 — Sessions and intake, headless
@@ -278,7 +289,7 @@ re-measured differential.
 | 1 | the declared extraction schema | `T-107` | pending | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load; **and a tree that declares no fact type reads no note** — extended by *(D113)*, which measured a rheumatology determination extracting both notes of a chart whose events no criterion consumes |
 | 2 | practice three | `T-108` | pending | source, tree, patients, notes, rows, recording; `run_eval.py` green |
 | 3 | practice four | `T-109` | pending | as row 2 |
-| 4 | the note criteria v1.2 deferred, and the four-practice account | `T-110` | pending | rheumatoid and ultrasound note-only criteria evaluated; `eval/report.md` carries the account over four practices; differential re-measured; every gate green |
+| 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | pending | Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
 
 ### v2.0 — The reviewer's UI *(tentative)*
 
@@ -2424,6 +2435,64 @@ section this task rewrites.
 to the code; an arrow pointing somewhere the engine does not go would still
 pass. That is stated in `D117`'s reversal condition and in the test file's
 own docstring rather than left as a silence.
+
+### `[x] T-127` *Where this system degrades*, re-read
+
+**REQ:** none · **Depends:** T-97 *(D119)* · **Blocks:** — ·
+**Discovered in:** a review of README's failure-modes section before `T-98`
+opened · **Decided by:** D120 · **Gates:** none — no acceptance criterion
+covers prose · **Timebox:** half a day
+**Status:** **closed** (D120) — the exit ran green and every gate with it.
+No code under `pa_agent/` moved; no recording, bundle, note, baseline or
+verifier claim was touched; no model was called.
+**Why it is its own task:** working rule 6. `T-98` is next and this is not
+`T-98`; it is what a re-read of the section found, and folding it into the
+row that measures the note quotes would make that close mean two things. Its
+id sits above the roadmap's reservations, which run to `T-125`, beside
+`T-126`.
+**Exit:**
+
+```
+./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python -m pytest tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: the committed report re-derives from the corrected tree —
+`ncd-100.1-jjm-v1` `d`'s note now reads as D107 found it; every unclaimed
+criterion of every loaded tree appears in README's *Where this system
+degrades* table, by tree and id, so the three-way sort is complete against
+the policy directory rather than against a list; every other copy the
+consistency suite pins still re-derives from its owner; and all ten gates
+are green.
+
+**What it delivers.** The review's outcome, recorded in D120 and written into
+the documents it found disagreeing. No figure in the section had drifted; two
+documents contradicted each other. README said six unclaimed criteria were
+limits "nothing lifts" while v1.6's row, US-14 and spec §11 said v1.6 turns
+them into verdicts — the trees' own notes sort them three ways, and every
+copy now carries that sort: pipeline-limited (Palmetto's `c4` and `d`),
+fact-shaped (the rheumatology tree's three, liftable where a note states the
+fact) and judgment-shaped (the ultrasound tree's three, D107's territory).
+Palmetto's `d` note said "REQ-44's territory" after D107 had found it
+decomposes; the note is corrected and the report regenerated, for no
+measurement, because `get_policy_context` never emits a note. Spec §10's P3
+said more patients was a decision not yet taken; it is taken — growth rides
+with v1.6's re-measurement round. And the deferral of the measured yellow,
+decided on 2026-09-21, is on the board: `T-98`'s exit is red with the quotes
+consulted and zero verifier claims, and `T-110`'s exit names the yellow
+beside the criteria it re-measures.
+
+**What it does not do.** Open `T-98`, add a tree field, add a P9, or touch
+D119, `T-97`'s record or the log's open-questions list — the frozen entries
+stay as written and D120 carries the corrections.
+
+**Discovered, and not folded in** (working rule 6): `T-126`'s exit names
+`tests/test_readme_structure.py`, which no commit added — `git ls-files
+tests` has no such file and `pytest` on it returns exit code 4 — so that
+exit never returned zero as written, and D117's *the diagram is checked*
+is a claim no test holds. Its own numbered task, with its own entry; the
+record and D117 stay as written.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

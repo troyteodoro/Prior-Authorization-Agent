@@ -334,17 +334,19 @@ unclaimed for want of a predicate.
 > **So that** the extractor, not only the rules engine, is shown to be declared by the tree rather than shaped by bariatric surgery
 
 **Version:** v1.6 · **Value:** v1.2 left every note-only criterion unclaimed;
-this is where the abstentions it declared become verdicts, on four practices.
+this is where the ones a note can answer become verdicts, on four practices,
+and the judgments stay abstentions *(D107, D120)*.
 
 - **Given** a tree declaring its own fact types **When** the bariatric tree
   declares `WmEvent` **Then** every existing recording replays unchanged ·
   *(A14)*
 - **Given** a tree declaring a fact type the engine lacks **When** it is loaded
   **Then** the load fails, naming it · *(A14)*
-- **Given** the rheumatoid and ultrasound trees **When** their note-only
-  criteria are declared with fact types **Then** they resolve to verdicts with
-  anchored spans, and their v1.2 abstentions are gone from the baseline by a
-  committed `--update-baseline` · *(D27; A14)*
+- **Given** the rheumatoid tree and Palmetto's bariatric tree **When** their
+  fact-shaped criteria are declared with fact types **Then** they resolve to
+  verdicts with anchored spans where a note states the fact, and those v1.2
+  abstentions are gone from the baseline by a committed `--update-baseline`;
+  the ultrasound tree's three judgments stay unclaimed · *(D27, D107, D120; A14)*
 - **Given** four practices **When** the differential is measured **Then** the
   agentic path agrees with the oracle on every outcome, or the disagreement is
   reported · *(Amendment 1; A14)*

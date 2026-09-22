@@ -792,3 +792,43 @@ def test_spec_p3_carries_the_reports_corpus_figures(report):
     assert sentence.group(3) == base_rate.group(1), (
         f"P3 states a base rate of {sentence.group(3)}; the report's is {base_rate.group(1)}"
     )
+
+
+# --------------------------------------------------------------------------
+# The trees own the unclaimed set; README's sort of it must be complete
+# --------------------------------------------------------------------------
+
+
+def test_the_readmes_degradation_section_sorts_every_unclaimed_criterion(readme):
+    """Every criterion a loaded tree declares unclaimed is sorted in README (D120).
+
+    `Where this system degrades` sorts the unclaimed criteria into what a
+    later version lifts and what nothing does. The sort is prose — D116
+    refused a category field on the tree — so the one thing checked is that
+    it is *complete*: a tree revision or a new practice that declares an
+    unclaimed criterion nobody sorts is a red suite rather than a claim
+    quietly out of date. The trees are globbed the way `build_report.py`
+    globs them, so the set is the policy directory's and not a list here.
+    """
+    unclaimed: list[tuple[str, str]] = []
+    for path in sorted((REPO_ROOT / "data" / "policies").glob("*.json")):
+        tree = json.loads(path.read_text(encoding="utf-8"))
+        for criterion in tree["criteria"]:
+            if criterion.get("evaluation") == "unclaimed":
+                unclaimed.append((tree["policy_version_id"], criterion["id"]))
+    assert unclaimed, "no loaded tree declares an unclaimed criterion; re-read this test"
+
+    degrades = readme[readme.index("## Where this system degrades") :]
+    degrades = degrades[: degrades.index("\n## ", 1)]
+    rows = [line for line in degrades.splitlines() if line.startswith("|")]
+
+    missing = [
+        (tree, criterion)
+        for tree, criterion in unclaimed
+        if not any(f"`{tree}`" in row and f"`{criterion}`" in row for row in rows)
+    ]
+    assert not missing, (
+        "README's degradation section does not sort these unclaimed criteria "
+        f"(tree, id): {missing}; every one a tree declares belongs in its table "
+        "(D120, working rule 12)"
+    )

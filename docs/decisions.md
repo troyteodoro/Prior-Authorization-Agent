@@ -10247,3 +10247,132 @@ suggestions *inside* the graph — a criterion whose verdict depends on a
 suggestion being accepted, which v1.5's form deliberately does not do. At that
 point the review becomes a step and the argument above is the one to answer,
 starting with what a note-bearing chart does when nobody has looked.
+
+---
+
+## D120 — Where the system degrades, re-read: the unclaimed criteria sort three ways, and corpus growth rides with re-measurement
+
+**Context.** README's *Where this system degrades* summarizes spec §10's
+P1–P8, all closed by v1.1 (D97 through D107), and one limit v1.2 measured
+rather than left undone (D116). A re-read of the section against its owners
+found no figure drifted — the per-tree states, the corpus counts and the
+24-criterion account all re-derive — and found instead two places the
+documents contradict each other, one decision §10 deferred and nothing took,
+and one decision taken with the owner on 2026-09-21 that no document yet
+records. This entry is the review's outcome and decides `T-127`, an off-path
+documentation task in `T-126`'s shape (D117). Nothing under `pa_agent/`
+moves; no recording, bundle, note, baseline or verifier claim is touched; no
+model is called.
+
+**The residuals, each with an owner.** Every P-bullet ends in a sentence
+about what remains. Read against §11:
+
+- **P1**, *every other MAC is a tree nobody has compiled* — no version
+  compiles a third bariatric MAC, and none should: D101 already measured
+  that MACs differ in shape, and a third set of constants would cost a
+  verifier round (D113) and answer nothing new. v1.6 adds two practices,
+  v2.1 the payer axis, v2.2 a commercial mimic.
+- **P2**, *a claim the model never quoted at all* — permanent by
+  construction; `eval/report.md`'s assertion coverage measures its rate and
+  reads 1.000 on all three recordings.
+- **P3** and **P4**, *one case outweighs a percentage point* — §10 deferred
+  the decision and the third choice below takes it.
+- **P5**, **P6**, **P8** — consequences of Articles II and V and of D45;
+  nothing to build. D107 stands.
+- **P7**, *one run is a sample* — a second sample under an identical
+  configuration, kept beside the first rather than replacing it, would be
+  this repo's first run-to-run stability figure, which D107's fourth
+  precondition names. Not taken now: v1.6 re-measures the differential under
+  a new extraction schema, and the round that measures it once can measure
+  it twice. Named on `T-110` as an option decided at that version's open.
+
+**Chosen — the eight unclaimed criteria sort three ways, and v1.6 promises
+exactly the classes it can lift.** README sorted them two ways after D116:
+two limits of *this pipeline*, which a later version lifts, and six limits
+of *the record*, which "nothing lifts". `docs/tasks.md`'s `T-110` row,
+US-14 and §11's v1.6 entry meanwhile said the rheumatoid and ultrasound
+trees' unclaimed criteria "resolve to verdicts" in v1.6. Both cannot be
+true, and the trees' own notes separate the six:
+
+| Class | Criteria | What lifts it |
+|---|---|---|
+| A limit of this pipeline | `ncd-100.1-jjm-v1` `c4` — a weight field the extraction schema lacks; `d` — four documented components, then set membership and a six-month window (D107) | v1.6's declared extraction schema |
+| A fact the coded record does not carry | `infliximab-ra-jjm-v1` `c` — NYHA class; `d` — a tuberculosis screening result, with its treatment on the medication list; `e` — a DAS28, CDAI or SDAI score | v1.6, where a note states the fact; where no committed note does, the abstention stands and `T-110`'s exit says so |
+| A judgment | `us-abdominal-visceral-j5-j8-v1` `c` — necessary for management; `d` — not redundant of what is planned; `e` — a high index of suspicion | Nothing through v2.0 (D107); the reviewer |
+
+The second class is D107's finding applied to the rheumatology tree: a
+criterion whose evidence is harder to *extract* is REQ-38's shape, and once
+a declared fact type holds the class, the score or the screening result, the
+predicate is set membership or a threshold — reserved, and Python's. The
+third class is the shape D107 says would claim REQ-44 and refuses: a
+predicate that cannot be compiled. So v1.6 can lift five of the eight at
+most, and three of those only on a chart whose note states the fact;
+`T-110`'s exit is rewritten to say so, US-14's third bullet and §11's v1.6
+goal with it, and README carries the table. **Rejected — a `limit` field on
+the tree** that the report would count. D116 refused categories of the
+report's invention, and a new tree field is a schema change for a sort that
+the quoted notes already let a reader check. The README's sort is prose, and
+the one thing pinned is that it is complete: `tests/test_docs_consistency.py`
+requires every unclaimed criterion of every loaded tree to appear in that
+section, so a criterion v1.6 adds and nobody sorts is a red suite.
+
+**Chosen — Palmetto's `d` note is corrected to D107's reading.**
+`ncd_100_1_jjm.json` still ended the note with *an evaluator is REQ-44's
+territory (P6)* — D101's sentence, from before D107 examined that criterion
+and found it decomposes into extraction, set membership and a window: REQ-38's
+shape, not REQ-44's. README's P6 bullet followed D107; `eval/report.md`
+quotes the tree and so carried the superseded sentence. The edit is not a
+measurement: `get_policy_context` emits a criterion's id, label, `scoped_to`
+and constant values and nothing else (D45's field-by-field payload), so the
+note never reaches a prompt, and no gate hashes a tree file. The report
+regenerates for nothing and `--verify` holds. The generator's own framing
+sentence — *a limit of the record, which no amount of engineering reaches* —
+is reworded to the three classes, still quoting rather than sorting.
+
+**Chosen — corpus growth rides with a version that re-measures anyway, never
+as a task of its own.** §10's P3 ends *more patients is a separate decision,
+taken after T-81's numbers landed (D97)*, and no version took it. The cost of
+a standalone chart is now measured rather than estimated: a note-bearing
+chart re-measures six extraction recordings — direct, ADK inline and ADK
+tool-fetch, on both tiers — because `synthesize_notes.py` renders *Document N
+of M* into every header (D104, D106); it re-runs the agentic differential
+(D91); and every row that cites costs a verifier round on both tiers (D113).
+v1.6 spends all of that for its own reasons, so charts are added there, in
+that round, and the residual P3 states is closed by naming where growth
+happens rather than by a number.
+
+**Chosen — the deferral of the measured yellow is recorded, and `T-98`'s
+exit is rewritten before it opens.** Taken with the owner on 2026-09-21,
+during the review that preceded this one: no committed chart note mentions
+any knowledge-table drug, effect or signal, so a consulted quote runner
+colours `bc6748d3`'s lisinopril candidate red, not yellow; a yellow needs a
+note edit, and a note edit is the six-recording re-measurement above, which
+v1.3's *one recording round* never budgeted (D113's lesson, one version
+later). So `T-98`'s `H4` is **red with the quotes consulted** — the recording
+is the proof the model looked, which is the state `QuoteSourceNotConsulted`
+exists to separate from red (D90, D119) — and `T-98` adds **zero verifier
+claims**, because a red cites nothing. US-11's yellow and A11's *zero yellow
+without a valid span* hold structurally and by unit test in v1.3; the
+measured yellow is `T-110`'s, in v1.6's round. `T-98`'s own entry, at its
+open, decides what it mints — whether the anchoring statement is checkable
+at unit level through `anchor.py`'s refusal (D65's shape) or waits for the
+measurement — and settles the `(candidate, quotes)` claim shape and where the
+review's model turn is counted; none of that is pre-empted here. Two
+corrections ride here rather than in the frozen entries: D119 and `T-97`'s
+record say six committed rows run through `bc6748d3`, and `eval/cases.json`
+holds two, E8 and E10b; and the row that gains the measured yellow is
+`T-110`, not `T-108` — one re-measurement round, not two (D45). **Rejected —
+leaving the board as written until `T-98` opens.** The board would say, for
+a session, that the next task measures something this entry records cannot
+be measured on the committed corpus, and the v1.6 row would be edited twice.
+
+**Noted, without an edit.** The log's *Open questions* list asks whether a
+payer-specific layer over the CMS baseline is in scope; D112 answered it with
+v2.1 and v2.2. The list sits in the append-only log and stays as written.
+
+**Reverses if:** v1.6 opens and a document or a chart shows a judgment-class
+criterion decomposing mechanically — D107's move on Palmetto's `d`, made a
+fourth time — in which case that criterion changes class by an entry at that
+open; or no committed note states any fact-class fact, in which case those
+three abstentions stand and `T-110`'s exit records that they do. Either way
+the sort moves by an entry, not by an edit to this one.

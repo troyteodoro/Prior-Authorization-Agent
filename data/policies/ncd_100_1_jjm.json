@@ -221,7 +221,7 @@
           "note": "Four named components follow in the source: bariatric surgeon, primary care referral, mental health, nutrition."
         }
       },
-      "note": "Unclaimed (D101): the pipeline extracts weight-management encounters and program assertions, and has no extractor for a multidisciplinary evaluation. Abstains with NOT_EVALUATED_BY_THIS_SYSTEM so the determination names what a reviewer still owes. An evaluator is REQ-44's territory (P6)."
+      "note": "Unclaimed (D101): the pipeline extracts weight-management encounters and program assertions, and has no extractor for a multidisciplinary evaluation. Abstains with NOT_EVALUATED_BY_THIS_SYSTEM so the determination names what a reviewer still owes. Decomposed (D107), it is extraction of four documented components, then set membership and a six-month window -- REQ-38's shape, not REQ-44's; claimed when the tree declares the fact type (v1.6), which is a new measurement (D45)."
     }
   ],
   "reconciled_facts": [

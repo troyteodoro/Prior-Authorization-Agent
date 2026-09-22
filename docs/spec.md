@@ -830,7 +830,8 @@ Synthea chart, two declared clones of it, and two documents from a third
 contractor. Since T-97 it is twenty-seven rows *(D119)*: the medical-history
 review's three, on charts the set already held, one of them carrying two
 declared resources. More
-patients is a separate decision, taken after T-81's numbers landed *(D97)*.
+patients is the decision D120 took: growth rides with a version that
+re-measures anyway — v1.6's round — never as a task of its own.
 
 ### P4 — The ground truth is a first draft
 
@@ -1155,7 +1156,9 @@ measurement script in `EXCLUDED`.
   matches no value set in this corpus, in either direction *(D119)*.
 - Every yellow suggestion carries a verified span; a suggestion whose quote
   fails to anchor is red, never yellow. **Unminted until `T-98`**, which
-  measures the quote.
+  measures the quote. The measured yellow itself is v1.6's *(D120)*; whether
+  `T-98` mints this at unit level or leaves it to that round is `T-98`'s
+  entry to say.
 - The model turn is recorded, replayed and counted like every other.
   **Unminted until `T-98`**, for the same reason.
 
@@ -1241,7 +1244,10 @@ and the runners, the anchorer and `build_result` become generic over declared
 types; `STEPS` stays a fixed tuple (Article I). Candidates, confirmed at
 open: CPAP for obstructive sleep apnea under NCD 240.4, a **nationally
 quantified** NCD, unlike 100.1; and one imaging or therapy domain. The
-rheumatoid and ultrasound trees gain their note-only criteria here. New
+criteria v1.2 and v1.3 deferred land here *(D120)*: Palmetto's `c4` and
+`d`; the rheumatoid tree's `c`, `d` and `e` where a note states the fact,
+abstaining where none does; and the measured yellow. The ultrasound tree's
+`c`, `d` and `e` are judgments and stay unclaimed *(D107)*. New
 notes are new extraction recordings (D45), and the agentic differential is
 re-measured.
 

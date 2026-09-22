@@ -1480,9 +1480,10 @@ def _compatibility_section() -> list[str]:
         "",
         "The tree's own words, quoted rather than sorted into categories of "
         "this report's invention (D116). Read together they separate "
-        "themselves: some name a limit of **this pipeline**, which a later "
-        "version lifts, and the rest name a limit of **the record**, which no "
-        "amount of engineering reaches.",
+        "themselves three ways (D120): a limit of **this pipeline**, which a "
+        "declared extraction schema lifts; a **fact the coded record does not "
+        "carry**, which a note may state and an extractor may then read; and a "
+        "**judgment**, which no predicate compiles and a reviewer answers.",
         "",
     ]
 
