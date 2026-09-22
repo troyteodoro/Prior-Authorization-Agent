@@ -28,6 +28,7 @@ Two things are deliberately **not** checked, and both matter:
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import subprocess
@@ -91,6 +92,10 @@ NUMBER_WORDS = {
     "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
     "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
     "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+    "twenty": 20, "twenty-one": 21, "twenty-two": 22, "twenty-three": 23,
+    "twenty-four": 24, "twenty-five": 25, "twenty-six": 26,
+    "twenty-seven": 27, "twenty-eight": 28, "twenty-nine": 29, "thirty": 30,
 }
 
 
@@ -268,24 +273,52 @@ def test_both_documents_report_the_board_s_own_task_count(readme, claude, closed
 # --------------------------------------------------------------------------
 
 
-def test_the_acceptance_figures_in_claude_md_come_from_the_report(claude, report):
-    """A2, A5 and A6 — the three that were wrong for two tasks.
+def _gate_row(readme: str, gate: str) -> str:
+    """The README's acceptance-gate table row for `gate`, without its cells."""
+    match = re.search(rf"^\| {gate} \| (.*) \|$", readme, re.M)
+    assert match, f"README's gate table no longer has an {gate} row"
+    return match.group(1)
 
-    Each is re-read from `eval/report.md`, which `build_report.py --verify`
-    recomputes from the committed recordings, and required to appear in
-    `CLAUDE.md`'s prose. The report is the source; this file holds a copy.
+
+def _determinations(report: str) -> int:
+    """A6's denominator, from the cost section's own row."""
+    cost_start = report.index("## Cost and latency")
+    cost_end = report.index("\n## ", cost_start + 1)
+    match = re.search(r"\| Determinations \| (\d+) \|", report[cost_start:cost_end])
+    assert match, "the report's cost table no longer states a determination count"
+    return int(match.group(1))
+
+
+def test_the_acceptance_figures_in_both_documents_come_from_the_report(readme, claude, report):
+    """A2, A5, A6 and A6's denominator — in **both** documents.
+
+    CLAUDE.md's three were the ones wrong for two tasks (D108), so they were
+    pinned and stayed right. README's gate table, twenty lines below a
+    sentence saying every figure in it is re-derived from the report, was
+    not pinned — and it carried A2 at a 0.467 base rate, A5 at 0.333 and A6
+    over sixteen determinations two closes after the report moved to 0.420,
+    0.407 and seventeen. A pin on one copy is a pin on one copy.
+
+    Each figure is re-read from `eval/report.md`, which `build_report.py
+    --verify` recomputes from the committed recordings, and required in both
+    documents' prose. The report is the source; each file holds a copy.
     """
     base_rate = re.search(r"base rate \(labeled pairs that are `MET`\) \| [\d/]+ = \*\*([\d.]+)\*\*", report)
     abstention = re.search(r"Abstention rate: [\d/]+ answered = ([\d.]+)", report)
     assert base_rate and abstention, "the report's shape moved; re-read it here"
+    rate, abstained = base_rate.group(1), abstention.group(1)
 
-    assert f"{base_rate.group(1)} base rate" in claude, (
-        f"CLAUDE.md does not carry the report's A2 base rate "
-        f"({base_rate.group(1)})"
+    assert f"{rate} base rate" in claude, (
+        f"CLAUDE.md does not carry the report's A2 base rate ({rate})"
     )
-    assert f"A5 abstention {abstention.group(1)}" in claude, (
-        f"CLAUDE.md does not carry the report's A5 abstention rate "
-        f"({abstention.group(1)})"
+    assert f"A5 abstention {abstained}" in claude, (
+        f"CLAUDE.md does not carry the report's A5 abstention rate ({abstained})"
+    )
+    assert f"**{rate}** base rate" in _gate_row(readme, "A2"), (
+        f"README's A2 row does not carry the report's base rate ({rate})"
+    )
+    assert f"abstention **{abstained}**" in _gate_row(readme, "A5"), (
+        f"README's A5 row does not carry the report's abstention rate ({abstained})"
     )
 
     # Scoped to A6's own section: the tier comparison above it has rows with
@@ -311,6 +344,54 @@ def test_the_acceptance_figures_in_claude_md_come_from_the_report(claude, report
         assert f"{int(value):,}" in claude, (
             f"CLAUDE.md does not carry the report's A6 {label} tokens ({int(value):,})"
         )
+    a6 = f"{calls} model calls / {int(tin):,} in / {int(tout):,} out"
+    assert a6 in _gate_row(readme, "A6"), f"README's A6 row does not read {a6!r}"
+
+    # The denominator is written as a number word in both documents; every
+    # occurrence is checked, and a stale one is the one that drifted.
+    determinations = _determinations(report)
+    for name, text in (("README.md", readme), ("CLAUDE.md", claude)):
+        counted = _counted_phrases(" ".join(text.split()), r"across (\S+) determinations")
+        assert counted, f"{name} no longer states A6's determination count"
+        for stated, phrase in counted:
+            assert stated == determinations, (
+                f"{name} says {phrase!r}; the report counts {determinations} "
+                "determinations (working rule 12)"
+            )
+
+
+@pytest.fixture(scope="module")
+def coverage():
+    """`scripts/check_req_coverage.py`, loaded rather than run: its counts
+    are the owner of README's A7 row, and importing it spends nothing."""
+    spec = importlib.util.spec_from_file_location(
+        "check_req_coverage", REPO_ROOT / "scripts" / "check_req_coverage.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_readmes_a7_row_comes_from_the_coverage_gate(readme, coverage):
+    """A7's three counts are the coverage gate's own, re-derived here.
+
+    README said *63 requirements: 61 mapped* while the gate printed 68 and
+    66 — T-96 and T-97 minted five requirements between them and nothing
+    compared the row to the script that counts them. The gate owns these
+    figures the way the report owns A2's.
+    """
+    spec_text = SPEC.read_text(encoding="utf-8")
+    requirements = len(coverage.spec_requirements(spec_text))
+    mapped = len(coverage.MAPPING)
+    unclaimed = len(coverage.unclaimed_table(spec_text))
+    expected = (
+        f"{requirements} requirements: {mapped} mapped to a check, "
+        f"{unclaimed} declared unclaimed"
+    )
+    assert expected in _gate_row(readme, "A7"), (
+        f"README's A7 row does not read {expected!r}; check_req_coverage.py "
+        "owns these counts (working rule 12)"
+    )
 
 
 # --------------------------------------------------------------------------
@@ -519,3 +600,195 @@ def test_the_knowledge_corpus_figures_come_from_the_corpus(readme, claude):
         assert stated == rows, (
             f"CLAUDE.md says {phrase!r}; the table has {rows} rows"
         )
+
+
+# --------------------------------------------------------------------------
+# The board owns each version's state
+# --------------------------------------------------------------------------
+
+
+def _board_states(board: str) -> dict[str, str]:
+    """version -> complete / in progress / planned, from the board's roadmap.
+
+    The board marks a version's state inside its *Delivers* cell — `· **closed**`
+    or `· **in progress**` — and an unmarked row is a version not yet opened.
+    """
+    section = board[board.index("## Roadmap after v1.1") :]
+    section = section[: section.index("\n### ")]
+    states: dict[str, str] = {}
+    for line in section.splitlines():
+        match = re.match(r"\| (v\d[\d.]*) \| (.*?) \| (US-[\d–—-]+|—) \|", line.strip())
+        if not match:
+            continue
+        delivers = match.group(2)
+        if "**closed**" in delivers:
+            states[match.group(1)] = "complete"
+        elif "**in progress**" in delivers:
+            states[match.group(1)] = "in progress"
+        else:
+            states[match.group(1)] = "planned"
+    return states
+
+
+def _readme_states(readme: str) -> dict[str, str]:
+    states: dict[str, str] = {}
+    for line in readme.splitlines():
+        match = re.match(
+            r"\| (v\d[\d.]*) \| .*? \| (US-[\d–—-]+|—) \| ([^|]+) \|", line.strip()
+        )
+        if match:
+            states[match.group(1)] = match.group(3).strip().strip("*").strip()
+    return states
+
+
+def test_the_readme_roadmap_states_agree_with_the_board(readme):
+    """The roadmap pin above compares versions and stories; the *State*
+    column drifted underneath it. README carried v1.3 as `planned` for two
+    closed tasks while its own *Where the project stands* section, forty
+    lines up, said in progress. The board is the owner (working rule 12)."""
+    board = _board_states(TASKS.read_text(encoding="utf-8"))
+    stated = _readme_states(readme)
+    assert board, "the board's roadmap table no longer parses"
+    for version, state in board.items():
+        assert version in stated, f"README's roadmap has no row for {version}"
+        assert stated[version] == state, (
+            f"README's roadmap says {version} is {stated[version]!r}; the "
+            f"board says {state!r}"
+        )
+
+
+# --------------------------------------------------------------------------
+# The store package owns the port count
+# --------------------------------------------------------------------------
+
+
+def test_the_stated_port_count_is_the_adapter_count(readme, claude):
+    """Three ports since T-97, and two documents plus the spec said two.
+
+    REQ-41 was cited by D119 for the third port and still read *two storage
+    ports*; README's introduction and its repository layout said the same.
+    The package is the owner: one adapter module per port, `__init__`
+    excluded because it imports none of them on purpose (Article VI).
+    """
+    stores = REPO_ROOT / "pa_agent" / "stores"
+    ports = len([p for p in stores.glob("*.py") if p.name != "__init__.py"])
+
+    spec_text = SPEC.read_text(encoding="utf-8")
+    req41 = re.search(r"\*\*REQ-41\*\*(.*?)\n\n", spec_text, re.DOTALL)
+    assert req41, "REQ-41 moved; re-read it here"
+
+    sources = {
+        "docs/spec.md REQ-41": req41.group(1),
+        "README.md": readme,
+        "CLAUDE.md": claude,
+    }
+    for name, text in sources.items():
+        counted = _counted_phrases(" ".join(text.split()), r"(\S+)\s+storage\s+ports\b")
+        assert counted, f"{name} states no storage-port count"
+        for stated, phrase in counted:
+            assert stated == ports, (
+                f"{name} says {phrase!r}; pa_agent/stores/ holds {ports} adapters"
+            )
+
+    for name, text in (("README.md", readme), ("CLAUDE.md", claude)):
+        layout = re.search(r"^\s*stores/\s+(.+)$", text, re.M)
+        assert layout, f"{name}'s repository layout no longer lists stores/"
+        counted = _counted_phrases(layout.group(1), r"(\S+)\s+ports\b")
+        assert counted, f"{name}'s stores/ line states no port count"
+        for stated, phrase in counted:
+            assert stated == ports, (
+                f"{name}'s stores/ line says {phrase!r}; there are {ports} ports"
+            )
+
+
+# --------------------------------------------------------------------------
+# The eval set owns its own families
+# --------------------------------------------------------------------------
+
+
+def test_claude_md_names_every_eval_row_family(claude):
+    """The count and the enumeration behind it must agree.
+
+    CLAUDE.md said *twenty-seven labeled rows — spec §6's fifteen plus NP1,
+    J1, RA1–RA3 and US1–US4*, which sums to twenty-four: T-97's `H1`–`H3`
+    were added to the count and not to the list. So every id-prefix family
+    in `eval/cases.json` has to be named in that sentence, and the count has
+    to be the file's. §6's rows are the `E` family and are named as §6's.
+    """
+    cases = json.loads((REPO_ROOT / "eval" / "cases.json").read_text(encoding="utf-8"))["cases"]
+    families = sorted({re.match(r"[A-Z]+", case["case_id"]).group(0) for case in cases})
+
+    flat = " ".join(claude.split())
+    sentence = re.search(r"holds (\S+) labeled rows — (.*?) — all `PASS`", flat)
+    assert sentence, "CLAUDE.md's eval-set sentence moved; re-read it here"
+    assert _as_count(sentence.group(1)) == len(cases), (
+        f"CLAUDE.md says the eval set holds {sentence.group(1)} rows; "
+        f"eval/cases.json holds {len(cases)}"
+    )
+    enumeration = sentence.group(2)
+    for family in families:
+        marker = r"§6" if family == "E" else rf"`{family}\d"
+        assert re.search(marker, enumeration), (
+            f"CLAUDE.md's enumeration of the eval set names no {family!r} row: "
+            f"{enumeration!r}"
+        )
+
+
+# --------------------------------------------------------------------------
+# The report owns spec §10's P3 as well
+# --------------------------------------------------------------------------
+
+
+def test_spec_p3_carries_the_reports_corpus_figures(report):
+    """The same pin README's P3 has, over the spec's own P3.
+
+    README's copy was pinned at T-95 (D116) and moved with the corpus; the
+    spec's — the section README's is a summary of — was not, and it stopped
+    at T-93's *eleven patients, seven documents, twenty cases* through two
+    corpus rounds. Its heading and its precision sentence are checked here
+    against the report's corpus sentence and precision table.
+    """
+    spec_text = SPEC.read_text(encoding="utf-8")
+
+    corpus = re.search(
+        r"The corpus is (\d+) patients, (\d+) chart notes and (\d+) policy documents\.",
+        report,
+    )
+    cases = re.search(r"(\d+) labeled cases\.", report)
+    precision_section = report[report.index("## Per-criterion precision") :]
+    precision_section = precision_section[: precision_section.index("### The base rate")]
+    said_met = re.search(r"\| \*\*all\*\* \| \*\*\d+\*\* \| \*\*(\d+)\*\* \|", precision_section)
+    measured = re.search(r"\*\*A2's threshold is [\d.]+ on `MET`\.\*\* Measured: \*\*([\d.]+)\*\*", report)
+    base_rate = re.search(r"base rate \(labeled pairs that are `MET`\) \| [\d/]+ = \*\*([\d.]+)\*\*", report)
+    assert corpus and cases and said_met and measured and base_rate, (
+        "the report's shape moved; re-read it here"
+    )
+    patients, _notes, documents = (int(v) for v in corpus.groups())
+
+    heading = re.search(r"^### P3 — (\S+) patients, (\S+) documents, (\S+) cases", spec_text, re.M)
+    assert heading, "spec §10's P3 heading moved; re-read it here"
+    for label, word, expected in (
+        ("patients", heading.group(1), patients),
+        ("documents", heading.group(2), documents),
+        ("cases", heading.group(3), int(cases.group(1))),
+    ):
+        assert _as_count(word) == expected, (
+            f"P3's heading says {word!r} {label}; the report says {expected} "
+            "(working rule 12)"
+        )
+
+    flat = " ".join(spec_text.split())
+    sentence = re.search(
+        r"A precision of ([\d.]+) over (\S+) `MET` calls against a base rate of ([\d.]+)",
+        flat,
+    )
+    assert sentence, "P3's precision sentence moved; re-read it here"
+    assert sentence.group(1) == measured.group(1), (
+        f"P3 states precision {sentence.group(1)}; the report measures {measured.group(1)}"
+    )
+    assert _as_count(sentence.group(2)) == int(said_met.group(1)), (
+        f"P3 says {sentence.group(2)!r} `MET` calls; the report counts {said_met.group(1)}"
+    )
+    assert sentence.group(3) == base_rate.group(1), (
+        f"P3 states a base rate of {sentence.group(3)}; the report's is {base_rate.group(1)}"
+    )

@@ -171,7 +171,7 @@ def test_no_policy_module_reaches_the_patient_plane(graph, root):
     assert not reached, (
         f"{root} reaches {sorted(reached)}. Article VI keeps the corpus and the "
         "chart on two planes; a policy module that can read patient data is the "
-        "violation the two ports exist to prevent (REQ-33)"
+        "violation the two planes exist to prevent (REQ-33)"
     )
 
 

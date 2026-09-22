@@ -591,8 +591,9 @@ def _review(
     than an optimization: `bc6748d3` carries an active lisinopril, no creatinine
     and notes that mention nothing renal, so its candidate can only be separated
     from yellow by reading them — and with no quote source the review raises
-    (D90, D119). Six committed rows run through that chart. Reviewing every case
-    would make this gate red today, and the row that fixes it is T-98.
+    (D90, D119). Two committed rows, E8 and E10b, run through that chart.
+    Reviewing every case would make this gate red today, and the row that
+    fixes it is T-98.
     """
     tree = policy_store.get_tree(result.policy_version_id)
     value_sets = {}

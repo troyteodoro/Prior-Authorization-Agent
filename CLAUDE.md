@@ -375,7 +375,7 @@ passing**, because the tests are written in terms of the thing that broke.
   note-free chart needs no quote source, which is why all three of T-97's rows
   sit on note-free charts and why the review is computed **only for rows that
   label one** — `bc6748d3` is note-bearing, carries an active lisinopril and no
-  creatinine, and six committed rows run through it.
+  creatinine, and two committed rows, E8 and E10b, run through it.
 - **`would_affect` compares the row's already-coded SNOMED codes, never its
   ICD-10 code** *(REQ-66, T-97, D119)*. Measured across every committed value
   set: the eight `icd10_anchor`s any set carries are `I10`, `N18.1`, `N18.2`,
@@ -656,7 +656,7 @@ notes *(D67)*. Both are pinned by parsing.
 ## Current state
 
 **78 of 78 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1217 tests across 42 files, 58 of
+(`check_gates.py`; the suite collects 1222 tests across 42 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -672,7 +672,8 @@ model calls, because the default extraction runner replays T-15's recording.
 The eval set is full (T-21, D75): `eval/cases.json` holds twenty-seven labeled
 rows — spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6,
 `J1`, the second-jurisdiction row *(D102)*, `RA1`–`RA3`, the second
-practice's *(D113)*, and `US1`–`US4`, the third's *(D114)* — all `PASS`,
+practice's *(D113)*, `US1`–`US4`, the third's *(D114)*, and `H1`–`H3`, the
+medical-history review's *(D119)* — all `PASS`,
 criterion-scoped,
 with every cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
@@ -729,9 +730,10 @@ rows, each naming a source for all four of its claims: the effect (a span
 into a hashed label), the ICD-10 code (NLM Clinical Tables), the SNOMED codes
 a chart already carrying the condition would hold (the pinned Synthea jar's
 own modules), and the structured signal (a LOINC code with a declared
-threshold). It minted REQ-62. Nothing under `pa_agent/` reads the file yet —
-`history.py`, the tri-state and `--suggest` are T-97 through T-99, and a test
-asserts the engine still does not. **`T-91`
+threshold). It minted REQ-62. Nothing under `pa_agent/` read the file at
+that close — `history.py`, the tri-state and `--suggest` were T-97 through
+T-99 — and since T-97 `stores/knowledge.py` serves it and `history.py` reads
+it. **`T-91`
 opened v1.2** (D110): every criterion a tree declares deterministic names a
 `kind` from `PredicateKind`, the engine dispatches on that and on no
 criterion id, and a kind it does not implement fails at load. It minted
@@ -812,9 +814,9 @@ nothing through v2.0 schedules one; the unclaimed set stays closed at two.
 
 T-90 (D106) took row 7: the whole corpus measured a second time
 on **Vertex** and committed beside the AI Studio recordings, which did not
-move. Fidelity is identical on both tiers, the verifier accepts the same 30
-claims with no verdict moving, and 0 of 169 / 0 of 165 / 0 of 76 model offsets
-were usable — D18's fourth reproduction. D71's clause is answered *partly*:
+move. Fidelity is identical on both tiers, the verifier accepted the same 30
+claims that round (38 since T-94) with no verdict moving, and 0 of 169 / 0 of
+165 / 0 of 76 model offsets were usable — D18's fourth reproduction. D71's clause is answered *partly*:
 the injected `set_model_response` round trip is an AI Studio artifact and
 vanishes natively (tool calls 26 → 12, unescaped spans 4 → 0) while the token
 overhead only halves, 4.12x → 2.14x against each tier's own direct runner.

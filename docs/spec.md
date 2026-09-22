@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1 and v1.2 complete, A1–A10 hold *(D104, D106, D116)*; **v1.3 in progress** *(T-96)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1 and v1.2 complete, A1–A10 hold *(D104, D106, D116)*; **v1.3 in progress** *(T-96, T-97)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -113,10 +113,11 @@ patient-data modules import no policy corpus and no index over it. The only type
 crossing is the compiled `Criterion`, enforced by an import-graph assertion.
 *(Art. VI)*
 
-**REQ-41** All data reaches the system through two storage ports, `PolicyStore`
-and `PatientStore`. No module outside a store adapter opens a file path, holds a
-connection, or names a storage location. The ports are separate types with
-separate implementations; no single object satisfies both. *(Art. VI, D25)*
+**REQ-41** All data reaches the system through three storage ports,
+`PolicyStore`, `PatientStore` and `KnowledgeStore`. No module outside a store
+adapter opens a file path, holds a connection, or names a storage location. The
+ports are separate types with separate implementations; no single object
+satisfies more than one. *(Art. VI, D25; the third port T-97, D119)*
 
 The ports are what makes a production database a second adapter rather than a
 rewrite. They are also how Article VI stops being a lint check: two planes become
@@ -806,11 +807,11 @@ instance above was one run's behaviour and the mechanism is the standing
 answer to its recurrence. What it cannot recover is a claim the model never
 quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
-### P3 — Eleven patients, seven documents, twenty cases *(was six, five, fifteen)*
+### P3 — Fourteen patients, nine documents, twenty-seven cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
-than a percentage point in every table. A precision of 1.000 over seventeen
-`MET` calls against a base rate of 0.567 is a real result and a small one; it
+than a percentage point in every table. A precision of 1.000 over twenty-one
+`MET` calls against a base rate of 0.420 is a real result and a small one; it
 says the approach does not obviously fail, and nothing more. Since T-88 the
 set is sixteen rows over eight bundles, one of them a declared clone that
 shares its note's bytes with its source *(D102)*; the count moved by one row
@@ -823,7 +824,12 @@ it is twenty rows over eleven bundles and seven documents *(D113)*: the second
 practice's two Synthea charts and a declared clone of one of them, all
 note-free, and three rows running a tree NCD 100.1 did not produce. The
 practice axis is no longer one-sided, and the set is still small enough that
-one case outweighs a percentage point. More
+one case outweighs a percentage point. Since T-94 it is twenty-four rows
+over fourteen bundles and nine documents *(D114)*: the third practice's
+Synthea chart, two declared clones of it, and two documents from a third
+contractor. Since T-97 it is twenty-seven rows *(D119)*: the medical-history
+review's three, on charts the set already held, one of them carrying two
+declared resources. More
 patients is a separate decision, taken after T-81's numbers landed *(D97)*.
 
 ### P4 — The ground truth is a first draft
@@ -950,7 +956,7 @@ changed is that the replayed numbers are no longer from a single tier.
 ## 11. Versions after v1
 
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
-is closed, **v1.2 is closed** *(T-95, D116)*, and **v1.3 is next**. This section fixes what
+is closed, **v1.2 is closed** *(T-95, D116)*, and **v1.3 is in progress** *(T-96, T-97)*. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are

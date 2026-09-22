@@ -36,8 +36,8 @@ declares it unclaimed and abstains rather than approving past it.
 explicit about what it does and does not prove.
 
 **And it is modular enough to sit inside a practice's back office.** The
-application is ports and adapters end to end: two storage ports keep the
-policy plane and the patient plane apart, three ports at the model boundary
+application is ports and adapters end to end: three storage ports keep the
+policy, patient and knowledge planes apart, three ports at the model boundary
 make every model call swappable and replayable, and the CLI is the single
 place an adapter is constructed — nothing else in the system knows where its
 data comes from. Patient records are standard FHIR bundles, so integrating
@@ -71,7 +71,7 @@ replays a committed recording.
 
 **v1, v1.1 and v1.2 are all complete.**
 78 of 78 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1217 tests (58 skip).
+gates A1–A10 holding. The suite collects 1222 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -212,12 +212,12 @@ in any gate* had been pinned against two of the three scripts that spend them
 | Gate | Result |
 |---|---|
 | A1 | 27 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.467** base rate and an always-`MET` baseline scoring exactly that |
+| A2 | precision **1.000** on `MET`, against a **0.420** base rate and an always-`MET` baseline scoring exactly that |
 | A3 | **zero** `MET` verdicts with an invalid span, over 104 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.333**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
-| A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across sixteen determinations, from instrumentation |
-| A7 | 63 requirements: 61 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A5 | abstention **0.407**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
+| A7 | 68 requirements: 66 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -359,7 +359,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1 | bariatric determination end to end, two implementations graded against one oracle | US-1–US-9 | **complete** |
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
-| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | planned |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **in progress** |
 | v1.4 | sessions and intake, headless | US-12 | planned |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
@@ -845,7 +845,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1217 tests across 42 files, 58 of them skipped — the skips are per-tree
+1222 tests across 42 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -1031,18 +1031,21 @@ labels, small n) still travel with every 1.000 in this README.
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      retrieval, runners, extraction, verifier, reconcile,
-                     aggregate, determination, contracts, model_pin, tiers, cli
+                     aggregate, determination, history, contracts, model_pin,
+                     tiers, cli
   agent/             ADK path: extraction_agent, retrieval_agent, tools, bounds
-  stores/            policy.py and patient.py — two ports, two planes;
-                     __init__.py imports neither, on purpose
+  stores/            policy.py, patient.py and knowledge.py — three ports;
+                     __init__.py imports none of them, on purpose
 data/policies/       nine source documents, six value sets (SNOMED and
                      RxNorm), and four criteria trees — two bariatric
                      (ncd-100.1-jf-v1, ncd-100.1-jjm-v1), one rheumatology
                      (infliximab-ra-jjm-v1) and one ultrasound
                      (us-abdominal-visceral-j5-j8-v1)
-data/knowledge/      the second hashed corpus — five FDA drug labels and the
-                     reviewed medication-effects table. **Not** the policy
-                     corpus, and a separate manifest for that reason
+data/knowledge/      the second hashed corpus — five FDA drug labels, the
+                     reviewed medication-effects table and the pinned RxNorm
+                     expansion that lets a row's ingredient reach a
+                     prescription. **Not** the policy corpus, and a separate
+                     manifest for that reason
 data/patients/       fourteen Synthea bundles + fourteen synthesized notes, hash-pinned
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free — one set per
