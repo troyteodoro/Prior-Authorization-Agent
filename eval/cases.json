@@ -1,6 +1,6 @@
 {
   "eval_set_id": "us1-v1",
-  "note": "Labeled acceptance cases: spec §6's fifteen plus NP1 (REQ-1, outside §6 per D75), J1 (the second jurisdiction, outside §6 per D102), RA1-RA3 (the second practice, outside §6 per D113), US1-US4 (the third, outside §6 per D114) and H1-H3 (the medical-history review, outside §6 per D119). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, and suggestion expectations from the knowledge table and the chart's coded facts, never from an observed run. Row semantics: D75.",
+  "note": "Labeled acceptance cases: spec §6's fifteen plus NP1 (REQ-1, outside §6 per D75), J1 (the second jurisdiction, outside §6 per D102), RA1-RA3 (the second practice, outside §6 per D113), US1-US4 (the third, outside §6 per D114) and H1-H4 (the medical-history review, outside §6 per D119). A case is labeled before the system that answers it exists (spec §8); criterion expectations are transcribed from §6, the T-06 manifests and the governing MAC document, and suggestion expectations from the knowledge table and the chart's coded facts, never from an observed run. Row semantics: D75.",
   "cases": [
     {
       "case_id": "E3",
@@ -699,6 +699,31 @@
           {
             "row_id": "methotrexate-neutropenia",
             "code": "D70.2",
+            "colour": "red",
+            "would_affect": []
+          }
+        ],
+        "withheld": []
+      }
+    },
+    {
+      "case_id": "H4",
+      "story": "US-11",
+      "spec_ref": "REQ-64, REQ-67, REQ-68; outside §6 (D122)",
+      "description": "A note-bearing chart with a table drug and no structured signal: red with the quotes consulted",
+      "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "E8's chart and E8's determination, shared from the cache (D75); this row labels only the review, and it is the row the chart was waiting for. The chart carries an active lisinopril order, no creatinine anywhere, no condition coding any renal disease, and two notes that mention neither the drug nor the kidney -- so the review cannot colour the candidate without reading them, and with no quote source it raises rather than answering red (D90, D119). The quote source here is RecordedQuoteRunner over eval/history/results.json: the model was asked, on both notes, for verbatim passages documenting each of the table's five conditions by display -- never the drug -- and returned none, so nothing anchored and the candidate is red. That is what red means, nothing on the chart, proved by a recording rather than assumed (D122). The suggestion cites nothing and adds no verifier claim, so max_model_calls is E8's 3 and max_review_model_calls is the review's own count: one turn per note, two notes, no re-ask fired. would_affect is empty and says why: no value set ncd-100.1-jf-v1 names admits the CKD codes the row declares. The measured yellow is T-110's (D120).",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "ncd-100.1-jf-v1",
+        "max_model_calls": 3,
+        "max_review_model_calls": 2,
+        "suggestions": [
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "code": "N28.9",
             "colour": "red",
             "would_affect": []
           }

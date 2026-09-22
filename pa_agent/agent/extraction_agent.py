@@ -148,10 +148,15 @@ def _reask_instruction(tool_fetch: bool) -> str:
 
 
 def _note_tools(
-    patient_store: PatientStore | None, tool_fetch: bool, document_id: str | None
+    patient_store: PatientStore | None,
+    tool_fetch: bool,
+    document_id: str | None,
+    allowlist: tuple[str, ...] = EXTRACTION_ALLOWLIST,
 ) -> list:
     """The allowlist, built once for both agents: `read_note` scoped to the
-    document under review, or nothing (REQ-53, T-66)."""
+    document under review, or nothing (REQ-53, T-66). The quote agent passes
+    its own allowlist constant — the same one tool — so the two leaves share
+    the builder and each names what it may reach (D122)."""
     if not tool_fetch:
         return []
     if patient_store is None:
@@ -165,7 +170,7 @@ def _note_tools(
             "reader's scope is fixed in Python before the run, not parsed "
             "out of whatever id the model asks for (T-66, D66)"
         )
-    return build_note_reader(patient_store, document_id).allowlist(*EXTRACTION_ALLOWLIST)
+    return build_note_reader(patient_store, document_id).allowlist(*allowlist)
 
 
 def build_extraction_agent(
@@ -386,48 +391,17 @@ def native_schema_enabled(model: str) -> bool:
     return bool(Gemini(model=model).capabilities.output_schema_and_tools)
 
 
-class AdkExtractionRunner:
-    """`ExtractionRunner` over `google-adk` 2.8.0 (REQ-52, T-62).
+class _AdkRuns:
+    """How an ADK leaf is invoked: one agent, one fresh session, one message,
+    and what it cost — shared by the extraction runner and the quote runner
+    (T-98, D122). A pure move of four methods out of `AdkExtractionRunner`,
+    bodies unchanged; the subclass supplies `_llm`, `_client`, `_model_name`,
+    `_app_name` and `_max_llm_calls`.
 
-    One fresh session per note. Not `run_debug`, whose shared default session id
-    would carry note N-1 into note N's context — the spike found that and D17
-    recorded it.
-
-    Raises `ExtractionOutputError` on no payload, unparseable output, or a payload
-    the schema rejects. **It never returns a zero-event result to signal a
-    failure**, because a note that extracts nothing leaks no REQ-9 traps and
-    contributes no false positives, so a transport error would score as flawless
-    extraction — the trap the spike documents in writing.
+    Failures are classified as `ExtractionOutputError` because that is the
+    vocabulary these methods were measured with; a runner for another payload
+    shape re-raises them under its own enum, member for member.
     """
-
-    name = "adk"
-
-    def __init__(
-        self,
-        client: Any = None,
-        patient_store: PatientStore | None = None,
-        tool_fetch: bool = False,
-        model: str = PINNED_MODEL,
-        llm: Any = None,
-        max_llm_calls: int = DEFAULT_MAX_LLM_CALLS,
-        app_name: str = "pa_agent",
-    ) -> None:
-        self._tool_fetch = tool_fetch
-        self._max_llm_calls = max_llm_calls
-        self._app_name = app_name
-        self._patient_store = patient_store
-        self._model_name = model
-        self._llm = llm
-        self._client = client
-        self._counter = 0
-
-    @property
-    def model(self) -> str:
-        return self._model_name
-
-    @property
-    def tool_fetch(self) -> bool:
-        return self._tool_fetch
 
     def _model_argument(self) -> Any:
         """A `BaseLlm` when one is available, else the pinned model name.
@@ -694,3 +668,47 @@ class AdkExtractionRunner:
                 "not an object",
             )
         return value
+
+
+class AdkExtractionRunner(_AdkRuns):
+    """`ExtractionRunner` over `google-adk` 2.8.0 (REQ-52, T-62).
+
+    One fresh session per note. Not `run_debug`, whose shared default session id
+    would carry note N-1 into note N's context — the spike found that and D17
+    recorded it.
+
+    Raises `ExtractionOutputError` on no payload, unparseable output, or a payload
+    the schema rejects. **It never returns a zero-event result to signal a
+    failure**, because a note that extracts nothing leaks no REQ-9 traps and
+    contributes no false positives, so a transport error would score as flawless
+    extraction — the trap the spike documents in writing.
+    """
+
+    name = "adk"
+
+    def __init__(
+        self,
+        client: Any = None,
+        patient_store: PatientStore | None = None,
+        tool_fetch: bool = False,
+        model: str = PINNED_MODEL,
+        llm: Any = None,
+        max_llm_calls: int = DEFAULT_MAX_LLM_CALLS,
+        app_name: str = "pa_agent",
+    ) -> None:
+        self._tool_fetch = tool_fetch
+        self._max_llm_calls = max_llm_calls
+        self._app_name = app_name
+        self._patient_store = patient_store
+        self._model_name = model
+        self._llm = llm
+        self._client = client
+        self._counter = 0
+
+    @property
+    def model(self) -> str:
+        return self._model_name
+
+    @property
+    def tool_fetch(self) -> bool:
+        return self._tool_fetch

@@ -531,6 +531,24 @@ membership in that set's declared system, and it changes nothing. A row that
 declares no such code — REQ-62's `unsourced_reason` — reports an empty list and
 the reason it is empty, never an empty list alone. *(T-97, D119)*
 
+**REQ-67** Every yellow suggestion carries a chart span the anchorer located
+by searching the model's verbatim quote and the validator accepts by slicing
+the source. A quote the anchorer refuses — after the bounded verbatim re-ask
+(REQ-56) — is dropped and recorded as refused, and the candidate is red, never
+yellow; a yellow the blind verifier rejects is red and says so; the model's
+own offsets are recorded and never trusted (D18). Checked at unit level
+through the anchorer's real refusal on a hand-written note (D65's shape); the
+committed corpus cannot produce a yellow until `T-110` (D120). *(T-98, D122)*
+
+**REQ-68** The review's model turn is measured, recorded, replayed and counted
+like every other model call: a `CallMetrics` per turn on a `RunTrace` per note
+consulted, the re-ask included (D71); recorded per note keyed by the note's
+sha256 under `eval/history/`, on both tiers and for each runner; replayed by
+`RecordedQuoteRunner` in every gate for zero calls; and budgeted by an eval
+row's `max_review_model_calls`, reported apart from determination cost. A
+changed instruction, condition list or schema is a new recording (D45).
+*(T-98, D122)*
+
 ---
 
 ## 6. Edge cases
@@ -807,7 +825,7 @@ instance above was one run's behaviour and the mechanism is the standing
 answer to its recurrence. What it cannot recover is a claim the model never
 quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
-### P3 — Fourteen patients, nine documents, twenty-seven cases *(was six, five, fifteen)*
+### P3 — Fourteen patients, nine documents, twenty-eight cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
 than a percentage point in every table. A precision of 1.000 over twenty-one
@@ -829,7 +847,9 @@ over fourteen bundles and nine documents *(D114)*: the third practice's
 Synthea chart, two declared clones of it, and two documents from a third
 contractor. Since T-97 it is twenty-seven rows *(D119)*: the medical-history
 review's three, on charts the set already held, one of them carrying two
-declared resources. More
+declared resources; since T-98, twenty-eight *(D122)*: `H4`, the review's
+red on the one note-bearing chart with a candidate, replaying six quote
+recordings that measured no passage for any pair. More
 patients is the decision D120 took: growth rides with a version that
 re-measures anyway — v1.6's round — never as a task of its own.
 
@@ -1154,13 +1174,16 @@ measurement script in `EXCLUDED`.
   against the governing tree's value sets and changes nothing. It compares the
   codes a chart carrying the condition would carry; the row's ICD-10 code
   matches no value set in this corpus, in either direction *(D119)*.
-- Every yellow suggestion carries a verified span; a suggestion whose quote
-  fails to anchor is red, never yellow. **Unminted until `T-98`**, which
-  measures the quote. The measured yellow itself is v1.6's *(D120)*; whether
-  `T-98` mints this at unit level or leaves it to that round is `T-98`'s
-  entry to say.
-- The model turn is recorded, replayed and counted like every other.
-  **Unminted until `T-98`**, for the same reason.
+- **REQ-67**, minted by `T-98`. Every yellow suggestion carries a verified
+  span; a suggestion whose quote fails to anchor is red, never yellow, and
+  one the verifier rejects is red and says so. Minted at unit level through
+  the anchorer's real refusal on a hand-written note (D65's shape), because a
+  statement is minted by the task whose close checks it *(D109)*; the
+  measured yellow itself is v1.6's *(D120, D122)*.
+- **REQ-68**, minted by `T-98`. The model turn is recorded, replayed and
+  counted like every other — six recordings, three runners on two tiers,
+  replayed by every gate for zero calls, and budgeted by the eval row apart
+  from determination cost *(D122)*.
 
 **The two worked examples above survived the source check, one of them with
 its drug changed** *(T-96, D118)*. The steroid pairing is sourceable end to

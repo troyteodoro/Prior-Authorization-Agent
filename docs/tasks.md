@@ -17,10 +17,22 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-98`, row 3 of `v1.3` in `Roadmap after v1.1` below** —
-the model's note quotes, recorded and anchored, and the eval row `H4`: red on
-a note-bearing chart with the quotes consulted, because no committed note can
-produce a yellow and the measured yellow is v1.6's *(D120)*.
+**What to do next: `T-99`, row 4 of `v1.3` in `Roadmap after v1.1` below** —
+the CLI surface: `--suggest` emits the `icd_suggestions` block beside the
+verdicts, which are unchanged, and A11's suggestion-precision section lands
+in `eval/report.md`.
+**`T-98` closed row 3** *(D122)*: the review's model turn, on every runner
+and both tiers. `pa_agent/quotes.py` is a fourth port in the first three's
+shape and `history.run_review` consults it once per note for every table
+condition by display — never by drug, code or colour — then hands any yellow
+to Article V as a `(candidate, quotes)` claim and demotes a rejection to red
+that says so. T-89's re-ask core was parameterised rather than copied, and
+both direct extraction recordings re-derive byte for byte under it. Six
+recordings in `eval/history/`, twelve notes each with the clone replayed by
+content, measured **0 of 60** `(note, condition)` pairs with any passage
+returned; `H4` reads **red with both notes consulted** for two turns and no
+verifier claim, and the verifier recording stays at 38 a tier. It minted
+**REQ-67** and **REQ-68**; the measured yellow is `T-110`'s.
 **`T-128`, off the path, closed** *(D121)*: `tests/test_readme_structure.py`,
 which `T-126`'s exit named and no commit had added — `pytest` on the path
 returned 4. The README's diagram is now parsed and compared to
@@ -250,7 +262,7 @@ table; the tri-state is Python; the model quotes the note and nothing else.
 |---|---|---|---|---|
 | 1 | the knowledge table and its sources | `T-96` | **closed** (D118) | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test. **Five rows, not the six planned**: warfarin's label states no hypotension and clopidogrel's states aplastic anemia, so §11's anticoagulant example is written against **apixaban** *(D118)* |
 | 2 | deterministic candidates and the tri-state | `T-97` | **closed** (D119) | `history.py` and the knowledge port; eval rows `H1`–`H3` — green via a structured signal, **silent because the chart already codes the condition**, red with nothing; `run_eval.py` green. **Rewritten at open** from "eval rows E14–E16 … yellow via a note quote": a yellow is a model measurement and belongs to row 3, and no chart in the corpus could produce a green without declared data *(D119)*. Ids are `H`-prefixed because these rows are outside §6, as NP1, J1, RA1–RA3 and US1–US4 are |
-| 3 | note quotes, recorded and anchored | `T-98` | pending | recording committed on both tiers, every quote anchored or recorded as refused, the model turn counted; the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today — **red with the quotes consulted**, the recording being the proof the model looked; **zero new verifier claims**, because a red cites nothing; every gate green. **Rewritten before open** from "gains row 2's yellow … verifier claims added and re-measured": no committed note mentions a table drug, and a note edit re-measures six extraction recordings, so the measured yellow is `T-110`'s *(D120)* |
+| 3 | note quotes, recorded and anchored | `T-98` | **closed** (D122) | recording committed on both tiers, every quote anchored or recorded as refused, the model turn counted; the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today — **red with the quotes consulted**, the recording being the proof the model looked; **zero new verifier claims**, because a red cites nothing; every gate green. **Rewritten before open** from "gains row 2's yellow … verifier claims added and re-measured": no committed note mentions a table drug, and a note edit re-measures six extraction recordings, so the measured yellow is `T-110`'s *(D120)* |
 | 4 | the CLI surface | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph |
 
 ### v1.4 — Sessions and intake, headless
@@ -2379,6 +2391,109 @@ and a test asserts the CLI still emits no suggestions block.
 **What it mints.** REQ-63 through REQ-66 — the four of v1.3's statements whose
 checks land at this close. *Every yellow carries a verified span* and *the model
 turn is recorded and counted* stay §11 statements until `T-98` *(D109)*.
+
+---
+
+### `[x] T-98` Note quotes, recorded and anchored
+
+**REQ:** 67, 68 · **Depends:** T-97 · **Blocks:** T-99, T-110 ·
+**Decided by:** D122 · **Gates:** A11 (third of four rows) ·
+**Timebox:** two days plus six measurement rounds
+**Status:** **closed** (D122) — opened and closed 2026-09-22; the exit ran
+green and every gate with it, on six new recordings and with every
+extraction, agentic and verifier recording untouched. Row 3 of `v1.3`, as
+D120 rewrote it: the model's note quotes, recorded on both tiers and
+anchored or recorded as refused; the eval row `H4` on `bc6748d3` **red with
+the quotes consulted**; zero new verifier claims.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_quotes.py tests/test_quote_recording.py \
+      tests/test_adk_quote_agent.py tests/test_quote_measurement.py \
+      tests/test_history.py tests/test_reask.py tests/test_extraction.py \
+      tests/test_adk_agent.py tests/test_adk_measurement.py tests/test_verifier.py \
+      tests/test_tier.py tests/test_planes.py tests/test_build_report.py -q --color=no \
+ && ./venv/bin/python scripts/run_extraction.py --rescore \
+ && ./venv/bin/python scripts/run_extraction.py --tier vertex --rescore \
+ && ./venv/bin/python scripts/run_quote_measurement.py --rescore \
+ && ./venv/bin/python scripts/run_quote_measurement.py --tier vertex --rescore \
+ && ./venv/bin/python scripts/run_adk_quote_measurement.py --rescore \
+ && ./venv/bin/python scripts/run_adk_quote_measurement.py --tier vertex --rescore \
+ && ./venv/bin/python scripts/run_adk_quote_measurement.py --tool-fetch --rescore \
+ && ./venv/bin/python scripts/run_adk_quote_measurement.py --tool-fetch --tier vertex --rescore \
+ && git diff --exit-code -I '"rescored_at"' -- eval/extraction eval/history \
+ && git checkout -- eval/extraction eval/history \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: the generalised re-ask reproduces both direct extraction
+recordings byte for byte except their rescore timestamp; all six quote
+recordings — direct, ADK inline and ADK tool-fetch, each on AI Studio and on
+Vertex — re-hash every note, re-anchor every recorded quote from the raw
+payload, re-validate every span and stamp the pin, the prompt version, the
+tier and the table's row list, for zero model calls; `H4` is `PASS` — one red
+suggestion citing nothing, both notes consulted, every turn counted against
+its own budget; the verifier recording still holds 38 claims a tier; the
+report carries the quote-consultation account and `--verify` recomputes it;
+every gate is green.
+
+**What it deliberately does not build.** `--suggest` and A11's precision
+section (`T-99`); a yellow on a committed note and the history verifier's
+recording at `eval/verifier/history_results.json` (`T-110`, D120); a
+run-to-run stability sample (`T-110`'s option, D120); a fourth drawn port in
+the README's diagram (D121 — the review sits beside the graph).
+
+**What it delivers.** `pa_agent/quotes.py` — `QUOTE_INSTRUCTION`,
+`format_effects` (displays only), `QuoteAnswers`, `QUOTE_PROMPT_VERSION`,
+`build_quote_result`, `consult`, and the `QuoteRunner` port with its direct,
+recorded and null runners; `pa_agent/agent/quote_agent.py` — `AdkQuoteRunner`
+in both modes over the `_AdkRuns` mixin lifted verbatim out of
+`AdkExtractionRunner`; the re-ask core parameterised by `build`, `locate` and
+`prompt_version` with extraction defaults resolved at call time, and
+`extract()`'s two turn closures lifted into `direct_first_turn` and
+`direct_reask_turn` for both leaves; `history.candidate_rows`, `HistoryRun`
+and `run_review`; `IcdSuggestion.verifier_rejected`;
+`verifier.build_history_claim_payload`, `HISTORY_INSTRUCTION`,
+`HISTORY_PROMPT_VERSION` and `LiveVerifierRunner(instruction=)`; the two
+measurement scripts, both with `--rescore`, in `check_gates.EXCLUDED`; the
+harness's `_recorded_quote_runner`, `REVIEW_MODEL_CALLS_EXCEEDED` and the
+review's cost on every row; `H4`; the report's *Quote consultation* section
+and A6's scope note; six recordings; and four test files.
+
+**Closed by D122.** Every one of the six recordings measured **0 of 60**
+`(note, condition)` pairs with any passage returned: the model answered every
+condition with an empty list on every note, on both tiers, through all three
+runners, so nothing anchored, nothing was refused and the re-ask fired on
+nothing. Model turns 12 / 12 / 12 / 12 / 24 / 24 (direct AI Studio and
+Vertex, ADK inline both tiers, ADK tool-fetch both tiers — a tool round trip
+is two calls), input tokens 6,879 / 10,935 / 7,859 / 11,903 / 25,303 /
+24,535. `H4` replays two turns (986 in, 240 out), the eval set reads 28 of 28
+`PASS` on the adopted baseline, A5 moves to 12/28 = 0.429, A6 does not move,
+and the verifier recording holds 38 claims a tier because `H4` shares E8's
+claim key. Both direct extraction recordings re-derived byte for byte under
+the generalised re-ask core, checked before the first edit and at the close.
+The suite collects 1373 tests across 47 files.
+
+Mutations caught, sixteen of sixteen, each restored from memory and
+`__pycache__` cleared: `build_quote_result` citing the model's offsets
+instead of anchoring; the drop reason renamed so the re-ask targets nothing;
+`run_review` answering `{}` with no runner; `run_review` consulting only the
+first note; the recorded runner skipping the sha256 check; the recorded
+runner ignoring `rows_asked`; `format_effects` rendering the row id; the
+re-ask core's `locate` default resolving to something other than the
+extraction locator; `apply_verbatim` writing an unasked path; the review
+budget read off the determination's calls (the scorer's self-check, 1 of 32);
+the history claim carrying the ICD-10 code; a rejected yellow staying yellow;
+the report section reading the stored aggregate; the ADK quote agent
+allowlisting a second tool; an unknown effect silently ignored; and
+`QuoteAnswers.effects` given a default. None survived. The corpus was
+restored from git and `select_patients.py --verify` run before the exit.
+
+**What it mints.** REQ-67 and REQ-68, the last two of v1.3's statements
+*(D109, D122)*.
 
 ---
 

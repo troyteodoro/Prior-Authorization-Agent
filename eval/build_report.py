@@ -156,11 +156,14 @@ def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
 
     runner = harness._recorded_runner()
     verifier = harness._recorded_verifier()
-    if runner is None or verifier is None:
+    # T-98 (D122): the review's quote turns, replayed like the other two.
+    quote_runner = harness._recorded_quote_runner()
+    if runner is None or verifier is None or quote_runner is None:
         raise SystemExit(
-            "eval/extraction/results.json or eval/verifier/results.json is "
-            "missing; the report cannot be built without the recordings it "
-            "reads. Both are committed — this is a checkout problem."
+            "eval/extraction/results.json, eval/verifier/results.json or "
+            "eval/history/results.json is missing; the report cannot be built "
+            "without the recordings it reads. All three are committed — this "
+            "is a checkout problem."
         )
 
     cache: dict[Any, Any] = {}
@@ -175,6 +178,7 @@ def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
             resolve_document,
             verifier,
             knowledge_store,
+            quote_runner,
         )
         for case in cases
     ]
@@ -631,6 +635,160 @@ def _anchoring_section() -> list[str]:
         "never by the model — and across these recordings it was asked about "
         f"{asked} quote{'s' if asked != 1 else ''} and recovered {got} "
         "(D103).",
+        "",
+    ]
+    return lines
+
+
+#: T-98's six quote recordings (D122): runner, tier, file. Read for their
+#: per-note records; the stored `aggregate` blocks are not consulted (T-71).
+HISTORY_RECORDINGS: tuple[tuple[str, str, str], ...] = (
+    ("direct", "ai_studio", "history/results.json"),
+    ("direct", "vertex", "history/results_vertex.json"),
+    ("ADK inline", "ai_studio", "history/adk_results_inline.json"),
+    ("ADK inline", "vertex", "history/adk_results_inline_vertex.json"),
+    ("ADK tool-fetch", "ai_studio", "history/adk_results_tool_fetch.json"),
+    ("ADK tool-fetch", "vertex", "history/adk_results_tool_fetch_vertex.json"),
+)
+
+
+def _quote_rows(recordings: list[tuple[str, str, dict[str, Any]]]) -> list[dict[str, Any]]:
+    """One row per quote recording, recomputed from the per-note records.
+
+    `pairs` is notes × conditions asked; a pair is *fabricated* when the model
+    returned a passage for it and none anchored after the re-ask, and
+    *anchored* when one did — which on this corpus would be a yellow nothing
+    was supposed to produce (D120). Every figure is summed from the notes'
+    own `score`, `reask` and `trace` blocks, never read from the stored
+    aggregate (T-71).
+    """
+    rows = []
+    for label, tier, payload in recordings:
+        scored = [n for n in payload["notes"] if n.get("score")]
+        calls, tokens_in, tokens_out, wall = _turn_totals(payload)
+        reasks = [n["reask"] for n in scored if n.get("reask")]
+        refused = [
+            {
+                "note_id": n["note_id"],
+                "quote": " ".join(str(d.get("quote", "")).split()),
+            }
+            for n in scored
+            for d in n["score"].get("dropped") or []
+            if d.get("reason") == "effect_quote_unanchorable"
+        ]
+        conditions = len(payload.get("rows_asked") or [])
+        rows.append(
+            {
+                "label": label,
+                "tier": tier,
+                "file": payload.get("file", ""),
+                "notes": len(scored),
+                "failed": len(payload["notes"]) - len(scored),
+                "conditions": conditions,
+                "pairs": len(scored) * conditions,
+                "pairs_fabricated": sum(n["score"]["pairs_fabricated"] for n in scored),
+                "pairs_anchored": sum(n["score"]["pairs_anchored"] for n in scored),
+                "quotes_returned": sum(n["score"]["quotes_returned"] for n in scored),
+                "quotes_anchored": sum(n["score"]["quotes_anchored"] for n in scored),
+                "quotes_refused": sum(n["score"]["quotes_refused"] for n in scored),
+                "reask_targets": sum(len(b.get("targets") or []) for b in reasks),
+                "reask_recovered": sum(len(b.get("recovered") or []) for b in reasks),
+                "model_calls": calls,
+                "input_tokens": tokens_in,
+                "output_tokens": tokens_out,
+                "wall_ms": wall,
+                "refused": refused,
+            }
+        )
+    return rows
+
+
+def _quote_section() -> list[str]:
+    """T-98 / REQ-67, REQ-68: the medical-history review's one model turn,
+    on every runner and tier, and what it returned (D122)."""
+    recordings: list[tuple[str, str, dict[str, Any]]] = []
+    for label, tier, relative in HISTORY_RECORDINGS:
+        path = EVAL_DIR / relative
+        if not path.exists():
+            raise SystemExit(
+                f"eval/{relative} is missing; the quote recordings are committed "
+                "and this section reads all six. This is a checkout problem."
+            )
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["file"] = Path(relative).name
+        recordings.append((label, tier, payload))
+    rows = _quote_rows(recordings)
+
+    lines = [
+        "## Quote consultation (T-98, REQ-67, REQ-68, D122)",
+        "",
+        "The medical-history review's one model turn. Each note-bearing chart's "
+        "notes are consulted for verbatim passages documenting each "
+        "knowledge-table condition — five, named by display and never by drug, "
+        "code or colour — and every passage is anchored by searching the note "
+        "for it (D18) or refused; a refused quote is re-asked once for its "
+        "verbatim text (REQ-56) and then dropped, and a candidate with no "
+        "anchored passage is red, never yellow (REQ-67). No committed note "
+        "documents any of the five conditions (D120), so the figure these "
+        "recordings yield is a **fabrication rate**: `(note, condition)` pairs "
+        "for which the model returned a passage that did not anchor. A pair "
+        "that *anchored* would be a yellow this corpus was not supposed to "
+        "produce, and the gate stops on it. Twelve notes are measured — the "
+        "declared clone's two are byte-identical to its source's and replay by "
+        "content — and every turn is counted (REQ-68, D71). Recomputed from the "
+        "per-note records of each committed recording; the stored aggregates "
+        "are not read (T-71). The AI Studio direct recording is the one every "
+        "gate replays, and `H4` reads red through it.",
+        "",
+        "| Runner | Tier | Notes | Model turns | Input tokens | Output tokens "
+        "| Quotes returned | Anchored | Refused | Re-asked | Recovered | Pairs "
+        "| Fabricated pairs |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for row in rows:
+        failed = f" ({row['failed']} failed)" if row["failed"] else ""
+        lines.append(
+            f"| {row['label']} (`{row['file']}`) | {row['tier']} | {row['notes']}{failed} "
+            f"| {row['model_calls']} | {row['input_tokens']} | {row['output_tokens']} "
+            f"| {row['quotes_returned']} | {row['quotes_anchored']} "
+            f"| {row['quotes_refused']} | {row['reask_targets']} | {row['reask_recovered']} "
+            f"| {row['pairs']} | **{row['pairs_fabricated']}** |"
+        )
+    lines.append("")
+
+    refused = [(row, r) for row in rows for r in row["refused"]]
+    if refused:
+        lines.append("**Refused passages, named.** Each is a passage the model "
+                     "returned for a condition and Python could not locate in "
+                     "the note, after the re-ask.")
+        lines.append("")
+        for row, r in refused:
+            quote = r["quote"]
+            shown = quote if len(quote) <= 80 else quote[:77] + "…"
+            lines.append(f"- {row['label']} ({row['tier']}), note `{r['note_id']}`: *{shown}*")
+        lines.append("")
+    else:
+        lines.append(
+            "**No passage was returned for any pair in any recording.** The "
+            "model answered every condition with an empty list on every note, "
+            "on both tiers and through all three runners; nothing was anchored, "
+            "nothing was refused, and the re-ask was asked about nothing."
+        )
+        lines.append("")
+
+    anchored = sum(row["pairs_anchored"] for row in rows)
+    lines += [
+        "**What red means here.** `H4`'s candidate — lisinopril and renal "
+        "impairment on a chart with no creatinine and no kidney code — is red "
+        "because both of its notes were consulted and neither holds a passage "
+        "for the condition: *nothing on the chart*, proved by the recording "
+        "rather than assumed (D122). It cites nothing and adds no verifier "
+        "claim. A red that was a yellow the blind verifier rejected would say "
+        "so on the suggestion (`verifier_rejected`); none is. The review's "
+        "turns are counted beside the determination's, never in them: A6 "
+        "below is determination cost only, and each eval row that labels a "
+        "review carries its own `max_review_model_calls`. Pairs anchored across "
+        f"all six recordings: {anchored}.",
         "",
     ]
     return lines
@@ -1347,6 +1505,12 @@ def _cost_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
         "figures that were each individually real (D71). These totals sum the "
         "full list.",
         "",
+        "**Scope.** These totals are determination cost only. The "
+        "medical-history review's quote turns (T-98) enter no determination's "
+        "`metrics` — the review sits beside the determination, not inside it "
+        "(D119, D122) — and are accounted in *Quote consultation* above, per "
+        "runner and tier, and on each eval row that labels a review.",
+        "",
     ]
 
 
@@ -1605,6 +1769,10 @@ def render() -> str:
         *_abstention_section(results, cache),
         *_sweep_section(),
         *_recall_section(cache),
+        # T-98 (D122): beside the determination's cost, and before it, so the
+        # cost section's scope note can point up at it. Not between the
+        # anchoring and tier sections, which describe one tier and pair two.
+        *_quote_section(),
         *_cost_section(results, cache),
         *_compatibility_section(),
         *_caveats_section(),

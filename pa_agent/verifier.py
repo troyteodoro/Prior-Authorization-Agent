@@ -72,6 +72,14 @@ PROMPT_VERSION = "verifier-v6"
 
 VERIFIER_TEMPERATURE = 0.0
 
+#: The medical-history review's claim (T-98, D122): a candidate condition and
+#: the note passages quoted for it. Its own version because it is its own
+#: instruction and its own recording — `eval/verifier/history_results.json`,
+#: which T-110 measures; nothing produces a yellow on the committed corpus, so
+#: v1 is built, wired and unmeasured, and `RecordedVerifierRunner` raises on
+#: any digest it has not got rather than defaulting a yellow to accepted.
+HISTORY_PROMPT_VERSION = "history-verifier-v1"
+
 #: What the model is asked, verbatim. The payload follows as JSON; the model
 #: never sees more than `build_claim_payload` put there.
 INSTRUCTION = (
@@ -112,6 +120,30 @@ INSTRUCTION = (
     "not evidence about this criterion's subject at all — a prescription "
     "quoted for a criterion about diagnoses, or a passage of prose quoted "
     "where the criterion is about the coded record.\n\n"
+    "Respond with JSON: {\"accept\": true|false, \"reason\": \"one sentence\"}."
+)
+
+#: What the model is asked about a history candidate, verbatim. One condition,
+#: its passages, and nothing else — no drug, no code, no colour, no chart —
+#: because the question is whether the passages document the patient having
+#: the condition, and every other fact would be reasoning by another door.
+HISTORY_INSTRUCTION = (
+    "You are a blind verifier for a prior-authorization system. You will be "
+    "given exactly one claim: a clinical condition (its name and the title of "
+    "the diagnosis code it would be recorded under), and the verbatim text "
+    "quoted from a clinical note as documentation that the patient has that "
+    "condition. You see nothing else: no medication list, no laboratory "
+    "values, no other conditions, no reasoning, no chart.\n\n"
+    "Your job is citation fidelity, not diagnosis: accept the claim if every "
+    "quoted passage documents that this patient has this condition — a "
+    "finding, an assessment, a diagnosis, or a result the note itself calls "
+    "abnormal. Reject it if any passage is about something else: a different "
+    "condition, a medication that can cause the condition, a plan to monitor "
+    "or screen for it, a family history of it, a normal result, or the "
+    "condition named as a risk, a possibility, or something to rule out. "
+    "Never infer the condition from a number, never apply a threshold, and "
+    "never judge whether the condition is correctly coded: the code was "
+    "chosen by a reviewed table and is not yours to re-adjudicate.\n\n"
     "Respond with JSON: {\"accept\": true|false, \"reason\": \"one sentence\"}."
 )
 
@@ -184,6 +216,42 @@ def build_claim_payload(
         "verdict": verdict,
         "quotes": list(quotes),
     }
+
+
+def build_history_claim_payload(candidate, quotes: list[str]) -> dict:
+    """One medical-history claim, and everything the verifier will ever see
+    about it (T-98, D122): the candidate's condition by display and the title
+    of its ICD-10 code, and the passages sliced mechanically from the note.
+
+    `candidate` is an `IcdSuggestion` or a `MedicationEffectRow` — both carry
+    the two fields read here. Excludes, deliberately: the row id (it embeds the
+    drug), the medication and ingredient (a prescription is never evidence of
+    the condition, D119), the colour (the verifier does not grade evidence),
+    the signal and any measurement (a threshold is Python's), the ICD-10 code
+    itself (a code invites re-adjudication of coding), `would_affect`, and
+    every chart fact. The top-level key set differs from a criterion claim's,
+    so no history digest can collide with one of the criterion recording's.
+    """
+    return {
+        "candidate": {
+            "effect": candidate.effect_display,
+            "icd10_title": candidate.icd10_title,
+        },
+        "quotes": list(quotes),
+    }
+
+
+def _describe(payload: dict) -> str:
+    """What a miss is about, for the message: a criterion claim names its
+    criterion and verdict; a history claim names its candidate (D122)."""
+    if "criterion" in payload:
+        return (
+            f"criterion {payload.get('criterion', {}).get('id', '?')}, "
+            f"verdict {payload.get('verdict', '?')}"
+        )
+    if "candidate" in payload:
+        return f"candidate {payload.get('candidate', {}).get('effect', '?')}"
+    return "a payload of unknown shape"
 
 
 def claim_digest(payload: dict) -> str:
@@ -284,17 +352,26 @@ class LiveVerifierRunner:
 
     name = "live"
 
-    def __init__(self, client, model: str = VERIFIER_MODEL) -> None:
+    def __init__(
+        self, client, model: str = VERIFIER_MODEL, *, instruction: str = INSTRUCTION
+    ) -> None:
         self._client = client
         self._model = model
+        # The criterion instruction by default, so the measured path is
+        # byte-identical; `HISTORY_INSTRUCTION` for a history claim (D122).
+        self._instruction = instruction
 
     @property
     def model(self) -> str:
         return self._model
 
+    @property
+    def instruction(self) -> str:
+        return self._instruction
+
     def run(self, payload: dict) -> VerifierAnswer:
         contents = (
-            f"{INSTRUCTION}\n\nCLAIM:\n"
+            f"{self._instruction}\n\nCLAIM:\n"
             f"{json.dumps(payload, ensure_ascii=False, indent=1)}"
         )
         started = time.perf_counter()
@@ -396,8 +473,7 @@ class RecordedVerifierRunner:
             raise VerifierOutputError(
                 VerifierFailure.NOT_RECORDED,
                 f"no recorded verification for claim {digest[:12]} "
-                f"(criterion {payload.get('criterion', {}).get('id', '?')}, "
-                f"verdict {payload.get('verdict', '?')}); run "
+                f"({_describe(payload)}); run "
                 "`python scripts/run_verifier_measurement.py` (it spends model "
                 "calls) or pass a live runner",
             )

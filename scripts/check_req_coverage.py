@@ -61,6 +61,11 @@ MAPPING: dict[str, str] = {
     "REQ-64": "tests/test_history.py",
     "REQ-65": "tests/test_history.py",
     "REQ-66": "tests/test_history.py",
+    # T-98 (D122). A refused quote is red, never yellow — checked through the
+    # anchorer's real refusal; and the review's model turn is recorded,
+    # replayed and counted, checked over all six quote recordings.
+    "REQ-67": "tests/test_history.py",
+    "REQ-68": "tests/test_quote_recording.py",
     # Extraction
     "REQ-8": "tests/test_extraction.py",
     "REQ-9": "tests/test_extraction.py",

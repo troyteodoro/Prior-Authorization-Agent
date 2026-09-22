@@ -698,3 +698,72 @@ def test_the_direct_aggregate_sums_every_turn(e8_note, e8_paraphrased) -> None:
     assert figures["total_output_tokens"] == 1 + 4
     assert (figures["reask_notes"], figures["reask_targets"], figures["reask_recovered"],
             figures["reask_calls"]) == (1, 1, 1, 1)
+
+
+# --------------------------------------------------------------------------
+# 5. T-98 (D122): one core, two payload shapes — and the extraction defaults
+# --------------------------------------------------------------------------
+
+
+def test_the_reask_core_defaults_to_the_extraction_shape() -> None:
+    """`extract()` and `AdkExtractionRunner.run()` pass no `build`, `locate`
+    or `prompt_version`, so what the core resolves them to when nothing is
+    passed *is* the extraction configuration. Pinned here because every
+    replay that happens to anchor would agree with a core that silently
+    defaulted to the quote shape — the mutation is invisible to a recording
+    and visible only to this line (D122)."""
+    from pa_agent.extraction import _locate, _resolve_reask_defaults
+
+    build, locate, version = _resolve_reask_defaults(None, None, None)
+    assert build is build_result
+    assert locate is _locate
+    assert version == PROMPT_VERSION
+
+
+def test_a_caller_supplied_shape_is_used_and_the_default_is_not(
+    e8_note, e8_paraphrased
+) -> None:
+    """The three parameters are honoured together: a locator that refuses
+    every path means nothing is targeted, so no re-ask fires, and the trace
+    carries the version the caller named rather than the extraction one."""
+    calls: list[str] = []
+
+    def refuse_everything(payload: dict, path: str) -> tuple[dict, str]:
+        calls.append(path)
+        raise KeyError(path)
+
+    def first_turn() -> Turn:
+        return Turn(payload=copy.deepcopy(e8_paraphrased), metrics=[_metric("extraction")])
+
+    def reask_turn(targets: list[dict]) -> Turn:  # pragma: no cover - must not run
+        raise AssertionError("no target can exist when the locator refuses every path")
+
+    def build_and_keep_drops(document_id, text, payload, metrics=None):
+        result = build_result(document_id, text, payload, metrics)
+        # The drop is still there — the locator, not the builder, is what
+        # decides whether it becomes a target.
+        assert any(d.get("path") == E8_PATH for d in result.dropped)
+        return result
+
+    with pytest.raises(KeyError):
+        extract_with_reask(
+            e8_note.document_id, e8_note.text, first_turn, reask_turn,
+            runner_name="shape-under-test", model="fake-under-test",
+            build=build_and_keep_drops, locate=refuse_everything,
+            prompt_version="shape-v0",
+        )
+    assert calls == [E8_PATH], "the caller's locator was asked about the drop"
+
+
+def test_a_caller_supplied_version_is_stamped_on_the_trace(e1_note, e1_payload) -> None:
+    def first_turn() -> Turn:
+        return Turn(payload=copy.deepcopy(e1_payload), metrics=[_metric("extraction")])
+
+    result = extract_with_reask(
+        e1_note.document_id, e1_note.text, first_turn,
+        lambda targets: Turn(payload=None), runner_name="direct",
+        model="fake-under-test", prompt_version="shape-v0",
+    )
+    assert result.trace is not None
+    assert result.trace.prompt_version == "shape-v0"
+    assert result.trace.prompt_version != PROMPT_VERSION

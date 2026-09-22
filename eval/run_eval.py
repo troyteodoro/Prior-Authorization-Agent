@@ -69,6 +69,7 @@ from pa_agent.contracts import (  # noqa: E402
 from pa_agent import history  # noqa: E402
 from pa_agent.determination import NoPolicyResult, determine  # noqa: E402
 from pa_agent.index import DocumentIndex  # noqa: E402
+from pa_agent.quotes import RecordedQuoteRunner  # noqa: E402
 from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
 from pa_agent.verifier import RecordedVerifierRunner  # noqa: E402
 from pa_agent.spans import SpanValidationError  # noqa: E402
@@ -121,6 +122,11 @@ class ReasonClass(str, Enum):
     WRONG_SUGGESTION = "WRONG_SUGGESTION"
     INVALID_SPAN = "INVALID_SPAN"
     MODEL_CALLS_EXCEEDED = "MODEL_CALLS_EXCEEDED"
+    # T-98 (D122): the review's quote turns are budgeted apart from the
+    # determination's calls, because they are counted apart (HistoryRun sits
+    # beside Determination.metrics) and the next action differs — re-measure
+    # the quote recording, not the extraction or verifier ones.
+    REVIEW_MODEL_CALLS_EXCEEDED = "REVIEW_MODEL_CALLS_EXCEEDED"
     UNEXPECTED_EXCEPTION = "UNEXPECTED_EXCEPTION"
     CASE_UNSPECIFIED = "CASE_UNSPECIFIED"
     NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
@@ -144,6 +150,13 @@ class CaseResult:
     # Outside `key` below: the labels already pin every outcome through
     # PASS/FAIL, so the baseline would widen without discriminating more.
     outcome: str | None = None
+    # T-98 (REQ-68, D122): what the medical-history review cost, apart from
+    # the determination — the quote turns and any verification. None on a row
+    # that labels no review. Outside `key` for the T-20 reason.
+    review_model_calls: int | None = None
+    review_input_tokens: int | None = None
+    review_output_tokens: int | None = None
+    review_wall_time_ms: float | None = None
 
     @property
     def key(self) -> tuple[str, str | None]:
@@ -172,6 +185,10 @@ class CaseResult:
             "output_tokens": self.output_tokens,
             "wall_time_ms": self.wall_time_ms,
             "outcome": self.outcome,
+            "review_model_calls": self.review_model_calls,
+            "review_input_tokens": self.review_input_tokens,
+            "review_output_tokens": self.review_output_tokens,
+            "review_wall_time_ms": self.review_wall_time_ms,
         }
 
 
@@ -191,6 +208,7 @@ def score(
     result: Determination | NoPolicyResult,
     resolve_document: Any = None,
     review: Any = None,
+    review_run: Any = None,
 ) -> CaseResult:
     """Compare a determination (or a `NoPolicyResult`) against its label.
 
@@ -211,6 +229,12 @@ def score(
     claims and before the span walk: a suggestion enters no verdict, so it can
     never be the graver finding, and an Article III failure inside one is graver
     than a mislabeled colour and belongs to the walk that reports it.
+
+    `review_run` is the `HistoryRun` the review came from (T-98, D122): what
+    consulting the notes cost, reported on the row apart from the
+    determination's cost and held to the row's own `max_review_model_calls`,
+    checked last — after the determination's budget, for the same reason that
+    budget is checked after everything else.
     """
     case_id = case["case_id"]
     expect = case["expect"]
@@ -244,6 +268,14 @@ def score(
         "output_tokens": determination.total_output_tokens,
         "wall_time_ms": determination.total_wall_time_ms,
     }
+    if review_run is not None:
+        # T-98 (REQ-68, D122): beside the determination's figures, never in them.
+        measured.update(
+            review_model_calls=review_run.model_calls,
+            review_input_tokens=review_run.total_input_tokens,
+            review_output_tokens=review_run.total_output_tokens,
+            review_wall_time_ms=review_run.total_wall_time_ms,
+        )
 
     if expects_no_policy:
         return CaseResult(
@@ -479,6 +511,20 @@ def score(
             **measured,
         )
 
+    # T-98 (REQ-68, D122): the review's own budget, its own reason class.
+    review_budget = expect.get("max_review_model_calls")
+    if review_budget is not None:
+        review_calls = review_run.model_calls if review_run is not None else 0
+        if review_calls > review_budget:
+            return CaseResult(
+                case_id,
+                CaseStatus.FAIL,
+                ReasonClass.REVIEW_MODEL_CALLS_EXCEEDED,
+                f"{review_calls} review model call(s) against a budget of "
+                f"{review_budget}",
+                **measured,
+            )
+
     return CaseResult(case_id, CaseStatus.PASS, None, "", **measured)
 
 
@@ -493,6 +539,23 @@ EVAL_AS_OF = date(2026, 9, 1)
 
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
 VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
+HISTORY_RESULTS = REPO_ROOT / "eval" / "history" / "results.json"
+
+
+def _recorded_quote_runner() -> Any:
+    """T-98's recording as a `QuoteRunner`. Spends nothing (D122).
+
+    `None` when the measurement has not been run — `run_review` then raises
+    `QuoteSourceNotConsulted` on a note-bearing chart, which the harness
+    reports as a failure naming the script, rather than this function
+    inventing an answer (D31, D90).
+    """
+    if not HISTORY_RESULTS.exists():
+        return None
+    recording = json.loads(HISTORY_RESULTS.read_text(encoding="utf-8"))
+    return RecordedQuoteRunner.from_records(
+        recording["notes"], recording["rows_asked"], model=recording.get("model")
+    )
 
 
 def _recorded_verifier() -> Any:
@@ -584,16 +647,18 @@ def _review(
     policy_store: Any,
     patient_store: Any,
     knowledge_store: Any,
+    quote_runner: Any = None,
+    verifier: Any = None,
 ) -> Any:
-    """The medical-history review for one chart, under the tree that answered.
+    """The medical-history run for one chart, under the tree that answered.
 
-    Computed **only for rows that label it**, and that is load-bearing rather
-    than an optimization: `bc6748d3` carries an active lisinopril, no creatinine
-    and notes that mention nothing renal, so its candidate can only be separated
-    from yellow by reading them — and with no quote source the review raises
-    (D90, D119). Two committed rows, E8 and E10b, run through that chart.
-    Reviewing every case would make this gate red today, and the row that
-    fixes it is T-98.
+    Computed **only for rows that label a review**: a row that grades a
+    determination on a note-bearing chart (E8 and E10b on `bc6748d3`) replays
+    no quotes and its determination stays a determination; a row that labels
+    one (`H4` on the same chart) consults the recorded quote runner for zero
+    calls, and the recorded verifier stands behind any yellow (T-98, D122).
+    With no recording on disk the run raises `QuoteSourceNotConsulted` on a
+    note-bearing chart rather than answering red (D90, D119).
     """
     tree = policy_store.get_tree(result.policy_version_id)
     value_sets = {}
@@ -604,7 +669,9 @@ def _review(
                 str(constant.value)
             )
     rows = knowledge_store.get_medication_effect_rows()
-    return history.review(
+    return history.run_review(
+        quote_runner=quote_runner,
+        verifier=verifier,
         patient_id=case["patient_id"],
         policy_version_id=tree.policy_version_id,
         rows=rows,
@@ -633,6 +700,7 @@ def run_case(
     resolve_document: Any = None,
     verifier: Any = None,
     knowledge_store: Any = None,
+    quote_runner: Any = None,
 ) -> CaseResult:
     """Run one labeled case and classify the result.
 
@@ -675,6 +743,7 @@ def run_case(
         )
 
     review = None
+    review_run = None
     if (
         knowledge_store is not None
         and case.get("patient_id")
@@ -682,9 +751,11 @@ def run_case(
         and _labels_a_review(case)
     ):
         try:
-            review = _review(
-                case, result, policy_store, patient_store, knowledge_store
+            review_run = _review(
+                case, result, policy_store, patient_store, knowledge_store,
+                quote_runner, verifier,
             )
+            review = review_run.review
         except Exception as exc:  # noqa: BLE001 — same rule as the handler above
             detail = "".join(
                 traceback.format_exception_only(type(exc), exc)
@@ -693,7 +764,7 @@ def run_case(
                 case_id, CaseStatus.FAIL, ReasonClass.UNEXPECTED_EXCEPTION, detail
             )
 
-    scored = score(case, result, resolve_document, review)
+    scored = score(case, result, resolve_document, review, review_run)
     outcome = (
         NO_POLICY_EXPECTATION
         if isinstance(result, NoPolicyResult)
@@ -732,6 +803,25 @@ def _synthetic_determination(
         outcome=outcome,
         criterion_results=criterion_results or [],
         metrics=metrics or [],
+    )
+
+
+def _synthetic_review_run(calls: int) -> Any:
+    """A `HistoryRun` with `calls` quote turns and no suggestions (T-98)."""
+    from pa_agent.contracts import HistoryReview, RunTrace
+
+    traces = [
+        RunTrace(
+            runner_name="self-check", model="self-check", prompt_version="self-check",
+            document_id=f"self-check/note_{i}.txt", steps=["quotes"],
+            metrics=[CallMetrics(model="self-check", purpose="quotes", input_tokens=1,
+                                 output_tokens=1, wall_time_ms=1.0)],
+        )
+        for i in range(calls)
+    ]
+    return history.HistoryRun(
+        review=HistoryReview(patient_id="self-check", policy_version_id="self-check-v0"),
+        traces=traces,
     )
 
 
@@ -787,6 +877,49 @@ def self_check() -> list[tuple[str, bool, str]]:
             _synthetic_determination(DeterminationOutcome.MET, [metric]),
         ),
         ("FAIL", "WRONG_OUTCOME"),
+    )
+    # T-98 (REQ-68, D122): the review's own budget, checked apart and last.
+    quiet = _synthetic_review_run(calls=0)
+    spent = _synthetic_review_run(calls=2)
+    record(
+        "a review within its own budget scores PASS",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_COVERED", "max_model_calls": 0,
+                                    "max_review_model_calls": 2}),
+            _synthetic_determination(DeterminationOutcome.NOT_COVERED),
+            None, spent.review, spent,
+        ),
+        ("PASS", None),
+    )
+    record(
+        "a review over its own budget scores FAIL/REVIEW_MODEL_CALLS_EXCEEDED",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_COVERED", "max_model_calls": 0,
+                                    "max_review_model_calls": 1}),
+            _synthetic_determination(DeterminationOutcome.NOT_COVERED),
+            None, spent.review, spent,
+        ),
+        ("FAIL", "REVIEW_MODEL_CALLS_EXCEEDED"),
+    )
+    record(
+        "a blown determination budget outranks a blown review budget",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_COVERED", "max_model_calls": 0,
+                                    "max_review_model_calls": 0}),
+            _synthetic_determination(DeterminationOutcome.NOT_COVERED, [metric]),
+            None, spent.review, spent,
+        ),
+        ("FAIL", "MODEL_CALLS_EXCEEDED"),
+    )
+    record(
+        "a review budget with no review run counts zero calls",
+        score(
+            _synthetic_case(expect={"outcome": "NOT_COVERED", "max_model_calls": 0,
+                                    "max_review_model_calls": 0}),
+            _synthetic_determination(DeterminationOutcome.NOT_COVERED),
+            None, quiet.review, None,
+        ),
+        ("PASS", None),
     )
     record(
         "a case with no procedure code is BLOCKED/CASE_UNSPECIFIED",
@@ -1214,6 +1347,9 @@ def print_report(results: list[CaseResult], drift: list[str], baseline_path: Pat
     input_tokens = sum(r.input_tokens or 0 for r in results)
     output_tokens = sum(r.output_tokens or 0 for r in results)
     wall_ms = sum(r.wall_time_ms or 0.0 for r in results)
+    review_calls = sum(r.review_model_calls or 0 for r in results)
+    review_in = sum(r.review_input_tokens or 0 for r in results)
+    review_out = sum(r.review_output_tokens or 0 for r in results)
 
     print()
     print(
@@ -1251,6 +1387,12 @@ def print_report(results: list[CaseResult], drift: list[str], baseline_path: Pat
             f"  ({counts[CaseStatus.BLOCKED]} case(s) BLOCKED, so these totals "
             "cover a subset of the eval set)"
         )
+    # T-98 (REQ-68, D122): the medical-history review's quote turns, apart
+    # from the determination's figures above and never folded into them.
+    print(
+        f"  review model calls spent: {review_calls}"
+        f"  ·  tokens: {review_in} in, {review_out} out"
+    )
     print()
 
     rel = baseline_path.relative_to(REPO_ROOT) if baseline_path.is_relative_to(REPO_ROOT) else baseline_path
@@ -1357,6 +1499,9 @@ def main(argv: list[str] | None = None) -> int:
     # in the harness.
     extraction_runner = _recorded_runner()
     verifier = _recorded_verifier()
+    # T-98 (D122): the review's quote turns, replayed from the same kind of
+    # recording for the same reason.
+    quote_runner = _recorded_quote_runner()
     cache: dict[tuple[Any, ...], Determination | NoPolicyResult] = {}
     results = [
         run_case(
@@ -1369,6 +1514,7 @@ def main(argv: list[str] | None = None) -> int:
             resolve_document,
             verifier,
             knowledge_store,
+            quote_runner,
         )
         for case in cases
     ]

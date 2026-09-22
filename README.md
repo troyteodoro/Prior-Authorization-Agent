@@ -37,7 +37,7 @@ explicit about what it does and does not prove.
 
 **And it is modular enough to sit inside a practice's back office.** The
 application is ports and adapters end to end: three storage ports keep the
-policy, patient and knowledge planes apart, three ports at the model boundary
+policy, patient and knowledge planes apart, four ports at the model boundary
 make every model call swappable and replayable, and the CLI is the single
 place an adapter is constructed — nothing else in the system knows where its
 data comes from. Patient records are standard FHIR bundles, so integrating
@@ -70,8 +70,8 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1 and v1.2 are all complete.**
-80 of 80 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1240 tests (58 skip).
+81 of 81 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A10 holding. The suite collects 1373 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -104,8 +104,13 @@ gates A1–A10 holding. The suite collects 1240 tests (58 skip).
   corpus could produce a green suggestion at all** — every candidate whose lab
   crossed already carried the code, and every uncoded one had never been
   measured — which is a fact about real charts worth more than the row it cost.
-  The model's note quotes are `T-98`; the measured yellow is v1.6's, because
-  no committed note mentions a table drug and a new note re-measures six
+  `T-98` added the model's one turn: every note-bearing chart's notes are
+  consulted for verbatim passages documenting each table condition — named by
+  display, never by drug — anchored by search or refused, on three runners
+  and two tiers; no committed note holds one, so the six recordings measure a
+  **fabrication rate of 0 of 60** pairs each, and `H4` reads **red with the
+  quotes consulted**, proved by a recording rather than assumed *(D122)*. The
+  measured yellow is v1.6's, because a new note re-measures six extraction
   recordings *(D120)*.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
@@ -213,13 +218,13 @@ in any gate* had been pinned against two of the three scripts that spend them
 
 | Gate | Result |
 |---|---|
-| A1 | 27 labeled cases, every spec §6 edge case present |
+| A1 | 28 labeled cases, every spec §6 edge case present |
 | A2 | precision **1.000** on `MET`, against a **0.420** base rate and an always-`MET` baseline scoring exactly that |
 | A3 | **zero** `MET` verdicts with an invalid span, over 104 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.407**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A5 | abstention **0.429**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
-| A7 | 68 requirements: 66 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 70 requirements: 68 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -285,7 +290,7 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   paraphrase P2 was written from, and recovered it. What remains is a claim
   the model never quoted at all.
 - **P3 — Small everything.** 14 patients (four of them declared clones), 14
-  chart notes, 9 policy documents, 27 cases: every rate moves in large steps,
+  chart notes, 9 policy documents, 28 cases: every rate moves in large steps,
   and one case outweighs a percentage point. The figures are `eval/report.md`'s,
   which computes them from the three manifests that own them — this bullet
   read *eleven, fourteen, seven, twenty* for two tasks after the corpus grew
@@ -563,7 +568,11 @@ each plane are separate files that nothing imports together.
 possible.** Each has a live implementation and a recorded one that replays a
 committed recording for zero cost, which is why the entire test suite and the
 eval harness exercise the full chain end to end for free — and why every
-figure in this README is a replay rather than a fresh bill.
+figure in this README is a replay rather than a fresh bill. A fourth port,
+`QuoteRunner` (`pa_agent/quotes.py`, T-98), serves the medical-history review
+in the same shape — direct, ADK, recorded, null — and is not drawn above,
+because the review sits beside the determination's graph rather than inside
+it *(D119, D121, D122)*.
 
 ### The policy file is the policy
 
@@ -863,7 +872,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1240 tests across 43 files, 58 of them skipped — the skips are per-tree
+1373 tests across 47 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -945,7 +954,7 @@ the installed framework still discovers the agent.
 ./venv/bin/python eval/run_eval.py --update-baseline   # adopt drift, as a reviewed diff
 ```
 
-Twenty-seven labeled cases across three practices, every cited span re-validated by
+Twenty-eight labeled cases across three practices, every cited span re-validated by
 the scorer. The gate
 fails on drift in **either** direction, so a case that *starts* passing is
 adopted explicitly with `--update-baseline` and a commit. Four result statuses
@@ -1051,7 +1060,8 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      retrieval, runners, extraction, verifier, reconcile,
                      aggregate, determination, history, contracts, model_pin,
                      tiers, cli
-  agent/             ADK path: extraction_agent, retrieval_agent, tools, bounds
+  agent/             ADK path: extraction_agent, quote_agent, retrieval_agent,
+                     tools, bounds
   stores/            policy.py, patient.py and knowledge.py — three ports;
                      __init__.py imports none of them, on purpose
 data/policies/       nine source documents, six value sets (SNOMED and

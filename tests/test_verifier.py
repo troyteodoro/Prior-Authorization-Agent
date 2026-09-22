@@ -538,3 +538,82 @@ def test_every_gate_reachable_claim_is_recorded(recording) -> None:
         f"{len(missing)} gate-reachable claim(s) missing from the recording; "
         "re-run scripts/run_verifier_measurement.py"
     )
+
+
+# --------------------------------------------------------------------------
+# T-98 (D122): the medical-history claim shape — built, wired, unmeasured
+# --------------------------------------------------------------------------
+
+
+def _a_history_candidate():
+    from pa_agent.stores.knowledge import LocalKnowledgeStore
+
+    return LocalKnowledgeStore().get_medication_effect_rows()[0]
+
+
+def test_the_history_payload_carries_the_candidate_and_nothing_else() -> None:
+    """A second blindness boundary: the condition by display, the title of its
+    code, the passages. Not the row id (it embeds the drug), not the
+    medication, not the colour, not the signal, not the code itself."""
+    from pa_agent.verifier import build_history_claim_payload
+
+    row = _a_history_candidate()
+    payload = build_history_claim_payload(row, ["a passage"])
+    assert sorted(payload) == ["candidate", "quotes"]
+    assert sorted(payload["candidate"]) == ["effect", "icd10_title"]
+    assert payload["candidate"]["effect"] == row.effect_display
+    assert payload["candidate"]["icd10_title"] == row.icd10_title
+    assert payload["quotes"] == ["a passage"]
+    rendered = json.dumps(payload).lower()
+    for leaked in (row.row_id, row.ingredient.display, row.icd10_code, "colour", "signal"):
+        assert leaked.lower() not in rendered, leaked
+
+
+def test_a_history_claim_is_never_in_the_criterion_recording(recording) -> None:
+    """A yellow can never default to accepted: the committed recording holds
+    criterion claims only, and a history digest raises `NOT_RECORDED` naming
+    the candidate — the history recording is T-110's (D122)."""
+    from pa_agent.verifier import build_history_claim_payload
+
+    row = _a_history_candidate()
+    runner = RecordedVerifierRunner.from_records(recording["claims"])
+    with pytest.raises(VerifierOutputError) as caught:
+        runner.run(build_history_claim_payload(row, ["a passage"]))
+    assert caught.value.reason is VerifierFailure.NOT_RECORDED
+    assert f"candidate {row.effect_display}" in str(caught.value)
+
+
+def test_the_history_digest_cannot_collide_with_a_criterion_digest(tree) -> None:
+    from pa_agent.verifier import build_history_claim_payload
+
+    criterion_claim = build_claim_payload(tree.criterion("a"), "MET", ["q"])
+    history_claim = build_history_claim_payload(_a_history_candidate(), ["q"])
+    assert set(criterion_claim) != set(history_claim)
+    assert claim_digest(criterion_claim) != claim_digest(history_claim)
+
+
+def test_the_live_runner_sends_the_history_instruction_only_when_so_built() -> None:
+    from pa_agent.verifier import (
+        HISTORY_INSTRUCTION,
+        HISTORY_PROMPT_VERSION,
+        INSTRUCTION,
+        PROMPT_VERSION,
+        build_history_claim_payload,
+    )
+
+    assert HISTORY_PROMPT_VERSION != PROMPT_VERSION
+    assert HISTORY_INSTRUCTION != INSTRUCTION
+    for word in ("green", "yellow", "red"):
+        assert f" {word} " not in HISTORY_INSTRUCTION.lower(), "the verifier grades no colour"
+
+    client = _FakeClient(json.dumps({"accept": True, "reason": "fine"}))
+    LiveVerifierRunner(client, instruction=HISTORY_INSTRUCTION).run(
+        build_history_claim_payload(_a_history_candidate(), ["a passage"])
+    )
+    assert client.requests[-1]["contents"].startswith(HISTORY_INSTRUCTION)
+
+    client = _FakeClient(json.dumps({"accept": True, "reason": "fine"}))
+    LiveVerifierRunner(client).run(build_history_claim_payload(_a_history_candidate(), ["p"]))
+    assert client.requests[-1]["contents"].startswith(INSTRUCTION), (
+        "the default is the criterion instruction, so the 38-claim path is byte-identical"
+    )

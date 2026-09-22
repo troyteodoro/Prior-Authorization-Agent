@@ -1693,9 +1693,20 @@ class IcdSuggestion(BaseModel):
     #: `would_affect_note` says which kind of empty it is.
     would_affect: tuple[str, ...] = ()
     would_affect_note: str | None = None
+    #: Red only, and only for a candidate that was yellow until Article V's
+    #: verifier rejected its quote (T-98, D122). A rejection is not an absence:
+    #: `VERIFIER_REJECTED` is its own gap reason on the criteria path for the
+    #: same reason, and a red that hid one would be the collapse Article IV
+    #: forbids, one object over.
+    verifier_rejected: bool = False
 
     @model_validator(mode="after")
     def _the_colour_matches_the_evidence(self) -> "IcdSuggestion":
+        if self.verifier_rejected and self.colour is not SuggestionColour.RED:
+            raise ValueError(
+                f"{self.row_id} is {self.colour.value} and marked verifier-rejected; "
+                "a rejected quote demotes the candidate to red (REQ-67)"
+            )
         if self.colour is SuggestionColour.RED:
             if self.citations:
                 raise ValueError(

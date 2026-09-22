@@ -8,11 +8,11 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Outcomes against the labels
 
-27 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
+28 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
 
 | Status | Cases | Meaning |
 |---|---|---|
-| `PASS` | 27 | matched the label on every checked dimension |
+| `PASS` | 28 | matched the label on every checked dimension |
 | `FAIL` | 0 | answered, and answered wrongly |
 | `BLOCKED` | 0 | the component under test does not exist yet |
 | `ERROR` | 0 | a classified fault; the system did not answer (REQ-28) |
@@ -187,7 +187,7 @@ A free-tier tool loop is not reproducible at temperature 0 (D91), and neither is
 
 ## Abstention (A5, REQ-28, REQ-31)
 
-**Abstention rate: 11/27 answered = 0.407**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
+**Abstention rate: 12/28 answered = 0.429**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
 
 An `ERROR` entering the numerator alone would let a crash *lower* the abstention rate — caution misreported as confidence (D77).
 
@@ -212,13 +212,13 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 | `discrepancy_tolerance` | Discrepancies disclosed | Abstention rate |
 |---|---|---|
-| 0 | 5 | 0.407 |
-| 0.25 | 3 | 0.407 |
-| 0.5 | 1 | 0.407 |
-| 1 ← pinned (D51) | 1 | 0.407 |
-| 2 | 1 | 0.407 |
-| 5 | 1 | 0.407 |
-| 50 | 0 | 0.407 |
+| 0 | 5 | 0.429 |
+| 0.25 | 3 | 0.429 |
+| 0.5 | 1 | 0.429 |
+| 1 ← pinned (D51) | 1 | 0.429 |
+| 2 | 1 | 0.429 |
+| 5 | 1 | 0.429 |
+| 50 | 0 | 0.429 |
 
 **Why abstention does not move.** Tolerance gates whether a disagreement is *recorded*. The abstention branch is a different test — the two values falling on opposite sides of the coverage threshold (REQ-34, `SOURCE_CONFLICT`) — and the threshold is not what is being swept.
 
@@ -261,6 +261,23 @@ Two figures over one denominator. **Direct** is containment in the bundle the ag
 
 **D4's reversal condition now reads against a number.** It was set as "measured retrieval recall below 0.85 — a number, not a hunch" and had been unfalsifiable since it was written, because nothing measured retrieval recall and nothing could. Vector search stays rejected on rule 9 and on a six-document corpus; this is the figure that would let it back in on evidence.
 
+## Quote consultation (T-98, REQ-67, REQ-68, D122)
+
+The medical-history review's one model turn. Each note-bearing chart's notes are consulted for verbatim passages documenting each knowledge-table condition — five, named by display and never by drug, code or colour — and every passage is anchored by searching the note for it (D18) or refused; a refused quote is re-asked once for its verbatim text (REQ-56) and then dropped, and a candidate with no anchored passage is red, never yellow (REQ-67). No committed note documents any of the five conditions (D120), so the figure these recordings yield is a **fabrication rate**: `(note, condition)` pairs for which the model returned a passage that did not anchor. A pair that *anchored* would be a yellow this corpus was not supposed to produce, and the gate stops on it. Twelve notes are measured — the declared clone's two are byte-identical to its source's and replay by content — and every turn is counted (REQ-68, D71). Recomputed from the per-note records of each committed recording; the stored aggregates are not read (T-71). The AI Studio direct recording is the one every gate replays, and `H4` reads red through it.
+
+| Runner | Tier | Notes | Model turns | Input tokens | Output tokens | Quotes returned | Anchored | Refused | Re-asked | Recovered | Pairs | Fabricated pairs |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| direct (`results.json`) | ai_studio | 12 | 12 | 6879 | 1386 | 0 | 0 | 0 | 0 | 0 | 60 | **0** |
+| direct (`results_vertex.json`) | vertex | 12 | 12 | 10935 | 1386 | 0 | 0 | 0 | 0 | 0 | 60 | **0** |
+| ADK inline (`adk_results_inline.json`) | ai_studio | 12 | 12 | 7859 | 1224 | 0 | 0 | 0 | 0 | 0 | 60 | **0** |
+| ADK inline (`adk_results_inline_vertex.json`) | vertex | 12 | 12 | 11903 | 1224 | 0 | 0 | 0 | 0 | 0 | 60 | **0** |
+| ADK tool-fetch (`adk_results_tool_fetch.json`) | ai_studio | 12 | 24 | 25303 | 1560 | 0 | 0 | 0 | 0 | 0 | 60 | **0** |
+| ADK tool-fetch (`adk_results_tool_fetch_vertex.json`) | vertex | 12 | 24 | 24535 | 1431 | 0 | 0 | 0 | 0 | 0 | 60 | **0** |
+
+**No passage was returned for any pair in any recording.** The model answered every condition with an empty list on every note, on both tiers and through all three runners; nothing was anchored, nothing was refused, and the re-ask was asked about nothing.
+
+**What red means here.** `H4`'s candidate — lisinopril and renal impairment on a chart with no creatinine and no kidney code — is red because both of its notes were consulted and neither holds a passage for the condition: *nothing on the chart*, proved by the recording rather than assumed (D122). It cites nothing and adds no verifier claim. A red that was a yellow the blind verifier rejected would say so on the suggestion (`verifier_rejected`); none is. The review's turns are counted beside the determination's, never in them: A6 below is determination cost only, and each eval row that labels a review carries its own `max_review_model_calls`. Pairs anchored across all six recordings: 0.
+
 ## Cost and latency (A6, Article X)
 
 Measured from each determination's own `metrics`, never estimated. **Reported, never asserted**: tokens and latency move between runs of the same model on the same input, and folding them into a gate would fail it on noise.
@@ -278,6 +295,8 @@ Measured from each determination's own `metrics`, never estimated. **Reported, n
 Every gate in this repo, this report included, spends **zero** model calls and touches no network (D45). The figures above are what the measurements cost when they were run.
 
 **Counting note.** A tool round trip is two LLM calls, and a note's singular `metrics` is turn one only. Summing the wrong one understated T-63's output tokens by 12.1x and inverted a comparison's sign, using figures that were each individually real (D71). These totals sum the full list.
+
+**Scope.** These totals are determination cost only. The medical-history review's quote turns (T-98) enter no determination's `metrics` — the review sits beside the determination, not inside it (D119, D122) — and are accounted in *Quote consultation* above, per runner and tier, and on each eval row that labels a review.
 
 ## Cross-practice compatibility (A10, REQ-57, REQ-58, D110, D111, D114)
 

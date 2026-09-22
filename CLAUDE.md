@@ -28,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-66 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-68 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-97 plus T-126, T-127 and T-128, each with a runnable exit condition; T-98 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D121, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-98 plus T-126, T-127 and T-128, each with a runnable exit condition; T-99 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D122, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -145,16 +145,18 @@ CLI exit codes: `0` an answer, `1` a bad request (unknown patient), `2` an
 unbuilt path, `3` a determination aborted over a criterion in `ERROR` — the
 criterion id and `error_code` go to stderr, nothing to stdout (REQ-29, D76).
 
-`--tier {ai_studio,vertex}` reaches the four measurement scripts and the CLI,
+`--tier {ai_studio,vertex}` reaches the six measurement scripts and the CLI,
 defaulting to the development tier so every existing invocation is unchanged;
 the output *and* `--rescore` paths are routed per tier, so a Vertex run cannot
 overwrite the AI Studio recordings the gates read *(T-90, D106)*.
 
 Commands that **spend model calls** and are therefore in no gate:
 `scripts/run_extraction.py`, `scripts/run_adk_extraction.py`,
-`scripts/run_verifier_measurement.py`, `eval/run_agentic_eval.py --measure`.
-Each has a `--rescore` / replay path that re-derives every number from the
-committed recording for free — use it.
+`scripts/run_verifier_measurement.py`, `scripts/run_quote_measurement.py`,
+`scripts/run_adk_quote_measurement.py` (T-98's two, `--tool-fetch` on the
+second), `eval/run_agentic_eval.py --measure`. Each has a `--rescore` /
+replay path that re-derives every number from the committed recording for
+free — use it.
 
 `README.md` is the project end to end, including A8's *Where this system
 degrades* — the failure-modes section is the deliverable, not a formality *(T-23,
@@ -185,8 +187,8 @@ would catch that are the ones that would have to be deleted to allow it. The
 graph has one conditional — whether a short circuit fired — and that is a
 `return`, not an edge *(D62)*.
 
-**Three ports at the model boundary; the first two are what make the
-differential real.**
+**Three ports at the model boundary, and a fourth beside the graph; the
+first two are what make the differential real.**
 
 - `ExtractionRunner` (`runners.py`, REQ-52) — *who reads the note*.
   `DirectExtractionRunner` (raw `google-genai`, D103's measured configuration —
@@ -207,6 +209,16 @@ differential real.**
   step_verify)` is the last `STEPS` entry (T-86's `sufficiency` precedes it, D99): cited verdicts only, first
   rejection → `INSUFFICIENT_EVIDENCE`/`VERIFIER_REJECTED`, no retry, and the
   determination still emits (REQ-18).
+- `QuoteRunner` (`quotes.py`, T-98, D122) — *who reads the note for the
+  review*. `DirectQuoteRunner`, `AdkQuoteRunner` (`pa_agent/agent/`, inline
+  and tool-fetch), `RecordedQuoteRunner` (replays `eval/history/results.json`,
+  keyed by note sha256, refusing a table row it was not asked) and a raising
+  `NullQuoteRunner`. Consulted by `history.run_review`, never by a `STEPS`
+  entry, so it is **not drawn** in the README's diagram and
+  `tests/test_readme_structure.py` still counts three ports (D121). Every
+  runner walks T-89's `extract_with_reask` with this module's builder and
+  locator — one re-ask core, two payload shapes — and returns through
+  `build_quote_result`, the trust boundary.
 
 **`pa_agent/tiers.py` is the one place a client is built** *(T-90, D106)*.
 `client_for(tier)` sets `GOOGLE_GENAI_USE_ENTERPRISE` and constructs the client
@@ -243,7 +255,14 @@ for one of two declared reasons, because the chart already codes the condition
 or because the signal was measured and did not cross. `would_affect` names the
 criteria of the governing tree whose value set admits the codes a chart
 carrying the condition would hold, and changes nothing. The model is asked for
-a note quote and nothing else, and not even that until T-98.
+a note quote and nothing else *(T-98, D122)*: `run_review` consults a
+`QuoteRunner` once per note for **every** table condition by display — never
+the drug, the code or a colour — returns a `HistoryRun` (the review beside a
+trace per note, D62's two-object shape), hands every yellow to Article V's
+verifier as a `(candidate, quotes)` claim and demotes a rejected one to red
+that says so (`verifier_rejected`, REQ-67). The review's calls never enter
+`Determination.metrics`; an eval row budgets them with its own
+`max_review_model_calls`.
 
 **Adjudication is nine predicate kinds and two exclusion kinds.**
 `PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
@@ -369,13 +388,35 @@ passing**, because the tests are written in terms of the thing that broke.
   that candidate is withheld with its measurement; suggesting the condition over
   it is a claim the record refutes, and it would make *the lab says no*
   indistinguishable from *nobody measured*.
-- **`quotes=None` raises on a chart that carries notes** *(T-97, D119)*. D90's
-  rule on a second wire: "the system did not look" and "the chart does not say"
-  are the two things the fault exists to keep apart, and red is the second. A
-  note-free chart needs no quote source, which is why all three of T-97's rows
-  sit on note-free charts and why the review is computed **only for rows that
-  label one** — `bc6748d3` is note-bearing, carries an active lisinopril and no
-  creatinine, and two committed rows, E8 and E10b, run through it.
+- **`quotes=None` raises on a chart that carries notes** *(T-97, D119; one
+  layer up since T-98, D122)*. D90's rule on a second wire: "the system did
+  not look" and "the chart does not say" are the two things the fault exists
+  to keep apart, and red is the second. A note-free chart needs no quote
+  source; `run_review` with no runner on a note-bearing chart still raises,
+  and the harness computes the review **only for rows that label one** —
+  `bc6748d3` is note-bearing, carries an active lisinopril and no creatinine,
+  E8 and E10b grade its determination without a review, and `H4` reads it
+  red through `RecordedQuoteRunner` with both notes consulted.
+- **The quote prompt names a condition and never a drug, a code or a
+  colour** *(T-98, D122)*. Every knowledge-table `row_id` embeds the
+  ingredient, and a model told *lisinopril* beside *renal impairment* is
+  invited to quote the medication line as evidence of the condition — the
+  one thing a prescription may never be (D119). `format_effects` renders
+  `effect_display`s only, every note is asked about every row so the request
+  is one configuration a chart cannot vary, and `RecordedQuoteRunner`
+  refuses a `(row_id, effect_display)` pair it was not asked: adding a table
+  row is a new measurement (D45). The same rule shapes the history verifier
+  payload, which carries the condition and its ICD-10 title and nothing else.
+- **A quote is yellow only after the anchorer located it and the validator
+  accepted it; the refusal is recorded, never repaired** *(REQ-67, T-98,
+  D122)*. `build_quote_result` anchors by searching the note for the model's
+  verbatim text, re-asks once (REQ-56) and then drops, and a candidate with no
+  anchored passage is red. Checked at unit level through the real anchorer on
+  a hand-written note, because no committed note can produce a yellow until
+  `T-110`; the six recordings measured **0 of 60** `(note, condition)` pairs
+  with any passage returned, and a pair that *anchored* is a red gate — a
+  yellow this corpus was not supposed to produce. The review's turns are
+  counted beside the determination's (`HistoryRun`), never in A6.
 - **`would_affect` compares the row's already-coded SNOMED codes, never its
   ICD-10 code** *(REQ-66, T-97, D119)*. Measured across every committed value
   set: the eight `icd10_anchor`s any set carries are `I10`, `N18.1`, `N18.2`,
@@ -655,8 +696,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**80 of 80 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1240 tests across 43 files, 58 of
+**81 of 81 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1373 tests across 47 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -679,11 +720,11 @@ A1–A10 all hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
-The eval set is full (T-21, D75): `eval/cases.json` holds twenty-seven labeled
+The eval set is full (T-21, D75): `eval/cases.json` holds twenty-eight labeled
 rows — spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6,
 `J1`, the second-jurisdiction row *(D102)*, `RA1`–`RA3`, the second
-practice's *(D113)*, `US1`–`US4`, the third's *(D114)*, and `H1`–`H3`, the
-medical-history review's *(D119)* — all `PASS`,
+practice's *(D113)*, `US1`–`US4`, the third's *(D114)*, and `H1`–`H4`, the
+medical-history review's *(D119, D122)* — all `PASS`,
 criterion-scoped,
 with every cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
@@ -704,7 +745,7 @@ D78's substance. US-7's measurements are in `eval/report.md`
 (T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
 against a 0.420 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
-104 checked**, **A5 abstention 0.407** with the per-`gap_reason` account, its
+104 checked**, **A5 abstention 0.429** with the per-`gap_reason` account, its
 per-tree split of the declared-unclaimed abstentions *(D113)* and D82's
 tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 52.4s across seventeen determinations** — replayed instrumentation, not the
@@ -712,8 +753,29 @@ replay's own clock. Read them from `eval/report.md`, which is generated; these a
 copy and the report is the source.
 
 Open: **nothing on the board. v1, v1.1 and v1.2 are all complete** — A1–A10
-all hold — and **`v1.3` is in progress**: `T-96` opened it and `T-97` closed
-row 2; **`T-98` is next**.
+all hold — and **`v1.3` is in progress**: `T-96` opened it, `T-97` closed
+row 2 and `T-98` closed row 3; **`T-99` is next** — `--suggest` on the CLI
+and A11's precision section.
+
+**`T-98` closed row 3** (D122): the review's one model turn exists, on
+every runner and both tiers. `pa_agent/quotes.py` is a fourth port in the
+shape of the first three, `pa_agent/agent/quote_agent.py` its ADK leaf, and
+`history.run_review` consults it once per note for **every** table
+condition by display, never by drug — then hands any yellow to Article V as
+a `(candidate, quotes)` claim built by `build_history_claim_payload` under
+`history-verifier-v1`, and demotes a rejection to red that says so. T-89's
+re-ask core was parameterised rather than copied, and both direct extraction
+recordings re-derive byte for byte under it. **Six recordings** in
+`eval/history/` — direct, ADK inline and ADK tool-fetch on AI Studio and
+Vertex, twelve notes each, the clone replayed by content — measured **0 of
+60** `(note, condition)` pairs with any passage returned, so the figure the
+round yields is a fabrication rate of zero and `H4` reads **red with both
+notes consulted**, two turns, no verifier claim: the verifier recording
+stays at 38 a tier because `H4` shares E8's claim key. It minted REQ-67 (a
+refused quote is red, never yellow — checked through the real anchorer on a
+hand-written note) and REQ-68 (the turn is recorded, replayed and counted,
+budgeted by `max_review_model_calls` apart from A6). The measured yellow and
+the history verifier's recording are `T-110`'s.
 
 **`T-97` closed row 2** (D119): `pa_agent/history.py` reads the knowledge table
 through a third port and **Python assigns the tri-state**. It minted REQ-63
@@ -1059,11 +1121,12 @@ would buy a passing check rather than a capability.
 
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
-                     retrieval, runners, extraction, verifier, reconcile,
-                     aggregate, determination, history, contracts, model_pin,
-                     tiers, cli
-  agent/             ADK: extraction_agent, retrieval_agent, patient_tools,
-                     policy_tools, tool_bounds, agent (adk web entry point)
+                     retrieval, runners, extraction, quotes, verifier,
+                     reconcile, aggregate, determination, history, contracts,
+                     model_pin, tiers, cli
+  agent/             ADK: extraction_agent, quote_agent, retrieval_agent,
+                     patient_tools, policy_tools, tool_bounds, agent (adk web
+                     entry point)
   stores/            policy.py, patient.py and knowledge.py — the three ports
                      and their file-backed adapters. __init__ imports none.
 data/policies/
@@ -1127,9 +1190,9 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 27 labeled rows (§6's 15 + NP1 + J1 +
-                     RA1-RA3 + US1-US4 + H1-H3; D75, D102, D104, D113,
-                     D114, D119)
+  cases.json         the eval set — 28 labeled rows (§6's 15 + NP1 + J1 +
+                     RA1-RA3 + US1-US4 + H1-H4; D75, D102, D104, D113,
+                     D114, D119, D122)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it;
@@ -1144,14 +1207,21 @@ eval/
   verifier/          results.json — T-17's recording, 38 claims since T-94,
                      re-measured whole by T-89, T-81, T-93 and T-94, and on
                      both tiers; `verifier-v6` since D115
-                     (D78, D102, D103, D104, D113, D115)
+                     (D78, D102, D103, D104, D113, D115). The history claim's
+                     recording, history_results.json, is T-110's (D122)
+  history/           T-98's six quote recordings (D122): results.json and
+                     results_vertex.json (direct), adk_results_inline[_vertex]
+                     .json and adk_results_tool_fetch[_vertex].json — twelve
+                     notes × five conditions each, 0 of 60 pairs with a
+                     passage; results.json is the one every gate replays
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient
 scripts/             check_gates, check_env, check_skeleton,
                      check_req_coverage, verify_sources,
                      select_patients, synthesize_notes, run_extraction,
-                     run_adk_extraction, run_verifier_measurement
-tests/               43 files
+                     run_adk_extraction, run_verifier_measurement,
+                     run_quote_measurement, run_adk_quote_measurement
+tests/               47 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

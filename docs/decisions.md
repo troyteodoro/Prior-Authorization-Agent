@@ -10457,3 +10457,191 @@ a third id written as English; the pattern now reads to the sentence's own
 subgraph, another arrow style, a node whose label carries a bracket — at
 which point the parser grows or the diagram is cut back to the part that is
 checkable, which is D117's condition restated one level down.
+
+---
+
+## D122 — Note quotes are a measured turn beside the determination; a refused quote is red, and the recording is the proof the model looked
+
+**Context.** T-98 is row 3 of v1.3, rewritten before it opened by D120: the
+measured yellow is `T-110`'s, because no committed note mentions a
+knowledge-table drug, effect or signal and a note edit re-measures six
+extraction recordings. What this row owes is the quote runner itself — the
+one model turn spec §11 gives the review, asked for verbatim passages and
+nothing else — its recording on both tiers, the eval row `H4` on
+`bc6748d3` reading **red with the quotes consulted**, and the three things
+D120 deliberately left to this entry: what the row mints, the shape of the
+`(candidate, quotes)` verifier claim, and where the review's model turn is
+counted. Eight decisions were taken with the owner on 2026-09-22 before any
+code was written; the rest of this entry is those decisions and the two
+calls made on top of them.
+
+**Chosen — the model is asked about conditions by their display, never by
+row id, drug, code or colour.** `format_effects` renders the table's
+`effect_display`s and nothing else — *osteoporosis, hypotension, renal
+impairment, hyperglycemia, neutropenia* — and the schema echoes the display
+so Python can join the answer back to a row. **Rejected — the `row_id`**,
+which was the first draft: every row id embeds the ingredient
+(`lisinopril-renal-impairment`), and a model told *lisinopril* beside *renal
+impairment* is invited to quote the medication line as evidence of the
+condition, which is the one thing D119 says a prescription may never be.
+**Rejected — the ICD-10 title**, for the same reason one row over:
+*Other drug-induced agranulocytosis* says "drug-induced". The prompt names
+no colour because `tests/test_history.py` scans `pa_agent/` for one, and no
+threshold because a threshold is Python's (Art. II).
+
+**Chosen — every note-bearing chart, all five conditions per call, and the
+figure the recording yields is a fabrication rate.** One call per note asks
+about every table effect regardless of which drugs the chart carries; the
+runner never sees the medication list, and `history.review` reads only the
+rows that are candidates and only those that reach the quote step. The
+prompt is therefore one fixed configuration — instruction, rendered
+condition list, schema — that a chart cannot vary, and `RecordedQuoteRunner`
+refuses a request naming a `(row_id, effect_display)` pair the recording was
+not asked, because **adding a table row is a new measurement** (D45's rule,
+on the knowledge table). On this corpus no note documents any of the five
+conditions, so what the measurement can show is how often the model returns
+a passage for a condition the note does not document: *pairs_fabricated*,
+counted per `(note, condition)` after the re-ask, over twelve notes and five
+conditions. **Rejected — asking only what the review needs**, `bc6748d3`'s
+two notes for one condition: two calls per tier that measure almost nothing
+about the model's refusal behaviour, and a live run on a chart with two
+candidates would then ask a question no recording holds.
+
+**Chosen — the clone is skipped by declaration; twelve notes are measured
+and fourteen replay.** `ee9d79ee`'s two notes are byte-identical to
+`07a5f345`'s (T-88, D102), `run_extraction.synthesized_cases` skips
+`cloned_from` charts for exactly that reason, and the recorded runner is
+keyed by content sha256 first, so the clone replays from its source's
+record. **Rejected — measuring the clone live**: it spends calls on
+identical bytes, makes one hash map to two records so that which one "owns"
+the bytes depends on sort order, and the second sample it would produce is
+the run-to-run stability figure D120 names as `T-110`'s option. The gate
+asserts that all fourteen manifest notes replay through the direct AI
+Studio recording.
+
+**Chosen — the re-ask core is parameterised, with its defaults bound to the
+extraction objects.** T-89's `extract_with_reask` is the fixed two-step
+every live runner walks (D103), and the quote turn walks it too. The core
+was coupled to the extraction payload in exactly three places — `_locate`,
+and the two `build_result` calls — so `reask_targets` and `apply_verbatim`
+take a `locate`, and `extract_with_reask` takes `build`, `locate` and
+`prompt_version`, each defaulting to the extraction function at call time.
+`extract()` and `AdkExtractionRunner.run()` pass none of the new arguments,
+`PROMPT_VERSION` is untouched, and the proof that the extraction path did
+not move is run rather than argued: `run_extraction.py --rescore` on both
+tiers followed by `git diff --exit-code -I '"rescored_at"'` reproduces both
+direct recordings byte for byte, which was checked once before this entry
+was written and again at the close. **Rejected — a second
+`extract_with_reask`** for the quote shape: a second `apply_verbatim` is a
+second place a model answer could write a field Python did not name, and
+D103's whole argument is that there is one.
+
+**Chosen — the direct runner and the ADK runner, the ADK in both modes, six
+recordings.** `DirectQuoteRunner` over raw `google-genai` and
+`AdkQuoteRunner` under `pa_agent/agent/`, inline and tool-fetch, each
+measured on AI Studio and on Vertex — the extraction path's full set (D62,
+D71, D106). The tier changes the prompt under tool-fetch, because on AI
+Studio `output_schema` with a tool becomes an injected `SetModelResponseTool`
+(D62), and a runner v1.6 will re-measure needs to exist on both paths before
+that round opens. The ADK runner reuses `AdkExtractionRunner`'s invocation
+methods through a mixin — a pure move of four methods with no body change,
+which `tests/test_adk_agent.py` proves and which changes no call
+configuration, so the ADK extraction recordings are not re-measured.
+**Rejected — the direct runner only**: the smaller round, and the one that
+leaves v1.6 building a second ADK leaf inside the round that measures it.
+
+**Chosen — `HistoryRun` is two objects, and the review's cost lives beside
+the determination's rather than inside it.** `WorkflowRun`'s shape (D62): a
+`HistoryReview` a human reads and a `RunTrace` per note consulted, every
+turn's `CallMetrics` on it, the re-ask included (D71). Nothing about
+`Determination.metrics` moves, so A6 stays a determination figure and
+`eval/report.md` says so in its cost section; the eval row budgets the review
+with its own `max_review_model_calls`, labelled with the measured count as
+every row's budget is, and an overrun is its own `ReasonClass`,
+`REVIEW_MODEL_CALLS_EXCEEDED`, because its next action is to re-measure the
+quote recording and not the extraction or verifier ones. **Rejected —
+folding the review's calls into `max_model_calls`**: a review call could then
+hide inside the determination's slack, and A6 would either move for a path
+that changes no verdict or silently exclude what the row counted.
+**Rejected — a metrics field on `HistoryReview`**: D119's argument against a
+field on `Determination`, unchanged.
+
+**Chosen — the `(candidate, quotes)` claim shape is built and wired now, with
+no recording and zero claims.** `build_history_claim_payload` is a second
+blindness boundary beside `build_claim_payload`: the condition's display and
+its ICD-10 title, and the quotes sliced mechanically from the note — no row
+id, no drug, no colour, no signal, no code, no chart. Its top-level key set
+differs from a criterion claim's, so no history digest can collide with one
+of the 38. `HISTORY_INSTRUCTION` carries its own version,
+`history-verifier-v1`, and `LiveVerifierRunner` takes the instruction as an
+argument defaulting to the criterion one, so the measured path is
+byte-identical. `run_review` verifies every yellow when a verifier is
+supplied and demotes a rejected one to **red with `verifier_rejected` set** —
+Article IV's rule that a rejection must not read as an absence, on the
+suggestion object — with no retry (REQ-18's rule). On the committed corpus no
+yellow exists, so the recorded verifier is never consulted; a yellow that
+appeared would reach `RecordedVerifierRunner`, which raises `NOT_RECORDED` on
+a digest it has not got, so **a yellow can never default to accepted**. The
+recording for these claims is `T-110`'s, at `eval/verifier/history_results.json`.
+**Rejected — widening `build_claim_payload`** with a fourth key: it moves every
+one of the 38 digests and costs a verifier round on both tiers for a claim
+nothing produces. **Rejected — settling the shape on paper only**: a promise
+in a log, inherited by the round that is already the expensive one.
+
+**Chosen — REQ-67 is minted now, at unit level, and REQ-68 by the recording
+gate.** D109's rule is that a statement is minted by the task whose close
+checks it. *A quote the anchorer refuses is red, never yellow* is checked at
+this close by a test that hands `run_review` a hand-written note and a quote
+with one word changed, through the real `anchor.py`, and asserts red with no
+citation — D65's shape — and its twin with the verbatim quote asserts yellow
+citing a span the validator accepts. The corpus cannot produce that yellow
+until `T-110`, and when it does the measurement is evidence for a requirement
+that exists. *The model turn is recorded, replayed and counted* is checked by
+`tests/test_quote_recording.py` over all six recordings. **Rejected —
+leaving REQ-67 in §11 until v1.6**: a unit-checked statement would sit
+unnumbered for three versions and the board would reference it anyway.
+
+**Chosen — `QuoteRunner` is a port in its own module and is not drawn.**
+`tests/test_readme_structure.py` reads the three model-boundary `Protocol`s
+from `runners`, `retrieval` and `verifier` and asserts the README's diagram
+draws exactly those; D121 already records that the review sits beside the
+graph rather than inside it, so a fourth port in `pa_agent/quotes.py` is
+outside the diagram by the same argument, and the README says so in prose.
+
+**Also chosen.** `QuoteSourceNotConsulted` stays, one layer up: `run_review`
+with no runner on a note-bearing chart still raises, and the message now names
+`run_review` and the recording rather than a task number. `H4` labels only the
+review, shares E8's cached determination, and adds **no verifier claim**,
+because `enumerate_claims` dedupes on E8's key and a red cites nothing — so
+the verifier recording stays at 38 on both tiers.
+
+**What it mints.** REQ-67 and REQ-68 — the last two of v1.3's statements.
+`--suggest` and A11's precision section stay `T-99`'s.
+
+**What it costs.** Six measurement rounds — twelve notes each, one turn per
+note plus a re-ask only where a quote did not anchor — and no verifier claim,
+no verdict, no span in any determination, no change to any baseline status.
+The eval set grows from twenty-seven rows to twenty-eight, so A5's per-case
+abstention rate moves and every prose copy is re-derived from the regenerated
+report (rule 12); A6 does not move, because `H4` adds no determination.
+**Measured at the close.** Twelve notes × five conditions = 60 pairs per
+recording, and **`pairs_fabricated` is 0 on all six**: the model answered
+every condition with an empty list on every note, on both tiers and through
+all three runners — no passage returned, none anchored, none refused, the
+re-ask asked about nothing. Model turns 12 for the direct and ADK-inline
+recordings and 24 for the tool-fetch ones, where a tool round trip is two
+calls (D71); input tokens 6,879 (direct, AI Studio), 10,935 (direct, Vertex),
+7,859 and 11,903 (ADK inline), 25,303 and 24,535 (ADK tool-fetch) — the
+Vertex direct runner again spends markedly more input tokens on an identical
+prompt (D106), and under tool-fetch the AI Studio prompt is the injected one
+(`output_schema_and_tools` false) while Vertex's is native. `H4` replays two
+turns for 986 input and 240 output tokens, and the eval set reads 28 of 28
+`PASS` on the adopted baseline; A5 moves to 12/28 = 0.429 and A6 does not
+move. `eval/report.md` carries the account per runner and tier.
+
+**Reverses if:** a committed note states a table condition — `T-110`'s round —
+at which point the yellow becomes a measurement and the history verifier a
+recording; or `pairs_fabricated` is non-zero on a tier, at which point the
+instruction is versioned and re-measured rather than the anchorer loosened
+(D18, D98); or a second consumer needs the quote turn inside the graph, which
+is D119's reversal condition and is answered there first.

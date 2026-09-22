@@ -26,7 +26,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Callable
+from typing import Any, Callable, Protocol, TypeVar
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -467,26 +467,78 @@ def _locate(payload: dict, path: str) -> tuple[dict, str]:
     return items[index], fieldname
 
 
-def reask_targets(result: ExtractionResult) -> list[dict]:
+class ReaskResult(Protocol):
+    """What the re-ask core reads and writes on a result, whatever built it.
+
+    `ExtractionResult` is the first shape and `quotes.QuoteResult` the second
+    (T-98, D122). The core touches these fields and nothing else, which is
+    why one core serves two payload shapes without knowing either.
+    """
+
+    dropped: list[dict]
+    metrics: CallMetrics | None
+    raw: dict | None
+    raw_first_turn: dict | None
+    reask: dict | None
+    trace: RunTrace | None
+
+
+ResultT = TypeVar("ResultT", bound=ReaskResult)
+
+#: A locator: `(payload, path) -> (container, key)`, raising `KeyError` for a
+#: path that names nothing in that payload shape. `_locate` is the
+#: extraction one; `quotes._locate_quote` is the second (D122).
+Locator = Callable[[dict, str], tuple[dict, str]]
+
+
+def _resolve_reask_defaults(
+    build: Callable[..., Any] | None,
+    locate: Locator | None,
+    prompt_version: str | None,
+) -> tuple[Callable[..., Any], Locator, str]:
+    """The extraction objects, bound at call time (D122).
+
+    Resolved here rather than in the signature so a test can pin what the
+    core does when a caller passes nothing — `extract()` and
+    `AdkExtractionRunner.run()` pass nothing, and the proof that T-98's
+    generalisation moved no extraction recording rests on these three
+    defaults being the extraction ones.
+    """
+    return (
+        build_result if build is None else build,
+        _locate if locate is None else locate,
+        PROMPT_VERSION if prompt_version is None else prompt_version,
+    )
+
+
+def reask_targets(result: ReaskResult, locate: Locator | None = None) -> list[dict]:
     """The quotes to re-ask about: every drop that is a quote Python could not
     locate, with the full quote read back out of the payload.
 
     Only `*_quote_unanchorable` reasons qualify. An unparseable date is not a
-    citation problem and no verbatim text would repair it.
+    citation problem and no verbatim text would repair it. `locate` reads the
+    payload shape the result was built from; it defaults to the extraction
+    locator (D122).
     """
     if result.raw is None:
         return []
+    _, locate, _ = _resolve_reask_defaults(None, locate, None)
     targets = []
     for drop in result.dropped:
         path = drop.get("path")
         if not path or not str(drop.get("reason", "")).endswith("_quote_unanchorable"):
             continue
-        container, key = _locate(result.raw, path)
+        container, key = locate(result.raw, path)
         targets.append({"path": path, "reason": drop["reason"], "quote": container[key]})
     return targets
 
 
-def apply_verbatim(payload: dict, targets: list[dict], answers: VerbatimAnswers) -> dict:
+def apply_verbatim(
+    payload: dict,
+    targets: list[dict],
+    answers: VerbatimAnswers,
+    locate: Locator | None = None,
+) -> dict:
     """The first turn's payload with the answered quotes replaced — at the
     targeted paths and nowhere else.
 
@@ -494,14 +546,18 @@ def apply_verbatim(payload: dict, targets: list[dict], answers: VerbatimAnswers)
     a path that was not asked about is ignored; so is a blank one, because an
     empty quote would anchor at offset zero and cite nothing. Nothing here can
     add, remove or re-date an event or an assertion: the only writes are to
-    quote fields the first turn already had.
+    quote fields the first turn already had. `locate` is the payload shape's
+    locator and defaults to the extraction one (D122); whichever it is, it can
+    only name a quote field the first turn already had, which is what keeps
+    this the one place a model answer is written into a payload.
     """
+    _, locate, _ = _resolve_reask_defaults(None, locate, None)
     patched = copy.deepcopy(payload)
     wanted = {target["path"] for target in targets}
     for answer in answers.quotes:
         if answer.path not in wanted or not answer.verbatim.strip():
             continue
-        container, key = _locate(patched, answer.path)
+        container, key = locate(patched, answer.path)
         container[key] = answer.verbatim
     return patched
 
@@ -515,20 +571,31 @@ def extract_with_reask(
     runner_name: str,
     model: str | None,
     step_names: tuple[str, str] = ("extract", "reask"),
-) -> ExtractionResult:
+    build: Callable[..., ResultT] | None = None,
+    locate: Locator | None = None,
+    prompt_version: str | None = None,
+) -> ResultT:
     """The fixed two-step every live runner walks (REQ-56, D103).
 
-    Turn one, then `build_result`; if Python could not locate a quote, one
-    re-ask — `REASK_ROUNDS` of them — for the verbatim text, the answer
-    patched in at the paths asked about, and `build_result` again. The
-    decision to re-ask is a Python predicate over string search, never model
-    output (Art. I), and the anchorer admits the new quote or drops it
-    exactly as it did the old one (Art. III).
+    Turn one, then `build`; if Python could not locate a quote, one re-ask —
+    `REASK_ROUNDS` of them — for the verbatim text, the answer patched in at
+    the paths asked about, and `build` again. The decision to re-ask is a
+    Python predicate over string search, never model output (Art. I), and the
+    anchorer admits the new quote or drops it exactly as it did the old one
+    (Art. III).
 
     A failed re-ask never raises: the first turn's result stands, `reask`
     carries the classified reason and the trace names it. Every turn's
     metrics land on the trace (Art. X, D71); `result.metrics` stays turn one.
+
+    `build`, `locate` and `prompt_version` name the payload shape being
+    walked (T-98, D122). Left unset they resolve to `build_result`, `_locate`
+    and `PROMPT_VERSION` at call time — the extraction configuration, which
+    is what both extraction runners pass by passing nothing. The quote turn
+    passes `quotes.build_quote_result`, `quotes._locate_quote` and
+    `quotes.QUOTE_PROMPT_VERSION`; nothing else about the walk differs.
     """
+    build, locate, version = _resolve_reask_defaults(build, locate, prompt_version)
     first = first_turn()
     assert first.payload is not None, "a first turn raises rather than returning nothing"
     metrics = list(first.metrics)
@@ -536,8 +603,8 @@ def extract_with_reask(
     steps = [step_names[0]]
     terminations = [first.termination]
 
-    result = build_result(document_id, text, first.payload, metrics[0] if metrics else None)
-    targets = reask_targets(result)
+    result = build(document_id, text, first.payload, metrics[0] if metrics else None)
+    targets = reask_targets(result, locate)
     if targets:
         first_payload = first.payload
         reask: dict = {
@@ -560,8 +627,8 @@ def extract_with_reask(
                     error = f"SCHEMA_INVALID: {exc.error_count()} error(s): {exc.errors()[0]['msg']}"
             if answers is not None:
                 reask["answers"] = [a.model_dump() for a in answers.quotes]
-                patched = apply_verbatim(first_payload, targets, answers)
-                result = build_result(document_id, text, patched, metrics[0] if metrics else None)
+                patched = apply_verbatim(first_payload, targets, answers, locate)
+                result = build(document_id, text, patched, metrics[0] if metrics else None)
                 still = {drop.get("path") for drop in result.dropped}
                 reask["recovered"] = [t["path"] for t in targets if t["path"] not in still]
                 reask["unrecovered"] = [t["path"] for t in targets if t["path"] in still]
@@ -576,7 +643,7 @@ def extract_with_reask(
     result.trace = RunTrace(
         runner_name=runner_name,
         model=metrics[0].model if metrics else model,
-        prompt_version=PROMPT_VERSION,
+        prompt_version=version,
         document_id=document_id,
         steps=steps,
         tool_calls=tool_calls,
@@ -617,6 +684,59 @@ def _generate(client, model: str, contents: str, schema, purpose: str) -> tuple[
     return response.text, metrics
 
 
+def direct_first_turn(client, model: str, contents: str, schema, purpose: str) -> Turn:
+    """The direct runner's first turn: one measured call, the answer parsed.
+
+    Raises whatever the SDK or the parser raises — a first turn that produced
+    nothing has nothing to build a result from, and the runner classifies
+    (`DirectExtractionRunner.run`). Shared with the quote turn since T-98
+    (D122): the two direct leaves differ only in what they ask.
+    """
+    response_text, metrics = _generate(client, model, contents, schema, purpose)
+    return Turn(
+        payload=json.loads(response_text),
+        metrics=[metrics],
+        termination=f"ok ({metrics.wall_time_ms:.0f}ms)",
+    )
+
+
+def direct_reask_turn(client, model: str, text: str, targets: list[dict], purpose: str) -> Turn:
+    """The direct runner's re-ask turn. Never raises: a failure is returned
+    classified on `Turn.error` and the first turn's result stands (D103).
+    Shared with the quote turn since T-98 (D122)."""
+    try:
+        response_text, metrics = _generate(
+            client, model, reask_contents(text, targets), VerbatimAnswers, purpose,
+        )
+    except Exception as exc:  # recorded classified, never raised (D103)
+        return Turn(
+            payload=None,
+            termination=type(exc).__name__,
+            error=f"CALL_FAILED: {type(exc).__name__}: {exc}",
+        )
+    try:
+        payload = json.loads(response_text)
+    except (json.JSONDecodeError, TypeError) as exc:
+        return Turn(
+            payload=None,
+            metrics=[metrics],
+            termination=f"unparseable ({metrics.wall_time_ms:.0f}ms)",
+            error=f"UNPARSEABLE: {exc}",
+        )
+    if not isinstance(payload, dict):
+        return Turn(
+            payload=None,
+            metrics=[metrics],
+            termination=f"schema_invalid ({metrics.wall_time_ms:.0f}ms)",
+            error=f"SCHEMA_INVALID: response is {type(payload).__name__}, not an object",
+        )
+    return Turn(
+        payload=payload,
+        metrics=[metrics],
+        termination=f"ok ({metrics.wall_time_ms:.0f}ms)",
+    )
+
+
 def extract(document_id: str, text: str, client, model: str = PINNED_MODEL) -> ExtractionResult:
     """One note in, structured facts out. At most `1 + REASK_ROUNDS` model
     calls (Art. X): the extraction, and one re-ask only when a quote could
@@ -626,51 +746,15 @@ def extract(document_id: str, text: str, client, model: str = PINNED_MODEL) -> E
     reads a credential or names a tier — D5 keeps AI Studio and Vertex as two
     credentials behind one pinned identifier, and the caller chooses.
     """
-
-    def first_turn() -> Turn:
-        response_text, metrics = _generate(
-            client, model, f"{INSTRUCTION}\n\nNOTE:\n{text}", Extraction, "extraction"
-        )
-        return Turn(
-            payload=json.loads(response_text),
-            metrics=[metrics],
-            termination=f"ok ({metrics.wall_time_ms:.0f}ms)",
-        )
-
-    def reask_turn(targets: list[dict]) -> Turn:
-        try:
-            response_text, metrics = _generate(
-                client, model, reask_contents(text, targets), VerbatimAnswers,
-                "extraction_reask",
-            )
-        except Exception as exc:  # recorded classified, never raised (D103)
-            return Turn(
-                payload=None,
-                termination=type(exc).__name__,
-                error=f"CALL_FAILED: {type(exc).__name__}: {exc}",
-            )
-        try:
-            payload = json.loads(response_text)
-        except (json.JSONDecodeError, TypeError) as exc:
-            return Turn(
-                payload=None,
-                metrics=[metrics],
-                termination=f"unparseable ({metrics.wall_time_ms:.0f}ms)",
-                error=f"UNPARSEABLE: {exc}",
-            )
-        if not isinstance(payload, dict):
-            return Turn(
-                payload=None,
-                metrics=[metrics],
-                termination=f"schema_invalid ({metrics.wall_time_ms:.0f}ms)",
-                error=f"SCHEMA_INVALID: response is {type(payload).__name__}, not an object",
-            )
-        return Turn(
-            payload=payload,
-            metrics=[metrics],
-            termination=f"ok ({metrics.wall_time_ms:.0f}ms)",
-        )
-
     return extract_with_reask(
-        document_id, text, first_turn, reask_turn, runner_name="direct", model=model
+        document_id,
+        text,
+        first_turn=lambda: direct_first_turn(
+            client, model, f"{INSTRUCTION}\n\nNOTE:\n{text}", Extraction, "extraction"
+        ),
+        reask_turn=lambda targets: direct_reask_turn(
+            client, model, text, targets, "extraction_reask"
+        ),
+        runner_name="direct",
+        model=model,
     )

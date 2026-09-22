@@ -12,10 +12,14 @@ could reach a verdict. The caller supplies the facts — `cli.py` and the eval
 harness both already construct the stores that serve them.
 
 **Python assigns the colour.** The model is asked for a note quote and nothing
-else, and even then only from T-98; it is never asked which colour and never
-asked which code. Every comparison here is arithmetic over a declared constant:
+else — through a `QuoteRunner` (`pa_agent.quotes`, T-98, D122) that
+`run_review` consults once per note and whose answers reach `review` as an
+already-anchored mapping; it is never asked which colour and never asked which
+code. Every comparison here is arithmetic over a declared constant:
 `CodedValueSet.admits` for membership (REQ-59) and `EffectSignal.satisfied_by`
-for the threshold, each done in one place.
+for the threshold, each done in one place. A yellow is then Article V's to
+check: `run_review` hands each one to the verifier as a `(candidate, quotes)`
+claim and demotes a rejected one to red that says so (REQ-67).
 
 **Three things this module deliberately refuses to do:**
 
@@ -47,8 +51,11 @@ for the threshold, each done in one place.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from pa_agent.contracts import (
+    CallMetrics,
     CodedConcept,
     CodedValueSet,
     Condition,
@@ -60,10 +67,16 @@ from pa_agent.contracts import (
     Medication,
     MedicationEffectRow,
     Observation,
+    RunTrace,
     SuggestionColour,
     WithheldCandidate,
     WithholdReason,
 )
+from pa_agent.verifier import build_history_claim_payload
+
+if TYPE_CHECKING:  # duck-typed at runtime; the module stays off both planes
+    from pa_agent.quotes import QuoteRunner
+    from pa_agent.verifier import VerifierRunner
 
 #: The medication status a candidate is drawn from. The filter is the review's
 #: judgment and not the adapter's, which is the rule `criteria.py` states for
@@ -83,8 +96,8 @@ class QuoteSourceNotConsulted(RuntimeError):
     """A candidate needed a note quote and no quote source was supplied.
 
     Raised rather than answered `RED`, because red is a claim about the chart
-    and this is a fact about the run (D90, D119). The message names T-98, which
-    is the row that supplies the runner.
+    and this is a fact about the run (D90, D119). The message names the way to
+    consult one: `run_review` with a `QuoteRunner` (T-98, D122).
     """
 
 
@@ -120,6 +133,32 @@ def _active_medications(
         for m in medications
         if m.status == ACTIVE_STATUS and products.admits(m.code, m.system)
     ]
+
+
+def candidate_rows(
+    rows: Sequence[MedicationEffectRow],
+    products: Mapping[str, CodedValueSet],
+    medications: Sequence[Medication],
+) -> list[MedicationEffectRow]:
+    """The rows an active prescription makes candidates, in `row_id` order.
+
+    The first thing `review` computes, and the thing `run_review` needs before
+    it: a chart with no candidate has no quote to ask for. A row with no
+    expansion raises for every row, matched or not — an unmatched row is one
+    that silently never fires (REQ-63, D119).
+    """
+    candidates: list[MedicationEffectRow] = []
+    for row in sorted(rows, key=lambda r: r.row_id):
+        expansion = products.get(row.ingredient.code)
+        if expansion is None:
+            raise KeyError(
+                f"row {row.row_id} declares ingredient {row.ingredient.code} and "
+                "no expansion was supplied for it; an unmatched row is one that "
+                "silently never fires (REQ-63, D119)"
+            )
+        if _active_medications(medications, expansion):
+            candidates.append(row)
+    return candidates
 
 
 def _most_recent(medications: Sequence[Medication]) -> Medication:
@@ -280,18 +319,8 @@ def review(
     suggestions: list[IcdSuggestion] = []
     withheld: list[WithheldCandidate] = []
 
-    for row in sorted(rows, key=lambda r: r.row_id):
-        expansion = products.get(row.ingredient.code)
-        if expansion is None:
-            raise KeyError(
-                f"row {row.row_id} declares ingredient {row.ingredient.code} and "
-                "no expansion was supplied for it; an unmatched row is one that "
-                "silently never fires (REQ-63, D119)"
-            )
-        matched = _active_medications(medications, expansion)
-        if not matched:
-            continue
-
+    for row in candidate_rows(rows, products, medications):
+        matched = _active_medications(medications, products[row.ingredient.code])
         medication = _most_recent(matched)
         on_chart = CodedConcept(
             system=medication.system or expansion.system,
@@ -378,7 +407,9 @@ def review(
                     f"to separate yellow from red, the chart carries "
                     f"{len(notes)} note(s), and no quote source was consulted. "
                     "Answering red here would report 'the chart does not say' "
-                    "for a chart nobody read (D90). The runner is T-98's."
+                    "for a chart nobody read (D90). Consult a QuoteRunner through "
+                    "history.run_review; RecordedQuoteRunner replays "
+                    "eval/history/results.json for zero calls (T-98, D122)."
                 )
             anchored: tuple[EvidenceSpan, ...] = ()
         else:
@@ -406,4 +437,156 @@ def review(
         policy_version_id=policy_version_id,
         suggestions=tuple(suggestions),
         withheld=tuple(sorted(withheld, key=lambda w: w.row_id)),
+    )
+
+
+# --------------------------------------------------------------------------
+# The run: the review beside what it cost (T-98, D122)
+# --------------------------------------------------------------------------
+
+
+@dataclass
+class HistoryRun:
+    """The review plus how it was reached — `WorkflowRun`'s two-object shape.
+
+    `review` is what a human reads; `traces` is one `RunTrace` per note the
+    quote runner consulted, every turn's `CallMetrics` on it, the re-ask
+    included (D71); `verifications` is what Article V's check of each yellow
+    cost; `rejections` names the candidates the verifier demoted, with its
+    reason. None of this touches `Determination.metrics`: the review's cost is
+    reported beside the determination's and never inside it (D119, D122).
+    """
+
+    review: HistoryReview
+    traces: list[RunTrace] = field(default_factory=list)
+    verifications: list[CallMetrics] = field(default_factory=list)
+    rejections: tuple[tuple[str, str], ...] = ()
+
+    @property
+    def notes_consulted(self) -> int:
+        return len(self.traces)
+
+    @property
+    def metrics(self) -> list[CallMetrics]:
+        return [m for trace in self.traces for m in trace.metrics] + list(self.verifications)
+
+    @property
+    def model_calls(self) -> int:
+        return len(self.metrics)
+
+    @property
+    def total_input_tokens(self) -> int:
+        return sum(m.input_tokens for m in self.metrics)
+
+    @property
+    def total_output_tokens(self) -> int:
+        return sum(m.output_tokens for m in self.metrics)
+
+    @property
+    def total_wall_time_ms(self) -> float:
+        return sum(m.wall_time_ms for m in self.metrics)
+
+
+def run_review(
+    *,
+    quote_runner: "QuoteRunner | None",
+    patient_id: str,
+    policy_version_id: str,
+    rows: Sequence[MedicationEffectRow],
+    products: Mapping[str, CodedValueSet],
+    medications: Sequence[Medication],
+    conditions: Sequence[Condition],
+    observations: Sequence[Observation],
+    criteria: Sequence[Criterion] = (),
+    value_sets: Mapping[str, CodedValueSet] | None = None,
+    notes: Sequence[Document] = (),
+    verifier: "VerifierRunner | None" = None,
+) -> HistoryRun:
+    """Consult the notes, then `review`, then Article V on every yellow.
+
+    The runner is asked about **every** row on **every** note, in store order —
+    the request is one fixed configuration a chart cannot vary (D45, D122) —
+    and only when the chart has notes and at least one candidate; Python keeps
+    what `review` needs. Every row is keyed in `quotes`, so a candidate that
+    reaches the quote step reads `()` — consulted, nothing found — and never
+    `None`. With no runner on a note-bearing chart the review still raises
+    `QuoteSourceNotConsulted`, one layer up (D90).
+
+    A yellow is a claim about the chart, so with a verifier supplied each one
+    is handed over as a `(candidate, quotes)` claim — the passages sliced from
+    the note, never taken from the model (D18) — and a rejection demotes it to
+    red with `verifier_rejected` set, no retry (REQ-18's rule, REQ-67). A
+    verifier fault propagates: it is not an answer, and neither colour is a
+    default for it (D90). On the committed corpus no yellow exists, so
+    `RecordedVerifierRunner` is never reached and holds no history claim;
+    one that appeared would raise `NOT_RECORDED` rather than default to
+    accepted (D122).
+    """
+    quotes: dict[str, tuple[EvidenceSpan, ...]] | None = None
+    traces: list[RunTrace] = []
+    if notes and quote_runner is not None and candidate_rows(rows, products, medications):
+        gathered: dict[str, list[EvidenceSpan]] = {row.row_id: [] for row in rows}
+        for note in notes:
+            result = quote_runner.run(note.document_id, note.text, rows)
+            for row_id, spans in result.spans.items():
+                gathered.setdefault(row_id, []).extend(spans)
+            if result.trace is not None:
+                traces.append(result.trace)
+        quotes = {row_id: tuple(spans) for row_id, spans in gathered.items()}
+
+    reviewed = review(
+        patient_id=patient_id,
+        policy_version_id=policy_version_id,
+        rows=rows,
+        products=products,
+        medications=medications,
+        conditions=conditions,
+        observations=observations,
+        criteria=criteria,
+        value_sets=value_sets,
+        notes=notes,
+        quotes=quotes,
+    )
+
+    verifications: list[CallMetrics] = []
+    rejections: list[tuple[str, str]] = []
+    if verifier is not None and any(
+        s.colour is SuggestionColour.YELLOW for s in reviewed.suggestions
+    ):
+        by_id = {note.document_id: note for note in notes}
+        suggestions: list[IcdSuggestion] = []
+        for suggestion in reviewed.suggestions:
+            if suggestion.colour is not SuggestionColour.YELLOW:
+                suggestions.append(suggestion)
+                continue
+            passages = [by_id[span.document_id].slice(span) for span in suggestion.citations]
+            answer = verifier.run(build_history_claim_payload(suggestion, passages))
+            if answer.metrics is not None:
+                verifications.append(answer.metrics)
+            if answer.accept:
+                suggestions.append(suggestion)
+                continue
+            rejections.append((suggestion.row_id, answer.reason))
+            suggestions.append(
+                IcdSuggestion(
+                    **{
+                        **suggestion.model_dump(),
+                        "colour": SuggestionColour.RED,
+                        "citations": (),
+                        "verifier_rejected": True,
+                    }
+                )
+            )
+        reviewed = HistoryReview(
+            patient_id=reviewed.patient_id,
+            policy_version_id=reviewed.policy_version_id,
+            suggestions=tuple(suggestions),
+            withheld=reviewed.withheld,
+        )
+
+    return HistoryRun(
+        review=reviewed,
+        traces=traces,
+        verifications=verifications,
+        rejections=tuple(rejections),
     )

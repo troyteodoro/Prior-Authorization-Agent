@@ -402,9 +402,10 @@ _ALLOWED_BROAD_SWALLOWS = {
     ("pa_agent/agent/extraction_agent.py", "_invoke"):
         "returns the failure classified; the first turn raises it, the re-ask "
         "records it (D103)",
-    ("pa_agent/extraction.py", "reask_turn"):
+    ("pa_agent/extraction.py", "direct_reask_turn"):
         "the re-ask never raises: a transport fault is recorded classified on "
-        "`reask.error` and the trace, and the first turn's result stands (D103)",
+        "`reask.error` and the trace, and the first turn's result stands (D103); "
+        "shared by the extraction and the quote turn since T-98 (D122)",
     ("pa_agent/agent/retrieval_agent.py", "_run"):
         "budget loop: stores the failure, re-raises classified at exhaustion",
 }

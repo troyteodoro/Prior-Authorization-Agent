@@ -1011,3 +1011,118 @@ def test_no_committed_eval_row_is_anything_but_pass(script):
     outcomes = outcomes[outcomes.index("## Outcomes") : outcomes.index("## Per-criterion")]
     for status in ("FAIL", "BLOCKED", "ERROR"):
         assert f"| `{status}` | 0 |" in outcomes, f"{status} is no longer zero"
+
+
+# --------------------------------------------------------------------------
+# T-98 (D122): the quote consultation section
+# --------------------------------------------------------------------------
+
+
+def _quote_note(note_id: str, returned: int, anchored: int, refused: int = 0,
+                turns: int = 1, reask: dict | None = None) -> dict:
+    fabricated = 1 if returned and not anchored else 0
+    return {
+        "note_id": note_id,
+        "score": {
+            "quotes_returned": returned, "quotes_anchored": anchored,
+            "quotes_refused": refused, "pairs_with_quote": 1 if returned else 0,
+            "pairs_anchored": 1 if anchored else 0, "pairs_fabricated": fabricated,
+            "dropped": (
+                [{"reason": "effect_quote_unanchorable", "quote": "a  passage\nnot there"}]
+                if refused else []
+            ),
+        },
+        "trace": {"metrics": [
+            {"input_tokens": 10, "output_tokens": 2, "wall_time_ms": 1.0}
+        ] * turns},
+        "reask": reask,
+    }
+
+
+def _quote_recording(*notes: dict, lying: bool = True) -> dict:
+    return {
+        "rows_asked": [{"row_id": f"r{i}", "effect_display": f"c{i}"} for i in range(5)],
+        # A lying aggregate: the rows must come from the records (T-71).
+        "aggregate": {"pairs_fabricated": 99, "model_calls": 99} if lying else {},
+        "notes": list(notes),
+    }
+
+
+def test_quote_rows_recompute_from_the_records_and_not_the_aggregate(script):
+    rows = script._quote_rows([
+        ("direct", "ai_studio", _quote_recording(
+            _quote_note("a/1", 0, 0),
+            _quote_note("a/2", 2, 1, refused=1, turns=2,
+                        reask={"targets": [{"path": "p"}], "recovered": [], "unrecovered": ["p"]}),
+        )),
+        ("ADK inline", "vertex", _quote_recording(_quote_note("b/1", 0, 0))),
+    ])
+    first, second = rows
+    assert first["notes"] == 2 and first["pairs"] == 10
+    assert first["pairs_fabricated"] == 0 and first["pairs_anchored"] == 1
+    assert first["quotes_returned"] == 2 and first["quotes_anchored"] == 1 and first["quotes_refused"] == 1
+    assert first["reask_targets"] == 1 and first["reask_recovered"] == 0
+    assert first["model_calls"] == 3, "every turn, not the lying aggregate"
+    assert first["input_tokens"] == 30
+    assert first["refused"] == [{"note_id": "a/2", "quote": "a passage not there"}]
+    assert second["tier"] == "vertex" and second["pairs"] == 5 and second["model_calls"] == 1
+
+
+def test_the_quote_section_reads_every_committed_recording(script):
+    """The figures the section exists to carry, pinned to the six recordings
+    as committed (D122): twelve notes each, sixty pairs, zero returned, zero
+    fabricated; twelve turns on the direct and inline runs and twenty-four on
+    the tool-fetch runs, where a tool round trip is two calls (D71)."""
+    text = "\n".join(script._quote_section())
+    assert "## Quote consultation (T-98, REQ-67, REQ-68, D122)" in text
+    for label, tier, filename, turns in (
+        ("direct", "ai_studio", "results.json", 12),
+        ("direct", "vertex", "results_vertex.json", 12),
+        ("ADK inline", "ai_studio", "adk_results_inline.json", 12),
+        ("ADK inline", "vertex", "adk_results_inline_vertex.json", 12),
+        ("ADK tool-fetch", "ai_studio", "adk_results_tool_fetch.json", 24),
+        ("ADK tool-fetch", "vertex", "adk_results_tool_fetch_vertex.json", 24),
+    ):
+        prefix = f"| {label} (`{filename}`) | {tier} | 12 | {turns} | "
+        row = next((line for line in text.splitlines() if line.startswith(prefix)), None)
+        assert row is not None, f"no row for {filename}"
+        assert row.endswith("| 0 | 0 | 0 | 0 | 0 | 60 | **0** |"), row
+    assert "**No passage was returned for any pair in any recording.**" in text
+    assert "Pairs anchored across all six recordings: 0." in text
+
+
+def test_the_quote_section_is_in_the_committed_report():
+    text = REPORT.read_text(encoding="utf-8")
+    assert "## Quote consultation (T-98, REQ-67, REQ-68, D122)" in text
+    assert "| Fabricated pairs |" in text
+    assert "**Scope.** These totals are determination cost only." in text
+
+
+def test_the_quote_section_names_a_refused_passage_beside_its_note(script, tmp_path, monkeypatch):
+    """The per-note record always showed the refusal; the point of the
+    section is that the *report* names it, flattened to one line, beside
+    its note and its recording."""
+    (tmp_path / "history").mkdir()
+    (tmp_path / "history" / "x.json").write_text(
+        json.dumps(_quote_recording(_quote_note("lossy/1", 1, 0, refused=1))),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(script, "EVAL_DIR", tmp_path)
+    monkeypatch.setattr(script, "HISTORY_RECORDINGS", (("direct", "ai_studio", "history/x.json"),))
+    text = "\n".join(script._quote_section())
+    assert "**Refused passages, named.**" in text
+    assert "- direct (ai_studio), note `lossy/1`: *a passage not there*" in text
+    assert "| 5 | **1** |" in text
+    assert "Pairs anchored across all six recordings: 0." in text
+
+
+def test_the_quote_section_refuses_a_missing_recording(script, tmp_path, monkeypatch):
+    monkeypatch.setattr(script, "EVAL_DIR", tmp_path)
+    with pytest.raises(SystemExit, match="checkout problem"):
+        script._quote_section()
+
+
+def test_the_cost_section_states_its_scope(script):
+    text = "\n".join(script._cost_section([], {}))
+    assert "**Scope.** These totals are determination cost only." in text
+    assert "Quote consultation" in text

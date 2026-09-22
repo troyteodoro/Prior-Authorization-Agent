@@ -14,11 +14,13 @@ the pinned expansion actually reach the codes Synthea writes — it is asked
 directly, because that is the failure the expansion exists to fix and it is a
 fact about the committed bundles rather than about a fixture.
 
-**There is no stub quote source class.** The review takes the anchored quotes as
-a mapping, so yellow is produced here by passing one; nothing under `pa_agent/`
-implements a quote port at this close, and T-98 is the row that adds one. D78's
-rule — an accept-all implementation lives in `tests/` and never in the package —
-is satisfied by there being nothing to place.
+**The quote port is `pa_agent.quotes` (T-98, D122)** and `run_review` is what
+consults it. `review` still takes the anchored quotes as a mapping, so the
+tri-state is pinned here by passing one; the REQ-67 tests below drive
+`run_review` with a stub runner whose payloads go through the **real**
+anchorer, because the statement they mint — a refused quote is red, never
+yellow — is the anchorer's refusal and not a fixture's. The stubs live here and
+never in the package (D78's rule).
 """
 
 from __future__ import annotations
@@ -32,6 +34,7 @@ import pytest
 
 from pa_agent import history
 from pa_agent.contracts import (
+    CallMetrics,
     CodedConcept,
     CodedValueSet,
     Condition,
@@ -47,9 +50,13 @@ from pa_agent.contracts import (
     SuggestionColour,
     WithholdReason,
 )
+from pa_agent.contracts import RunTrace
+from pa_agent.quotes import NullQuoteRunner, RecordedQuoteRunner, build_quote_result
+from pa_agent.spans import validate as validate_span
 from pa_agent.stores.knowledge import LocalKnowledgeStore
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
+from pa_agent.verifier import RecordedVerifierRunner, VerifierAnswer
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BUNDLES = REPO_ROOT / "data" / "patients" / "bundles"
@@ -337,13 +344,13 @@ def test_a_quote_source_consulted_and_empty_is_red():
     assert review.suggestions[0].colour is SuggestionColour.RED
 
 
-def test_no_quote_source_on_a_chart_with_notes_raises_and_names_the_next_row():
+def test_no_quote_source_on_a_chart_with_notes_raises_and_names_the_runner():
     """D90, on a second wire. Answering red here would report *the chart does not
-    say* for a chart nobody read."""
+    say* for a chart nobody read. The message names the way to consult one."""
     row = a_row()
     with pytest.raises(history.QuoteSourceNotConsulted) as caught:
         run(row, notes=[a_note()], quotes=None)
-    assert "T-98" in str(caught.value)
+    assert "run_review" in str(caught.value)
 
 
 def test_a_crossing_reading_with_no_span_raises_rather_than_reporting_red():
@@ -382,6 +389,219 @@ def test_the_model_is_never_asked_for_a_colour_or_a_code():
 # --------------------------------------------------------------------------
 # REQ-65 — a suggestion is not a code assignment, and a withhold is recorded
 # --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# REQ-67 — a refused quote is red, never yellow; a rejected yellow is red and
+# says so. REQ-68 — every turn of every note is counted. Through `run_review`
+# with a stub runner whose payloads go through the real anchorer (T-98, D122).
+# --------------------------------------------------------------------------
+
+
+HAND_NOTE = (
+    "ASSESSMENT\n"
+    "Chronic kidney disease stage 2 noted on labs.\n"
+    "Blood pressure 118/76, unremarkable.\n"
+)
+HAND_VERBATIM = "Chronic kidney disease stage 2 noted on labs."
+HAND_PARAPHRASE = "Chronic kidney disease stage two noted on labs."
+
+
+def a_hand_note(document_id: str = "p1/chart_note_1.txt", text: str = HAND_NOTE) -> Document:
+    return Document.from_text(document_id, text)
+
+
+class _StubQuoteRunner:
+    """Answers each note with a prepared payload, through `build_quote_result`
+    and therefore through the real anchorer; records what it was asked."""
+
+    name = "stub"
+
+    def __init__(self, payload_by_document: dict[str, dict]) -> None:
+        self._payloads = payload_by_document
+        self.asked: list[tuple[str, tuple[str, ...]]] = []
+
+    def run(self, document_id, text, rows):
+        self.asked.append((document_id, tuple(r.row_id for r in rows)))
+        payload = self._payloads.get(document_id, {"effects": []})
+        metric = CallMetrics(
+            model="fake-under-test", purpose="quotes", input_tokens=5,
+            output_tokens=2, wall_time_ms=1.0,
+        )
+        result = build_quote_result(document_id, text, payload, metric, rows=rows)
+        result.trace = RunTrace(
+            runner_name=self.name, model="fake-under-test", prompt_version="stub",
+            document_id=document_id, steps=["quotes"], metrics=[metric],
+        )
+        return result
+
+
+class _Verdict:
+    """A verifier fake with one fixed answer. Lives here, never in the package."""
+
+    name = "verdict"
+
+    def __init__(self, accept: bool, reason: str = "test double") -> None:
+        self._accept, self._reason = accept, reason
+        self.payloads: list[dict] = []
+
+    def run(self, payload: dict) -> VerifierAnswer:
+        self.payloads.append(payload)
+        return VerifierAnswer(
+            accept=self._accept, reason=self._reason,
+            metrics=CallMetrics(
+                model="fake-under-test", purpose="verification", input_tokens=3,
+                output_tokens=1, wall_time_ms=1.0,
+            ),
+        )
+
+
+def _quote_payload(display: str, quote: str) -> dict:
+    return {"effects": [{"effect": display, "quotes": [
+        {"quote": quote, "char_start": 0, "char_end": 1}]}]}
+
+
+def run_with_runner(row: MedicationEffectRow, runner, **kwargs) -> history.HistoryRun:
+    defaults = dict(
+        quote_runner=runner,
+        patient_id="p1",
+        policy_version_id="a-tree-v1",
+        rows=[row],
+        products=products_for(row, "999"),
+        medications=[a_medication()],
+        conditions=[],
+        observations=[],
+        notes=[a_hand_note()],
+    )
+    defaults.update(kwargs)
+    return history.run_review(**defaults)
+
+
+def test_a_paraphrased_quote_is_refused_by_the_anchorer_and_the_candidate_is_red():
+    """REQ-67, through the real `anchor.py`: one word changed and the quote does
+    not occur in the note, so it is dropped and the candidate is red citing
+    nothing — never yellow on a passage nobody can locate (D18)."""
+    row = a_row()
+    runner = _StubQuoteRunner({"p1/chart_note_1.txt": _quote_payload("an effect", HAND_PARAPHRASE)})
+    run_ = run_with_runner(row, runner)
+    (suggestion,) = run_.review.suggestions
+    assert suggestion.colour is SuggestionColour.RED
+    assert suggestion.citations == ()
+    assert suggestion.verifier_rejected is False
+    assert run_.notes_consulted == 1 and run_.rejections == ()
+
+
+def test_a_verbatim_quote_is_yellow_and_the_validator_accepts_its_span():
+    row = a_row()
+    runner = _StubQuoteRunner({"p1/chart_note_1.txt": _quote_payload("an effect", HAND_VERBATIM)})
+    run_ = run_with_runner(row, runner)
+    (suggestion,) = run_.review.suggestions
+    assert suggestion.colour is SuggestionColour.YELLOW
+    (span,) = suggestion.citations
+    from pa_agent.index import DocumentIndex
+
+    index = DocumentIndex()
+    index.add(a_hand_note())
+    assert validate_span(span, index) == HAND_VERBATIM
+    assert suggestion.signal is None
+
+
+def test_a_yellow_the_verifier_rejects_is_red_and_says_so():
+    """REQ-67's second clause and Article V on the review: the claim the
+    verifier sees is the candidate and its passages, sliced from the note;
+    a rejection demotes to red with `verifier_rejected` set, no retry."""
+    row = a_row()
+    runner = _StubQuoteRunner({"p1/chart_note_1.txt": _quote_payload("an effect", HAND_VERBATIM)})
+    verifier = _Verdict(accept=False, reason="the passage is about something else")
+    run_ = run_with_runner(row, runner, verifier=verifier)
+    (suggestion,) = run_.review.suggestions
+    assert suggestion.colour is SuggestionColour.RED
+    assert suggestion.citations == ()
+    assert suggestion.verifier_rejected is True
+    assert run_.rejections == ((row.row_id, "the passage is about something else"),)
+    (payload,) = verifier.payloads
+    assert sorted(payload) == ["candidate", "quotes"]
+    assert payload["quotes"] == [HAND_VERBATIM]
+    assert payload["candidate"] == {"effect": "an effect", "icd10_title": row.icd10_title}
+    assert run_.model_calls == 2, "one quote turn and one verification, both counted"
+
+
+def test_a_yellow_the_verifier_accepts_stays_yellow_and_the_call_is_counted():
+    row = a_row()
+    runner = _StubQuoteRunner({"p1/chart_note_1.txt": _quote_payload("an effect", HAND_VERBATIM)})
+    verifier = _Verdict(accept=True)
+    run_ = run_with_runner(row, runner, verifier=verifier)
+    (suggestion,) = run_.review.suggestions
+    assert suggestion.colour is SuggestionColour.YELLOW
+    assert suggestion.verifier_rejected is False
+    assert len(run_.verifications) == 1 and run_.model_calls == 2
+    assert run_.total_input_tokens == 5 + 3
+
+
+def test_a_red_with_no_quote_never_reaches_the_verifier():
+    row = a_row()
+    runner = _StubQuoteRunner({})
+    verifier = _Verdict(accept=False)
+    run_ = run_with_runner(row, runner, verifier=verifier)
+    assert run_.review.suggestions[0].colour is SuggestionColour.RED
+    assert verifier.payloads == [] and run_.verifications == []
+
+
+def test_a_note_free_chart_never_consults_the_runner():
+    row = a_row()
+    run_ = run_with_runner(row, NullQuoteRunner("note-free"), notes=[])
+    assert run_.review.suggestions[0].colour is SuggestionColour.RED
+    assert run_.notes_consulted == 0 and run_.model_calls == 0
+
+
+def test_a_chart_with_no_candidate_never_consults_the_runner():
+    row = a_row()
+    run_ = run_with_runner(row, NullQuoteRunner("no candidate"), medications=[])
+    assert run_.review.suggestions == () and run_.notes_consulted == 0
+
+
+def test_no_runner_on_a_note_bearing_chart_raises_one_layer_up():
+    row = a_row()
+    with pytest.raises(history.QuoteSourceNotConsulted):
+        run_with_runner(row, None)
+
+
+def test_the_runner_is_asked_about_every_row_on_every_note_and_python_keeps_the_candidates():
+    """D122: the request is one fixed configuration. Two rows, one candidate;
+    the runner is asked both on both notes, and only the candidate is
+    reviewed."""
+    on_chart = a_row(row_id="drug-a", ingredient="1")
+    absent = a_row(row_id="drug-b", ingredient="2", signal_code="2345-7").model_copy(
+        update={"effect_display": "another effect"}
+    )
+    products = {**products_for(on_chart, "999"), **products_for(absent, "888")}
+    runner = _StubQuoteRunner({})
+    run_ = run_with_runner(
+        on_chart, runner, rows=[on_chart, absent], products=products,
+        notes=[a_hand_note("p1/chart_note_1.txt"), a_hand_note("p1/chart_note_2.txt", "Second note.\n")],
+    )
+    assert runner.asked == [
+        ("p1/chart_note_1.txt", ("drug-a", "drug-b")),
+        ("p1/chart_note_2.txt", ("drug-a", "drug-b")),
+    ]
+    assert [s.row_id for s in run_.review.suggestions] == ["drug-a"]
+    assert run_.notes_consulted == 2 and run_.model_calls == 2
+
+
+def test_quotes_from_two_notes_are_merged_in_store_order():
+    row = a_row()
+    second = "Follow-up: an effect is documented again here.\n"
+    runner = _StubQuoteRunner({
+        "p1/chart_note_1.txt": _quote_payload("an effect", HAND_VERBATIM),
+        "p1/chart_note_2.txt": _quote_payload("an effect", "an effect is documented again here."),
+    })
+    run_ = run_with_runner(
+        row, runner, notes=[a_hand_note(), a_hand_note("p1/chart_note_2.txt", second)],
+    )
+    (suggestion,) = run_.review.suggestions
+    assert [c.document_id for c in suggestion.citations] == [
+        "p1/chart_note_1.txt", "p1/chart_note_2.txt",
+    ]
 
 
 def test_a_condition_the_chart_already_codes_is_withheld_with_the_codes():
@@ -727,15 +947,107 @@ def test_h3s_chart_yields_one_red_suggestion_citing_nothing(corpus_review):
     assert suggestion.citations == ()
 
 
-def test_the_one_note_bearing_chart_with_a_candidate_raises_until_t98(corpus_review):
+H4_PATIENT = "bc6748d3-3a0f-9734-7730-4518f5b268fb"
+HISTORY_RESULTS = REPO_ROOT / "eval" / "history" / "results.json"
+VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
+
+
+def test_the_note_bearing_chart_with_a_candidate_raises_with_no_quote_source(corpus_review):
     """`bc6748d3` carries an active lisinopril, no creatinine, and notes that
-    mention nothing renal. It is why the review is computed only for rows that
-    label one, and it is T-98's yellow host."""
+    mention nothing renal, so `review` with no quote source raises rather
+    than answering red (D90, D119) — still, with the runner one layer up."""
     with pytest.raises(history.QuoteSourceNotConsulted):
-        corpus_review("bc6748d3-3a0f-9734-7730-4518f5b268fb", "43775")
+        corpus_review(H4_PATIENT, "43775")
 
 
-def test_every_suggestion_the_corpus_produces_slices_back(corpus_review):
+@pytest.fixture(scope="module")
+def corpus_run():
+    """`corpus_review`'s twin through `run_review`, with the recorded quote
+    runner and the recorded verifier — the two things every gate replays."""
+    assert HISTORY_RESULTS.exists(), (
+        "eval/history/results.json is missing; run scripts/run_quote_measurement.py "
+        "(it spends model calls)"
+    )
+    recording = json.loads(HISTORY_RESULTS.read_text(encoding="utf-8"))
+    quote_runner = RecordedQuoteRunner.from_records(
+        recording["notes"], recording["rows_asked"], model=recording["model"]
+    )
+    verifier = RecordedVerifierRunner.from_records(
+        json.loads(VERIFIER_RESULTS.read_text(encoding="utf-8"))["claims"]
+    )
+    knowledge = LocalKnowledgeStore()
+    patient = LocalPatientStore()
+    policy = LocalPolicyStore()
+    rows = knowledge.get_medication_effect_rows()
+    products = {
+        row.ingredient.code: knowledge.get_ingredient_products(row.ingredient.code)
+        for row in rows
+    }
+
+    def run_for(patient_id: str, procedure_code: str) -> history.HistoryRun:
+        tree = policy.get_tree(
+            policy.resolve(
+                procedure_code, patient.get_jurisdiction_state(patient_id)
+            ).policy_version_id
+        )
+        sets = {}
+        for criterion in tree.criteria:
+            constant = criterion.constants.get(history.VALUE_SET_CONSTANT)
+            if constant is not None:
+                sets[str(constant.value)] = policy.get_value_set(str(constant.value))
+        return history.run_review(
+            quote_runner=quote_runner,
+            patient_id=patient_id,
+            policy_version_id=tree.policy_version_id,
+            rows=rows,
+            products=products,
+            medications=patient.get_medications(patient_id),
+            conditions=patient.get_conditions(patient_id),
+            observations=patient.get_observations(patient_id),
+            criteria=tree.criteria,
+            value_sets=sets,
+            notes=patient.get_notes(patient_id),
+            verifier=verifier,
+        )
+
+    return run_for
+
+
+def test_h4s_chart_reads_red_with_both_notes_consulted_and_every_turn_counted(corpus_run):
+    """T-98's row (D122): the recorded runner is consulted on both of the
+    chart's notes for every table condition, none anchors for renal
+    impairment, and the candidate is red — proved by a recording, not
+    assumed. No yellow, so the recorded verifier is never reached."""
+    run_ = corpus_run(H4_PATIENT, "43775")
+    assert run_.review.policy_version_id == "ncd-100.1-jf-v1"
+    assert run_.review.by_colour == {"green": 0, "yellow": 0, "red": 1}
+    (suggestion,) = run_.review.suggestions
+    assert (suggestion.row_id, suggestion.icd10_code) == ("lisinopril-renal-impairment", "N28.9")
+    assert suggestion.citations == () and suggestion.verifier_rejected is False
+    assert suggestion.would_affect == ()
+    assert run_.review.withheld == ()
+    assert run_.notes_consulted == 2
+    assert run_.model_calls == sum(len(t.metrics) for t in run_.traces) >= 2
+    assert run_.verifications == [] and run_.rejections == ()
+    assert {t.document_id for t in run_.traces} == {
+        f"{H4_PATIENT}/chart_note_1.txt", f"{H4_PATIENT}/chart_note_2.txt",
+    }
+
+
+def test_the_other_labeled_charts_reach_the_same_review_through_run_review(
+    corpus_review, corpus_run
+):
+    for patient_id, code in (
+        (H1_PATIENT, "93975"),
+        ("b1bbb34a-aa4b-5c18-a550-8bd26e0da528", "93975"),
+        ("42a430ab-b7ca-87a5-279f-ee115f49fd6e", "J1745"),
+    ):
+        run_ = corpus_run(patient_id, code)
+        assert run_.review == corpus_review(patient_id, code)
+        assert run_.notes_consulted == 0, "note-free: nothing to consult"
+
+
+def test_every_suggestion_the_corpus_produces_slices_back(corpus_run):
     """Article III over the review's own citations, on both corpora: a chart span
     into the bundle and an effect span into a hashed label."""
     from pa_agent.index import DocumentIndex
@@ -748,8 +1060,9 @@ def test_every_suggestion_the_corpus_produces_slices_back(corpus_review):
         (H1_PATIENT, "93975"),
         ("b1bbb34a-aa4b-5c18-a550-8bd26e0da528", "93975"),
         ("42a430ab-b7ca-87a5-279f-ee115f49fd6e", "J1745"),
+        (H4_PATIENT, "43775"),
     ):
-        review = corpus_review(patient_id, code)
+        review = corpus_run(patient_id, code).review
         for item in (*review.suggestions, *review.withheld):
             spans = list(item.citations)
             if getattr(item, "effect", None) is not None:
