@@ -10645,3 +10645,159 @@ recording; or `pairs_fabricated` is non-zero on a tier, at which point the
 instruction is versioned and re-measured rather than the anchorer loosened
 (D18, D98); or a second consumer needs the quote turn inside the graph, which
 is D119's reversal condition and is answered there first.
+
+---
+
+## D123 — The review reaches a person through one flag, and the version closes on the one A11 clause nothing held
+
+**Context.** `T-99` is row 4 of v1.3 and its last. `T-97` built the review and
+`T-98` measured its one model turn, and between them the feature is complete
+and invisible: `pa_agent/cli.py` names no suggestion key, and
+`tests/test_history.py` asserts that on purpose so row 2 could not build
+ahead. The board gives this row two things — `--suggest`, and A11's
+suggestion-precision section in `eval/report.md` — and v1.3's gate to close.
+Nothing here mints a requirement: REQ-62 through REQ-68 are all minted, so
+what this row has to produce is a gate that holds on commands, which is
+`T-95`'s shape one version along.
+
+**Chosen — A11's four clauses were traced to commands before the row was
+scoped, and three already had one.** T-95 closed A10 having found two of its
+three clauses held by nothing, so the first question this row asks is which of
+A11's four are commanded today. *Zero suggestions without a source row*,
+*zero yellow without a valid span* and *zero verdict drift* each resolve to a
+test `T-97` or `T-98` already wrote — the last one structurally, which is the
+strongest of the three: no `Determination` field names a suggestion and no
+engine module imports `history`, so the drift is not merely unmeasured but
+unrepresentable (D119). Only *suggestion precision at A2's bar* had nothing.
+**Rejected — writing a fresh command for all four**, which would have added a
+differential harness running every eval row with and without the review to
+re-prove what an import-graph assertion already proves, and a second span walk
+beside the scorer's. **Rejected — asserting the three in prose and moving on**:
+that is the move T-95 found and closed, and repeating it one version later
+would make the precedent worthless. What this row does instead is *name* the
+command behind each clause, in the record and in the report's own section, so
+the claim is auditable rather than restated.
+
+**Chosen — the quote runner follows `--extraction`.** `_build_verifier`
+already does exactly this and says why: the recorded leaf gets the recorded
+checker, because a live leaf produces claims no recording has seen. A third
+leaf on the same word keeps the property that a recorded run spends nothing
+and a live run is live throughout, and it adds no flag. **Rejected — a
+separate `--quotes`**: it makes representable a configuration no recording
+holds — live quotes over replayed extraction — which is `T-110`'s measurement
+and not a demo path, and a user who reached it would get a bill from a command
+whose other half advertises zero calls. Reverses if `T-110` needs to vary the
+two independently from the CLI rather than from its measurement script.
+
+**Chosen — the review is composed in `cli.py`.** `history.py` takes `products`
+and `value_sets` as arguments precisely so it reaches neither plane, and
+`tests/test_planes.py` asserts the both-planes set is an **exact** five modules
+with `pa_agent.cli` already among them as the composition root (REQ-41). The
+assembly recipe already exists in the eval harness; this row puts a second
+caller beside it rather than moving it. **Rejected — a new module holding the
+assembly**: it would have to be declared in the both-planes list, widening an
+Article VI allowlist for one caller, and the list is exact because a subset
+check once hid `retrieval` (D83). **Rejected — fetching inside `history.py`**:
+that is the one change that would put the review on both planes and end the
+property its signature exists to hold.
+
+**Chosen — `HistoryReview.policy_version_id` becomes `str | None`.** A request
+that short-circuits has no governing tree, and the review is a report about the
+chart rather than about the policy, so it is still answerable — a reviewer
+asking what an uncovered chart implies is the case most worth answering, not
+the one to leave silent. `None` means no tree governs this request, and every
+`would_affect` is empty carrying that as its reason, because REQ-66 forbids an
+empty list without one. **Rejected — a sentinel string** such as
+`"NO_POLICY_FOUND"`: the field is printed in a block beside real policy ids and
+a reader has no way to tell the two apart, which is D22's class of error.
+**Rejected — suppressing the block on a short circuit**: it makes the most
+useful case the one case that answers nothing.
+
+**Chosen — the trivial baseline is "suggest every candidate".** A2's bar is
+0.90 *reported beside a base rate and the precision of a trivial baseline*, and
+a precision figure without one is not a result. The analogue of always-`MET`
+here is a system that emits every row an active prescription makes a candidate,
+ignoring both withhold reasons — and the two it gets wrong are exactly `H2`'s
+`ALREADY_CODED` and `SIGNAL_NOT_CROSSED`, so the comparison measures the half of
+the review that does the work. Precision stays on the labeled rows only, as A2's
+section does, because scoring the rest would need a ground truth that does not
+exist (D42, D85). **Rejected — no baseline**, on the ground that three
+suggestions cannot support one: the denominator is the thing to state plainly,
+not a reason to drop the comparison that gives the figure meaning. The section
+says three.
+
+**Chosen — the unreachable fallback in `review` is deleted rather than bound.**
+`history.py` reads `system=medication.system or expansion.system`, and
+`expansion` is a local of `candidate_rows` that `review` never binds. It is
+dead rather than live: `_active_medications` filters on
+`products.admits(m.code, m.system)` and `CodedValueSet.admits` is
+`system == self.system and code in self.codes`, so a matched medication's
+system always equals the expansion's and the right arm never evaluates. The
+fix is `system=medication.system`. **Rejected — binding `expansion`**: it
+preserves a branch that cannot be reached and reads as though a system-less
+medication could be a candidate, which REQ-59 says it cannot. Pinned two ways
+because no chart can exercise it — a test that a matched medication's system
+*is* the expansion's declared system, which is the property that makes the
+branch dead, and an AST scan for a name `review()` loads without binding, so a
+future fallback naming an out-of-scope local is a red suite rather than a
+`NameError` waiting on a loosened filter (D65's shape). Found while planning
+this row and fixed in it rather than minted as a task, because it is one line
+on the path this row puts in front of a user; working rule 6's new-task rule is
+for discovered *work*, and this is a deletion.
+
+**Chosen — the prose step list in `README.md` is fixed here and then checked.**
+The README says the graph is "a module-level tuple of **eight** named steps" and
+lists eight; `workflow.STEPS` has ten and the mermaid diagram below the sentence
+draws all ten. `tests/test_readme_structure.py` compares the *diagram* to
+`STEPS`, so the sentence above it drifted with every gate green — D108's failure
+in the one place D121's test does not reach. The sentence is corrected and the
+test extended to parse it against `STEPS` too. **Rejected — a separate task**:
+this row already edits that section for `--suggest` and the gate table, and a
+second record for one sentence costs a reader more than it tells them.
+**Rejected — fixing it without the check**: it is the same drift recurring,
+and the reason it lasted is that nothing held it.
+
+**What it mints.** Nothing. v1.3's seven statements were minted by `T-96`
+through `T-98`, and a version whose last row mints nothing is a version whose
+requirements were earned where they were checked (D109). The closing argument
+is A11.
+
+**Measured at the close.** A11 holds. **Precision 1.000** over three
+suggestions on the four labeled charts, against a **0.600** trivial baseline —
+the base rate by construction — whose two errors are exactly `H2`'s withheld
+pair, one per reason. `--suggest` prints `H1`'s green suggestion citing its
+declared creatinine for zero model calls and `H4`'s red one with both notes
+consulted for two replayed turns, 986 input and 240 output tokens, counted
+inside the block and never in Article X's. The determination printed without
+the flag is **byte-identical to the pre-change tree**; with it the only
+difference is the added key. No verdict, span, recording or baseline status
+moved; the verifier recording stays at 38 claims a tier; the suite collects
+1392 tests across 47 files.
+
+**What the mutation pass bought, which is the part worth recording.** Thirteen
+of thirteen caught — **after two were not**. `_build_quote_runner` returning
+`None` on a missing recording passed the entire suite, because the case that
+exposes it is the **note-free** chart: a note-bearing one raises in
+`run_review` one layer up (D90), so the review that goes quiet about an absent
+quote source is the one that had nothing to ask it. That is D31's shape on the
+third recorded runner, and it is now a subprocess test pointing
+`--history-recording` at a path that does not exist. The second survivor is
+sharper: the test written **in this entry** to close the README's prose drift
+asserted facts about the README rather than about the check, so weakening the
+comparison to a length test changed nothing — a guard against a drift that
+could not catch the guard being removed. It was restructured into
+`test_readme_structure.py`'s own `check_*` plus mutant-refusal shape, with
+four mutants, so neither the count nor the chain can be dropped silently.
+Both were re-run and caught, with a third that drops the count rather than the
+chain. **The harness itself needed a rule**: killed mid-run it left a mutant
+on disk, and a residue check found it before anything was measured against it,
+so restores are now verified — and documents must not be edited while it runs,
+because one unrelated doc-consistency failure reports every later mutation as
+caught. That belongs beside CLAUDE.md's other three traps.
+
+**Reverses if:** a second consumer needs the review composed outside `cli.py`,
+at which point the assembly moves to a module declared in the both-planes list
+with its reason; or `T-110`'s measured yellow makes the labeled suggestion set
+large enough that precision on the labeled rows stops being a figure with a
+denominator worth stating; or a short-circuit review turns out to want a tree
+after all, which is the `--state` reading rejected above.

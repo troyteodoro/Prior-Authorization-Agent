@@ -469,6 +469,160 @@ def test_the_cli_reports_no_policy_found_without_denying():
     assert "outcome" not in printed
 
 
+# --------------------------------------------------------------------------
+# `--suggest` — the medical-history review beside the verdicts (T-99, D123)
+# --------------------------------------------------------------------------
+
+#: `H1`'s chart: a declared lisinopril order and a declared creatinine that
+#: crosses, under the tree that governs 93975 in Alabama. Note-free, so the
+#: review needs no quote source and spends nothing.
+H1_PATIENT = "455d3f7d-3b99-dad6-c0b2-d5405144e793"
+H1_CODE = "93975"
+
+#: `H4`'s chart: an active lisinopril, no creatinine anywhere, and two notes —
+#: so the candidate can only be coloured by reading them, and red is a claim
+#: the recording has to support (D122).
+H4_PATIENT = "bc6748d3-3a0f-9734-7730-4518f5b268fb"
+H4_CODE = "43775"
+
+
+def test_the_determination_is_unchanged_by_the_flag():
+    """Spec §11's *no verdict changes in v1.3*, on the printed document.
+
+    `_render` is the one place a suggestion could have been folded into the
+    determination's own keys, and no eval row reads the printed shape. Run the
+    same request twice and the only difference is the added block — which is
+    also what makes `--suggest` safe to hand a reviewer *(T-99, D123)*.
+    """
+    args = ("--patient", H4_PATIENT, "--procedure", H4_CODE, "--as-of", "2026-01-15")
+    plain = _run_cli(*args)
+    suggested = _run_cli(*args, "--suggest")
+    assert plain.returncode == 0, plain.stderr
+    assert suggested.returncode == 0, suggested.stderr
+
+    before = json.loads(plain.stdout)
+    after = json.loads(suggested.stdout)
+    assert "icd_suggestions" not in before
+    assert set(after) - set(before) == {"icd_suggestions"}
+    assert {k: v for k, v in after.items() if k != "icd_suggestions"} == before
+
+
+def test_suggest_emits_the_green_suggestion_for_zero_model_calls():
+    """`H1`'s row, through the surface a person actually runs.
+
+    The chart carries no notes, so no quote source is consulted and the review
+    costs nothing — the colour is arithmetic over a declared threshold (REQ-64)
+    and the citation is the observation itself (Article III).
+    """
+    proc = _run_cli("--patient", H1_PATIENT, "--procedure", H1_CODE, "--suggest")
+    assert proc.returncode == 0, proc.stderr
+    block = json.loads(proc.stdout)["icd_suggestions"]
+
+    assert block["by_colour"] == {"green": 1, "yellow": 0, "red": 0}
+    assert block["model_calls"] == 0 and block["notes_consulted"] == 0
+    (suggestion,) = block["suggestions"]
+    assert suggestion["row_id"] == "lisinopril-renal-impairment"
+    assert suggestion["icd10_code"] == "N28.9"
+    assert suggestion["colour"] == "green"
+    assert suggestion["would_affect"] == ["a"], (
+        "the one non-empty would_affect this corpus can produce (REQ-66, D119)"
+    )
+    assert suggestion["citations"], "a green cites the measurement that crossed"
+
+
+def test_suggest_reads_red_with_the_notes_consulted_and_counts_its_own_turns():
+    """`H4`'s row: red is *nothing on the chart*, proved by the recording.
+
+    The two review turns are the quote runner's, one per note, replayed from
+    `eval/history/results.json` for zero calls. They are reported **beside**
+    the determination's and never inside them (REQ-68, D122) — which is the
+    assertion that would fail if the review's cost were ever folded into
+    Article X's counters.
+    """
+    proc = _run_cli("--patient", H4_PATIENT, "--procedure", H4_CODE, "--suggest")
+    assert proc.returncode == 0, proc.stderr
+    printed = json.loads(proc.stdout)
+    block = printed["icd_suggestions"]
+
+    assert block["by_colour"] == {"green": 0, "yellow": 0, "red": 1}
+    assert block["notes_consulted"] == 2 and block["model_calls"] == 2
+    assert printed["model_calls"] != block["model_calls"], (
+        "the review's turns must not be the determination's; REQ-68 reports "
+        "them apart"
+    )
+    (suggestion,) = block["suggestions"]
+    assert suggestion["colour"] == "red"
+    assert suggestion["citations"] == [], "a red cites nothing"
+    assert suggestion["verifier_rejected"] is False, (
+        "this red is an absence, not a rejected yellow — the two are different "
+        "facts and the flag is what keeps them apart (REQ-67)"
+    )
+
+
+def test_suggest_answers_a_code_no_policy_governs():
+    """The case most worth answering, not the one to leave silent.
+
+    A review is a report about the chart rather than about the policy, so a
+    short circuit still gets one — with no governing tree, `policy_version_id`
+    is null and every `would_affect` is empty **carrying its reason**, because
+    REQ-66 forbids an empty list alone *(T-99, D123)*.
+    """
+    proc = _run_cli("--patient", H4_PATIENT, "--procedure", FOREIGN_CODE, "--suggest")
+    assert proc.returncode == 0, proc.stderr
+    printed = json.loads(proc.stdout)
+    assert printed["result"] == "NO_POLICY_FOUND"
+
+    block = printed["icd_suggestions"]
+    assert block["policy_version_id"] is None
+    (suggestion,) = block["suggestions"]
+    assert suggestion["would_affect"] == []
+    assert "no tree governs this request" in suggestion["would_affect_note"]
+
+
+def test_suggest_refuses_a_missing_quote_recording_instead_of_going_quiet():
+    """D31's rule on the third recorded runner *(T-99, D123)*.
+
+    A missing recording must **raise and name the way to make one**, never
+    resolve to "no quote source". The dangerous case is not the note-bearing
+    chart — `run_review` raises one layer up there (D90) — it is the
+    **note-free** one, which would answer perfectly and never mention that the
+    quote source it was told to use is not on disk. That is a well-formed
+    answer hiding a missing input, and it is what every downstream reader
+    would then agree with.
+
+    Found by mutation: returning `None` from `_build_quote_runner` survived
+    the whole suite before this test existed.
+    """
+    proc = _run_cli(
+        "--patient", H1_PATIENT,
+        "--procedure", H1_CODE,
+        "--suggest",
+        "--history-recording", "eval/history/does_not_exist.json",
+    )
+    assert proc.returncode != 0, (
+        "a missing quote recording answered anyway; on this note-free chart "
+        "the review needs no quote source and would go quiet about it"
+    )
+    assert proc.stdout == "", "nothing is printed when the inputs are not there"
+    assert "run_quote_measurement.py" in proc.stderr, (
+        "the error must name the command that produces the recording, as the "
+        "extraction and verifier builders do"
+    )
+
+
+def test_suggest_over_an_unknown_patient_is_a_bad_request():
+    """Exit 1, not a traceback after a printed determination.
+
+    The review runs inside the same `try` as the determination, so a patient
+    the stores cannot resolve is the bad request it always was — the existing
+    contract, extended to the new surface rather than given a code of its own.
+    """
+    proc = _run_cli("--patient", "nobody", "--procedure", H4_CODE, "--suggest")
+    assert proc.returncode == 1
+    assert proc.stdout == ""
+    assert "bad request" in proc.stderr
+
+
 def test_the_cli_answers_a_covered_code_end_to_end(e1_patient):
     """*Replaces the exit-2 test T-25 wrote (D62).*
 

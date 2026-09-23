@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1 and v1.2 complete, A1–A10 hold *(D104, D106, D116)*; **v1.3 in progress** *(T-96, T-97)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2 and v1.3 complete, A1–A11 hold *(D104, D106, D116, D123)*; **v1.4 is next** *(T-100)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -977,7 +977,8 @@ changed is that the replayed numbers are no longer from a single tier.
 ## 11. Versions after v1
 
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
-is closed, **v1.2 is closed** *(T-95, D116)*, and **v1.3 is in progress** *(T-96, T-97)*. This section fixes what
+is closed, **v1.2 is closed** *(T-95, D116)*, and **v1.3 is closed**
+*(T-99, D123)*. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are
@@ -992,7 +993,7 @@ number.
 |---|---|---|---|---|---|
 | v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
-| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
@@ -1198,6 +1199,19 @@ drug was an assumption.
 **Gate A11.** Suggestion precision against manifest labels at or above A2's
 bar on `MET`; zero suggestions without a source row; zero yellow without a
 valid span; zero verdict drift against the baseline.
+
+**v1.3 is closed and A11 holds** *(T-99, D123)*. Three of the four clauses
+were already held by commands `T-97` and `T-98` wrote, so the closing row
+measured the fourth and named the other three rather than re-proving them:
+suggestion precision **1.000** over three suggestions on the four labeled
+charts, against a trivial baseline of **0.600** that suggests every candidate
+— which is the base rate by construction, A2's own identity — and whose two
+errors are exactly the candidates `H2` withholds, one per withhold reason.
+The labels are `eval/cases.json`'s `expect.suggestions` and `expect.withheld`;
+`eval/manifests/` carries note facts and no structured suggestion label, so
+"manifest labels" above means the labeled eval set. The version **minted
+nothing after `T-98`**, which is v1.2's closing shape *(D116)*: REQ-62
+through REQ-68 were each minted by the task whose close checked them.
 
 ### v1.4 — Sessions and intake, headless
 

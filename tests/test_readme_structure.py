@@ -198,6 +198,42 @@ def check_steps(block: str, steps: list[str]) -> None:
     assert chain == steps, f"the diagram walks {chain}; workflow.STEPS is {steps}"
 
 
+#: The sentence in *What a determination looks like* that describes `STEPS`.
+PROSE_STEPS = re.compile(
+    r"module-level tuple of ([a-z]+) named steps walked by a plain-Python "
+    r"driver:\s*\n?\s*\*([^*]+)\*"
+)
+
+SPELLED = {
+    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
+}
+
+
+def check_prose_steps(prose: str, steps: list[str]) -> None:
+    """The README's *sentence* about the graph, held to `workflow.STEPS`.
+
+    The diagram was checked from `T-128` on; the prose above it was not, and it
+    had drifted — *eight named steps*, listing eight, while the picture below
+    drew ten. Every gate stayed green, because nothing compared the two
+    *(T-99, D123)*. Both halves of the sentence are compared: the written-out
+    count and the arrow chain, because either alone admits the other's error.
+    """
+    written = PROSE_STEPS.search(prose)
+    assert written is not None, (
+        "the prose description of `workflow.STEPS` is gone or reworded; if "
+        "that was deliberate, re-point PROSE_STEPS at the new sentence"
+    )
+    assert SPELLED.get(written.group(1)) == len(steps), (
+        f"the README says {written.group(1)!r} named steps; workflow.STEPS "
+        f"has {len(steps)}"
+    )
+    chain = [re.sub(r"\s+", " ", name).strip() for name in written.group(2).split("→")]
+    chain = [name for name in chain if name]
+    assert chain == steps, (
+        f"the README's prose walks {chain}; workflow.STEPS is {steps}"
+    )
+
+
 def check_short_circuit(block: str, results: dict[str, bool]) -> None:
     """Every result type is on an SC1 edge, routed by whether it carries a tree."""
     parsed, _labels_unused = _parse(block)
@@ -320,6 +356,10 @@ def test_the_heading_order_is_the_literal(readme):
     )
 
 
+def test_the_prose_step_list_is_the_engines_too(readme):
+    check_prose_steps(_without_fences(readme), _step_names())
+
+
 def test_the_replaced_sections_are_not_top_level_again(readme):
     headings = re.findall(r"^## (.+)$", _without_fences(readme), flags=re.M)
     back = [name for name in REPLACED_SECTIONS if name in headings]
@@ -361,6 +401,44 @@ def test_no_edge_joins_two_storage_planes_and_every_plane_is_an_adapter(diagram)
 def _mutated(diagram: str, old: str, new: str) -> str:
     assert diagram.count(old) == 1, f"the mutant's anchor {old!r} is not unique in the diagram"
     return diagram.replace(old, new)
+
+
+def test_prose_with_a_dropped_step_is_refused(readme):
+    """The real drift: a step missing and the count adjusted to match, which
+    reads perfectly *(T-99, D123)*."""
+    mutant = _without_fences(readme).replace(
+        "→ criteria_c → unclaimed → sufficiency → verify*",
+        "→ criteria_c → verify*",
+    ).replace("tuple of ten named steps", "tuple of eight named steps")
+    with pytest.raises(AssertionError):
+        check_prose_steps(mutant, _step_names())
+
+
+def test_prose_with_a_renamed_step_is_refused(readme):
+    """A count that still adds up, so only comparing the chain catches it."""
+    mutant = _without_fences(readme).replace("→ sufficiency →", "→ sufficient →")
+    with pytest.raises(AssertionError):
+        check_prose_steps(mutant, _step_names())
+
+
+def test_prose_with_a_reordered_step_is_refused(readme):
+    """Same names, same count, wrong order — the case a set comparison or a
+    length check would both wave through."""
+    mutant = _without_fences(readme).replace(
+        "*gather → extract → criterion_a →", "*extract → gather → criterion_a →"
+    )
+    with pytest.raises(AssertionError):
+        check_prose_steps(mutant, _step_names())
+
+
+def test_prose_with_a_wrong_count_is_refused(readme):
+    """The chain right and the number wrong — the half a chain-only check
+    would miss."""
+    mutant = _without_fences(readme).replace(
+        "tuple of ten named steps", "tuple of nine named steps"
+    )
+    with pytest.raises(AssertionError):
+        check_prose_steps(mutant, _step_names())
 
 
 def test_a_renamed_step_is_refused(diagram):

@@ -389,6 +389,19 @@ the medication list already implied is the denial Sam did not see coming.
 
 **Covers:** A11
 **Note:** the model quotes; it never proposes a code and never picks a colour.
+**Status:** **closed** — all four of v1.3's rows are done and **A11 holds**
+*(T-96 through T-99; D118, D119, D122, D123)*. Two of the story's criteria
+are satisfied structurally rather than by a chart: **no chart in the corpus
+could produce a green** until one was given declared data, because every
+candidate whose signal crossed already coded the condition and every uncoded
+one had never been measured *(D119)* — which is a fact about real charts
+worth more than the criterion it cost; and **no committed note documents any
+of the five conditions**, so the yellow is checked at unit level through the
+anchorer's real refusal and its verbatim twin, and the measured yellow is
+`T-110`'s *(D120, D122)*. What the story asked for is what `--suggest`
+prints: a colour Python assigned, a code traceable to one reviewed row, the
+evidence behind it, and `would_affect` beside it — with every criterion
+verdict unchanged.
 
 ---
 

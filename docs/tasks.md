@@ -17,10 +17,22 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-99`, row 4 of `v1.3` in `Roadmap after v1.1` below** —
-the CLI surface: `--suggest` emits the `icd_suggestions` block beside the
-verdicts, which are unchanged, and A11's suggestion-precision section lands
-in `eval/report.md`.
+**What to do next: `T-100`, row 1 of `v1.4` in `Roadmap after v1.1` below** —
+the session port, its file adapter and the lifecycle enum: every transition
+tested and every illegal one raising, a session round-tripping byte-stable,
+and `stores/__init__.py` still importing nothing.
+**`T-99` closed row 4 and v1.3** *(D123)*: `--suggest` emits the
+`icd_suggestions` block beside a determination whose own keys are
+byte-identical with and without it, following `--extraction` for its quote
+leaf so the default spends nothing; a request that short-circuits still gets
+a review, with `policy_version_id` null and every `would_affect` empty
+carrying that as its reason. **A11 holds**: suggestion precision **1.000**
+over three suggestions against a **0.600** trivial baseline that suggests
+every candidate, and each of the gate's other three clauses named with the
+command that already held it. It minted nothing, and found and deleted an
+unreachable fallback in `history.review` that named another function's local
+— dead while `admits` guarantees a matched medication's system, and a
+`NameError` the day it did not.
 **`T-98` closed row 3** *(D122)*: the review's model turn, on every runner
 and both tiers. `pa_agent/quotes.py` is a fourth port in the first three's
 shape and `history.run_review` consults it once per note for every table
@@ -99,8 +111,8 @@ Medicare rheumatology LCD does *(D111)*. **Row 3 cost a verifier measurement
 round the version's plan did not budget** — an eval row with a cited verdict
 is a claim the recording must hold — so the `Model calls` column below is
 corrected rather than worked around, and T-94's rows will cost the same
-*(D113)*. Acceptance gates A1–A10 all hold and US-1 through US-7, US-9 and
-US-10 are delivered; **v1, v1.1 and v1.2 are all complete.** v1.1 — the round D97 opened as
+*(D113)*. Acceptance gates A1–A11 all hold and US-1 through US-7, US-9,
+US-10 and US-11 are delivered; **v1, v1.1, v1.2 and v1.3 are all complete.** v1.1 — the round D97 opened as
 "v2" and D105 renamed — was spec §10's list of known limits, P1–P8,
 sequenced into one task each,
 and **all eight rows are closed**: `T-85` through `T-90` and `T-81`, then P6's
@@ -216,7 +228,7 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 |---|---|---|---|---|---|
 | v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
-| v1.3 | medical-history review: ICD suggestions with evidence · **in progress** | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
@@ -258,12 +270,20 @@ colour-sorted by how much evidence it has. Codes come only from a reviewed
 table; the tri-state is Python; the model quotes the note and nothing else.
 **One recording round**, replayed by every gate after.
 
+**All four rows are closed; v1.3 is closed and A11 holds** *(T-99, D123)*.
+Three of A11's four clauses were already held by commands `T-97` and `T-98`
+wrote — a suggestion traceable to its row, a yellow only on a span the
+validator accepts, and verdict drift that is *unrepresentable* rather than
+merely unmeasured — so the row measured the fourth and named the other three
+rather than re-proving them. The version minted nothing after `T-98`, which is
+the same closing shape v1.2 had *(D116)*.
+
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the knowledge table and its sources | `T-96` | **closed** (D118) | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test. **Five rows, not the six planned**: warfarin's label states no hypotension and clopidogrel's states aplastic anemia, so §11's anticoagulant example is written against **apixaban** *(D118)* |
 | 2 | deterministic candidates and the tri-state | `T-97` | **closed** (D119) | `history.py` and the knowledge port; eval rows `H1`–`H3` — green via a structured signal, **silent because the chart already codes the condition**, red with nothing; `run_eval.py` green. **Rewritten at open** from "eval rows E14–E16 … yellow via a note quote": a yellow is a model measurement and belongs to row 3, and no chart in the corpus could produce a green without declared data *(D119)*. Ids are `H`-prefixed because these rows are outside §6, as NP1, J1, RA1–RA3 and US1–US4 are |
 | 3 | note quotes, recorded and anchored | `T-98` | **closed** (D122) | recording committed on both tiers, every quote anchored or recorded as refused, the model turn counted; the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today — **red with the quotes consulted**, the recording being the proof the model looked; **zero new verifier claims**, because a red cites nothing; every gate green. **Rewritten before open** from "gains row 2's yellow … verifier claims added and re-measured": no committed note mentions a table drug, and a note edit re-measures six extraction recordings, so the measured yellow is `T-110`'s *(D120)* |
-| 4 | the CLI surface | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph |
+| 4 | the CLI surface | `T-99` | **closed** (D123) | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph. **A11's fourth clause measured** — suggestion precision 1.000 over 3 against a 0.600 baseline — and the other three named with the commands `T-97` and `T-98` already wrote |
 
 ### v1.4 — Sessions and intake, headless
 
@@ -2494,6 +2514,135 @@ restored from git and `select_patients.py --verify` run before the exit.
 
 **What it mints.** REQ-67 and REQ-68, the last two of v1.3's statements
 *(D109, D122)*.
+
+---
+
+### `[x] T-99` The CLI surface, and A11's suggestion-precision section
+
+**REQ:** none · **Depends:** T-96, T-97, T-98 · **Blocks:** — ·
+**Decided by:** D123 · **Gates:** A11 (fourth of four rows; closes v1.3) ·
+**Timebox:** one day
+**Status:** **closed** (D123) — opened and closed 2026-09-22; the exit ran
+green and every gate with it, for **zero model calls** and with every
+extraction, agentic, verifier and quote recording untouched. Row 4 of `v1.3`
+and the version: the review `T-97` built and `T-98` measured is something a
+person can run, and the one clause of A11 no command held is a generated
+section.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_history.py tests/test_determination.py \
+      tests/test_build_report.py tests/test_quotes.py tests/test_planes.py \
+      tests/test_readme_structure.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python -m pa_agent.cli --patient 455d3f7d-3b99-dad6-c0b2-d5405144e793 \
+      --procedure 93975 --suggest \
+ && ./venv/bin/python -m pa_agent.cli --patient bc6748d3-3a0f-9734-7730-4518f5b268fb \
+      --procedure 43775 --suggest \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: `--suggest` prints `H1`'s green suggestion citing its declared
+creatinine and `H4`'s red one with both notes consulted, for **zero model
+calls** — the quote runner follows `--extraction` and the default replays
+`eval/history/results.json`; the determination's own keys are byte-identical
+with and without the flag, which is spec §11's *no verdict changes in v1.3*
+at the surface; `eval/report.md` carries the suggestion-precision section and
+`--verify` recomputes it; every gate is green.
+
+**Why A11's other three clauses need no new command.** A gate closes on what
+is checked, not on what is asserted *(T-95, D116)*, so each clause was traced
+to a command before this row was scoped. *Zero suggestions without a source
+row* is `tests/test_history.py`'s check that every suggestion carries its
+row's code and the span it was asserted from. *Zero yellow without a valid
+span* is the anchorer's real refusal on a hand-written note, its verbatim
+twin, and the corpus-wide check that every suggestion slices back, with the
+scorer validating suggestion citations through A3's own walk. *Zero verdict
+drift* is structural rather than differential: no `Determination` field names
+a suggestion and no engine module imports `history`, so there is no field
+through which one could reach a verdict *(D119)*, and `run_eval.py`'s
+baseline diff holds the measured half. Only the precision figure had nothing,
+and it is what the board gave this row.
+
+**What it deliberately does not build.** The measured yellow and the history
+verifier's recording at `eval/verifier/history_results.json` (`T-110`, D120);
+a run-to-run stability sample (`T-110`'s option); a fourth drawn port in the
+README's diagram (D121 — the review sits beside the graph); sessions and
+intake (`T-100`, v1.4).
+
+**What it delivers.** `pa_agent/cli.py` — `--suggest`, `--history-recording`,
+`DEFAULT_HISTORY_RECORDING`, `_build_quote_runner` (the third leaf, following
+`--extraction` exactly as `_build_verifier` does), `_review_block` (the
+assembly, in the composition root because `history.py` takes its value sets
+and its expansion as arguments) and `_with_suggestions`, with the review
+computed **inside** the determination's own `try` so an unresolvable patient
+stays exit 1; `HistoryReview.policy_version_id` widened to `str | None` and
+threaded through `review`, `run_review` and `_would_affect`, which answers a
+tree-less request with the reason REQ-66 requires; the deleted fallback in
+`history.review`; `eval/build_report.py` — `_compose` factored out of `_run`,
+`_reviews`, `_a11_rows` and `_a11_section`, rendered between A10's section and
+the caveats; `eval/report.md` regenerated; and eleven tests across four files.
+
+**Closed by D123.** **A11 holds.** Suggestion precision **1.000** over three
+suggestions on the four labeled charts, against a trivial baseline of
+**0.600** — which is the base rate by construction, A2's own identity — whose
+two errors are exactly the candidates `H2` withholds, one per withhold
+reason. The other three clauses were already held by commands `T-97` and
+`T-98` wrote, so the row named them rather than re-proving them; the report's
+section carries that mapping. `--suggest` prints `H1`'s green suggestion
+citing its declared creatinine for **zero model calls**, and `H4`'s red one
+with both notes consulted for two replayed turns, 986 input and 240 output
+tokens — the review's, reported inside the block and never in Article X's
+counters. The determination printed without the flag is **byte-identical to
+the pre-change tree**, and with it the only difference is the added key.
+Nothing minted; no verdict, span, recording or baseline status moved, and the
+verifier recording stays at 38 claims a tier. The suite collects 1392 tests
+across 47 files.
+
+**What the round found.** Two things, neither of them the feature. A fallback
+in `history.review` read `medication.system or expansion.system`, naming a
+local of `candidate_rows` that `review` never binds — unreachable while
+`admits` guarantees a matched medication's system *is* the expansion's
+(REQ-59), a `NameError` the day that filter loosened, and invisible to all 52
+behavioural tests because `or` short-circuits on a system every Synthea
+resource declares. It is deleted, and pinned by an AST scan over `pa_agent/`
+for a name read in a scope where neither that scope, any enclosing one, the
+module nor builtins bind it; closures are walked with their scope chain, so
+`aggregate.py`'s parser and the ADK tool builders are not false positives
+(D65's shape). And `README.md` described the graph as *a module-level tuple of
+eight named steps*, listing eight, while `workflow.STEPS` has ten and the
+diagram below the sentence drew all ten — `tests/test_readme_structure.py`
+compared the *diagram* and not the prose. Fixed, and the sentence is now read
+from the engine too, both halves of it.
+
+Mutations caught, **thirteen of thirteen — after two were not**. The twelve of
+the first pass: the A11 correctness key ignoring colour; the candidate count
+forgetting the withheld, which is the baseline's denominator; the reviews pass
+skipping the rows that label one; the tree never resolved, so `would_affect`
+always empties; the notes withheld from the review; the block folded into the
+determination's own keys with `rendered.update`; `--suggest` on by default;
+the review's calls zeroed out of the block; the deleted fallback restored; and
+the free-name scanner's nested scopes stopping being opaque. **Two survived**,
+and both were real. `_build_quote_runner` returning `None` on a missing
+recording passed the whole suite: the dangerous case is not the note-bearing
+chart — `run_review` raises one layer up there (D90) — but the **note-free**
+one, which answers perfectly and never says the quote source it was told to
+use is absent, which is D31's shape on the third recorded runner. And the
+first prose test asserted facts about the README rather than about the check,
+so weakening the comparison to a length test changed nothing; it was
+restructured into this file's own `check_*` plus mutant-refusal shape, with
+four mutants, so neither half of the comparison can be dropped silently. Both
+were re-run and caught, together with a third that drops the count instead of
+the chain.
+
+**A harness note, for the method section.** The first pass was killed
+mid-run and **left a mutant on disk** — `eval/build_report.py`'s candidate
+count — which a residue check caught before anything was measured against it.
+The harness now verifies every restore, and documents were not edited while it
+ran: a doc-consistency failure from an unrelated edit reports every later
+mutation as caught.
 
 ---
 

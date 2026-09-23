@@ -1847,13 +1847,19 @@ class HistoryReview(BaseModel):
     field through which a suggestion could reach a verdict.
 
     `policy_version_id` is carried because `would_affect` is computed against
-    one tree's value sets and means nothing without saying which tree.
+    one tree's value sets and means nothing without saying which tree. It is
+    `None` when **no tree governs the request** — a code no policy covers, or a
+    state no tree serves — which is still a chart worth reviewing, and then
+    every `would_affect` is empty carrying that as its reason (REQ-66 forbids an
+    empty list alone). A sentinel string was rejected: the field prints beside
+    real policy ids and a reader has no way to tell the two apart *(T-99,
+    D123)*.
     """
 
     model_config = ConfigDict(frozen=True)
 
     patient_id: str = Field(min_length=1)
-    policy_version_id: str = Field(min_length=1)
+    policy_version_id: str | None = Field(default=None, min_length=1)
     suggestions: tuple[IcdSuggestion, ...] = ()
     withheld: tuple[WithheldCandidate, ...] = ()
 

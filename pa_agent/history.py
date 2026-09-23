@@ -245,7 +245,7 @@ def _would_affect(
     row: MedicationEffectRow,
     criteria: Sequence[Criterion],
     value_sets: Mapping[str, CodedValueSet],
-    policy_version_id: str,
+    policy_version_id: str | None,
 ) -> tuple[tuple[str, ...], str | None]:
     """The criteria whose value set admits a code this condition would carry.
 
@@ -265,6 +265,14 @@ def _would_affect(
         return (), (
             f"the row declares no code for {row.effect_display}, so there is "
             "nothing to compare against a value set (REQ-62)"
+        )
+    if policy_version_id is None:
+        # No tree governs this request, so there is no value set to compare
+        # against. The review is still a fact about the chart, and an empty
+        # `would_affect` never travels without its reason (T-99, D123).
+        return (), (
+            "no tree governs this request, so no value set was compared "
+            f"against {', '.join(sorted(coded.codes))} (REQ-66)"
         )
 
     affected: list[str] = []
@@ -288,7 +296,7 @@ def _would_affect(
 def review(
     *,
     patient_id: str,
-    policy_version_id: str,
+    policy_version_id: str | None,
     rows: Sequence[MedicationEffectRow],
     products: Mapping[str, CodedValueSet],
     medications: Sequence[Medication],
@@ -323,7 +331,13 @@ def review(
         matched = _active_medications(medications, products[row.ingredient.code])
         medication = _most_recent(matched)
         on_chart = CodedConcept(
-            system=medication.system or expansion.system,
+            # Never `or expansion.system`: `_active_medications` admits a
+            # medication only when `admits(code, system)` holds, and that is
+            # `system == self.system` (REQ-59), so a matched medication's
+            # system *is* the expansion's. A fallback here is unreachable,
+            # and naming a local of `candidate_rows` made it a NameError
+            # waiting on a loosened filter (T-99, D123).
+            system=medication.system,
             code=medication.code,
             display=medication.display,
         )
@@ -491,7 +505,7 @@ def run_review(
     *,
     quote_runner: "QuoteRunner | None",
     patient_id: str,
-    policy_version_id: str,
+    policy_version_id: str | None,
     rows: Sequence[MedicationEffectRow],
     products: Mapping[str, CodedValueSet],
     medications: Sequence[Medication],

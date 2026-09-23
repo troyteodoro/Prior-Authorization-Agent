@@ -15,6 +15,7 @@ from __future__ import annotations
 import ast
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -765,9 +766,18 @@ EXPECTED_ACCOUNT: dict[tuple[str, str], str] = {
 
 
 def _compatibility(text: str) -> str:
-    """The rendered section, sliced out of the committed report."""
+    """The rendered section, sliced out of the committed report.
+
+    Bounded by the **next** top-level heading rather than by a named one: the
+    section after this one was `## Scope of these numbers` until `T-99` put
+    A11's between them, and a slice that names its neighbour silently grows to
+    swallow whatever lands next (D123, the same fix T-95 made for the cost
+    section).
+    """
     start = text.index("## Cross-practice compatibility")
-    return text[start : text.index("## Scope of these numbers", start)]
+    rest = text[start:]
+    end = rest.index("\n## ", 1)
+    return rest[:end]
 
 
 def _criterion_rows(section: str) -> dict[tuple[str, str], str]:
@@ -963,7 +973,9 @@ def test_the_account_computes_its_totals_rather_than_stating_them(script):
     """
     source = SCRIPT.read_text(encoding="utf-8")
     section = source[source.index("def _compatibility_section") :]
-    section = section[: section.index("def _caveats_section")]
+    # To the next top-level definition, not to a named one: `_a11_section` now
+    # sits between this and `_caveats_section` (T-99, D123).
+    section = section[: re.search(r"\ndef ", section[1:]).end()]
     assert "KIND_ORIGIN[" in section, "the account must index the origin table"
     assert "_criterion_class(" in section
     assert ".criteria" in section, "the account must read each tree's criteria"
@@ -1096,6 +1108,144 @@ def test_the_quote_section_is_in_the_committed_report():
     assert "## Quote consultation (T-98, REQ-67, REQ-68, D122)" in text
     assert "| Fabricated pairs |" in text
     assert "**Scope.** These totals are determination cost only." in text
+
+
+# --------------------------------------------------------------------------
+# A11 — suggestion precision, and the baseline that gives it a scale (T-99)
+# --------------------------------------------------------------------------
+
+
+class _FakeSuggestion:
+    def __init__(self, row_id, code, colour, effect=True):
+        self.row_id = row_id
+        self.icd10_code = code
+        self.colour = type("C", (), {"value": colour})()
+        self.effect = object() if effect else None
+
+
+class _FakeWithheld:
+    def __init__(self, row_id, reason):
+        self.row_id = row_id
+        self.reason = type("R", (), {"value": reason})()
+
+
+class _FakeRun:
+    def __init__(self, suggestions=(), withheld=(), model_calls=0):
+        self.review = type(
+            "V", (), {"suggestions": tuple(suggestions), "withheld": tuple(withheld)}
+        )()
+        self.model_calls = model_calls
+
+
+def test_a11_rows_score_against_the_label_in_both_directions(script):
+    """A suggestion counts as correct only when row, code **and** colour match.
+
+    Driven with hand-written pairs rather than the corpus, because the corpus
+    scores 3 of 3 and cannot show a miss — and a precision figure that cannot
+    go down is not measuring anything (T-99, D123).
+    """
+    labels = {
+        "X1": {
+            "patient_id": "p",
+            "expect": {
+                "suggestions": [
+                    {"row_id": "r1", "code": "A00", "colour": "green"},
+                    {"row_id": "r2", "code": "B00", "colour": "red"},
+                ],
+                "withheld": [],
+            },
+        },
+        "X2": {
+            "patient_id": "q",
+            "expect": {
+                "suggestions": [],
+                "withheld": [{"row_id": "r3", "reason": "ALREADY_CODED"}],
+            },
+        },
+    }
+    runs = {
+        # r1 right; r2 emitted with the wrong colour, so it is not correct.
+        "X1": _FakeRun(
+            suggestions=[
+                _FakeSuggestion("r1", "A00", "green"),
+                _FakeSuggestion("r2", "B00", "yellow"),
+            ],
+            model_calls=2,
+        ),
+        "X2": _FakeRun(withheld=[_FakeWithheld("r3", "ALREADY_CODED")]),
+    }
+    first, second = script._a11_rows(labels, runs)
+
+    assert first["emitted"] == 2 and first["correct"] == 1, (
+        "a colour the label does not name is a wrong suggestion, not a right "
+        "one — Python picks the colour and that is the claim being graded"
+    )
+    assert first["candidates"] == 2 and first["yellow"] == 1
+    assert first["review_calls"] == 2
+    assert second["emitted"] == 0 and second["withheld"] == 1
+    assert second["withheld_correct"] == 1
+    assert second["candidates"] == 1, (
+        "a withheld candidate is still a candidate; the baseline's denominator "
+        "is what withholding is measured against"
+    )
+
+
+def test_a11_counts_a_withheld_candidate_in_the_baselines_denominator(script):
+    """The identity the section rests on: every candidate becomes exactly one
+    of a suggestion or a withheld entry, so the candidate count is derived
+    from the review and the two can never disagree."""
+    labels = {"X": {"patient_id": "p", "expect": {"suggestions": [], "withheld": []}}}
+    runs = {
+        "X": _FakeRun(
+            suggestions=[_FakeSuggestion("r1", "A00", "red")],
+            withheld=[_FakeWithheld("r2", "SIGNAL_NOT_CROSSED")],
+        )
+    }
+    (row,) = script._a11_rows(labels, runs)
+    assert row["candidates"] == row["emitted"] + row["withheld"] == 2
+
+
+def test_the_a11_section_is_in_the_committed_report():
+    """The figures this round measured, pinned as committed.
+
+    Three suggestions over five candidates on four labeled charts: precision
+    1.000 against a trivial baseline of 0.600, which is the base rate by
+    construction. The baseline's two errors are `H2`'s, one per withhold
+    reason (D119, D123).
+    """
+    text = REPORT.read_text(encoding="utf-8")
+    assert "## Suggestion precision (A11, REQ-63, REQ-65, D119, D122)" in text
+    assert "| **all** | **5** | **3** | **3** | **2** | **2** | **2** |" in text
+    assert "**A11's threshold is A2's bar, 0.90.** Measured: **1.000**" in text
+    assert "| Precision of a baseline that suggests every candidate | **0.600** |" in text
+    assert "### What holds each of A11's four clauses" in text
+
+
+def test_the_a11_section_states_its_denominator(script):
+    """A2's discipline: a precision figure travels with its denominator, and
+    three is small enough that the section has to say so rather than let
+    1.000 carry weight it cannot (D123)."""
+    text = REPORT.read_text(encoding="utf-8")
+    assert "**What the denominator means.** 3." in text
+    assert "does not obviously fail" in text
+
+
+def test_the_a11_section_derives_its_rows_and_names_no_figure(script):
+    """No literal result in the section body (T-95's rule for `KIND_ORIGIN`).
+
+    Every number in the rendered section comes from `_a11_rows`, so a review
+    that changed would move the report rather than disagree with it.
+    """
+    source = SCRIPT.read_text(encoding="utf-8")
+    body = source[source.index("def _a11_section") :]
+    body = body[: body.index("\ndef ", 1)]
+    assert "_a11_rows(" in body and "_reviews(" in body
+    for literal in ("1.000", "0.600", '"H1"', '"H4"'):
+        assert literal not in body, (
+            f"{literal!r} is written into the section body; the figures come "
+            "from the reviews, and a literal here is a summary that agrees "
+            "with itself"
+        )
 
 
 def test_the_quote_section_names_a_refused_passage_beside_its_note(script, tmp_path, monkeypatch):

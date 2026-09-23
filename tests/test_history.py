@@ -26,6 +26,7 @@ never in the package (D78's rule).
 from __future__ import annotations
 
 import ast
+import builtins
 import json
 from datetime import date
 from pathlib import Path
@@ -69,6 +70,80 @@ LOINC = "http://loinc.org"
 #: The chart H1 runs on, and the tree that governs 93975 in its state.
 H1_PATIENT = "455d3f7d-3b99-dad6-c0b2-d5405144e793"
 ULTRASOUND_TREE = "us-abdominal-visceral-j5-j8-v1"
+
+
+# --------------------------------------------------------------------------
+# A free-name scan, for the mutation no behavioural test can catch (T-99, D123)
+# --------------------------------------------------------------------------
+
+_SCOPE = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)
+_BUILTINS = frozenset(dir(builtins))
+
+
+def _arg_names(args: ast.arguments) -> set[str]:
+    out = {a.arg for a in args.posonlyargs + args.args + args.kwonlyargs}
+    if args.vararg:
+        out.add(args.vararg.arg)
+    if args.kwarg:
+        out.add(args.kwarg.arg)
+    return out
+
+
+def _own_scope(scope) -> tuple[set[str], set[str], list]:
+    """(names bound here, names read here, scopes nested directly here).
+
+    A nested scope is opaque: its interior belongs to its own frame and is
+    visited separately, with this frame's names added to what it can see.
+    """
+    bound: set[str] = set()
+    read: set[str] = set()
+    nested: list = []
+    args = getattr(scope, "args", None)
+    if isinstance(args, ast.arguments):
+        bound |= _arg_names(args)
+    stack = list(ast.iter_child_nodes(scope))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, _SCOPE):
+            nested.append(node)
+            if getattr(node, "name", None):
+                bound.add(node.name)
+            continue
+        if isinstance(node, ast.Name):
+            (bound if isinstance(node.ctx, ast.Store) else read).add(node.id)
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            bound.add(node.name)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            bound |= {(a.asname or a.name).split(".")[0] for a in node.names}
+        elif isinstance(node, (ast.Global, ast.Nonlocal)):
+            bound |= set(node.names)
+        stack.extend(ast.iter_child_nodes(node))
+    return bound, read, nested
+
+
+def _free_names(source: str) -> dict[str, list[str]]:
+    """Names a function reads that no enclosing scope, module or builtin binds.
+
+    A closure reading an enclosing function's local is legitimate and is not
+    reported; `pa_agent/` has several (`aggregate.py`'s parser, the ADK tool
+    builders), which is why the scope chain is walked rather than each function
+    being judged alone.
+    """
+    found: dict[str, list[str]] = {}
+
+    def visit(scope, visible: set[str], path: str) -> None:
+        bound, read, nested = _own_scope(scope)
+        visible = visible | bound
+        if path and not isinstance(scope, ast.ClassDef):
+            missing = read - visible - _BUILTINS
+            if missing:
+                found[path] = sorted(missing)
+        for child in nested:
+            name = getattr(child, "name", "<lambda>")
+            visit(child, visible, f"{path}.{name}" if path else name)
+
+    visit(ast.parse(source), set(), "")
+    return found
 
 
 # --------------------------------------------------------------------------
@@ -243,6 +318,68 @@ def test_a_completed_prescription_is_not_a_candidate():
     drug also carries an active one."""
     row = a_row()
     assert run(row, medications=[a_medication(status="completed")]).suggestions == ()
+
+
+def test_a_medication_declaring_no_system_is_not_a_candidate():
+    """REQ-59's rule is what makes a fallback for a missing system unreachable.
+
+    `_active_medications` admits a prescription only when
+    `CodedValueSet.admits(code, system)` holds, and that is
+    `system == self.system` — so an unstated system is not a member and never
+    reaches the suggestion. No committed chart can show this: every Synthea
+    `MedicationRequest` in all fourteen bundles declares RxNorm *(T-99, D123)*.
+    """
+    row = a_row()
+    review = run(row, medications=[a_medication(system=None)])
+    assert review.suggestions == () and review.withheld == ()
+
+
+def test_a_matched_medications_system_is_the_expansions_own():
+    """The property the deleted fallback pretended to need *(T-99, D123)*.
+
+    `history.review` read `medication.system or expansion.system`, naming a
+    local of `candidate_rows` that `review` never binds. The right arm could
+    not be reached — a matched medication's system *is* the expansion's, by the
+    membership test above — so the expression was dead code that would have
+    become a `NameError` the day the filter was loosened. Deleting it is safe
+    exactly while this holds, and `CodedConcept.system` is `min_length=1`, so a
+    `None` arriving here would be refused at the contract rather than silently
+    carried.
+    """
+    row = a_row()
+    products = products_for(row, "999")
+    expansion = products[row.ingredient.code]
+    review = run(row, products=products, observations=[an_observation(2.1)])
+
+    assert review.suggestions, "the fixture stopped producing a candidate"
+    for suggestion in review.suggestions:
+        assert suggestion.medication.system == expansion.system, (
+            "a matched medication no longer carries the expansion's system, so "
+            "the membership test has been loosened and review() needs the "
+            "fallback D123 deleted"
+        )
+
+
+def test_no_function_under_pa_agent_reads_a_name_nothing_binds():
+    """D65's shape: the check no behavioural test on this corpus could be.
+
+    The deleted fallback named `expansion` in a frame that never bound it, and
+    every test stayed green because `or` short-circuits on a system the corpus
+    always declares. A scan for a name read in a scope where neither that
+    scope, any enclosing one, the module nor builtins bind it is what turns the
+    next one into a red suite instead of a `NameError` in production
+    *(T-99, D123)*.
+    """
+    offenders = {}
+    for path in sorted(PACKAGE.rglob("*.py")):
+        free = _free_names(path.read_text(encoding="utf-8"))
+        if free:
+            offenders[str(path.relative_to(REPO_ROOT))] = free
+    assert not offenders, (
+        f"these read a name nothing in scope binds: {offenders}. Either bind it "
+        "or delete the branch — a fallback naming another function's local is "
+        "dead until it is a NameError (D123)"
+    )
 
 
 # --------------------------------------------------------------------------
@@ -714,12 +851,16 @@ def test_no_suggestion_reaches_a_determination():
         ], f"{module}.py imports the review; a suggestion enters no verdict"
 
 
-def test_the_cli_emits_no_suggestions_block_at_this_close():
-    """Working rule 1: `--suggest` is T-99's, and this row must not build ahead.
+def test_the_cli_reaches_the_review_only_through_the_declared_surface():
+    """`T-99` built what `T-97` forbade, and the shape is what is now pinned.
 
-    Structural rather than a subprocess: the CLI does not import the review and
-    names no suggestion key, so there is no path by which a determination printed
-    today could carry one.
+    Until this row the assertion was that `cli.py` imports no review and names
+    no suggestion key, so that row 2 could not build ahead (working rule 1).
+    The surface exists now, so what has to stay true instead is *how* it is
+    reached: the review arrives as `pa_agent.history` and the block is attached
+    under exactly one key, behind `--suggest`. A second writer of that key is a
+    suggestion reaching the document without passing the one renderer REQ-65 is
+    checked at *(T-99, D123)*.
     """
     source = (PACKAGE / "cli.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
@@ -731,12 +872,16 @@ def test_the_cli_emits_no_suggestions_block_at_this_close():
         alias.name for node in ast.walk(tree) if isinstance(node, ast.Import)
         for alias in node.names
     }
-    assert not any("history" in name for name in imported), (
-        "cli.py imports the review; the --suggest surface is T-99's"
+    assert "pa_agent" in imported, "the review reaches the CLI from the package"
+    assert not any(name.startswith("pa_agent.history") for name in imported), (
+        "import the module, not its names: `from pa_agent import history` keeps "
+        "every call site reading `history.run_review`"
     )
-    assert "icd_suggestions" not in source and "--suggest" not in source, (
-        "cli.py names the suggestion surface T-99 has not built yet"
+    assert source.count('"icd_suggestions"') == 1, (
+        "the block is attached under exactly one key, in one place — a second "
+        "writer is a suggestion reaching the document past the renderer"
     )
+    assert '"--suggest"' in source, "the flag that gates the block is --suggest"
 
 
 # --------------------------------------------------------------------------

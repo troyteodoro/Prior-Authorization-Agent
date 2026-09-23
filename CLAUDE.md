@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-68 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-98 plus T-126, T-127 and T-128, each with a runnable exit condition; T-99 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D122, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-99 plus T-126, T-127 and T-128, each with a runnable exit condition; T-100 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D123, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -139,7 +139,18 @@ Run the system:
 
 ```bash
 ./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775   # a real determination, zero model calls
+./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775 --suggest   # + the icd_suggestions block
 ```
+
+`--suggest` *(T-99, D123)* emits the medical-history review **beside** the
+determination, whose own keys are byte-identical with and without it — there
+is no field through which a suggestion reaches a verdict, and `_render` is the
+one place that could have blurred it, which is where it is checked. Its quote
+leaf **follows `--extraction`**, as the verifier does, so the default replays
+`eval/history/results.json` for zero calls. The review's model calls are
+reported inside the block and never in Article X's own counters (REQ-68). A
+request that short-circuits still gets one, with `policy_version_id` **null**
+and every `would_affect` empty carrying that as its reason (REQ-66).
 
 CLI exit codes: `0` an answer, `1` a bad request (unknown patient), `2` an
 unbuilt path, `3` a determination aborted over a criterion in `ERROR` — the
@@ -244,7 +255,12 @@ D119)*. Production is a second adapter, which is the whole reason the ports
 exist *(D25)*.
 
 **`pa_agent/history.py` is the medical-history review, and it sits beside the
-determination rather than inside it** *(T-97, D119)*. A pure function: it takes
+determination rather than inside it** *(T-97, D119)*. **`cli.py` composes it**
+*(T-99, D123)* — the value sets, the pinned ingredient expansion and the
+patient facts are all arguments, which is exactly what keeps this module off
+both planes, so the assembly belongs in the composition root and nowhere
+else; the eval harness assembles the same facts for the rows that label a
+review. A pure function: it takes
 facts and returns a `HistoryReview`, so `Determination`, `STEPS`,
 `aggregate.assemble` and every recording are untouched and spec §11's *no
 verdict changes in v1.3* is structural rather than measured. An active
@@ -388,6 +404,29 @@ passing**, because the tests are written in terms of the thing that broke.
   that candidate is withheld with its measurement; suggesting the condition over
   it is a claim the record refutes, and it would make *the lab says no*
   indistinguishable from *nobody measured*.
+- **`--suggest` adds one key and changes nothing else** *(T-99, D123)*. The
+  determination's own keys are byte-identical with and without the flag, and
+  `_render` is the single place the block is attached — a second writer of
+  `icd_suggestions`, or a `rendered.update(...)` that spreads it, is a
+  suggestion reaching the document without passing the one renderer REQ-65 is
+  checked at. The review's model calls live **inside** the block and never in
+  Article X's counters (REQ-68), and the quote leaf **follows `--extraction`**:
+  a separate flag would make live quotes over replayed extraction
+  representable, which is a configuration no recording holds. A request that
+  short-circuits still gets a review, so `HistoryReview.policy_version_id` is
+  `str | None` — making it required again deletes the answer for the case most
+  worth answering, and a sentinel string prints beside real policy ids.
+- **A fallback naming a name nothing in scope binds is dead code, not a
+  fallback** *(T-99, D123)*. `history.review` read
+  `medication.system or expansion.system`, where `expansion` is a local of
+  `candidate_rows`: unreachable while `admits` guarantees a matched
+  medication's system *is* the expansion's (REQ-59), and a `NameError` the day
+  that filter loosened. All 52 behavioural tests passed on it, because `or`
+  short-circuits on a system every Synthea resource declares. It is pinned by
+  an AST scan over `pa_agent/` for a name read in a scope where neither that
+  scope, any enclosing one, the module nor builtins bind it — closures are
+  walked with their scope chain, so `aggregate.py`'s parser and the ADK tool
+  builders are not false positives (D65's shape).
 - **`quotes=None` raises on a chart that carries notes** *(T-97, D119; one
   layer up since T-98, D122)*. D90's rule on a second wire: "the system did
   not look" and "the chart does not say" are the two things the fault exists
@@ -679,6 +718,17 @@ wrong silently:
   `select_patients.py --verify` before trusting any result *(T-91)*. Restoring
   from git is exact; regenerating is not byte-stable *(D73)*.
 
+- **A killed mutation run leaves the mutant on disk, and a doc edit during
+  one fakes every later result** *(T-99, D123)*. A harness that restores after
+  each run restores nothing if it is interrupted mid-run — measured: a kill
+  left `eval/build_report.py` mutated, and every result after it would have
+  been scored against the mutant. **Verify the restore** (compare the bytes
+  back) and re-check the mutation sites before trusting a pass. And **do not
+  edit any tracked document while one runs**: `tests/test_docs_consistency.py`
+  fails on a stale count, so one unrelated edit reports every subsequent
+  mutation as caught. Adding tests changes the suite size, so the count is
+  re-derived *after* the last test lands, never during.
+
 - **A mutation run can edit a committed bundle.** Since T-97
   `select_patients.py` has a mode that **writes** one —
   `--declare-additions` — so a mutation in the append path that the harness
@@ -696,8 +746,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**81 of 81 tasks closed, 0 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1373 tests across 47 files, 58 of
+**82 of 82 tasks closed, 0 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1392 tests across 47 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -715,8 +765,8 @@ had added: the README's diagram is compared to `workflow.STEPS`, the
 resolver's result types and their routing, the three ports and the store
 adapters, and a renamed step is a red suite.
 
-Delivered: **US-1 through US-7, US-9 and US-10**, and **acceptance gates
-A1–A10 all hold**. `python -m pa_agent.cli --patient
+Delivered: **US-1 through US-7, US-9, US-10 and US-11**, and **acceptance
+gates A1–A11 all hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
@@ -749,13 +799,35 @@ rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
 per-tree split of the declared-unclaimed abstentions *(D113)* and D82's
 tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 52.4s across seventeen determinations** — replayed instrumentation, not the
-replay's own clock. Read them from `eval/report.md`, which is generated; these are a
+replay's own clock. **A11 suggestion precision 1.000** over three suggestions
+on four labeled charts, against a **0.600** trivial baseline that suggests
+every candidate and gets wrong exactly the two `H2` withholds *(T-99, D123)*.
+Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **nothing on the board. v1, v1.1 and v1.2 are all complete** — A1–A10
-all hold — and **`v1.3` is in progress**: `T-96` opened it, `T-97` closed
-row 2 and `T-98` closed row 3; **`T-99` is next** — `--suggest` on the CLI
-and A11's precision section.
+Open: **nothing on the board. v1, v1.1, v1.2 and v1.3 are all complete** —
+A1–A11 all hold. **`T-100` is next**, row 1 of `v1.4`: the session port, its
+file adapter and the lifecycle enum, for zero model calls.
+
+**`T-99` closed row 4 and v1.3** (D123). `--suggest` emits the
+`icd_suggestions` block beside a determination whose own keys are
+byte-identical with and without it — `_render` is the one place a suggestion
+could have been folded in, so that is where it is checked. The quote leaf
+follows `--extraction`, as the verifier already does, so the default replays
+`eval/history/results.json` for zero calls; `cli.py` composes the review
+because `history.py` takes its value sets and its ingredient expansion as
+arguments and that is what keeps it off both planes. A short-circuited
+request still gets a review, with `policy_version_id` **null** — the field is
+`str | None` now — and every `would_affect` empty carrying that as its
+reason. **A11's other three clauses were already held by commands** `T-97`
+and `T-98` wrote, so the row measured the fourth and named the rest rather
+than re-proving them; the report's section carries the mapping. It minted
+nothing. It also deleted an unreachable fallback in `history.review` that
+read `medication.system or expansion.system`, naming a local of
+`candidate_rows`: dead while `admits` guarantees a matched medication's
+system is the expansion's, a `NameError` the day the filter loosened, and
+invisible to all 52 behavioural tests — so it is pinned by an AST scan for a
+name read in a scope nothing binds, over all of `pa_agent/`.
 
 **`T-98` closed row 3** (D122): the review's one model turn exists, on
 every runner and both tiers. `pa_agent/quotes.py` is a fourth port in the

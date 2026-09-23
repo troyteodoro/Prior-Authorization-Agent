@@ -69,9 +69,9 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1 and v1.2 are all complete.**
-81 of 81 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1373 tests (58 skip).
+**v1, v1.1, v1.2 and v1.3 are all complete.**
+82 of 82 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
+gates A1–A11 holding. The suite collects 1392 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -88,7 +88,7 @@ gates A1–A10 holding. The suite collects 1373 tests (58 skip).
   non-invasive abdominal and visceral vascular ultrasound from WPS's L35755
   *(T-94)* — and closed by generating the account of what that cost
   *(T-95)*. **The answer is in the next section, and it is measured.**
-- **v1.3** is in progress, and asks what the chart *implies* rather than what it
+- **v1.3** is complete, and asks what the chart *implies* rather than what it
   says. `T-96` opened it with a second hashed corpus: five FDA drug labels under
   `data/knowledge/`, and a reviewed table of (drug, effect) rows that is the only
   place a suggested ICD-10 code may come from — every row naming a source for
@@ -111,7 +111,12 @@ gates A1–A10 holding. The suite collects 1373 tests (58 skip).
   **fabrication rate of 0 of 60** pairs each, and `H4` reads **red with the
   quotes consulted**, proved by a recording rather than assumed *(D122)*. The
   measured yellow is v1.6's, because a new note re-measures six extraction
-  recordings *(D120)*.
+  recordings *(D120)*. `T-99` closed the version by putting the review in front
+  of a person — `--suggest` emits it as a block **beside** the determination,
+  whose own keys are byte-identical with and without the flag — and by
+  measuring the one clause of A11 nothing held: **suggestion precision 1.000
+  over three suggestions, against a trivial baseline of 0.600** that suggests
+  every candidate and gets wrong exactly the two the review withholds *(D123)*.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -214,7 +219,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 
 ### Every acceptance gate, and what it reads
 
-**Acceptance gates A1–A10 all hold.**
+**Acceptance gates A1–A11 all hold.**
 
 | Gate | Result |
 |---|---|
@@ -228,6 +233,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
+| A11 | suggestion precision **1.000** over 3 suggestions against a **0.600** trivial baseline; zero suggestions without a source row; zero yellow without a valid span; zero verdict drift — each clause named with the command that holds it |
 
 ### How the project got here
 
@@ -376,7 +382,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1 | bariatric determination end to end, two implementations graded against one oracle | US-1–US-9 | **complete** |
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
-| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **in progress** |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
 | v1.4 | sessions and intake, headless | US-12 | planned |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
@@ -399,13 +405,13 @@ D110)*. That is the property every version below rests on — v1.6 adds two
 more practices, and v2.2 adds a payer whose policy states the criteria
 Medicare never does.
 
-**Next is v1.3**, which leaves coverage rules alone and adds a second kind of
-help: from the medications and conditions already on the chart, surface
-conditions the chart *supports* but does not carry — a corticosteroid and a
-low bone density, an anticoagulant and a low blood pressure — each tied to
-evidence and sorted by how much of it there is. Codes come only from a
-reviewed table, the tri-state is Python, and the model quotes the note and
-nothing else.
+**Next is v1.4**, which leaves both the coverage rules and the review alone
+and makes a determination something the specialist can come back to: a third
+plane with its own port and file-backed adapter, an intake contract that
+accepts a procedure with or without ICD codes — typed at the command line or
+sent by an upstream system, both validating to the same object — and a closed
+lifecycle enum walked by Python, where an illegal transition raises. `session
+create | list | show | run`, and **zero model calls**.
 
 ---
 
@@ -454,10 +460,11 @@ reconciled.
    35 is nationally non-covered; this is computed from structured FHIR. Zero
    model calls.
 3. **The workflow.** Anything surviving both enters `pa_agent/workflow.py` — a
-   module-level tuple of eight named steps walked by a plain-Python driver:
+   module-level tuple of ten named steps walked by a plain-Python driver:
    *gather → extract → criterion_a → reconcile → criterion_b → qualifying_run
-   → criteria_c → verify*. The single conditional in the graph is whether a
-   short circuit fired, and that is a `return`, not an edge.
+   → criteria_c → unclaimed → sufficiency → verify*. The single conditional in
+   the graph is whether a short circuit fired, and that is a `return`, not an
+   edge.
 
 **Seven criteria**, all sourced from the policy's own criteria tree:
 
@@ -854,6 +861,8 @@ predicate — which is the point.
 | `--recording <path>` | the recording replayed under `--extraction recorded` |
 | `--tool-fetch` | with `--extraction adk`: the agent fetches the note through its `read_note` tool instead of receiving it in the message |
 | `--as-of YYYY-MM-DD` | the date recency windows are measured from (default: today). Pin it to reproduce a determination |
+| `--suggest` | also emit the medical-history review, as an `icd_suggestions` block beside the determination. Its quote leaf follows `--extraction`, so the default replays the committed recording for **zero model calls** |
+| `--history-recording <path>` | the quote recording replayed under `--suggest` with `--extraction recorded` |
 
 Exit codes: `0` an answer (honest abstentions included), `1` a bad request
 (unknown patient), `2` an unbuilt path, `3` a determination aborted because a
@@ -862,6 +871,19 @@ nothing to stdout.
 
 The live modes need a Gemini API key in `pa_agent/agent/.env` (gitignored — no
 real key ever appears in a tracked file).
+
+**`--suggest` changes no verdict.** The review is its own object beside the
+determination, not a field on it, so the determination's own keys are
+byte-identical with and without the flag and there is no route by which a
+suggestion could reach a criterion — spec §11's *no verdict changes in v1.3*
+is structural rather than measured *(D119, D123)*. The block carries each
+suggestion's colour, the row of the knowledge table its ICD-10 code came from,
+the span in the FDA label the effect is asserted from, the candidates the
+review **withheld** and why, and its own model-call counters, which are
+reported apart from the determination's because the review sits beside the
+graph rather than inside it *(REQ-68)*. A request that short-circuits still
+gets a review — a chart is worth reading even when the code is not covered —
+and every `would_affect` is then empty carrying that as its reason.
 
 ### Gates and tests
 
@@ -872,7 +894,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1373 tests across 47 files, 58 of them skipped — the skips are per-tree
+1392 tests across 47 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

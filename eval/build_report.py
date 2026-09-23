@@ -130,14 +130,12 @@ class _ToleranceOverride:
         return getattr(self._inner, name)
 
 
-def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
-    """Every labeled case, scored, plus the determination cache behind it.
+def _compose(policy_store: Any) -> dict[str, Any]:
+    """The three stores and the three recorded runners `run_eval.main` composes.
 
-    The cache is what the per-criterion sections read: one determination per
-    `(patient, procedure, as_of)`, which is the object rows sharing a patient
-    were scored against (D75).
+    Factored out because `_run` and `_reviews` both need them and building two
+    sets would let the report grade one system and describe another *(T-99)*.
     """
-    cases = json.loads((EVAL_DIR / "cases.json").read_text(encoding="utf-8"))["cases"]
     patient_store = LocalPatientStore()
     # T-97 (D119): the same three stores `run_eval.main` composes, for the same
     # reason — a row that labels a medical-history review and is scored without
@@ -165,24 +163,73 @@ def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
             "without the recordings it reads. All three are committed — this "
             "is a checkout problem."
         )
+    return {
+        "policy_store": policy_store,
+        "patient_store": patient_store,
+        "knowledge_store": knowledge_store,
+        "resolve_document": resolve_document,
+        "runner": runner,
+        "verifier": verifier,
+        "quote_runner": quote_runner,
+    }
+
+
+def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
+    """Every labeled case, scored, plus the determination cache behind it.
+
+    The cache is what the per-criterion sections read: one determination per
+    `(patient, procedure, as_of)`, which is the object rows sharing a patient
+    were scored against (D75).
+    """
+    cases = json.loads((EVAL_DIR / "cases.json").read_text(encoding="utf-8"))["cases"]
+    parts = _compose(policy_store)
 
     cache: dict[Any, Any] = {}
     results = [
         harness.run_case(
             case,
             policy_store,
-            patient_store,
-            runner,
+            parts["patient_store"],
+            parts["runner"],
             harness.EVAL_AS_OF,
             cache,
-            resolve_document,
-            verifier,
-            knowledge_store,
-            quote_runner,
+            parts["resolve_document"],
+            parts["verifier"],
+            parts["knowledge_store"],
+            parts["quote_runner"],
         )
         for case in cases
     ]
     return results, cache
+
+
+def _reviews(policy_store: Any, cache: dict[Any, Any]) -> dict[str, Any]:
+    """The `HistoryRun` for every case that labels a review, by case id.
+
+    Recomputed from the same recordings rather than read off a `CaseResult`,
+    which carries the review's *cost* and not the review (T-71's rule: the
+    report derives its figures and never reads a stored aggregate). Zero model
+    calls — the quote runner is the recorded one.
+    """
+    cases = json.loads((EVAL_DIR / "cases.json").read_text(encoding="utf-8"))["cases"]
+    parts = _compose(policy_store)
+    runs: dict[str, Any] = {}
+    for case in cases:
+        if not harness._labels_a_review(case):
+            continue
+        result = _determination_for(case, cache)
+        if result is None:
+            continue
+        runs[case["case_id"]] = harness._review(
+            case,
+            result,
+            policy_store,
+            parts["patient_store"],
+            parts["knowledge_store"],
+            parts["quote_runner"],
+            parts["verifier"],
+        )
+    return runs
 
 
 def _labels() -> dict[str, dict[str, Any]]:
@@ -1691,6 +1738,162 @@ def _compatibility_section() -> list[str]:
     return lines
 
 
+def _a11_rows(
+    labels: dict[str, dict[str, Any]], runs: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """One row per case that labels a review, compared to its label.
+
+    Pure over `(labels, runs)` so the tests can drive it with hand-written
+    pairs; nothing here reads a stored aggregate (T-71).
+
+    **Every candidate becomes exactly one of a suggestion or a withheld entry**
+    — that is what `history.review` does with each row an active prescription
+    matched — so the candidate count is derived from the review rather than
+    recomputed from the chart, and the two can never disagree.
+    """
+    rows = []
+    for case_id in sorted(runs):
+        expect = labels[case_id]["expect"]
+        review = runs[case_id].review
+        want = {
+            (s["row_id"], s["code"], s["colour"])
+            for s in (expect.get("suggestions") or [])
+        }
+        got = {
+            (s.row_id, s.icd10_code, s.colour.value) for s in review.suggestions
+        }
+        want_withheld = {
+            (w["row_id"], w["reason"]) for w in (expect.get("withheld") or [])
+        }
+        got_withheld = {(w.row_id, w.reason.value) for w in review.withheld}
+        rows.append(
+            {
+                "case_id": case_id,
+                "emitted": len(got),
+                "correct": len(got & want),
+                "labeled": len(want),
+                "withheld": len(got_withheld),
+                "withheld_correct": len(got_withheld & want_withheld),
+                "candidates": len(review.suggestions) + len(review.withheld),
+                "yellow": sum(
+                    1 for s in review.suggestions if s.colour.value == "yellow"
+                ),
+                "sourced": sum(1 for s in review.suggestions if s.row_id and s.effect),
+                "review_calls": runs[case_id].model_calls,
+            }
+        )
+    return rows
+
+
+def _a11_section(cache: dict[Any, Any], policy_store: Any) -> list[str]:
+    """A11's suggestion precision, and the trivial baseline that gives it a scale.
+
+    The one clause of A11 that no command held before this row *(T-99, D123)*.
+    """
+    labels = _labels()
+    runs = _reviews(policy_store, cache)
+    rows = _a11_rows(labels, runs)
+
+    emitted = sum(r["emitted"] for r in rows)
+    correct = sum(r["correct"] for r in rows)
+    candidates = sum(r["candidates"] for r in rows)
+    withheld = sum(r["withheld"] for r in rows)
+    withheld_correct = sum(r["withheld_correct"] for r in rows)
+    yellow = sum(r["yellow"] for r in rows)
+    sourced = sum(r["sourced"] for r in rows)
+    calls = sum(r["review_calls"] for r in rows)
+
+    precision = correct / emitted if emitted else 0.0
+    baseline = correct / candidates if candidates else 0.0
+
+    lines = [
+        "## Suggestion precision (A11, REQ-63, REQ-65, D119, D122)",
+        "",
+        "The medical-history review graded against the labels, over the rows "
+        "that label one. A suggestion is **correct** when its row, its ICD-10 "
+        "code and its colour are the ones the label names; a withheld candidate "
+        "is correct when its row and its reason are. Scored over the labeled "
+        "rows only, as A2 is: the other charts have no suggestion ground truth, "
+        "and deriving one from the system's own output measures agreement with "
+        "itself (D42, D85). Recomputed here from the committed recordings "
+        "rather than read off a scored row (T-71).",
+        "",
+        "| Case | Candidates | Suggestions | Correct | Withheld | Correct | "
+        "Review calls |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for r in rows:
+        lines.append(
+            f"| `{r['case_id']}` | {r['candidates']} | {r['emitted']} | "
+            f"{r['correct']} | {r['withheld']} | {r['withheld_correct']} | "
+            f"{r['review_calls']} |"
+        )
+    lines += [
+        f"| **all** | **{candidates}** | **{emitted}** | **{correct}** | "
+        f"**{withheld}** | **{withheld_correct}** | **{calls}** |",
+        "",
+        f"**A11's threshold is A2's bar, 0.90.** Measured: "
+        f"**{precision:.3f}** over {emitted} suggestions.",
+        "",
+        "### The base rate and the trivial baseline (A2's shape)",
+        "",
+        "A2 carries a baseline because a precision figure alone is not a "
+        "result, and the same is true here. The trivial system is one that "
+        "**suggests every candidate** — every row an active prescription "
+        "matched, with no withholding — which is this feature's always-`MET`: "
+        "it does the matching and none of the judging.",
+        "",
+        "| Figure | Value |",
+        "|---|---|",
+        f"| Candidates across the labeled charts | {candidates} |",
+        f"| Candidates the labels say are suggestions (the base rate) | "
+        f"{correct}/{candidates} = **{baseline:.3f}** |",
+        f"| Precision of a baseline that suggests every candidate | "
+        f"**{baseline:.3f}** |",
+        f"| Precision measured | {correct}/{emitted} = **{precision:.3f}** |",
+        "",
+        "The baseline's precision *is* the base rate, by construction — the "
+        "same identity A2's section states. What it gets wrong is exactly what "
+        "withholding exists for: the candidate whose condition the chart "
+        "**already codes**, and the one whose signal was **measured and did "
+        "not cross**. Both are on one chart, `H2`, which is why that row labels "
+        "zero suggestions and a withheld list rather than nothing at all — an "
+        "empty suggestion list and a chart with no candidate are different "
+        "facts (REQ-65, D119).",
+        "",
+        f"**What the denominator means.** {emitted}. This is a small number and "
+        "it is the number: on a corpus this size a perfect score means only "
+        "that the approach does not obviously fail, and the figure worth "
+        "reading beside it is the baseline it beats. The measured yellow that "
+        "would widen it is `T-110`'s (D120).",
+        "",
+        "### What holds each of A11's four clauses",
+        "",
+        "A gate closes on what is checked rather than on what is asserted "
+        "(T-95, D116), so each clause names its command.",
+        "",
+        "| Clause | Held by | This round |",
+        "|---|---|---|",
+        f"| suggestion precision at A2's bar | this section, and "
+        f"`build_report.py --verify` | **{precision:.3f}** ≥ 0.90 |",
+        f"| zero suggestions without a source row | `tests/test_history.py` — "
+        f"every suggestion carries its row's code and the span the effect was "
+        f"asserted from | {sourced}/{emitted} sourced |",
+        f"| zero yellow without a valid span | `tests/test_history.py` — the "
+        f"anchorer's real refusal on a hand-written note, its verbatim twin, "
+        f"and every corpus suggestion re-sliced; `run_eval.py` validates "
+        f"suggestion citations through A3's own walk | {yellow} yellow on this "
+        f"corpus |",
+        "| zero verdict drift | `tests/test_history.py` — no `Determination` "
+        "field names a suggestion and no engine module imports `history`, so "
+        "the drift is unrepresentable rather than merely unmeasured (D119); "
+        "`tests/test_determination.py` runs one request with and without "
+        "`--suggest`; `run_eval.py` diffs the baseline | structural |",
+        "",
+    ]
+    return lines
+
+
 def _caveats_section() -> list[str]:
     return [
         "## Scope of these numbers",
@@ -1745,7 +1948,8 @@ def _caveats_section() -> list[str]:
 
 
 def render() -> str:
-    results, cache = _run(LocalPolicyStore())
+    policy_store = LocalPolicyStore()
+    results, cache = _run(policy_store)
     pairs = _criterion_pairs(results, cache)
 
     lines = [
@@ -1775,6 +1979,11 @@ def render() -> str:
         *_quote_section(),
         *_cost_section(results, cache),
         *_compatibility_section(),
+        # T-99 (D123): after A10's section, so the gate sections run in the
+        # order the gates are numbered, and before the caveats that close the
+        # document. Not beside the quote section above: that one is about what
+        # the model turn cost, and this one about whether the review is right.
+        *_a11_section(cache, policy_store),
         *_caveats_section(),
     ]
     return "\n".join(lines).rstrip("\n") + "\n"

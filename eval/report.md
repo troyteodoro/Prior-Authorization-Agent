@@ -368,6 +368,46 @@ Counted apart, because A10 counts criteria and an exclusion is not one: written 
 | bariatric surgery | `ncd-100.1-jjm-v1` | Bariatric surgery for T2DM with BMI below 35 is nationally non-covered | `nationally_covered` | `bmi_below_bound_with_active_condition` |
 | rheumatology | `infliximab-ra-jjm-v1` | Infliximab combined with another biologic or a JAK inhibitor is not covered | `contractor_determined` | `active_medication_value_set` |
 
+## Suggestion precision (A11, REQ-63, REQ-65, D119, D122)
+
+The medical-history review graded against the labels, over the rows that label one. A suggestion is **correct** when its row, its ICD-10 code and its colour are the ones the label names; a withheld candidate is correct when its row and its reason are. Scored over the labeled rows only, as A2 is: the other charts have no suggestion ground truth, and deriving one from the system's own output measures agreement with itself (D42, D85). Recomputed here from the committed recordings rather than read off a scored row (T-71).
+
+| Case | Candidates | Suggestions | Correct | Withheld | Correct | Review calls |
+|---|---|---|---|---|---|---|
+| `H1` | 1 | 1 | 1 | 0 | 0 | 0 |
+| `H2` | 2 | 0 | 0 | 2 | 2 | 0 |
+| `H3` | 1 | 1 | 1 | 0 | 0 | 0 |
+| `H4` | 1 | 1 | 1 | 0 | 0 | 2 |
+| **all** | **5** | **3** | **3** | **2** | **2** | **2** |
+
+**A11's threshold is A2's bar, 0.90.** Measured: **1.000** over 3 suggestions.
+
+### The base rate and the trivial baseline (A2's shape)
+
+A2 carries a baseline because a precision figure alone is not a result, and the same is true here. The trivial system is one that **suggests every candidate** — every row an active prescription matched, with no withholding — which is this feature's always-`MET`: it does the matching and none of the judging.
+
+| Figure | Value |
+|---|---|
+| Candidates across the labeled charts | 5 |
+| Candidates the labels say are suggestions (the base rate) | 3/5 = **0.600** |
+| Precision of a baseline that suggests every candidate | **0.600** |
+| Precision measured | 3/3 = **1.000** |
+
+The baseline's precision *is* the base rate, by construction — the same identity A2's section states. What it gets wrong is exactly what withholding exists for: the candidate whose condition the chart **already codes**, and the one whose signal was **measured and did not cross**. Both are on one chart, `H2`, which is why that row labels zero suggestions and a withheld list rather than nothing at all — an empty suggestion list and a chart with no candidate are different facts (REQ-65, D119).
+
+**What the denominator means.** 3. This is a small number and it is the number: on a corpus this size a perfect score means only that the approach does not obviously fail, and the figure worth reading beside it is the baseline it beats. The measured yellow that would widen it is `T-110`'s (D120).
+
+### What holds each of A11's four clauses
+
+A gate closes on what is checked rather than on what is asserted (T-95, D116), so each clause names its command.
+
+| Clause | Held by | This round |
+|---|---|---|
+| suggestion precision at A2's bar | this section, and `build_report.py --verify` | **1.000** ≥ 0.90 |
+| zero suggestions without a source row | `tests/test_history.py` — every suggestion carries its row's code and the span the effect was asserted from | 3/3 sourced |
+| zero yellow without a valid span | `tests/test_history.py` — the anchorer's real refusal on a hand-written note, its verbatim twin, and every corpus suggestion re-sliced; `run_eval.py` validates suggestion citations through A3's own walk | 0 yellow on this corpus |
+| zero verdict drift | `tests/test_history.py` — no `Determination` field names a suggestion and no engine module imports `history`, so the drift is unrepresentable rather than merely unmeasured (D119); `tests/test_determination.py` runs one request with and without `--suggest`; `run_eval.py` diffs the baseline | structural |
+
 ## Scope of these numbers
 
 The measurement context for every figure above.
