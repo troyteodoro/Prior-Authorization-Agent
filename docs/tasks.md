@@ -17,8 +17,23 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-129`, off the path, before v1.6 opens** *(D124)* — the
-national floor checked at load. Then `v1.4` opens with `T-100`.
+**What to do next: `T-101`, row 2 of `v1.4`** — the intake contract. A JSON
+intake and the equivalent flags validate to the same object; a malformed one is
+a bad request, exit 1, and no session exists. `pa_agent/intake.py` may **not**
+name `Path` or call `open`, so the CLI reads the bytes and hands over the text.
+Then `T-102`, the verbs, closes the version.
+**`T-100` opened v1.4** *(D127)*: the session plane is the **fourth** storage
+port — `T-96` made the knowledge corpus the third — and the **first thing under
+`pa_agent/` that writes a file**, so `data/sessions/` is gitignored, pinned by
+no manifest and out of `verify_sources.py`'s reach. The lifecycle is a table,
+all nine ordered state pairs are tested with the legal three transcribed from
+US-12's sentences rather than read back from the table, and `advance()` returns
+or raises while only the adapter writes — which is what makes *never recorded*
+structural. It minted **REQ-69**, **REQ-70** and **REQ-71**. Two gates passed
+while the feature was wrong and both are fixed; `is_terminal()` is a function
+rather than a property because the property makes `contracts` import `session`
+and that cycle puts **every module in the package** inside the session plane.
+**`T-129` is still off the path** *(D124)*, due before v1.6 opens.
 **`T-99` closed row 4 and v1.3** *(D126)*: `--suggest` emits the
 `icd_suggestions` block beside verdicts that are byte-identical without it,
 a request no tree governs declines by name, and `eval/report.md` carries
@@ -238,7 +253,7 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 | v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
-| v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
+| v1.4 | sessions and intake, headless · **in progress** | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
@@ -291,12 +306,17 @@ table; the tri-state is Python; the model quotes the note and nothing else.
 A determination becomes something Sam can come back to. A third plane with
 its own port, an intake contract that accepts a procedure with or without
 ICD codes from an upstream system or the command line, and a closed
-lifecycle enum walked by Python. `session list` is v2.0's dashboard as text.
-**Zero model calls.**
+lifecycle enum walked by Python. `session list` is v2.2's dashboard as text
+*(D125)*. **Zero model calls.**
+
+**`T-100` opened the version** *(D127)*. The session plane is the **fourth**
+port, not the third — `T-96` made the knowledge corpus the third — and the
+first whose corpus the system **writes**, which is why `data/sessions/` is
+gitignored and pinned by no manifest.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the session port, its file adapter and the lifecycle | `T-100` | pending | every transition in the enum has a test and every illegal one raises; a session round-trips through the adapter byte-stable; `stores/__init__.py` still imports nothing |
+| 1 | the session port, its file adapter and the lifecycle | `T-100` | **closed** (D127) | all **nine** ordered state pairs tested — the legal set transcribed from US-12's sentences, never read back from the table — and every illegal one raises and records nothing; a session round-trips byte-stable **written twice**; the session plane reaches no other and none reaches it; `stores/__init__.py` still imports nothing, now checked for all four ports. Mints **REQ-69**, **REQ-70**, **REQ-71** |
 | 2 | the intake contract | `T-101` | pending | a JSON intake and the CLI flags validate to the same object; a malformed intake is a bad request, exit 1 |
 | 3 | the verbs | `T-102` | pending | `session create / list / show / run` round-trip a determination; every gate green |
 
@@ -2567,6 +2587,107 @@ committed note is in T-98's recording; `eval/report.md` carries A11's section
 with precision gated on the colours that assert and red reported beside the
 all-red baseline; and the seven ungraded candidates on five charts carry
 review labels, so 12 of 12 are graded.
+
+---
+
+## `US-12` Keep my determinations as sessions I can come back to
+
+Opened by `T-100` *(D127)*. Three rows: the port and the lifecycle, the intake
+contract, then the verbs. **Zero model calls in all three** — nothing here
+reaches the model boundary, and the version's whole cost is plumbing.
+
+### `[x] T-100` The session port, its file adapter and the lifecycle
+
+**REQ:** 69, 70, 71 · **Depends:** — · **Blocks:** T-101, T-102 ·
+**Decided by:** D127 · **Gates:** A12 (first of three rows; opens v1.4) ·
+**Timebox:** one day
+**Status:** **closed** (D127) — the exit ran green and every gate with it.
+**v1.4 is open.** The session plane is the **fourth** storage port and the
+**first thing under `pa_agent/` that writes a file**; `data/sessions/` is
+gitignored because it is the system's own output rather than a corpus the
+repository ships, so no manifest pins it and `verify_sources.py` does not
+reach it.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_session.py tests/test_session_store.py \
+      tests/test_planes.py tests/test_schemas.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: every `SessionState` has a row in `TRANSITIONS`, asserted at
+import; all **nine** ordered state pairs are tested, and the legal three are
+**transcribed from US-12's own sentences** rather than read back from the
+table, so a table that lost a row goes red instead of agreeing with itself;
+every illegal move raises `IllegalTransition` naming both ends and the legal
+set, and records nothing — structurally, because `advance()` returns or raises
+and only the adapter writes; a session round-trips byte-identically **written
+twice**, which is what catches a clock inside the serializer; `list_sessions()`
+answers `[]` on an empty or missing root while `get()` still raises; a session
+id carrying a path separator is refused before it can write outside the root;
+no type reachable from `Session` is a `Document` or a FHIR resource, and no
+committed policy or note text appears in a written session; the session plane
+reaches none of the other three and none of them reaches it; `stores/__init__.py`
+imports nothing, now checked for all four ports.
+
+**What it found.** `SessionState.terminal` as a **property** — the shape the
+task was briefed with — makes `contracts` import `session` while `session`
+imports `contracts`, and that cycle makes **every module in the package reach
+the session plane** through the import graph. Six plane roots went red the
+first time the walk ran against it. `is_terminal()` is a function in
+`pa_agent/session.py` instead; the vocabulary stays in `contracts` and the
+table stays with the code that walks it, which is `PredicateKind` and
+`criteria.PREDICATES` exactly *(D110)*. Both readings are identical on today's
+three states, so the absence is pinned by parsing: no enum member carries a
+non-string value, and `contracts.py` imports `pa_agent.session` nowhere.
+
+**Two gates passed while the feature was wrong, and both are fixed** *(D127)*.
+Article VI's structural check walks `Session`'s field graph for a `Document` or
+a FHIR resource and is blind to a plain `str`: adding `cached_policy_text: str`
+to `SessionRun` passed **all nineteen tests**, so the field sets of `Session`,
+`SessionRun` and `Intake` are now pinned as literals (D51's shape). And the
+content check compared committed text against the written file's **bytes**,
+which JSON escapes — so a session carrying a whole policy document read as
+absent and the test could never fail; it now walks the **decoded** strings, and
+was re-attacked by smuggling the corpus through `ran_at`. **Ten mutations
+caught**, plus one measurement that changed the committed test: byte-stability
+is asserted over **two** writes, because a one-write version passes a serializer
+that stamps a non-contract key — pydantic ignores extras on read, so the session
+round-trips equal while every write differs.
+
+**What is deliberately not built.** `pa_agent/intake.py` and its two
+validating constructors are `T-101`'s; the verbs are `T-102`'s. The `Intake`
+**contract** lands here because `T-100`'s own statement — a session records its
+intake — cannot be checked without the object, and storing loose fields would
+make `T-101` a schema migration of a persisted file one row later *(D127)*.
+Nothing constructs a `SessionStore` yet: `cli.py` gains no verb at this close.
+
+**What it mints.** REQ-69, REQ-70 and REQ-71 — the three of v1.4's four
+statements this close checks. The fourth, the intake's two routes, stays a §11
+statement until `T-101` opens *(D109)*.
+
+### `[ ] T-101` The intake contract
+
+**REQ:** mints 72 · **Depends:** T-100 · **Blocks:** T-102 ·
+**Gates:** A12 (second of three rows) · **Timebox:** half a day
+**Status:** pending.
+**Exit:** a JSON intake and the equivalent flags validate to the same object; a
+malformed intake is a bad request, exit 1, and no session exists.
+`pa_agent/intake.py` may **not** name `Path` or call `open` — the storage scan
+in `tests/test_planes.py` forbids it outside `pa_agent/stores/`, so the CLI
+reads the bytes and hands over the text.
+
+### `[ ] T-102` The verbs
+
+**REQ:** mints none — its close *checks* REQ-69 through REQ-72 over the real
+verbs rather than over objects built in a test, which is T-93 and T-95's
+precedent · **Depends:** T-100, T-101 · **Gates:** A12 (third of three rows) ·
+**Timebox:** one day
+**Status:** pending.
+**Exit:** `session create / list / show / run` round-trip a determination;
+the bare `--patient/--procedure` invocation still prints byte-identical stdout
+and keeps exit codes 0/1/2/3; every gate green.
 
 ---
 

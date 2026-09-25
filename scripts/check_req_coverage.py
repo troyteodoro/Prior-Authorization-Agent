@@ -122,6 +122,10 @@ MAPPING: dict[str, str] = {
     "REQ-22": "tests/test_workflow.py",
     "REQ-25": "tests/test_build_report.py",
     "REQ-28": "tests/test_metrics_error_accounting.py",
+    # Sessions and intake (T-100, D127)
+    "REQ-69": "tests/test_session_store.py",
+    "REQ-70": "tests/test_session_store.py",
+    "REQ-71": "tests/test_session.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

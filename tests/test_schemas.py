@@ -410,12 +410,21 @@ def test_no_single_class_satisfies_both_protocols() -> None:
         assert not (has_policy and has_patient), f"{candidate.__name__} reaches both planes"
 
 
-def test_the_stores_package_imports_neither_plane() -> None:
-    """A package-level re-export would be exactly the module Article VI denies."""
+def test_the_stores_package_imports_no_plane() -> None:
+    """A package-level re-export would be exactly the module Article VI denies.
+
+    All four ports, since T-100. `KnowledgeStore` was never added when T-97
+    landed the third, so the claim this test makes was one port short of the
+    package for two versions — a gap fixed here because this row edits the test
+    anyway (D127).
+    """
     import pa_agent.stores as stores
 
-    assert not hasattr(stores, "PolicyStore")
-    assert not hasattr(stores, "PatientStore")
+    for port in ("PolicyStore", "PatientStore", "KnowledgeStore", "SessionStore"):
+        assert not hasattr(stores, port), (
+            f"pa_agent.stores re-exports {port}; a package-level alias is the "
+            "module that reaches every plane (Article VI)"
+        )
 
 
 def test_the_policy_store_returns_the_t01_tree(tree: CriteriaTree) -> None:

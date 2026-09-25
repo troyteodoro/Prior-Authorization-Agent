@@ -24,3 +24,7 @@ __pycache__/
 
 # T-04: Synthea jar and full generated population; only the six selected bundles are committed (D35)
 data/patients/work/
+
+# T-100: the session plane is output, not evidence — no manifest pins it and
+# verify_sources.py does not reach it, so it is per-user and never tracked (D127)
+data/sessions/

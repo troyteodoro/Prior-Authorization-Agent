@@ -28,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-68 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-71 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-99 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-100 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D126, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-102 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-103 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D127, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -230,12 +230,13 @@ tier land without touching them.
 **`build_result()` is the trust boundary.** Every runner returns through it. ADK
 output is untrusted model output and there is no private route to a `WmEvent`.
 
-**Three storage ports, three corpora** (`stores/policy.py`,
-`stores/patient.py`, `stores/knowledge.py`, REQ-41, Article VI). The patient port serves observations, conditions,
+**Four storage ports, three corpora and one output** (`stores/policy.py`,
+`stores/patient.py`, `stores/knowledge.py`, `stores/session.py`, REQ-41,
+Article VI). The patient port serves observations, conditions,
 **medications** (T-92), **procedures** (T-94, each carrying the care setting
 it was performed in), notes, the jurisdiction state and documents; the
-policy port serves resolution, trees, documents and value sets. `stores/__init__.py` imports neither submodule on purpose —
-a package-level re-export would be the module that reaches both planes.
+policy port serves resolution, trees, documents and value sets. `stores/__init__.py` imports no submodule on purpose —
+a package-level re-export would be the module that reaches every plane.
 The knowledge port
 serves `data/knowledge/` — what a **drug** is known to do, which is neither
 what a payer covers nor what one chart says — as reviewed rows plus the pinned
@@ -696,8 +697,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**82 of 82 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1393 tests across 47 files, 58 of
+**83 of 83 tasks closed, 3 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1443 tests across 49 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -1153,7 +1154,7 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   agent/             ADK: extraction_agent, quote_agent, retrieval_agent,
                      patient_tools, policy_tools, tool_bounds, agent (adk web
                      entry point)
-  stores/            policy.py, patient.py and knowledge.py — the three ports
+  stores/            policy.py, patient.py, knowledge.py and session.py — the four ports
                      and their file-backed adapters. __init__ imports none.
 data/policies/
   source/            ncd_100_1, a53028, r931cp, l34576, a56852, l35677, a56432,

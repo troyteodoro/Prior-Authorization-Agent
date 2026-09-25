@@ -48,6 +48,13 @@ PATIENT_ROOTS = ("pa_agent.stores.patient", "pa_agent.agent.patient_tools")
 #: neither, which is a weaker claim wearing the same words.
 KNOWLEDGE_ROOTS = ("pa_agent.stores.knowledge",)
 
+#: The fourth port, and the first that **writes** (T-100, D127). `data/sessions/`
+#: is not a corpus the repository ships — it is the system's own record of having
+#: answered a question — so it is a root of its own for the same reason the
+#: knowledge corpus is: folding it into either plane would make "the policy plane
+#: cannot read a chart" true of a module that reads neither.
+SESSION_ROOTS = ("pa_agent.stores.session", "pa_agent.session")
+
 #: Modules that legitimately reach both planes, and why. Asserted as an exact
 #: set (D83) — a subset check would have hidden `retrieval`, which nobody's list
 #: had until the graph was parsed.
@@ -242,6 +249,34 @@ def test_no_plane_root_reaches_the_knowledge_corpus(graph, root):
     is known to do would be a policy artifact with a second source of truth."""
     assert not _reaches(graph, root, KNOWLEDGE_ROOTS), (
         f"{root} reaches the knowledge corpus"
+    )
+
+
+@pytest.mark.parametrize("root", SESSION_ROOTS)
+def test_the_session_plane_reaches_no_other_plane(graph, root):
+    """The session plane holds ids and snapshots, not corpora (T-100, REQ-70).
+
+    Both directions, as for the knowledge corpus: a session adapter that could
+    read a chart or a policy would be able to store one, and REQ-70's claim is
+    that it stores neither. `pa_agent.session` is in the set because the state
+    machine is pure — a store import there would put a write path one directory
+    above the only place the storage scan tolerates one (D127).
+    """
+    assert not _reaches(graph, root, POLICY_ROOTS), f"{root} reaches the policy plane"
+    assert not _reaches(graph, root, PATIENT_ROOTS), f"{root} reaches the patient plane"
+    assert not _reaches(graph, root, KNOWLEDGE_ROOTS), (
+        f"{root} reaches the knowledge corpus"
+    )
+
+
+@pytest.mark.parametrize("root", POLICY_ROOTS + PATIENT_ROOTS + KNOWLEDGE_ROOTS)
+def test_no_other_plane_reaches_the_session_corpus(graph, root):
+    """And nothing reaches it. A criteria tree or a chart adapter that could read
+    what the system has already answered would be a corpus with a second source
+    of truth — and a policy plane that could read a determination is a rule
+    deciding by precedent (Article VII)."""
+    assert not _reaches(graph, root, SESSION_ROOTS), (
+        f"{root} reaches the session corpus"
     )
 
 

@@ -113,11 +113,12 @@ patient-data modules import no policy corpus and no index over it. The only type
 crossing is the compiled `Criterion`, enforced by an import-graph assertion.
 *(Art. VI)*
 
-**REQ-41** All data reaches the system through three storage ports,
-`PolicyStore`, `PatientStore` and `KnowledgeStore`. No module outside a store
-adapter opens a file path, holds a connection, or names a storage location. The
-ports are separate types with separate implementations; no single object
-satisfies more than one. *(Art. VI, D25; the third port T-97, D119)*
+**REQ-41** All data reaches the system through four storage ports,
+`PolicyStore`, `PatientStore`, `KnowledgeStore` and `SessionStore`. No module
+outside a store adapter opens a file path, holds a connection, names a storage
+location, or writes one. The ports are separate types with separate
+implementations; no single object satisfies more than one. *(Art. VI, D25; the
+third port T-97, D119; the fourth — and the first that writes — T-100, D127)*
 
 The ports are what makes a production database a second adapter rather than a
 rewrite. They are also how Article VI stops being a lint check: two planes become
@@ -548,6 +549,35 @@ sha256 under `eval/history/`, on both tiers and for each runner; replayed by
 row's `max_review_model_calls`, reported apart from determination cost. A
 changed instruction, condition list or schema is a new recording (D45).
 *(T-98, D122)*
+
+### Sessions and intake
+
+**REQ-69** The session plane is a **port**, `SessionStore`, with a file-backed
+adapter constructed in `cli.py` and nowhere else; no module outside
+`pa_agent/stores/` names its root, opens it, or writes to it. It is the first
+port whose corpus the system **writes** rather than reads, so its root is
+gitignored, no manifest pins it and `verify_sources.py` does not reach it — a
+determination the system produced is not a source the system re-derives. The
+`stores` package still imports no submodule. *(Art. VI, REQ-41; T-100, D127)*
+
+**REQ-70** A session records its intake, and per run the clock it ran against,
+the `policy_version_id` and the determination itself. It holds **no `Document`
+and no FHIR resource** — nothing a store would have to re-serve. The line is
+drawn at resources rather than at text: a determination's quoted spans travel
+with it exactly as they reach the CLI's stdout, and a session that could not
+carry them could not carry the thing it exists to hold. Runs are **appended**;
+a second run of one intake is a new snapshot and never an edit. *(Art. VI;
+T-100, D127)*
+
+**REQ-71** The lifecycle is a closed enum walked by a declared table. Every
+state has a row, asserted at import, so a state nothing can leave and nothing
+can reach fails at load rather than becoming a silent dead end (D110's shape).
+Terminality is **derived from the table**, never declared on a member — a flag
+would be a copy, and reading the table from the enum is an import cycle that
+makes every module in the package reach the session plane. An illegal
+transition **raises and is never recorded**, which is structural rather than
+remembered: the machine returns a new session or raises, and only the adapter
+writes. *(Art. I; T-100, D127)*
 
 ---
 
@@ -1009,7 +1039,7 @@ load-bearing; a table that sorts prettily is not.
 | v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
-| v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
+| v1.4 | sessions and intake, headless · **in progress** | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
@@ -1257,8 +1287,10 @@ both the CLI and the harness so the two cannot disagree about a chart
 ### v1.4 — Sessions and intake, headless
 
 **Goal.** A determination becomes something the specialist can come back
-to. A third plane — the session plane — with its own port and file-backed
-adapter, constructed in `cli.py` and nowhere else (REQ-41's rule); a session
+to. A **fourth** plane — the session plane — with its own port and file-backed
+adapter, constructed in `cli.py` and nowhere else (REQ-41's rule). It is the
+fourth and not the third because `T-96` made the knowledge corpus the third
+*(D118)*; it is also the first whose corpus the system **writes**. A session
 holds ids and its own determination snapshot and never a copy of either
 corpus (Article VI). An intake contract, `pa_agent/intake.py`: a procedure,
 with or without ICD codes, a patient and a state, from a JSON document an
@@ -1281,8 +1313,8 @@ an illegal transition raises. Verbs: `session create | list | show | run`.
   malformed intake is a bad request (exit 1), never a session.
 
 **Gate A12.** Every transition in the enum has a test and every illegal one
-raises; a session round-trips through the adapter byte-stable; the plane
-check extends to the third plane.
+raises; a session round-trips through the adapter byte-stable; the plane check
+extends to the **fourth** plane, in both directions.
 
 ### v1.5 — The form, review, simulated submission and tracking, headless
 
@@ -1465,7 +1497,7 @@ logic in templates; every gate green with the app importable.
 |---|---|---|
 | A10 | v1.2 | every criterion of every loaded tree evaluated by a declared kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
 | A11 | v1.3 | precision on the colours that **assert** — green and yellow — at or above A2's 0.90, reported beside the count, the colour base rate and the all-red baseline, with red reported and never gated; zero suggestions without a source row; zero yellow without a valid span, held at unit level with the measured figure named as A14's; zero verdict drift *(D123)* |
-| A12 | v1.4 | every lifecycle transition tested, every illegal one raises; sessions round-trip byte-stable |
+| A12 | v1.4 | every lifecycle transition tested, every illegal one raises; sessions round-trip byte-stable; the plane check extends to the fourth plane *(D127)* |
 | A13 | v1.5 | zero packets with an unjustified red suggestion; every packet citation valid; every outbox session `AWAITING_DECISION` |
 | A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors; **A11's yellow measured** — every yellow suggestion on the round's new notes carries a valid span and a verifier verdict *(D123)* |
 | A15 | v2.2 | every UI action maps to a CLI verb with identical output; zero logic in templates |

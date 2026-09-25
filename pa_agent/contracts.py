@@ -1902,3 +1902,134 @@ class DeterminationAborted(Exception):
     @property
     def criterion_ids(self) -> list[str]:
         return [r.criterion_id for r in self.results]
+
+
+# --------------------------------------------------------------------------
+# Sessions and intake (T-100, D127)
+# --------------------------------------------------------------------------
+
+
+class SessionState(str, Enum):
+    """Where a session is in its lifecycle (REQ-71).
+
+    Closed, and walked by `pa_agent.session`'s transition table rather than by
+    anything that reads a model's output — Article I's rule on a third
+    structure. The values are uppercase because they reach the CLI's stdout
+    beside `DeterminationOutcome`, and a reader should not have to learn which
+    of two enums lowercases.
+
+    There is no `FAILED` and no `ERROR`. A determination that aborts is
+    `DeterminationOutcome`'s business and reaches the CLI as exit 3; a session
+    whose run raised simply has no new snapshot and stays where it was. Adding
+    a lifecycle state for it would be Article IV's collapse one plane over —
+    two different failures wearing one name.
+    """
+
+    #: Created from an intake, nothing run yet. Every session starts here.
+    CREATED = "CREATED"
+    #: At least one determination snapshot recorded. A second run appends
+    #: another; `DETERMINED -> DETERMINED` is legal because US-12 says a second
+    #: run is a new snapshot and never an edit.
+    DETERMINED = "DETERMINED"
+    #: Handed to the reviewer. v1.5 extends the table from here; in v1.4 it has
+    #: no outgoing transition and is therefore terminal *by the table* — never
+    #: by a flag on this member (D127).
+    IN_REVIEW = "IN_REVIEW"
+
+    # No `terminal` here, and not only as a matter of taste. Terminality is a
+    # fact about `pa_agent.session.TRANSITIONS`, so reading it from this class
+    # means `contracts` importing `session` — and `session` already imports
+    # `contracts`. That cycle makes every module in the package reach the
+    # session plane through the import graph, which `tests/test_planes.py`
+    # measured the moment it was written. `pa_agent.session.is_terminal()` is
+    # the accessor; the vocabulary lives here and the table lives with the code
+    # that walks it, which is `PredicateKind` and `criteria.PREDICATES` exactly
+    # (D110, D127).
+
+
+class Intake(BaseModel):
+    """What was asked for: a procedure, a patient, and where they are.
+
+    The object both routes validate to — a JSON document an upstream system
+    produced and the flags a person typed. **This contract lands with the
+    session, not with the parser**: `T-100`'s own statement is that a session
+    records its intake, and that cannot be checked without the object, while
+    `pa_agent/intake.py`'s two constructors and its `MalformedIntake` are
+    `T-101`'s (D127).
+
+    `icd10_codes` is carried and read by nothing, which is `practice`'s
+    precedent (T-95, D116): a field an upstream system sends and this version
+    does not adjudicate on is recorded rather than dropped, because dropping it
+    means the session cannot reproduce the request it answered.
+
+    There is no `as_of`. It is a property of a *run* — the clock a
+    determination was computed against — and lives on `SessionRun`, so two runs
+    of one intake at different dates are two snapshots of one request rather
+    than two requests.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    patient_id: str = Field(min_length=1)
+    procedure_code: str = Field(min_length=1)
+    #: `None` means *read it from the bundle*, which is the CLI's own default
+    #: (REQ-55). An invented default here would be a jurisdiction nobody asked
+    #: for.
+    state: str | None = None
+    icd10_codes: tuple[str, ...] = ()
+
+
+class SessionRun(BaseModel):
+    """One determination this session produced, and the clock it ran against.
+
+    Appended, never rewritten (US-12). The determination is stored whole
+    because it is the reviewable artifact; what is *not* stored is anything a
+    store would have to re-serve — no `Document`, no FHIR resource (REQ-70).
+    A determination's spans and quotes travel with it, as they do on the CLI's
+    stdout today: Article VI's line is drawn at resources, not at text.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    ran_at: str = Field(min_length=1)
+    as_of: date
+    policy_version_id: str = Field(min_length=1)
+    determination: Determination
+
+
+class Session(BaseModel):
+    """A determination the specialist can come back to (REQ-70).
+
+    Holds ids and snapshots. `state` is walked by `pa_agent.session`; `runs` is
+    append-only, so the history of what this request answered at each clock is
+    the object rather than a log beside it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    session_id: str = Field(min_length=1)
+    created_at: str = Field(min_length=1)
+    intake: Intake
+    state: SessionState
+    runs: tuple[SessionRun, ...] = ()
+
+    @model_validator(mode="after")
+    def _runs_match_the_state(self) -> Session:
+        """`DETERMINED` and `CREATED` are claims about the runs, so check them.
+
+        A `CREATED` session carrying a snapshot, or a `DETERMINED` one carrying
+        none, is a state that disagrees with the thing it describes — and every
+        listing built on `state` would agree with it (D31's shape, on a field).
+        """
+        if self.state is SessionState.CREATED and self.runs:
+            raise ValueError(
+                f"session {self.session_id} is CREATED and carries "
+                f"{len(self.runs)} run(s); a session with a determination is "
+                "DETERMINED"
+            )
+        if self.state is not SessionState.CREATED and not self.runs:
+            raise ValueError(
+                f"session {self.session_id} is {self.state.value} and carries "
+                "no run; only CREATED means nothing has been determined"
+            )
+        return self

@@ -36,7 +36,7 @@ declares it unclaimed and abstains rather than approving past it.
 explicit about what it does and does not prove.
 
 **And it is modular enough to sit inside a practice's back office.** The
-application is ports and adapters end to end: three storage ports keep the
+application is ports and adapters end to end: four storage ports keep the
 policy, patient and knowledge planes apart, four ports at the model boundary
 make every model call swappable and replayable, and the CLI is the single
 place an adapter is constructed — nothing else in the system knows where its
@@ -70,9 +70,9 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2 and v1.3 are all complete.**
-82 of 82 tasks closed, **1 open** — `T-129`, the national floor checked at
-load, which closes before v1.6 *(D124)* — all ten zero-cost gates green, and
-acceptance gates A1–A11 holding. The suite collects 1393 tests (58 skip).
+83 of 83 tasks closed, **3 open** — `T-101` and `T-102`, v1.4's remaining
+rows, and `T-129`, the national floor checked at load before v1.6 *(D124)* — all ten zero-cost gates green, and
+acceptance gates A1–A11 holding. The suite collects 1443 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -225,7 +225,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.424**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
-| A7 | 70 requirements: 68 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 73 requirements: 71 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -378,7 +378,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
-| v1.4 | sessions and intake, headless | US-12 | planned |
+| v1.4 | sessions and intake, headless | US-12 | **in progress** |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
 | v2.0 | the payer axis: national and regional coverage | US-16 | planned |
@@ -873,7 +873,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1393 tests across 47 files, 58 of them skipped — the skips are per-tree
+1443 tests across 49 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -1063,7 +1063,7 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      tiers, cli
   agent/             ADK path: extraction_agent, quote_agent, retrieval_agent,
                      tools, bounds
-  stores/            policy.py, patient.py and knowledge.py — three ports;
+  stores/            policy.py, patient.py, knowledge.py and session.py — four ports;
                      __init__.py imports none of them, on purpose
 data/policies/       nine source documents, six value sets (SNOMED and
                      RxNorm), and four criteria trees — two bariatric

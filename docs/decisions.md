@@ -11069,3 +11069,185 @@ the denominator stops being one, and the baseline row acquires a real
 comparison (D123's own reversal condition); or a consumer needs suggestions on
 a short-circuited request, at which point the declared reason becomes a
 computed review and this entry says what changed.
+
+---
+
+## D127 — The session plane is the fourth port, it is the first thing the package writes, and the lifecycle table owns what `terminal` means
+
+**Context.** `T-100` opens v1.4. Three of the version's four statements are
+this row's: the session store is a port constructed only in `cli.py`; a session
+records its intake, policy version, determination and state and holds no
+corpus; the lifecycle is a closed enum whose illegal transitions raise and are
+never recorded. `T-101` owns the fourth. This entry is written before the code
+(Article IX) and records four choices, each of which had a plausible
+alternative that a green suite would not have distinguished.
+
+### Chosen — a fourth adapter in `stores/knowledge.py`'s idiom, and it writes
+
+`pa_agent/stores/session.py` copies the port module's shape exactly: a docstring
+asserting plane isolation, `DEFAULT_SESSION_ROOT`, a `@runtime_checkable`
+`SessionStore` Protocol with a small fixed method set, and a `LocalSessionStore`
+that does not inherit it. `SessionNotFound(LookupError)` is
+`UnknownJurisdiction`'s shape — typed, carrying what was asked for and what the
+store holds — because a missing session answered with `None` is D31's failure on
+a fourth port.
+
+**What is new, and what it costs.** This is the **first module under
+`pa_agent/` that writes a file.** Every adapter before it reads; every write in
+the repo has lived in `scripts/`, `eval/` or `spike/`. The cost is that
+`mkdir` and `write_text` now appear inside the package, and the only thing
+keeping that honest is that they appear **under `stores/`**:
+`tests/test_planes.py::test_no_module_outside_stores_names_a_storage_location`
+scans for `open`, `Path`, `glob` and their neighbours everywhere else, and
+`STORAGE_SCAN_EXEMPT` stays one module wide. A write helper in
+`pa_agent/session.py` — the pure state machine — would be the second adapter
+nobody declared, which is the shape D25 exists to refuse and the shape
+`history.py` was kept clean of at T-97.
+
+*Rejected — a writer in `pa_agent/session.py` beside the state machine.* It
+reads naturally and it puts a path literal one directory above the only place
+the plane test tolerates one. The machine stays pure and imports `contracts`
+only, so it reaches no plane at all.
+
+**Reverses if** a second session consumer needs concurrent writes, at which
+point the adapter's read-modify-write becomes a question this entry did not
+have to answer.
+
+### Chosen — `list_sessions()` returns `[]`, and `get()` raises
+
+This **inverts D31 and D39 for this port only**, and the inversion is the point
+rather than an exception to be quiet about. Those entries say a store must never
+answer `None` or `[]` for something it has not implemented, because a
+well-formed empty answer is the one every downstream check agrees with. That
+reasoning holds for a **corpus the repository ships**: an empty knowledge table
+or an empty bundle list means a broken checkout, and reporting it as *no drug
+causes anything* is a lie the whole suite would ratify.
+
+A session directory is not that. It is the first store whose contents the
+**system writes**, and an empty one means exactly one thing — nobody has created
+a session yet. `[]` is the true answer on a fresh clone, and the first thing a
+new user runs is `session list`.
+
+The asymmetry is deliberate and is what keeps D31's guarantee: **`get()` still
+raises.** *This store holds no sessions* and *this store does not hold the
+session you named* are different facts, and only the second is a lookup failure.
+
+*Rejected — raising on an empty or missing root*, which makes `session list`
+fail on a clean checkout and teaches a user to create a session before they can
+ask whether they have one. *Rejected — `get()` returning `None` for symmetry*,
+which is D31 restated with no reason to restate it.
+
+**Reverses if** a session root acquires committed fixtures — at which point it
+is a shipped corpus and D31's rule applies to it unmodified.
+
+### Chosen — `terminal` is derived from the transition table, not declared per member
+
+`TRANSITIONS: dict[SessionState, tuple[SessionState, ...]]`, with
+`set(TRANSITIONS) == set(SessionState)` asserted the way `PREDICATES` is
+asserted against `PredicateKind` (T-91, D110). `pa_agent.session.is_terminal()`
+reads that table: a state is terminal when it has no outgoing transitions.
+
+**It is a function in `session.py`, not a property on the enum, and the second
+reason is measured rather than argued.** A property on `SessionState` has to
+read `TRANSITIONS`, so `contracts` imports `session` while `session` already
+imports `contracts`. The AST import walk in `tests/test_planes.py` counts that
+cycle, and because every module in the package imports `contracts`, **every
+plane root then reaches the session plane**: six of them went red the first
+time the walk ran against that shape. The vocabulary belongs in `contracts` and
+the table belongs with the code that walks it — which is `PredicateKind` in
+`contracts` and `PREDICATES` in `criteria.py`, exactly. A cycle that makes an
+Article VI claim untestable is a stronger argument than the staleness one
+above, and it was found by writing the test before believing the design.
+
+**This departs from `ErrorCode.__new__`'s idiom on purpose.** `ErrorCode`
+carries its classification per member through `__new__` so that a code added
+without being classified fails rather than defaulting to retryable, and that is
+right there: the classification is a *fact about the code*, and no other
+structure holds it. A session state's terminality is not a fact about the state
+— it is a fact about the table, which already exists and is already asserted
+complete. A literal `terminal=True` on `IN_REVIEW` would be a **copy**, and it
+goes stale the moment v1.5 adds `AWAITING_DECISION` and gives `IN_REVIEW` an
+outgoing edge. Working rule 12's argument — the generated artifact owns the
+figure and prose is a copy — applied to code.
+
+*Rejected — per-member `terminal` through `__new__`.* It buys the
+fail-on-forgetting property that the completeness assertion already buys, and it
+pays with a second source of truth that v1.5 is scheduled to contradict.
+*Rejected — a property on the enum reading the table*, which is the same
+derivation and buys the cycle above. `tests/test_session.py` pins the absence
+of both: no enum member carries a non-string value, and `contracts.py` imports
+`pa_agent.session` nowhere.
+
+**Reverses if** a state is ever terminal for a reason the table cannot express —
+a state with outgoing edges that may nonetheless never be left — at which point
+terminality is a fact about the state and belongs on it.
+
+### Chosen — `data/sessions/`, gitignored, and not a hashed corpus
+
+One `.gitignore` line beside `data/patients/work/`'s, in the same commented
+style. The session root is **output, not evidence**: `verify_sources.py` does
+not reach it, no manifest pins it, and nothing re-hashes it. The three corpora
+this repo verifies are claims about the world that a gate re-checks — nine
+policy documents, fourteen bundles, five labels — and a session is the system's
+own record of having answered a question. Hashing it would assert that a
+determination the system produced is a source the system can re-derive, which is
+backwards.
+
+*Rejected — tracking `data/sessions/` with committed example sessions.* It would
+give a gate something to replay, and it would mean every local run writes into a
+tracked directory. That is the hazard the mutation-testing notes are about:
+`synthesize_notes.py --generate` rmtrees a tracked corpus and
+`select_patients.py --declare-additions` writes one, and both have cost a
+mutation run its meaning (T-91, D119). A store the tests write to has no
+business being tracked. *Rejected — a root outside `data/`*, which would make
+the session plane the only one not laid out like the others for no gain.
+
+**The consequence is stated rather than hidden:** byte-stability is therefore
+checked against `tmp_path`, not against a committed file, and the adapter's
+default root is asserted by a test rather than exercised by a gate. That is
+weaker than a hashed corpus and it is the right trade for a directory whose
+contents are per-user.
+
+**Reverses if** a session ever needs to be re-read by a gate — v1.5's rendered
+packet is the candidate, and it would be a committed fixture rather than a
+tracked live root.
+
+### Two gates that passed while the feature was wrong
+
+The close ran the adversarial half as well as the mutation half — not *break
+it and watch it go red*, but *make it wrong and see whether the gate still
+passes*. Two did, and both are fixed here rather than left for a later reader
+to find.
+
+**1. Article VI's check saw models, not content.** `test_no_corpus_type_is_reachable_from_a_session`
+walks `Session`'s field graph for a `Document` or a FHIR resource, which is the
+right structural claim and is blind to a **plain `str`**. Adding
+`cached_policy_text: str | None` to `SessionRun` — a field that can hold the
+entire policy corpus — passed **all nineteen tests**. Fixed by pinning the
+field set of `Session`, `SessionRun` and `Intake` as literals (D51's shape), so
+a field added to hold corpus text fails where a reviewer reads its name.
+
+**2. The content check could never fail.** Its first version compared committed
+corpus text against the written file's **bytes**, and JSON escapes newlines —
+so a session carrying a whole policy document read as *absent*. It was a
+sentence wearing an assertion's clothes. Fixed by parsing the session and
+walking every **decoded** string; re-attacked by smuggling the corpus through
+an existing field (`ran_at`), which the decoded walk catches.
+
+The lesson is the one D65 keeps restating: a check that inspects the shape of a
+thing cannot see what is inside it, and a check comparing two encodings of the
+same text compares nothing. Both are the kind that stay green forever.
+
+**Also measured, and load-bearing.** Byte-stability is asserted over **two**
+writes. A one-write version catches a regenerated `created_at` — because the
+round-trip comparison catches it — but **not** a serializer stamping a
+non-contract key: pydantic ignores extra keys on read, so the session
+round-trips equal while every write produces different bytes. The one-write
+test passes that mutation and the two-write test fails it, which is why the
+second write is in the committed fixture.
+
+### What it mints
+
+**REQ-69**, **REQ-70** and **REQ-71** — the three of v1.4's four statements
+this close checks. The fourth, the intake's two routes, stays a §11 statement
+until `T-101` opens *(D109)*.

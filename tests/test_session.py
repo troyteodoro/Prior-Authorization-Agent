@@ -1,0 +1,266 @@
+"""The session lifecycle (T-100, D127, REQ-71).
+
+Gate A12's first clause — *every transition in the enum has a test and every
+illegal one raises* — which on a three-state enum means all **nine ordered
+pairs**, not just the legal ones.
+
+**The legal set here is written out from the prose, not read from the code.**
+`LEGAL` below is transcribed from `docs/stories.md`'s US-12 and spec §11's v1.4
+entry, sentence by sentence, with the sentence quoted beside each pair. A test
+that built its expectation from `TRANSITIONS` would agree with any table at
+all, including one that had lost a row — which is the whole failure this file
+exists to catch, and the one an adversarial pass at this close went looking
+for.
+"""
+
+from __future__ import annotations
+
+import ast
+import itertools
+from pathlib import Path
+
+import pytest
+from pydantic import ValidationError
+
+from pa_agent.contracts import (
+    Determination,
+    DeterminationOutcome,
+    Intake,
+    Session,
+    SessionRun,
+    SessionState,
+)
+from pa_agent.session import TRANSITIONS, IllegalTransition, advance, is_terminal, legal
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+#: Every move the documents declare, transcribed from their own sentences.
+#: Deliberately a literal: derived from `TRANSITIONS` it would prove nothing.
+#:
+#: - US-12: "a session is created ... in `CREATED`" then "when it is run ... it
+#:   holds the determination ... and moves to `DETERMINED`".
+#: - US-12: "a second run is a new snapshot, never an edit" -> DETERMINED may
+#:   become DETERMINED again.
+#: - spec §11 v1.4: "`CREATED -> DETERMINED -> IN_REVIEW`, extended by v1.5".
+LEGAL: set[tuple[SessionState, SessionState]] = {
+    (SessionState.CREATED, SessionState.DETERMINED),
+    (SessionState.DETERMINED, SessionState.DETERMINED),
+    (SessionState.DETERMINED, SessionState.IN_REVIEW),
+}
+
+ALL_PAIRS = list(itertools.product(SessionState, SessionState))
+
+
+def _determination(policy_version_id: str = "ncd-100.1-jf-v1") -> Determination:
+    return Determination(
+        patient_id="p",
+        procedure_code="43775",
+        policy_version_id=policy_version_id,
+        outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
+    )
+
+
+def _run(ran_at: str = "2026-09-25T00:00:00Z") -> SessionRun:
+    return SessionRun(
+        ran_at=ran_at,
+        as_of="2026-09-25",
+        policy_version_id="ncd-100.1-jf-v1",
+        determination=_determination(),
+    )
+
+
+def _session(state: SessionState = SessionState.CREATED, runs: tuple = ()) -> Session:
+    return Session(
+        session_id="s1",
+        created_at="2026-09-25T00:00:00Z",
+        intake=Intake(patient_id="p", procedure_code="43775"),
+        state=state,
+        runs=runs,
+    )
+
+
+# --------------------------------------------------------------------------
+# The table
+# --------------------------------------------------------------------------
+
+
+def test_the_table_covers_every_state():
+    """D110's completeness idiom. A state with no row is one nothing can leave
+    and nothing can reach, and no behavioural test would say so."""
+    assert set(TRANSITIONS) == set(SessionState)
+
+
+def test_the_table_is_exactly_what_the_documents_declare():
+    """The table against the prose, in both directions.
+
+    This is the check that catches a row added to `TRANSITIONS` that no
+    document authorises — a lifecycle that grew in code and not in the spec.
+    """
+    from_table = {
+        (frm, to) for frm, tos in TRANSITIONS.items() for to in tos
+    }
+    assert from_table == LEGAL, (
+        f"TRANSITIONS declares {sorted((f.value, t.value) for f, t in from_table)}; "
+        f"the documents declare {sorted((f.value, t.value) for f, t in LEGAL)}"
+    )
+
+
+@pytest.mark.parametrize("frm,to", ALL_PAIRS, ids=lambda s: s.value)
+def test_every_ordered_pair_is_legal_or_raises(frm, to):
+    """A12: every transition tested, every illegal one raises.
+
+    All nine, parametrized, so a state added to the enum without a decision
+    about each of its pairs cannot pass by omission.
+    """
+    expected = (frm, to) in LEGAL
+    assert legal(frm, to) is expected
+
+    runs = () if frm is SessionState.CREATED else (_run(),)
+    session = _session(frm, runs)
+
+    if expected:
+        moved = advance(session, to, run=_run("2026-09-26T00:00:00Z"))
+        assert moved.state is to
+    else:
+        with pytest.raises(IllegalTransition):
+            advance(session, to, run=_run("2026-09-26T00:00:00Z"))
+
+
+def test_an_illegal_transition_records_nothing():
+    """REQ-71's second half, and the reason `advance` cannot write.
+
+    The machine returns a new object or raises; the caller persists. So a
+    refused move leaves the caller holding exactly what it passed in — asserted
+    on the object, because that is what the adapter would be handed.
+    """
+    before = _session(SessionState.CREATED)
+    with pytest.raises(IllegalTransition):
+        advance(before, SessionState.IN_REVIEW, run=_run())
+    assert before.state is SessionState.CREATED
+    assert before.runs == ()
+
+
+def test_the_illegal_transition_names_both_ends_and_the_legal_set():
+    """The message is what tells a reviewer what they could have done."""
+    with pytest.raises(IllegalTransition) as caught:
+        advance(_session(SessionState.CREATED), SessionState.IN_REVIEW)
+    assert caught.value.frm is SessionState.CREATED
+    assert caught.value.to is SessionState.IN_REVIEW
+    assert caught.value.legal == ["DETERMINED"]
+    assert "CREATED" in str(caught.value) and "IN_REVIEW" in str(caught.value)
+
+
+def test_a_terminal_state_names_nothing_it_could_become():
+    with pytest.raises(IllegalTransition, match="terminal"):
+        advance(_session(SessionState.IN_REVIEW, (_run(),)), SessionState.DETERMINED)
+
+
+# --------------------------------------------------------------------------
+# `terminal` is derived, not declared (D127)
+# --------------------------------------------------------------------------
+
+
+def test_terminal_is_read_off_the_table():
+    assert is_terminal(SessionState.IN_REVIEW) is True
+    assert is_terminal(SessionState.CREATED) is False
+    assert is_terminal(SessionState.DETERMINED) is False
+
+
+def test_contracts_does_not_import_the_state_machine():
+    """Why `is_terminal` is a function here rather than a property there.
+
+    A property on `SessionState` reads `TRANSITIONS`, so `contracts` imports
+    `session` while `session` imports `contracts` — and that cycle makes every
+    module in the package reach the session plane. Measured: six plane roots
+    went red the first time the walk was run against it (D127).
+    """
+    source = (REPO_ROOT / "pa_agent" / "contracts.py").read_text(encoding="utf-8")
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            assert node.module != "pa_agent.session", (
+                f"contracts.py imports pa_agent.session at line {node.lineno}; "
+                "the vocabulary may not depend on the table that walks it"
+            )
+
+
+def test_no_member_of_the_enum_declares_terminality_as_a_literal():
+    """D127's departure from `ErrorCode.__new__`, pinned by parsing.
+
+    A `terminal=True` beside a member is a copy of the table, and v1.5
+    contradicts it the moment `AWAITING_DECISION` gives `IN_REVIEW` an outgoing
+    edge. Behaviourally the two readings are identical on today's three states,
+    so this is checked by reading the source — D65's shape.
+    """
+    source = (REPO_ROOT / "pa_agent" / "contracts.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    enum = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ClassDef) and node.name == "SessionState"
+    )
+    for node in enum.body:
+        if isinstance(node, ast.Assign):
+            value = node.value
+            assert isinstance(value, ast.Constant) and isinstance(value.value, str), (
+                f"SessionState member at line {node.lineno} carries something "
+                "other than a plain string; terminality is the table's (D127)"
+            )
+
+
+# --------------------------------------------------------------------------
+# A run is appended, never an edit (US-12)
+# --------------------------------------------------------------------------
+
+
+def test_a_second_run_appends_and_leaves_the_first_alone():
+    session = advance(_session(), SessionState.DETERMINED, run=_run("first"))
+    again = advance(session, SessionState.DETERMINED, run=_run("second"))
+
+    assert [r.ran_at for r in again.runs] == ["first", "second"]
+    assert session.runs[0].ran_at == "first"
+    assert len(session.runs) == 1, "the earlier session object was mutated"
+
+
+def test_advancing_without_a_run_keeps_the_runs_it_had():
+    determined = advance(_session(), SessionState.DETERMINED, run=_run())
+    reviewed = advance(determined, SessionState.IN_REVIEW)
+    assert reviewed.runs == determined.runs
+
+
+# --------------------------------------------------------------------------
+# The state agrees with the runs
+# --------------------------------------------------------------------------
+
+
+def test_a_created_session_carrying_a_run_is_refused():
+    with pytest.raises(ValidationError, match="CREATED and carries"):
+        _session(SessionState.CREATED, (_run(),))
+
+
+def test_a_determined_session_carrying_no_run_is_refused():
+    with pytest.raises(ValidationError, match="carries\nno run|carries no run"):
+        _session(SessionState.DETERMINED, ())
+
+
+# --------------------------------------------------------------------------
+# The machine reaches no plane
+# --------------------------------------------------------------------------
+
+
+def test_the_state_machine_imports_only_contracts():
+    """It sits beside the port, not inside it. A store import here would put a
+    write path one directory above the only place the plane scan tolerates
+    one (D127)."""
+    source = (REPO_ROOT / "pa_agent" / "session.py").read_text(encoding="utf-8")
+    imported = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            imported.add(node.module)
+        elif isinstance(node, ast.Import):
+            imported.update(alias.name for alias in node.names)
+
+    internal = {name for name in imported if name.startswith("pa_agent")}
+    assert internal == {"pa_agent.contracts"}, (
+        f"pa_agent/session.py imports {sorted(internal)}; the state machine is "
+        "pure and reaches no plane (D127)"
+    )
