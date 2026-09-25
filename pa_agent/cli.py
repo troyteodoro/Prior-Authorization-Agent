@@ -47,13 +47,26 @@ import argparse
 import json
 import os
 import sys
+import uuid
 
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
-from pa_agent import history
-from pa_agent.contracts import Determination, DeterminationAborted
+from pa_agent import history, intake as intake_module, session as session_machine
+from pa_agent.contracts import (
+    Determination,
+    DeterminationAborted,
+    Session,
+    SessionRun,
+    SessionState,
+)
 from pa_agent.determination import NoJurisdictionResult, NoPolicyResult, determine
+from pa_agent.stores.session import (
+    DEFAULT_SESSION_ROOT,
+    LocalSessionStore,
+    SessionExists,
+    SessionNotFound,
+)
 from pa_agent.quotes import RecordedQuoteRunner
 from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.verifier import RecordedVerifierRunner
@@ -294,7 +307,398 @@ def _review(result, patient_id: str, policy_store, patient_store, knowledge_stor
     )
 
 
+def _determine_or_report(
+    policy_store, procedure, *, patient_id, patient_store, as_of, runner,
+    verifier, state,
+):
+    """One determination, or the exit code its fault maps to.
+
+    Returns `(code, result)` — `result` is `None` exactly when `code` is
+    non-zero. Shared by the bare form and `session run` (D129): two copies of
+    this block would be two answers to *what does a retrieval fault exit with*,
+    and the four codes are a contract this module publishes.
+    """
+    try:
+        result = determine(
+            policy_store,
+            procedure,
+            patient_id=patient_id,
+            patient_store=patient_store,
+            as_of=as_of,
+            extraction_runner=runner,
+            verifier=verifier,
+            state=state,
+        )
+    except NotImplementedError as exc:
+        # The message names what is missing (D27's pattern).
+        print(str(exc), file=sys.stderr)
+        return 2, None
+    except DeterminationAborted as exc:
+        # REQ-29 (T-29, D76): the criterion id and its `error_code` go to
+        # stderr, one line per errored criterion, and nothing goes to stdout —
+        # a partial answer printed anyway would be a determination emitted
+        # over an `ERROR` with extra steps (REQ-24, REQ-26).
+        for errored in exc.results:
+            code = (
+                errored.error_code.value if errored.error_code else "UNCLASSIFIED"
+            )
+            print(
+                f"criterion {errored.criterion_id}: {code}: "
+                f"{errored.error_detail}",
+                file=sys.stderr,
+            )
+        if exc.attempts is not None:
+            print(f"attempts: {exc.attempts}", file=sys.stderr)
+        return 3, None
+    except KeyError as exc:
+        # A request the stores cannot resolve — an unknown patient, most
+        # likely. A bad request is not an answer and not an unbuilt path.
+        print(f"bad request: {exc.args[0]}", file=sys.stderr)
+        return 1, None
+    return 0, result
+
+
+def _block_for(result, patient_id, policy_store, patient_store, knowledge_store,
+               suggest: bool):
+    """The `--suggest` block, or `None` when the flag was not passed.
+
+    Shared for `_render`'s sake: the flag-off document must be byte-identical
+    to the one this module printed before `--suggest` existed (REQ-65, D126).
+    """
+    if not suggest:
+        return None
+    review = None
+    if history.review_scope(result) is not None:
+        review = _review(
+            result, patient_id, policy_store, patient_store, knowledge_store
+        ).review
+    return _suggestion_block(result, review)
+
+
+#: The verbs `session` takes. A literal set, tested against the subparsers the
+#: session parser declares, because dispatching on "any first positional" would
+#: make a typo a session command (D129).
+SESSION_VERBS = ("create", "list", "show", "run")
+
+
+def _now() -> str:
+    """The clock, named once and only here.
+
+    `pa_agent/session.py` has no clock and `stores/session.py` generates
+    nothing — a `datetime.now()` inside a serializer makes a round trip pass on
+    the first write and fail on the second (D127). The composition root is
+    where a value that cannot be derived comes from.
+    """
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _session_store(root: Path | None) -> LocalSessionStore:
+    """The fourth store, constructed here like the other three (REQ-41)."""
+    return LocalSessionStore(root)
+
+
+def _intake_from(args) -> "intake_module.Intake":
+    """One `Intake` from whichever route the caller used.
+
+    Reading the file is **this module's**: `pa_agent/intake.py` names no path
+    and opens nothing, because `tests/test_planes.py` refuses storage names
+    outside `pa_agent/stores/` and the composition root is where every location
+    is named (D128, REQ-41).
+    """
+    if args.intake is not None:
+        try:
+            text = args.intake.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise intake_module.MalformedIntake(
+                f"cannot read intake {args.intake}: {exc}"
+            ) from exc
+        return intake_module.from_json(text)
+    if args.patient is None or args.procedure is None:
+        raise intake_module.MalformedIntake(
+            "session create needs --intake, or --patient and --procedure "
+            "together; a session with no request is not a session"
+        )
+    return intake_module.from_flags(
+        patient=args.patient,
+        procedure=args.procedure,
+        state=args.state,
+        icd10=args.icd10,
+    )
+
+
+def _summarise(session: Session) -> dict:
+    """One row of `session list`: ids and counts, never a determination.
+
+    The checklist v2.2's dashboard draws (D125), as text. It carries what the
+    specialist scans by — what was asked, where it got to, how many snapshots —
+    and `session show` is what carries the answer itself.
+    """
+    return {
+        "session_id": session.session_id,
+        "state": session.state.value,
+        "created_at": session.created_at,
+        "patient_id": session.intake.patient_id,
+        "procedure_code": session.intake.procedure_code,
+        "runs": len(session.runs),
+    }
+
+
+def _render_session(session: Session) -> dict:
+    """A whole session, with every stored determination rendered by `_render`.
+
+    Through the same renderer the bare form uses, so the computed properties a
+    `model_dump` drops — `model_calls`, the gap list, the token counts — are
+    present here exactly as they are there. Two renderers would be two answers
+    to one question, and v2.2's `T-116` compares these surfaces (D129).
+    """
+    rendered = session.model_dump(mode="json")
+    rendered["runs"] = [
+        {
+            "ran_at": run.ran_at,
+            "as_of": run.as_of.isoformat(),
+            "policy_version_id": run.policy_version_id,
+            "determination": _render(run.determination),
+        }
+        for run in session.runs
+    ]
+    return rendered
+
+
+def _verb_create(args) -> int:
+    store = _session_store(args.sessions_root)
+    try:
+        intake = _intake_from(args)
+    except intake_module.MalformedIntake as exc:
+        # REQ-72's other half, measured here: a malformed intake is a bad
+        # request and **no session is written**. The store is not touched on
+        # this path at all, which is what makes "never a session" structural
+        # rather than a cleanup step (D128).
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    session = Session(
+        session_id=uuid.uuid4().hex,
+        created_at=_now(),
+        intake=intake,
+        state=SessionState.CREATED,
+    )
+    try:
+        store.create(session)
+    except SessionExists as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    print(json.dumps(_summarise(session), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _verb_list(args) -> int:
+    store = _session_store(args.sessions_root)
+    sessions = store.list_sessions()
+    print(
+        json.dumps(
+            {
+                "root": str(store.root),
+                "count": len(sessions),
+                "sessions": [_summarise(s) for s in sessions],
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def _verb_show(args) -> int:
+    store = _session_store(args.sessions_root)
+    try:
+        session = store.get(args.session_id)
+    except SessionNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(_render_session(session), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _verb_run(args) -> int:
+    """Determine this session's request, and append the snapshot.
+
+    The determination is computed exactly as the bare form computes it and
+    rendered by the same function, so the document under `determination` is
+    byte-identical to what `--patient/--procedure` prints for the same request
+    (D129). What differs is only that it is kept.
+    """
+    store = _session_store(args.sessions_root)
+    try:
+        session = store.get(args.session_id)
+    except SessionNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    as_of = args.as_of or date.today()
+    policy_store = LocalPolicyStore()
+    patient_store = LocalPatientStore()
+    knowledge_store = LocalKnowledgeStore() if args.suggest else None
+    runner = _build_runner(
+        args.extraction, args.recording, args.tool_fetch, patient_store, args.tier
+    )
+    verifier = _build_verifier(
+        args.extraction, DEFAULT_VERIFIER_RECORDING, args.tier
+    )
+
+    code, result = _determine_or_report(
+        policy_store,
+        session.intake.procedure_code,
+        patient_id=session.intake.patient_id,
+        patient_store=patient_store,
+        as_of=as_of,
+        runner=runner,
+        verifier=verifier,
+        state=session.intake.state,
+    )
+    if result is None:
+        return code
+
+    block = _block_for(result, session.intake.patient_id, policy_store,
+                       patient_store, knowledge_store, args.suggest)
+    rendered = _render(result, block)
+
+    if not isinstance(result, Determination):
+        # A code no policy governs, or a state no tree serves. There is no
+        # `Determination` to snapshot, `SessionRun` is typed as one, and
+        # widening it would make `contracts` import `determination` — the cycle
+        # T-100 measured (D129). So the answer is printed, exit is 0 because a
+        # deterministic non-answer is an answer (D32), and the session stays
+        # CREATED because nothing was determined.
+        print(
+            f"session {session.session_id} is unchanged and stays "
+            f"{session.state.value}: this request resolved to "
+            f"{rendered.get('result')}, so there is no determination to record",
+            file=sys.stderr,
+        )
+        print(json.dumps(
+            {
+                "session_id": session.session_id,
+                "state": session.state.value,
+                "recorded": False,
+                "determination": rendered,
+            },
+            indent=2,
+            ensure_ascii=False,
+        ))
+        return 0
+
+    run = SessionRun(
+        ran_at=_now(),
+        as_of=as_of,
+        policy_version_id=result.policy_version_id,
+        determination=result,
+    )
+    try:
+        advanced = session_machine.advance(
+            session, SessionState.DETERMINED, run=run
+        )
+    except session_machine.IllegalTransition as exc:
+        # Raised before anything is constructed and before the store is
+        # touched, so "an illegal transition is never recorded" holds because
+        # there is no write on this path (REQ-71, D127).
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    store.save(advanced)
+    print(json.dumps(
+        {
+            "session_id": advanced.session_id,
+            "state": advanced.state.value,
+            "recorded": True,
+            "runs": len(advanced.runs),
+            "determination": rendered,
+        },
+        indent=2,
+        ensure_ascii=False,
+    ))
+    return 0
+
+
+VERB_HANDLERS = {
+    "create": _verb_create,
+    "list": _verb_list,
+    "show": _verb_show,
+    "run": _verb_run,
+}
+
+
+def _add_model_flags(parser: argparse.ArgumentParser) -> None:
+    """The flags `session run` shares with the bare form, declared once."""
+    parser.add_argument(
+        "--extraction",
+        choices=("recorded", "direct", "adk"),
+        default="recorded",
+        help="which model leaf reads the notes (default: recorded, zero calls)",
+    )
+    parser.add_argument("--recording", type=Path, default=DEFAULT_RECORDING)
+    parser.add_argument("--tool-fetch", action="store_true")
+    parser.add_argument("--tier", choices=TIERS, default=MEASURED_TIER)
+    parser.add_argument("--as-of", type=date.fromisoformat, default=None)
+    parser.add_argument(
+        "--suggest",
+        action="store_true",
+        help="emit the medical-history review beside the verdicts (REQ-65)",
+    )
+
+
+def _session_main(argv: list[str]) -> int:
+    """`session create | list | show | run`.
+
+    A **separate** parser, which is the whole point: the bare form's parser is
+    untouched, so `--patient` and `--procedure` keep `required=True` and every
+    exit code is what it was (D129).
+    """
+    parser = argparse.ArgumentParser(
+        prog="python -m pa_agent.cli session",
+        description="Keep a determination as a session you can come back to.",
+    )
+    parser.add_argument(
+        "--sessions-root",
+        type=Path,
+        default=None,
+        help=f"where sessions are written (default: {DEFAULT_SESSION_ROOT})",
+    )
+    verbs = parser.add_subparsers(dest="verb", required=True)
+
+    create = verbs.add_parser("create", help="record a request as a session")
+    create.add_argument("--intake", type=Path, default=None,
+                        help="a JSON intake an upstream system produced")
+    create.add_argument("--patient", default=None)
+    create.add_argument("--procedure", default=None)
+    create.add_argument("--state", default=None)
+    create.add_argument("--icd10", nargs="*", default=(),
+                        help="ICD-10 codes the request carries (recorded, and "
+                             "read by no predicate in this version)")
+
+    verbs.add_parser("list", help="every session, newest first")
+
+    show = verbs.add_parser("show", help="one session and its snapshots")
+    show.add_argument("session_id")
+
+    run = verbs.add_parser("run", help="determine this session's request")
+    run.add_argument("session_id")
+    _add_model_flags(run)
+
+    args = parser.parse_args(argv)
+    return VERB_HANDLERS[args.verb](args)
+
+
 def main(argv: list[str] | None = None) -> int:
+    # The verbs are dispatched **before the parser is built**, which is what
+    # leaves the block below byte-identical: `--patient` and `--procedure` keep
+    # `required=True` and every exit code is what it was (D129). Dispatch is on
+    # the literal word, not on "any first positional", so a typo is an unknown
+    # argument rather than a silently accepted session command.
+    args_in = list(sys.argv[1:] if argv is None else argv)
+    if args_in and args_in[0] == "session":
+        return _session_main(args_in[1:])
+
     parser = argparse.ArgumentParser(
         prog="python -m pa_agent.cli",
         description="Prior authorization determination for one request.",
@@ -361,52 +765,22 @@ def main(argv: list[str] | None = None) -> int:
         args.extraction, DEFAULT_VERIFIER_RECORDING, args.tier
     )
 
-    try:
-        result = determine(
-            store,
-            args.procedure,
-            patient_id=args.patient,
-            patient_store=patient_store,
-            as_of=args.as_of or date.today(),
-            extraction_runner=runner,
-            verifier=verifier,
-            state=args.state,
-        )
-    except NotImplementedError as exc:
-        # The message names what is missing (D27's pattern).
-        print(str(exc), file=sys.stderr)
-        return 2
-    except DeterminationAborted as exc:
-        # REQ-29 (T-29, D76): the criterion id and its `error_code` go to
-        # stderr, one line per errored criterion, and nothing goes to stdout —
-        # a partial answer printed anyway would be a determination emitted
-        # over an `ERROR` with extra steps (REQ-24, REQ-26).
-        for errored in exc.results:
-            code = (
-                errored.error_code.value if errored.error_code else "UNCLASSIFIED"
-            )
-            print(
-                f"criterion {errored.criterion_id}: {code}: "
-                f"{errored.error_detail}",
-                file=sys.stderr,
-            )
-        if exc.attempts is not None:
-            print(f"attempts: {exc.attempts}", file=sys.stderr)
-        return 3
-    except KeyError as exc:
-        # A request the stores cannot resolve — an unknown patient, most
-        # likely. A bad request is not an answer and not an unbuilt path.
-        print(f"bad request: {exc.args[0]}", file=sys.stderr)
-        return 1
+    code, result = _determine_or_report(
+        store,
+        args.procedure,
+        patient_id=args.patient,
+        patient_store=patient_store,
+        as_of=args.as_of or date.today(),
+        runner=runner,
+        verifier=verifier,
+        state=args.state,
+    )
+    if result is None:
+        return code
 
-    block = None
-    if args.suggest:
-        review = None
-        if history.review_scope(result) is not None:
-            review = _review(
-                result, args.patient, store, patient_store, knowledge_store
-            ).review
-        block = _suggestion_block(result, review)
+    block = _block_for(
+        result, args.patient, store, patient_store, knowledge_store, args.suggest
+    )
 
     print(json.dumps(_render(result, block), indent=2, ensure_ascii=False))
     return 0

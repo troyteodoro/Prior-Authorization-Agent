@@ -31,7 +31,7 @@ an instruction typed into a prompt.
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-72 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
 | `docs/tasks.md` | The board. Task records T-00 through T-102 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-103 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D128, kill criteria, open questions. Append-only. |
+| `docs/decisions.md` | D1–D129, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -697,8 +697,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**84 of 84 tasks closed, 2 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1472 tests across 50 files, 58 of
+**85 of 85 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1500 tests across 51 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -756,9 +756,27 @@ tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **`T-102` and `T-129`. v1, v1.1, v1.2 and v1.3 are all complete** —
-A1–A11 all hold — and **`v1.4` is in progress**: `T-100` opened it and `T-101`
-closed row 2; **`T-102` is next**, the verbs, which close the version.
+Open: **`T-129` alone. v1, v1.1, v1.2, v1.3 and v1.4 are all complete** —
+**A1–A12 all hold**, and US-12 is delivered. Next is `T-129`, off the path and
+due before v1.6 *(D124)*; after it, **v1.5** — the form, the review log and
+simulated submission (`T-103`–`T-106`).
+
+**`T-102` closed v1.4** *(D129)*: `session create | list | show | run`. The
+verbs dispatch on `argv[0]` **before** the bare parser is built, which is why
+that parser block is not edited and *the bare invocation keeps working* is a
+fact about the source — pinned three ways: `cli.py` parsed for `required=True`
+on both flags, a **literal set of the bare document's top-level keys**, and
+`session run`'s determination compared byte for byte to the bare form's
+stdout. `_determine_or_report` and `_block_for` are shared by both surfaces so
+a fault cannot map to two exit codes. An illegal order is exit 1 and the
+session's bytes are unchanged after it. **A request no tree governs cannot
+become a `SessionRun`** — `SessionRun.determination` is a `Determination` and
+`determine()` returns one of three things — so it prints its answer, exits 0
+and stays `CREATED`; widening the contract would make `contracts` import
+`determination` and reproduce T-100's cycle. The byte-identity test **passed
+while the bare form moved** — a key added to `_render` appears on both sides of
+the comparison — which is what the pinned key set now catches. It minted
+nothing.
 **`T-99` closed v1.3** *(D126)*: `--suggest` emits the `icd_suggestions` block
 beside verdicts byte-identical without it, a request no tree governs declines
 by name, and `eval/report.md` carries A11's section. **`T-100` opened v1.4**

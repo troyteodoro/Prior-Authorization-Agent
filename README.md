@@ -69,10 +69,10 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1, v1.2 and v1.3 are all complete.**
-84 of 84 tasks closed, **2 open** — `T-102`, v1.4's last row, and `T-129`,
-the national floor checked at load before v1.6 *(D124)* — all ten zero-cost
-gates green, and acceptance gates A1–A11 holding. The suite collects 1472
+**v1, v1.1, v1.2, v1.3 and v1.4 are all complete.**
+85 of 85 tasks closed, **1 open** — `T-129`, the national floor checked at
+load before v1.6 *(D124)* — all ten zero-cost gates green, and acceptance
+gates A1–A12 holding. The suite collects 1500
 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
@@ -379,7 +379,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
-| v1.4 | sessions and intake, headless | US-12 | **in progress** |
+| v1.4 | sessions and intake, headless | US-12 | **complete** |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
 | v2.0 | the payer axis: national and regional coverage | US-16 | planned |
@@ -855,12 +855,42 @@ predicate — which is the point.
 | `--extraction recorded\|direct\|adk` | which model leaf reads the notes. Default `recorded` replays the committed extraction for **zero model calls**; `direct` (raw `google-genai`) and `adk` spend live calls |
 | `--recording <path>` | the recording replayed under `--extraction recorded` |
 | `--tool-fetch` | with `--extraction adk`: the agent fetches the note through its `read_note` tool instead of receiving it in the message |
+| `--state XX` | the two-letter state the request is resolved under (REQ-55). Default: read from the patient's bundle; an explicit value wins, so one chart can be adjudicated under another MAC's tree |
+| `--tier ai_studio\|vertex` | which tier a **live** leaf calls. Ignored by `--extraction recorded`, which spends nothing |
 | `--as-of YYYY-MM-DD` | the date recency windows are measured from (default: today). Pin it to reproduce a determination |
+| `--suggest` | emit the medical-history review beside the verdicts, which are unchanged (REQ-65). Replays T-98's quote recording, so it spends nothing |
 
-Exit codes: `0` an answer (honest abstentions included), `1` a bad request
-(unknown patient), `2` an unbuilt path, `3` a determination aborted because a
-criterion is in `ERROR` — the criterion id and error code go to stderr,
-nothing to stdout.
+Exit codes: `0` an answer (honest abstentions included), `1` a bad request —
+an unknown patient, and from the session verbs a malformed intake, an unknown
+session or an illegal lifecycle order; `2` an unbuilt path; `3` a determination
+aborted because a criterion is in `ERROR` — the criterion id and error code go
+to stderr, nothing to stdout.
+
+### A session
+
+A determination you can come back to (v1.4). The verbs dispatch **ahead of**
+the parser above, so every invocation on this page works exactly as it did
+before they existed.
+
+```bash
+./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 --state WA
+./venv/bin/python -m pa_agent.cli session create --intake request.json
+./venv/bin/python -m pa_agent.cli session list
+./venv/bin/python -m pa_agent.cli session run <session-id> --as-of 2025-01-01
+./venv/bin/python -m pa_agent.cli session show <session-id>
+```
+
+`create` takes the request either way — a JSON document an upstream system
+produced or the flags a person typed — and both validate to the same object.
+`run` determines it and **appends** a snapshot: a second run is a new snapshot,
+never an edit, and the determination it prints is byte-identical to what the
+bare invocation prints for the same request. `--sessions-root` moves the store;
+the default is `data/sessions/`, which is gitignored because a session is the
+system's own output rather than evidence it can re-derive.
+
+A request no tree governs — a code no policy covers, or a state no tree serves
+— prints its answer, exits `0` and leaves the session `CREATED`: nothing was
+determined, so there is no snapshot to keep.
 
 The live modes need a Gemini API key in `pa_agent/agent/.env` (gitignored — no
 real key ever appears in a tracked file).
@@ -874,7 +904,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1472 tests across 50 files, 58 of them skipped — the skips are per-tree
+1500 tests across 51 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

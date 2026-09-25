@@ -11330,3 +11330,144 @@ request that writes no session — is `T-102`'s, because nothing has a CLI
 surface to exit from until the verbs land. That is REQ-67's shape exactly
 (D122): a statement minted by the close that checks the half it can, with the
 measured half named and owned *(D109)*.
+
+---
+
+## D129 — The verbs dispatch ahead of the parser, an illegal order is a bad request, and a request no tree governs records nothing
+
+**Context.** Row 3 of v1.4, and the version's close. `T-100` built the session
+plane and `T-101` the intake; this row puts `session create | list | show |
+run` on the CLI and shows A12 holding. The constraint that shapes every choice
+below is the owner's, fixed before the version opened: **the bare invocation
+keeps working unchanged** — `python -m pa_agent.cli --patient X --procedure Y`,
+with `--patient` and `--procedure` `required=True` and exit codes 0/1/2/3 as
+`pa_agent/cli.py`'s own docstring publishes them.
+
+### Chosen — dispatch on `argv[0]` before the parser is built
+
+`main()` reads its first argument. If it is `session`, the rest goes to
+`_session_main`, which builds a **separate** `ArgumentParser(prog="python -m
+pa_agent.cli session")` with `add_subparsers(dest="verb", required=True)`.
+Otherwise the existing parser runs, and its block is byte-identical to what
+`T-99` left.
+
+That last clause is the argument. The bare form is not *believed* to be
+unchanged, it is unchanged — the lines that define it were not edited — and
+`tests/test_session_verbs.py` pins it twice over: by parsing `cli.py` for
+`required=True` on both flags, and by comparing the bare form's stdout against
+the bytes the same request produced at `1bbd244`, the commit before this one.
+
+**Rejected — `add_subparsers` on the existing parser.** With subparsers
+present, `--patient` and `--procedure` stay top-level and stay required, so
+`session list` would demand a patient and a procedure. The only way out is to
+move them down into a bare subcommand, which changes the usage string, the
+`prog`, and what a missing flag exits with — and the bare invocation is quoted
+in `README.md`, `CLAUDE.md`, `docs/spec.md`, six task records and this
+module's own docstring. A refactor that rewrites every `args.*` access in
+`main()` to add four verbs is a large diff through the one function whose
+behaviour this row promised not to touch.
+
+**Rejected — a second entry point**, `pa_agent.session_cli`. It would
+construct stores, so `tests/test_planes.py`'s `BOTH_PLANES` and
+`STORAGE_SCAN_EXEMPT` would each grow a member. Both are exact-set assertions
+that are currently **one module wide**, and REQ-41 says the CLI is the one
+place a store is constructed. Two composition roots is the claim getting
+weaker to make a diff smaller.
+
+**Rejected — `parse_known_args` and re-dispatch on the remainder.** A typo'd
+verb becomes a positional and is silently accepted, which is the shape D31
+refuses in a different costume.
+
+**Reverses if** the verb set grows past what a hand-rolled first-argument test
+reads clearly — v1.5 adds `review`, `submit` and `decide` — at which point
+subparsers arrive **for the session tree only**, with the bare form still
+dispatched ahead of them and this entry's byte comparison still the check.
+
+### Chosen — an illegal order is a bad request, exit 1
+
+Three things exit 1 from the verbs: a malformed intake (REQ-72's other half,
+which `T-101` minted at unit level and named as this row's), an unknown session
+id, and **an illegal transition**. The stderr line names the current state and
+what it may legally become, because `IllegalTransition` carries both and the
+message is the only thing the person who typed the command has to go on.
+
+**Rejected — a fifth exit code for a lifecycle refusal.** Four are quoted in
+`CLAUDE.md`, `README.md` and spec REQ-29, and a fifth meaning is a five-place
+documentation change to encode a distinction the stderr line already carries.
+Exit 1 is *the request cannot be acted on as sent*, and asking to review a
+session that has determined nothing is exactly that.
+
+`2` and `3` keep their meanings and their routes. Noted in passing and **not
+this row's to fix**: argparse's own usage error exits 2, which collides with
+the documented *unbuilt path* code. That collision predates the verbs — a
+missing `--patient` has always exited 2 — and adding subcommands does not
+change it, because the session parser is a separate object with the same
+argparse behaviour.
+
+### Chosen — `session run` appends a snapshot; it never edits one
+
+`CREATED -> DETERMINED` on the first run and `DETERMINED -> DETERMINED` on
+every one after, which is US-12's *a second run is a new snapshot, never an
+edit* and the reason `TRANSITIONS` carries that self-edge at all (D127). The
+determination is rendered through `_render`, the same function the bare form
+uses and the one `T-99` kept pure for this caller (D126) — a second renderer
+would be a second answer to one question, and v2.2's `T-116` compares the two
+surfaces byte for byte.
+
+`IN_REVIEW` has no verb in v1.4. The state exists because spec §11 declares the
+lifecycle `CREATED -> DETERMINED -> IN_REVIEW`, and v1.5 is what moves a
+session into it; saying so plainly here is cheaper than leaving a reader to
+discover that three of the four verbs are implemented and one state is
+unreachable.
+
+### Chosen — a request no tree governs prints its answer and records nothing
+
+**Found while implementing, and it changes what `session run` means.**
+`SessionRun.determination` is typed as a `Determination` (T-100), but
+`determine()` returns one of three things: a `Determination`, a
+`NoPolicyResult`, or a `NoJurisdictionResult`. A session created over a
+procedure code no policy governs — `99213`, which `NP1` already grades — or in
+a state no tree serves cannot produce a `SessionRun` at all.
+
+So `session run` on such a request **prints the answer, exits 0, and leaves the
+session in `CREATED`**, saying on stderr that nothing was recorded and why.
+Three reasons that is the right answer rather than a workaround:
+
+1. It is true. Nothing was determined, so there is no snapshot to keep, and
+   `Session`'s own validator already refuses a `CREATED` session carrying a run
+   and a `DETERMINED` one carrying none (T-100). The lifecycle and the runs
+   agree by construction, in this case as in every other.
+2. `NO_POLICY_FOUND` is not an error (D32) and must not become one. The verb
+   exits 0 and prints the same document the bare form prints, because a
+   deterministic non-answer is an answer.
+3. The alternative costs a cycle. Widening `SessionRun.determination` to the
+   union means `contracts` imports `determination`, and `determination` already
+   imports `contracts` — the cycle `T-100` measured when `SessionState.terminal`
+   was tried as a property, which made **every** plane root reach the session
+   plane through the import graph and failed six tests in `tests/test_planes.py`.
+   The second measurement of the same wall, one row later.
+
+**Rejected — exit 1.** A code no policy governs is not a bad request; the store
+resolved it and the system answered. `test_the_cli_reports_no_policy_found_
+without_denying` has asserted exit 0 for that shape since `T-25`, and a verb
+that disagreed with the flag form about the same request would be the divergence
+this whole row is arranged to prevent.
+
+**Rejected — recording a run with a null determination.** It would make
+`DETERMINED` mean *something was attempted*, and every listing built on `state`
+would agree with it (D31's shape, on a field — which is the sentence T-100's own
+validator was written from).
+
+**Reverses if** v1.5's packet needs to carry a non-answer — a `NO_POLICY_FOUND`
+is a thing a specialist may well need to send back — at which point the union
+lands on a new type in `contracts` that `determination` constructs, rather than
+on an import that reverses the graph.
+
+### What it costs
+
+No model call. No recording, bundle, note, span, verdict, baseline or verifier
+claim moves. `pa_agent/cli.py` grows a dispatch and four verb handlers; nothing
+else under `pa_agent/` changes. **It mints no requirement** — its close *checks*
+REQ-69 through REQ-72 over the real verbs rather than over objects built in a
+test, which is `T-93` and `T-95`'s precedent and what D113 said a row minting
+nothing looks like.

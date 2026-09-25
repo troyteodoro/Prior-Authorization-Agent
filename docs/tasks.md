@@ -17,10 +17,31 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-102`, row 3 of `v1.4`** — the verbs, which close the
-version. `session create / list / show / run` round-trip a determination; the
-bare `--patient/--procedure` invocation still prints byte-identical stdout and
-keeps exit codes 0/1/2/3.
+**What to do next: `T-129`, off the path, before v1.6 opens** *(D124)* — the
+national floor checked at load. D112 deferred the relation to the payer round
+on the ground that both committed trees declare 35.0, the floor exactly; v1.6's
+candidate NCD is nationally quantified, so the premise expires before that
+version opens and the check lands first. It is the only open row on this board.
+After it, **v1.5** — the form, the review log and simulated submission
+(`T-103`–`T-106`), which is the next version in `Roadmap after v1.1`.
+
+**`v1.4` is closed and A12 holds** *(T-102, D129)*. A determination is now
+something a specialist can come back to: `session create | list | show | run`
+over a fourth storage port, an intake that validates the same object from a
+JSON document or from flags, and a lifecycle Python walks. **v1, v1.1, v1.2,
+v1.3 and v1.4 are all complete** — A1 through A12 hold.
+**`T-102` closed row 3 and the version** *(D129)*: the verbs dispatch on
+`argv[0]` **before** the bare parser is built, so that parser block is not
+edited and *the bare invocation keeps working* is a fact about the source
+rather than a promise about behaviour — pinned by parsing `cli.py` for
+`required=True` on both flags, by a literal set of the document's top-level
+keys, and by comparing `session run`'s determination to the bare form's stdout
+byte for byte. An illegal order is exit 1 and the session's bytes are unchanged
+after it. It found that a request **no tree governs** cannot become a
+`SessionRun` at all, and answers it by printing and recording nothing rather
+than by widening a contract into an import cycle. It minted nothing, which is
+what a version's last row looks like when the statements were all minted by the
+rows that checked them.
 **`T-101` closed row 2** *(D128)*: `pa_agent/intake.py` takes JSON **text**,
 never a parsed object — a caller that parsed has already decided what *not
 JSON* means, so two modules would decide what a bad intake is — and one
@@ -263,7 +284,7 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 | v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
-| v1.4 | sessions and intake, headless · **in progress** | US-12 | T-100–T-102 | none | A12 |
+| v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
@@ -328,7 +349,7 @@ gitignored and pinned by no manifest.
 |---|---|---|---|---|
 | 1 | the session port, its file adapter and the lifecycle | `T-100` | **closed** (D127) | all **nine** ordered state pairs tested — the legal set transcribed from US-12's sentences, never read back from the table — and every illegal one raises and records nothing; a session round-trips byte-stable **written twice**; the session plane reaches no other and none reaches it; `stores/__init__.py` still imports nothing, now checked for all four ports. Mints **REQ-69**, **REQ-70**, **REQ-71** |
 | 2 | the intake contract | `T-101` | **closed** (D128) | a JSON intake and the CLI flags validate to the same object; a malformed intake is a bad request, exit 1. The parser takes JSON **text** and normalisation lives on the contract, so the two routes cannot diverge even in principle *(D128)*; the exit-1 half is measured by `T-102` |
-| 3 | the verbs | `T-102` | pending | `session create / list / show / run` round-trip a determination; every gate green |
+| 3 | the verbs | `T-102` | **closed** (D129) | `session create / list / show / run` round-trip a determination; the bare invocation is byte-identical and its key set is pinned; a request no tree governs prints its answer and records nothing *(D129)*; every gate green |
 
 ### v1.5 — The form, review, simulated submission and tracking, headless
 
@@ -2728,16 +2749,65 @@ level. The exit-1 half — a bad request that writes no session — is `T-102`'s
 because nothing has a CLI surface to exit from until the verbs land; REQ-67's
 shape *(D122, D109)*.
 
-### `[ ] T-102` The verbs
+### `[x] T-102` The verbs
 
 **REQ:** mints none — its close *checks* REQ-69 through REQ-72 over the real
 verbs rather than over objects built in a test, which is T-93 and T-95's
 precedent · **Depends:** T-100, T-101 · **Gates:** A12 (third of three rows) ·
 **Timebox:** one day
-**Status:** pending.
-**Exit:** `session create / list / show / run` round-trip a determination;
-the bare `--patient/--procedure` invocation still prints byte-identical stdout
-and keeps exit codes 0/1/2/3; every gate green.
+**Status:** **closed** (D129) — opened and closed 2026-09-25; the exit ran
+green and every gate with it. Row 3 of `v1.4`, and the version's close: **A12
+holds** and US-12 is delivered. No model call, and no recording, bundle, note,
+span, verdict, baseline or verifier claim moved.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_session_verbs.py tests/test_determination.py \
+      tests/test_fault_injection.py tests/test_session.py tests/test_session_store.py \
+      tests/test_intake.py tests/test_planes.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python -m pa_agent.cli --patient 07a5f345-3e7c-da0f-da0b-87fa252a5bfd --procedure 43775 > /dev/null \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: `session create | list | show | run` round-trip a determination
+through the adapter under `tmp_path`, every step a separate process so `show`
+reads bytes rather than an object still in memory; the bare
+`--patient/--procedure` invocation prints a document whose top-level keys are
+the pinned set and exits 0/1/2/3 as before; a malformed intake and an unknown
+session are bad requests that write nothing, proved against the **directory**;
+an illegal transition is exit 1 and the session's bytes are unchanged after it;
+and every gate replays.
+
+**What it delivers.** Four verbs and a dispatch. `main()` reads its first
+argument and hands `session` to `_session_main`, which builds a **separate**
+parser — so the bare form's parser block is not edited, which is how *the bare
+invocation keeps working* stops being a promise and becomes a fact about the
+source. `_determine_or_report` and `_block_for` are factored out of `main()`
+and shared, so the two surfaces cannot drift in how a fault maps to an exit
+code, and `session run` renders through `_render`, the function `T-99` kept
+pure for exactly this caller (D126).
+
+**What it found.** `SessionRun.determination` is typed as a `Determination`,
+and `determine()` returns one of three things. A session over a code no policy
+governs — `99213`, which `NP1` already grades — cannot produce a run at all.
+It **prints the answer, exits 0 and stays `CREATED`**, because nothing was
+determined; widening the contract would make `contracts` import
+`determination` and reproduce the cycle `T-100` measured one row earlier
+*(D129)*.
+
+**The adversarial pass, and what it cost.** The byte-identity test compares
+`session run`'s determination to the bare form's stdout — and **both move
+together**. Adding a key to `_render` left 85 tests passing while the document
+the CLI publishes had changed. The fix is `BARE_DETERMINATION_KEYS`, a literal
+key set a new key has to get past (D51's move, on an output shape); the mutant
+is red under it. Eight further mutants were caught cleanly: dispatch on any
+positional, a second renderer, an illegal transition returning 0, `create`
+writing before validating, `--patient` losing `required=True`, a snapshot
+recorded when nothing was determined, `save()` never reached, and
+`--sessions-root` ignored — the last of which wrote into the working tree,
+which is why the file also parses **itself** for a store constructed without a
+root.
 
 ---
 

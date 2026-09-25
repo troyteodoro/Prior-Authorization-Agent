@@ -1054,7 +1054,7 @@ load-bearing; a table that sorts prettily is not.
 | v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
-| v1.4 | sessions and intake, headless · **in progress** | US-12 | T-100–T-102 | none | A12 |
+| v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
