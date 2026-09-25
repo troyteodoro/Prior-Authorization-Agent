@@ -56,7 +56,7 @@ carries less information than they do.
   overtaken: T-87 compiled Palmetto's L34576, an LCD, into the second tree.)*
   Other practices' policies are v1.2 and v1.6.
 - Vector search or embedding-based retrieval. Not scheduled *(D4, D70)*.
-- Any user interface. v2.0, after every screen's port exists headless.
+- Any user interface. v2.2, after every screen's port exists headless *(D125)*.
 - Terraform, CI/CD, containers. Never *(working rule 9)*.
 - Real or de-identified patient data of any kind. Never.
 
@@ -893,7 +893,7 @@ reserved. That is a deliberate limit on what has been demonstrated, not an
 oversight — the agentic path is real and it decides *what to read*, not what
 the answer is.
 
-**D107 writes down what would claim them, and nothing through v2.0 does.** The
+**D107 writes down what would claim them, and nothing on the roadmap does.** The
 candidate that looks like the answer is not one: Palmetto's `d`, a
 multidisciplinary evaluation within six months, decomposes into extraction plus
 set membership plus a window, so building it would add an extractor and leave
@@ -988,6 +988,16 @@ version whose statements do not all acquire a check on its opening day)*. §1's
 rule is why: a requirement with no check is a wish, and a wish is not given a
 number.
 
+**The last three rows were reordered by D125.** The reviewer's UI runs
+**last**, behind both engine rounds: it is the only version that renders
+every other version's output, and the two that were scheduled after it both
+change what it renders — the payer axis changes the request its create form
+builds, and the commercial policy adds predicate kinds its determination
+view has never displayed. **Gates, stories and task ids stay with their
+content**, so A15 and `T-111`–`T-116` are still the UI's and the
+gates-by-version table below reads A16, A17, A15 down the page. Ids are
+load-bearing; a table that sorts prettily is not.
+
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
 | v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
@@ -996,9 +1006,9 @@ number.
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
-| v2.0 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
-| v2.1 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | T-117–T-120 | none | A16 |
-| v2.2 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
+| v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
+| v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
+| v2.2 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
 
 ### v1.1 — Finishing §10
 
@@ -1195,9 +1205,39 @@ bleeding rather than as an effect the drug causes. Apixaban's label does state
 it, so the example is written against apixaban. The pairing was right; the
 drug was an assumption.
 
-**Gate A11.** Suggestion precision against manifest labels at or above A2's
-bar on `MET`; zero suggestions without a source row; zero yellow without a
-valid span; zero verdict drift against the baseline.
+**Gate A11, rewritten before `T-99` opened** *(D123)*. Four clauses, each
+held by a command:
+
+1. **Precision on the colours that assert** — green and yellow together — at
+   or above A2's 0.90, reported beside the count, the colour base rate and
+   the precision of the trivial review that colours every candidate red.
+   **Red is reported, never gated.** A2 gates `MET` and only reports recall
+   because a false `MET` is a denial; green and yellow assert in the same
+   direction, red abstains, and scoring an abstention for precision rewards
+   a review that suggests nothing.
+2. Zero suggestions without a source row.
+3. Zero yellow without a valid span, held **at unit level** through the
+   anchorer's real refusal on a hand-written note (REQ-67, D65's shape). The
+   **measured** figure is **A14's**: the corpus produces no yellow until
+   `T-110` adds a note that states a table effect *(D120, D122)*, and a
+   clause that passes because its set is empty is not a clause.
+4. Zero verdict drift against the baseline.
+
+**What the corpus holds, measured before the gate was written** *(D123)*:
+12 candidates across 9 of the 14 bundles, of which **one green** — `H1`'s,
+on the chart carrying `T-97`'s two declared resources — and **zero
+yellows**. `T-99` labels the seven candidates on the five charts no row
+graded, all of which already carry a determination row, so the graded
+count is 12 of 12 for zero new verifier claims and zero model calls.
+
+**A short-circuited request declines the block by name** *(D123)*. On
+`NOT_COVERED`, `NO_POLICY_FOUND` and `NO_JURISDICTION_TREE` there is no
+governing tree, so there is no `policy_version_id` to review under and no
+value set for `would_affect` to test membership in. `--suggest` emits the
+`icd_suggestions` block carrying a declared reason and **never an empty
+suggestion list**: an empty list says *the chart implies nothing*, which is
+a claim about the chart, where the true statement is that nothing selected a
+tree to look under. D90's rule, on a third wire.
 
 ### v1.4 — Sessions and intake, headless
 
@@ -1211,7 +1251,7 @@ upstream system produced or from command-line flags a person typed, both
 validating to the same object. A closed lifecycle enum walked by a Python
 state machine — `CREATED → DETERMINED → IN_REVIEW`, extended by v1.5 — where
 an illegal transition raises. Verbs: `session create | list | show | run`.
-`session list` is v2.0's dashboard checklist, as text. **Zero model calls.**
+`session list` is v2.2's dashboard checklist, as text *(D125)*. **Zero model calls.**
 
 **Requirements it will mint.**
 
@@ -1285,40 +1325,20 @@ re-measured.
 - The compatibility account covers four practices.
 
 **Gate A14.** A10 over four practices; every eval row `PASS`; the agentic
-differential re-measured with zero errors.
+differential re-measured with zero errors; and **A11's yellow measured**
+*(D123)* — every yellow suggestion on this round's new notes carries a valid
+span and a verifier verdict. A11 holds that clause at unit level because no
+committed note can produce a yellow; this is the round that adds one, so it
+is the round that measures it.
 
-### v2.0 — The reviewer's UI *(tentative)*
-
-**Goal.** The first version a persona uses without a terminal. A local
-single-process web app over the session port; the framework is decided in
-its own entry (`adk web` already places FastAPI and uvicorn in the pinned
-environment, so `check_env.py` parity is the first thing checked). No
-authentication, no database beyond the file-backed stores, no deployment —
-working rule 9 holds. Screens map to ports: a dashboard with the session
-checklist and its statuses, and a create form for a procedure with or
-without ICD codes, typed or pasted from an upstream system; a determination
-view with criteria, verdicts, spans rendered as highlighted excerpts beside
-the structured evidence, and the gap list; a suggestions panel where green
-adds, yellow adds with its citation and red opens the justification field at
-that point in the form; the rest of the form; the simulated email and its
-outbox; tracking to awaiting approval. **No logic in the UI**: every action
-is a verb v1.4 and v1.5 already test, and tests are contract tests plus a
-test-client smoke test, no browser automation.
-
-**Requirements it will mint.**
-
-- Every UI action maps to a CLI verb and produces identical output.
-- Templates carry no logic, pinned by parsing (D65's shape).
-- The UI reads and writes through the session port only; it constructs no
-  store.
-
-**Gate A15.** Every UI action maps to a CLI verb with identical output; zero
-logic in templates; every gate green with the app importable.
-
-### v2.1 — The payer axis: national and regional coverage
+### v2.0 — The payer axis: national and regional coverage
 
 **Goal.** A request is `(payer, procedure code, state)`, and a regional tree
-may not be broader than the national coverage it operationalizes *(D112)*.
+declares the national tree it operationalizes *(D112)*. **The floor relation
+itself is `T-129`'s and closes before v1.6** *(D124)*: D112 deferred it here
+on the ground that both committed trees declare 35.0 — the floor exactly —
+and v1.6's candidate NCD is nationally quantified, so the premise expires
+one version before this one opens.
 
 **Why now and not sooner.** Resolution has widened once per round because a
 corpus forced it: by state at T-87, by state *and practice* at T-92, when
@@ -1329,33 +1349,29 @@ commercial plan both bind 43775 in Alabama — and `_binding_index` raises
 deferring it was safe.
 
 **In scope.** `payer` on `Jurisdiction` and on the request; the binding index
-keyed by it; a tree declaring its **scope**, national or regional, and a
-regional tree naming the national tree it sits under; and the floor relation
-**checked at load**. `national_floor` has been on `Criterion` since T-01 and
-nothing asserts the relation its name claims: a MAC tree declaring
-`bmi_threshold: 30.0` would cover patients NCD 100.1 does not, and every gate
-would stay green. Both committed trees declare 35.0 — the floor exactly — so
-no behavioural test on this corpus can tell the difference, which is D65's
-shape. **Zero model calls.**
+keyed by it; a tree declaring its **scope**, national or regional; and a
+regional tree naming the national tree it sits under, which is the relation
+`T-129`'s load check reads. **Zero model calls.**
 
-**Out of scope.** Any real commercial document (v2.2 says why none can be
-committed), and plan-level variation below the regional tree.
+**Out of scope.** Any real commercial document (v2.1 says why none can be
+committed), plan-level variation below the regional tree, and the floor
+check itself, which `T-129` lands ahead of v1.6 *(D124)*.
 
 **Requirements it will mint.**
 
 - Every tree declares the payer whose coverage it compiles and whether its
   scope is national or regional; a request resolves by payer, code and state,
   and two payers binding one code in one state resolve to one tree each.
-- A regional tree declares the national tree it operationalizes, and every
-  constant for which a national floor is declared satisfies that floor at
-  load, in the direction the source states — equal or stricter, never looser.
+- A regional tree declares the national tree it operationalizes. The floor
+  relation over that pairing is `T-129`'s statement, minted there *(D124)*.
 
 **Gate A16.** Every loaded tree declares a payer and a scope; every regional
-tree with a declared floor satisfies it at load; two payers binding one code
+tree names the national tree it operationalizes; two payers binding one code
 in one state resolve to one tree each and neither by load order; every eval
-row `PASS`; zero model calls in any gate.
+row `PASS`; zero model calls in any gate. *(The floor relation is `T-129`'s,
+D124.)*
 
-### v2.2 — A mimicked commercial policy, and the criteria Medicare never states
+### v2.1 — A mimicked commercial policy, and the criteria Medicare never states
 
 **Goal.** Test the engine against the shape a **private** payer writes coverage
 in, which is not the shape CMS writes it in *(D112)*.
@@ -1400,15 +1416,43 @@ kind or declared unclaimed, zero omitted; no citation in any determination
 resolves to the synthetic policy without the artifact naming it synthetic;
 every eval row `PASS`; zero model calls in any gate.
 
+### v2.2 — The reviewer's UI *(tentative)*
+
+**Goal.** The first version a persona uses without a terminal. A local
+single-process web app over the session port; the framework is decided in
+its own entry (`adk web` already places FastAPI and uvicorn in the pinned
+environment, so `check_env.py` parity is the first thing checked). No
+authentication, no database beyond the file-backed stores, no deployment —
+working rule 9 holds. Screens map to ports: a dashboard with the session
+checklist and its statuses, and a create form for a procedure with or
+without ICD codes, typed or pasted from an upstream system; a determination
+view with criteria, verdicts, spans rendered as highlighted excerpts beside
+the structured evidence, and the gap list; a suggestions panel where green
+adds, yellow adds with its citation and red opens the justification field at
+that point in the form; the rest of the form; the simulated email and its
+outbox; tracking to awaiting approval. **No logic in the UI**: every action
+is a verb v1.4 and v1.5 already test, and tests are contract tests plus a
+test-client smoke test, no browser automation.
+
+**Requirements it will mint.**
+
+- Every UI action maps to a CLI verb and produces identical output.
+- Templates carry no logic, pinned by parsing (D65's shape).
+- The UI reads and writes through the session port only; it constructs no
+  store.
+
+**Gate A15.** Every UI action maps to a CLI verb with identical output; zero
+logic in templates; every gate green with the app importable.
+
 ### Gates by version
 
 | Gate | Version | Threshold |
 |---|---|---|
 | A10 | v1.2 | every criterion of every loaded tree evaluated by a declared kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
-| A11 | v1.3 | suggestion precision at or above A2's bar; zero suggestions without a source row; zero yellow without a valid span; zero verdict drift |
+| A11 | v1.3 | precision on the colours that **assert** — green and yellow — at or above A2's 0.90, reported beside the count, the colour base rate and the all-red baseline, with red reported and never gated; zero suggestions without a source row; zero yellow without a valid span, held at unit level with the measured figure named as A14's; zero verdict drift *(D123)* |
 | A12 | v1.4 | every lifecycle transition tested, every illegal one raises; sessions round-trip byte-stable |
 | A13 | v1.5 | zero packets with an unjustified red suggestion; every packet citation valid; every outbox session `AWAITING_DECISION` |
-| A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors |
-| A15 | v2.0 | every UI action maps to a CLI verb with identical output; zero logic in templates |
-| A16 | v2.1 | every tree declares a payer and a scope; every declared national floor satisfied at load; two payers binding one code in one state resolve to one tree each |
-| A17 | v2.2 | every criterion of the commercial tree evaluated by a declared kind or declared unclaimed; no citation resolves to the synthetic policy without the artifact naming it synthetic |
+| A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors; **A11's yellow measured** — every yellow suggestion on the round's new notes carries a valid span and a verifier verdict *(D123)* |
+| A15 | v2.2 | every UI action maps to a CLI verb with identical output; zero logic in templates |
+| A16 | v2.0 | every tree declares a payer and a scope; two payers binding one code in one state resolve to one tree each, neither by load order *(the floor relation is `T-129`'s, D124)* |
+| A17 | v2.1 | every criterion of the commercial tree evaluated by a declared kind or declared unclaimed; no citation resolves to the synthetic policy without the artifact naming it synthetic |

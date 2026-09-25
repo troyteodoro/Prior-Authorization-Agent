@@ -400,7 +400,7 @@ the medication list already implied is the denial Sam did not see coming.
 > **I want** a determination created from a procedure — with or without ICD codes, typed by me or sent from another system — kept as a session with a status
 > **So that** the checklist of what I am working on is the system's, not a spreadsheet beside it
 
-**Version:** v1.4 · **Value:** the dashboard v2.0 draws is a list the system
+**Version:** v1.4 · **Value:** the dashboard v2.2 draws is a list the system
 already keeps.
 
 - **Given** a procedure code and a patient, with or without ICD codes, from
@@ -450,7 +450,7 @@ on the reviewer's explicit action after review".
 
 ---
 
-## Feature F6 — Reviewer UI *(v2.0; D105; tentative)*
+## Feature F6 — Reviewer UI *(v2.2; D105, reordered by D125; tentative)*
 
 ### `US-15` Work from a dashboard, not a terminal
 
@@ -458,7 +458,7 @@ on the reviewer's explicit action after review".
 > **I want** a dashboard of my sessions, each opening to its determination with the criteria, the evidence beside them and the coloured code suggestions, the form, and a send button
 > **So that** clearing a chart is one screen, not a sequence of commands
 
-**Version:** v2.0 · **Value:** every persona-facing behaviour before this
+**Version:** v2.2 *(D125)* · **Value:** every persona-facing behaviour before this
 version is reachable only by someone who reads JSON.
 
 - **Given** the dashboard **When** it renders **Then** it lists what `session
@@ -487,12 +487,12 @@ decided in the app shell's entry.
 
 > **As** Sam
 > **I want** the same request answered under the payer that actually covers
-> this patient, and a regional rule that can never be looser than the national
-> one it sits under
+> this patient, under the national rule that payer's regional tree sits
+> beneath
 > **So that** I stop keeping one payer's thresholds in my head while reading
 > another's chart
 
-**Version:** v2.1 · **Value:** every answer the system has given so far is
+**Version:** v2.0 *(D125)* · **Value:** every answer the system has given so far is
 Medicare's. A second payer is the first time *whose rule is this* has more than
 one answer, and the first time a regional rule can quietly exceed its national
 grant.
@@ -503,17 +503,19 @@ grant.
 - **Given** a payer this store does not serve **When** the request names it
   **Then** the answer says so, and it is not the answer for a state no tree
   serves · *(REQ-55's distinction; A16)*
-- **Given** a regional tree declaring a constant looser than the national floor
-  it cites **When** it is loaded **Then** the load fails naming the constant,
-  the floor and the direction — a regional rule may be stricter and never
-  broader · *(A16)*
+- **Given** a regional tree **When** it is loaded **Then** it names the
+  national tree it operationalizes, and one naming none fails the load ·
+  *(A16)*. The **floor comparison** over that pairing — a constant looser
+  than the floor it cites failing the load, naming the constant, the floor
+  and the direction — is `T-129`'s and lands before v1.6, because a
+  nationally quantified NCD is what makes it live *(D124)*
 - **Given** a determination **When** it is read **Then** it names the payer and
   the scope of the tree that produced it, so no figure is quoted as another
   payer's · *(A16)*
 
 **Covers:** A16
-**Ships:** resolution by payer, and the first check of a relation
-`national_floor` has asserted by its name since T-01 *(D112)*.
+**Ships:** resolution by payer, over the floor relation `T-129` checked
+first *(D112, D124)*.
 
 ---
 
@@ -526,7 +528,7 @@ grant.
 > **So that** I learn whether the engine is Medicare-shaped before anyone
 > points it at commercial work
 
-**Version:** v2.2 · **Value:** the practices tested so far are all CMS's, and
+**Version:** v2.1 *(D125)* · **Value:** the practices tested so far are all CMS's, and
 CMS's drug documents quantify almost nothing — a fact T-92 established by
 fetching four of them. The criteria this system was built to evaluate are
 commonplace in commercial utilisation management and absent from Medicare's

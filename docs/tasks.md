@@ -19,8 +19,27 @@ that follow *(D105)*.
 
 **What to do next: `T-99`, row 4 of `v1.3` in `Roadmap after v1.1` below** —
 the CLI surface: `--suggest` emits the `icd_suggestions` block beside the
-verdicts, which are unchanged, and A11's suggestion-precision section lands
-in `eval/report.md`.
+verdicts, which are unchanged, and A11's section lands in `eval/report.md`.
+**Its exit and A11 were both rewritten before the row opened** *(D123)*. A11
+borrowed A2's number without A2's asymmetry — it scored green, yellow and red
+on one scale, so a review that coloured every candidate red would have cleared
+it while suggesting nothing — and its two data-bearing clauses would have
+closed on one green and no yellow at all. Precision is now gated on the
+colours that **assert**, red is reported beside an all-red baseline, the
+measured yellow is named as **A14's** rather than passing because its set is
+empty, and the row grades the seven candidates on the five charts no row
+touched, for zero new verifier claims. The exit also settles what `--suggest`
+emits when the request short-circuits and there is no tree to review under: a
+declared reason, never an empty list.
+**Then `T-129`, off the path, before v1.6 opens** *(D124)* — the national
+floor checked at load. D112 deferred the relation to the payer round because
+both committed trees declare 35.0, the floor exactly; v1.6's candidate NCD is
+nationally quantified, so the premise expires four versions early.
+**The last three versions were reordered** *(D125)*: the reviewer's UI runs
+last, behind both engine rounds, because it is the only version that renders
+every other version's output and both of the rounds that used to follow it
+change what it renders. Gates, stories and task ids stayed with their
+content.
 **`T-98` closed row 3** *(D122)*: the review's model turn, on every runner
 and both tiers. `pa_agent/quotes.py` is a fourth port in the first three's
 shape and `history.run_review` consults it once per note for every table
@@ -112,10 +131,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Eighty tasks are on this board — IDs run to T-128; T-126 through T-128 are
-off the path and above the roadmap's reservations; numbering is not contiguous
-and D92 and D94 deleted six records between them, so the highest id is well
-above the count. **80 are closed and 0 are open.** The table below is the path **as it ran**, which is not the path anyone
+Eighty-two tasks are on this board — IDs run to T-129; T-126 through T-129
+are off the path and above the roadmap's reservations; numbering is not
+contiguous and D92 and D94 deleted six records between them, so the highest id
+is well above the count. **81 are closed and 1 is open** — `T-129`, which
+closes before v1.6 *(D124)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -135,7 +155,7 @@ D81, withdrawn by D92, records deleted by D94)*.
 | 10 | `T-23` | **closed US-7** · gates **A7**, **A8** *(D87)* | **closed** |
 | 11 | `T-82` | the ratification programme is deleted *(D92)* | **closed** — this row is the withdrawal |
 
-Off the path. Real work, nothing waiting on it:
+Off the path. Real work the versions do not sequence — nothing waited on the first three; `T-129` is waited on by v1.6, which is the whole reason it is here *(D124)*:
 
 | Task | Why it is not sequenced | When |
 |---|---|---|
@@ -143,6 +163,7 @@ Off the path. Real work, nothing waiting on it:
 | `T-126` | the README restructured behind a checked architecture diagram; no version needs it, and its id sits above the roadmap's reservations, which run to T-125 | after `T-95` *(D117)* |
 | `T-127` | *Where this system degrades* re-read: the unclaimed criteria sorted three ways, corpus growth assigned to v1.6's round, Palmetto's `d` note corrected to D107, the measured yellow's deferral recorded — documents only, zero model calls | after `T-97` *(D120)* |
 | `T-128` | the README-structure test `T-126`'s exit named and no commit added: the diagram compared to `workflow.STEPS`, the resolver's result types, the three ports and the store adapters, every check refusing a mutant; zero model calls | after `T-127` *(D121)* |
+| `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **before v1.6 opens** *(D124)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -220,9 +241,9 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
-| v2.0 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
-| v2.1 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | T-117–T-120 | none | A16 |
-| v2.2 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
+| v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
+| v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
+| v2.2 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
 
 ### v1.2 — Cross-practice round one: rheumatoid arthritis, then ultrasound
 
@@ -263,7 +284,7 @@ table; the tri-state is Python; the model quotes the note and nothing else.
 | 1 | the knowledge table and its sources | `T-96` | **closed** (D118) | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test. **Five rows, not the six planned**: warfarin's label states no hypotension and clopidogrel's states aplastic anemia, so §11's anticoagulant example is written against **apixaban** *(D118)* |
 | 2 | deterministic candidates and the tri-state | `T-97` | **closed** (D119) | `history.py` and the knowledge port; eval rows `H1`–`H3` — green via a structured signal, **silent because the chart already codes the condition**, red with nothing; `run_eval.py` green. **Rewritten at open** from "eval rows E14–E16 … yellow via a note quote": a yellow is a model measurement and belongs to row 3, and no chart in the corpus could produce a green without declared data *(D119)*. Ids are `H`-prefixed because these rows are outside §6, as NP1, J1, RA1–RA3 and US1–US4 are |
 | 3 | note quotes, recorded and anchored | `T-98` | **closed** (D122) | recording committed on both tiers, every quote anchored or recorded as refused, the model turn counted; the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today — **red with the quotes consulted**, the recording being the proof the model looked; **zero new verifier claims**, because a red cites nothing; every gate green. **Rewritten before open** from "gains row 2's yellow … verifier claims added and re-measured": no committed note mentions a table drug, and a note edit re-measures six extraction recordings, so the measured yellow is `T-110`'s *(D120)* |
-| 4 | the CLI surface | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; README paragraph |
+| 4 | the CLI surface and A11's section | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; on a **short-circuited** request — `NOT_COVERED`, `NO_POLICY_FOUND`, `NO_JURISDICTION_TREE` — the block carries a declared *no governing tree* reason and **never an empty suggestion list**; `eval/report.md` carries A11's section as D123 rewrote it, precision gated on green and yellow with red reported beside the all-red baseline; the seven ungraded candidates on `49092fd9`, `a8edc52e`, `53126ee7`, `915602a8` and `7acd0453` get review labels, so 12 of 12 are graded for zero new verifier claims; README paragraph; every gate green. **Rewritten before open** *(D123)*: A11 borrowed A2's number without A2's asymmetry, its gated direction held one datapoint and its yellow clause had nothing to check |
 
 ### v1.4 — Sessions and intake, headless
 
@@ -311,7 +332,47 @@ re-measured differential.
 | 3 | practice four | `T-109` | pending | as row 2 |
 | 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | pending | Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
 
-### v2.0 — The reviewer's UI *(tentative)*
+### v2.0 — The payer axis: national and regional coverage *(D112, reordered by D125)*
+
+A request becomes `(payer, code, state)`. Resolution has widened once per
+round because a corpus forced it — by state at T-87, by state *and practice*
+at T-92 — and a second payer collides harder than a second practice did:
+Medicare and any commercial plan both bind 43775 in Alabama, and the binding
+index raises on the first such tree. **`national_floor` is no longer this
+round's** *(D124)*: D112 deferred the floor relation here because both
+committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is
+nationally quantified — so the premise expires before this version opens and
+`T-129` takes the check ahead of it. What stays here is the relation the
+check reads: a regional tree naming the national tree it operationalizes.
+**Zero model calls.**
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the payer on the tree and the request | `T-117` | pending | every loaded tree declares a payer; a tree that does not raises at load; every determination records it |
+| 2 | resolution by payer | `T-118` | pending | two payers binding one code in one state resolve to one tree each, neither by load order; an unserved payer is its own answer, distinct from an unserved state (REQ-55's shape) |
+| 3 | scope, and the national pairing | `T-119` | pending | every tree declares national or regional; a regional tree names the national tree it operationalizes, and a regional tree naming none raises at load. **The floor clause moved to `T-129`** *(D124)* — the constant-versus-floor comparison lands before v1.6, because a nationally quantified NCD is what makes it live |
+| 4 | the second payer's tree | `T-120` | pending | a second payer's tree loaded and resolved beside Medicare's; every eval row `PASS`; every gate green |
+
+### v2.1 — A mimicked commercial policy *(D112, reordered by D125)*
+
+The shape a **private** payer writes coverage in, which is not CMS's shape.
+The policy is **synthesized and declared synthetic** — a commercial medical
+policy is copyrighted, usually behind a login and revised without notice, so
+it cannot be committed, cannot be re-fetched by a gate and must not be quoted
+at length (D21, D29; D73's declaration shape). It earns the predicate kinds
+v1.2 expected and could not: no Medicare rheumatology LCD states a
+conventional-DMARD trial duration or a screening requirement, which T-92
+established by fetching four of them *(D111)*. **Zero model calls.**
+
+| # | Slice | Task | State | Exit, in one line |
+|---|---|---|---|---|
+| 1 | the synthetic policy and its declaration | `T-121` | pending | the policy declares itself synthetic, carries no fetched-corpus provenance, and appears in no `sources.json` hash; a test fails if any artifact cites it without saying so |
+| 2 | trial duration | `T-122` | pending | step-therapy duration computed by Python over `MedicationRequest` dates and cited to the resource; a short trial is `NOT_MET`, never an abstention |
+| 3 | the screening and the lab threshold | `T-123` | pending | a required screening the chart does not carry abstains naming what to collect; a lab value against a threshold in a window is `MET`/`NOT_MET` citing the observation |
+| 4 | patients and eval rows | `T-124` | pending | patients or declared additions (D73's shape); rows for the `NOT_MET` and the abstention; `run_eval.py` green |
+| 5 | the commercial compatibility account | `T-125` | pending | `eval/report.md` covers the commercial tree beside the CMS practices; `build_report.py --verify` green; every gate green |
+
+### v2.2 — The reviewer's UI *(tentative; reordered by D125)*
 
 A local single-process web app over the session port. Dashboard of sessions
 with their status; create one from a procedure with or without ICD codes,
@@ -330,45 +391,6 @@ v1.5 already test. Rows are placeholders until v1.6 closes.
 | 4 | suggestions and the form | `T-114` | pending | the three colours behave as v1.3 specified; red cannot be added without its justification |
 | 5 | submit and tracking | `T-115` | pending | the email preview, the outbox, the status transitions |
 | 6 | the smoke gate | `T-116` | pending | every UI action maps to a CLI verb with identical output; templates carry no logic, pinned by parsing (D65's shape); every gate green |
-
-### v2.1 — The payer axis: national and regional coverage *(D112)*
-
-A request becomes `(payer, code, state)`. Resolution has widened once per
-round because a corpus forced it — by state at T-87, by state *and practice*
-at T-92 — and a second payer collides harder than a second practice did:
-Medicare and any commercial plan both bind 43775 in Alabama, and the binding
-index raises on the first such tree. This round also makes `national_floor`
-mean something: it has been on `Criterion` since T-01 and nothing checks the
-relation its name claims, so a MAC tree declaring a threshold **below** the
-NCD's would cover patients CMS does not and every gate would stay green. Both
-committed trees declare 35.0, the floor exactly, so no behavioural test on
-this corpus can tell — D65's shape. **Zero model calls.**
-
-| # | Slice | Task | State | Exit, in one line |
-|---|---|---|---|---|
-| 1 | the payer on the tree and the request | `T-117` | pending | every loaded tree declares a payer; a tree that does not raises at load; every determination records it |
-| 2 | resolution by payer | `T-118` | pending | two payers binding one code in one state resolve to one tree each, neither by load order; an unserved payer is its own answer, distinct from an unserved state (REQ-55's shape) |
-| 3 | scope, and the floor checked | `T-119` | pending | every tree declares national or regional; a regional tree names the national tree it operationalizes; a constant looser than its declared floor **raises at load**, naming the constant, the floor and the direction |
-| 4 | the second payer's tree | `T-120` | pending | a second payer's tree loaded and resolved beside Medicare's; every eval row `PASS`; every gate green |
-
-### v2.2 — A mimicked commercial policy *(D112)*
-
-The shape a **private** payer writes coverage in, which is not CMS's shape.
-The policy is **synthesized and declared synthetic** — a commercial medical
-policy is copyrighted, usually behind a login and revised without notice, so
-it cannot be committed, cannot be re-fetched by a gate and must not be quoted
-at length (D21, D29; D73's declaration shape). It earns the predicate kinds
-v1.2 expected and could not: no Medicare rheumatology LCD states a
-conventional-DMARD trial duration or a screening requirement, which T-92
-established by fetching four of them *(D111)*. **Zero model calls.**
-
-| # | Slice | Task | State | Exit, in one line |
-|---|---|---|---|---|
-| 1 | the synthetic policy and its declaration | `T-121` | pending | the policy declares itself synthetic, carries no fetched-corpus provenance, and appears in no `sources.json` hash; a test fails if any artifact cites it without saying so |
-| 2 | trial duration | `T-122` | pending | step-therapy duration computed by Python over `MedicationRequest` dates and cited to the resource; a short trial is `NOT_MET`, never an abstention |
-| 3 | the screening and the lab threshold | `T-123` | pending | a required screening the chart does not carry abstains naming what to collect; a lab value against a threshold in a window is `MET`/`NOT_MET` citing the observation |
-| 4 | patients and eval rows | `T-124` | pending | patients or declared additions (D73's shape); rows for the `NOT_MET` and the abstention; `run_eval.py` green |
-| 5 | the commercial compatibility account | `T-125` | pending | `eval/report.md` covers the commercial tree beside the CMS practices; `build_report.py --verify` green; every gate green |
 
 ---
 
@@ -2674,6 +2696,64 @@ because they are what the real diagram refused.
 reaches the planner, `extract` the extraction runner and `verify` the
 verifier. Deriving that means parsing `workflow.py`'s step bodies, and D121
 says why it is not earned; D117's reversal condition stands for it.
+
+### `[ ] T-129` The national floor, checked at load
+
+**REQ:** mints one — the floor relation, minted here because this close is
+what checks it *(D109)* · **Depends:** T-01, for the `national_floor` span
+both bariatric trees already carry · **Blocks:** v1.6, which is why it is
+sequenced at all · **Discovered in:** the plan review of 2026-09-24 ·
+**Decided by:** D124 · **Gates:** none of its own; A16 keeps the payer half
+· **Timebox:** half a day
+**Status:** **open** — off the path, closing **before v1.6 opens**.
+
+**Why it is its own task, and why now.** Working rule 6: discovered work is
+a new numbered task, never a clause folded into a reserved row's exit.
+D112 put this relation in the payer round and justified the deferral —
+`national_floor` has been on `Criterion` since `T-01`, nothing asserts the
+relation its name claims, and **both committed trees declare 35.0, the floor
+exactly**, so no behavioural test on this corpus can tell the difference
+(D65's shape). That reasoning has an expiry date: spec §11's v1.6 names
+**CPAP under NCD 240.4** as its candidate *because it is a nationally
+quantified NCD, unlike 100.1*. A nationally quantified NCD with MAC trees
+compiled under it is exactly the configuration where a regional constant can
+sit below its national floor — and on the old plan the first tree that can
+violate the relation loads into an engine four versions away from checking
+it.
+
+**Measured at open.** `national_floor` is read by exactly one test,
+`tests/test_criteria_tree.py::test_the_national_floor_is_cited_where_it_is_claimed`,
+which asserts the span slices back and cites the NCD. Nothing under
+`pa_agent/` reads the field at all. A MAC tree declaring
+`bmi_threshold: 30.0` would cover patients NCD 100.1 does not and all ten
+gates would stay green.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_criteria_tree.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: every `national_floor` declares the **value and comparison** it
+asserts beside the span it already carries, and the span still slices back to
+that value in the hashed corpus; every constant for which a floor is declared
+satisfies it **at load**, in the direction the source states — equal or
+stricter, never looser; a tree whose constant is looser **raises at load**,
+naming the constant, the floor and the direction; a declared floor whose
+value cannot be read out of its own quote raises rather than defaulting to
+satisfied (D31's shape — the silent alternative is a floor every tree
+passes). Both committed bariatric trees satisfy it at equality, so no verdict,
+span, recording, baseline or verifier claim moves.
+
+**Mutation to run at close:** loosen one committed tree's `bmi_threshold` to
+30.0 and watch the load raise; flip the comparison's direction and watch it
+raise on the tree that satisfied it. A check that only ever passes is the
+thing this task exists to avoid. Restore from git and clear `__pycache__`
+before trusting the result; the corpus-writing modes make that mandatory
+here as everywhere *(T-91, D119)*.
+
+**Zero model calls.** No recording, bundle, note or baseline is touched.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

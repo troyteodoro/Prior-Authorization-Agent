@@ -10645,3 +10645,287 @@ recording; or `pairs_fabricated` is non-zero on a tier, at which point the
 instruction is versioned and re-measured rather than the anchorer loosened
 (D18, D98); or a second consumer needs the quote turn inside the graph, which
 is D119's reversal condition and is answered there first.
+
+---
+
+## D123 — A11 is rewritten before `T-99` opens: precision is gated on the colour that asserts, the short circuit gets a named answer, and the review's denominator is every chart that has one
+
+**Context.** `T-98` closed v1.3's row 3 (D122). Row 4, `T-99`, is the CLI
+surface and A11's section in `eval/report.md`, and a read of the whole plan
+before the row opens — the owner's, 2026-09-24 — found the gate states a
+threshold in a shape this version cannot hold. A weak exit condition is a
+design decision (working rule 5), and a gate rewritten *after* seeing the
+number it grades is the move the kill-criteria note forbids, so the rewrite
+happens now or not at all.
+
+**What A11 says today.** *Suggestion precision against manifest labels at or
+above A2's bar on `MET`; zero suggestions without a source row; zero yellow
+without a valid span; zero verdict drift against the baseline.*
+
+### Four findings, three of them measured
+
+**1. A11 borrows A2's number but not A2's asymmetry.** A2 gates precision on
+`MET` and only *reports* recall, and §7 says why: a false `MET` is a denial
+the specialist did not expect, a false `NOT_MET` is an unnecessary chart
+review, and the first is worse. The colours are not symmetric either. Green
+says *addable with no further evidence*; red says *nothing on the chart* and
+cannot enter a form without a written justification (REQ-65). Green and
+yellow assert; red abstains. "Suggestion precision" over all three scores an
+assertion and an abstention on one scale — and since the abstentions
+dominate this corpus, a review that coloured every candidate red would clear
+the bar while suggesting nothing. That is the always-`MET` baseline A2
+carries a baseline clause to catch, inverted.
+
+**2. The gated direction has n=1, and one of the four clauses is vacuous.**
+Measured across all fourteen committed bundles: **12 candidates on 9 charts**,
+of which the corpus produces **one green** — `H1`'s, on the chart carrying
+T-97's two declared resources (D119) — and **zero yellows**. The measured
+yellow was deferred to `T-110` twice, by D120 and again by D122. So A11's
+precision clause would close at n=1 on a declared datapoint and its
+yellow-span clause would close by having nothing to check. That is exactly
+what `T-95` refused for A10 — *a row cannot close on a gate two-thirds of
+which nothing checks* (D116) — one version later and in the other direction:
+A10's clauses were held by no command, A11's would be held by no data.
+
+**3. Seven of the twelve candidates are computed by the code and graded by
+nothing, and grading them is free.** The five charts and what the review
+already answers on them:
+
+| Chart | Its row | Candidates | What the review answers |
+|---|---|---|---|
+| `49092fd9` | `E7` | 1 | withheld, `ALREADY_CODED` — note-bearing, two quote turns |
+| `a8edc52e` | `E12` | 1 | red |
+| `53126ee7` | `US3` | 2 | withheld `SIGNAL_NOT_CROSSED`, withheld `ALREADY_CODED` |
+| `915602a8` | `RA2` | 1 | red |
+| `7acd0453` | `US2` | 2 | withheld `SIGNAL_NOT_CROSSED`, withheld `ALREADY_CODED` |
+
+Every one of those charts is **already in the eval set with a determination
+row**, four are note-free and the fifth's two notes are both in the committed
+quote recording — so a review label on each shares a cached determination
+exactly as `H2`, `H3` and `H4` do (D75's rule), for **zero new verifier
+claims and zero model calls**. D113's tax does not apply: an eval row is a
+verifier measurement when it carries a *cited verdict*, and these carry none.
+
+**What it buys, stated plainly: sample size, not new failure modes.** The
+seven reproduce shapes `H1`–`H4` already cover — two red, three
+`ALREADY_CODED`, two `SIGNAL_NOT_CROSSED`, no green, no yellow. The one
+thing genuinely new is the second note-consulting row: today only `H4`
+consults a note through `RecordedQuoteRunner`, and `E7`'s chart makes it two.
+
+**4. `T-99`'s exit does not say what `--suggest` emits when there is no
+determination.** `history.review` requires a `policy_version_id`, and two
+committed rows have none because their requests short-circuit before the
+graph: `E2` (`NOT_COVERED`, sc2) and `NP1` (`NO_POLICY_FOUND`).
+`NO_JURISDICTION_TREE` is the third. `49092fd9` carries an active candidate,
+two notes, **and `E2` as one of its two rows**, so this is not hypothetical.
+Block absent, block empty and block computed without a tree are three
+different meanings and the exit names none.
+
+### Chosen — A11 becomes four clauses, each held by a command
+
+1. **Precision on the colours that assert** — green and yellow together — at
+   or above A2's 0.90, reported beside the count, the colour base rate, and
+   the precision of the trivial review that colours every candidate red. Red
+   is **reported, never gated**: it is the abstention, and gating an
+   abstention for precision is REQ-5's error one layer up.
+2. **Zero suggestions without a source row.** Unchanged.
+3. **Zero yellow without a valid span**, held at unit level through the
+   anchorer's real refusal on a hand-written note — REQ-67's shape, minted
+   that way by `T-98` for this reason (D122) — with the **measured** figure
+   named as **A14's**, because no committed note can produce a yellow until
+   `T-110` (D120). The clause says whose it is rather than passing because
+   the set is empty.
+4. **Zero verdict drift against the baseline.** Unchanged.
+
+### Chosen — a short-circuited request declines the block by name
+
+On `NOT_COVERED`, `NO_POLICY_FOUND` and `NO_JURISDICTION_TREE` there is no
+governing tree, so there is no `policy_version_id` to review under and no
+value set for `would_affect` to test membership in. `--suggest` emits the
+`icd_suggestions` block carrying a **declared reason** — no governing tree —
+and never an empty suggestion list.
+
+**Rejected: an empty list.** An empty list says *the chart implies nothing*,
+which is a claim about the chart; the true statement is *the system did not
+look, because nothing selected a tree to look under*. Those are the two
+things D90 exists to keep apart, and D119 and D122 already put the same rule
+on two other wires. **Rejected: computing the review with an empty
+`would_affect`.** That is D119's own failure — a reading that returns an
+empty list on every row and passes every behavioural test this corpus can
+produce.
+
+### Chosen — `T-99` labels every candidate-bearing chart
+
+Row 4's exit gains the five rows above, so the graded candidate count goes
+from 5 to 12 and every chart the code produces a candidate for is a chart
+the harness grades. Ids stay `H`-prefixed: these rows are outside §6, as
+`NP1`, `J1`, `RA1`–`RA3`, `US1`–`US4` and `H1`–`H4` are.
+
+### Rejected alternatives
+
+- **Leave A11 as written and let the yellow clause pass.** This is the thing
+  `T-95` found and closed for A10. Closing a version on a gate whose data is
+  empty is worse than closing it on a gate whose command is missing, because
+  nothing will ever go red to say so.
+- **Gate precision over all three colours.** Rewards colouring everything
+  red, which is the one behaviour the tri-state exists to avoid.
+- **Lower the 0.90 for A11 because n is small.** Moving a bar after seeing
+  the sample; the kill-criteria note says the entry that does it has to say
+  so, and this one would have nothing else to say.
+- **Defer the whole A11 section to v1.6.** Then v1.3 closes with no gate at
+  all, and A7's rule — every REQ maps to a passing check or is declared —
+  would carry REQ-63 through REQ-68 on unit tests alone.
+
+**Reverses if** `T-110` measures a yellow, at which point clause 3's figure
+becomes A14's measurement and the unit-level minting is superseded rather
+than repeated (D109's rule); or the review acquires a consumer that needs a
+suggestion on a short-circuited request, at which point the declared reason
+becomes a computed review and this entry is what says what changed.
+
+---
+
+## D124 — The national floor is checked at load before v1.6, because v1.6 is what breaks the premise it was deferred on
+
+**Context.** D112 put the floor relation in v2.1 and said why deferring it
+was safe: `national_floor` has been on `Criterion` since `T-01`, nothing
+asserts the relation its name claims, and **both committed trees declare
+35.0 — the floor exactly** — so it is "an unchecked invariant rather than a
+live defect", D65's shape. That reasoning was correct when it was written
+and it has an expiry date nobody wrote down.
+
+**What expires it.** Spec §11's v1.6 entry names its candidates, confirmed at
+open, and the first is **CPAP for obstructive sleep apnea under NCD 240.4, a
+nationally quantified NCD, unlike 100.1** — chosen *because* it quantifies
+nationally. A nationally quantified NCD with MAC trees compiled under it is
+precisely the configuration where a regional constant can sit below its
+national floor: NCD 100.1 quantifies nothing except the BMI and comorbidity
+sentence criterion (a) cites, which is why two trees could both declare 35.0
+and nothing could tell. v1.6 is four versions ahead of v2.1, so on the
+current plan the first tree that can violate the relation loads into an
+engine that cannot check it.
+
+**Measured.** `national_floor` is read by exactly one test —
+`tests/test_criteria_tree.py::test_the_national_floor_is_cited_where_it_is_claimed`
+— which asserts the span slices back and cites the NCD. It is an
+`EvidenceSpan | None` on `Criterion` and nothing else in `pa_agent/` reads
+it. A MAC tree declaring `bmi_threshold: 30.0` would cover patients NCD
+100.1 does not and all ten gates would stay green.
+
+**Chosen — `T-129`, off the path, closing before v1.6 opens.** In `T-127`
+and `T-128`'s shape (D117, D120, D121): documents and a load-time check, no
+recording, no bundle, no note, no verdict, no model call. The floor declares
+its **value and comparison** beside the span it already carries; every
+constant for which a floor is declared satisfies it **at load**, in the
+direction the source states — equal or stricter, never looser; a violation
+raises naming the constant, the floor and the direction. Both committed
+bariatric trees satisfy it at equality, so nothing moves on this corpus,
+which is the point: the check lands while it is free and before the corpus
+that needs it arrives.
+
+**What stays in v2.1.** The payer on the tree and on the request, the
+binding index keyed by it, the national/regional scope declaration, and a
+regional tree naming the national tree it operationalizes. That row's exit
+loses its floor clause and says so; the payer axis is what D112 is about and
+this entry takes one clause off it, not the version.
+
+### Rejected alternatives
+
+- **Leave it in v2.1.** The premise it was deferred on does not survive
+  v1.6, and "safe to defer" stops being true silently — there is no gate
+  that goes red when the justification expires.
+- **Fold it into `T-107`.** Discovered work becomes a new numbered task
+  (working rule 6), and a reserved row's exit quietly gaining a clause is
+  how a version's cost stops being legible. `T-107` has an extraction schema
+  to land.
+- **A `provisional` flag on the constant, or a column in the report.** D51
+  pinned the provisional count at zero so a new one is a visible diff, and
+  D116 refused categories of the report's invention. A relation that can be
+  checked at load is checked at load.
+- **Check it in the compatibility account instead.** `eval/report.md` is
+  generated from the trees the engine loads, so a report that *notices* a
+  looser constant is a report describing a tree the engine already accepted.
+  Article VII's rule is that the tree is the source of truth; a tree that
+  violates a declared floor should not load.
+
+**Reverses if** v1.6's practices are confirmed at open with no nationally
+quantified NCD among them — in which case the check is still correct and
+still cheap, but its urgency was this entry's rather than the corpus's, and
+that should be said in the close.
+
+---
+
+## D125 — The reviewer's UI moves behind the two engine rounds, and version labels follow execution order
+
+**The owner's decision, 2026-09-24.** D105 fixed the versions through v2.0
+and set five rules, the fifth of which is that **a reordering is a new entry
+here**. This is that entry. D112 added v2.1 and v2.2 after v2.0; this one
+moves the UI behind both.
+
+**Why.** v2.0 is the only version that *renders* every other version's
+output, and the two versions scheduled after it both change what it renders:
+
+1. **v2.1 changes the request.** Its own entry says so — a request becomes
+   `(payer, procedure code, state)`, and the UI's create form is a request
+   builder. Resolution has widened once per round already (by state at
+   `T-87`, by state and practice at `T-92`), and the UI would be written
+   against the shape immediately before the next widening.
+2. **v2.2 extends the criteria vocabulary.** A commercial tree earns the
+   predicate kinds Medicare's documents never state — a trial duration, a
+   lab threshold in a window, a reauthorisation interval — and the
+   determination view renders criteria. A view built before those kinds
+   exist is a view revisited when they arrive.
+
+Built at v2.0 the UI is written against a contract the next version changes
+and a vocabulary the one after extends, and revisited twice. Built last it
+is written once over a finished engine. It is also the **largest** version
+on the board at six tasks, the only one carrying no measurement, and the one
+§11 already marks *tentative* — so it is the worst candidate for being
+built twice.
+
+**Chosen — execution order and labels both move.** The order becomes v1.3 →
+v1.4 → v1.5 → v1.6 → the payer axis → the commercial mimic → the UI, and
+the labels follow it:
+
+| Label | Delivers | Story | Gate | Tasks |
+|---|---|---|---|---|
+| v2.0 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | A16 | T-117–T-120 |
+| v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | A17 | T-121–T-125 |
+| v2.2 | the reviewer's UI over the session port | US-15 | A15 | T-111–T-116 |
+
+**Gates, stories and task ids stay with their content.** A15 is US-15's, and
+US-15 is the UI's, whichever version runs it; `T-111` through `T-116` are
+the UI's rows and ids are load-bearing (the precedence note: split a
+requirement rather than renumber it, and anything referencing an id must
+keep resolving).
+
+**The consequence, stated rather than smoothed.** §11's gates-by-version
+table now reads A16, A17, A15 down the page, and the UI's task ids sit below
+the ids of the two rounds that precede it. Both are the cost of keeping a
+gate with the work it grades and an id stable. The board already reads this
+way — numbering is not contiguous, `T-126` through `T-128` sit above the
+roadmap's reservations while running before them, and D92 and D94 deleted
+six records out of the middle.
+
+### Rejected alternatives
+
+- **Renumber the gates and the task ids to match the new order.** A15 is
+  cited by US-15's *Covers* line and by §11; `T-111`–`T-116` are cited by
+  the roadmap and by this log. Renumbering to make a table sort prettily is
+  the move the precedence note exists to refuse.
+- **Keep the labels and state an execution order beside them.** A version
+  opens when the previous one closes (D105 rule 1), so a board whose labels
+  and order disagree has two readings of *what is next* and no rule for
+  choosing between them. That is the failure `Path to v1` was written to
+  end (D70).
+- **Move only v2.1 ahead of v2.0 and leave v2.2 last.** Halves the benefit
+  and keeps the worse half: v2.2's new predicate kinds are the ones the
+  determination view has never had to render.
+- **Cut the UI.** Not asked for and not warranted — US-15 is the only story
+  a persona reaches without a terminal, and every action it takes is a verb
+  v1.4 and v1.5 already test, which is what makes it cheap **once the verbs
+  and the engine are final**.
+
+**Reverses if** a demo needs a screen before the engine rounds land, at
+which point the UI moves back and the cost is the revisit this entry
+avoids — which should be paid knowingly, in a new entry, rather than
+discovered.

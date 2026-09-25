@@ -70,8 +70,9 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1 and v1.2 are all complete.**
-81 of 81 tasks closed, 0 open, all ten zero-cost gates green, and acceptance
-gates A1–A10 holding. The suite collects 1373 tests (58 skip).
+81 of 81 tasks closed, **1 open** — `T-129`, the national floor checked at
+load, which closes before v1.6 *(D124)* — all ten zero-cost gates green, and
+acceptance gates A1–A10 holding. The suite collects 1373 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -353,7 +354,7 @@ it. Read together, the reasons sort three ways *(D120)*:
 |---|---|---|
 | **this pipeline** | `ncd-100.1-jjm-v1` `c4` — a weight the extraction schema has no field for; `d` — four documented components, then set membership and a six-month window *(D107)* | v1.6's declared extraction schema |
 | **a fact the coded record does not carry** | `infliximab-ra-jjm-v1` `c` — NYHA class; `d` — a tuberculosis screening result, with its treatment on the medication list; `e` — a DAS28, CDAI or SDAI score | v1.6, where a note states the fact; where no committed note does, the abstention stands |
-| **a judgment** | `us-abdominal-visceral-j5-j8-v1` `c` — necessary for management; `d` — not redundant of what is planned; `e` — a high index of suspicion | nothing through v2.0 *(D107)*; the reviewer |
+| **a judgment** | `us-abdominal-visceral-j5-j8-v1` `c` — necessary for management; `d` — not redundant of what is planned; `e` — a high index of suspicion | nothing on the roadmap *(D107)*; the reviewer |
 
 So v1.6 can lift five of the eight at most, and three of those only on a
 chart whose note states the fact. The last three are the shape D107 says
@@ -380,9 +381,9 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.4 | sessions and intake, headless | US-12 | planned |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
-| v2.0 | the reviewer's UI over the session port | US-15 | planned |
-| v2.1 | the payer axis: national and regional coverage, and a floor that is checked | US-16 | planned |
-| v2.2 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
+| v2.0 | the payer axis: national and regional coverage | US-16 | planned |
+| v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
+| v2.2 | the reviewer's UI over the session port | US-15 | planned |
 
 **What v1.2 established, and why the rest of the roadmap depends on it.**
 The two rows that matter are in *What it measures* above; the point here is
@@ -396,7 +397,7 @@ closed set and a kind the engine lacks fails at load. **Unbuilt is not
 unclaimed:** a limit the tree declares is reviewed and reported as an
 abstention; a predicate nobody wrote may not borrow it *(REQ-57, REQ-58,
 D110)*. That is the property every version below rests on — v1.6 adds two
-more practices, and v2.2 adds a payer whose policy states the criteria
+more practices, and v2.1 adds a payer whose policy states the criteria
 Medicare never does.
 
 **Next is v1.3**, which leaves coverage rules alone and adds a second kind of

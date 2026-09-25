@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-68 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-98 plus T-126, T-127 and T-128, each with a runnable exit condition; T-99 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D122, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-98 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-99 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D125, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -696,14 +696,16 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**81 of 81 tasks closed, 0 open. All 10 gates green**
+**81 of 81 tasks closed, 1 open. All 10 gates green**
 (`check_gates.py`; the suite collects 1373 tests across 47 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
-IDs run to T-128 (T-126 through T-128 are off the path, above the roadmap's reservations), but
-numbering is not contiguous and D92 and D94 deleted six records between them,
-so the highest id is well above the count.
+IDs run to T-129 (T-126 through T-129 are off the path, above the roadmap's
+reservations), but numbering is not contiguous and D92 and D94 deleted six
+records between them, so the highest id is well above the count. **The open
+one is `T-129`** *(D124)* — the national floor checked at load, which closes
+before v1.6.
 
 **`T-127` and `T-128` are off the path** *(D120, D121)*. `T-127` re-read
 *Where this system degrades*: the eight unclaimed criteria sort three ways
@@ -752,10 +754,30 @@ tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **nothing on the board. v1, v1.1 and v1.2 are all complete** — A1–A10
+Open: **`T-129`, off the path. v1, v1.1 and v1.2 are all complete** — A1–A10
 all hold — and **`v1.3` is in progress**: `T-96` opened it, `T-97` closed
 row 2 and `T-98` closed row 3; **`T-99` is next** — `--suggest` on the CLI
-and A11's precision section.
+and A11's section, **both rewritten before the row opened** *(D123)*.
+
+**The plan was re-read whole on 2026-09-24, and three things moved**
+*(D123, D124, D125)*. **A11** borrowed A2's number without A2's asymmetry:
+it scored green, yellow and red on one scale, so a review colouring every
+candidate red would have cleared it while suggesting nothing, and its two
+data-bearing clauses would have closed on one green and no yellow — the
+shape `T-95` refused for A10, in the other direction. Precision is now gated
+on the colours that **assert**, red is reported beside an all-red baseline,
+the measured yellow is **A14's**, and `T-99` grades the seven candidates on
+the five charts no row touched — measured: 12 candidates on 9 of 14 bundles,
+5 of them graded — for zero new verifier claims, plus the answer for what
+`--suggest` emits when the request short-circuits and there is no tree.
+**`T-129`** takes the `national_floor` load check out of the payer round and
+ahead of v1.6, because v1.6's candidate NCD is nationally quantified and
+D112's premise — both trees declaring 35.0, the floor exactly — expires
+there. **The last three versions were reordered**: the reviewer's UI runs
+last, behind both engine rounds, since it renders every other version's
+output and both rounds that used to follow it change what it renders. Gates,
+stories and task ids stayed with their content, so A15 and `T-111`–`T-116`
+are still the UI's and §11's gate table reads A16, A17, A15.
 
 **`T-98` closed row 3** (D122): the review's one model turn exists, on
 every runner and both tiers. `pa_agent/quotes.py` is a fourth port in the
@@ -884,7 +906,7 @@ so it adds an extractor and leaves Python deciding. Claiming REQ-44 needs a
 predicate that cannot be compiled (the shape D97 rejected in Novitas's
 "diligent effort"), a stability mechanism satisfying **Article II's own test**,
 an oracle other than the deterministic path, and its own gate. None is met and
-nothing through v2.0 schedules one; the unclaimed set stays closed at two.
+nothing on the roadmap schedules one; the unclaimed set stays closed at two.
 
 T-90 (D106) took row 7: the whole corpus measured a second time
 on **Vertex** and committed beside the AI Studio recordings, which did not
@@ -900,12 +922,14 @@ are quoted.
 The §10 round was
 opened as "v2" and renamed v1.1 by D105, which also fixed the versions after
 it — v1.2 through v2.0, one story and one gate each — in spec §11, on the
-board's `Roadmap after v1.1`, and in stories F3–F6. **D112 added v2.1 and
-v2.2** after them: the payer axis (a request resolves by payer as well as by
-code and state, and `national_floor` stops being a citation nothing checks)
-and a **mimicked** commercial policy, synthesized and declared synthetic
-because a real one cannot be committed or re-fetched by a gate — which is what
-earns the predicate kinds Medicare's drug documents do not state *(D111)*.
+board's `Roadmap after v1.1`, and in stories F3–F6. **D112 added two more**
+after them: the payer axis (a request resolves by payer as well as by code
+and state) and a **mimicked** commercial policy, synthesized and declared
+synthetic because a real one cannot be committed or re-fetched by a gate —
+which is what earns the predicate kinds Medicare's drug documents do not
+state *(D111)*. **D125 then reordered the last three**, so v2.0 is the payer
+axis, v2.1 the commercial mimic and v2.2 the reviewer's UI; the floor check
+`national_floor` has never had is `T-129`'s, ahead of v1.6 *(D124)*.
 A version's REQ ids are
 minted when it opens, so the count below is unchanged. v1 and v1.1 are both
 complete — **A1–A9 all hold** — and spec §10's list of known limits, P1–P8,
