@@ -69,7 +69,11 @@
         "document_id": "ncd_100_1",
         "char_start": 5509,
         "char_end": 5705,
-        "quote": "are covered for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity."
+        "quote": "are covered for Medicare beneficiaries who have a body-mass index ≥ 35, have at least one co-morbidity related to obesity, and have been previously unsuccessful with medical treatment for obesity.",
+        "constant": "bmi_threshold",
+        "value": 35.0,
+        "comparison": "gte",
+        "note": "The same national sentence Noridian's tree cites, bounding Palmetto's own threshold (REQ-73, T-129, D130). L34576 states 35.0 and CMS states 35, so this holds at equality too, which is exactly why the relation could sit unasserted from T-01 to T-129 (D112, D124)."
       }
     },
     {

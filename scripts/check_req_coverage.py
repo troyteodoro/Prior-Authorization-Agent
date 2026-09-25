@@ -102,6 +102,9 @@ MAPPING: dict[str, str] = {
     "REQ-59": "tests/test_valueset_port.py",
     "REQ-60": "tests/test_infliximab_tree.py",
     "REQ-61": "tests/test_ultrasound_tree.py",
+    # T-129 (D130). The national floor: declared with its value and
+    # comparison, satisfied at load, and its value read out of its own quote.
+    "REQ-73": "tests/test_criteria_tree.py",
     # Verification
     "REQ-17": "tests/test_verifier.py",
     "REQ-18": "tests/test_verifier.py",

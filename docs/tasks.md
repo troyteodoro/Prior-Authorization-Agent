@@ -17,13 +17,13 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-129`, off the path, before v1.6 opens** *(D124)* — the
-national floor checked at load. D112 deferred the relation to the payer round
-on the ground that both committed trees declare 35.0, the floor exactly; v1.6's
-candidate NCD is nationally quantified, so the premise expires before that
-version opens and the check lands first. It is the only open row on this board.
-After it, **v1.5** — the form, the review log and simulated submission
-(`T-103`–`T-106`), which is the next version in `Roadmap after v1.1`.
+**What to do next: `v1.5`, row 1 — `T-103`** — the form, the review log and
+simulated submission (`T-103`–`T-106`), which is the next version in `Roadmap
+after v1.1`. **Nothing is open on this board.** `T-129` closed the last row off
+the path *(D130)*: the national floor is declared with its value and its
+comparison and checked where a tree loads, so v1.6's nationally quantified NCD
+arrives into an engine that can already refuse a MAC constant below its national
+bound.
 
 **`v1.4` is closed and A12 holds** *(T-102, D129)*. A determination is now
 something a specialist can come back to: `session create | list | show | run`
@@ -64,7 +64,13 @@ structural. It minted **REQ-69**, **REQ-70** and **REQ-71**. Two gates passed
 while the feature was wrong and both are fixed; `is_terminal()` is a function
 rather than a property because the property makes `contracts` import `session`
 and that cycle puts **every module in the package** inside the session plane.
-**`T-129` is still off the path** *(D124)*, due before v1.6 opens.
+**`T-129` closed off the path** *(D130)*: `national_floor` declares the
+constant it bounds, the value and the comparison, and a tree whose constant is
+looser than its national floor **fails to load** — the relation the field's name
+claimed from `T-01` and nothing asserted until here. It minted **REQ-73**. Both
+bariatric trees hold it at equality, so nothing moved, which is the point: the
+check landed while it was free and before the corpus that needs it arrives
+*(D124)*.
 **`T-99` closed row 4 and v1.3** *(D126)*: `--suggest` emits the
 `icd_suggestions` block beside verdicts that are byte-identical without it,
 a request no tree governs declines by name, and `eval/report.md` carries
@@ -175,11 +181,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Eighty-two tasks are on this board — IDs run to T-129; T-126 through T-129
+Eighty-six tasks are on this board — IDs run to T-129; T-126 through T-129
 are off the path and above the roadmap's reservations; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **81 are closed and 1 is open** — `T-129`, which
-closes before v1.6 *(D124)*. The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **All 86 are closed and none is open**; `T-132` below
+is numbered and has no record yet, in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -209,7 +215,8 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-128` | the README-structure test `T-126`'s exit named and no commit added: the diagram compared to `workflow.STEPS`, the resolver's result types, the three ports and the store adapters, every check refusing a mutant; zero model calls | after `T-127` *(D121)* |
 | `T-130` | `pa_agent/history.py`'s `review()` reads `medication.system or expansion.system` and **never binds `expansion`** — it is a local of `candidate_rows`. Verified by AST: bound in `candidate_rows`, used and unbound in `review`. `Medication.system` is `str \| None`, so an active prescription carrying no system raises `NameError` where the code means to fall back. Every committed bundle codes RxNorm, so nothing fires today and no behavioural test on this corpus can reach it | **discovered in `T-99`** — `--suggest` is what makes it reachable off-corpus, so it is numbered here and fixed in its own row *(working rule 6)* |
 | `T-131` | **A2's 0.90 threshold is printed and held by no command.** `eval/report.md` states it and `build_report.py --verify` only byte-compares a re-render, so a regeneration in which precision fell to 0.5 passes every gate. `T-99` gated A11's threshold with a test; A2's, A3's and A5's are still prose. T-95's finding about A10, in a third place | **discovered in `T-99`** — gating one threshold made the absence of the others legible; not folded in, because three gates acquiring commands is its own row |
-| `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **before v1.6 opens** *(D124)* |
+| `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **closed** (D130), before v1.6 opened |
+| `T-132` | **this board's own task count is a copy nothing re-derives.** `tests/test_docs_consistency.py` counts the closed-record headings and holds `README.md` and `CLAUDE.md` to them; the board's own prose — *"Eighty-two tasks are on this board … 81 are closed and 1 is open"* — was correct when D124 wrote it at `773c209` and was four closes stale by `T-129`, with every gate green. D108's own failure, on the document that **owns** the figure. Same class, found in the same pass: spec §11's opening line read *"v1.3 is in progress"* while its own table three lines below marked v1.3 and v1.4 closed | **discovered in `T-129`** — both stale figures are reconciled in that close under working rule 12; the missing check, over a document's prose against that document's own table, is its own row *(working rule 6)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -277,7 +284,8 @@ before, in D97's shape. Each version's scope and the requirements it mints
 are in spec §11; each closes on its story closing with every gate green.
 **D112 added the last two rows**, after T-92 established the two facts they
 rest on: the `(state, code)` collision recurs at the payer level, and
-`national_floor` asserts a relation nothing checks.
+`national_floor` asserted a relation nothing checked — which `T-129` took off
+this round and closed as REQ-73 *(D124, D130)*.
 
 | Version | Delivers | Story | Tasks | Model calls | Gate |
 |---|---|---|---|---|---|
@@ -392,16 +400,17 @@ Medicare and any commercial plan both bind 43775 in Alabama, and the binding
 index raises on the first such tree. **`national_floor` is no longer this
 round's** *(D124)*: D112 deferred the floor relation here because both
 committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is
-nationally quantified — so the premise expires before this version opens and
-`T-129` takes the check ahead of it. What stays here is the relation the
-check reads: a regional tree naming the national tree it operationalizes.
+nationally quantified — so the premise expired before this version opens and
+`T-129` took the check ahead of it, minting **REQ-73** *(D130)*. What stays
+here is the relation the check reads: a regional tree naming the national tree
+it operationalizes.
 **Zero model calls.**
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the payer on the tree and the request | `T-117` | pending | every loaded tree declares a payer; a tree that does not raises at load; every determination records it |
 | 2 | resolution by payer | `T-118` | pending | two payers binding one code in one state resolve to one tree each, neither by load order; an unserved payer is its own answer, distinct from an unserved state (REQ-55's shape) |
-| 3 | scope, and the national pairing | `T-119` | pending | every tree declares national or regional; a regional tree names the national tree it operationalizes, and a regional tree naming none raises at load. **The floor clause moved to `T-129`** *(D124)* — the constant-versus-floor comparison lands before v1.6, because a nationally quantified NCD is what makes it live |
+| 3 | scope, and the national pairing | `T-119` | pending | every tree declares national or regional; a regional tree names the national tree it operationalizes, and a regional tree naming none raises at load. **The floor clause moved to `T-129`** *(D124)* and closed there as REQ-73 *(D130)* — the constant-versus-floor comparison landed before v1.6, because a nationally quantified NCD is what makes it live |
 | 4 | the second payer's tree | `T-120` | pending | a second payer's tree loaded and resolved beside Medicare's; every eval row `PASS`; every gate green |
 
 ### v2.1 — A mimicked commercial policy *(D112, reordered by D125)*
@@ -2989,15 +2998,17 @@ reaches the planner, `extract` the extraction runner and `verify` the
 verifier. Deriving that means parsing `workflow.py`'s step bodies, and D121
 says why it is not earned; D117's reversal condition stands for it.
 
-### `[ ] T-129` The national floor, checked at load
+### `[x] T-129` The national floor, checked at load
 
-**REQ:** mints one — the floor relation, minted here because this close is
-what checks it *(D109)* · **Depends:** T-01, for the `national_floor` span
-both bariatric trees already carry · **Blocks:** v1.6, which is why it is
+**REQ:** mints one — **REQ-73**, the floor relation, minted here because this
+close is what checks it *(D109)* · **Depends:** T-01, for the `national_floor`
+span both bariatric trees already carry · **Blocks:** v1.6, which is why it is
 sequenced at all · **Discovered in:** the plan review of 2026-09-24 ·
-**Decided by:** D124 · **Gates:** none of its own; A16 keeps the payer half
-· **Timebox:** half a day
-**Status:** **open** — off the path, closing **before v1.6 opens**.
+**Decided by:** D124, built under D130 · **Gates:** none of its own; A16 keeps
+the payer half · **Timebox:** half a day
+**Status:** **closed** (D130) — off the path, closed **before v1.6 opened**;
+the exit ran green and every gate with it, and no verdict, span, recording,
+baseline or verifier claim moved.
 
 **Why it is its own task, and why now.** Working rule 6: discovered work is
 a new numbered task, never a clause folded into a reserved row's exit.
@@ -3046,6 +3057,43 @@ before trusting the result; the corpus-writing modes make that mandatory
 here as everywhere *(T-91, D119)*.
 
 **Zero model calls.** No recording, bundle, note or baseline is touched.
+
+**What it delivered** *(D130)*. `national_floor` is a `NationalFloor` —
+`CoverageClaim`'s shape, a span subclass — carrying the **constant** it bounds,
+the **value** and the **comparison**, all three required. A `Criterion` model
+validator raises on five things: a floor naming a constant the criterion does
+not declare, a floor over a provisional or non-numeric constant, a comparison
+that is not the bounded constant's or is one `FLOOR_DIRECTIONS` cannot read, a
+constant looser than the floor in the declared direction, and a floor whose
+value cannot be found in its own quote. That last one is the clause the shape
+exists for: defaulting it to satisfied is a floor every tree passes. The check
+runs at `model_validate`, which is what `LocalPolicyStore._load_trees` calls, so
+it is REQ-57's pattern and REQ-57's error idiom rather than a new exception.
+Both bariatric trees satisfy their floor at **equality**, so nothing moved.
+
+**The mutation pass: eleven mutations, zero survivors.** The record's two —
+`bmi_threshold` loosened to 30.0, and the comparison flipped on each tree in
+turn — both raise at load naming the constant, the floor and the direction. Nine
+more mutated the check itself: the relation inverted, the relation disabled, the
+quote-readability raise dropped, the comparison-equality raise dropped, the field
+retyped back to a bare `EvidenceSpan`, a default on `value`, an early return from
+the whole validator, and the unreadable-operator raise dropped. Each was caught
+by a named test in `tests/test_criteria_tree.py`. The tightest of them is the
+default on `value`: it survives a bare `pytest.raises(ValidationError)` because
+the quote check rejects `0.0` anyway, so the required-field test matches
+`Field required` instead.
+
+**What it deliberately did not do.** No floor on criterion (b), whose
+`min_comorbidity_count` the same NCD sentence also quantifies — the shape admits
+one per criterion and declaring it is a tree edit no row asked for. And no
+operator parsed out of prose: *"body-mass index ≥ 35"* carries its symbol and
+*"at least one co-morbidity"* does not, so the comparison is held against the
+bounded constant's instead, with the consequence stated in D130 rather than
+hidden — a tree that flips **both** comparisons satisfies the check at equality,
+which is a coherent tree misreading its document.
+
+**Found and not fixed:** `T-132`, below — this board's own prose task count is a
+copy nothing re-derives, and it has been four closes stale.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

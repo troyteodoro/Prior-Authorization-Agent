@@ -11471,3 +11471,140 @@ else under `pa_agent/` changes. **It mints no requirement** — its close *check
 REQ-69 through REQ-72 over the real verbs rather than over objects built in a
 test, which is `T-93` and `T-95`'s precedent and what D113 said a row minting
 nothing looks like.
+
+---
+
+## D130 — A national floor declares the constant it bounds, its value and its comparison; it is satisfied at load, and its value is read out of its own quote
+
+**Context.** `T-129`, off the path, closing before v1.6. D124 fixed *that* the
+floor relation is checked at load and *when* — ahead of v1.6, whose candidate
+NCD is nationally quantified and is therefore the first corpus that can produce
+a MAC constant sitting below its national bound. It fixed neither the
+declaration's shape, nor where the check runs, nor what it raises. Those three
+are this entry's, and a weak answer to any of them is a floor every tree passes.
+
+**Measured at open, and unchanged since D124 measured it.** `national_floor` is
+an `EvidenceSpan | None` on `Criterion`, read by exactly one test —
+`tests/test_criteria_tree.py::test_the_national_floor_is_cited_where_it_is_claimed`,
+which slices the span and asserts it cites the NCD. Nothing under `pa_agent/`
+reads the field. Both bariatric trees declare `bmi_threshold: 35.0` against a
+floor quoting *"body-mass index ≥ 35"*, so the relation holds at **equality** in
+the only two places it exists. That is why no behavioural test over this corpus
+can separate a working check from no check at all — D65's shape, and what let
+D112 defer it honestly.
+
+### Chosen — the floor is a `NationalFloor`: an `EvidenceSpan` carrying the constant it bounds, the value and the comparison
+
+`CoverageClaim`'s shape, one field over. A span subclass keeps the
+`(document_id, char_start, char_end, quote)` the floor already had, so the two
+committed files gain three keys rather than a new object, and every span rule
+already written applies unchanged. It adds:
+
+- `constant` — the criterion constant this floor bounds. **Required.** A floor
+  on a criterion is not a floor on a number: criterion (a) declares
+  `bmi_threshold` *and* `lookback_months`, and the NCD quantifies only the
+  first. A floor that did not name its constant would have to be matched by
+  guessing, and the guess that lands on "the first one" is D31's silent wrong
+  answer — a well-formed comparison against whichever number happened to be
+  there.
+- `value` — numeric. A floor is a bound and a bound is arithmetic; a national
+  requirement carrying no number is not a floor and has no direction anything
+  could be looser than.
+- `comparison` — one of the operators the checker can interpret, and required to
+  be **the same string the floored constant declares**.
+
+### Chosen — the check is a `Criterion` model validator, so it raises where a tree is loaded
+
+`CriteriaTree.model_validate_json` inside `LocalPolicyStore._load_trees` *is*
+the load, and `Criterion`'s own validators are already what a tree fails at:
+the `kind` validator's comment says so in as many words — *"An unknown name
+fails here, at `model_validate`, which is where a tree is loaded."* So this
+follows REQ-57's pattern and reuses its error idiom: a `ValueError` naming the
+criterion, the constant, its value, the floor and the direction, surfacing to a
+caller as pydantic's `ValidationError`. No new exception type, because the
+existing one already means *this tree does not load*.
+
+Four things raise, and the fourth is the one the shape exists for:
+
+1. a floor naming a constant the criterion does not declare, or one that is
+   provisional and therefore has no value to compare;
+2. a floor whose comparison is not the floored constant's, or is an operator
+   the checker cannot interpret;
+3. a constant **looser** than its floor, read in the shared operator's
+   direction — `gte`/`gt` means larger is stricter, `lte`/`lt` means smaller is;
+4. a floor whose `value` cannot be found in its own `quote`. **This one must
+   not default to satisfied.** A floor whose number came from memory rather
+   than from the sentence it cites is a floor every tree passes, and it passes
+   for D31's reason: the silent alternative is a well-formed answer every
+   downstream check agrees with. The value is therefore read out of the quote
+   mechanically, and the quote is held to the hashed document by the test that
+   has always held it.
+
+**Rejected — checking it in `eval/report.md`'s compatibility account.** D124
+refused this and the reason is worth restating: the report is generated from the
+trees the engine has already loaded, so a report that *notices* a looser
+constant is a report describing a tree the engine accepted. Article VII's claim
+is that the tree is the source of truth; a tree violating a floor it declares
+should not load.
+
+**Rejected — parsing the comparison out of the quote as well as the value.**
+*"body-mass index ≥ 35"* carries the symbol, so it looks free. *"at least one
+co-morbidity related to obesity"* does not, and the first floor over a counted
+constant would need the validator to read English — which is extraction's job
+and not a validator's, and Article II keeps arithmetic in code precisely by not
+asking code to read prose. The comparison is held mechanically against the
+constant's own instead, and a reviewer reads the operator beside the quote in
+one diff, which is Article VII's mechanism. **The consequence, stated rather
+than buried:** a tree that flips *both* the floor's and the constant's
+comparison satisfies the check at equality. That is a coherent tree misreading
+its document, and no check in this repo catches a misread document; what this
+check catches is a constant drifting from a floor the tree itself declares.
+
+**Rejected — a normalisation layer over comparison spellings.** The corpus
+already spells one operator two ways: `"gte"` in both bariatric trees, `">="`
+in the ultrasound tree's `min_months_since_prior_procedure`. Requiring the floor
+to spell it the way the constant it bounds spells it needs no map — both
+spellings sit in the direction table, string equality is required anyway, and a
+spelling the table does not carry raises instead of being normalised into a
+guess.
+
+**Rejected — declaring a second floor on criterion (b).** The cited NCD
+sentence also quantifies the comorbidity count, and `min_comorbidity_count: 1`
+would satisfy a floor of 1 at equality. Declaring it is a tree edit no task
+asked for (working rule 1), and the chosen shape admits it later with no
+change: the floor is singular **per criterion**, and criterion (b) is a
+different criterion.
+
+**Rejected — an AST check beside the behavioural ones.** D65's move applies when
+no input the corpus can produce separates the two behaviours. Here a
+hand-written `Criterion` is a legitimate input and separates them completely: a
+looser constant, a mismatched comparison, a floor naming an unknown constant and
+a floor whose value is absent from its quote each raise at construction, and
+construction is the load. Parsing `pa_agent/` for the comparison would grade the
+spelling of a check that a test can simply run.
+
+**Reverses if** a committed tree needs two floors on one criterion, or a floor
+over something that is not a number — a care setting the national document
+requires, a screen it names. The first widens the field to a list; the second is
+not a floor at all and wants its own relation. Either is a new entry.
+
+**On D124's own reversal clause.** It says the check's urgency is D124's rather
+than the corpus's if v1.6 opens with no nationally quantified NCD among its
+confirmed practices. v1.6 has not opened, so nothing has confirmed or refuted
+that yet; the check is correct and free either way, and this close does not
+claim the corpus forced it.
+
+**What it mints.** REQ-73, the floor relation — minted here because this close
+is what checks it (D109). **What does not move.** Both committed trees satisfy
+their floor at equality, so no verdict, span, recording, baseline or verifier
+claim changes. `get_policy_context` is built field by field and never carried
+the floor, so no prompt changes and D45 is not triggered. Nothing under
+`pa_agent/` outside `contracts.py` is edited.
+
+**Found and not fixed.** `docs/tasks.md`'s own prose — *"Eighty-two tasks are on
+this board … 81 are closed and 1 is open"* — was correct when D124 wrote it at
+`773c209` and has been stale through four closes since, because
+`tests/test_docs_consistency.py` re-derives that count for `README.md` and
+`CLAUDE.md` and not for the board that owns it. The figure is reconciled in this
+close under working rule 12; the missing check is `T-132`, numbered and not
+folded in (working rule 6).

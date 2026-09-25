@@ -28,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-72 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-73 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A12 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's and A12 v1.4's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-102 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-103 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D129, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-102 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-103 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, and T-132, which T-129 did *(D130)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D130, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -286,6 +286,13 @@ because no field the tree already carried could say that two bariatric trees
 under two contractors are one practice while Palmetto's rheumatology tree is
 not. It is deliberately absent from `get_policy_context`'s payload, which is
 built field by field so a new field cannot become a changed prompt (D45).
+**A criterion may also declare a `national_floor`** *(T-129, REQ-73, D130)* —
+the national document's own sentence, spanned, beside the **constant** it bounds,
+the **value** and the **comparison** — and a `Criterion` validator refuses at
+load any constant looser than its floor. Every constant in these trees is a
+MAC's, not CMS's *(D21)*, so a MAC may be stricter than the NCD it
+operationalizes and may never be looser. Both bariatric trees hold it at
+equality; the floor is not in the tool payload either.
 `reconcile.py`
 then runs REQ-34 across the structured and note BMIs. `aggregate.py` parses the
 policy's own `decision_expression` — parsed, never `eval()`'d and never
@@ -484,6 +491,18 @@ passing**, because the tests are written in terms of the thing that broke.
   not a tidy-up. That is why `infliximab-ra-jjm-v1` declares
   `min_comorbidity_count` for a criterion counting the patient's *indication*,
   with a note on the constant saying so.
+- **A tree compiling a national document declares its `national_floor` by hand,
+  and nothing derives which trees should** *(T-129, REQ-73, D130)*. The
+  relation itself cannot be broken quietly: a constant looser than its floor, a
+  comparison that is not the bounded constant's, a floor naming a constant the
+  criterion does not declare, and a floor whose value is absent from its own
+  quote each refuse the tree at `model_validate`. What cannot raise is a tree
+  that declares **no** floor — no field says a tree operationalizes an NCD, so
+  `tests/test_criteria_tree.py`'s `EXPECTED_FLOORS` asserts the two that exist
+  and a third tree omitting one passes every check in the repo. v2.0's
+  national/regional scope and its regional-to-national pairing (`T-119`) is what
+  would derive it; until then, a tree under a quantified NCD needs its floor
+  written, and the missing one is invisible.
 - **A criterion's arithmetic comes from its declared `kind`, never from its
   id** *(REQ-57, D110)*. Both trees letter their criteria `a`, `b`, `c1`…
   because NCD 100.1's MACs do, and coverage documents from other practices
@@ -697,16 +716,16 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**85 of 85 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1500 tests across 51 files, 58 of
+**86 of 86 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1518 tests across 51 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
 IDs run to T-129 (T-126 through T-129 are off the path, above the roadmap's
 reservations), but numbering is not contiguous and D92 and D94 deleted six
-records between them, so the highest id is well above the count. **The open
-one is `T-129`** *(D124)* — the national floor checked at load, which closes
-before v1.6.
+records between them, so the highest id is well above the count. **Nothing is
+open**; `T-130`, `T-131` and `T-132` are numbered with no record yet. **Next is
+v1.5, row 1 — `T-103`.**
 
 **`T-127` and `T-128` are off the path** *(D120, D121)*. `T-127` re-read
 *Where this system degrades*: the eight unclaimed criteria sort three ways
@@ -756,10 +775,22 @@ tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **`T-129` alone. v1, v1.1, v1.2, v1.3 and v1.4 are all complete** —
-**A1–A12 all hold**, and US-12 is delivered. Next is `T-129`, off the path and
-due before v1.6 *(D124)*; after it, **v1.5** — the form, the review log and
-simulated submission (`T-103`–`T-106`).
+Open: **nothing. v1, v1.1, v1.2, v1.3 and v1.4 are all complete** —
+**A1–A12 all hold**, and US-12 is delivered. Next is **v1.5** — the form, the
+review log and simulated submission (`T-103`–`T-106`).
+
+**`T-129` closed the last row off the path** *(D130)*: `national_floor` is a
+`NationalFloor` declaring the **constant** it bounds, its **value** and its
+**comparison** beside the span it has carried since T-01, and a `Criterion`
+validator refuses at load a constant looser than its floor, a comparison that
+is not the bounded constant's, a floor naming a constant the criterion does not
+declare, and a floor whose value cannot be read out of its own quote — that
+last one raising rather than defaulting to satisfied, because a floor nobody
+can recover from the corpus is a floor every tree passes (D31's shape). It
+minted **REQ-73**. Both bariatric trees hold it at **equality**, so no verdict,
+span, recording, baseline or verifier claim moved: the check landed while it was
+free and before v1.6's nationally quantified NCD arrives *(D124)*. Eleven
+mutations, zero survivors; the pass is in the task record.
 
 **`T-102` closed v1.4** *(D129)*: `session create | list | show | run`. The
 verbs dispatch on `argv[0]` **before** the bare parser is built, which is why
@@ -787,7 +818,7 @@ import cycle that makes every module reach the session plane. **`T-101` closed
 row 2** *(D128)*: `pa_agent/intake.py` takes JSON **text**, one
 `MalformedIntake` covers all five ways a request can be unusable, and
 **normalisation lives on the contract** so the two routes cannot diverge even
-in principle. `T-129` stays off the path, due before v1.6.
+in principle. `T-129` then closed the last row off the path *(D130)*.
 
 **The plan was re-read whole on 2026-09-24, and three things moved**
 *(D123, D124, D125)*. **A11** borrowed A2's number without A2's asymmetry:
@@ -800,10 +831,10 @@ the measured yellow is **A14's**, and `T-99` grades the seven candidates on
 the five charts no row touched — measured: 12 candidates on 9 of 14 bundles,
 5 of them graded — for zero new verifier claims, plus the answer for what
 `--suggest` emits when the request short-circuits and there is no tree.
-**`T-129`** takes the `national_floor` load check out of the payer round and
+**`T-129`** took the `national_floor` load check out of the payer round and
 ahead of v1.6, because v1.6's candidate NCD is nationally quantified and
 D112's premise — both trees declaring 35.0, the floor exactly — expires
-there. **The last three versions were reordered**: the reviewer's UI runs
+there; it closed with D130 and minted REQ-73. **The last three versions were reordered**: the reviewer's UI runs
 last, behind both engine rounds, since it renders every other version's
 output and both rounds that used to follow it change what it renders. Gates,
 stories and task ids stayed with their content, so A15 and `T-111`–`T-116`
@@ -959,7 +990,8 @@ synthetic because a real one cannot be committed or re-fetched by a gate —
 which is what earns the predicate kinds Medicare's drug documents do not
 state *(D111)*. **D125 then reordered the last three**, so v2.0 is the payer
 axis, v2.1 the commercial mimic and v2.2 the reviewer's UI; the floor check
-`national_floor` has never had is `T-129`'s, ahead of v1.6 *(D124)*.
+`national_floor` never had was `T-129`'s, closed ahead of v1.6 as REQ-73
+*(D124, D130)*.
 A version's REQ ids are
 minted when it opens, so the count below is unchanged. v1 and v1.1 are both
 complete — **A1–A9 all hold** — and spec §10's list of known limits, P1–P8,

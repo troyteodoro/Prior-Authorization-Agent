@@ -507,15 +507,15 @@ grant.
   national tree it operationalizes, and one naming none fails the load ·
   *(A16)*. The **floor comparison** over that pairing — a constant looser
   than the floor it cites failing the load, naming the constant, the floor
-  and the direction — is `T-129`'s and lands before v1.6, because a
-  nationally quantified NCD is what makes it live *(D124)*
+  and the direction — was `T-129`'s and landed before v1.6 as **REQ-73**,
+  because a nationally quantified NCD is what makes it live *(D124, D130)*
 - **Given** a determination **When** it is read **Then** it names the payer and
   the scope of the tree that produced it, so no figure is quoted as another
   payer's · *(A16)*
 
 **Covers:** A16
-**Ships:** resolution by payer, over the floor relation `T-129` checked
-first *(D112, D124)*.
+**Ships:** resolution by payer, over the floor relation `T-129` already
+checked *(D112, D124, D130)*.
 
 ---
 

@@ -395,6 +395,23 @@ frequency limit compiles as an interval and not as a count: *at most one a
 year* and *the last one was over a year ago* are the same arithmetic, and only
 the second has a span to cite when it passes (REQ-5). *(T-94, D40, D114)*
 
+**REQ-73** A criterion may declare a **national floor** on one of its
+constants: the national document's own sentence, spanned, beside the value and
+the comparison that sentence states. The regional constant must then **equal or
+tighten** that value in the declared direction and may never loosen it — every
+constant in this repo's trees comes from a MAC's article rather than from CMS
+*(D21)*, and a MAC may be stricter than the NCD it operationalizes and may not
+be more permissive. The relation is checked **where the tree loads**, and a tree
+whose constant is looser **fails to load**, naming the constant, its value, the
+floor and the direction; a report generated from the trees the engine accepted
+is too late. A floor names the constant it bounds, because a criterion declares
+several and the national document quantifies some of them; it is read in the
+operator the bounded constant itself declares, so no operator is parsed out of
+prose; and its value must be **readable out of its own quote**, which fails to
+load rather than defaulting to satisfied — a floor nobody can recover from the
+corpus is a floor every tree passes. *(Art. II, Art. VII; T-129, D112, D124,
+D130)*
+
 ### Verification
 
 **REQ-17** Each accepted verdict is checked by a verifier receiving only the
@@ -1028,7 +1045,8 @@ changed is that the replayed numbers are no longer from a single tier.
 ## 11. Versions after v1
 
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
-is closed, **v1.2 is closed** *(T-95, D116)*, and **v1.3 is in progress** *(T-96, T-97)*. This section fixes what
+is closed, and **v1.2, v1.3 and v1.4 are closed too** *(T-95/D116, T-99/D126,
+T-102/D129)*; **v1.5 is next**. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are
@@ -1401,10 +1419,10 @@ is the round that measures it.
 
 **Goal.** A request is `(payer, procedure code, state)`, and a regional tree
 declares the national tree it operationalizes *(D112)*. **The floor relation
-itself is `T-129`'s and closes before v1.6** *(D124)*: D112 deferred it here
-on the ground that both committed trees declare 35.0 — the floor exactly —
-and v1.6's candidate NCD is nationally quantified, so the premise expires
-one version before this one opens.
+itself was `T-129`'s and closed before v1.6, as REQ-73** *(D124, D130)*: D112
+deferred it here on the ground that both committed trees declare 35.0 — the
+floor exactly — and v1.6's candidate NCD is nationally quantified, so the
+premise expired one version before this one opens.
 
 **Why now and not sooner.** Resolution has widened once per round because a
 corpus forced it: by state at T-87, by state *and practice* at T-92, when
@@ -1421,7 +1439,7 @@ regional tree naming the national tree it sits under, which is the relation
 
 **Out of scope.** Any real commercial document (v2.1 says why none can be
 committed), plan-level variation below the regional tree, and the floor
-check itself, which `T-129` lands ahead of v1.6 *(D124)*.
+check itself, which `T-129` landed ahead of v1.6 as REQ-73 *(D124, D130)*.
 
 **Requirements it will mint.**
 
@@ -1429,13 +1447,14 @@ check itself, which `T-129` lands ahead of v1.6 *(D124)*.
   scope is national or regional; a request resolves by payer, code and state,
   and two payers binding one code in one state resolve to one tree each.
 - A regional tree declares the national tree it operationalizes. The floor
-  relation over that pairing is `T-129`'s statement, minted there *(D124)*.
+  relation over that pairing was `T-129`'s statement and is **REQ-73**, minted
+  there *(D124, D130)*.
 
 **Gate A16.** Every loaded tree declares a payer and a scope; every regional
 tree names the national tree it operationalizes; two payers binding one code
 in one state resolve to one tree each and neither by load order; every eval
-row `PASS`; zero model calls in any gate. *(The floor relation is `T-129`'s,
-D124.)*
+row `PASS`; zero model calls in any gate. *(The floor relation is REQ-73, closed by `T-129` —
+D124, D130.)*
 
 ### v2.1 — A mimicked commercial policy, and the criteria Medicare never states
 
@@ -1520,5 +1539,5 @@ logic in templates; every gate green with the app importable.
 | A13 | v1.5 | zero packets with an unjustified red suggestion; every packet citation valid; every outbox session `AWAITING_DECISION` |
 | A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors; **A11's yellow measured** — every yellow suggestion on the round's new notes carries a valid span and a verifier verdict *(D123)* |
 | A15 | v2.2 | every UI action maps to a CLI verb with identical output; zero logic in templates |
-| A16 | v2.0 | every tree declares a payer and a scope; two payers binding one code in one state resolve to one tree each, neither by load order *(the floor relation is `T-129`'s, D124)* |
+| A16 | v2.0 | every tree declares a payer and a scope; two payers binding one code in one state resolve to one tree each, neither by load order *(the floor relation is REQ-73, closed by `T-129` — D124, D130)* |
 | A17 | v2.1 | every criterion of the commercial tree evaluated by a declared kind or declared unclaimed; no citation resolves to the synthetic policy without the artifact naming it synthetic |

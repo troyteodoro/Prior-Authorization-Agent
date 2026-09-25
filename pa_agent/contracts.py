@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import date
 from enum import Enum
 from typing import Any, Literal
@@ -190,6 +191,111 @@ class PolicyConstant(BaseModel):
         return self
 
 
+#: The comparison operators a floor can be read in, and which way is *stricter*.
+#: `+1` means a larger constant is stricter — a BMI threshold of 40 admits fewer
+#: patients than one of 35 — and `-1` means a smaller one is. Both spellings the
+#: corpus uses are here (`"gte"` in the bariatric trees, `">="` in the ultrasound
+#: tree), because a floor must spell its operator the way the constant it bounds
+#: spells it and an operator absent from this table **raises** rather than being
+#: normalised into a guess (T-129, REQ-73, D130).
+FLOOR_DIRECTIONS: dict[str, int] = {
+    "gte": +1,
+    ">=": +1,
+    "gt": +1,
+    ">": +1,
+    "lte": -1,
+    "<=": -1,
+    "lt": -1,
+    "<": -1,
+}
+
+
+#: Numbers as a policy document writes them. Used only to read a declared floor
+#: back out of its own quote — never to read a *comparison* out of prose, which
+#: is extraction's job and not a validator's (D130).
+_NUMBER_IN_PROSE = re.compile(r"\d+(?:\.\d+)?")
+
+
+class NationalFloor(EvidenceSpan):
+    """A national bound a regional constant may equal or tighten, never loosen.
+
+    NCD 100.1 quantifies exactly one thing — *"a body-mass index ≥ 35"* — and
+    every constant in this repo's trees comes from a MAC's own article (D21). A
+    MAC may be stricter than CMS and may not be looser, so the tree carries the
+    national sentence beside the regional number and **the relation is checked
+    where the tree loads** (REQ-73, T-129, D130).
+
+    `CoverageClaim`'s shape, one field over: a span subclass, so the floor keeps
+    the `(document_id, char_start, char_end, quote)` it has carried since T-01
+    and every span rule already written applies to it unchanged.
+
+    Three fields make the relation checkable, and each is required for a reason
+    a default would hide:
+
+    - `constant` — the criterion constant this floor bounds. Criterion (a)
+      declares `bmi_threshold` *and* `lookback_months`, and the NCD quantifies
+      only the first; a floor that did not name its constant would be matched by
+      guessing, and the guess that lands on "the first one" compares cleanly
+      against whichever number happened to be there (D31).
+    - `value` — numeric, because a bound is arithmetic. A national requirement
+      carrying no number is not a floor and has no direction anything could be
+      looser than.
+    - `comparison` — the operator the relation is read in, required to be the
+      same string the floored constant declares.
+
+    The value is also required to appear in the floor's own `quote`, which the
+    hashed document is held to elsewhere. A floor whose number came from memory
+    rather than from the sentence it cites is a floor every tree passes.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The name of the criterion constant this floor bounds.
+    constant: str = Field(min_length=1)
+    #: The national bound itself. `float` covers the integer counts a national
+    #: document states too; a floor over something that is not a number is not a
+    #: floor, and wants its own relation (D130).
+    value: float
+    #: The operator, from `FLOOR_DIRECTIONS`, and the floored constant's own.
+    comparison: str = Field(min_length=1)
+    #: Why the floor reads the way it does, for a reviewer of the tree.
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def _the_value_is_readable_in_the_quote(self) -> NationalFloor:
+        """REQ-73's fourth raise, and the one that must not default to satisfied.
+
+        The quote is what the span slices to; the number is what the relation is
+        computed against. If the second cannot be found in the first, the floor
+        asserts a bound its own citation does not state — and a floor nobody can
+        read out of the corpus is a floor every tree passes (D31's shape, D130).
+        """
+        if self.comparison not in FLOOR_DIRECTIONS:
+            raise ValueError(
+                f"national floor into {self.document_id} declares comparison "
+                f"{self.comparison!r}, which is not one of "
+                f"{sorted(FLOOR_DIRECTIONS)}. An operator this check cannot read "
+                "is not normalised into a guess (REQ-73, D130)"
+            )
+        if self.quote is None:
+            raise ValueError(
+                f"national floor into {self.document_id} carries no quote; the "
+                "value it bounds is read out of the quote, and a floor with "
+                "nothing to read it from is satisfied by every tree (REQ-73, D130)"
+            )
+        stated = [float(token) for token in _NUMBER_IN_PROSE.findall(self.quote)]
+        if not any(number == self.value for number in stated):
+            raise ValueError(
+                f"national floor into {self.document_id} declares value "
+                f"{self.value}, and its own quote states {stated or 'no number'}: "
+                f"{self.quote!r}. A floor whose number is not in the sentence it "
+                "cites came from memory, and it would be satisfied by every tree "
+                "rather than by the document (REQ-73, D130)"
+            )
+        return self
+
+
+
 class PredicateKind(str, Enum):
     """What arithmetic a criterion is evaluated by — the engine's closed
     vocabulary (T-91, REQ-57, D110).
@@ -276,7 +382,11 @@ class Criterion(BaseModel):
     kind: PredicateKind | None = None
     constants: dict[str, PolicyConstant] = Field(default_factory=dict)
     scoped_to: str | None = None
-    national_floor: EvidenceSpan | None = None
+    #: The national bound this criterion's regional constant may equal or
+    #: tighten and never loosen, checked below at load (REQ-73, T-129, D130).
+    #: Singular **per criterion**: criterion (b) quantifies a different number
+    #: from the same NCD sentence and would declare its own.
+    national_floor: NationalFloor | None = None
     # Why a criterion is what it is — in practice, why it is unclaimed. Read by
     # a reviewer of the tree, never carried into a tool payload (D101).
     note: str | None = None
@@ -311,6 +421,73 @@ class Criterion(BaseModel):
                 f"{self.kind.value!r}. Unbuilt is not unclaimed: a criterion the "
                 "engine can evaluate is evaluated, and one it cannot is declared "
                 "unclaimed with a note, never both (REQ-57, REQ-58, D110)"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _a_declared_national_floor_is_satisfied(self) -> Criterion:
+        """T-129 (REQ-73, D130): a regional constant equals or tightens its floor.
+
+        Every constant in this repo's trees comes from a MAC's article and not
+        from CMS (D21), so this system determines coverage *as that MAC would* —
+        and a MAC may be stricter than the NCD it operationalizes and may not be
+        looser. The relation was declared by the field's name from T-01 and
+        asserted by nothing until here: both bariatric trees state 35.0, the
+        floor exactly, so a tree declaring 30.0 would have covered patients NCD
+        100.1 does not with all ten gates green (D112, D124).
+
+        It runs here because this is where a tree loads: `model_validate` is
+        what `LocalPolicyStore._load_trees` calls, which is REQ-57's pattern for
+        a criterion declaring a kind the engine lacks and the same error idiom.
+        A tree violating a floor it declares does not load, rather than loading
+        and being noticed later by something generated from it (D124).
+        """
+        floor = self.national_floor
+        if floor is None:
+            return self
+        try:
+            bounded = self.constants[floor.constant]
+        except KeyError:
+            raise ValueError(
+                f"criterion {self.id}: a national floor bounds constant "
+                f"{floor.constant!r}, which this criterion does not declare; it "
+                f"declares {sorted(self.constants)}. A floor that named no "
+                "constant would be matched by guessing (REQ-73, D130)"
+            ) from None
+        if bounded.provisional:
+            raise ValueError(
+                f"criterion {self.id}: a national floor bounds "
+                f"{floor.constant!r}, which is provisional pending open question "
+                f"{bounded.open_question} and carries no value. A floor over a "
+                "number nobody has settled cannot be satisfied or violated, and "
+                "treating it as satisfied is the silent pass (REQ-73, D130)"
+            )
+        if not isinstance(bounded.value, (int, float)) or isinstance(bounded.value, bool):
+            raise ValueError(
+                f"criterion {self.id}: a national floor bounds "
+                f"{floor.constant!r}, whose value {bounded.value!r} is not a "
+                "number. A floor is arithmetic; a national requirement that is "
+                "not a quantity is not a floor (REQ-73, D130)"
+            )
+        if bounded.comparison != floor.comparison:
+            raise ValueError(
+                f"criterion {self.id}: the national floor on {floor.constant!r} "
+                f"compares {floor.comparison!r} and the constant compares "
+                f"{bounded.comparison!r}. A floor is read in the operator the "
+                "constant it bounds declares, so the two spellings have to be "
+                "the same one — this check reads no operator out of prose "
+                "(REQ-73, D130)"
+            )
+        direction = FLOOR_DIRECTIONS[floor.comparison]
+        if direction * (float(bounded.value) - floor.value) < 0:
+            stricter = "at or above" if direction > 0 else "at or below"
+            raise ValueError(
+                f"criterion {self.id}: {floor.constant} is {bounded.value} and "
+                f"the national floor cited in {floor.document_id}"
+                f"[{floor.char_start}:{floor.char_end}] is {floor.value} "
+                f"({floor.comparison}), so the constant is looser than the floor. "
+                f"A regional constant is {stricter} its national bound — a MAC "
+                "may be stricter than CMS and never more permissive (REQ-73, D130)"
             )
         return self
 

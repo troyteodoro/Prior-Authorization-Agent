@@ -415,7 +415,12 @@ def test_the_contracts_still_import_no_model_and_no_store() -> None:
             imported.update(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module)
-    assert imported == {"__future__", "hashlib", "json", "datetime", "enum", "typing", "pydantic"}, (
+    # `re` since T-129 (D130): `NationalFloor` reads its declared value back out
+    # of its own quote, which is a string search over a span this module already
+    # carries. Still no storage and no credential, which is what the set is for.
+    assert imported == {
+        "__future__", "hashlib", "json", "re", "datetime", "enum", "typing", "pydantic",
+    }, (
         f"contracts.py imports {sorted(imported)}; a store or a model client "
         "here would put storage and a credential in the vocabulary layer "
         "(REQ-41)"

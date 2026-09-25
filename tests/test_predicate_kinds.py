@@ -296,6 +296,14 @@ def test_a_criterion_lettered_a_is_evaluated_by_the_kind_it_declares():
     a, c1 = _criterion(raw, "a"), _criterion(raw, "c1")
     a["kind"], c1["kind"] = c1["kind"], a["kind"]
     a["constants"], c1["constants"] = c1["constants"], a["constants"]
+    # The national floor bounds a *constant* (T-129, REQ-73, D130), so it travels
+    # with the constants: the BMI threshold is `c1`'s in this tree, and a floor
+    # left behind on `a` names a constant `a` no longer declares — which is the
+    # load raise doing its job on a swap that forgot half of itself.
+    a["national_floor"], c1["national_floor"] = (
+        c1.get("national_floor"),
+        a.get("national_floor"),
+    )
     tree = CriteriaTree.model_validate(raw)
 
     assert [c.id for c in _declared(tree, OBSERVATION_KINDS)] == ["c1"]

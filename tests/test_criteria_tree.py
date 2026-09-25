@@ -16,12 +16,14 @@ from __future__ import annotations
 
 import json
 import re
+import tempfile
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
-from pa_agent.contracts import CriteriaTree
+from pa_agent.contracts import FLOOR_DIRECTIONS, CriteriaTree
+from pa_agent.stores.policy import LocalPolicyStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TREE_PATH = REPO_ROOT / "data" / "policies" / "ncd_100_1_jf.json"
@@ -592,6 +594,262 @@ def test_the_national_floor_is_cited_where_it_is_claimed(
     assert floor["document_id"] == "ncd_100_1", (
         "the national floor must cite the NCD; A53028 is one MAC's article (D21)"
     )
+    # T-129 (REQ-73, D130): the value the relation is computed against is read
+    # out of the **document**, not out of the tree. The contract reads it out of
+    # the quote at load; this closes the chain by reading it out of the hashed
+    # bytes the span points at, which is the half no validator can see.
+    sliced = text[floor["char_start"] : floor["char_end"]]
+    assert str(int(floor["value"])) in sliced or str(floor["value"]) in sliced, (
+        f"the floor declares {floor['value']} and the sentence it cites in "
+        f"{floor['document_id']} does not state it: {sliced!r}"
+    )
+
+
+# --------------------------------------------------------------------------
+# The national floor is a relation, and it is checked where the tree loads
+# (T-129, REQ-73, D130)
+# --------------------------------------------------------------------------
+
+#: Every `(policy_version_id, criterion_id)` that declares a floor. Asserted
+#: rather than discovered, like `TREE_PATHS` and `EXPECTED_CRITERIA_BY_TREE`
+#: above: a floor deleted from a tree would make every check below vacuous and
+#: nothing else in the suite would notice, and a floor *added* is a relation a
+#: reviewer should see in the diff. L35677 and L35755 operate under no NCD, so
+#: their trees declare none (D111, D114).
+EXPECTED_FLOORS = {
+    ("ncd-100.1-jf-v1", "a"),
+    ("ncd-100.1-jjm-v1", "a"),
+}
+
+
+def _floor_criterion(raw: dict) -> dict:
+    """The one criterion in `raw` that declares a floor."""
+    declaring = [c for c in raw["criteria"] if c.get("national_floor")]
+    assert len(declaring) == 1, f"expected one floor, found {len(declaring)}"
+    return declaring[0]
+
+
+def _jf_tree_with(mutate) -> dict:
+    """Noridian's tree, parsed fresh, with `mutate` applied to it."""
+    raw = json.loads(TREE_PATH.read_text(encoding="utf-8"))
+    mutate(raw, _floor_criterion(raw))
+    return raw
+
+
+def test_the_trees_declaring_a_national_floor_are_the_expected_ones():
+    """Non-vacuity, first. Every check below is over a declared floor, so a
+    corpus that declared none would pass all of them saying nothing."""
+    found = {
+        (tree_id, criterion["id"])
+        for tree_id, path in TREE_PATHS.items()
+        for criterion in json.loads(path.read_text(encoding="utf-8"))["criteria"]
+        if criterion.get("national_floor")
+    }
+    assert found == EXPECTED_FLOORS
+
+
+def test_every_declared_floor_is_satisfied_by_the_constant_it_bounds():
+    """The relation itself, over the corpus as committed.
+
+    Both trees hold it at **equality** — 35.0 against CMS's 35 — which is the
+    whole reason it could be declared from T-01 and asserted by nothing until
+    T-129 (D112, D124). This test is therefore the weakest one in the section:
+    it says the corpus is clean, and every test after it says the check works.
+    """
+    checked = 0
+    for tree_id, path in TREE_PATHS.items():
+        tree = CriteriaTree.model_validate_json(path.read_text(encoding="utf-8"))
+        for criterion in tree.criteria:
+            floor = criterion.national_floor
+            if floor is None:
+                continue
+            bounded = criterion.constant(floor.constant)
+            direction = FLOOR_DIRECTIONS[floor.comparison]
+            assert direction * (float(bounded.value) - floor.value) >= 0, (
+                f"{tree_id}.{criterion.id}: {floor.constant} is {bounded.value} "
+                f"against a national floor of {floor.value} ({floor.comparison})"
+            )
+            assert bounded.comparison == floor.comparison
+            checked += 1
+    assert checked == len(EXPECTED_FLOORS)
+
+
+def test_a_constant_looser_than_its_national_floor_fails_to_load():
+    """The defect the whole task exists for. `bmi_threshold: 30.0` under a
+    national floor of 35 covers patients NCD 100.1 does not, and before T-129
+    all ten gates stayed green on it (D124)."""
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["constants"]["bmi_threshold"].update(value=30.0)
+    )
+    with pytest.raises(ValidationError, match="looser than the floor"):
+        CriteriaTree.model_validate(raw)
+
+
+def test_a_constant_stricter_than_its_national_floor_loads():
+    """Both directions are the requirement: *equal or stricter*. A check that
+    refused 40.0 would forbid a MAC from being more demanding than CMS, which
+    is the thing a MAC is allowed to be."""
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["constants"]["bmi_threshold"].update(value=40.0)
+    )
+    tree = CriteriaTree.model_validate(raw)
+    assert tree.criterion("a").require("bmi_threshold") == 40.0
+
+
+def test_a_looser_constant_raises_through_the_store_that_loads_the_tree():
+    """*At load* means at load. The relation is checked by a `Criterion`
+    validator, and `LocalPolicyStore._load_trees` is the caller that reaches
+    it — so a looser tree dropped into a policy root never becomes a
+    `CriteriaTree` at all, let alone a determination."""
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["constants"]["bmi_threshold"].update(value=30.0)
+    )
+    with tempfile.TemporaryDirectory() as root:
+        path = Path(root) / "ncd_100_1_jf.json"
+        path.write_text(json.dumps(raw), encoding="utf-8")
+        store = LocalPolicyStore(Path(root))
+        with pytest.raises(ValidationError, match="looser than the floor"):
+            store.get_tree("ncd-100.1-jf-v1")
+
+
+@pytest.mark.parametrize("flipped", ["floor", "constant"])
+def test_a_floor_comparing_the_other_way_from_its_constant_fails_to_load(flipped):
+    """The mutation the task record names, and the one equality hides.
+
+    At 35.0 against 35.0 the numeric relation holds in **either** direction, so
+    a flipped operator cannot be caught by arithmetic on this corpus. It is
+    caught by requiring the floor to be read in the operator the constant it
+    bounds declares — which is also why the check reads no operator out of
+    prose (D130).
+    """
+    def mutate(tree, criterion):
+        if flipped == "floor":
+            criterion["national_floor"]["comparison"] = "lte"
+        else:
+            criterion["constants"]["bmi_threshold"]["comparison"] = "lte"
+
+    with pytest.raises(ValidationError, match="read in the operator"):
+        CriteriaTree.model_validate(_jf_tree_with(mutate))
+
+
+def test_a_floor_whose_value_is_not_in_its_own_quote_fails_to_load():
+    """D31's shape, and the clause the record insists on: a floor nobody can
+    read out of the corpus **raises**, rather than defaulting to satisfied. A
+    floor of 30 beside a sentence stating 35 would be satisfied by every tree
+    this repo will ever hold."""
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["national_floor"].update(value=30.0)
+    )
+    with pytest.raises(ValidationError, match="came from memory"):
+        CriteriaTree.model_validate(raw)
+
+
+def test_a_floor_with_no_quote_to_read_fails_to_load():
+    """Same clause, one step earlier. The quote is where the value is read
+    from, so a floor without one has nothing to be checked against."""
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["national_floor"].pop("quote")
+    )
+    with pytest.raises(ValidationError, match="carries no quote"):
+        CriteriaTree.model_validate(raw)
+
+
+@pytest.mark.parametrize("field", ["constant", "value", "comparison"])
+def test_a_floor_omitting_any_of_the_three_new_fields_fails_to_load(field):
+    """None of them may default. A floor that could omit its value and still
+    load is the silent pass wearing the shape of a partial declaration —
+    `national_floor` was a bare span for twelve tasks and that is exactly what
+    it was (D124).
+
+    `Field required` and not merely `ValidationError`: a default on `value` that
+    the quote check happened to reject downstream would still raise, and the
+    claim here is that the field is **required**, not that something eventually
+    complains.
+    """
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["national_floor"].pop(field)
+    )
+    with pytest.raises(ValidationError, match="Field required"):
+        CriteriaTree.model_validate(raw)
+
+
+def test_a_floor_naming_a_constant_the_criterion_does_not_declare_fails_to_load():
+    """Criterion (a) declares `bmi_threshold` and `lookback_months`, and the NCD
+    quantifies only the first. A floor that did not name its constant would be
+    matched by guessing, and the guess that lands on "the first one" compares
+    cleanly against whichever number happened to be there (D31, D130)."""
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["national_floor"].update(constant="bmi_ceiling")
+    )
+    with pytest.raises(ValidationError, match="which this criterion does not declare"):
+        CriteriaTree.model_validate(raw)
+
+
+def test_a_floor_over_a_constant_that_declares_no_comparison_fails_to_load():
+    """The other half of naming the constant. `lookback_months` is a decided
+    window with no operator on it (D40), so pointing the floor at it leaves the
+    direction to be supplied by the checker — and a direction the tree did not
+    state is a direction nobody reviewed."""
+    raw = _jf_tree_with(
+        lambda tree, criterion: criterion["national_floor"].update(constant="lookback_months")
+    )
+    with pytest.raises(ValidationError, match="the constant compares None"):
+        CriteriaTree.model_validate(raw)
+
+
+def test_a_floor_in_an_operator_the_engine_cannot_read_fails_to_load():
+    """`FLOOR_DIRECTIONS` is the closed vocabulary, and a spelling outside it
+    raises instead of being normalised into a guess. `"at_least"` reads
+    unambiguously to a person and has no direction to this check."""
+    def mutate(tree, criterion):
+        criterion["national_floor"]["comparison"] = "at_least"
+        criterion["constants"]["bmi_threshold"]["comparison"] = "at_least"
+
+    with pytest.raises(ValidationError, match="not normalised into a guess"):
+        CriteriaTree.model_validate(_jf_tree_with(mutate))
+
+
+def test_a_floor_over_a_provisional_constant_fails_to_load():
+    """A provisional constant carries no value (D23), so the relation has
+    nothing to compute. Reading that as satisfied is the silent pass; the tree
+    does not load until the question is closed."""
+    def mutate(tree, criterion):
+        criterion["national_floor"]["constant"] = "lookback_months"
+        criterion["constants"]["lookback_months"] = {
+            "type": "integer_months",
+            "provisional": True,
+            "open_question": 4,
+            "comparison": "gte",
+        }
+
+    with pytest.raises(ValidationError, match="provisional pending open question"):
+        CriteriaTree.model_validate(_jf_tree_with(mutate))
+
+
+def test_both_comparison_spellings_the_corpus_uses_are_readable():
+    """The corpus spells one operator two ways — `"gte"` in the bariatric trees
+    and `">="` in the ultrasound tree's `min_months_since_prior_procedure` — so
+    the table carries both and a floor over either constant needs no code
+    change. Re-derived from the files rather than listed, so a third spelling
+    is this test's failure and not a surprise at v1.6."""
+    spellings = {
+        body["comparison"]
+        for path in TREE_PATHS.values()
+        for name, body in _all_constants(json.loads(path.read_text(encoding="utf-8")))
+        if isinstance(body, dict) and body.get("comparison")
+    }
+    assert spellings, "no constant in the corpus declares a comparison any more"
+    unreadable = sorted(spellings - set(FLOOR_DIRECTIONS))
+    assert not unreadable, (
+        f"constants in the corpus compare {unreadable}, which FLOOR_DIRECTIONS "
+        "cannot read; a floor over one of them would raise at load"
+    )
+
+
+def test_every_direction_in_the_table_is_a_sign():
+    """`FLOOR_DIRECTIONS` is multiplied by a difference, so a value that is not
+    ±1 would scale the comparison instead of orienting it."""
+    assert set(FLOOR_DIRECTIONS.values()) == {+1, -1}
 
 
 # --------------------------------------------------------------------------
