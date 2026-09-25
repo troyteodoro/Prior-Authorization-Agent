@@ -17,29 +17,27 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-99`, row 4 of `v1.3` in `Roadmap after v1.1` below** —
-the CLI surface: `--suggest` emits the `icd_suggestions` block beside the
-verdicts, which are unchanged, and A11's section lands in `eval/report.md`.
-**Its exit and A11 were both rewritten before the row opened** *(D123)*. A11
-borrowed A2's number without A2's asymmetry — it scored green, yellow and red
-on one scale, so a review that coloured every candidate red would have cleared
-it while suggesting nothing — and its two data-bearing clauses would have
-closed on one green and no yellow at all. Precision is now gated on the
-colours that **assert**, red is reported beside an all-red baseline, the
-measured yellow is named as **A14's** rather than passing because its set is
-empty, and the row grades the seven candidates on the five charts no row
-touched, for zero new verifier claims. The exit also settles what `--suggest`
-emits when the request short-circuits and there is no tree to review under: a
-declared reason, never an empty list.
-**Then `T-129`, off the path, before v1.6 opens** *(D124)* — the national
-floor checked at load. D112 deferred the relation to the payer round because
-both committed trees declare 35.0, the floor exactly; v1.6's candidate NCD is
-nationally quantified, so the premise expires four versions early.
-**The last three versions were reordered** *(D125)*: the reviewer's UI runs
-last, behind both engine rounds, because it is the only version that renders
-every other version's output and both of the rounds that used to follow it
-change what it renders. Gates, stories and task ids stayed with their
-content.
+**What to do next: `T-129`, off the path, before v1.6 opens** *(D124)* — the
+national floor checked at load. Then `v1.4` opens with `T-100`.
+**`T-99` closed row 4 and v1.3** *(D126)*: `--suggest` emits the
+`icd_suggestions` block beside verdicts that are byte-identical without it,
+a request no tree governs declines by name, and `eval/report.md` carries
+A11's section — precision **1.000 over n = 1** on the colours that assert,
+with the all-red baseline rendered as having **no denominator** rather than
+a score. `H5`–`H9` took the graded candidate count from 5 to **12 of 12**,
+every one derived from the bundles and the table before any run. **A11
+holds; v1, v1.1, v1.2 and v1.3 are all complete.**
+**Two things it found.** D123's clause 4 named `NOT_COVERED` among the
+results with no tree; both short circuits fire *after* a tree is resolved, so
+that determination reviews like any other chart. D126 carries the correction
+and `H8` holds it. And the **adversarial half of the mutation pass caught two
+gates that could pass wrongly**: scoring precision over all three colours
+rendered the same 1.000 (5/5 against 1/1, the rate identical and only the
+denominator different), and a hardcoded corpus count matched today's 12. Both
+now have tests that perturb the input and require the output to follow.
+**`T-130` and `T-131` are on the board** *(working rule 6)* — a `NameError`
+in `history.review`'s unbound `expansion`, unreachable on this corpus, and
+A2's threshold being printed and held by no command.
 **`T-98` closed row 3** *(D122)*: the review's model turn, on every runner
 and both tiers. `pa_agent/quotes.py` is a fourth port in the first three's
 shape and `history.run_review` consults it once per note for every table
@@ -163,6 +161,8 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-126` | the README restructured behind a checked architecture diagram; no version needs it, and its id sits above the roadmap's reservations, which run to T-125 | after `T-95` *(D117)* |
 | `T-127` | *Where this system degrades* re-read: the unclaimed criteria sorted three ways, corpus growth assigned to v1.6's round, Palmetto's `d` note corrected to D107, the measured yellow's deferral recorded — documents only, zero model calls | after `T-97` *(D120)* |
 | `T-128` | the README-structure test `T-126`'s exit named and no commit added: the diagram compared to `workflow.STEPS`, the resolver's result types, the three ports and the store adapters, every check refusing a mutant; zero model calls | after `T-127` *(D121)* |
+| `T-130` | `pa_agent/history.py`'s `review()` reads `medication.system or expansion.system` and **never binds `expansion`** — it is a local of `candidate_rows`. Verified by AST: bound in `candidate_rows`, used and unbound in `review`. `Medication.system` is `str \| None`, so an active prescription carrying no system raises `NameError` where the code means to fall back. Every committed bundle codes RxNorm, so nothing fires today and no behavioural test on this corpus can reach it | **discovered in `T-99`** — `--suggest` is what makes it reachable off-corpus, so it is numbered here and fixed in its own row *(working rule 6)* |
+| `T-131` | **A2's 0.90 threshold is printed and held by no command.** `eval/report.md` states it and `build_report.py --verify` only byte-compares a re-render, so a regeneration in which precision fell to 0.5 passes every gate. `T-99` gated A11's threshold with a test; A2's, A3's and A5's are still prose. T-95's finding about A10, in a third place | **discovered in `T-99`** — gating one threshold made the absence of the others legible; not folded in, because three gates acquiring commands is its own row |
 | `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **before v1.6 opens** *(D124)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
@@ -237,7 +237,7 @@ rest on: the `(state, code)` collision recurs at the payer level, and
 |---|---|---|---|---|---|
 | v1.1 | spec §10 P1–P8 — `Path to v1.1` above · **closed** | — | T-85–T-90 | the Vertex round | A1–A9 ✓ |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
-| v1.3 | medical-history review: ICD suggestions with evidence · **in progress** | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
@@ -284,7 +284,7 @@ table; the tri-state is Python; the model quotes the note and nothing else.
 | 1 | the knowledge table and its sources | `T-96` | **closed** (D118) | every row of `medication_effects.json` names a source `verify_sources.py --offline` covers; a row without one fails a test. **Five rows, not the six planned**: warfarin's label states no hypotension and clopidogrel's states aplastic anemia, so §11's anticoagulant example is written against **apixaban** *(D118)* |
 | 2 | deterministic candidates and the tri-state | `T-97` | **closed** (D119) | `history.py` and the knowledge port; eval rows `H1`–`H3` — green via a structured signal, **silent because the chart already codes the condition**, red with nothing; `run_eval.py` green. **Rewritten at open** from "eval rows E14–E16 … yellow via a note quote": a yellow is a model measurement and belongs to row 3, and no chart in the corpus could produce a green without declared data *(D119)*. Ids are `H`-prefixed because these rows are outside §6, as NP1, J1, RA1–RA3 and US1–US4 are |
 | 3 | note quotes, recorded and anchored | `T-98` | **closed** (D122) | recording committed on both tiers, every quote anchored or recorded as refused, the model turn counted; the eval row `H4`, on `bc6748d3` — the one note-bearing chart carrying a table drug with no structured signal, which `history.py` raises on today — **red with the quotes consulted**, the recording being the proof the model looked; **zero new verifier claims**, because a red cites nothing; every gate green. **Rewritten before open** from "gains row 2's yellow … verifier claims added and re-measured": no committed note mentions a table drug, and a note edit re-measures six extraction recordings, so the measured yellow is `T-110`'s *(D120)* |
-| 4 | the CLI surface and A11's section | `T-99` | pending | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; on a **short-circuited** request — `NOT_COVERED`, `NO_POLICY_FOUND`, `NO_JURISDICTION_TREE` — the block carries a declared *no governing tree* reason and **never an empty suggestion list**; `eval/report.md` carries A11's section as D123 rewrote it, precision gated on green and yellow with red reported beside the all-red baseline; the seven ungraded candidates on `49092fd9`, `a8edc52e`, `53126ee7`, `915602a8` and `7acd0453` get review labels, so 12 of 12 are graded for zero new verifier claims; README paragraph; every gate green. **Rewritten before open** *(D123)*: A11 borrowed A2's number without A2's asymmetry, its gated direction held one datapoint and its yellow clause had nothing to check |
+| 4 | the CLI surface and A11's section | `T-99` | **closed** (D126) | `--suggest` emits the `icd_suggestions` block beside the verdicts, which are unchanged; on a request **no tree governs** — `NO_POLICY_FOUND` and `NO_JURISDICTION_TREE`, the two results that are not `Determination`s — the block carries a declared *no governing tree* reason and **never an empty suggestion list**; a `NOT_COVERED` determination carries a tree and **reviews normally**, which is D123's clause 4 corrected by measurement *(D126)*; `eval/report.md` carries A11's section as D123 rewrote it, precision gated on green and yellow with red reported beside the all-red baseline; the seven ungraded candidates on `49092fd9`, `a8edc52e`, `53126ee7`, `915602a8` and `7acd0453` get review labels, so 12 of 12 are graded for zero new verifier claims; README paragraph; every gate green. **Rewritten before open** *(D123)*: A11 borrowed A2's number without A2's asymmetry, its gated direction held one datapoint and its yellow clause had nothing to check |
 
 ### v1.4 — Sessions and intake, headless
 
@@ -2516,6 +2516,57 @@ restored from git and `select_patients.py --verify` run before the exit.
 
 **What it mints.** REQ-67 and REQ-68, the last two of v1.3's statements
 *(D109, D122)*.
+
+### `[x] T-99` The CLI surface and A11's section
+
+**REQ:** none — D123 rewrote a gate rather than minting a statement; REQ-63
+through REQ-68 already state the review's requirements *(D109's rule read the
+other way)* · **Depends:** T-96, T-97, T-98 · **Blocks:** — ·
+**Decided by:** D126, under D123 · **Gates:** A11 (fourth of four rows, and
+the version) · **Timebox:** one day
+**Status:** **closed** (D126) — opened and closed 2026-09-25; the exit ran
+green and every gate with it. Row 4 of `v1.3`, as D123 rewrote it before the
+row opened, **and the version**: A11 holds and US-11 is delivered. No
+recording, bundle, note or verifier claim was touched and no model was
+called; `eval/cases.json` gained five rows, `eval/baseline.json` and
+`eval/report.md` were regenerated.
+
+**What it found, and what it cost.** D123's clause 4 named `NOT_COVERED` in
+the decline set and that is **wrong**: both short circuits fire after a tree
+is resolved, so a non-covered determination carries its `policy_version_id`
+and reviews like any other chart. D123 had reasoned from `E2`'s eval label,
+whose `expect` omits the key. The correction is D126's — the log is
+append-only — and `H8` is the row that holds it. The decline set is the two
+results that are not `Determination`s at all.
+
+**Five rows, not five labels.** The brief said the labels ride on existing
+rows and the set stays at 28. That contradicts how `H2`, `H3` and `H4` were
+written: an `H` row is its own row sharing a cached determination (D75). So
+`H5`–`H9` are new rows, the set is **33**, and A5 moved 0.429 → 0.424 on a
+denominator five rows larger. A2 and A6 did not move: the new rows carry no
+`criteria` labels and add no determination.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_determination.py tests/test_history.py \
+      tests/test_quotes.py tests/test_planes.py tests/test_build_report.py \
+      tests/test_docs_consistency.py tests/test_adk_agent.py -q --color=no \
+ && ./venv/bin/python -m pa_agent.cli --patient 455d3f7d-3b99-dad6-c0b2-d5405144e793 --procedure 93975 --suggest \
+ && ./venv/bin/python -m pa_agent.cli --patient 49092fd9-d5bf-24e2-474b-00041a279a47 --procedure 43644 --suggest \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: `--suggest` emits the `icd_suggestions` block beside verdicts
+that are byte-identical to the run without it; a short-circuited request emits
+the block **declining by name** and never an empty suggestion list; the review
+spends zero model calls on every chart the CLI can be given, because every
+committed note is in T-98's recording; `eval/report.md` carries A11's section
+with precision gated on the colours that assert and red reported beside the
+all-red baseline; and the seven ungraded candidates on five charts carry
+review labels, so 12 of 12 are graded.
 
 ---
 

@@ -730,6 +730,132 @@
         ],
         "withheld": []
       }
+    },
+    {
+      "case_id": "H5",
+      "story": "US-11",
+      "spec_ref": "REQ-63, REQ-64, REQ-65, REQ-66; outside §6 (D123)",
+      "description": "The second note-consulting review: a candidate the chart already codes",
+      "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "E7's chart and E7's determination, shared from the cache (D75); this row labels only the review. Derived from the bundle and the table, not from a run: the chart carries an active lisinopril order and codes two of the five SNOMED concepts the row declares as already-carrying the condition (431855005, 431856006), so the candidate is withheld ALREADY_CODED citing them -- and never red, because red means nothing on the chart and this chart answers (REQ-65, D119). It is the second note-bearing review row after H4: two notes are consulted through RecordedQuoteRunner for two turns, because run_review asks every note about every table row whenever the chart has a candidate at all, and the withhold is decided before any quote is read. Zero suggestions is the claim; the withheld list is what makes it mean something.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "max_model_calls": 4,
+        "max_review_model_calls": 2,
+        "suggestions": [],
+        "withheld": [
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "reason": "ALREADY_CODED"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "H6",
+      "story": "US-11",
+      "spec_ref": "REQ-63, REQ-64, REQ-65, REQ-66; outside §6 (D123)",
+      "description": "A table drug whose analyte the chart never measured: the red suggestion",
+      "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
+      "procedure_code": "43775",
+      "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
+      "note": "E12's chart and E12's determination, shared from the cache (D75); this row labels only the review. Derived from the bundle and the table: an active hydrochlorothiazide order makes the row a candidate, the chart codes none of the SNOMED concepts that would mean hyperglycemia is already carried, and it holds no glucose observation at all -- zero readings of LOINC 2345-7 anywhere. Nothing supports the condition and nothing refutes it, so Python colours it red and the suggestion cites nothing. Red is honest here with no quote source because E12's chart is note-free by declaration (T-41, D73): there is no note to read, so this is the chart saying nothing rather than the system not looking (D90). would_affect is empty: no value set ncd-100.1-jf-v1 names admits 80394007.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "max_model_calls": 2,
+        "max_review_model_calls": 0,
+        "suggestions": [
+          {
+            "row_id": "hydrochlorothiazide-hyperglycemia",
+            "code": "R73.9",
+            "colour": "red",
+            "would_affect": []
+          }
+        ],
+        "withheld": []
+      }
+    },
+    {
+      "case_id": "H7",
+      "story": "US-11",
+      "spec_ref": "REQ-63, REQ-64, REQ-65, REQ-66; outside §6 (D123)",
+      "description": "Both withhold reasons on one chart, under the third practice's tree",
+      "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
+      "procedure_code": "93975",
+      "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+      "note": "US3's chart and US3's determination, shared from the cache (D75); this row labels only the review. Derived from the bundle and the table: hydrochlorothiazide is a candidate whose analyte the chart measured 67 times, topping out at 98.74 mg/dL against the row's declared threshold of 126 -- the chart measured the thing and answered no, which is withheld SIGNAL_NOT_CROSSED and not red (REQ-64, D119). Lisinopril is a candidate the chart already codes, four of the five declared SNOMED concepts, so it is withheld ALREADY_CODED. Zero suggestions, two withheld, sorted by row_id as score compares them. The chart is note-free, so no quote source is consulted and none is needed.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+        "max_model_calls": 1,
+        "max_review_model_calls": 0,
+        "suggestions": [],
+        "withheld": [
+          {
+            "row_id": "hydrochlorothiazide-hyperglycemia",
+            "reason": "SIGNAL_NOT_CROSSED"
+          },
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "reason": "ALREADY_CODED"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "H8",
+      "story": "US-11",
+      "spec_ref": "REQ-63, REQ-64, REQ-65, REQ-66; outside §6 (D123)",
+      "description": "A review beside a NOT_COVERED determination: the tree is there, so the review runs",
+      "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
+      "procedure_code": "J1745",
+      "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
+      "note": "RA2's chart and RA2's determination, shared from the cache (D75); this row labels only the review, and it is the row that settles D123's clause 4. A NOT_COVERED determination carries a policy_version_id -- both short circuits fire after a tree is resolved (determination.py:147 and :181) -- so the review runs like any other chart and would_affect has value sets to test membership in. D123 said NOT_COVERED declines the block; that was inferred from E2's label omitting the key rather than from the object, and D126 corrects it by measurement. Derived from the bundle and the table: an active methotrexate order, no neutrophil count anywhere, no condition coding drug-induced neutropenia, so the colour is red and the suggestion cites nothing. The chart is note-free (RA1's reason), so red is honest with no quote source. would_affect is empty: no value set infliximab-ra-jjm-v1 names admits 47318007.",
+      "expect": {
+        "outcome": "NOT_COVERED",
+        "policy_version_id": "infliximab-ra-jjm-v1",
+        "max_model_calls": 0,
+        "max_review_model_calls": 0,
+        "suggestions": [
+          {
+            "row_id": "methotrexate-neutropenia",
+            "code": "D70.2",
+            "colour": "red",
+            "would_affect": []
+          }
+        ],
+        "withheld": []
+      }
+    },
+    {
+      "case_id": "H9",
+      "story": "US-11",
+      "spec_ref": "REQ-63, REQ-64, REQ-65, REQ-66; outside §6 (D123)",
+      "description": "The same two withholds on a second chart of the third practice's cohort",
+      "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
+      "procedure_code": "93975",
+      "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
+      "note": "US2's chart and US2's determination, shared from the cache (D75), which is why this row carries US2's own as_of: the cache key is (patient, procedure, as_of, state) and a row that omitted it would compute a second determination rather than share one. This row labels only the review. Derived from the bundle and the table, identically to H7 and on a different chart: hydrochlorothiazide measured 67 times, topping out at 98.74 against 126, withheld SIGNAL_NOT_CROSSED; lisinopril already coded four ways, withheld ALREADY_CODED. Two charts of one cohort answering the same way is what makes the withheld list a measurement rather than a coincidence.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "policy_version_id": "us-abdominal-visceral-j5-j8-v1",
+        "max_model_calls": 2,
+        "max_review_model_calls": 0,
+        "suggestions": [],
+        "withheld": [
+          {
+            "row_id": "hydrochlorothiazide-hyperglycemia",
+            "reason": "SIGNAL_NOT_CROSSED"
+          },
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "reason": "ALREADY_CODED"
+          }
+        ]
+      },
+      "as_of": "2026-09-01"
     }
   ]
 }

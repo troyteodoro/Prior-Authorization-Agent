@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-68 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-98 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-99 through T-125 are reserved rows whose records are written when they open. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D125, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-99 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-100 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D126, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -696,8 +696,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**81 of 81 tasks closed, 1 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1373 tests across 47 files, 58 of
+**82 of 82 tasks closed, 1 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1393 tests across 47 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -722,11 +722,12 @@ A1–A10 all hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.
-The eval set is full (T-21, D75): `eval/cases.json` holds twenty-eight labeled
+The eval set is full (T-21, D75): `eval/cases.json` holds 33 labeled
 rows — spec §6's fifteen plus `NP1`, the `NO_POLICY_FOUND` row outside §6,
 `J1`, the second-jurisdiction row *(D102)*, `RA1`–`RA3`, the second
-practice's *(D113)*, `US1`–`US4`, the third's *(D114)*, and `H1`–`H4`, the
-medical-history review's *(D119, D122)* — all `PASS`,
+practice's *(D113)*, `US1`–`US4`, the third's *(D114)*, and `H1`–`H9`, the
+medical-history review's — `H5`–`H9` added by T-99 so every candidate the
+knowledge table finds is graded *(D119, D122, D123)* — all `PASS`,
 criterion-scoped,
 with every cited span validated by the scorer (A3). Case rows may carry their own
 `as_of`, and E2's does: sc2 fires only for nationally covered codes on
@@ -747,17 +748,18 @@ D78's substance. US-7's measurements are in `eval/report.md`
 (T-22, T-28, D85), generated and gate-verified: **A2 precision 1.000 on `MET`
 against a 0.420 base rate** (the always-`MET` baseline scores exactly the base
 rate, which is the comparison A2 asks for), **A3 zero invalid `MET` spans over
-104 checked**, **A5 abstention 0.429** with the per-`gap_reason` account, its
+104 checked**, **A5 abstention 0.424** with the per-`gap_reason` account, its
 per-tree split of the declared-unclaimed abstentions *(D113)* and D82's
 tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 52.4s across seventeen determinations** — replayed instrumentation, not the
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **`T-129`, off the path. v1, v1.1 and v1.2 are all complete** — A1–A10
-all hold — and **`v1.3` is in progress**: `T-96` opened it, `T-97` closed
-row 2 and `T-98` closed row 3; **`T-99` is next** — `--suggest` on the CLI
-and A11's section, **both rewritten before the row opened** *(D123)*.
+Open: **`T-129`, off the path. v1, v1.1, v1.2 and v1.3 are all complete** —
+A1–A11 all hold. **`T-99` closed v1.3** *(D126)*: `--suggest` emits the
+`icd_suggestions` block beside verdicts byte-identical without it, a request
+no tree governs declines by name, and `eval/report.md` carries A11's
+section. Next is `T-129`, then `v1.4` opens with `T-100`.
 
 **The plan was re-read whole on 2026-09-24, and three things moved**
 *(D123, D124, D125)*. **A11** borrowed A2's number without A2's asymmetry:
@@ -1214,7 +1216,7 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 28 labeled rows (§6's 15 + NP1 + J1 +
+  cases.json         the eval set — 33 labeled rows (§6's 15 + NP1 + J1 +
                      RA1-RA3 + US1-US4 + H1-H4; D75, D102, D104, D113,
                      D114, D119, D122)
   baseline.json      what run_eval.py diffs against

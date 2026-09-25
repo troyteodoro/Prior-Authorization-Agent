@@ -714,28 +714,51 @@ def test_no_suggestion_reaches_a_determination():
         ], f"{module}.py imports the review; a suggestion enters no verdict"
 
 
-def test_the_cli_emits_no_suggestions_block_at_this_close():
-    """Working rule 1: `--suggest` is T-99's, and this row must not build ahead.
+def test_the_cli_emits_the_suggestions_block_through_the_shared_predicate():
+    """T-97's build-ahead guard, inverted by the row it was guarding for.
 
-    Structural rather than a subprocess: the CLI does not import the review and
-    names no suggestion key, so there is no path by which a determination printed
-    today could carry one.
+    Until `T-99` this asserted `cli.py` named no `--suggest` and imported no
+    review, because building it early would have been working rule 1 broken.
+    `T-99` is that row, so the assertion becomes its positive: the surface
+    exists, and it decides whether to review through `history.review_scope`
+    rather than through a second reading of which results carry a tree (D126).
+
+    Kept as a test rather than deleted: the thing worth holding is that there
+    is exactly one predicate, and that is the half a behavioural test on this
+    corpus cannot catch (D65's shape).
     """
     source = (PACKAGE / "cli.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
+    # Both spellings: `import pa_agent.history` puts the name on the alias,
+    # and `from pa_agent import history` puts it on the alias too while the
+    # module reads `pa_agent`. Collecting only `node.module` misses the second,
+    # which is the one this file uses.
     imported = {
         node.module
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom) and node.module
     } | {
-        alias.name for node in ast.walk(tree) if isinstance(node, ast.Import)
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.Import, ast.ImportFrom))
         for alias in node.names
     }
-    assert not any("history" in name for name in imported), (
-        "cli.py imports the review; the --suggest surface is T-99's"
+    assert any("history" in name for name in imported), (
+        "cli.py no longer reaches the review; --suggest is T-99's surface"
     )
-    assert "icd_suggestions" not in source and "--suggest" not in source, (
-        "cli.py names the suggestion surface T-99 has not built yet"
+    assert "--suggest" in source and "icd_suggestions" in source
+
+    scope_calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "review_scope"
+    ]
+    assert scope_calls, (
+        "cli.py decides whether a tree governs without asking "
+        "history.review_scope; a second reading can disagree with the "
+        "harness about one chart (D126)"
     )
 
 
@@ -1092,3 +1115,69 @@ def test_the_declared_constant_every_criterion_names_its_value_set_in_is_the_tre
         f"only {named} committed criteria name {history.VALUE_SET_CONSTANT!r}; "
         "would_affect compares against nothing"
     )
+
+
+# --------------------------------------------------------------------------
+# `review_scope` — the one predicate both consumers ask (T-99, D126)
+# --------------------------------------------------------------------------
+
+
+def test_review_scope_answers_none_only_for_a_result_with_no_tree():
+    """D126's correction of D123, at unit level.
+
+    `NoPolicyResult` and `NoJurisdictionResult` carry no `policy_version_id`
+    and nothing reviews under them. A `NOT_COVERED` determination **does**
+    carry one — both short circuits fire after a tree is resolved — so it
+    reviews like any other chart. D123 named `NOT_COVERED` in the decline set;
+    it was inferred from an eval label omitting the key rather than from the
+    object.
+    """
+    from pa_agent.determination import NoJurisdictionResult, NoPolicyResult
+
+    assert history.review_scope(NoPolicyResult(procedure_code="99213")) is None
+    assert (
+        history.review_scope(
+            NoJurisdictionResult(
+                procedure_code="43775", state="TX", known_states=("AL",)
+            )
+        )
+        is None
+    )
+
+    class _NotCovered:
+        policy_version_id = "ncd-100.1-jf-v1"
+
+    assert history.review_scope(_NotCovered()) == "ncd-100.1-jf-v1"
+
+
+def test_review_scope_treats_an_empty_version_as_no_tree():
+    """An empty string is not a policy version, and `""` is the well-formed
+    value a half-built result would carry (D31's shape)."""
+
+    class _Blank:
+        policy_version_id = ""
+
+    assert history.review_scope(_Blank()) is None
+    assert history.review_scope(object()) is None
+
+
+def test_history_never_imports_a_store_or_the_determination_module():
+    """`review_scope` is duck-typed so this module stays out of the closure
+    that reaches both planes (Article VI, D126).
+
+    `tests/test_planes.py` walks imports with `ast` and counts
+    `if TYPE_CHECKING` blocks too, so a typed import to name the result types
+    would fail the exact-set assertion there. Asserted here as well, because
+    the failure there names a set rather than this reason.
+    """
+    import ast
+
+    source = (REPO_ROOT / "pa_agent" / "history.py").read_text(encoding="utf-8")
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            assert not node.module.startswith("pa_agent.stores"), node.module
+            assert node.module != "pa_agent.determination", node.module
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                assert not alias.name.startswith("pa_agent.stores"), alias.name
+                assert alias.name != "pa_agent.determination", alias.name

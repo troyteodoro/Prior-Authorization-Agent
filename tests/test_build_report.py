@@ -15,6 +15,7 @@ from __future__ import annotations
 import ast
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -210,7 +211,7 @@ def test_only_labeled_pairs_are_scored(script):
     rest would need a ground truth that does not exist."""
     cases = json.loads((REPO_ROOT / "eval" / "cases.json").read_text())["cases"]
     labeled = sum(len((c.get("expect") or {}).get("criteria") or {}) for c in cases)
-    results, cache = script._run(
+    results, cache, _reviews = script._run(
         __import__("pa_agent.stores.policy", fromlist=["LocalPolicyStore"]).LocalPolicyStore()
     )
     pairs = script._criterion_pairs(results, cache)
@@ -331,7 +332,7 @@ def _stubbed_recall(script, tmp_path, monkeypatch, mutate):
 
     from pa_agent.stores.policy import LocalPolicyStore
 
-    _results, cache = script._run(LocalPolicyStore())
+    _results, cache, _reviews = script._run(LocalPolicyStore())
     text = "\n".join(script._recall_section(cache))
     return text.split("| **all**")[1].split("\n")[0]
 
@@ -1126,3 +1127,291 @@ def test_the_cost_section_states_its_scope(script):
     text = "\n".join(script._cost_section([], {}))
     assert "**Scope.** These totals are determination cost only." in text
     assert "Quote consultation" in text
+
+
+# --------------------------------------------------------------------------
+# A11's section (T-99, D123, D126)
+#
+# The adversarial half: each of these tries to make the section pass while
+# describing a system that is wrong. A gate that only goes red when the
+# implementation is broken is half a gate (T-95's finding about A10, D91's
+# about the agentic recording's free half).
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def suggestion_text(script):
+    return REPORT.read_text(encoding="utf-8")
+
+
+def _suggestion_section(text: str) -> str:
+    start = text.index("## Suggestion precision")
+    return text[start : text.index("\n## ", start + 1)]
+
+
+def test_a11_renders_its_denominator_beside_its_figure(suggestion_text):
+    """A precision with no `n` is the figure D123 rewrote this gate to refuse.
+
+    1.000 over one datapoint clears 0.90 and establishes almost nothing, so
+    the denominator is not an optional detail of the rendering — it is the
+    thing that makes the figure readable. Asserted on the *rendered* text
+    because that is what a reviewer reads.
+    """
+    section = _suggestion_section(suggestion_text)
+    assert re.search(r"\*\*Precision on green and yellow\*\* \| \*\*\d+/\d+ = ", section), (
+        "the precision row no longer prints correct/total beside the rate"
+    )
+    assert re.search(r"Measured: \*\*[\d.]+\*\* over \*\*n = \d+\*\*", section), (
+        "the threshold sentence no longer names its n"
+    )
+    assert "Read the denominator before the figure." in section
+
+
+def test_a11s_trivial_baseline_cannot_be_read_as_a_pass(suggestion_text):
+    """The all-red review has no precision, and the section must say so.
+
+    A review that colours every candidate red emits no green and no yellow,
+    so its precision has an empty denominator. Rendering that as `n/a` — or
+    omitting the row — reads as *the baseline was beaten*, when what happened
+    is that the baseline declined to play. The row says **no denominator**
+    and the recall row carries the 0.000 that makes it legible.
+    """
+    section = _suggestion_section(suggestion_text)
+    assert "| Precision of a trivial all-red review | **no denominator**" in section
+    assert re.search(r"Recall of green-and-yellow, all-red review \| 0/\d+ = 0\.000", section)
+    assert "the baseline declined to play" in section
+    baseline_row = [
+        line for line in section.splitlines()
+        if "trivial all-red review" in line
+    ]
+    assert baseline_row and "n/a" not in baseline_row[0], (
+        "the baseline's precision renders as `n/a`, which a reader takes for a "
+        "score; it has no denominator and the row must say that"
+    )
+
+
+def test_a11s_graded_count_is_derived_from_the_corpus(script):
+    """`12 of 12` is two derivations, not a literal.
+
+    A hardcoded count keeps passing after a table row or a bundle is added,
+    which is the whole shape of this failure. `_corpus_candidates` walks the
+    manifest and the knowledge table; the graded figure walks the reviews the
+    harness produced. This asserts they are computed, by moving one and
+    watching the other stay put.
+    """
+    corpus = script._corpus_candidates()
+    assert corpus > 0
+    # Same walk, one bundle short: the derived figure must follow the corpus.
+    manifest = json.loads(
+        (REPO_ROOT / "data" / "patients" / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert len(manifest["bundles"]) > 1
+    section = _suggestion_section(REPORT.read_text(encoding="utf-8"))
+    assert f"finds **{corpus}** candidates" in section, (
+        "the rendered corpus count is not the one `_corpus_candidates` derives"
+    )
+    assert f"grades **{corpus}** of them" in section, (
+        "the graded count no longer equals the corpus count; if that is real, "
+        "the section says so in prose and this test should read the new shape"
+    )
+
+
+def test_a11_reports_red_and_gates_only_the_asserting_colours(suggestion_text):
+    """D123's central clause, in the rendering.
+
+    Red is the abstention. It is counted and shown per row, and it is not in
+    the gated denominator — a review that coloured everything red would have
+    no precision at all rather than a perfect one.
+    """
+    section = _suggestion_section(suggestion_text)
+    assert re.search(r"Suggestions emitted \| \d+ \(\d+ green, \d+ yellow, \d+ red\)", section)
+    assert "Scoring an assertion and an abstention on one scale rewards a review" in section
+
+
+def test_a11_names_the_yellow_clause_as_a14s(suggestion_text):
+    """Clause 3 says whose the measured figure is rather than passing empty."""
+    section = _suggestion_section(suggestion_text)
+    assert "**A14's**" in section and "T-110" in section
+
+
+def test_the_suggestion_section_sits_outside_every_heading_slice(suggestion_text):
+    """The splice point, held by a test rather than by a comment.
+
+    `test_the_recall_section_*` slices `## Planner recall` → `## Cost and
+    latency` and asserts a phrase A11's section also uses. Several other tests
+    slice between two headings the same way. This asserts A11 sits in the one
+    gap none of them spans, so a future reordering that breaks that is red
+    here rather than mysteriously red there.
+    """
+    text = suggestion_text
+    assert text.index("## Cost and latency") < text.index("## Suggestion precision")
+    assert text.index("## Suggestion precision") < text.index("## Cross-practice compatibility")
+    recall = text[text.index("## Planner recall") : text.index("## Cost and latency")]
+    assert "Suggestion precision" not in recall
+
+
+def test_a11s_threshold_is_held_by_this_command_not_only_printed(script):
+    """A11's gate, as a gate (D123: every clause held by a command).
+
+    `--verify` byte-compares a re-render, so it catches *drift* and not a bad
+    number: regenerate with precision at 0.5 and the report is internally
+    coherent and every gate stays green. This recomputes the figure from the
+    reviews the harness produced and asserts the bar.
+
+    A2's, A3's and A5's thresholds are still printed and held by nothing —
+    that is `T-131`, recorded on the board rather than folded in here.
+    """
+    _results, _cache, reviews = script._run(LocalPolicyStore())
+    labels = script._labels()
+
+    labelled = {}
+    for case_id, case in labels.items():
+        for entry in case["expect"].get("suggestions") or []:
+            labelled[(case_id, entry["row_id"])] = entry["colour"]
+
+    asserting = 0
+    correct = 0
+    for case_id, run in reviews.items():
+        for suggestion in run.review.suggestions:
+            if suggestion.colour.value not in ("green", "yellow"):
+                continue
+            asserting += 1
+            if labelled.get((case_id, suggestion.row_id)) == suggestion.colour.value:
+                correct += 1
+
+    assert asserting > 0, (
+        "no suggestion asserts, so A11's gated direction has no denominator; "
+        "if the corpus really produces none, this test states the new shape"
+    )
+    precision = correct / asserting
+    assert precision >= 0.90, (
+        f"A11: precision on green and yellow is {precision:.3f} over "
+        f"n = {asserting}; the threshold is A2's 0.90"
+    )
+
+
+def test_a11s_every_suggestion_traces_to_a_knowledge_table_row(script):
+    """A11's second clause: zero suggestions without a source row (REQ-63)."""
+    from pa_agent.stores.knowledge import LocalKnowledgeStore
+
+    _results, _cache, reviews = script._run(LocalPolicyStore())
+    rows = {row.row_id for row in LocalKnowledgeStore().get_medication_effect_rows()}
+    assert rows
+
+    seen = 0
+    for run in reviews.values():
+        for suggestion in run.review.suggestions:
+            seen += 1
+            assert suggestion.row_id in rows, (
+                f"suggestion {suggestion.row_id} resolves to no table row"
+            )
+            assert suggestion.effect.document_id, "a suggestion with no effect span"
+    assert seen, "no suggestion was graded; the clause would pass empty"
+
+
+def test_a11s_third_clause_has_no_yellow_to_measure_and_says_whose_it_is(script):
+    """Clause 3, held as the *absence* it is rather than passing silently.
+
+    No committed note produces a yellow. That makes "zero yellow without a
+    valid span" vacuously true, which is exactly what D123 rewrote A11 to
+    stop happening quietly — so this asserts the set is empty **and** that
+    the report names A14 as the owner of the measured figure. When `T-110`
+    produces one, this test goes red and is rewritten to measure it.
+    """
+    _results, _cache, reviews = script._run(LocalPolicyStore())
+    yellows = [
+        suggestion
+        for run in reviews.values()
+        for suggestion in run.review.suggestions
+        if suggestion.colour.value == "yellow"
+    ]
+    assert not yellows, (
+        "a committed chart now produces a yellow; A11 clause 3 stops being a "
+        "unit-level claim and this test measures the span instead (T-110)"
+    )
+    section = REPORT.read_text(encoding="utf-8")
+    assert "**A14's**" in section
+
+
+def test_a11s_gated_denominator_is_the_asserting_suggestions_and_no_others(script):
+    """The mutation that survived the first pass (T-99's close).
+
+    Computing A11's precision over **all three colours** — D123's explicitly
+    rejected alternative — passed every other test in this file. On this
+    corpus both readings render **1.000**: asserting-only is 1/1 and
+    all-colours is 5/5, because every red is also correctly labelled. The
+    *rate* cannot tell them apart; only the **denominator** can.
+
+    So the denominator is the assertion. It must equal the number of green
+    and yellow suggestions the harness produced, counted here from the
+    reviews rather than read from the prose.
+    """
+    _results, _cache, reviews = script._run(LocalPolicyStore())
+
+    asserting = sum(
+        1
+        for run in reviews.values()
+        for suggestion in run.review.suggestions
+        if suggestion.colour.value in ("green", "yellow")
+    )
+    emitted = sum(len(run.review.suggestions) for run in reviews.values())
+    assert asserting < emitted, (
+        "every suggestion asserts, so this corpus can no longer tell an "
+        "asserting-only denominator from an all-colours one; the mutation "
+        "this test exists for is undetectable again and needs a new grip"
+    )
+
+    section = _suggestion_section(REPORT.read_text(encoding="utf-8"))
+    row = next(
+        line for line in section.splitlines()
+        if "**Precision on green and yellow**" in line
+    )
+    match = re.search(r"\*\*(\d+)/(\d+) = ", row)
+    assert match, f"the precision row no longer prints correct/total: {row}"
+    assert int(match.group(2)) == asserting, (
+        f"A11's precision row has denominator {match.group(2)}; the harness "
+        f"produced {asserting} asserting suggestions and {emitted} in total. "
+        "A denominator of the total means precision is being scored over red "
+        "as well, which is the alternative D123 rejected — it rewards a "
+        "review that colours everything red."
+    )
+    threshold = next(
+        line for line in section.splitlines() if "over **n =" in line
+    )
+    assert f"n = {asserting}**" in threshold, (
+        "the threshold sentence's n disagrees with the precision row's "
+        "denominator"
+    )
+
+
+def test_a11s_corpus_count_follows_the_table_rather_than_being_a_literal(script, monkeypatch):
+    """The second mutation that survived (T-99's close).
+
+    Replacing `_corpus_candidates()` with the literal `12` passed every test,
+    because 12 is what the corpus holds today. A literal keeps passing until
+    a table row or a bundle is added, and then reports a stale number with
+    every gate green — the exact shape D91 found in the agentic recording's
+    free half.
+
+    So the assertion perturbs the input: drop one row from the knowledge
+    table and the derived count must move. A literal cannot.
+    """
+    from pa_agent.stores.knowledge import LocalKnowledgeStore
+
+    before = script._corpus_candidates()
+    assert before > 0
+
+    real = LocalKnowledgeStore.get_medication_effect_rows
+    dropped = "lisinopril-renal-impairment"
+
+    def fewer_rows(self):
+        return [row for row in real(self) if row.row_id != dropped]
+
+    monkeypatch.setattr(LocalKnowledgeStore, "get_medication_effect_rows", fewer_rows)
+    after = script._corpus_candidates()
+
+    assert after < before, (
+        f"the corpus candidate count stayed {before} with the "
+        f"{dropped!r} row removed from the table; it is a literal, not a "
+        "derivation, and it will keep passing after the corpus grows"
+    )

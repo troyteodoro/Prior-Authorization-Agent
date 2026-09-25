@@ -701,6 +701,7 @@ def run_case(
     verifier: Any = None,
     knowledge_store: Any = None,
     quote_runner: Any = None,
+    reviews: dict[str, Any] | None = None,
 ) -> CaseResult:
     """Run one labeled case and classify the result.
 
@@ -747,7 +748,11 @@ def run_case(
     if (
         knowledge_store is not None
         and case.get("patient_id")
-        and not isinstance(result, NoPolicyResult)
+        # One predicate, shared with `pa_agent/cli.py` (D126): a result that
+        # carries no tree has nothing to review under, and it is narrower than
+        # `NoPolicyResult` — `NoJurisdictionResult` is its sibling, and a
+        # `NOT_COVERED` determination carries a tree and reviews like any other.
+        and history.review_scope(result) is not None
         and _labels_a_review(case)
     ):
         try:
@@ -756,6 +761,14 @@ def run_case(
                 quote_runner, verifier,
             )
             review = review_run.review
+            # An out-parameter beside `cache`, and for the same reason (D126):
+            # `eval/build_report.py` grades colours against labels, so it needs
+            # *the* review this row was scored against. Re-deriving it there
+            # would be a second code path free to disagree with this one —
+            # D91's failure, where a free half drifted because nothing
+            # re-derived it.
+            if reviews is not None:
+                reviews[case_id] = review_run
         except Exception as exc:  # noqa: BLE001 — same rule as the handler above
             detail = "".join(
                 traceback.format_exception_only(type(exc), exc)

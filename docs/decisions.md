@@ -10929,3 +10929,143 @@ six records out of the middle.
 which point the UI moves back and the cost is the revisit this entry
 avoids — which should be paid knowingly, in a new entry, rather than
 discovered.
+
+---
+
+## D126 — `--suggest` replays, declines by name on a short circuit, and A11 scores the colour that asserts
+
+**Context.** `T-99`, row 4 of v1.3 and the version's last. D123 rewrote both
+the row's exit and gate A11 before the row opened; this entry is the design
+that implements them, and it adds nothing D123 did not already decide except
+the three mechanical choices below, each of which had a plausible wrong answer.
+
+### Chosen — `--suggest` consults the recorded quote runner, and cannot miss
+
+The flag constructs `LocalKnowledgeStore()` in the composition root beside the
+two stores already there (REQ-41), and a `RecordedQuoteRunner` over
+`eval/history/results.json`, exactly as `--extraction recorded` consults
+T-15's recording. **Zero model calls on every chart the CLI can be given**,
+which is what keeps `--suggest` a demo path rather than a bill (D32's reading
+of the default).
+
+The reason this is safe rather than lucky: `LocalPatientStore` serves only the
+fourteen committed bundles, and T-98 measured all fourteen note documents —
+twelve distinct hashes, the declared clone sharing its source's bytes and
+replayed by content (D102's keying). So **no reachable patient has a note the
+recording lacks**, and `RecordedQuoteRunner`'s `NOT_RECORDED` is unreachable
+from this entry point. It is still the right failure: a chart added without a
+measurement must raise rather than answer red (D90, D122), and the runner
+refuses a `(row_id, effect_display)` pair it was not asked for the same
+reason — adding a table row is a new measurement (D45).
+
+**Rejected: a `NullQuoteRunner` default**, which raises on every note-bearing
+chart, making `--suggest` useless on five of the seven charts that have notes.
+**Rejected: constructing a live runner when the recording is absent** — that
+is a CLI flag that silently spends money, and every other runner in this file
+makes the same choice the other way.
+
+### Chosen — a short-circuited request declines the block by name
+
+`_render`'s two short-circuit branches return early with hand-built dicts, and
+they gain the block too. It carries `computed: false` and a declared
+`reason: "NO_GOVERNING_TREE"` with a sentence saying what that means, and it
+**never carries a `suggestions` key at all**.
+
+This is D123's decision; what this entry adds is where it lives. The block is
+built in `_render`, beside the result it describes, rather than in `main()`
+after the fact — a caller reading the JSON sees one object whose every key was
+decided in one place, and the alternative puts the decline on a code path that
+does not know which result it is describing.
+
+**Rejected: an empty suggestion list**, for D123's reason: it says *the chart
+implies nothing*, a claim about the chart, where the true statement is that
+nothing selected a tree to look under. **Rejected: omitting the block** — a
+missing key and a key that declines are distinguishable only if the key is
+there, and `--suggest` was asked for.
+
+### Corrected — `NOT_COVERED` is **not** a request without a tree
+
+D123's clause 4 named three results that decline: `NOT_COVERED`,
+`NO_POLICY_FOUND` and `NO_JURISDICTION_TREE`. **The first is wrong**, and the
+implementation found it.
+
+Measured, on the committed corpus:
+
+| Request | Result object | `policy_version_id` | Block |
+|---|---|---|---|
+| 43644, sc2's national exclusion | `Determination` | `ncd-100.1-jf-v1` | **reviews** |
+| 43842, sc1's `NotCovered` | `Determination` | `ncd-100.1-jf-v1` | **reviews** |
+| 99213 | `NoPolicyResult` | none | declines |
+| 43775 in TX | `NoJurisdictionResult` | none | declines |
+
+Both short circuits fire **after** a tree has been resolved — sc1 reads the
+tree's own non-covered set and sc2 is the NCD's national exclusion — so a
+`NOT_COVERED` determination carries its `policy_version_id` like any other.
+Only the two results that are not `Determination`s at all lack a tree.
+
+D123 reasoned from `E2`'s **eval label**, whose `expect` block carries no
+`policy_version_id` — but a label omitting a key is not the object lacking a
+field, and `E2`'s determination has always had one. The rule D123 states is
+unchanged and is the one implemented: **decline where nothing selected a tree**.
+Only the list of which results those are was wrong.
+
+This entry is where the correction lives, because `docs/decisions.md` is
+append-only and a reversal is a new entry, never an edit (working rule 12).
+`T-99`'s open board row is corrected in place, since it is not yet a closed
+record.
+
+**Why reviewing a `NOT_COVERED` chart is right and not merely permitted.** The
+review is about the **chart**, not the procedure: a non-covered request still
+resolves a governing tree, so `would_affect` has value sets to test membership
+in and the suggestion means what it means everywhere else. Declining there
+would make the block's absence depend on the *outcome* rather than on whether
+the system looked — which is the distinction the decline exists to draw.
+
+### Chosen — A11's section scores the colours that assert, and says what the baseline cannot do
+
+`_suggestion_section` in `eval/build_report.py` renders, over every
+review-labelled row:
+
+- **precision on green and yellow together**, against the labelled colour,
+  with its denominator printed beside it, gated at A2's 0.90;
+- the **colour base rate** — labelled green-or-yellow over every suggestion
+  emitted — which is what the precision figure has to beat something at;
+- the **all-red baseline**, reported as **`n/a`** with the reason: a review
+  that colours every candidate red emits no asserting suggestion, so its
+  precision has no denominator. Its **recall of green-and-yellow is 0.000**,
+  and that is the figure that makes the vacuity visible.
+- red and the withheld counts, reported and not gated.
+
+Reporting the baseline as *undefined, and here is why* is the whole point.
+A2's trivial baseline scores the base rate, so the comparison is a number
+against a number; A11's cannot, because the trivial review abstains. **Printing
+`0.000` for it, or omitting the row, would both read as "the baseline was
+beaten"** when what actually happened is that the baseline declined to play —
+and a reader who cannot tell those apart is the reader D123 rewrote this gate
+for.
+
+**Rejected: gating precision over all three colours**, D123's own rejection.
+**Rejected: computing the section from the six quote recordings** the way
+`_quote_section` does. That section measures a fabrication rate over
+`(note, condition)` pairs and never loads a `HistoryReview`; A11 grades
+colours against labels, so it needs the review objects, which means `_run`
+returns them.
+
+### Chosen — `_run` returns the reviews it already built
+
+`run_case` builds a `HistoryRun` per review-labelled row and discards it;
+`_run` returns `(results, cache)`. It now returns the reviews as a third
+element, keyed by `case_id`. Two call sites move.
+
+**Rejected: re-deriving the reviews inside the section**, which means
+rebuilding four stores and two runners and calling `_review` a second time —
+twice the work, and two code paths that can disagree about what the harness
+measured. The figure in the report would then be *a* review rather than *the*
+review the eval set graded, which is D91's failure: a free half that drifts
+because nothing re-derives it.
+
+**Reverses if** `T-110` measures a yellow — clause 3's figure becomes A14's,
+the denominator stops being one, and the baseline row acquires a real
+comparison (D123's own reversal condition); or a consumer needs suggestions on
+a short-circuited request, at which point the declared reason becomes a
+computed review and this entry says what changed.

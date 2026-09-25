@@ -44,6 +44,7 @@ from pa_agent.contracts import (  # noqa: E402
     GapReason,
     PredicateKind,
 )
+from pa_agent import history  # noqa: E402
 from pa_agent.index import DocumentIndex  # noqa: E402
 from pa_agent.spans import SpanValidationError, validate  # noqa: E402
 from pa_agent.stores.knowledge import LocalKnowledgeStore  # noqa: E402
@@ -130,12 +131,15 @@ class _ToleranceOverride:
         return getattr(self._inner, name)
 
 
-def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
-    """Every labeled case, scored, plus the determination cache behind it.
+def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any], dict[str, Any]]:
+    """Every labeled case, scored, plus the determination cache behind it and
+    the medical-history runs it produced.
 
     The cache is what the per-criterion sections read: one determination per
     `(patient, procedure, as_of)`, which is the object rows sharing a patient
-    were scored against (D75).
+    were scored against (D75). The third element is A11's (T-99, D126): the
+    `HistoryRun` the harness graded, keyed by case id, so the suggestion
+    section scores *the* review rather than a re-derivation of it.
     """
     cases = json.loads((EVAL_DIR / "cases.json").read_text(encoding="utf-8"))["cases"]
     patient_store = LocalPatientStore()
@@ -167,6 +171,7 @@ def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
         )
 
     cache: dict[Any, Any] = {}
+    reviews: dict[str, Any] = {}
     results = [
         harness.run_case(
             case,
@@ -179,14 +184,15 @@ def _run(policy_store: Any) -> tuple[list[Any], dict[Any, Any]]:
             verifier,
             knowledge_store,
             quote_runner,
+            reviews,
         )
         for case in cases
     ]
-    return results, cache
+    return results, cache, reviews
 
 
 def _labels() -> dict[str, dict[str, Any]]:
-    """Case id -> its `expect` block."""
+    """Case id -> its whole case record; `case["expect"]` is the label."""
     cases = json.loads((EVAL_DIR / "cases.json").read_text(encoding="utf-8"))["cases"]
     return {case["case_id"]: case for case in cases}
 
@@ -1224,7 +1230,7 @@ def _sweep_rows() -> tuple[str, ...]:
     rows = []
     for tolerance in TOLERANCE_GRID:
         store = _ToleranceOverride(LocalPolicyStore(), tolerance)
-        results, cache = _run(store)
+        results, cache, _ = _run(store)
         account = harness.abstention_account(results)
         discrepancies = sum(
             len(r.discrepancies)
@@ -1454,6 +1460,191 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
         "retrieval recall and nothing could. Vector search stays rejected on "
         "rule 9 and on a six-document corpus; this is the figure that would let "
         "it back in on evidence.",
+        "",
+    ]
+
+
+def _corpus_candidates() -> int:
+    """Every candidate the knowledge table finds across **every** bundle.
+
+    Derived, never asserted: a literal keeps passing after a table row or a
+    bundle is added, which is the shape a hardcoded count always has. This is
+    A11's denominator-of-denominators — the figure the graded count is
+    compared against to claim *all of them*.
+    """
+    patient_store = LocalPatientStore()
+    knowledge_store = LocalKnowledgeStore()
+    rows = knowledge_store.get_medication_effect_rows()
+    products = {
+        row.ingredient.code: knowledge_store.get_ingredient_products(
+            row.ingredient.code
+        )
+        for row in rows
+    }
+    manifest = json.loads(
+        (REPO_ROOT / "data" / "patients" / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    total = 0
+    for record in manifest["bundles"]:
+        patient_id = record.get("patient_id")
+        if not patient_id:
+            continue
+        total += len(
+            history.candidate_rows(
+                rows, products, patient_store.get_medications(patient_id)
+            )
+        )
+    return total
+
+
+def _suggestion_section(reviews: dict[str, Any]) -> list[str]:
+    """A11, as D123 rewrote it and D126 built it.
+
+    Precision on the colours that **assert** — green and yellow — because a
+    false green is a code in a packet the chart does not support, and red is
+    the abstention. The all-red baseline is reported as what it is: a review
+    that emits no asserting suggestion and therefore **has no precision to
+    measure**, which is the figure that makes its vacuity legible.
+    """
+    labels = _labels()
+
+    graded_suggestions: list[tuple[str, Any]] = []
+    graded_withheld: list[tuple[str, Any]] = []
+    for case_id, run in sorted(reviews.items()):
+        for suggestion in run.review.suggestions:
+            graded_suggestions.append((case_id, suggestion))
+        for withheld in run.review.withheld:
+            graded_withheld.append((case_id, withheld))
+
+    graded = len(graded_suggestions) + len(graded_withheld)
+    corpus = _corpus_candidates()
+
+    by_colour = {"green": 0, "yellow": 0, "red": 0}
+    for _case_id, suggestion in graded_suggestions:
+        by_colour[suggestion.colour.value] += 1
+    asserting = by_colour["green"] + by_colour["yellow"]
+
+    # The label a row carries for each suggestion, keyed the way `score`
+    # compares them: (case_id, row_id) -> colour.
+    labelled: dict[tuple[str, str], str] = {}
+    for case_id, case in labels.items():
+        for entry in case["expect"].get("suggestions") or []:
+            labelled[(case_id, entry["row_id"])] = entry["colour"]
+
+    correct = sum(
+        1
+        for case_id, suggestion in graded_suggestions
+        if suggestion.colour.value in ("green", "yellow")
+        and labelled.get((case_id, suggestion.row_id)) == suggestion.colour.value
+    )
+    precision = correct / asserting if asserting else None
+
+    labelled_asserting = sum(
+        1 for colour in labelled.values() if colour in ("green", "yellow")
+    )
+    base_rate = (
+        labelled_asserting / len(graded_suggestions) if graded_suggestions else None
+    )
+    # The all-red review emits no green and no yellow, so it recovers none of
+    # the asserting suggestions the labels carry.
+    baseline_recall = 0.0 if labelled_asserting else None
+
+    rows = []
+    for case_id, suggestion in graded_suggestions:
+        rows.append(
+            f"| `{case_id}` | `{suggestion.row_id}` | {suggestion.icd10_code} | "
+            f"**{suggestion.colour.value}** | "
+            f"{labelled.get((case_id, suggestion.row_id), '—')} |"
+        )
+
+    withheld_reasons: dict[str, int] = {}
+    for _case_id, withheld in graded_withheld:
+        withheld_reasons[withheld.reason.value] = (
+            withheld_reasons.get(withheld.reason.value, 0) + 1
+        )
+
+    return [
+        "## Suggestion precision (A11, REQ-63–REQ-68, D123, D126)",
+        "",
+        f"The knowledge table finds **{corpus}** candidates across the "
+        f"{len(json.loads((REPO_ROOT / 'data' / 'patients' / 'manifest.json').read_text(encoding='utf-8'))['bundles'])} "
+        f"committed bundles. The eval set grades **{graded}** of them, across "
+        f"{len(reviews)} rows that label a review — "
+        + (
+            "**every candidate the code produces** (T-99, D123)."
+            if graded == corpus
+            else f"**{corpus - graded} are graded by nothing**, which is the gap D123 "
+            "opened this row to close."
+        ),
+        "",
+        f"Of the {graded}, **{len(graded_suggestions)}** became suggestions and "
+        f"**{len(graded_withheld)}** were withheld — "
+        + ", ".join(
+            f"{count} `{reason}`" for reason, count in sorted(withheld_reasons.items())
+        )
+        + ". A withheld candidate is the chart answering, and is not a "
+        "suggestion at any colour (REQ-65, D119).",
+        "",
+        "| Case | Row | Code | System | Labeled |",
+        "|---|---|---|---|---|",
+        *rows,
+        "",
+        "### Precision is gated on the colours that assert (A11, D123)",
+        "",
+        "**Green** says *addable with no further evidence*; **yellow** says "
+        "*addable with this quote attached*. Both assert. **Red** says "
+        "*nothing on the chart* and cannot enter a form without a written "
+        "justification (REQ-65) — it abstains. Scoring an assertion and an "
+        "abstention on one scale rewards a review that colours everything red, "
+        "which is the always-`MET` baseline inverted (D123).",
+        "",
+        "| Figure | Value |",
+        "|---|---|",
+        f"| Suggestions emitted | {len(graded_suggestions)} "
+        f"({by_colour['green']} green, {by_colour['yellow']} yellow, "
+        f"{by_colour['red']} red) |",
+        f"| **Precision on green and yellow** | **{correct}/{asserting} = "
+        f"{_fmt(precision)}** |",
+        f"| Asserting base rate (labeled green-or-yellow / suggestions) | "
+        f"{labelled_asserting}/{len(graded_suggestions)} = {_fmt(base_rate)} |",
+        f"| Precision of a trivial all-red review | **no denominator** — it "
+        f"emits 0 asserting suggestions |",
+        f"| Recall of green-and-yellow, all-red review | "
+        f"0/{labelled_asserting} = {_fmt(baseline_recall)} |",
+        "",
+        f"**A11's threshold is A2's 0.90, on green and yellow.** Measured: "
+        f"**{_fmt(precision)}** over **n = {asserting}**.",
+        "",
+        "**Read the denominator before the figure.** "
+        + (
+            f"n = {asserting} is one suggestion. A precision of "
+            f"{_fmt(precision)} over a single datapoint clears any bar and "
+            "establishes almost nothing; it says this system has not yet "
+            "asserted a code the chart does not support, on the one occasion "
+            "it asserted anything."
+            if asserting <= 2
+            else f"n = {asserting}."
+        ),
+        "",
+        "**The trivial baseline cannot clear this bar, and that is the point.** "
+        "A2's always-`MET` baseline scores the base rate, so the comparison is "
+        "a number against a number. A11's trivial review colours every "
+        "candidate red, emits no green and no yellow, and therefore has **no "
+        "precision at all** — an empty denominator, not a good score. Its "
+        "recall of the asserting suggestions the labels carry is "
+        f"**{_fmt(baseline_recall)}**: it recovers none of them. A reader who "
+        "takes the missing precision for a passing grade has it exactly "
+        "backwards — the baseline declined to play.",
+        "",
+        "**Zero yellow, and the clause that says so.** No committed note "
+        "produces a yellow, so REQ-67's *every yellow carries a valid span* is "
+        "held at unit level through the anchorer's real refusal on a "
+        "hand-written note (D65's shape, T-98). The **measured** figure is "
+        "**A14's**, when `T-110` adds a note that states a table effect "
+        "(D120, D122, D123).",
+        "",
         "",
     ]
 
@@ -1745,7 +1936,7 @@ def _caveats_section() -> list[str]:
 
 
 def render() -> str:
-    results, cache = _run(LocalPolicyStore())
+    results, cache, reviews = _run(LocalPolicyStore())
     pairs = _criterion_pairs(results, cache)
 
     lines = [
@@ -1774,6 +1965,9 @@ def render() -> str:
         # anchoring and tier sections, which describe one tier and pair two.
         *_quote_section(),
         *_cost_section(results, cache),
+        # T-99 (D126): after the cost section and before compatibility. Every
+        # other gap between two headings is inside a slice some test takes.
+        *_suggestion_section(reviews),
         *_compatibility_section(),
         *_caveats_section(),
     ]

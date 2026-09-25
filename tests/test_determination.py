@@ -801,3 +801,138 @@ def test_the_cli_refuses_an_unknown_patient_without_a_state_as_a_bad_request():
     proc = _run_cli("--patient", "X", "--procedure", E3_CODE)
     assert proc.returncode == 1, proc.stdout
     assert "no patient" in proc.stderr
+
+
+# --------------------------------------------------------------------------
+# `--suggest` (T-99, D123, D126)
+#
+# The adversarial half: the decline must be *red when it degrades to an empty
+# list*, not merely correct when it happens to be. An empty suggestion list is
+# the well-formed answer every downstream check agrees with (D31, D39, D90).
+# --------------------------------------------------------------------------
+
+
+def test_suggest_emits_the_block_and_leaves_every_verdict_byte_identical(e1_patient):
+    """REQ-65: a suggestion enters no verdict. Checked by subtraction.
+
+    Not "the verdicts look the same" — the two documents are compared after
+    removing the one key `--suggest` adds, so any drift anywhere else in the
+    determination is a diff.
+    """
+    plain = _run_cli("--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01")
+    suggested = _run_cli(
+        "--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01", "--suggest"
+    )
+    assert plain.returncode == 0, plain.stderr
+    assert suggested.returncode == 0, suggested.stderr
+
+    without = json.loads(plain.stdout)
+    with_block = json.loads(suggested.stdout)
+    assert "icd_suggestions" not in without, (
+        "a run without --suggest carries the block anyway; the flag is not the "
+        "thing that decides it"
+    )
+    block = with_block.pop("icd_suggestions")
+    assert with_block == without, "--suggest moved something other than its own block"
+    assert block["patient_id"] == e1_patient
+    assert with_block["model_calls"] == without["model_calls"]
+
+
+def test_the_reviews_turns_never_enter_the_determinations_counters(e1_patient):
+    """REQ-68: the review's cost is reported apart from the determination's.
+
+    `E1`'s chart is note-bearing and carries a candidate, so `run_review`
+    consults both notes — real replayed turns. `model_calls` is the
+    determination's counter and must not move for them, or A6's figure would
+    quietly start including a cost that is not a determination's (D122).
+    """
+    plain = _run_cli("--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01")
+    suggested = _run_cli(
+        "--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01", "--suggest"
+    )
+    assert plain.returncode == 0 and suggested.returncode == 0
+
+    before = json.loads(plain.stdout)
+    after = json.loads(suggested.stdout)
+    for counter in ("model_calls", "total_input_tokens", "total_output_tokens"):
+        assert after[counter] == before[counter], (
+            f"--suggest moved {counter}; the review's turns are budgeted by "
+            "max_review_model_calls, apart from A6 (REQ-68)"
+        )
+
+
+@pytest.mark.parametrize(
+    "args, expected",
+    [
+        (("--procedure", FOREIGN_CODE, "--state", "WA"), "NO_POLICY_FOUND"),
+        (("--procedure", "43775", "--state", "TX"), "NO_JURISDICTION_TREE"),
+    ],
+)
+def test_a_request_no_tree_governs_declines_the_block_by_name(e1_patient, args, expected):
+    """D123's clause, and the shape of it that matters.
+
+    The assertion is **not** that a reason is present. It is that the block
+    carries no `suggestions` key at all — because a `{"suggestions": []}`
+    would read as *the chart implies nothing*, a claim about the chart, where
+    the true statement is that nothing selected a tree to look under (D90).
+    An implementation that degraded to an empty list would satisfy a
+    reason-is-present test and fail this one.
+    """
+    proc = _run_cli("--patient", e1_patient, *args, "--suggest")
+    assert proc.returncode == 0, proc.stderr
+    printed = json.loads(proc.stdout)
+    assert printed["result"] == expected
+
+    block = printed["icd_suggestions"]
+    assert block["computed"] is False
+    assert block["reason"] == "NO_GOVERNING_TREE"
+    assert "suggestions" not in block, (
+        "the decline carries a suggestions key; an empty list there is the "
+        "answer every downstream check agrees with and the one D123 refuses"
+    )
+    assert "withheld" not in block
+
+
+def test_a_not_covered_determination_reviews_rather_than_declining(e1_patient):
+    """D126's correction of D123, held by a command.
+
+    Both short circuits fire *after* a tree is resolved, so a `NOT_COVERED`
+    determination carries a `policy_version_id` and has value sets for
+    `would_affect` to test membership in. It reviews like any other chart.
+    D123 said it declines; that was inferred from an eval label omitting the
+    key rather than from the object.
+    """
+    proc = _run_cli("--patient", e1_patient, "--procedure", E3_CODE, "--state", "WA", "--suggest")
+    assert proc.returncode == 0, proc.stderr
+    printed = json.loads(proc.stdout)
+    assert printed["outcome"] == "NOT_COVERED"
+    assert printed["policy_version_id"]
+
+    block = printed["icd_suggestions"]
+    assert block.get("computed") is not False, (
+        "a NOT_COVERED determination declined the block; it carries a tree "
+        "(determination.py's NotCovered branch), so it reviews (D126)"
+    )
+    assert block["policy_version_id"] == printed["policy_version_id"]
+    assert "suggestions" in block and "withheld" in block
+
+
+def test_the_cli_and_the_harness_share_one_review_predicate():
+    """One predicate, or the two can disagree about a chart (D126).
+
+    Parsed, not exercised: on this corpus both readings answer identically on
+    every committed chart, so no behavioural test can tell a second
+    implementation from the shared one (D65's shape).
+    """
+    import ast
+
+    for path in (REPO_ROOT / "pa_agent" / "cli.py", REPO_ROOT / "eval" / "run_eval.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "review_scope"
+        ]
+        assert calls, f"{path.name} no longer asks history.review_scope whether a tree governs"

@@ -69,10 +69,10 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1 and v1.2 are all complete.**
-81 of 81 tasks closed, **1 open** — `T-129`, the national floor checked at
+**v1, v1.1, v1.2 and v1.3 are all complete.**
+82 of 82 tasks closed, **1 open** — `T-129`, the national floor checked at
 load, which closes before v1.6 *(D124)* — all ten zero-cost gates green, and
-acceptance gates A1–A10 holding. The suite collects 1373 tests (58 skip).
+acceptance gates A1–A11 holding. The suite collects 1393 tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -219,11 +219,11 @@ in any gate* had been pinned against two of the three scripts that spend them
 
 | Gate | Result |
 |---|---|
-| A1 | 28 labeled cases, every spec §6 edge case present |
+| A1 | 33 labeled cases, every spec §6 edge case present |
 | A2 | precision **1.000** on `MET`, against a **0.420** base rate and an always-`MET` baseline scoring exactly that |
 | A3 | **zero** `MET` verdicts with an invalid span, over 104 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.429**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A5 | abstention **0.424**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
 | A7 | 70 requirements: 68 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
@@ -291,7 +291,7 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   paraphrase P2 was written from, and recovered it. What remains is a claim
   the model never quoted at all.
 - **P3 — Small everything.** 14 patients (four of them declared clones), 14
-  chart notes, 9 policy documents, 28 cases: every rate moves in large steps,
+  chart notes, 9 policy documents, 33 cases: every rate moves in large steps,
   and one case outweighs a percentage point. The figures are `eval/report.md`'s,
   which computes them from the three manifests that own them — this bullet
   read *eleven, fourteen, seven, twenty* for two tasks after the corpus grew
@@ -377,7 +377,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1 | bariatric determination end to end, two implementations graded against one oracle | US-1–US-9 | **complete** |
 | v1.1 | spec §10's eight known limits, one task each | — | **complete** |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
-| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **in progress** |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
 | v1.4 | sessions and intake, headless | US-12 | planned |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
@@ -873,7 +873,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1373 tests across 47 files, 58 of them skipped — the skips are per-tree
+1393 tests across 47 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

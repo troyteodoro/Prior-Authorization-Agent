@@ -92,6 +92,33 @@ ACTIVE_CONDITION_STATUS = "active"
 VALUE_SET_CONSTANT = "value_set_id"
 
 
+def review_scope(result: object) -> str | None:
+    """The `policy_version_id` a review runs under, or `None` if nothing does.
+
+    **One predicate, called by both consumers** (T-99, D126). `cli.py` decides
+    whether `--suggest` emits a review or declines by name, and
+    `eval/run_eval.py` decides whether a row's review is computed; if each
+    asked the question its own way they could disagree about one chart, and
+    the report would then describe a system the CLI does not implement.
+
+    Duck-typed on purpose. Importing `pa_agent.determination` to name the
+    result types — even under `if TYPE_CHECKING` — would put this module in
+    the closure that reaches **both** storage planes, and
+    `tests/test_planes.py` asserts that set exactly (Article VI). The question
+    it asks is the true one anyway: *does this result carry a tree*.
+
+    **What lacks one is narrower than it looks** *(D126, correcting D123)*.
+    `NoPolicyResult` and `NoJurisdictionResult` are not `Determination`s and
+    carry no `policy_version_id`. A `NOT_COVERED` determination **does** carry
+    one — both short circuits fire after a tree is resolved — so it reviews
+    like any other chart, and `would_affect` has value sets to test membership
+    in. The decline is about whether the system had a tree to look under, not
+    about which way the request came out.
+    """
+    version = getattr(result, "policy_version_id", None)
+    return str(version) if version else None
+
+
 class QuoteSourceNotConsulted(RuntimeError):
     """A candidate needed a note quote and no quote source was supplied.
 

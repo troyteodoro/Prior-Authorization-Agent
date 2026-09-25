@@ -8,11 +8,11 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Outcomes against the labels
 
-28 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
+33 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
 
 | Status | Cases | Meaning |
 |---|---|---|
-| `PASS` | 28 | matched the label on every checked dimension |
+| `PASS` | 33 | matched the label on every checked dimension |
 | `FAIL` | 0 | answered, and answered wrongly |
 | `BLOCKED` | 0 | the component under test does not exist yet |
 | `ERROR` | 0 | a classified fault; the system did not answer (REQ-28) |
@@ -187,7 +187,7 @@ A free-tier tool loop is not reproducible at temperature 0 (D91), and neither is
 
 ## Abstention (A5, REQ-28, REQ-31)
 
-**Abstention rate: 12/28 answered = 0.429**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
+**Abstention rate: 14/33 answered = 0.424**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
 
 An `ERROR` entering the numerator alone would let a crash *lower* the abstention rate — caution misreported as confidence (D77).
 
@@ -212,13 +212,13 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 | `discrepancy_tolerance` | Discrepancies disclosed | Abstention rate |
 |---|---|---|
-| 0 | 5 | 0.429 |
-| 0.25 | 3 | 0.429 |
-| 0.5 | 1 | 0.429 |
-| 1 ← pinned (D51) | 1 | 0.429 |
-| 2 | 1 | 0.429 |
-| 5 | 1 | 0.429 |
-| 50 | 0 | 0.429 |
+| 0 | 5 | 0.424 |
+| 0.25 | 3 | 0.424 |
+| 0.5 | 1 | 0.424 |
+| 1 ← pinned (D51) | 1 | 0.424 |
+| 2 | 1 | 0.424 |
+| 5 | 1 | 0.424 |
+| 50 | 0 | 0.424 |
 
 **Why abstention does not move.** Tolerance gates whether a disagreement is *recorded*. The abstention branch is a different test — the two values falling on opposite sides of the coverage threshold (REQ-34, `SOURCE_CONFLICT`) — and the threshold is not what is being swept.
 
@@ -297,6 +297,41 @@ Every gate in this repo, this report included, spends **zero** model calls and t
 **Counting note.** A tool round trip is two LLM calls, and a note's singular `metrics` is turn one only. Summing the wrong one understated T-63's output tokens by 12.1x and inverted a comparison's sign, using figures that were each individually real (D71). These totals sum the full list.
 
 **Scope.** These totals are determination cost only. The medical-history review's quote turns (T-98) enter no determination's `metrics` — the review sits beside the determination, not inside it (D119, D122) — and are accounted in *Quote consultation* above, per runner and tier, and on each eval row that labels a review.
+
+## Suggestion precision (A11, REQ-63–REQ-68, D123, D126)
+
+The knowledge table finds **12** candidates across the 14 committed bundles. The eval set grades **12** of them, across 9 rows that label a review — **every candidate the code produces** (T-99, D123).
+
+Of the 12, **5** became suggestions and **7** were withheld — 4 `ALREADY_CODED`, 3 `SIGNAL_NOT_CROSSED`. A withheld candidate is the chart answering, and is not a suggestion at any colour (REQ-65, D119).
+
+| Case | Row | Code | System | Labeled |
+|---|---|---|---|---|
+| `H1` | `lisinopril-renal-impairment` | N28.9 | **green** | green |
+| `H3` | `methotrexate-neutropenia` | D70.2 | **red** | red |
+| `H4` | `lisinopril-renal-impairment` | N28.9 | **red** | red |
+| `H6` | `hydrochlorothiazide-hyperglycemia` | R73.9 | **red** | red |
+| `H8` | `methotrexate-neutropenia` | D70.2 | **red** | red |
+
+### Precision is gated on the colours that assert (A11, D123)
+
+**Green** says *addable with no further evidence*; **yellow** says *addable with this quote attached*. Both assert. **Red** says *nothing on the chart* and cannot enter a form without a written justification (REQ-65) — it abstains. Scoring an assertion and an abstention on one scale rewards a review that colours everything red, which is the always-`MET` baseline inverted (D123).
+
+| Figure | Value |
+|---|---|
+| Suggestions emitted | 5 (1 green, 0 yellow, 4 red) |
+| **Precision on green and yellow** | **1/1 = 1.000** |
+| Asserting base rate (labeled green-or-yellow / suggestions) | 1/5 = 0.200 |
+| Precision of a trivial all-red review | **no denominator** — it emits 0 asserting suggestions |
+| Recall of green-and-yellow, all-red review | 0/1 = 0.000 |
+
+**A11's threshold is A2's 0.90, on green and yellow.** Measured: **1.000** over **n = 1**.
+
+**Read the denominator before the figure.** n = 1 is one suggestion. A precision of 1.000 over a single datapoint clears any bar and establishes almost nothing; it says this system has not yet asserted a code the chart does not support, on the one occasion it asserted anything.
+
+**The trivial baseline cannot clear this bar, and that is the point.** A2's always-`MET` baseline scores the base rate, so the comparison is a number against a number. A11's trivial review colours every candidate red, emits no green and no yellow, and therefore has **no precision at all** — an empty denominator, not a good score. Its recall of the asserting suggestions the labels carry is **0.000**: it recovers none of them. A reader who takes the missing precision for a passing grade has it exactly backwards — the baseline declined to play.
+
+**Zero yellow, and the clause that says so.** No committed note produces a yellow, so REQ-67's *every yellow carries a valid span* is held at unit level through the anchorer's real refusal on a hand-written note (D65's shape, T-98). The **measured** figure is **A14's**, when `T-110` adds a note that states a table effect (D120, D122, D123).
+
 
 ## Cross-practice compatibility (A10, REQ-57, REQ-58, D110, D111, D114)
 

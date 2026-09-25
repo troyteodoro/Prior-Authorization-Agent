@@ -825,7 +825,7 @@ instance above was one run's behaviour and the mechanism is the standing
 answer to its recurrence. What it cannot recover is a claim the model never
 quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
-### P3 — Fourteen patients, nine documents, twenty-eight cases *(was six, five, fifteen)*
+### P3 — Fourteen patients, nine documents, 33 cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
 than a percentage point in every table. A precision of 1.000 over twenty-one
@@ -849,7 +849,13 @@ contractor. Since T-97 it is twenty-seven rows *(D119)*: the medical-history
 review's three, on charts the set already held, one of them carrying two
 declared resources; since T-98, twenty-eight *(D122)*: `H4`, the review's
 red on the one note-bearing chart with a candidate, replaying six quote
-recordings that measured no passage for any pair. More
+recordings that measured no passage for any pair. Since T-99 it is **33**
+*(D123)*: `H5`–`H9`, review labels on five charts the set already graded a
+determination for, so every one of the twelve candidates the knowledge table
+finds across the fourteen bundles is graded rather than five of them. They
+add no determination and no verifier claim — each shares its neighbour's
+cache key — so A2 and A6 do not move and A5 does, from 0.429 to 0.424, on a
+denominator five rows larger. More
 patients is the decision D120 took: growth rides with a version that
 re-measures anyway — v1.6's round — never as a task of its own.
 
@@ -1002,7 +1008,7 @@ load-bearing; a table that sorts prettily is not.
 |---|---|---|---|---|---|
 | v1.1 | §10's P1–P8, one task each *(D97)* | — | T-85–T-90 | the Vertex round (T-90) | A1–A9 |
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
-| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted | US-11 | T-96–T-99 | one recording round | A11 |
+| v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless | US-12 | T-100–T-102 | none | A12 |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
@@ -1230,14 +1236,23 @@ yellows**. `T-99` labels the seven candidates on the five charts no row
 graded, all of which already carry a determination row, so the graded
 count is 12 of 12 for zero new verifier claims and zero model calls.
 
-**A short-circuited request declines the block by name** *(D123)*. On
-`NOT_COVERED`, `NO_POLICY_FOUND` and `NO_JURISDICTION_TREE` there is no
-governing tree, so there is no `policy_version_id` to review under and no
-value set for `would_affect` to test membership in. `--suggest` emits the
-`icd_suggestions` block carrying a declared reason and **never an empty
-suggestion list**: an empty list says *the chart implies nothing*, which is
-a claim about the chart, where the true statement is that nothing selected a
-tree to look under. D90's rule, on a third wire.
+**A request no tree governs declines the block by name** *(D123, corrected
+by D126)*. `NO_POLICY_FOUND` and `NO_JURISDICTION_TREE` are not
+`Determination`s and carry no `policy_version_id`, so there is nothing to
+review under and no value set for `would_affect` to test membership in.
+`--suggest` emits the `icd_suggestions` block carrying a declared reason and
+**never an empty suggestion list**: an empty list says *the chart implies
+nothing*, which is a claim about the chart, where the true statement is that
+nothing selected a tree to look under. D90's rule, on a third wire.
+
+**`NOT_COVERED` is not in that set**, which D123 got wrong and `T-99` found.
+Both short circuits fire *after* a tree is resolved, so a non-covered
+determination carries its `policy_version_id` like any other and reviews
+normally; `H8` is the row that holds it. D123 reasoned from `E2`'s eval
+label, whose `expect` omits the key — but a label omitting a key is not the
+object lacking a field. One predicate, `history.review_scope`, is asked by
+both the CLI and the harness so the two cannot disagree about a chart
+*(D126)*.
 
 ### v1.4 — Sessions and intake, headless
 
