@@ -11251,3 +11251,82 @@ second write is in the committed fixture.
 **REQ-69**, **REQ-70** and **REQ-71** — the three of v1.4's four statements
 this close checks. The fourth, the intake's two routes, stays a §11 statement
 until `T-101` opens *(D109)*.
+
+---
+
+## D128 — The intake takes text, normalises in one place, and carries codes it does not read
+
+**Context.** Row 2 of v1.4. `T-100` landed the `Intake` contract because a
+session records an intake and that statement cannot be checked without the
+object *(D127)*; this row builds the two routes to it — a JSON document an
+upstream system produced and the flags a person typed — and mints the
+statement that they agree.
+
+### Chosen — `intake.py` takes JSON **text**, not a parsed object
+
+`from_json(text: str) -> Intake`, and one `MalformedIntake` for *not JSON*,
+*not an object*, *a missing field* and *a wrong type* alike.
+
+**Rejected — taking a parsed `dict`.** Then `cli.py` catches
+`json.JSONDecodeError` and `intake.py` catches everything else, so **two
+modules decide what a bad intake is** and the exit-1 mapping has two sources
+that can drift apart. A caller handed a parsed object has already made the
+first validation decision, and made it somewhere the intake's own tests cannot
+reach. One fault type across one boundary is the whole point of the contract.
+
+This is legal under the storage scan: `json` is not in `STORAGE_NAMES`
+(`tests/test_planes.py`), while `Path` and `open` are — so `json.loads` inside
+`intake.py` is fine and reading the file stays `cli.py`'s, which is the
+composition root that already names every path (D25, REQ-41).
+
+**Reverses if** an upstream system sends a format that is not JSON text, at
+which point the second format is **declared** with its own constructor rather
+than inferred from the argument's type.
+
+### Chosen — normalisation lives on the contract, so the two routes cannot diverge
+
+`Intake` normalises `icd10_codes` in a field validator — stripped, uppercased,
+de-duplicated, order preserved — and both constructors reach it by
+constructing the same model.
+
+**Rejected — normalising in a shared helper both constructors call.** That is
+the obvious shape and it is weaker in exactly the way this row is about: the
+claim *a JSON intake and the equivalent flags validate to the same object* is
+then true because both call one function today, and a later edit to either
+route can make it false while every existing test passes on inputs that
+happen to need no normalising. On the contract, the asymmetry is
+**unbuildable** rather than merely tested against — there is no second place
+to normalise, so the equality is structural (D62's argument for the trust
+boundary, one layer down).
+
+**Reverses if** a consumer needs the codes exactly as sent — at which point the
+raw form is a second field and the entry says which one is authoritative.
+
+### Chosen — the codes are validated as strings, not as ICD-10-CM
+
+Non-empty after stripping, and that is all. **Rejected — a pattern.** No
+committed artifact in this repository states the grammar of an ICD-10-CM code,
+and writing one from memory is the mistake `history.py`'s own no-lookback
+paragraph names: a rule with no source, enforced as though it had one. The
+precedent is `practice` (T-95, D116) — a field required to be well-formed,
+consumed by no predicate, recorded because dropping it means the session cannot
+reproduce the request it answered.
+
+**Reverses if** v1.5's form renders the codes against a code system, which
+gives the validation a source to cite.
+
+### Confirmed, not decided here — no `as_of` on the intake
+
+Settled by the contract at `T-100`: `as_of` is a property of a *run*, so two
+runs of one intake at different clocks are two snapshots of one request rather
+than two requests. Recorded here because this row is where a flag route could
+have quietly added one.
+
+### What it mints
+
+**REQ-72**, at **unit level**: the two routes validate to the same object and
+every malformed shape raises. The *exit-1* half — a malformed intake is a bad
+request that writes no session — is `T-102`'s, because nothing has a CLI
+surface to exit from until the verbs land. That is REQ-67's shape exactly
+(D122): a statement minted by the close that checks the half it can, with the
+measured half named and owned *(D109)*.

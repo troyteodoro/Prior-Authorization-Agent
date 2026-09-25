@@ -17,11 +17,21 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `T-101`, row 2 of `v1.4`** — the intake contract. A JSON
-intake and the equivalent flags validate to the same object; a malformed one is
-a bad request, exit 1, and no session exists. `pa_agent/intake.py` may **not**
-name `Path` or call `open`, so the CLI reads the bytes and hands over the text.
-Then `T-102`, the verbs, closes the version.
+**What to do next: `T-102`, row 3 of `v1.4`** — the verbs, which close the
+version. `session create / list / show / run` round-trip a determination; the
+bare `--patient/--procedure` invocation still prints byte-identical stdout and
+keeps exit codes 0/1/2/3.
+**`T-101` closed row 2** *(D128)*: `pa_agent/intake.py` takes JSON **text**,
+never a parsed object — a caller that parsed has already decided what *not
+JSON* means, so two modules would decide what a bad intake is — and one
+`MalformedIntake` covers all five ways a request can be unusable, because the
+response to every one of them is the same. **Normalisation lives on the
+contract, not in either constructor**: `Intake` strips, uppercases and
+de-duplicates its own codes, so *the two routes validate to the same object* is
+structural rather than a property of two code paths that agree today. The codes
+are validated as strings and **not** as ICD-10-CM, because no committed
+artifact states that grammar. It minted **REQ-72** at unit level; the exit-1
+half is `T-102`'s, REQ-67's shape.
 **`T-100` opened v1.4** *(D127)*: the session plane is the **fourth** storage
 port — `T-96` made the knowledge corpus the third — and the **first thing under
 `pa_agent/` that writes a file**, so `data/sessions/` is gitignored, pinned by
@@ -317,7 +327,7 @@ gitignored and pinned by no manifest.
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the session port, its file adapter and the lifecycle | `T-100` | **closed** (D127) | all **nine** ordered state pairs tested — the legal set transcribed from US-12's sentences, never read back from the table — and every illegal one raises and records nothing; a session round-trips byte-stable **written twice**; the session plane reaches no other and none reaches it; `stores/__init__.py` still imports nothing, now checked for all four ports. Mints **REQ-69**, **REQ-70**, **REQ-71** |
-| 2 | the intake contract | `T-101` | pending | a JSON intake and the CLI flags validate to the same object; a malformed intake is a bad request, exit 1 |
+| 2 | the intake contract | `T-101` | **closed** (D128) | a JSON intake and the CLI flags validate to the same object; a malformed intake is a bad request, exit 1. The parser takes JSON **text** and normalisation lives on the contract, so the two routes cannot diverge even in principle *(D128)*; the exit-1 half is measured by `T-102` |
 | 3 | the verbs | `T-102` | pending | `session create / list / show / run` round-trip a determination; every gate green |
 
 ### v1.5 — The form, review, simulated submission and tracking, headless
@@ -2667,16 +2677,56 @@ Nothing constructs a `SessionStore` yet: `cli.py` gains no verb at this close.
 statements this close checks. The fourth, the intake's two routes, stays a §11
 statement until `T-101` opens *(D109)*.
 
-### `[ ] T-101` The intake contract
+### `[x] T-101` The intake contract
 
 **REQ:** mints 72 · **Depends:** T-100 · **Blocks:** T-102 ·
-**Gates:** A12 (second of three rows) · **Timebox:** half a day
-**Status:** pending.
-**Exit:** a JSON intake and the equivalent flags validate to the same object; a
-malformed intake is a bad request, exit 1, and no session exists.
-`pa_agent/intake.py` may **not** name `Path` or call `open` — the storage scan
-in `tests/test_planes.py` forbids it outside `pa_agent/stores/`, so the CLI
-reads the bytes and hands over the text.
+**Decided by:** D128 · **Gates:** A12 (second of three rows) ·
+**Timebox:** half a day
+**Status:** **closed** (D128) — the exit ran green and every gate with it. No
+recording, bundle, note, baseline or verifier claim was touched; no model was
+called; no verdict or span moved.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_intake.py tests/test_planes.py \
+      tests/test_check_req_coverage.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: a JSON document and the equivalent flags validate to the same
+`Intake` **on inputs that need normalising**; every malformed shape raises
+`MalformedIntake` **for its own stated reason**; `pa_agent/intake.py` names no
+member of `tests/test_planes.py`'s own `STORAGE_NAMES`; and the accepted key
+set is the contract's field set rather than a second list beside it.
+
+**What it delivers.** `pa_agent/intake.py` — `from_json(text)`,
+`from_flags(...)`, `MalformedIntake`, and one private `_build` that is the only
+construction site — plus a normalising field validator on `Intake` and
+`tests/test_intake.py`, 29 tests.
+
+**The design decision that mattered.** Both constructors reach `Intake` without
+touching a code, and `Intake` normalises its own. A shared helper both routes
+called would have made *the two routes agree* true **because both call it
+today**; on the contract the asymmetry is unbuildable. `test_intake.py` parses
+this module for an `upper`, `lower` or `strip` call and fails on one, because
+no behavioural test can distinguish the two designs while they happen to agree
+*(D65's shape)*.
+
+**Two tests are written against the adversary rather than the feature.**
+`test_the_agreement_is_tested_on_inputs_that_need_normalising` fails if every
+equality row carries codes that are already stripped, uppercase and unique —
+such a table passes against a route that does not normalise at all, which is
+the bug it exists to find. `test_the_malformed_table_exercises_more_than_key_presence`
+fails if the seventeen malformed shapes do not between them exercise a parse
+failure, a shape failure, a missing field, an unknown field, a type failure, a
+length failure, a container failure and a blank code — a table where everything
+fails on a missing key grades one rule and claims to grade eight.
+
+**What it mints.** **REQ-72**, the last of v1.4's four statements, at unit
+level. The exit-1 half — a bad request that writes no session — is `T-102`'s,
+because nothing has a CLI surface to exit from until the verbs land; REQ-67's
+shape *(D122, D109)*.
 
 ### `[ ] T-102` The verbs
 

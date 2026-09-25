@@ -28,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-71 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-72 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A11 (A10 is v1.2's and A11 v1.3's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
 | `docs/tasks.md` | The board. Task records T-00 through T-102 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-103 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D127, kill criteria, open questions. Append-only. |
+| `docs/decisions.md` | D1–D128, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -697,8 +697,8 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**83 of 83 tasks closed, 3 open. All 10 gates green**
-(`check_gates.py`; the suite collects 1443 tests across 49 files, 58 of
+**84 of 84 tasks closed, 2 open. All 10 gates green**
+(`check_gates.py`; the suite collects 1472 tests across 50 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
@@ -756,11 +756,20 @@ tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **`T-129`, off the path. v1, v1.1, v1.2 and v1.3 are all complete** —
-A1–A11 all hold. **`T-99` closed v1.3** *(D126)*: `--suggest` emits the
-`icd_suggestions` block beside verdicts byte-identical without it, a request
-no tree governs declines by name, and `eval/report.md` carries A11's
-section. Next is `T-129`, then `v1.4` opens with `T-100`.
+Open: **`T-102` and `T-129`. v1, v1.1, v1.2 and v1.3 are all complete** —
+A1–A11 all hold — and **`v1.4` is in progress**: `T-100` opened it and `T-101`
+closed row 2; **`T-102` is next**, the verbs, which close the version.
+**`T-99` closed v1.3** *(D126)*: `--suggest` emits the `icd_suggestions` block
+beside verdicts byte-identical without it, a request no tree governs declines
+by name, and `eval/report.md` carries A11's section. **`T-100` opened v1.4**
+*(D127)*: the session plane is the **fourth** storage port and the first thing
+under `pa_agent/` that writes a file, the lifecycle is a table and `terminal`
+is read off it rather than declared on the enum — a property there is an
+import cycle that makes every module reach the session plane. **`T-101` closed
+row 2** *(D128)*: `pa_agent/intake.py` takes JSON **text**, one
+`MalformedIntake` covers all five ways a request can be unusable, and
+**normalisation lives on the contract** so the two routes cannot diverge even
+in principle. `T-129` stays off the path, due before v1.6.
 
 **The plan was re-read whole on 2026-09-24, and three things moved**
 *(D123, D124, D125)*. **A11** borrowed A2's number without A2's asymmetry:

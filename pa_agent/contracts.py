@@ -40,7 +40,7 @@ from datetime import date
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # --------------------------------------------------------------------------
 # Evidence
@@ -1977,6 +1977,39 @@ class Intake(BaseModel):
     #: for.
     state: str | None = None
     icd10_codes: tuple[str, ...] = ()
+
+    @field_validator("icd10_codes", mode="after")
+    @classmethod
+    def _codes_are_normalised_here_and_nowhere_else(
+        cls, codes: tuple[str, ...]
+    ) -> tuple[str, ...]:
+        """Strip, uppercase and de-duplicate, preserving order (T-101, D128).
+
+        **On the contract, not in the constructors.** `intake.from_json` and
+        `intake.from_flags` both reach this by building this model, so *a JSON
+        intake and the equivalent flags validate to the same object* is
+        structural rather than a property of two code paths that agree today.
+        A shared helper would make the claim true because both call it, and a
+        later edit to either route could falsify it while every test built on
+        already-normal inputs kept passing — which is the asymmetry this row
+        exists to rule out.
+
+        The codes are validated **as strings and not as ICD-10-CM**: no
+        committed artifact states that grammar, and a pattern written from
+        memory is a rule enforced as though it had a source (D128). Empty after
+        stripping is refused, because a blank code is a field the sender left
+        behind rather than a code.
+        """
+        seen: dict[str, None] = {}
+        for raw in codes:
+            code = raw.strip().upper()
+            if not code:
+                raise ValueError(
+                    "an ICD-10 code is blank; a code that is empty after "
+                    "stripping is an omission wearing a field's clothes"
+                )
+            seen.setdefault(code, None)
+        return tuple(seen)
 
 
 class SessionRun(BaseModel):

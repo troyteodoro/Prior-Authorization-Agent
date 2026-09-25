@@ -70,9 +70,10 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2 and v1.3 are all complete.**
-83 of 83 tasks closed, **3 open** — `T-101` and `T-102`, v1.4's remaining
-rows, and `T-129`, the national floor checked at load before v1.6 *(D124)* — all ten zero-cost gates green, and
-acceptance gates A1–A11 holding. The suite collects 1443 tests (58 skip).
+84 of 84 tasks closed, **2 open** — `T-102`, v1.4's last row, and `T-129`,
+the national floor checked at load before v1.6 *(D124)* — all ten zero-cost
+gates green, and acceptance gates A1–A11 holding. The suite collects 1472
+tests (58 skip).
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -225,7 +226,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.424**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
-| A7 | 73 requirements: 71 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 74 requirements: 72 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -873,7 +874,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1443 tests across 49 files, 58 of them skipped — the skips are per-tree
+1472 tests across 50 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

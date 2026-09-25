@@ -579,6 +579,21 @@ transition **raises and is never recorded**, which is structural rather than
 remembered: the machine returns a new session or raises, and only the adapter
 writes. *(Art. I; T-100, D127)*
 
+**REQ-72** A request reaches the system as a **JSON document** an upstream
+system produced or as **flags** a person typed, and both validate to the same
+`Intake`. The parser takes JSON **text**, never a parsed object — a caller that
+parsed has already decided what *not JSON* means, so two modules would decide
+what a bad intake is. One fault, `MalformedIntake`, covers text that is not
+JSON, JSON that is not an object, a missing field, an unknown field and a wrong
+type alike, because the response to all five is identical: a **bad request,
+exit 1, and no session written**. Normalisation of the carried ICD-10 codes
+happens on the contract and not in either constructor, so the two routes cannot
+diverge even in principle; the codes are validated as strings and **not** as
+ICD-10-CM, because no committed artifact states that grammar. The parser names
+no path and opens nothing — reading the bytes is the composition root's
+(REQ-41). *(T-101, D128; the exit-1 half is measured by `T-102`, REQ-67's
+shape)*
+
 ---
 
 ## 6. Edge cases
@@ -1309,8 +1324,12 @@ an illegal transition raises. Verbs: `session create | list | show | run`.
   patient resource beyond ids.
 - The lifecycle is a closed enum; every transition is code; an illegal
   transition raises and is never recorded.
-- A JSON intake and the equivalent flags validate to the same object; a
-  malformed intake is a bad request (exit 1), never a session.
+- **REQ-72**, minted by `T-101`. A JSON intake and the equivalent flags
+  validate to the same object; a malformed intake is a bad request (exit 1),
+  never a session. Minted at **unit level** — the two routes and every
+  malformed shape — with the *exit-1* half named as `T-102`'s, because nothing
+  has a CLI surface to exit from until the verbs land. REQ-67's shape *(D122,
+  D109, D128)*.
 
 **Gate A12.** Every transition in the enum has a test and every illegal one
 raises; a session round-trips through the adapter byte-stable; the plane check
