@@ -3,6 +3,7 @@
     python -m pa_agent.cli --patient X --procedure 43842
     python -m pa_agent.cli --patient <uuid> --procedure 43775
     python -m pa_agent.cli --patient <uuid> --procedure 43775 --extraction adk
+    python -m pa_agent.cli session packet <session-id>
 
 Prints one JSON document to stdout. For a determination it carries the outcome,
 the `policy_version_id` (REQ-4), the coverage claim it cites where there is one
@@ -12,9 +13,13 @@ serializes fields. For a code no policy governs it prints a `NO_POLICY_FOUND`
 result and still exits zero: a deterministic answer is not an error (D32).
 
 **This module is where every path is named and every port is constructed** — the
-two stores, and the extraction runner (REQ-41, REQ-52). Nothing below it holds a
-path or a credential, which is what makes the production adapters D25 wants a
-second implementation rather than a rewrite.
+four stores, the extraction runner, the verifier, the quote runner and the
+document index a packet's citations are validated against (REQ-41, REQ-52,
+REQ-74). Nothing below it holds a path or a credential, which is what makes the
+production adapters D25 wants a second implementation rather than a rewrite. It
+is also where every value that cannot be derived comes from: the clock (`_now`)
+and, until `T-105` builds the payer directory, the packet's recipient
+(`PLACEHOLDER_PAYER`) — D127's rule, D131's application of it.
 
 `--extraction` picks the model leaf, and the default is the honest one:
 
@@ -52,7 +57,12 @@ import uuid
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from pa_agent import history, intake as intake_module, session as session_machine
+from pa_agent import (
+    form,
+    history,
+    intake as intake_module,
+    session as session_machine,
+)
 from pa_agent.contracts import (
     Determination,
     DeterminationAborted,
@@ -61,6 +71,7 @@ from pa_agent.contracts import (
     SessionState,
 )
 from pa_agent.determination import NoJurisdictionResult, NoPolicyResult, determine
+from pa_agent.index import DocumentIndex
 from pa_agent.stores.session import (
     DEFAULT_SESSION_ROOT,
     LocalSessionStore,
@@ -378,7 +389,7 @@ def _block_for(result, patient_id, policy_store, patient_store, knowledge_store,
 #: The verbs `session` takes. A literal set, tested against the subparsers the
 #: session parser declares, because dispatching on "any first positional" would
 #: make a typo a session command (D129).
-SESSION_VERBS = ("create", "list", "show", "run")
+SESSION_VERBS = ("create", "list", "show", "run", "packet")
 
 
 def _now() -> str:
@@ -423,6 +434,8 @@ def _intake_from(args) -> "intake_module.Intake":
         procedure=args.procedure,
         state=args.state,
         icd10=args.icd10,
+        requesting_provider=args.requesting_provider,
+        servicing_provider=args.servicing_provider,
     )
 
 
@@ -620,11 +633,134 @@ def _verb_run(args) -> int:
     return 0
 
 
+#: The recipient a packet is addressed to until `T-105` builds the payer
+#: directory. **A declared placeholder, not a contact**: no committed artifact
+#: names a payer's prior-authorization mailbox, and an address written from
+#: memory is a claim enforced as though it had a source (D118's rule, D128's on
+#: ICD-10 grammar). It lives here because the composition root is where a value
+#: that cannot be derived comes from — `_now()`'s rule (D127) — and `T-105`
+#: replaces the *source* of the string with `payers.json`, not its shape (D131).
+PLACEHOLDER_PAYER = "Simulated Payer <prior-auth@payer.invalid>"
+
+
+def _packet_index(document_ids, policy_store, patient_store) -> DocumentIndex:
+    """The documents a packet's citations slice back through (REQ-74).
+
+    Built **here** because only the composition root may name both ports
+    (REQ-41) and a packet's spans point into both: a criterion cites the
+    patient's bundle and its notes, a coverage claim cites the corpus. That is
+    the scorer's rule (D75) and `workflow._document_for`'s, one surface over.
+
+    An id neither port serves is left out, and `form.assemble` then refuses the
+    packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`. Classifying it is the span
+    validator's job, and deciding here what a missing document *means* would be
+    the composition root answering a question `pa_agent.spans` exists to answer
+    (D38).
+    """
+    index = DocumentIndex()
+    for document_id in document_ids:
+        for store in (patient_store, policy_store):
+            try:
+                index.add(store.get_document(document_id))
+            except KeyError:
+                continue
+            break
+    return index
+
+
+def _verb_packet(args) -> int:
+    """Assemble the packet for one snapshot and print it.
+
+    It prints the **rendered `.eml`** rather than a JSON record, because a packet
+    is a document and the other four verbs print records; `--json` prints the
+    structured `Packet` for a reader who wants the fields. `--run N` picks the
+    snapshot and defaults to the latest, because a session may hold several and
+    a packet is over one (D131).
+
+    The review is computed for every session whose determination carries a tree,
+    and it costs nothing: `--suggest` has replayed `T-98`'s quote recording since
+    `T-99` and every committed chart's notes are in it (D126).
+    """
+    store = _session_store(args.sessions_root)
+    try:
+        session = store.get(args.session_id)
+    except SessionNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    if not session.runs:
+        # Not an unbuilt path and not an error: the session exists and has
+        # determined nothing, so there is no snapshot to assemble a packet over.
+        # Exit 1 is *the request cannot be acted on as sent* (D129).
+        print(
+            f"bad request: session {session.session_id} is "
+            f"{session.state.value} and carries no determination; run it before "
+            "asking for a packet",
+            file=sys.stderr,
+        )
+        return 1
+
+    run_index = len(session.runs) - 1 if args.run is None else args.run
+    if not 0 <= run_index < len(session.runs):
+        # Checked here rather than left to `form.assemble`'s own refusal, because
+        # reading the snapshot to render it comes first and an out-of-range index
+        # would be an `IndexError` before the refusal could be raised.
+        print(
+            f"bad request: session {session.session_id} holds "
+            f"{len(session.runs)} run(s); there is no run {run_index}",
+            file=sys.stderr,
+        )
+        return 1
+
+    determination = session.runs[run_index].determination
+    policy_store = LocalPolicyStore()
+    patient_store = LocalPatientStore()
+    knowledge_store = LocalKnowledgeStore()
+
+    review = None
+    if history.review_scope(determination) is not None:
+        review = _review(
+            determination,
+            session.intake.patient_id,
+            policy_store,
+            patient_store,
+            knowledge_store,
+        ).review
+
+    try:
+        packet = form.assemble(
+            session=session,
+            run_index=run_index,
+            rendered_determination=_render(determination),
+            review=review,
+            payer=args.payer,
+            index=_packet_index(
+                form.source_ids(determination=determination, review=review),
+                policy_store,
+                patient_store,
+            ),
+        )
+    except form.PacketRefused as exc:
+        # Every refusal is a bad request: a missing justification, a row the
+        # review does not hold and a citation that no longer slices are all
+        # *this cannot be sent as it stands*, and the message is what the
+        # reviewer acts on (D129's rule for the verbs).
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(json.dumps(packet.model_dump(mode="json"), indent=2, ensure_ascii=False))
+    else:
+        sys.stdout.write(form.render(packet))
+    return 0
+
+
 VERB_HANDLERS = {
     "create": _verb_create,
     "list": _verb_list,
     "show": _verb_show,
     "run": _verb_run,
+    "packet": _verb_packet,
 }
 
 
@@ -675,6 +811,15 @@ def _session_main(argv: list[str]) -> int:
     create.add_argument("--icd10", nargs="*", default=(),
                         help="ICD-10 codes the request carries (recorded, and "
                              "read by no predicate in this version)")
+    # T-103 (D131): the flag half of the two identity fields, so REQ-72's *a
+    # JSON intake and the equivalent flags validate to the same object* stays
+    # true of the whole contract rather than of the four fields it had.
+    create.add_argument("--requesting-provider", default=None,
+                        help="identity pass-through, reproduced on the packet "
+                             "and read by no predicate")
+    create.add_argument("--servicing-provider", default=None,
+                        help="identity pass-through, reproduced on the packet "
+                             "and read by no predicate")
 
     verbs.add_parser("list", help="every session, newest first")
 
@@ -684,6 +829,29 @@ def _session_main(argv: list[str]) -> int:
     run = verbs.add_parser("run", help="determine this session's request")
     run.add_argument("session_id")
     _add_model_flags(run)
+
+    packet = verbs.add_parser(
+        "packet", help="assemble the prior-authorization packet for one snapshot"
+    )
+    packet.add_argument("session_id")
+    packet.add_argument(
+        "--run",
+        type=int,
+        default=None,
+        help="which snapshot to package (default: the latest)",
+    )
+    packet.add_argument(
+        "--payer",
+        default=PLACEHOLDER_PAYER,
+        help=f"the recipient the packet is addressed to (default: "
+             f"{PLACEHOLDER_PAYER!r}, a declared placeholder until T-105 builds "
+             f"the payer directory)",
+    )
+    packet.add_argument(
+        "--json",
+        action="store_true",
+        help="print the structured Packet instead of the rendered .eml",
+    )
 
     args = parser.parse_args(argv)
     return VERB_HANDLERS[args.verb](args)

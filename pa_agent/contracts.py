@@ -2154,6 +2154,14 @@ class Intake(BaseModel):
     #: for.
     state: str | None = None
     icd10_codes: tuple[str, ...] = ()
+    #: Identity **pass-through**, carried and read by no predicate — the same
+    #: rule as `icd10_codes` above and as `practice` on a tree (T-95, D116). A
+    #: full prior-auth form names both, the packet reproduces both, and neither
+    #: is a `Practitioner` resource: Article VI's line is drawn at resources,
+    #: not at text (REQ-70), and a resource here is a corpus the session would
+    #: have to re-serve (T-103, D131).
+    requesting_provider: str | None = None
+    servicing_provider: str | None = None
 
     @field_validator("icd10_codes", mode="after")
     @classmethod
@@ -2189,6 +2197,132 @@ class Intake(BaseModel):
         return tuple(seen)
 
 
+# --------------------------------------------------------------------------
+# The review log (T-103, D131)
+# --------------------------------------------------------------------------
+
+
+class ReviewAction(str, Enum):
+    """What one entry in a session's review log did (REQ-74).
+
+    Closed, and `GapReason`'s discipline applies — two values with the same next
+    action would be one value. These do not: an acceptance puts a code in the
+    packet, a rejection keeps it out, a justification is what lets a *red* one
+    in, and a note is prose about the chart that touches no code.
+
+    `ACCEPT` and `REJECT` are one question and `JUSTIFY` is another, which is
+    why they are separate values rather than a flag on one: an accept followed
+    by a justification must not un-accept the row, and a justification followed
+    by a rejection must not keep it (D131).
+    """
+
+    ACCEPT_SUGGESTION = "ACCEPT_SUGGESTION"
+    REJECT_SUGGESTION = "REJECT_SUGGESTION"
+    JUSTIFY_SUGGESTION = "JUSTIFY_SUGGESTION"
+    NOTE = "NOTE"
+
+
+#: The actions that decide whether a row is in the packet. A partition of
+#: `ReviewAction` with `JUSTIFY_SUGGESTION` and `NOTE`, read by `form.accepted`.
+ACCEPTANCE_ACTIONS = (
+    ReviewAction.ACCEPT_SUGGESTION,
+    ReviewAction.REJECT_SUGGESTION,
+)
+
+#: The actions that name a suggestion row rather than the chart at large.
+ROW_ACTIONS = ACCEPTANCE_ACTIONS + (ReviewAction.JUSTIFY_SUGGESTION,)
+
+
+class ReviewEntry(BaseModel):
+    """One thing the reviewer did to one snapshot, recorded and never edited.
+
+    **The red justification lives here and not on `IcdSuggestion`** (D131).
+    That object is frozen, red carries no citations by construction, and
+    `history.run_review` recomputes the whole review on every `--suggest` — so a
+    justification stored there is recomputed away. Widening `citations` to hold
+    it would be worse: a justification is the one thing in a packet that is
+    **not** evidence, and putting it where Article III validates spans means a
+    span that slices back to nothing.
+
+    `run_index` is required, because a review of snapshot 0 does not justify a
+    code in snapshot 1's packet: a second run is a new snapshot of a chart that
+    may have moved (US-12, D127's self-edge).
+
+    `at` is recorded and **never compared**. Two entries written in the same
+    second compare equal, so order is log order and the log is append-only —
+    which is `T-104`'s statement and the reason this model carries no ordering
+    field of its own.
+
+    The evidence is validated per action, in **both** directions, in
+    `WithheldCandidate`'s idiom: an action that names a row must name its code,
+    and one that does not must not pretend to.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    at: str = Field(min_length=1)
+    reviewer: str = Field(min_length=1)
+    action: ReviewAction
+    run_index: int = Field(ge=0)
+    #: Set by every `ROW_ACTIONS` member, refused by `NOTE`.
+    row_id: str | None = None
+    icd10_code: str | None = None
+    #: `JUSTIFY_SUGGESTION` only. What lets a red suggestion into a packet
+    #: (REQ-65, REQ-74).
+    justification: str | None = None
+    #: `NOTE` only.
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def _the_action_matches_what_it_carries(self) -> "ReviewEntry":
+        if self.action is ReviewAction.NOTE:
+            if self.row_id is not None or self.icd10_code is not None:
+                raise ValueError(
+                    "a NOTE entry names a suggestion row; a note is prose about "
+                    "the chart, and an entry that touches a code is one of the "
+                    "three row actions (REQ-74)"
+                )
+            if self.justification is not None:
+                raise ValueError(
+                    "a NOTE entry carries a justification; a justification is "
+                    "what lets a red suggestion into a packet and belongs to "
+                    "JUSTIFY_SUGGESTION"
+                )
+            if self.note is None or not self.note.strip():
+                raise ValueError(
+                    "a NOTE entry carries no note; an empty note is an omission "
+                    "wearing a field's clothes (D128's rule on a blank code)"
+                )
+            return self
+
+        if self.row_id is None or self.icd10_code is None:
+            raise ValueError(
+                f"a {self.action.value} entry names no row_id and icd10_code; "
+                "an action on a suggestion says which suggestion, or it is a "
+                "code in a packet that traces to nothing (REQ-74)"
+            )
+        if self.note is not None:
+            raise ValueError(
+                f"a {self.action.value} entry carries a note; prose about the "
+                "chart is its own NOTE entry, so the two cannot be read as one"
+            )
+        if self.action is ReviewAction.JUSTIFY_SUGGESTION:
+            if self.justification is None or not self.justification.strip():
+                raise ValueError(
+                    f"JUSTIFY_SUGGESTION for {self.row_id} carries no written "
+                    "justification; whitespace is an omission wearing a field's "
+                    "clothes, and a red suggestion enters a packet on the "
+                    "writing and nothing else (REQ-65, D128's rule)"
+                )
+        elif self.justification is not None:
+            raise ValueError(
+                f"a {self.action.value} entry carries a justification; only "
+                "JUSTIFY_SUGGESTION does, so the packet reads one field and "
+                "never has to choose between two"
+            )
+        return self
+
+
 class SessionRun(BaseModel):
     """One determination this session produced, and the clock it ran against.
 
@@ -2222,6 +2356,15 @@ class Session(BaseModel):
     intake: Intake
     state: SessionState
     runs: tuple[SessionRun, ...] = ()
+    #: The review log, append-only and read by order (T-103, D131). It lands
+    #: here and not in a file of its own because REQ-70's claim is that a
+    #: session holds what it produced, and a review of a snapshot belongs with
+    #: the snapshot — the store's byte-stability check then covers it for free.
+    #: `T-104` ships the verb that appends; this row defines the home, because
+    #: *a suggestion enters only through a recorded acceptance* cannot be
+    #: checked against a recording with nowhere to live (T-100's precedent with
+    #: `Intake`).
+    reviews: tuple[ReviewEntry, ...] = ()
 
     @model_validator(mode="after")
     def _runs_match_the_state(self) -> Session:
@@ -2241,5 +2384,147 @@ class Session(BaseModel):
             raise ValueError(
                 f"session {self.session_id} is {self.state.value} and carries "
                 "no run; only CREATED means nothing has been determined"
+            )
+        return self
+
+
+# --------------------------------------------------------------------------
+# The packet (T-103, D131)
+# --------------------------------------------------------------------------
+
+
+class PacketProvenance(BaseModel):
+    """Which session, which snapshot, which tree, and who it is addressed to.
+
+    The one field of `Packet` that is **not** a form field, declared as such so
+    that *every packet field maps to a row of README's form table* is a claim a
+    test can make — `BOTH_PLANES`' idiom, on an output shape. A form does not
+    have a *which snapshot of which session* box; a reviewable artifact needs
+    one.
+
+    `payer` is the recipient header value and nothing else. `T-105` replaces the
+    **source** of that string with `payers.json`; the shape does not move.
+    `submitted_at` is `None` until a submission exists, and `form.render` emits a
+    `Date:` header only when it does — an .eml with a clock-derived date is one
+    no committed fixture can equal twice (D131).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    session_id: str = Field(min_length=1)
+    run_index: int = Field(ge=0)
+    policy_version_id: str = Field(min_length=1)
+    payer: str = Field(min_length=1)
+    submitted_at: str | None = None
+
+
+class PacketSuggestion(BaseModel):
+    """One suggested code the reviewer accepted, with what let it in (REQ-74).
+
+    Every clinical field is copied from the **row's** suggestion, never from the
+    review entry: the entry says only *that this was accepted* and — for a red —
+    *why*. An entry that carried its own code could put a code in a packet that
+    traces to nothing, which is the one thing a suggestion may never be.
+
+    The red rule is enforced here as well as in `form.accepted`, and both earn
+    their place. This validator is what makes *no packet carries an unjustified
+    accepted red* structural rather than remembered, so a second assembly path
+    cannot skip it; `form.accepted` raising first is what makes the refusal name
+    **every** unjustified code instead of the one that happened to be built
+    first (D131).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    row_id: str = Field(min_length=1)
+    colour: SuggestionColour
+    icd10_code: str = Field(min_length=1)
+    icd10_title: str = Field(min_length=1)
+    effect_display: str = Field(min_length=1)
+    #: Provenance: the sentence in the drug's label that asserts the effect.
+    effect: EvidenceSpan
+    #: Chart evidence, copied from the suggestion. Empty on a red, by
+    #: construction on `IcdSuggestion` (REQ-64).
+    citations: tuple[EvidenceSpan, ...] = ()
+    #: Red only, and required there. The reviewer's written reason.
+    justification: str | None = None
+    #: Who accepted it and when, read off the `ACCEPT_SUGGESTION` entry.
+    accepted_by: str = Field(min_length=1)
+    accepted_at: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _a_red_in_a_packet_is_justified(self) -> "PacketSuggestion":
+        if self.colour is SuggestionColour.RED:
+            if self.justification is None or not self.justification.strip():
+                raise ValueError(
+                    f"{self.row_id} is red and carries no written justification; "
+                    "red means nothing on the chart supports it, so it enters a "
+                    "form on the reviewer's writing and nothing else (REQ-65, "
+                    "REQ-74)"
+                )
+            if self.citations:
+                raise ValueError(
+                    f"{self.row_id} is red and cites {len(self.citations)} "
+                    "span(s); red cites nothing, and a justification is not "
+                    "evidence (D131)"
+                )
+        elif self.justification is not None:
+            raise ValueError(
+                f"{self.row_id} is {self.colour.value} and carries a "
+                "justification; a colour that cites the chart is already "
+                "evidenced, and two reasons for one code read as a stronger "
+                "claim than either"
+            )
+        return self
+
+
+class Packet(BaseModel):
+    """The prior authorization request, assembled and ready to transmit.
+
+    **Every field is a live row of README's *A full prior-auth form, mapped to
+    these lanes* table**, except `provenance`, which says so. That table is this
+    model's field list and `tests/test_docs_consistency.py` holds the two
+    together in both directions, because it is the one thing in the README that
+    would silently disagree with the code as the packet grows (D131).
+
+    `determination` is the **rendered** document, handed down from `cli._render`
+    and embedded verbatim. `form.py` never re-renders one: a second renderer is a
+    second answer to one question (D129), and v2.2's `T-116` compares the two
+    surfaces byte for byte.
+
+    `evidence` is the determination's spans, typed, so `form.citations` can walk
+    them — the rendered dict carries offsets a reader can check and not objects
+    a validator can slice. Nothing here is a `Document`: a packet names the
+    documents it cites and carries the quotes, exactly as a determination does
+    (REQ-70's line).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    provenance: PacketProvenance
+    #: Administrative.
+    patient_id: str = Field(min_length=1)
+    requesting_provider: str | None = None
+    servicing_provider: str | None = None
+    #: Code alignment.
+    procedure_code: str = Field(min_length=1)
+    diagnosis_codes: tuple[str, ...] = ()
+    #: Clinical justification: the rendered determination and its spans.
+    determination: dict[str, Any]
+    evidence: tuple[EvidenceSpan, ...] = ()
+    #: Supporting documents: every document id this packet cites, first-cited
+    #: order.
+    supporting_documents: tuple[str, ...] = ()
+    #: The accepted ICD-10 suggestions, which are diagnosis codes a human put
+    #: here (REQ-65).
+    suggestions: tuple[PacketSuggestion, ...] = ()
+
+    @model_validator(mode="after")
+    def _the_rendered_determination_is_not_empty(self) -> "Packet":
+        if not self.determination:
+            raise ValueError(
+                f"the packet for session {self.provenance.session_id} carries an "
+                "empty determination; a packet whose clinical justification is "
+                "absent is a form with nothing in the box it exists for"
             )
         return self

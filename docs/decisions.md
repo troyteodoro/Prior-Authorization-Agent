@@ -11608,3 +11608,396 @@ this board … 81 are closed and 1 is open"* — was correct when D124 wrote it 
 `CLAUDE.md` and not for the board that owns it. The figure is reconciled in this
 close under working rule 12; the missing check is `T-132`, numbered and not
 folded in (working rule 6).
+
+---
+
+## D131 — v1.5 opens: A13 is rewritten before the round, the outbox statement is made directional, and the packet's red justification lives in the review log
+
+**Context.** Row 1 of v1.5, and the version's opening entry. `T-102` closed
+v1.4 (D129) and `T-129` closed off the path (D130); nothing is open. This
+version delivers the packet the specialist sends and what happens to it:
+`pa_agent/form.py` and `session packet` (`T-103`), the review log (`T-104`),
+simulated submission and tracking (`T-105`), and the committed rendered packets
+(`T-106`). D105 clause 3 assigns three things to this entry — the rewording of
+spec §1, the version's own task order, and the gate — so all three are here,
+before any code, with `T-103`'s own choices after them (Article IX, working
+rule 5).
+
+### Chosen — A13 is rewritten now, into five clauses each naming the task whose close checks it
+
+**A13 as written** — *zero packets in the outbox with a red suggestion lacking
+a justification; every citation in every packet valid; every outbox session
+`AWAITING_DECISION`* — has three defects, and a gate rewritten **after** seeing
+the number it grades is what the kill-criteria note forbids. So it is rewritten
+now or not at all, which is D123's precedent on A11 and T-95/D116's on A10.
+
+1. **No zero-model-calls clause**, though §11's row says *none*. Every version
+   since v1.2 has had that clause in its gate because every version since v1.2
+   could have spent a call by accident; v1.5 adds a *sixth* place a recording
+   is consulted (the packet's review) and would have been the first round whose
+   spend was promised in a table and asserted nowhere.
+2. **US-13's fifth bullet is in no clause.** *Given a payer's simulated
+   decision, when it is recorded, then the session closes with the outcome and
+   the date* — the gate says only that the session is `AWAITING_DECISION`,
+   which is the state **before** that bullet. A story bullet with no clause is
+   a bullet that closes by nobody looking.
+3. **Two clauses have no denominator.** *Every citation in every packet valid*
+   and *zero packets with an unjustified red* are both satisfied by a packet
+   with no citations, and by a suite that assembles no packets. That is exactly
+   what T-95 refused for A10 (two of three clauses held by no command) and what
+   D123 refused for A11 (a clause held by no data), and it would be the third
+   round in a row to find it after the fact.
+
+**A13, rewritten.** Zero packets carrying an **accepted** red suggestion with
+no justification, over a non-empty set of red suggestions the committed corpus
+produces, the refusal naming every unjustified ICD-10 code *(T-103)*; every
+citation in every packet slices back through the port that serves its document,
+reported beside the count checked *(T-103, re-checked over the committed
+fixture by T-106)*; the review log is append-only and the determination's bytes
+are unchanged after any number of reviews, held by parsing as well as by bytes
+*(T-104)*; a session acquires an outbox artifact exactly when it enters
+`AWAITING_DECISION` and no session in an earlier state has one, every
+submission from a state the table forbids exits 1 naming the current state and
+writes nothing, and `session decide` closes the session recording the payer's
+outcome and the date it was taken *(T-105)*; zero model calls in any gate
+*(T-106)*.
+
+The word **accepted** is load-bearing and is the reason clause 1 can be held at
+all. `history.run_review` recomputes every suggestion on every `--suggest`, so
+*a red suggestion exists* is a fact about the chart and the table, not about the
+packet; what the packet controls is whether a red **entered** it. REQ-65 already
+says a suggestion enters no form without a human action, so the checkable claim
+is over the accepted set.
+
+**Rejected — leaving A13 and adding the missing clauses to the task exits
+instead.** The exits are rewritten below anyway, but a gate is what a version
+closes on and A13 is quoted in two places in the spec. A gate whose clauses are
+weaker than its rows' exits is a gate a later reader will quote as the standard
+this round met.
+
+**Rejected — gating the citation count at a number.** *Reported beside the
+count checked* rather than *at least N citations*: the count is a property of
+the committed corpus, and pinning it makes a corpus edit fail a gate about
+packets. What the clause needs is that the denominator is non-zero and printed,
+which is A11's shape after D123.
+
+**Reverses if** a later version gives the outbox a second artifact class, at
+which point clause 4's *exactly when* needs restating per class rather than per
+session.
+
+A13 is updated in **both** places it appears — §11's v1.5 entry and the
+gates-by-version table — in this commit.
+
+### Chosen — §11's fourth statement is false as written and mints in its directional form
+
+*"The outbox is the only side effect of submission, and every session in it is
+`AWAITING_DECISION`"* stops being true the moment `session decide` runs: the
+packet stays in the outbox and the session becomes `DECIDED`. As written the
+statement is satisfiable only by never running `decide` in the test that checks
+it, which is a requirement whose check has to avoid a verb the same version
+ships.
+
+The directional form is what is true and what is worth checking: **a session
+acquires an outbox artifact exactly when it enters `AWAITING_DECISION`, and no
+session in an earlier state has one.** `T-105` mints it. The *only side effect*
+half stays, and is checked against the directory rather than against an exit
+code — D129's rule, since an exit code is what a write-then-fail path also
+returns.
+
+**Rejected — keeping the invariant and reading it as *every session that is
+still awaiting a decision*.** That is a different sentence, and the one in the
+spec would still be quotable. Correcting the statement is cheaper than
+maintaining a gloss on it.
+
+### Chosen — spec §1's "does not submit" is reworded here
+
+D105 clause 3 assigned the rewording to this version's own entry, and this is
+it. §1 now reads that the system **transmits only on the reviewer's explicit
+action after review, and never decides to**, and §4's System-actor row reads the
+same. The sentence *"The system does not submit, does not decide, and does not
+adjudicate on a payer's behalf"* was true of every version before this one and
+is false of the verb `T-105` ships; leaving it would make the spec's first page
+contradict its own §11.
+
+**What does not change:** *does not decide* and *does not adjudicate on a
+payer's behalf*. Those are Amendment 1's scope and Article VII's, and this
+version touches neither.
+
+**Rejected — rewording it when `T-105` lands rather than now.** The sentence
+governs the whole version, and a row that ships a verb its own spec forbids is
+a row that has to choose between its exit and §1 at the last moment.
+
+### Chosen — all four of v1.5's board exits are rewritten, before the rows open
+
+A reserved row's exit may be rewritten up to the moment its record is written;
+`T-97`'s was rewritten at open and `T-98`'s and `T-99`'s before open. All four
+are too weak in the same way — each states a behaviour that a mutant reproduces
+— and the rewrite is cheap now and a renegotiation later.
+
+**`T-103`.** Three gaps. It does not say the refusal **names the code**, which
+US-13 does and §11 does not; *every citation slices back* has no denominator;
+and nothing checks that a suggestion enters only through a human action, which
+is REQ-65's whole point and the only clause that distinguishes a form from a
+report. → *`form.py` assembles the packet and `session packet` prints it; every
+citation in it slices back through the port that serves its document, with the
+count reported; a suggestion enters only through a recorded acceptance; an
+accepted red without a justification is refused, naming every unjustified
+ICD-10 code; `form.py` names no path, no clock and no renderer, checked by
+parsing.*
+
+**`T-104`.** *Never edits* is a behavioural claim no behavioural test on this
+corpus separates from *edits and puts back the same value*, and *after any
+review* passes a one-review test that a replace-entry-0 mutant also passes. →
+*`session review` appends, never edits — `session.review()` names `runs`
+nowhere, checked by parsing — and the determination's bytes are unchanged after
+any number of reviews, compared off disk; a review of a snapshot that does not
+exist is refused.*
+
+**`T-105`.** *Illegal orders raise* **contradicts D129**, whose contract is exit
+1 with a stderr line naming the current state and its legal successors; *decide
+closes it* drops US-13's outcome and date; and nothing checks the outbox is the
+*only* side effect. → *`session submit` writes the packet to a payer outbox and
+moves the session to `AWAITING_DECISION`, and that file is the only thing on
+disk that changed; `session decide` closes it recording the payer's outcome and
+the date it was taken; an order the table forbids exits 1, names the current
+state and its legal successors, and writes nothing — checked against the
+directory, not the exit code.*
+
+**`T-106`.** *One packet* is a sample of one chosen by whoever writes it;
+*byte-stable* does not say against what, and D127 measured that one write and
+two writes fail different mutations; nothing says the fixture is **re-derived**,
+which is D91's whole finding — a recording's free half drifts and only
+`--rescore` notices; and A13's version-wide zero-model-calls clause is
+unplaced. → *two committed packets, one carrying a justified red and one none,
+each rendering byte-identical to its committed fixture and identical when
+rendered twice; each fixture session's determination re-derived from the live
+engine and compared; zero model calls; every gate green.*
+
+### Chosen — the packet does not carry a non-answer, and the reason is the lifecycle rather than the type
+
+D129's open question: *v1.5's packet may need to carry a non-answer — a
+`NO_POLICY_FOUND` is a thing a specialist may well need to send back* — at which
+point `SessionRun.determination` would widen to the union. **It does not, and
+the reason is not the type.** `submit` requires `IN_REVIEW`; `IN_REVIEW` is
+reachable only from `DETERMINED`; `DETERMINED` is reachable only by recording a
+`SessionRun`; and a request no tree governs **stays `CREATED`**, which is D129's
+own third finding. There is no path through the lifecycle that reaches a packet
+carrying a non-answer, so the union would build a type for a route no verb can
+take — and it would make `contracts` import `determination`, which is T-100's
+measured cycle.
+
+**Reverses if** v2.0's payer axis gives *"no policy under this payer"* a
+recipient. That is a different sentence from *no policy in the store governs
+this code*: it is addressed to a named payer, and it has somewhere to go. At
+that point D129's named shape lands — a new type in `contracts` that
+`determination` constructs — with a payer to send it to.
+
+### Chosen — v1.5 adds no eval row, no verifier claim and no report section
+
+A deliberate departure from A10's and A11's shape, stated so a later reader does
+not ask why v1.5 has no section in `eval/report.md`.
+
+**None of A13's five clauses is a rate.** A2 is a precision, A5 an abstention
+share, A6 a cost, A11 a precision — each has a denominator the corpus supplies
+and each belongs in a generated report. A13's clauses are **universals over a
+set the suite constructs**: every citation slices back, no accepted red is
+unjustified, the log appends, the outbox is the only side effect. A report table
+of *4 of 4 packets valid* would have a denominator chosen by whoever wrote the
+fixtures, which is the thing D123 refused for A11's yellow clause.
+
+It follows that this version adds no `eval/cases.json` row and therefore no
+verifier claim (D113's tax applies to a row with a **cited verdict**, and this
+version produces no new verdict at all — REQ-65's rule, one layer along). The
+verifier recording stays at 38 claims a tier.
+
+**Rejected — an `eval/cases.json` row per packet shape.** The harness grades a
+determination against a label, and a packet is not a determination: it is an
+assembly over one, and its failures are refusals rather than wrong verdicts. A
+row would have to grade *did it refuse*, which is a unit-level question wearing
+an eval row's clothes.
+
+**Reverses if** a later version measures something about packets that varies by
+chart — an anchoring rate over a rendered form, a per-practice field-coverage
+figure — at which point the report gains a section and this paragraph is
+superseded.
+
+### On D129's own reversal clause for the verb surface
+
+D129 said its hand-rolled dispatch reverses *if the verb set grows past what a
+first-argument test reads clearly*, and named v1.5's `review`, `submit` and
+`decide`. **It is already satisfied and needs no migration.** `_session_main`
+builds a separate `ArgumentParser` and calls `add_subparsers(dest="verb",
+required=True)` with one `add_parser` per verb, so every verb this version adds
+is a subparser and a `VERB_HANDLERS` entry. The only hand-rolled part is the
+single `args_in[0] == "session"` literal in `main()`, which does not grow with
+the verb set. One sentence, so a later reader does not go looking for the
+migration D129's clause implies.
+
+### `T-103`'s own choices
+
+**Chosen — the red justification lives in the review log, not on
+`IcdSuggestion`.** Three reasons, in order of force. `IcdSuggestion` is frozen
+and red carries **no citations by construction**, so there is no field on it a
+justification fits. `history.run_review` recomputes the whole review on every
+`--suggest`, so a justification written onto a suggestion is recomputed away on
+the next call. And widening `citations` to hold it is worse than either: a
+justification is the one thing in a packet that is **not** evidence, and putting
+it where Article III validates spans means a span that slices back to nothing.
+
+So `contracts.py` gains `ReviewAction` — `ACCEPT_SUGGESTION`,
+`REJECT_SUGGESTION`, `JUSTIFY_SUGGESTION`, `NOTE`, closed, because two values
+with the same next action would be one value (`GapReason`'s discipline) — and
+`ReviewEntry`, frozen, with a validator per action in `WithheldCandidate`'s
+idiom and in **both** directions: `ACCEPT`/`REJECT`/`JUSTIFY` require `row_id`
+and `icd10_code` and refuse a free-text `note`; `NOTE` refuses both ids and
+requires its text; `ACCEPT` and `REJECT` refuse a `justification`, which only
+`JUSTIFY` carries; and `JUSTIFY` refuses a whitespace-only one — `Intake`'s
+blank-code rule one field along, an omission wearing a field's clothes.
+
+**Chosen — `reviews` lands on `Session` now, and `T-104` ships the verb that
+appends to it.** T-100's precedent exactly: the `Intake` **contract** landed
+with T-100 because T-100's own statement — *a session records its intake* —
+could not be checked without the object, while the two constructors were
+T-101's. This row's statement is *a suggestion enters only through a recorded
+acceptance*, and it cannot be checked against anything if the recording has no
+home. A `form.assemble` reading entries from a parameter the CLI cannot fill
+would be a checked behaviour with no surface, which is the shape REQ-67 and
+REQ-72 both split across two rows to avoid.
+
+**Rejected — a separate review-log file beside the session.** It would be a
+fifth storage root, and REQ-70's claim is that the session holds what it
+produced; a review of a snapshot belongs with the snapshot. The session store's
+byte-stability test covers it for free.
+
+**Chosen — acceptance and justification are two questions, each answered by the
+latest entry that speaks to it.** The log is read **by order, never by comparing
+`at` strings** — two entries written in one second compare equal, and a sort on
+a string clock is a decision made by whichever entry the sort happened to put
+last. Within one `run_index`, the latest of `ACCEPT`/`REJECT` decides
+acceptance and the latest `JUSTIFY` supplies the text. A single latest-entry
+rule would be wrong in both directions: an `ACCEPT` followed by a `JUSTIFY`
+would un-accept the row, and a `JUSTIFY` followed by a `REJECT` would keep it.
+
+**Chosen — entries are scoped to the `run_index` they name.** A review of
+snapshot 0 does not justify a code in snapshot 1's packet, because a second run
+is a new snapshot of a chart that may have moved (US-12's rule, D127's
+self-edge). The alternative — entries applying to whichever run the packet is
+built over — makes a justification written against last week's chart carry into
+this week's packet, which is the one thing a justification exists to prevent.
+
+**Chosen — an accept naming a `row_id` the review does not hold is
+`SuggestionNotInReview`, never a silent skip.** A typo would otherwise put
+nothing in the packet and say nothing about it, or — worse, if the code were
+carried from the entry rather than from the row — put a code in a packet that
+traces to nothing, which CLAUDE.md names as the one thing a suggestion must
+never be. Every field of a `PacketSuggestion` is read from the **row's**
+suggestion; the entry supplies only *that it was accepted* and *the
+justification*.
+
+**Chosen — `UnjustifiedRedSuggestion` names every unjustified code, joined.** A
+refusal naming the first makes a reviewer fix one code and re-run four times.
+`_determine_or_report` printing one stderr line per errored criterion is the
+precedent, and the mutation `', '.join(codes)` → `codes[0]` is why the test
+carries two reds rather than one: with one red in a fixture the two expressions
+are the same string.
+
+**Chosen — `PacketSuggestion` refuses an unjustified red at construction, and
+`accepted()` still collects every code first.** The contract-level refusal is
+what makes *no packet carries an unjustified accepted red* structural rather
+than remembered; `accepted()` raising first is what makes the message name all
+of them. Both, because deleting either leaves a green suite with one of A13's
+clauses unheld: without the contract a future second assembly path skips the
+check, and without `accepted()`'s collection the refusal names one code.
+
+**Chosen — `form.py` composes `cli._render`'s output and never re-renders a
+determination.** `assemble` takes `rendered_determination: dict` handed **down**
+from the composition root. `form.py` **cannot** import `cli.py`:
+`tests/test_planes.py`'s `BOTH_PLANES` is an exact-set assertion and `form.py`
+would join it, making the module that assembles a packet a module that reaches
+both storage planes. And D129 already settled that a second renderer is a second
+answer to one question, with v2.2's `T-116` comparing the two surfaces byte for
+byte. Pinned by parsing: `form.py` declares no `_render` and imports nothing
+from `pa_agent.cli`, and the `.eml` body is asserted to contain the handed-down
+document verbatim.
+
+**Chosen — the `.eml` is hand-rolled, not `email.message.EmailMessage`.**
+`as_string()` inserts a clock-derived `Date:` and a randomised `Message-ID`, so
+a committed fixture would differ on every render — T-106's whole exit. It also
+line-folds to a stdlib policy, so the fixture would break on a Python upgrade
+with no change to this repo. The headers are written in a fixed order;
+`Message-ID` is a digest of `(session_id, run_index)` at the reserved
+`.invalid` domain, so it is deterministic and cannot collide with a real host;
+`Date:` is emitted **only** when the packet carries a submission timestamp,
+which nothing does until `T-105`.
+
+**Rejected — inventing a `From:` address.** No committed artifact names the
+submitting practice, and a header written from memory is a claim enforced as
+though it had a source (D118's rule, D128's on ICD-10 grammar). The header is
+absent and this entry says why, rather than present and fictional.
+
+**Chosen — the payer is a string the composition root supplies, and in this row
+it is a declared placeholder.** `assemble(..., payer=...)` takes the recipient
+header value; `cli.py` holds `PLACEHOLDER_PAYER` and names it as a placeholder,
+the way `_now()` is the one place a value that cannot be derived comes from
+(D127). `T-105` replaces the **source** of the string with `payers.json`, not
+its shape. `submitted_at` is a defaulted keyword on `assemble` for the same
+reason: T-105 supplies it and no existing call changes.
+
+**Chosen — `session packet` is a fifth verb, and it prints the `.eml`.**
+US-13 names review, submit and decide and not this; the verb exists because
+`T-103` must be closable on its own, and an exit condition that can only be
+reached through `T-105`'s verb is a row that closes on the next row's work. It
+prints the rendered packet because a packet is a **document** and the other four
+verbs print **records**; `--json` prints the structured `Packet` for a reader
+who wants the fields. `--run N` picks the snapshot, defaulting to the latest,
+because a session may hold several and the packet is over one.
+
+**Chosen — the document index is built in `cli.py`, from the ids `form.py`
+reports.** Only the composition root may name both ports (REQ-41), and a
+packet's spans point into both — a criterion cites the bundle and its notes, a
+coverage claim cites the corpus (D75's rule, `workflow._document_for`'s shape).
+So `form.source_ids` reports what to load and `cli._packet_index` loads it. An
+id neither port serves is left out and surfaces as `UncitedPacket`
+(`UNKNOWN_DOCUMENT`) from `assemble`, which is where a rejection is classified;
+swallowing it in the builder would be the composition root deciding what a
+missing document means.
+
+**Rejected — `form.py` taking a resolver callable and building the index
+itself.** That is what `workflow._validate_result_spans` does, and it is right
+there because the graph already holds both ports in its context. Here it would
+mean `form.py` holding a callable that reaches both planes, and the traversal
+that collects citations would run twice with no test able to tell the two
+traversals apart if they diverged. One traversal, `citations()`, is used by the
+validator, by the renderer and by T-106's gate.
+
+**Chosen — `Intake` gains `requesting_provider` and `servicing_provider` as
+pass-through text.** `icd10_codes`' precedent (T-101, D128) and `practice`'s
+(T-95, D116): a field an upstream system sends and no predicate reads is
+recorded rather than dropped. They are **strings, never a `Practitioner`
+resource** — Article VI's line is drawn at resources, not at text (REQ-70), and
+a resource here would be a third corpus the session would have to re-serve.
+README's form table moves those two rows from *Not in v1* to live in the same
+commit.
+
+**Chosen — README's form table is `Packet`'s field list, and a test says so.**
+That table assigns every field of a full prior-auth form to a lane, and it is
+the one thing in the README that will silently disagree with the code as the
+packet grows. `tests/test_docs_consistency.py` now reads it: every row whose
+*In this build* cell says the field is live maps to a declared `Packet` field,
+and every `Packet` field is either mapped from a row or in a declared
+non-row set — one member, `provenance`, with its reason, in `BOTH_PLANES`'
+idiom.
+
+### What it costs
+
+No model call, no network. No recording, bundle, note, span, verdict, baseline
+or verifier claim moves, and `_render` gains no key — the packet is its own
+surface and `BARE_DETERMINATION_KEYS` is unchanged. `main()`'s parser block and
+the `args_in[0] == "session"` literal are untouched; `STORAGE_SCAN_EXEMPT` stays
+one module wide and `BOTH_PLANES` gains nothing, because `form.py` imports
+`contracts`, `index` and `spans` and reaches neither plane.
+
+**What it mints.** REQ-74 — the packet's citations, the refusal, and the human
+action a suggestion enters through — minted here because this close is what
+checks it (D109). The other three of v1.5's statements stay §11 statements until
+`T-104` and `T-105` open.

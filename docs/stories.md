@@ -434,19 +434,28 @@ until v1.5 nothing leaves.
 - **Given** a determined session **When** Sam reviews it **Then** her edits
   append to a review log beside the determination, whose bytes are unchanged ·
   *(A13)*
-- **Given** a red suggestion **When** the form is assembled without a
-  justification **Then** the packet is refused, naming the code · *(A13)*
+- **Given** a red suggestion Sam **accepted** **When** the form is assembled
+  without a justification **Then** the packet is refused, naming **every**
+  unjustified code · *(A13; D131 — the review is recomputed on every call, so
+  what the packet controls is whether a red *entered* it, and a refusal naming
+  one code makes her fix one and re-run)*
 - **Given** a reviewed session **When** Sam submits it **Then** an
   email-shaped packet is written to the simulated payer's outbox, every
   citation in it slices back, and the session is `AWAITING_DECISION` · *(A13)*
 - **Given** a session not yet in review **When** submission is attempted
-  **Then** it raises; the system never decides to transmit · *(A13)*
+  **Then** the lifecycle machine raises and the verb exits 1 naming the current
+  state and its legal successors, with nothing written; the system never
+  decides to transmit · *(A13; D129's contract, restated by D131)*
 - **Given** a payer's simulated decision **When** it is recorded **Then** the
   session closes with the outcome and the date · *(A13)*
 
-**Covers:** A13
+**Covers:** A13 *(rewritten into five clauses before `T-103` opened, D131)*
+**Ships:** `session packet` beside `review`, `submit` and `decide` — a fifth
+verb this story does not name, because `T-103` has to be closable on its own
+and an exit reachable only through `T-105`'s verb is a row closing on the next
+row's work *(D131)*.
 **Note:** this version rewords spec §1's "does not submit" to "transmits only
-on the reviewer's explicit action after review".
+on the reviewer's explicit action after review, and never decides to" *(D131)*.
 
 ---
 

@@ -287,9 +287,16 @@ def test_no_corpus_type_is_reachable_from_a_session():
 #: plain `str` is invisible to it. Measured at this close: adding
 #: `cached_policy_text: str` to `SessionRun` — a field that can hold the entire
 #: policy corpus — passed all nineteen tests until this pin existed.
-SESSION_FIELDS = {"session_id", "created_at", "intake", "state", "runs"}
+SESSION_FIELDS = {"session_id", "created_at", "intake", "state", "runs", "reviews"}
 RUN_FIELDS = {"ran_at", "as_of", "policy_version_id", "determination"}
-INTAKE_FIELDS = {"patient_id", "procedure_code", "state", "icd10_codes"}
+#: `requesting_provider` and `servicing_provider` joined at T-103 (D131):
+#: identity **pass-through text**, never a `Practitioner` resource — Article VI's
+#: line is drawn at resources, not at text, which is the same reason
+#: `icd10_codes` is a tuple of strings and not a list of `Condition`s.
+INTAKE_FIELDS = {
+    "patient_id", "procedure_code", "state", "icd10_codes",
+    "requesting_provider", "servicing_provider",
+}
 
 
 def test_a_session_carries_exactly_these_fields():

@@ -832,3 +832,128 @@ def test_the_readmes_degradation_section_sorts_every_unclaimed_criterion(readme)
         f"(tree, id): {missing}; every one a tree declares belongs in its table "
         "(D120, working rule 12)"
     )
+
+
+# --------------------------------------------------------------------------
+# The form table is `Packet`'s field list (T-103, D131)
+# --------------------------------------------------------------------------
+
+#: Each live row of README's *A full prior-auth form, mapped to these lanes*
+#: table, and the `Packet` field(s) it lands in. Many-to-many on purpose: the
+#: determination answers two clinical rows, and *Diagnosis codes* covers both
+#: what the request carried and what the reviewer accepted.
+#:
+#: A literal here rather than a mapping in `pa_agent/form.py`, because a pin
+#: belongs with the check and production code does not carry a copy of a README
+#: table — `SESSION_FIELDS`' precedent, one document over.
+FORM_ROW_FIELDS: dict[str, tuple[str, ...]] = {
+    "Patient data": ("patient_id",),
+    "Requesting provider": ("requesting_provider",),
+    "Servicing provider": ("servicing_provider",),
+    "Diagnosis codes (ICD / SNOMED)": ("diagnosis_codes", "suggestions"),
+    "CPT / HCPCS procedure code": ("procedure_code",),
+    "Step-therapy / prior-treatment log": ("determination", "evidence"),
+    "Disease severity markers": ("determination", "evidence"),
+    "Recent provider notes": ("supporting_documents",),
+}
+
+#: The `Packet` fields that are **not** form fields, each with its reason —
+#: `BOTH_PLANES`' idiom in `tests/test_planes.py`. A form has no *which snapshot
+#: of which session, addressed to whom* box; a reviewable artifact needs one.
+PACKET_NON_FORM_FIELDS: dict[str, str] = {
+    "provenance": (
+        "which session, which snapshot, which tree and which recipient — "
+        "provenance a reviewable artifact carries and a paper form does not"
+    ),
+}
+
+
+def _form_table_rows(readme: str) -> dict[str, str]:
+    """Each form-table row's label and its *In this build* cell."""
+    section = readme[readme.index("## A full prior-auth form, mapped to these lanes") :]
+    section = section[: section.index("\n## ", 1)]
+    rows: dict[str, str] = {}
+    for line in section.splitlines():
+        if not line.startswith("| ") or line.startswith("| Form field") or "---" in line:
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 6:
+            continue
+        label = cells[0].strip("*").strip()
+        if not cells[-1]:
+            continue  # the lane heading rows, which carry empty cells
+        rows[label] = cells[-1]
+    assert rows, "README's form table no longer parses"
+    return rows
+
+
+def _is_live(cell: str) -> bool:
+    """A row is live when its *In this build* cell says so, first word.
+
+    Keyed on the start of the cell rather than on the word appearing anywhere,
+    because *Not in v1 — the emitted packet … is the deterministic equivalent*
+    describes what is live instead of claiming to be.
+    """
+    return cell.strip("*").strip().startswith("Live")
+
+
+def test_every_live_form_row_is_a_packet_field_and_every_field_is_a_row(readme):
+    """README's form table **is** `form.py`'s field list (D131).
+
+    That table assigns every field of a full prior-authorization form to a lane,
+    and it is the one thing in this README that will silently disagree with the
+    code as the packet grows: a field added to `Packet` with no row is a form
+    field nobody classified, and a row promoted to *Live* with no field is a
+    claim about what this build carries that it does not.
+
+    Both directions, as an exact set. `PACKET_NON_FORM_FIELDS` is the one
+    declared exception and it carries its reason, so it cannot quietly become a
+    second list of things nobody checks (`BOTH_PLANES`' rule).
+    """
+    from pa_agent.contracts import Packet
+
+    rows = _form_table_rows(readme)
+    live = {label for label, cell in rows.items() if _is_live(cell)}
+
+    assert live == set(FORM_ROW_FIELDS), (
+        "README's live form rows and the mapping disagree.\n"
+        f"  live in README and unmapped: {sorted(live - set(FORM_ROW_FIELDS))}\n"
+        f"  mapped and not live: {sorted(set(FORM_ROW_FIELDS) - live)}\n"
+        "A row promoted to Live gains a Packet field in the same commit (D131)."
+    )
+
+    mapped = {field for fields in FORM_ROW_FIELDS.values() for field in fields}
+    declared = set(Packet.model_fields)
+    assert mapped <= declared, (
+        f"the mapping names Packet fields that do not exist: "
+        f"{sorted(mapped - declared)}"
+    )
+    unclassified = declared - mapped - set(PACKET_NON_FORM_FIELDS)
+    assert not unclassified, (
+        f"Packet carries {sorted(unclassified)}, which no form row maps to and "
+        "PACKET_NON_FORM_FIELDS does not declare; every field of the packet is a "
+        "field of the form, or it says why not (D131)"
+    )
+    assert not (mapped & set(PACKET_NON_FORM_FIELDS)), (
+        "a field is mapped from a row *and* declared as non-form; the two sets "
+        "are a partition"
+    )
+    for field, reason in PACKET_NON_FORM_FIELDS.items():
+        assert field in declared, f"{field} is declared non-form and is not a field"
+        assert len(reason.split()) >= 8, f"{field}: the reason is too thin to audit"
+
+
+def test_the_form_table_still_carries_rows_this_build_does_not_have(readme):
+    """The table's value is that it classifies the *whole* form, not this build.
+
+    If every row were live the table would have stopped being an architecture
+    argument and become a feature list — and the check above would then pass on a
+    table that had lost its point (D131).
+    """
+    rows = _form_table_rows(readme)
+    not_live = {label for label, cell in rows.items() if not _is_live(cell)}
+    assert len(not_live) >= 3, (
+        f"only {sorted(not_live)} are not live; the table exists to assign every "
+        "field of a full form to a lane, including the ones this build has not "
+        "built"
+    )

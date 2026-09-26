@@ -28,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-73 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A12 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's and A12 v1.4's, in §11's gate table rather than §7). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 closed with v1.2. |
-| `docs/tasks.md` | The board. Task records T-00 through T-102 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-103 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, and T-132, which T-129 did *(D130)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D130, kill criteria, open questions. Append-only. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-74 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10, US-11 and US-12 closed with v1.2, v1.3 and v1.4; **US-13 is v1.5's and open**. |
+| `docs/tasks.md` | The board. Task records T-00 through T-103 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-104 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, and T-133, which T-103 did *(D131)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D131, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -139,11 +139,21 @@ Run the system:
 
 ```bash
 ./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775   # a real determination, zero model calls
+./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775
+./venv/bin/python -m pa_agent.cli session run <session-id>
+./venv/bin/python -m pa_agent.cli session packet <session-id>          # the .eml; --json for the fields
 ```
 
-CLI exit codes: `0` an answer, `1` a bad request (unknown patient), `2` an
-unbuilt path, `3` a determination aborted over a criterion in `ERROR` — the
-criterion id and `error_code` go to stderr, nothing to stdout (REQ-29, D76).
+The five session verbs dispatch on `argv[0]` **before** the bare parser is built,
+so the bare invocation above is unchanged (D129). `session packet` is `T-103`'s
+and prints a document rather than a record, which is why it is the one verb whose
+default output is not JSON *(D131)*.
+
+CLI exit codes: `0` an answer, `1` a bad request (unknown patient; from the verbs
+also a malformed intake, an unknown session, an illegal order and a **refused
+packet**), `2` an unbuilt path, `3` a determination aborted over a criterion in
+`ERROR` — the criterion id and `error_code` go to stderr, nothing to stdout
+(REQ-29, D76, D129, D131).
 
 `--tier {ai_studio,vertex}` reaches the six measurement scripts and the CLI,
 defaulting to the development tier so every existing invocation is unchanged;
@@ -264,6 +274,24 @@ verifier as a `(candidate, quotes)` claim and demotes a rejected one to red
 that says so (`verifier_rejected`, REQ-67). The review's calls never enter
 `Determination.metrics`; an eval row budgets them with its own
 `max_review_model_calls`.
+
+**`pa_agent/form.py` is the packet, and it is pure** *(T-103, D131)*. No path,
+no clock, no store, and **no renderer**: `assemble` takes
+`rendered_determination` — the dict `cli._render` produced — handed **down** and
+embeds it verbatim, because a second renderer is a second answer to one question
+(D129) and a `form.py` importing `cli.py` would join `BOTH_PLANES`. It validates
+every citation through `pa_agent.spans` against an index the composition root
+filled from the ids `source_ids` reports, and `citations()` is the one traversal
+the validator, the renderer and T-106's gate all read. Four refusal conditions
+under `PacketRefused`, three of them typed: an accepted red with no
+justification (**naming every** unjustified code), an acceptance naming a row
+the review does not hold, a citation that does not slice, and — on the base
+type — a run the session does not have. The `.eml` is
+hand-rolled — `EmailMessage.as_string()` stamps a clock-derived `Date:` and a
+randomised `Message-ID`, so no fixture could equal two renders — and carries no
+`From:`, because nothing in the repository names who sends. `session packet` is
+the fifth verb; the payer is a string the composition root supplies, and until
+`T-105` that string is `cli.PLACEHOLDER_PAYER`, declared as a placeholder.
 
 **Adjudication is nine predicate kinds and two exclusion kinds.**
 `PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
@@ -425,6 +453,26 @@ passing**, because the tests are written in terms of the thing that broke.
   with any passage returned, and a pair that *anchored* is a red gate — a
   yellow this corpus was not supposed to produce. The review's turns are
   counted beside the determination's (`HistoryRun`), never in A6.
+- **A red suggestion's justification lives in the review log, and a suggestion
+  enters a packet only through a recorded acceptance** *(REQ-74, T-103, D131)*.
+  `IcdSuggestion` is frozen, red carries **no citations by construction**, and
+  `history.run_review` recomputes the whole review on every `--suggest` — so a
+  justification stored on the suggestion is recomputed away, silently, on the
+  next call. Widening `citations` to hold it is worse: a justification is the one
+  thing in a packet that is **not** evidence, so it would put a non-span where
+  Article III validates spans. `ReviewEntry`/`ReviewAction` are the home, on
+  `Session.reviews`; the form reads **acceptance and justification as two
+  questions**, each answered by the latest entry in **log order** that speaks to
+  it, scoped to the `run_index` being packaged. A single latest-entry rule is
+  wrong in both directions — an accept then a justify would un-accept the row,
+  a justify then a reject would keep it — and comparing `at` strings is worse
+  still, because two entries written in one second compare equal.
+- **The blank-justification guard is on the contract and nowhere else** *(T-103,
+  D131, measured)*. `ReviewEntry` refuses a whitespace-only justification at
+  construction, so a second guard in `form.accepted` would be a check no input
+  can reach: `if not justification` and `if justification is None` are the same
+  function there, and the mutation between them survives every test. A check
+  that cannot fail is not a check — `accepted()` reads `is None`.
 - **`would_affect` compares the row's already-coded SNOMED codes, never its
   ICD-10 code** *(REQ-66, T-97, D119)*. Measured across every committed value
   set: the eight `icd10_anchor`s any set carries are `I10`, `N18.1`, `N18.2`,
@@ -716,16 +764,17 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**86 of 86 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1518 tests across 51 files, 58 of
+**87 of 87 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1553 tests across 52 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
 IDs run to T-129 (T-126 through T-129 are off the path, above the roadmap's
 reservations), but numbering is not contiguous and D92 and D94 deleted six
 records between them, so the highest id is well above the count. **Nothing is
-open**; `T-130`, `T-131` and `T-132` are numbered with no record yet. **Next is
-v1.5, row 1 — `T-103`.**
+open**; `T-130`, `T-131`, `T-132` and `T-133` are numbered with no record yet.
+**v1.5 is open and `T-103` closed its first row** *(D131)*; next is `T-104`, the
+review log.
 
 **`T-127` and `T-128` are off the path** *(D120, D121)*. `T-127` re-read
 *Where this system degrades*: the eight unclaimed criteria sort three ways
@@ -776,8 +825,35 @@ replay's own clock. Read them from `eval/report.md`, which is generated; these a
 copy and the report is the source.
 
 Open: **nothing. v1, v1.1, v1.2, v1.3 and v1.4 are all complete** —
-**A1–A12 all hold**, and US-12 is delivered. Next is **v1.5** — the form, the
-review log and simulated submission (`T-103`–`T-106`).
+**A1–A12 all hold**, and US-12 is delivered. **v1.5 is open**: `T-103` closed
+row 1 and the remaining rows are `T-104`–`T-106` — the review log, simulated
+submission and the committed rendered packets.
+
+**`T-103` opened v1.5** *(D131)*: `pa_agent/form.py` assembles the packet and
+`session packet` prints it as an `.eml`. The module is **pure** — no path, no
+clock, no renderer: `assemble` takes `cli._render`'s dict handed **down**,
+because a second renderer is a second answer to one question (D129) and a
+`form.py` importing the composition root would join `BOTH_PLANES`. **A
+suggestion enters a packet only through a recorded `ACCEPT_SUGGESTION`** scoped
+to the snapshot being packaged, and the **red justification lives in the review
+log** — `IcdSuggestion` is frozen, red carries no citations by construction, and
+`run_review` recomputes the review on every call, so a justification stored
+there is recomputed away; putting it in `citations` would put a non-evidence
+string where Article III validates spans. `contracts.py` gained `ReviewAction`,
+`ReviewEntry`, `Packet`, `PacketSuggestion` and `PacketProvenance`; `Session`
+gained `reviews` (T-100's precedent — the *home* lands with the row whose
+statement reads it, the verb is `T-104`'s) and `Intake` gained
+`requesting_provider` and `servicing_provider` as pass-through **text**. It
+minted **REQ-74**. The entry also **rewrote A13** into five clauses before the
+round, corrected §11's outbox statement into the directional form `decide` does
+not falsify, and reworded spec §1 and §4 as D105 clause 3 assigns to it. Nine
+mutations, zero survivors, and **two moved a check**: a blank-justification
+guard in `accepted()` is a check no input can reach, because `ReviewEntry`
+refuses a whitespace-only justification at construction — so the guard lives on
+the contract and `accepted()` reads `is None`; and truncating the citation loop
+to `[:1]` **survived the first pass**, because the empty-index test fails on the
+first span and the count assertion re-validates in the test's own loop. The test
+that catches it fills the index with only the first cited document.
 
 **`T-129` closed the last row off the path** *(D130)*: `national_floor` is a
 `NationalFloor` declaring the **constant** it bounds, its **value** and its
@@ -1208,8 +1284,8 @@ would buy a passing check rather than a capability.
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      retrieval, runners, extraction, quotes, verifier,
-                     reconcile, aggregate, determination, history, contracts,
-                     model_pin, tiers, cli
+                     reconcile, aggregate, determination, history, form,
+                     intake, session, contracts, model_pin, tiers, cli
   agent/             ADK: extraction_agent, quote_agent, retrieval_agent,
                      patient_tools, policy_tools, tool_bounds, agent (adk web
                      entry point)
@@ -1307,7 +1383,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement,
                      run_quote_measurement, run_adk_quote_measurement
-tests/               47 files
+tests/               52 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

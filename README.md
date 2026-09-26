@@ -69,12 +69,12 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1, v1.2, v1.3 and v1.4 are all complete.**
-86 of 86 tasks closed, **none open** — `T-129` closed the last row off the
-path, the national floor checked at load before v1.6 *(D124, D130)* — all ten
-zero-cost gates green, and acceptance gates A1–A12 holding. The suite collects
-1518 tests (58 skip). **Next is v1.5**: the form, the review log and simulated
-submission.
+**v1, v1.1, v1.2, v1.3 and v1.4 are all complete, and v1.5 is under way.**
+87 of 87 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
+the `session packet` verb *(D131)*, behind `T-129`'s national floor checked at
+load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
+A1–A12 holding. The suite collects 1553 tests (58 skip). **v1.5 continues with
+`T-104`**: the review log, then simulated submission.
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -91,8 +91,8 @@ submission.
   non-invasive abdominal and visceral vascular ultrasound from WPS's L35755
   *(T-94)* — and closed by generating the account of what that cost
   *(T-95)*. **The answer is in the next section, and it is measured.**
-- **v1.3** is in progress, and asks what the chart *implies* rather than what it
-  says. `T-96` opened it with a second hashed corpus: five FDA drug labels under
+- **v1.3** asked what the chart *implies* rather than what it says. `T-96`
+  opened it with a second hashed corpus: five FDA drug labels under
   `data/knowledge/`, and a reviewed table of (drug, effect) rows that is the only
   place a suggested ICD-10 code may come from — every row naming a source for
   each of its four claims, and a claim with no source this project can re-read
@@ -115,6 +115,20 @@ submission.
   quotes consulted**, proved by a recording rather than assumed *(D122)*. The
   measured yellow is v1.6's, because a new note re-measures six extraction
   recordings *(D120)*.
+- **v1.4** made a determination something a specialist can come back to:
+  `session create | list | show | run` over a fourth storage port, an intake
+  that validates the same object from a JSON document an upstream system sent or
+  from flags a person typed, and a lifecycle Python walks *(D127, D128, D129)*.
+- **v1.5** is under way, and it is the packet. `T-103` built
+  `pa_agent/form.py` and the `session packet` verb: the determination, the
+  identity fields, the diagnosis codes and the ICD-10 suggestions the reviewer
+  **accepted** — assembled into an email-shaped document whose every citation is
+  re-validated through the port that serves its document before it is returned.
+  A suggestion enters only through a recorded acceptance, and a **red** one —
+  pharmacological plausibility with nothing on the chart — is refused unless the
+  reviewer has written a justification, with the refusal naming *every*
+  unjustified code rather than the first *(D131)*. The review log, transmission
+  to a simulated payer and the tracking that follows are `T-104`–`T-106`.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -227,7 +241,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.424**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
-| A7 | 75 requirements: 73 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 76 requirements: 74 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -381,7 +395,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
 | v1.4 | sessions and intake, headless | US-12 | **complete** |
-| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | planned |
+| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | **in progress** |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
 | v2.0 | the payer axis: national and regional coverage | US-16 | planned |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
@@ -810,8 +824,8 @@ means here. Four lanes:
 |---|---|---|---|---|---|
 | **Administrative** | | | | | |
 | Patient data | Input — a FHIR bundle | None — the extractor is *barred* from structured data, so the note reading stays independent | — | Structured observations and conditions read from the patient port | Live |
-| Requesting provider | Input | — | — | Identity pass-through and validation | Not in v1 |
-| Servicing provider | Input | — | — | Identity pass-through and validation | Not in v1 |
+| Requesting provider | Input — `--intake` or a flag | — | — | Identity pass-through on the intake, reproduced on the packet, read by no predicate | Live (v1.5 — text, never a `Practitioner` resource) |
+| Servicing provider | Input — `--intake` or a flag | — | — | Identity pass-through on the intake, reproduced on the packet, read by no predicate | Live (v1.5 — text, never a `Practitioner` resource) |
 | **Code alignment (code request)** | | | | | |
 | Diagnosis codes (ICD / SNOMED) | Input — inside the bundle | — | The comorbidity value set (543 codes) and the exclusion's condition binding | Set membership: criterion (b), and the national T2DM exclusion (sc2) | Live (SNOMED, per the corpus) |
 | CPT / HCPCS procedure code | Input — `--procedure` | — | The tree's three procedure sets: covered, non-covered, contractor-determined | sc1 resolution to one of four typed answers, zero model calls | Live |
@@ -876,6 +890,8 @@ before they existed.
 ```bash
 ./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 --state WA
 ./venv/bin/python -m pa_agent.cli session create --intake request.json
+./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 \
+      --icd10 E66.01 --requesting-provider "Referring Clinic"
 ./venv/bin/python -m pa_agent.cli session list
 ./venv/bin/python -m pa_agent.cli session run <session-id> --as-of 2025-01-01
 ./venv/bin/python -m pa_agent.cli session show <session-id>
@@ -883,6 +899,9 @@ before they existed.
 
 `create` takes the request either way — a JSON document an upstream system
 produced or the flags a person typed — and both validate to the same object.
+`--icd10`, `--requesting-provider` and `--servicing-provider` are recorded and
+read by no predicate: they are what the packet reproduces, and dropping them
+would mean the session could not reproduce the request it answered.
 `run` determines it and **appends** a snapshot: a second run is a new snapshot,
 never an edit, and the determination it prints is byte-identical to what the
 bare invocation prints for the same request. `--sessions-root` moves the store;
@@ -892,6 +911,34 @@ system's own output rather than evidence it can re-derive.
 A request no tree governs — a code no policy covers, or a state no tree serves
 — prints its answer, exits `0` and leaves the session `CREATED`: nothing was
 determined, so there is no snapshot to keep.
+
+### The packet
+
+The prior-authorization request itself, assembled from one snapshot (v1.5).
+
+```bash
+./venv/bin/python -m pa_agent.cli session packet <session-id>
+./venv/bin/python -m pa_agent.cli session packet <session-id> --run 0 --json
+```
+
+It prints an **email-shaped document** — the administrative fields, the code
+alignment, the accepted ICD-10 suggestions with their justifications, the
+determination verbatim as the commands above print it, and a numbered citation
+manifest. `--json` prints the structured packet instead, `--run N` picks a
+snapshot (default: the latest), and `--payer` sets the recipient, whose default
+is a declared placeholder until the payer directory lands.
+
+Two rules the assembly enforces, and both are refusals rather than warnings.
+**Every citation is re-validated** through the port that serves its document
+before the packet is returned, so a span that no longer slices back is a refused
+packet and not a footnote. And a **suggested code enters only through a recorded
+acceptance**: a red suggestion — pharmacological plausibility with nothing on the
+chart — is refused unless the reviewer wrote a justification, and the refusal
+names *every* unjustified code, not the first. The refusals exit `1`, print
+nothing to stdout, and say which code or which citation.
+
+Nothing is transmitted. The review log, the payer outbox and the tracking that
+follows are the rest of v1.5.
 
 The live modes need a Gemini API key in `pa_agent/agent/.env` (gitignored — no
 real key ever appears in a tracked file).
@@ -905,7 +952,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1518 tests across 51 files, 58 of them skipped — the skips are per-tree
+1553 tests across 52 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -987,8 +1034,8 @@ the installed framework still discovers the agent.
 ./venv/bin/python eval/run_eval.py --update-baseline   # adopt drift, as a reviewed diff
 ```
 
-Twenty-eight labeled cases across three practices, every cited span re-validated by
-the scorer. The gate
+Thirty-three labeled cases across three practices, every cited span re-validated
+by the scorer — the count is `eval/report.md`'s, which is generated. The gate
 fails on drift in **either** direction, so a case that *starts* passing is
 adopted explicitly with `--update-baseline` and a commit. Four result statuses
 stay distinct: `PASS`, `FAIL`, `BLOCKED` (the component does not exist yet —
@@ -1090,9 +1137,9 @@ labels, small n) still travel with every 1.000 in this README.
 
 ```
 pa_agent/            resolver, criteria, spans, index, anchor, workflow,
-                     retrieval, runners, extraction, verifier, reconcile,
-                     aggregate, determination, history, contracts, model_pin,
-                     tiers, cli
+                     retrieval, runners, extraction, quotes, verifier,
+                     reconcile, aggregate, determination, history, form,
+                     intake, session, contracts, model_pin, tiers, cli
   agent/             ADK path: extraction_agent, quote_agent, retrieval_agent,
                      tools, bounds
   stores/            policy.py, patient.py, knowledge.py and session.py — four ports;

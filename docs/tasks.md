@@ -17,13 +17,15 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v1.5`, row 1 — `T-103`** — the form, the review log and
-simulated submission (`T-103`–`T-106`), which is the next version in `Roadmap
-after v1.1`. **Nothing is open on this board.** `T-129` closed the last row off
-the path *(D130)*: the national floor is declared with its value and its
-comparison and checked where a tree loads, so v1.6's nationally quantified NCD
-arrives into an engine that can already refuse a MAC constant below its national
-bound.
+**What to do next: `v1.5`, row 2 — `T-104`**, the review log. **Nothing is
+open on this board.** **`T-103` opened v1.5 and closed row 1** *(D131)*:
+`pa_agent/form.py` assembles the packet, `session packet` prints it, every
+citation in it slices back through the port that serves its document, and a
+suggestion enters only through a recorded acceptance — with an accepted red
+refused unless a justification is written, naming **every** unjustified code.
+That entry is also the version's opening one: it rewrote **A13** into five
+clauses before the round, corrected §11's outbox statement, reworded spec §1 and
+§4, and rewrote all four of v1.5's exits. Rows 3 and 4 are `T-105` and `T-106`.
 
 **`v1.4` is closed and A12 holds** *(T-102, D129)*. A determination is now
 something a specialist can come back to: `session create | list | show | run`
@@ -181,11 +183,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Eighty-six tasks are on this board — IDs run to T-129; T-126 through T-129
+Eighty-seven tasks are on this board — IDs run to T-129; T-126 through T-129
 are off the path and above the roadmap's reservations; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 86 are closed and none is open**; `T-132` below
-is numbered and has no record yet, in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **All 87 are closed and none is open**; `T-132` and
+`T-133` below are numbered and have no record yet, in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -217,6 +219,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-131` | **A2's 0.90 threshold is printed and held by no command.** `eval/report.md` states it and `build_report.py --verify` only byte-compares a re-render, so a regeneration in which precision fell to 0.5 passes every gate. `T-99` gated A11's threshold with a test; A2's, A3's and A5's are still prose. T-95's finding about A10, in a third place | **discovered in `T-99`** — gating one threshold made the absence of the others legible; not folded in, because three gates acquiring commands is its own row |
 | `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **closed** (D130), before v1.6 opened |
 | `T-132` | **this board's own task count is a copy nothing re-derives.** `tests/test_docs_consistency.py` counts the closed-record headings and holds `README.md` and `CLAUDE.md` to them; the board's own prose — *"Eighty-two tasks are on this board … 81 are closed and 1 is open"* — was correct when D124 wrote it at `773c209` and was four closes stale by `T-129`, with every gate green. D108's own failure, on the document that **owns** the figure. Same class, found in the same pass: spec §11's opening line read *"v1.3 is in progress"* while its own table three lines below marked v1.3 and v1.4 closed | **discovered in `T-129`** — both stale figures are reconciled in that close under working rule 12; the missing check, over a document's prose against that document's own table, is its own row *(working rule 6)* |
+| `T-133` | **three more copies with no owner.** `README.md`'s *eval harness* section read *Twenty-eight labeled cases* while `eval/report.md` — which owns the figure — said 33; `test_the_readmes_corpus_figures_come_from_the_report` checks the copy in P3's bullet and scans no other, which is the every-occurrence weakness `test_every_stated_suite_size_is_the_suites_size` was rebuilt to fix, one figure over. Its repository layout listed the `pa_agent/` modules by hand and had been missing `quotes`, `intake` and `session` since `T-98`, `T-100` and `T-101` — a list the package itself owns. And `CLAUDE.md`'s layout read *tests/ 47 files* against 52: `test_every_stated_suite_size_is_the_suites_size` matches *N tests across M files* and a bare file count is invisible to it. All three are reconciled in `T-103`'s close under working rule 12; the three checks are this row's | **discovered in `T-103`** — `T-132` is the same class on the board's own prose; these three are README's and CLAUDE.md's, against owners outside the document, so they are one row and not folded into that one *(working rule 6)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -293,7 +296,7 @@ this round and closed as REQ-73 *(D124, D130)*.
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
-| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
+| v1.5 | the form, review, simulated submission and tracking, headless · **in progress** | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
@@ -367,12 +370,24 @@ determination, never an edit to it; transmission to a simulated payer on her
 action, and the session tracked to awaiting a decision. Spec §1's "does not
 submit" is reworded by this version's entry. **Zero model calls.**
 
+**`T-103` opened the version** *(D131)*, which also **rewrote A13** — five
+clauses instead of three, each naming the task whose close checks it — corrected
+§11's outbox statement into the directional form `decide` does not falsify, and
+reworded spec §1 and §4 as D105 clause 3 assigns to this entry. **All four exits
+below were rewritten before their rows opened**, in `T-97`/`T-98`/`T-99`'s
+shape: each of the four stated a behaviour a mutant reproduces, and three of
+them left an A13 clause held by nothing. The reasons are in D131, one per row.
+This version adds **no eval row, no verifier claim and no `eval/report.md`
+section**, deliberately: none of A13's clauses is a rate, so the suite is the
+evidence and a report table would have a denominator whoever wrote the fixtures
+chose *(D131)*.
+
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the form | `T-103` | pending | `form.py` assembles the packet; every citation in it slices back; a red suggestion without a justification is refused |
-| 2 | the review log | `T-104` | pending | `session review` appends, never edits; the determination's bytes are unchanged after any review |
-| 3 | simulated submission and tracking | `T-105` | pending | `session submit` writes the packet to a payer outbox and moves the session to `AWAITING_DECISION`; `session decide` closes it; illegal orders raise |
-| 4 | the rendered packet | `T-106` | pending | one packet renders byte-stable from a recorded session; every gate green |
+| 1 | the form | `T-103` | **closed** (D131) | `form.py` assembles the packet and `session packet` prints it; every citation in it slices back through the port that serves its document, with the count reported; a suggestion enters only through a recorded acceptance; an accepted red without a justification is refused, naming **every** unjustified ICD-10 code; `form.py` names no path, no clock and no renderer, checked by parsing. **Rewritten before open** *(D131)* |
+| 2 | the review log | `T-104` | pending | `session review` appends, never edits — `session.review()` names `runs` nowhere, checked by parsing — and the determination's bytes are unchanged after **any number of** reviews, compared off disk; a review of a snapshot that does not exist is refused. **Rewritten before open** *(D131)*: *never edits* is a claim no behavioural test on this corpus separates from *edits and puts back the same value* |
+| 3 | simulated submission and tracking | `T-105` | pending | `session submit` writes the packet to a payer outbox and moves the session to `AWAITING_DECISION`, and that file is the **only** thing on disk that changed; `session decide` closes it recording the payer's outcome and the date it was taken; an order the table forbids exits 1, names the current state and its legal successors, and writes nothing — checked against the **directory**, not the exit code. **Rewritten before open** *(D131)*: *illegal orders raise* contradicts D129, and *decide closes it* dropped US-13's outcome and date |
+| 4 | the rendered packet | `T-106` | pending | **two** committed packets, one carrying a justified red and one none, each rendering byte-identical to its committed fixture **and identical when rendered twice**; each fixture session's determination **re-derived** from the live engine and compared; zero model calls; every gate green. **Rewritten before open** *(D131)*: *one packet* is a sample of one, *byte-stable* did not say against what (D127), and nothing re-derived the fixture (D91) |
 
 ### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
 
@@ -2817,6 +2832,126 @@ recorded when nothing was determined, `save()` never reached, and
 `--sessions-root` ignored — the last of which wrote into the working tree,
 which is why the file also parses **itself** for a store constructed without a
 root.
+
+---
+
+## `US-13` Let me review, complete and send the packet
+
+Opened by `T-103` *(D131)*, which is also v1.5's opening entry: it rewrote A13
+into five clauses, corrected §11's outbox statement, reworded spec §1 and §4,
+and rewrote all four of this version's exits before their rows opened. Four
+rows: the form, the review log, submission and tracking, then the committed
+rendered packets. **Zero model calls in all four** — the review the packet reads
+replays `T-98`'s recording, which is the same replay `--suggest` has used since
+`T-99`.
+
+### `[x] T-103` The form
+
+**REQ:** mints 74 · **Depends:** T-100, T-101, T-102, T-97, T-99 ·
+**Blocks:** T-104, T-105, T-106 · **Decided by:** D131 ·
+**Gates:** A13 (first of four rows; opens v1.5) · **Timebox:** one day
+**Status:** **closed** (D131) — opened and closed 2026-09-25; the exit ran green
+and every gate with it. **v1.5 is open.** No model call, and no recording,
+bundle, note, span, verdict, baseline or verifier claim moved; `_render` gained
+no key, so `BARE_DETERMINATION_KEYS` is unchanged and the bare invocation's
+document is byte-for-byte what `T-102` left.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_form.py -q --color=no
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: a packet assembled over a determined session validates **every**
+citation through the port that serves its document and **reports the count**, so
+a clause that would pass on zero citations cannot; a suggestion enters the packet
+**only** through a recorded `ACCEPT_SUGGESTION` scoped to the run being packaged;
+an accepted red with no justification is refused, and the refusal names **every**
+unjustified ICD-10 code rather than the first; an accept naming a `row_id` the
+review does not hold is refused rather than skipped; a `NOTE` entry changes no
+packet field; and `pa_agent/form.py` is parsed for a path, a clock, a
+`_render` and an import of `pa_agent.cli`, none of which it may hold.
+
+**What it delivers.** `pa_agent/form.py` — pure: it names no path, opens nothing
+and imports no clock. `assemble()` builds the packet from the session, the
+snapshot, the rendered determination handed **down** from the composition root,
+the review, the payer and a document index, and validates every citation through
+`pa_agent.spans` before returning; `citations()` is the one traversal, used by
+the validator, by the renderer and by `T-106`'s gate; `render()` writes the
+`.eml` by hand. Three refusal types under `PacketRefused` —
+`UnjustifiedRedSuggestion`, `SuggestionNotInReview`, `UncitedPacket` — plus the
+base for a run the session does not hold; three children rather than one type
+with a `reason`, because the next actions differ (write a justification, fix a
+`row_id`, chase a span that no longer slices) and `resolver.py`'s four types are
+the precedent.
+`contracts.py` gains `ReviewAction`, `ReviewEntry`, `PacketProvenance`,
+`PacketSuggestion` and `Packet`; `Session` gains `reviews` and `Intake` gains
+`requesting_provider` and `servicing_provider`. `cli.py` gains `session packet`,
+the fifth verb, and `_packet_index` — built there because only the composition
+root may name both ports (REQ-41) and a packet's spans point into both.
+
+**Why the justification is in the log and not on the suggestion.**
+`IcdSuggestion` is frozen, red carries **no citations by construction**, and
+`history.run_review` recomputes the whole review on every `--suggest`, so a
+justification written onto a suggestion is recomputed away. Widening `citations`
+to hold it is worse: a justification is the one thing in the packet that is
+**not** evidence, and putting it where Article III validates spans means a span
+that slices back to nothing *(D131)*.
+
+**Why `reviews` lands here and the verb does not.** T-100's precedent exactly:
+the `Intake` contract landed with `T-100` because *a session records its intake*
+could not be checked without the object, while the constructors were `T-101`'s.
+This row's statement is *a suggestion enters only through a recorded
+acceptance*, and a form reading entries from a parameter the CLI cannot fill
+is a checked behaviour with no surface — REQ-67's and REQ-72's split, in the
+other direction.
+
+**What is deliberately not built.** `session review` (`T-104`), the payer outbox,
+`payers.json`, `AWAITING_DECISION`, `DECIDED`, `session submit` and `session
+decide` (`T-105`), and the committed `.eml` fixtures (`T-106`). The payer is a
+string the composition root supplies and in this row it is `PLACEHOLDER_PAYER`,
+declared as one; `submitted_at` is a defaulted keyword on `assemble`, so `T-105`
+supplies it without reshaping the function and `Date:` is emitted only when a
+packet carries one.
+
+**The mutation pass: nine mutations, zero survivors**, each caught by a named
+test in `tests/test_form.py` and none by a count drifting. Both blank-
+justification guards weakened to `is None`; the unjustified-red raise deleted;
+`', '.join(unjustified)` → `unjustified[0]`; the citation loop truncated to
+`[:1]`; a local `_render` added; `accepted()` reading the **entry's**
+`icd10_code` instead of the row's; `run_index` scoping dropped; and an accept
+naming an unknown row skipped rather than refused.
+
+**Two of them moved a check, and that is the pass's substance.** First, a
+redundant blank-justification guard in `accepted()` is a check **no input can
+reach**: `ReviewEntry` refuses a whitespace-only justification at construction,
+so `if not justification` and `if justification is None` are the same function
+there, and the mutation between them survives everything. Blankness is decided
+once, on the contract — where `ReviewEntry(action=JUSTIFY, justification="   ")`
+and `PacketSuggestion(..., justification="   ")` each distinguish the two — and
+`accepted()` reads `is None`. A check that cannot fail is not a check. Second,
+**truncating the citation loop survived the first pass.** The empty-index test
+fails on the *first* span, so a one-iteration loop raises identically, and the
+count assertion re-validates the manifest in the **test's** own loop, which a
+truncated production loop never runs. `test_a_citation_after_the_first_is_
+refused_too` fills the index with only the first cited document, and it is the
+one test that fails under `[:1]` — the shape D65 argues for, arrived at by
+measurement rather than by foresight.
+
+**What it mints.** **REQ-74**, with the coverage mapping and the pinned count in
+the same commit. The other three of v1.5's statements stay §11 statements until
+`T-104` and `T-105` open *(D109)*.
+
+**Found and not fixed, numbered `T-133`.** Three copies with no owner. README's
+*eval harness* section read *Twenty-eight labeled cases* against the report's 33
+— the first one `test_the_readmes_corpus_figures_come_from_the_report` does not
+scan, which is the every-occurrence weakness the suite-size check was rebuilt to
+fix, one figure over. Its repository layout omitted `quotes`, `intake` and
+`session` from `pa_agent/`, a list the package owns. And `CLAUDE.md`'s layout
+read *tests/ 47 files* against 52, which the suite-size regex cannot see because
+it matches *N tests across M files* and not a bare file count. All three are
+reconciled here under working rule 12; the three checks are that row's *(working
+rule 6)*.
 
 ---
 

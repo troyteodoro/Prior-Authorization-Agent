@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1 and v1.2 complete, A1–A10 hold *(D104, D106, D116)*; **v1.3 in progress** *(T-96, T-97)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3 and v1.4 complete, A1–A12 hold *(D104, D106, D116, D126, D129)*; **v1.5 in progress** *(T-103, D131)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -19,8 +19,12 @@ Given a patient record and a requested procedure, produce a reviewable
 determination stating, for each criterion in the governing coverage policy,
 whether the record supports it, with citations a human can verify.
 
-The system does not submit, does not decide, and does not adjudicate on a
-payer's behalf. It prepares a packet and a gap list for a human specialist.
+The system **transmits only on the reviewer's explicit action after review, and
+never decides to**; it does not decide, and does not adjudicate on a payer's
+behalf. It prepares a packet and a gap list for a human specialist. *(Reworded
+by v1.5's own opening entry, as D105 clause 3 assigns — the earlier "does not
+submit" was true of every version before v1.5 and false of the verb `T-105`
+ships. D131.)*
 
 ## 2. Primary output
 
@@ -66,7 +70,7 @@ carries less information than they do.
 |---|---|
 | Specialist | Consumes the determination and gap list. Only human in the v1 loop. |
 | Policy author | Reviews and approves criteria tree diffs. Same person as the specialist in v1. |
-| System | Retrieves, extracts, adjudicates, verifies, aggregates. Never submits. *(v1.5 rewords this: transmits only on the reviewer's explicit action, D105.)* |
+| System | Retrieves, extracts, adjudicates, verifies, aggregates. **Transmits only on the reviewer's explicit action after review, and never decides to** *(reworded by v1.5's opening entry, D105 clause 3, D131)*. |
 | Upstream system | Creates sessions through the intake contract; never reads a determination. *(v1.4, §11)* |
 | Payer (simulated) | Receives the packet on the reviewer's action; never uses the system. *(v1.5, §11)* |
 
@@ -611,6 +615,30 @@ no path and opens nothing — reading the bytes is the composition root's
 (REQ-41). *(T-101, D128; the exit-1 half is measured by `T-102`, REQ-67's
 shape)*
 
+### The packet, review and transmission
+
+**REQ-74** Every citation in an assembled packet slices back through the port
+that serves its document, validated by `pa_agent.spans` before the packet is
+returned and reported beside the count checked — a clause over *every* citation
+is satisfied by a packet with none, which is why the count is part of the
+statement. A packet is **refused** while any **accepted** red suggestion lacks a
+written justification, and the refusal names **every** unjustified ICD-10 code
+rather than the first: a refusal naming one makes a reviewer write one
+justification and re-run. And a suggestion enters a packet **only** through a
+recorded human action — an `ACCEPT_SUGGESTION` entry in the session's review log,
+scoped to the snapshot being packaged, naming a `row_id` that run's review holds.
+An acceptance naming a row the review does not hold is refused rather than
+skipped; every clinical field is copied from the row's suggestion and never from
+the entry, so a typo cannot put a code in a packet that traces to nothing
+(REQ-63, REQ-65). The **word *accepted* is load-bearing**: the review is
+recomputed on every call, so *a red suggestion exists* is a fact about the chart
+and the table, and what a packet controls is whether one entered it. The
+justification lives in the review log and not on the suggestion — that object is
+frozen, red carries no citations by construction, and a justification is the one
+thing in a packet that is **not** evidence, so putting it where Article III
+validates spans would mean a span that slices back to nothing. *(Art. III;
+T-103, D131)*
+
 ---
 
 ## 6. Edge cases
@@ -1046,7 +1074,7 @@ changed is that the replayed numbers are no longer from a single tier.
 
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
 is closed, and **v1.2, v1.3 and v1.4 are closed too** *(T-95/D116, T-99/D126,
-T-102/D129)*; **v1.5 is next**. This section fixes what
+T-102/D129)*; **v1.5 is in progress**, opened by `T-103` *(D131)*. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are
@@ -1073,7 +1101,7 @@ load-bearing; a table that sorts prettily is not.
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
-| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | T-103–T-106 | none | A13 |
+| v1.5 | the form, review, simulated submission and tracking, headless · **in progress** | US-13 | T-103–T-106 | none | A13 |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
@@ -1367,20 +1395,61 @@ after review; and the session tracked to `AWAITING_DECISION`, with a
 this version's entry to "transmits only on the reviewer's explicit action
 after review, and never decides to". **Zero model calls.**
 
-**Requirements it will mint.**
+**Requirements, and the task that mints each** *(D109)*.
 
-- The packet's every citation slices back; a packet is refused while any
-  red suggestion lacks a justification.
+- **REQ-74**, minted by `T-103`. The packet's every citation slices back
+  through the port that serves its document, reported beside the count; a
+  packet is refused while any **accepted** red suggestion lacks a written
+  justification, and the refusal names every unjustified ICD-10 code; a
+  suggestion enters a packet only through a recorded human action. *The word
+  accepted is load-bearing*: the review is recomputed on every call, so *a red
+  suggestion exists* is a fact about the chart and what a packet controls is
+  whether one entered it *(D131)*.
 - The review log is append-only; the determination's bytes are unchanged
-  by any review.
+  by any number of reviews. `T-104`'s.
 - Transmission is a lifecycle transition taken only on an explicit verb,
-  after `IN_REVIEW`; the system never decides to transmit.
-- The outbox is the only side effect of submission, and every session in it
-  is `AWAITING_DECISION`.
+  after `IN_REVIEW`; the system never decides to transmit. `T-105`'s.
+- A session acquires an outbox artifact **exactly when** it enters
+  `AWAITING_DECISION`, and no session in an earlier state has one; the outbox
+  is the only side effect of submission. `T-105`'s. **Corrected by D131** from
+  *"every session in the outbox is `AWAITING_DECISION`"*, which stops being
+  true the moment `session decide` runs — the packet stays in the outbox while
+  the session becomes `DECIDED`, so as written the statement was satisfiable
+  only by never running `decide` in the test that checked it.
 
-**Gate A13.** Zero packets in the outbox with a red suggestion lacking a
-justification; every citation in every packet valid; every outbox session
-`AWAITING_DECISION`.
+**Gate A13, rewritten before `T-103` opened** *(D131)*. Five clauses, each
+naming the task whose close checks it. As written it had no zero-model-calls
+clause though this version claims none, left US-13's fifth bullet — *the
+session closes with the outcome and the date* — in no clause at all, and gave
+two clauses **no denominator**, so a packet with zero citations and a suite
+that assembled zero packets both cleared them. That is T-95/D116's finding on
+A10 and D123's on A11, and a gate rewritten after seeing the number it grades
+is what the kill-criteria note forbids.
+
+1. Zero packets carrying an **accepted** red suggestion with no justification,
+   over a **non-empty** set of red suggestions the committed corpus produces,
+   the refusal naming every unjustified ICD-10 code *(T-103)*.
+2. Every citation in every packet slices back through the port that serves its
+   document, **reported beside the count checked** *(T-103; re-checked over the
+   committed fixture by T-106)*.
+3. The review log is append-only and the determination's bytes are unchanged
+   after **any number of** reviews, held by parsing as well as by bytes
+   *(T-104)*.
+4. A session acquires an outbox artifact exactly when it enters
+   `AWAITING_DECISION` and no session in an earlier state has one; every
+   submission from a state the table forbids exits 1 naming the current state
+   and writes nothing; and `session decide` closes the session recording the
+   payer's outcome and the date it was taken *(T-105)*.
+5. Zero model calls in any gate *(T-106)*.
+
+**This version adds no eval row, no verifier claim and no `eval/report.md`
+section**, and that is deliberate *(D131)*. None of A13's clauses is a **rate**:
+A2, A5, A6 and A11 each have a denominator the corpus supplies, and these are
+universals over a set the suite constructs. A report table of *4 of 4 packets
+valid* would carry a denominator whoever wrote the fixtures chose, which is what
+D123 refused for A11's yellow clause. It follows that the verifier recording
+stays at 38 claims a tier: D113's tax applies to a row with a **cited verdict**,
+and this version produces no verdict at all (REQ-65).
 
 ### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
 
@@ -1536,7 +1605,7 @@ logic in templates; every gate green with the app importable.
 | A10 | v1.2 | every criterion of every loaded tree evaluated by a declared kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
 | A11 | v1.3 | precision on the colours that **assert** — green and yellow — at or above A2's 0.90, reported beside the count, the colour base rate and the all-red baseline, with red reported and never gated; zero suggestions without a source row; zero yellow without a valid span, held at unit level with the measured figure named as A14's; zero verdict drift *(D123)* |
 | A12 | v1.4 | every lifecycle transition tested, every illegal one raises; sessions round-trip byte-stable; the plane check extends to the fourth plane *(D127)* |
-| A13 | v1.5 | zero packets with an unjustified red suggestion; every packet citation valid; every outbox session `AWAITING_DECISION` |
+| A13 | v1.5 | zero packets carrying an **accepted** red suggestion with no justification, over a non-empty set of reds the corpus produces, the refusal naming every unjustified code; every packet citation slices back through the port serving its document, **reported beside the count checked**; the review log append-only with the determination's bytes unchanged after any number of reviews; a session acquires an outbox artifact exactly when it enters `AWAITING_DECISION` and none earlier has one, a forbidden submission exits 1 and writes nothing, and `decide` closes the session with the payer's outcome and date; zero model calls in any gate *(rewritten before `T-103` opened, D131)* |
 | A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors; **A11's yellow measured** — every yellow suggestion on the round's new notes carries a valid span and a verifier verdict *(D123)* |
 | A15 | v2.2 | every UI action maps to a CLI verb with identical output; zero logic in templates |
 | A16 | v2.0 | every tree declares a payer and a scope; two payers binding one code in one state resolve to one tree each, neither by load order *(the floor relation is REQ-73, closed by `T-129` — D124, D130)* |

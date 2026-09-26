@@ -35,7 +35,19 @@ from pa_agent.contracts import Intake
 #: refused rather than ignored: a typo'd `procedure` silently dropped is a
 #: request answered as though a field had not been sent, and the sender has no
 #: way to find out (D31's shape, on a wire).
-ALLOWED_KEYS = frozenset({"patient_id", "procedure_code", "state", "icd10_codes"})
+ALLOWED_KEYS = frozenset(
+    {
+        "patient_id",
+        "procedure_code",
+        "state",
+        "icd10_codes",
+        # T-103 (D131): identity pass-through, carried and read by no predicate.
+        # `tests/test_intake.py` holds this set to `Intake`'s own field set, so a
+        # field the contract gains and this route cannot send is a red suite.
+        "requesting_provider",
+        "servicing_provider",
+    }
+)
 
 #: The two a request cannot be without. `state` is optional because `None`
 #: means *read it from the bundle*, which is the CLI's own default (REQ-55),
@@ -95,6 +107,8 @@ def from_json(text: str) -> Intake:
         procedure_code=payload["procedure_code"],
         state=payload.get("state"),
         icd10=payload.get("icd10_codes", ()),
+        requesting_provider=payload.get("requesting_provider"),
+        servicing_provider=payload.get("servicing_provider"),
     )
 
 
@@ -104,6 +118,8 @@ def from_flags(
     procedure: str,
     state: str | None = None,
     icd10: Sequence[str] = (),
+    requesting_provider: str | None = None,
+    servicing_provider: str | None = None,
 ) -> Intake:
     """An `Intake` from the flags a person typed.
 
@@ -112,12 +128,23 @@ def from_flags(
     the procedure — two non-empty strings that would validate either way round.
     """
     return _build(
-        patient_id=patient, procedure_code=procedure, state=state, icd10=icd10
+        patient_id=patient,
+        procedure_code=procedure,
+        state=state,
+        icd10=icd10,
+        requesting_provider=requesting_provider,
+        servicing_provider=servicing_provider,
     )
 
 
 def _build(
-    *, patient_id: Any, procedure_code: Any, state: Any, icd10: Any
+    *,
+    patient_id: Any,
+    procedure_code: Any,
+    state: Any,
+    icd10: Any,
+    requesting_provider: Any = None,
+    servicing_provider: Any = None,
 ) -> Intake:
     """Construct the contract, and turn its refusal into this module's fault.
 
@@ -143,6 +170,8 @@ def _build(
             procedure_code=procedure_code,
             state=state,
             icd10_codes=codes,
+            requesting_provider=requesting_provider,
+            servicing_provider=servicing_provider,
         )
     except ValidationError as exc:
         raise MalformedIntake(_explain(exc)) from exc
