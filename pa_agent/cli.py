@@ -57,6 +57,8 @@ import uuid
 from datetime import date, datetime, timezone
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from pa_agent import (
     form,
     history,
@@ -66,6 +68,8 @@ from pa_agent import (
 from pa_agent.contracts import (
     Determination,
     DeterminationAborted,
+    ReviewAction,
+    ReviewEntry,
     Session,
     SessionRun,
     SessionState,
@@ -389,7 +393,7 @@ def _block_for(result, patient_id, policy_store, patient_store, knowledge_store,
 #: The verbs `session` takes. A literal set, tested against the subparsers the
 #: session parser declares, because dispatching on "any first positional" would
 #: make a typo a session command (D129).
-SESSION_VERBS = ("create", "list", "show", "run", "packet")
+SESSION_VERBS = ("create", "list", "show", "run", "review", "packet")
 
 
 def _now() -> str:
@@ -633,6 +637,101 @@ def _verb_run(args) -> int:
     return 0
 
 
+#: Each review action, and the flag that asks for it. A literal mapping rather
+#: than a `--action` choice plus an id, because the four actions do not take the
+#: same arguments and one flag per action is what lets argparse refuse two at
+#: once (T-104, D132).
+REVIEW_ACTIONS = {
+    "accept": ReviewAction.ACCEPT_SUGGESTION,
+    "reject": ReviewAction.REJECT_SUGGESTION,
+    "justify": ReviewAction.JUSTIFY_SUGGESTION,
+    "note": ReviewAction.NOTE,
+}
+
+
+def _review_entry(args, run_index: int) -> ReviewEntry:
+    """One `ReviewEntry` from the flags, validated by the contract and nowhere else.
+
+    argparse decides **which** action was asked for and nothing else. That a row
+    action names a code, that a `NOTE` names neither a row nor a code, and that
+    a justification is not whitespace are all `ReviewEntry`'s own validator
+    (T-103, D131): a `required=True` on `--code` would be a second rule about
+    one field, and two rules about one field eventually disagree — `Intake`'s
+    normalisation argument (D128), one contract over.
+    """
+    asked = [name for name in REVIEW_ACTIONS if getattr(args, name) is not None]
+    # The parser's mutually exclusive group is `required=True`, so exactly one
+    # is set; this is the assertion that says so rather than an `if`.
+    (name,) = asked
+    action = REVIEW_ACTIONS[name]
+    return ReviewEntry(
+        at=_now(),
+        reviewer=args.reviewer,
+        action=action,
+        run_index=run_index,
+        row_id=None if action is ReviewAction.NOTE else getattr(args, name),
+        icd10_code=args.code,
+        justification=args.justification,
+        note=args.note,
+    )
+
+
+def _verb_review(args) -> int:
+    """Append one entry to a session's review log (REQ-75).
+
+    **Appends, never edits.** The machine returns a new session carrying one
+    more entry and the store writes it; nothing on this path can reach a
+    `SessionRun`, so the determination's bytes are unchanged by construction
+    rather than by care (D132).
+
+    Three refusals, all exit 1 with nothing on stdout and nothing written: an
+    unknown session, an order the table forbids — naming the current state and
+    its legal successors, D129's contract, and there is no fifth exit code — and
+    an entry that is not a review, whether because the flags do not make one or
+    because it names a snapshot the session does not hold.
+    """
+    store = _session_store(args.sessions_root)
+    try:
+        session = store.get(args.session_id)
+    except SessionNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    # `max(..., 0)` rather than a bounds check here: on a `CREATED` session
+    # there is no snapshot *because nothing has been determined*, and the
+    # lifecycle is the answer a reviewer needs — so the entry is built and
+    # `review()` refuses the move, rather than this line reporting a run count
+    # for a session that was never going to be reviewable.
+    run_index = args.run if args.run is not None else max(len(session.runs) - 1, 0)
+    try:
+        entry = _review_entry(args, run_index)
+    except ValidationError as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    try:
+        reviewed = session_machine.review(session, entry)
+    except (session_machine.IllegalTransition, session_machine.NoSuchSnapshot) as exc:
+        # Raised before the copy is made and before the store is touched, so
+        # "a refused review is never recorded" holds because there is no write
+        # on this path (REQ-71's shape, REQ-75).
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    store.save(reviewed)
+    print(json.dumps(
+        {
+            "session_id": reviewed.session_id,
+            "state": reviewed.state.value,
+            "reviews": len(reviewed.reviews),
+            "entry": entry.model_dump(mode="json"),
+        },
+        indent=2,
+        ensure_ascii=False,
+    ))
+    return 0
+
+
 #: The recipient a packet is addressed to until `T-105` builds the payer
 #: directory. **A declared placeholder, not a contact**: no committed artifact
 #: names a payer's prior-authorization mailbox, and an address written from
@@ -760,6 +859,7 @@ VERB_HANDLERS = {
     "list": _verb_list,
     "show": _verb_show,
     "run": _verb_run,
+    "review": _verb_review,
     "packet": _verb_packet,
 }
 
@@ -829,6 +929,42 @@ def _session_main(argv: list[str]) -> int:
     run = verbs.add_parser("run", help="determine this session's request")
     run.add_argument("session_id")
     _add_model_flags(run)
+
+    review = verbs.add_parser(
+        "review", help="append one entry to a session's review log"
+    )
+    review.add_argument("session_id")
+    review.add_argument(
+        "--reviewer",
+        required=True,
+        help="who is signing off. Required: the packet that leaves is one a "
+             "named person reviewed, and an entry with no reviewer cannot "
+             "support that (US-13, D132)",
+    )
+    # Exactly one action per entry, and argparse is the only thing that says so.
+    # What each action must carry is `ReviewEntry`'s validator (D131, D132).
+    action = review.add_mutually_exclusive_group(required=True)
+    action.add_argument("--accept", metavar="ROW_ID",
+                        help="accept the suggestion this row_id names")
+    action.add_argument("--reject", metavar="ROW_ID",
+                        help="keep the suggestion this row_id names out")
+    action.add_argument("--justify", metavar="ROW_ID",
+                        help="write the justification a red suggestion needs "
+                             "before it may enter a packet (REQ-65)")
+    action.add_argument("--note", metavar="TEXT",
+                        help="prose about the chart, touching no code")
+    review.add_argument("--code", default=None,
+                        help="the ICD-10 code the entry names. Required by the "
+                             "three row actions and refused by --note; the "
+                             "packet reads the row's code and never this one")
+    review.add_argument("--justification", default=None,
+                        help="the text --justify records. Whitespace is refused")
+    review.add_argument(
+        "--run",
+        type=int,
+        default=None,
+        help="which snapshot this entry reviews (default: the latest)",
+    )
 
     packet = verbs.add_parser(
         "packet", help="assemble the prior-authorization packet for one snapshot"

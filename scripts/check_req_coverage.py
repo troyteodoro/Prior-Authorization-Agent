@@ -130,8 +130,9 @@ MAPPING: dict[str, str] = {
     "REQ-70": "tests/test_session_store.py",
     "REQ-71": "tests/test_session.py",
     "REQ-72": "tests/test_intake.py",
-    # The packet, review and transmission (T-103, D131).
+    # The packet, review and transmission (T-103, D131; T-104, D132).
     "REQ-74": "tests/test_form.py",
+    "REQ-75": "tests/test_review_log.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

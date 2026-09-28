@@ -12001,3 +12001,224 @@ one module wide and `BOTH_PLANES` gains nothing, because `form.py` imports
 action a suggestion enters through — minted here because this close is what
 checks it (D109). The other three of v1.5's statements stay §11 statements until
 `T-104` and `T-105` open.
+
+---
+
+## D132 — The review log is a field the table lets a session append to, and *the determination is untouched* is structural in three layers
+
+**Context.** Row 2 of v1.5. `T-103` landed `ReviewAction`, `ReviewEntry` and
+`Session.reviews` because *a suggestion enters only through a recorded
+acceptance* could not be checked without the object, and named the verb that
+appends as this row's (D131). This row's statement is the one A13's third
+clause holds: **the review log is append-only and the determination's bytes are
+unchanged after any number of reviews**. D131 rewrote the exit before the row
+opened, on the ground that *never edits* is a claim no behavioural test on this
+corpus separates from *edits and puts back the same value*. Written before the
+code (Article IX, working rule 5).
+
+### Chosen — the log is a field, appended by a pure function, and the table gains one row
+
+`pa_agent/session.py` gains `review(session, entry) -> Session`, beside
+`advance()` and in its shape: it returns a new session or raises, and only the
+adapter writes. `TRANSITIONS` gains **`IN_REVIEW: (IN_REVIEW,)`** — the append
+self-edge, `DETERMINED -> DETERMINED`'s precedent, because US-13 says *her edits
+append to a review log*, plural, and a log a reviewer may add to once is not a
+log.
+
+**`IN_REVIEW` therefore stops being terminal purely by the table, and that is
+D127's argument being paid off rather than restated.** `is_terminal()` is not
+touched, no flag moves, and nothing outside `TRANSITIONS` is edited to make it
+happen — which is exactly what D127 predicted would be impossible had
+terminality been a literal on the enum member: *"a flag would be a copy, and
+v1.5 contradicts it the moment `IN_REVIEW` gets an outgoing edge."* The
+prediction was one version early about which edge, and exact about the
+mechanism.
+
+**One consequence, stated rather than left to be found.**
+`IllegalTransition`'s message has a branch for a state with no successors —
+*"nothing — it is terminal"* — and **no state reaches it any more**. It is kept,
+not deleted: `T-105`'s `DECIDED` is terminal and restores it, and deleting a
+message branch this version's successor re-adds is churn in a file whose
+purpose is to be read. `tests/test_session.py`'s
+`test_a_terminal_state_names_nothing_it_could_become` is rewritten to what is
+now true — no state is terminal, and `IN_REVIEW`'s refusal names `IN_REVIEW` as
+its one successor — rather than left asserting a fact the table no longer
+states.
+
+### Chosen — *the determination's bytes are unchanged* is structural in three layers, and the layers are not interchangeable
+
+D131's rewrite asks for a claim a mutant cannot reproduce. Three things hold it,
+each catching what the others cannot:
+
+1. **`Session`, `SessionRun` and `Determination` are all frozen**, so
+   `model_copy(update=…)` on a session has no route *inside* a run. This is the
+   layer that needs no test, and it is also the weakest: it says a run cannot be
+   edited in place, not that `runs` cannot be replaced wholesale.
+2. **`review()` names `runs` nowhere.** A function that read `session.runs` and
+   put the same value back in the update is **indistinguishable from this one on
+   every input**, which is why the check is a parse of the source (D65's shape).
+   It is narrow on purpose: the assertion is over the `model_copy(update=…)`
+   dict — its keys are exactly `state` and `reviews`, and nothing inside it
+   names `runs` — and **not** over the whole function body, because the body has
+   a legitimate `len(session.runs)` in it (below). A test that banned the name
+   outright would have to be relaxed the first time the function needed to count
+   the snapshots, and a check relaxed under pressure is a check nobody trusts
+   the second time.
+3. **`_verb_review` is compared off disk.** The stored `runs` sub-document is
+   captured before the **first** of three reviews and compared after the
+   **third**, because a one-review test passes a mutant that replaces entry 0,
+   and a comparison taken after each review passes one that restores the bytes
+   between calls.
+
+### Chosen — the snapshot bound is checked in `review()` **and** on the contract, because `model_copy` does not validate
+
+Measured before the code was written, because the obvious design is wrong:
+
+```
+Session.model_copy(update={"state": IN_REVIEW, "reviews": (entry,)})
+  -> a CREATED session with no runs, one review and state IN_REVIEW
+```
+
+pydantic's `model_copy` **runs no validator**. So a `Session` validator alone —
+*every `entry.run_index` names a snapshot this session holds* — would be
+unreachable through the only path that appends, and the verb would write a
+session the store **cannot read back**, because `get()` goes through
+`model_validate_json`. A well-formed write that fails on the next read is D31's
+failure with a delay on it.
+
+So both, and each catches a different input. The contract validator is the
+structural half: no construction path and no file on disk can hold a review of a
+snapshot that does not exist, which is what makes *a review binds to the
+snapshot it reviewed* a property of the type rather than of one caller.
+`review()`'s own check is the reachable half, raising `NoSuchSnapshot` before
+the copy is made. Two types rather than one with a field, because the next
+actions differ: `IllegalTransition` says *determine it first*, `NoSuchSnapshot`
+says *pass a `--run` this session holds* — `resolver.py`'s four types and
+`form.py`'s three refusals are the precedent.
+
+**Rejected — a second contract validator for *`reviews` is empty while
+`CREATED`*.** It cannot fail on any input the first one admits: a `CREATED`
+session carries no runs (the existing validator), `run_index` is `ge=0`, so
+every entry on a `CREATED` session already violates the bound. D131 spent a
+mutation finding exactly this shape in `accepted()` — *a check that cannot fail
+is not a check* — and adding one knowingly, one row later, would be worse than
+finding it by accident.
+
+### Rejected — a separate append-only file beside the session
+
+It reads like the right shape for a log and it is a second source of truth that
+can disagree with `state`. The session would then say `IN_REVIEW` while the log
+beside it held nothing, or hold entries while the session said `CREATED`, and
+`session show` would be reading two documents that can diverge. It also means a
+second write path on a port whose docstring says **four reads and one write,
+because that is what the four verbs ask** — and REQ-70's claim is that a session
+holds what it produced. A review of a snapshot belongs with the snapshot, and
+the store's byte-stability test then covers the log for free. *(D131 rejected
+this for `T-103`'s half; it is restated here because this is the row where the
+file would actually have been written.)*
+
+### Rejected — the log on `SessionRun`
+
+It binds a review to its snapshot by construction, which is the one thing it has
+going for it. But `runs` is append-only and a `SessionRun` is frozen, so
+appending a review would mean **rebuilding the run** — at which point *the
+determination's bytes are unchanged* is no longer structural but a property of
+whoever rebuilt it, and this row's entire statement is gone. `run_index` on the
+entry buys the same binding for nothing and survives an append.
+
+### Rejected — an anonymous entry
+
+US-13 is *the packet that leaves is one I signed off on*, and an entry with no
+reviewer cannot support that sentence: a log recording that something was
+accepted, but not by whom, is a record of the decision with the accountability
+removed. `--reviewer` is required, and `ReviewEntry.reviewer` already carries
+`min_length=1` from `T-103`.
+
+### Chosen — the flags name the fields, and every refusal is the contract's
+
+`session review <id> --reviewer NAME` plus a required mutually exclusive group —
+`--accept ROW_ID`, `--reject ROW_ID`, `--justify ROW_ID`, `--note TEXT` — with
+`--code` for the three row actions, `--justification` for `JUSTIFY_SUGGESTION`
+and `--run N` defaulting to the latest snapshot. **argparse enforces only which
+action was asked for**; that a row action carries a code, that a `NOTE` carries
+neither, and that a justification is not whitespace are all refused by
+`ReviewEntry`'s validator (T-103, D131). Putting `required=True` on `--code`
+would be a second rule about the same field, and two rules about one field
+eventually disagree — `Intake`'s normalisation argument (D128), one contract
+over.
+
+**Rejected — deriving the entry's `icd10_code` by recomputing the review.** It
+would make a typo impossible at the point of writing, and it costs far more than
+it buys: the verb would have to build three ports and a quote runner, recompute
+the whole review, and acquire the review's own refusals on a command whose job
+is to append a line. And it buys nothing the packet needs — every clinical field
+of a `PacketSuggestion` is copied from the **row's** suggestion and never from
+the entry (D131), so a typo'd code in the log is a record of what the reviewer
+named and reaches no packet. The code the reviewer typed is also the more honest
+thing to record.
+
+**Rejected — refusing an `--accept` whose `row_id` this run's review does not
+hold, at review time.** The review is recomputed on every call (D131), so a row
+that exists today may not exist tomorrow, and a refusal written against today's
+review would be a claim that expires in the log. `form.accepted` already refuses
+it with `SuggestionNotInReview` at the moment it matters, which is when the
+packet is assembled.
+
+### On the surface, and what does not move
+
+`SESSION_VERBS`, `VERB_HANDLERS` and the subparsers stay one vocabulary, which
+`tests/test_session_verbs.py` asserts by parsing. `_render_session` needs **no
+edit** to publish the log: it starts from `session.model_dump(mode="json")` and
+overrides only `runs`, so `reviews` has been in `session show`'s document since
+`T-103` landed the field — asserted here rather than assumed, because *a key
+appears because a field exists* is exactly the kind of fact that stops being
+true when someone writes an explicit dict.
+
+`main()`'s parser block, the `args_in[0] == "session"` literal, `_render`,
+`BARE_DETERMINATION_KEYS`, `advance()`, `SessionRun`, the store's `_serialize`,
+`STORAGE_SCAN_EXEMPT` and `BOTH_PLANES` are all untouched. **v1.5 adds no key to
+`_render`**: a review is not part of a determination, which is the whole reason
+it is a log beside one.
+
+**Reverses if** a review has to be **retracted** — at which point a retraction
+is a **new entry** and never a deletion, append-only in both directions, and the
+reader of the log gains a rule about which entry wins. `form.accepted` already
+reads the log that way for acceptance and justification (D131), so the shape
+exists; what does not exist is a reason to write it before something needs it.
+
+### What it mints
+
+**REQ-75** — the review log is append-only, each entry binds to the snapshot it
+reviewed, and the determination's bytes are unchanged after any number of
+reviews, structurally, because the function that appends cannot name the runs.
+Minted here because this close is what checks it (D109). v1.5's remaining two
+statements stay §11 statements until `T-105` opens.
+
+### What the mutation pass found, and the one check it moved
+
+Five mutations, and the fifth **survived the whole suite** on its first run:
+`_verb_review` saving the session it had just read **before** `review()` raises.
+Every refusal test compared the file's **bytes**, and the adapter generates
+nothing (D127) — so re-writing the object just read reproduces the file
+exactly. The comparison holds *nothing changed*; REQ-71's claim is *never
+recorded*, and the two only coincide because the serializer is content-pure.
+Closed by comparing `st_mtime_ns` beside the bytes, which moves on a
+same-content rewrite (measured), after which the mutant is caught by both
+refusal tests. This is D127's own lesson one surface over: *a check comparing
+two encodings of the same text compares nothing*, and a check comparing a file
+to itself after a rewrite is the same shape.
+
+**The `runs`-in-update mutant is caught by the parse and by nothing else** — one
+failing test out of 1575 — which is the measurement D65's argument predicts
+rather than assumes, and the reason layer 2 above is a parse.
+
+**Rejected — fixing the same weakness in `tests/test_session_verbs.py`.** `T-102`'s
+`test_an_illegal_transition_is_a_bad_request_and_records_nothing` compares bytes
+the same way and would survive the same mutation in `_verb_run`. It is that
+row's gate, so it is numbered `T-135` and not folded in *(working rule 6)*.
+
+### What it costs
+
+No model call, no network. No recording, bundle, note, span, verdict, baseline
+or verifier claim moves — a review reaches no determination, which is the claim
+rather than a side effect.

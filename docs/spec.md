@@ -639,6 +639,25 @@ thing in a packet that is **not** evidence, so putting it where Article III
 validates spans would mean a span that slices back to nothing. *(Art. III;
 T-103, D131)*
 
+**REQ-75** A session's **review log is append-only**. One entry records what one
+reviewer did to one snapshot — the action, the row it names, the clock it was
+written at — and `pa_agent.session.review` appends it, moving the session to
+`IN_REVIEW`, which from `IN_REVIEW` is the table's own append self-edge. Each
+entry **binds to the snapshot it reviewed** through a required `run_index`, and
+a review of a snapshot the session does not hold is refused — on the contract,
+so no construction path and no file on disk can carry one, **and** in the
+function that appends, because `model_copy` runs no validator and the contract
+alone would be unreachable from the only path that writes. **The determination's
+bytes are unchanged after any number of reviews**, and that is structural in
+three layers rather than remembered: `Session`, `SessionRun` and `Determination`
+are frozen, so there is no route inside a run; the appending function **names
+`runs` nowhere in what it writes**, checked by parsing, because a function that
+read the runs and put the same value back is indistinguishable from it on every
+input; and the stored runs are compared **off disk** across three reviews, since
+a one-review comparison passes a mutant that replaces the first entry. A
+retraction, if one is ever needed, is a **new entry** and never a deletion.
+*(T-104, D132)*
+
 ---
 
 ## 6. Edge cases
@@ -1405,8 +1424,12 @@ after review, and never decides to". **Zero model calls.**
   accepted is load-bearing*: the review is recomputed on every call, so *a red
   suggestion exists* is a fact about the chart and what a packet controls is
   whether one entered it *(D131)*.
-- The review log is append-only; the determination's bytes are unchanged
-  by any number of reviews. `T-104`'s.
+- **REQ-75**, minted by `T-104`. The review log is append-only, each entry
+  binds to the snapshot it reviewed, and the determination's bytes are unchanged
+  after any number of reviews — **structural**, because the function that
+  appends cannot name the runs, which is the form D131 rewrote this row's exit
+  into: *never edits* is a claim no behavioural test on this corpus separates
+  from *edits and puts back the same value* *(D132)*.
 - Transmission is a lifecycle transition taken only on an explicit verb,
   after `IN_REVIEW`; the system never decides to transmit. `T-105`'s.
 - A session acquires an outbox artifact **exactly when** it enters

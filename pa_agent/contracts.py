@@ -2387,6 +2387,34 @@ class Session(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def _every_review_binds_to_a_snapshot(self) -> Session:
+        """A review of a snapshot this session does not hold is a review of
+        nothing (REQ-75, T-104, D132).
+
+        Here **as well as** in `pa_agent.session.review`, and neither is
+        redundant: `model_copy(update=…)` runs no validator, so this one is
+        unreachable through the only path that appends, while the function's
+        own check cannot see a file someone edited by hand — and `get()` reads
+        through `model_validate_json`, so this is what refuses it.
+
+        There is deliberately **no second rule** for *`reviews` is empty while
+        `CREATED`*. A `CREATED` session carries no runs (above) and
+        `run_index` is `ge=0`, so every entry on one already fails this bound:
+        the second rule could not fail on any input the first admits, and a
+        check that cannot fail is not a check (D131's finding, D132).
+        """
+        for position, entry in enumerate(self.reviews):
+            if entry.run_index >= len(self.runs):
+                raise ValueError(
+                    f"review entry {position} of session {self.session_id} "
+                    f"names run {entry.run_index} and the session holds "
+                    f"{len(self.runs)}; a review binds to the snapshot it "
+                    "reviewed, because a second run is a new snapshot of a "
+                    "chart that may have moved (REQ-75)"
+                )
+        return self
+
 
 # --------------------------------------------------------------------------
 # The packet (T-103, D131)

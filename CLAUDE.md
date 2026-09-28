@@ -28,10 +28,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-74 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-75 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10, US-11 and US-12 closed with v1.2, v1.3 and v1.4; **US-13 is v1.5's and open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-103 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-104 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, and T-133, which T-103 did *(D131)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D131, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-104 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-105 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, T-133, which T-103 did *(D131)*, and T-134 and T-135, which T-104 did *(D132)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D132, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -141,13 +141,17 @@ Run the system:
 ./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775   # a real determination, zero model calls
 ./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775
 ./venv/bin/python -m pa_agent.cli session run <session-id>
+./venv/bin/python -m pa_agent.cli session review <session-id> --reviewer NAME --note TEXT
 ./venv/bin/python -m pa_agent.cli session packet <session-id>          # the .eml; --json for the fields
 ```
 
-The five session verbs dispatch on `argv[0]` **before** the bare parser is built,
+The six session verbs dispatch on `argv[0]` **before** the bare parser is built,
 so the bare invocation above is unchanged (D129). `session packet` is `T-103`'s
 and prints a document rather than a record, which is why it is the one verb whose
-default output is not JSON *(D131)*.
+default output is not JSON *(D131)*. `session review` is `T-104`'s and appends
+one entry per action — `--accept`/`--reject`/`--justify`/`--note`, mutually
+exclusive — with argparse deciding **only** which action was asked for and
+`ReviewEntry` refusing everything else *(D132)*.
 
 CLI exit codes: `0` an answer, `1` a bad request (unknown patient; from the verbs
 also a malformed intake, an unknown session, an illegal order and a **refused
@@ -292,6 +296,23 @@ randomised `Message-ID`, so no fixture could equal two renders — and carries n
 `From:`, because nothing in the repository names who sends. `session packet` is
 the fifth verb; the payer is a string the composition root supplies, and until
 `T-105` that string is `cli.PLACEHOLDER_PAYER`, declared as a placeholder.
+
+**The review log is a field, appended by a pure function, and the table is why
+it can be appended twice** *(T-104, D132)*. `pa_agent/session.review` returns a
+new `Session` carrying one more `ReviewEntry` or raises; only the adapter
+writes. `TRANSITIONS` gained **`IN_REVIEW: (IN_REVIEW,)`**, the append
+self-edge — US-13's *her edits append*, plural — so `IN_REVIEW` stopped being
+terminal with **no line outside the table edited**, which is D127's reason for
+deriving terminality rather than declaring it, paid off. *The determination's
+bytes are unchanged* is structural in three layers: the models are frozen, so
+`model_copy` has no route inside a run; `review()` **names `runs` nowhere in
+what it writes**, held by parsing the `update` dict because a function that read
+them and put them back is indistinguishable from it on every input; and the
+stored runs are compared **off disk across three reviews**, since a one-review
+comparison passes a mutant that replaces entry 0. Each entry's `run_index` is
+bounded **on the contract and inside `review()`** — `model_copy` runs no
+validator, so the contract alone is unreachable from the only path that appends
+and the verb would write a session `get()` cannot read back.
 
 **Adjudication is nine predicate kinds and two exclusion kinds.**
 `PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
@@ -480,6 +501,13 @@ passing**, because the tests are written in terms of the thing that broke.
   `I95.9`, `N28.9`, `R73.9` and `D70.2`. Nothing matches either way, so the
   ICD-keyed reading returns an empty list on all five rows **and passes every
   behavioural test this corpus can produce**.
+- **A refused write is checked against the file's `st_mtime_ns`, not only its
+  bytes** *(T-104, D132)*. `stores/session.py` generates nothing, so a
+  `store.save(session)` inserted before a refusal raises **reproduces the file
+  exactly** — a byte comparison holds *nothing changed* where REQ-71 says *never
+  recorded*, and the mutation survived the whole suite until the modification
+  time joined the comparison. `tests/test_review_log.py`'s two refusal tests
+  carry it; `tests/test_session_verbs.py`'s equivalent is `T-135`.
 - **Never return `None` or `[]` from an unimplemented store half or planner**
   *(D31, D39, D63)*. A policy store returning `None` reports `NO_POLICY_FOUND`
   for all of Medicare; a patient store returning `[]` manufactures E7 for every
@@ -764,17 +792,17 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**87 of 87 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1553 tests across 52 files, 58 of
+**88 of 88 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1575 tests across 53 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
 IDs run to T-129 (T-126 through T-129 are off the path, above the roadmap's
 reservations), but numbering is not contiguous and D92 and D94 deleted six
 records between them, so the highest id is well above the count. **Nothing is
-open**; `T-130`, `T-131`, `T-132` and `T-133` are numbered with no record yet.
-**v1.5 is open and `T-103` closed its first row** *(D131)*; next is `T-104`, the
-review log.
+open**; `T-130`, `T-131`, `T-132`, `T-133`, `T-134` and `T-135` are numbered
+with no record yet. **v1.5 is open and `T-103` and `T-104` closed its first two rows**
+*(D131, D132)*; next is `T-105`, simulated submission and tracking.
 
 **`T-127` and `T-128` are off the path** *(D120, D121)*. `T-127` re-read
 *Where this system degrades*: the eight unclaimed criteria sort three ways
@@ -825,9 +853,23 @@ replay's own clock. Read them from `eval/report.md`, which is generated; these a
 copy and the report is the source.
 
 Open: **nothing. v1, v1.1, v1.2, v1.3 and v1.4 are all complete** —
-**A1–A12 all hold**, and US-12 is delivered. **v1.5 is open**: `T-103` closed
-row 1 and the remaining rows are `T-104`–`T-106` — the review log, simulated
-submission and the committed rendered packets.
+**A1–A12 all hold**, and US-12 is delivered. **v1.5 is open**: `T-103` and
+`T-104` closed rows 1 and 2 and the remaining rows are `T-105` and `T-106` —
+simulated submission and tracking, then the committed rendered packets.
+
+**`T-104` closed row 2** *(D132)*: `session review` appends. The log is a field
+on `Session`, `TRANSITIONS` gained the `IN_REVIEW` self-edge, and `IN_REVIEW`
+stopped being terminal with nothing outside the table edited — D127's argument
+paid off, one version after it was written and on a different edge than it
+guessed. It minted **REQ-75**, moved no determination, and found two things.
+`T-134`: `cli._packet_index` consults the patient and policy stores and never
+the knowledge store, so a packet carrying an accepted suggestion is refused with
+`UNKNOWN_DOCUMENT` — a suggestion's `effect` is a span into an FDA label, and
+the knowledge corpus is the third one D131's *both ports* did not count.
+`T-135`: a refusal test that compares a session's **bytes** holds *nothing
+changed* and not *nothing written*, because the adapter generates nothing — a
+`save` of the object just read reproduces the file. This row's own refusal tests
+compare `st_mtime_ns` beside the bytes; `T-102`'s does not.
 
 **`T-103` opened v1.5** *(D131)*: `pa_agent/form.py` assembles the packet and
 `session packet` prints it as an `.eml`. The module is **pure** — no path, no

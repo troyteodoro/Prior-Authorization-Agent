@@ -70,11 +70,12 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3 and v1.4 are all complete, and v1.5 is under way.**
-87 of 87 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
-the `session packet` verb *(D131)*, behind `T-129`'s national floor checked at
-load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A12 holding. The suite collects 1553 tests (58 skip). **v1.5 continues with
-`T-104`**: the review log, then simulated submission.
+88 of 88 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
+the `session packet` verb and `T-104` added the review log beside it *(D131,
+D132)*, behind `T-129`'s national floor checked at load *(D124, D130)* — all ten
+zero-cost gates green, and acceptance gates A1–A12 holding. The suite collects
+1575 tests (58 skip). **v1.5 continues with `T-105`**: simulated submission and
+tracking, then the committed rendered packets.
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -241,7 +242,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.424**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
-| A7 | 76 requirements: 74 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 77 requirements: 75 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -912,6 +913,34 @@ A request no tree governs — a code no policy covers, or a state no tree serves
 — prints its answer, exits `0` and leaves the session `CREATED`: nothing was
 determined, so there is no snapshot to keep.
 
+### The review log
+
+What the reviewer did, appended beside the determination and never into it
+(v1.5).
+
+```bash
+./venv/bin/python -m pa_agent.cli session review <session-id> --reviewer "R. Chen" \
+      --accept hydrochlorothiazide-hyperglycemia --code R73.9
+./venv/bin/python -m pa_agent.cli session review <session-id> --reviewer "R. Chen" \
+      --justify hydrochlorothiazide-hyperglycemia --code R73.9 \
+      --justification "Thiazide exposure documented; monitoring ordered."
+./venv/bin/python -m pa_agent.cli session review <session-id> --reviewer "R. Chen" \
+      --note "Discussed with the surgeon; proceeding."
+```
+
+One entry per action — accept, reject, justify or note — each naming who wrote
+it, the snapshot it reviews and the clock it was written at. The log **appends**:
+a second entry never replaces the first, a retraction would be a new entry, and
+the determination the entries are about is untouched by any number of them. That
+last claim is structural rather than careful: the frozen models leave no route
+into a snapshot, the function that appends names the runs nowhere, and the
+stored determination is compared byte for byte across three reviews.
+
+A review of a session that has determined nothing is refused, exit `1`, naming
+the state it is in and what it may become — reviewing an empty packet is not a
+thing the lifecycle allows. So is a review of a snapshot the session does not
+hold. `--run N` picks one; the default is the latest.
+
 ### The packet
 
 The prior-authorization request itself, assembled from one snapshot (v1.5).
@@ -937,8 +966,8 @@ chart — is refused unless the reviewer wrote a justification, and the refusal
 names *every* unjustified code, not the first. The refusals exit `1`, print
 nothing to stdout, and say which code or which citation.
 
-Nothing is transmitted. The review log, the payer outbox and the tracking that
-follows are the rest of v1.5.
+Nothing is transmitted. The payer outbox and the tracking that follows are the
+rest of v1.5.
 
 The live modes need a Gemini API key in `pa_agent/agent/.env` (gitignored — no
 real key ever appears in a tracked file).
@@ -952,7 +981,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1553 tests across 52 files, 58 of them skipped — the skips are per-tree
+1575 tests across 53 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

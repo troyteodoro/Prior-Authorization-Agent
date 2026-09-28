@@ -493,13 +493,16 @@ def test_an_unknown_session_is_a_bad_request(tmp_path):
 
 
 def test_an_illegal_transition_is_a_bad_request_and_records_nothing(tmp_path):
-    """`IN_REVIEW` is terminal in v1.4, so running one is refused (REQ-71).
+    """`IN_REVIEW -> DETERMINED` is not in the table, so running one is refused
+    (REQ-71).
 
-    No verb sequence reaches `IN_REVIEW` in this version — v1.5's `review` is
-    what moves a session there — so the state is written directly, which is the
-    only way to reach the refusal this row's exit-code mapping exists for. The
-    bytes are compared after the refusal: a machine that advanced and then
-    failed to persist would look identical to one that refused.
+    `IN_REVIEW` stopped being terminal at `T-104`, which gave it the append
+    self-edge — but it gained no edge back to `DETERMINED`, so this refusal is
+    what it was. The state is still written directly rather than reached through
+    `session review`, because what is under test is this verb's exit-code
+    mapping and not the other verb's. The bytes are compared after the refusal:
+    a machine that advanced and then failed to persist would look identical to
+    one that refused.
     """
     root = tmp_path / "sessions"
     session_id = _created(
@@ -556,8 +559,13 @@ def test_every_declared_verb_has_a_handler_and_a_subparser():
 
 
 def test_a_verb_this_version_does_not_have_is_refused(tmp_path):
-    """v1.5's verbs are not silently accepted no-ops."""
-    for absent in ("submit", "review", "decide"):
+    """v1.5's remaining verbs are not silently accepted no-ops.
+
+    `review` left this list at `T-104` and `submit` and `decide` leave it at
+    `T-105`. The list shrinking is the point: a verb named here and shipped is
+    a test that would pass on a command that parses and does nothing.
+    """
+    for absent in ("submit", "decide"):
         proc = _session(tmp_path / "sessions", absent)
         assert proc.returncode != 0, absent
         assert proc.stdout == "", absent

@@ -5,8 +5,9 @@ illegal one raises* — which on a three-state enum means all **nine ordered
 pairs**, not just the legal ones.
 
 **The legal set here is written out from the prose, not read from the code.**
-`LEGAL` below is transcribed from `docs/stories.md`'s US-12 and spec §11's v1.4
-entry, sentence by sentence, with the sentence quoted beside each pair. A test
+`LEGAL` below is transcribed from `docs/stories.md`'s US-12 and US-13 and spec
+§11's v1.4 entry, sentence by sentence, with the sentence quoted beside each
+pair — T-104's row came from US-13's *her edits append*, not from the table. A test
 that built its expectation from `TRANSITIONS` would agree with any table at
 all, including one that had lost a row — which is the whole failure this file
 exists to catch, and the one an adversarial pass at this close went looking
@@ -42,10 +43,14 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 #: - US-12: "a second run is a new snapshot, never an edit" -> DETERMINED may
 #:   become DETERMINED again.
 #: - spec §11 v1.4: "`CREATED -> DETERMINED -> IN_REVIEW`, extended by v1.5".
+#: - US-13: "her edits append to a review log beside the determination" ->
+#:   IN_REVIEW may become IN_REVIEW again, because *append* is plural and a log
+#:   a reviewer may add to once is not a log (T-104, D132).
 LEGAL: set[tuple[SessionState, SessionState]] = {
     (SessionState.CREATED, SessionState.DETERMINED),
     (SessionState.DETERMINED, SessionState.DETERMINED),
     (SessionState.DETERMINED, SessionState.IN_REVIEW),
+    (SessionState.IN_REVIEW, SessionState.IN_REVIEW),
 }
 
 ALL_PAIRS = list(itertools.product(SessionState, SessionState))
@@ -150,9 +155,25 @@ def test_the_illegal_transition_names_both_ends_and_the_legal_set():
     assert "CREATED" in str(caught.value) and "IN_REVIEW" in str(caught.value)
 
 
-def test_a_terminal_state_names_nothing_it_could_become():
-    with pytest.raises(IllegalTransition, match="terminal"):
+def test_no_state_is_terminal_once_the_review_log_appends():
+    """D127's argument, paid off — and the one line that did it.
+
+    `IN_REVIEW` was terminal in v1.4 **by the table**, and T-104 gave it the
+    append self-edge. Terminality followed with no flag moved, no member
+    edited and `is_terminal()` untouched, which is precisely what D127 said a
+    literal `terminal=True` on the member would have made impossible.
+
+    The message branch for a state with no successors is therefore unreachable
+    on this table. It is kept because `T-105`'s `DECIDED` is terminal and
+    restores it; what is asserted here is what is true now — `IN_REVIEW`'s
+    refusal names `IN_REVIEW` as its one successor, and nothing says *terminal*.
+    """
+    assert not any(is_terminal(state) for state in SessionState)
+
+    with pytest.raises(IllegalTransition) as caught:
         advance(_session(SessionState.IN_REVIEW, (_run(),)), SessionState.DETERMINED)
+    assert caught.value.legal == ["IN_REVIEW"]
+    assert "terminal" not in str(caught.value)
 
 
 # --------------------------------------------------------------------------
@@ -161,9 +182,11 @@ def test_a_terminal_state_names_nothing_it_could_become():
 
 
 def test_terminal_is_read_off_the_table():
-    assert is_terminal(SessionState.IN_REVIEW) is True
-    assert is_terminal(SessionState.CREATED) is False
-    assert is_terminal(SessionState.DETERMINED) is False
+    """Every state, against its own row. `IN_REVIEW` reads `False` since T-104
+    because its row is non-empty, and for no other reason (D132)."""
+    for state in SessionState:
+        assert is_terminal(state) is (TRANSITIONS[state] == ())
+    assert is_terminal(SessionState.IN_REVIEW) is False
 
 
 def test_contracts_does_not_import_the_state_machine():
