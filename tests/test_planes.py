@@ -5,7 +5,7 @@ two more name this task where a combined handle would be caught. Every one of
 them is a per-module assertion that a new module joins *by someone remembering
 to add it*. This file is the walk none of them gave.
 
-Two assertions, in opposite directions (D83):
+Three assertions, the first two in opposite directions (D83):
 
 1. **Downward from each plane's roots** — following imports down from a policy
    module never reaches a patient module, and the reverse. This needs no
@@ -16,6 +16,12 @@ Two assertions, in opposite directions (D83):
    Set equality in both directions: a new module that quietly grows a second
    import fails, and a whitelist entry that stops reaching both fails too, so an
    entry cannot go stale.
+3. **All-three-corpora reachability, as an exact set** (T-134, D133) — the
+   modules that reach the policy, patient *and* knowledge corpora are exactly
+   the one declared here. `BOTH_PLANES` cannot express this claim: it is
+   satisfied by a module that knows nothing of `data/knowledge/`, which is how
+   the composition root came to build a packet's document index from two ports
+   while a packet's citations point into three.
 
 Plus D25's scan, scoped to `pa_agent/` with `cli.py` exempt as the composition
 root (REQ-41). Scoping matters: `tests/` opens fixtures and `eval/run_eval.py`
@@ -74,6 +80,28 @@ BOTH_PLANES: dict[str, str] = {
     ),
     "pa_agent.agent.retrieval_agent": (
         "the agentic planner; same bundle as retrieval.py, chosen by the model"
+    ),
+}
+
+#: Modules that reach **all three read corpora**, and why (T-134, D133).
+#:
+#: `BOTH_PLANES` above is Article VI's policy-and-patient pair and must keep
+#: meaning exactly that, so this is a second exact set rather than a widening of
+#: the first. It exists because nothing in this repository ever wrote down that a
+#: module reaches every corpus: the composition root has done so since `T-97`,
+#: and the only assertion about the knowledge plane was that nothing *else*
+#: reaches it — which is how `cli._packet_index` came to be built from two ports
+#: while a packet's citations point into three.
+#:
+#: The **session** plane is deliberately not a member of this claim. A session
+#: store serves no `get_document` and holds no citable document, so it is not a
+#: corpus a span can point into; `tests/test_packet_index.py` draws the same line
+#: from the same fact, derived from the store package.
+ALL_READ_PLANES: dict[str, str] = {
+    "pa_agent.cli": (
+        "the composition root; REQ-41 makes it the one place a store is "
+        "constructed, and a packet's citations slice back through all three "
+        "corpora — the chart, the policy corpus and an FDA label (REQ-74, D133)"
     ),
 }
 
@@ -224,6 +252,55 @@ def test_exactly_the_declared_modules_reach_both_planes(graph):
         "reach both; drop them, or the whitelist is documenting a shape the "
         "code left behind"
     )
+
+
+def test_exactly_the_declared_modules_reach_all_three_read_corpora(graph):
+    """Set equality again, over the three corpora a citation can address (D133).
+
+    `BOTH_PLANES` cannot express this: it is satisfied by a module that reaches
+    the policy and patient planes and knows nothing of `data/knowledge/`, which
+    described `cli.py` at `T-96` and stopped being the whole truth at `T-97`. A
+    module that can read every corpus is the composition point a packet's
+    document index is built at, and it needs a stated reason for the same purpose
+    the other whitelist serves.
+
+    Equality in both directions, so a second module growing the third import
+    fails here, and an entry that stops reaching all three cannot linger.
+    """
+    actual = {
+        module
+        for module in graph
+        if _reaches(graph, module, POLICY_ROOTS)
+        and _reaches(graph, module, PATIENT_ROOTS)
+        and _reaches(graph, module, KNOWLEDGE_ROOTS)
+    }
+    declared = set(ALL_READ_PLANES)
+    undeclared = actual - declared
+    assert not undeclared, (
+        f"{sorted(undeclared)} reach all three read corpora and are not "
+        "declared. A module that can read what a payer covers, what one chart "
+        "says and what a drug is known to do is a composition point and needs a "
+        "stated reason in ALL_READ_PLANES (Article VI, D119, D133)"
+    )
+    stale = declared - actual
+    assert not stale, (
+        f"{sorted(stale)} are declared as three-corpus modules and no longer "
+        "reach all three; drop them, or the whitelist documents a shape the code "
+        "left behind"
+    )
+    assert declared <= set(BOTH_PLANES), (
+        f"{sorted(declared - set(BOTH_PLANES))} reach all three corpora and are "
+        "not declared in BOTH_PLANES, which reaching two of them requires"
+    )
+
+
+def test_every_three_corpus_entry_states_a_reason():
+    """`test_every_whitelist_entry_states_a_reason`'s rule on the second list —
+    written out rather than folded into it, because a loop over both would pass
+    if one of the two dictionaries were emptied."""
+    assert ALL_READ_PLANES, "the three-corpus whitelist is empty; cli.py reaches all three"
+    for module, reason in ALL_READ_PLANES.items():
+        assert len(reason.split()) >= 5, f"{module}: reason is too thin to audit"
 
 
 @pytest.mark.parametrize("root", KNOWLEDGE_ROOTS)

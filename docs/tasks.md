@@ -19,6 +19,20 @@ that follow *(D105)*.
 
 **What to do next: `v1.5`, row 3 — `T-105`**, simulated submission and
 tracking. **Nothing is open on this board.**
+**`T-134` closed off the path** *(D133)*: `cli._packet_index` consults the
+**knowledge** port as well as the patient and policy ones, so a packet carrying
+an accepted suggestion assembles. A suggestion's `effect` is a span into an FDA
+label and D131's *a packet's spans point into both* counted two corpora where
+there are three, so `T-103`'s headline capability was unreachable through the
+verbs that produce it — while every gate stayed green, because the red tests
+validate no span and the assembling tests use a determination with no accepted
+suggestion. It is sequenced **before `T-105`** because `T-106`'s exit needs a
+committed packet carrying a justified red, which could not be assembled at all.
+The set of ports the index consults is **derived** from the store package,
+`tests/test_planes.py` gained `ALL_READ_PLANES` — the exact set of modules
+reaching all three read corpora, which is `cli.py` alone — and the reorder
+mutation **survives by construction**, which is why the disjointness of the three
+id spaces is what is asserted instead. It minted nothing and found `T-136` and `T-137`.
 **`T-104` closed row 2** *(D132)*: `session review` appends one entry per
 reviewer action to a log **beside** the determination, and `TRANSITIONS` gains
 `IN_REVIEW -> IN_REVIEW`, the append self-edge US-13's *her edits append* asks
@@ -194,12 +208,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Eighty-eight tasks are on this board — IDs run to T-129; T-126 through T-129
-are off the path and above the roadmap's reservations; numbering is not
+Eighty-nine tasks are on this board — IDs run to T-134; T-126 through T-129 and
+T-134 are off the path and above the roadmap's reservations; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 88 are closed and none is open**; `T-132`,
-`T-133`, `T-134` and `T-135` below are numbered and have no record yet, in this
-board's usual shape. The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **All 89 are closed and none is open**; `T-132`,
+`T-133`, `T-135`, `T-136` and `T-137` below are numbered and have no record yet,
+in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -232,8 +246,10 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **closed** (D130), before v1.6 opened |
 | `T-132` | **this board's own task count is a copy nothing re-derives.** `tests/test_docs_consistency.py` counts the closed-record headings and holds `README.md` and `CLAUDE.md` to them; the board's own prose — *"Eighty-two tasks are on this board … 81 are closed and 1 is open"* — was correct when D124 wrote it at `773c209` and was four closes stale by `T-129`, with every gate green. D108's own failure, on the document that **owns** the figure. Same class, found in the same pass: spec §11's opening line read *"v1.3 is in progress"* while its own table three lines below marked v1.3 and v1.4 closed | **discovered in `T-129`** — both stale figures are reconciled in that close under working rule 12; the missing check, over a document's prose against that document's own table, is its own row *(working rule 6)* |
 | `T-133` | **three more copies with no owner.** `README.md`'s *eval harness* section read *Twenty-eight labeled cases* while `eval/report.md` — which owns the figure — said 33; `test_the_readmes_corpus_figures_come_from_the_report` checks the copy in P3's bullet and scans no other, which is the every-occurrence weakness `test_every_stated_suite_size_is_the_suites_size` was rebuilt to fix, one figure over. Its repository layout listed the `pa_agent/` modules by hand and had been missing `quotes`, `intake` and `session` since `T-98`, `T-100` and `T-101` — a list the package itself owns. And `CLAUDE.md`'s layout read *tests/ 47 files* against 52: `test_every_stated_suite_size_is_the_suites_size` matches *N tests across M files* and a bare file count is invisible to it. All three are reconciled in `T-103`'s close under working rule 12; the three checks are this row's | **discovered in `T-103`** — `T-132` is the same class on the board's own prose; these three are README's and CLAUDE.md's, against owners outside the document, so they are one row and not folded into that one *(working rule 6)* |
-| `T-134` | **`cli._packet_index` never consults the knowledge store, so no packet carrying an accepted suggestion can be assembled.** A suggestion's `effect` is a span into an **FDA label** — `spl_hydrochlorothiazide[3520:3643]` on the one chart the corpus colours red — and `form.citations` includes it, but the index is built from the patient and policy stores alone, so `assemble` refuses the packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`. `LocalKnowledgeStore.get_document` already exists and serves it; D131's *a packet's spans point into both* counted two corpora and the knowledge corpus is the third (T-96, D118). Invisible to `tests/test_form.py` because its red tests exercise `form.accepted` and the assembling tests use a determination with no accepted suggestion, so no test builds an index over a packet that cites a label | **discovered in `T-104`** — found by driving `session review --accept` and then `session packet` end to end, which is the first time the two verbs met. One line in the composition root and a test that a label span slices back; not folded in, because the packet's index is `T-103`'s surface and `T-106`'s committed fixture is what would pin it *(working rule 6)* |
+| `T-134` | **`cli._packet_index` never consults the knowledge store, so no packet carrying an accepted suggestion can be assembled.** A suggestion's `effect` is a span into an **FDA label** — `spl_hydrochlorothiazide[3520:3643]` on the one chart the corpus colours red — and `form.citations` includes it, but the index is built from the patient and policy stores alone, so `assemble` refuses the packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`. `LocalKnowledgeStore.get_document` already exists and serves it; D131's *a packet's spans point into both* counted two corpora and the knowledge corpus is the third (T-96, D118). Invisible to `tests/test_form.py` because its red tests exercise `form.accepted` and the assembling tests use a determination with no accepted suggestion, so no test builds an index over a packet that cites a label | **closed** (D133), before `T-105` opened — discovered in `T-104` by driving `session review --accept` and then `session packet` end to end, the first time the two verbs met. It blocked `T-106`, whose exit needs a packet carrying a justified red, which is why a one-line defect was sequenced ahead of the version's remaining rows |
 | `T-135` | **`tests/test_session_verbs.py::test_an_illegal_transition_is_a_bad_request_and_records_nothing` holds *nothing changed*, not *nothing written*.** It compares the session's bytes after a refused `session run`, and the adapter generates nothing (D127) — so a `store.save(session)` inserted **before** `advance()` raises reproduces the file exactly and the test stays green. REQ-71's claim is that an illegal transition is *never recorded*. Measured in `T-104`'s mutation pass on the same shape in `_verb_review`, where it survived the whole suite until `st_mtime_ns` was compared beside the bytes | **discovered in `T-104`** — the fix is one comparison, and `T-104`'s own two refusal tests carry it already; this row is `T-102`'s gate and `_verb_run`'s path, so it is numbered rather than folded in *(working rule 6)* |
+| `T-136` | **nothing checks that `form.source_ids` reports every document `form.citations` needs.** The index is built from `source_ids` alone, so a citation whose document that traversal omits is an `UncitedPacket` on a span that was fine — which is `T-134`'s defect one layer down, in the pure module rather than the composition root. The two traversals share `_determination_spans`, and `_review_spans` is a deliberate **superset** of what a packet carries (D131), so they cannot disagree on this corpus; the relation itself is held by no command. The check is a property over a hand-written review carrying every colour | **discovered in `T-134`** — the row that fixed the index found that its one input is unconstrained; not folded in, because it is a property over `form.py` and not a store the composition root forgot *(working rule 6)* |
+| `T-137` | **`Packet.supporting_documents` says it is *every document id this packet cites* and is computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest names three documents and `supporting_documents` names one, omitting the FDA label. Before `T-134` no packet with an accepted suggestion could be assembled, so the field's own comment was true of every packet that existed and false of the first one this close produced. Either the comment is wrong — the field is the determination's documents, which is what a prior-auth form's *supporting documents* box means — or the computation is; the two readings differ in what `T-106`'s fixture will render, and README's form table maps the field to *Recent provider notes* | **discovered in `T-134`** — a claim this close made reachable rather than one it broke, and it is a decision about what the box means rather than a missing store, so it is `T-103`'s surface and its own row *(working rule 6)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -3349,6 +3365,138 @@ which is a coherent tree misreading its document.
 
 **Found and not fixed:** `T-132`, below — this board's own prose task count is a
 copy nothing re-derives, and it has been four closes stale.
+
+### `[x] T-134` The packet's document index reaches the third corpus
+
+**REQ:** mints nothing — REQ-74 already says *through the port that serves its
+document*, and this close makes that true *(T-95's and T-102's precedent)* ·
+**Depends:** T-103, whose `_packet_index` this is, and T-96/T-97 for the corpus
+and its port · **Blocks:** `T-106`, whose exit needs a committed packet
+**carrying a justified red** · **Discovered in:** T-104 *(D132)* ·
+**Decided by:** D133 · **Gates:** A13 (clause 2, the citation clause it made
+reachable) · **Timebox:** half a day
+**Status:** **closed** (D133) — off the path, closed **before `T-105` opened**;
+the exit ran green and every gate with it. No model call, no network, and no
+recording, bundle, note, span, verdict, baseline or verifier claim moved.
+
+**Why it is its own task.** Working rule 6: `T-104` found it by driving
+`session review --accept` and then `session packet` end to end, which is the
+first time the two verbs met, and a fix folded into that close would have made
+the row mean two things. **Why it is sequenced here rather than after
+`T-105`:** `T-106`'s exit is two committed packets, one of them carrying a
+justified red, and no such packet could be assembled at all — so this blocked
+that row from opening.
+
+**The defect.** `cli._packet_index` was built from the patient and policy stores
+alone. A suggestion's `effect` is a span into an **FDA label**
+(`spl_hydrochlorothiazide[3520:3643]` on the one chart this corpus colours red),
+served by `LocalKnowledgeStore.get_document` — the **third** hashed corpus
+(T-96, D118), whose port landed in T-97 (D119). So every packet carrying an
+accepted suggestion was refused with `UncitedPacket`/`UNKNOWN_DOCUMENT`, and
+`T-103`'s headline capability was unreachable through the verbs that produce it.
+D131's *a packet's spans point into both* counted two corpora where there are
+three; **D133 corrects that sentence and does not edit it.**
+
+**Why all ten gates were green.** The two halves of the claim lived in two files
+and never met. `tests/test_form.py`'s red tests exercise `form.accepted`, which
+returns `PacketSuggestion`s and validates **no span**; its assembling tests use a
+determination with **no accepted suggestion**, so `form.citations` never reaches a
+label. `tests/test_review_log.py` drives `--accept` and `--justify` through the
+verb and then reads `form.accepted` in process, stopping one call short of
+`assemble`. No test in the repository built an index over a packet that cites a
+label.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_packet_index.py tests/test_planes.py \
+    tests/test_form.py tests/test_review_log.py tests/test_docs_consistency.py \
+    -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: `session packet` on a session whose reviewer accepted and justified
+a red **exits 0**, and the rendered `.eml` carries the code, the justification and
+the label's citation in its manifest; the `effect` span **slices back out of the
+hashed label bytes** through the real `cli._packet_index` and the real validator;
+an accepted red with no justification is **still** refused naming its code; an id
+**no** port serves is still left out and classified by `form.assemble` (D38);
+every store `Protocol` declaring `get_document` is both a parameter of
+`_packet_index` and iterated by it, **derived from the store package** rather than
+listed; no document id is served by two ports, so the tuple's order is not a
+precedence rule; and `pa_agent.cli` is the exact set of modules reaching all three
+read corpora.
+
+**What it delivers.** One parameter and one tuple element in the composition
+root, and three things that were missing around them.
+`tests/test_packet_index.py` is where the verb that accepts a suggestion and the
+verb that packages one finally meet — the end-to-end drive, the slice out of the
+hashed label, the derived port enumeration and the disjointness measurement.
+`tests/test_planes.py` gains **`ALL_READ_PLANES`**, the exact set of modules whose
+closure reaches the policy, patient *and* knowledge corpora, with its reason:
+`BOTH_PLANES` is Article VI's policy-and-patient pair and cannot express the
+claim, so it is a second set rather than a widening of the first, and the three
+per-plane isolation tests are untouched. And `tests/test_form.py`'s private
+`_index` now says in its docstring that it is deliberately **not**
+`cli._packet_index` — a copy of the builder agreeing with a wrong original is how
+this stayed invisible there.
+
+**The session plane is deliberately outside both the port set and
+`ALL_READ_PLANES`**, on one fact rather than two: a session store declares no
+`get_document` and holds no citable document, so it is not a corpus a span can
+point into.
+
+**The mutation pass: seven mutations, six caught, and the seventh survives by
+construction — which is the pass's substance.**
+
+| Mutation | Result |
+|---|---|
+| the knowledge store dropped from the tuple, parameter kept | 6 failing tests |
+| the parameter removed — D131's exact two-port shape | 6 failing tests |
+| **the tuple reordered to `(knowledge, policy, patient)`** | **survives the whole suite** |
+| `ALL_READ_PLANES` emptied | 2 failing tests |
+| the port derivation made to skip `knowledge.py` | the guard for the guard fails |
+| the builder made to raise on an unresolvable id | D38's test fails |
+| `form._review_spans` stopped reporting the effect's document | 3 failing tests |
+
+**The reorder survives because it is unobservable, not because nothing looked.**
+The three ports' document-id spaces are **disjoint** — nine policy ids, five
+`spl_*` labels, and the patient plane's bundle filenames and note paths — so the
+loop's `break` can only ever fire on one store and no reorder changes any index
+this corpus can build. An unreachable mutation is not a caught one, so what is
+asserted instead is the property that makes it unreachable: **no document id is
+served by two ports**, probed in both directions through the public
+`get_document`. That is D65's rule in its other form — where a behavioural test
+cannot separate two implementations, check the fact that makes them the same
+rather than pinning the one that happens to be there. It is also the check that
+fails first on the day a corpus ships an id another corpus already has, at which
+point the index has to state a precedence in code.
+
+**What it deliberately did not do.** No `--suggest`-style flag on `session
+packet`, no change to `form.py`'s traversal, and no fourth "any document" adapter
+or `stores/__init__` re-export: that would be the module reaching every plane
+that `stores/__init__.py` imports nothing to avoid. And `tests/test_form.py`'s
+`_index` was **not** given a third store — a private copy agreeing with the fixed
+`cli.py` checks nothing, and the claim belongs to the real builder.
+
+**Found and not fixed, numbered `T-137`.** `Packet.supporting_documents` declares
+itself *every document id this packet cites* and is computed from the
+determination's spans alone, so on the first packet this close made assemblable
+the manifest names three documents and that field names one. It was true of every
+packet that could previously exist, which is the shape of the defect this row
+closed — a claim held only by the case that could not arise. Whether the comment
+or the computation is wrong is a decision about what a form's *supporting
+documents* box means, and `T-106`'s fixture renders whichever answer wins.
+
+**Found and not fixed, numbered `T-136`.** `form.source_ids` is the only input to
+the index, and nothing checks that the ids it reports are the ids
+`form.citations` needs. The two traversals share `_determination_spans`, and
+`_review_spans` is a deliberate **superset** of what a packet carries (D131), so
+today they cannot disagree — but the relation *every citation's document is in
+`source_ids`* is the one this row's defect violated one layer down, and it is held
+by no command over an arbitrary review. The check is a property over a
+hand-written review carrying every colour, which is its own row *(working rule
+6)*.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

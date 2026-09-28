@@ -70,11 +70,12 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3 and v1.4 are all complete, and v1.5 is under way.**
-88 of 88 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
-the `session packet` verb and `T-104` added the review log beside it *(D131,
-D132)*, behind `T-129`'s national floor checked at load *(D124, D130)* — all ten
-zero-cost gates green, and acceptance gates A1–A12 holding. The suite collects
-1575 tests (58 skip). **v1.5 continues with `T-105`**: simulated submission and
+89 of 89 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
+the `session packet` verb, `T-104` added the review log beside it *(D131,
+D132)* and `T-134` gave the packet's citations the third corpus they point into
+*(D133)*, behind `T-129`'s national floor checked at load *(D124, D130)* — all
+ten zero-cost gates green, and acceptance gates A1–A12 holding. The suite
+collects 1586 tests (58 skip). **v1.5 continues with `T-105`**: simulated submission and
 tracking, then the committed rendered packets.
 
 - **v1** delivered the determination end to end: two short circuits, seven
@@ -128,8 +129,13 @@ tracking, then the committed rendered packets.
   A suggestion enters only through a recorded acceptance, and a **red** one —
   pharmacological plausibility with nothing on the chart — is refused unless the
   reviewer has written a justification, with the refusal naming *every*
-  unjustified code rather than the first *(D131)*. The review log, transmission
-  to a simulated payer and the tracking that follows are `T-104`–`T-106`.
+  unjustified code rather than the first *(D131)*. `T-104` added the review log
+  the acceptances are recorded in, and `T-134` — off the path, because it
+  blocked the fixtures — gave the packet's document index the **third** corpus
+  its citations point into: a suggestion's effect is a span into an FDA label,
+  so every packet carrying an accepted suggestion was refused until it was
+  built from all three ports *(D132, D133)*. Transmission to a simulated payer
+  and the tracking that follows are `T-105` and `T-106`.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -960,7 +966,9 @@ is a declared placeholder until the payer directory lands.
 Two rules the assembly enforces, and both are refusals rather than warnings.
 **Every citation is re-validated** through the port that serves its document
 before the packet is returned, so a span that no longer slices back is a refused
-packet and not a footnote. And a **suggested code enters only through a recorded
+packet and not a footnote — and *the port that serves its document* means all
+three of them, because a criterion cites the chart, a coverage claim cites the
+policy corpus and an accepted suggestion's effect cites an FDA label *(D133)*. And a **suggested code enters only through a recorded
 acceptance**: a red suggestion — pharmacological plausibility with nothing on the
 chart — is refused unless the reviewer wrote a justification, and the refusal
 names *every* unjustified code, not the first. The refusals exit `1`, print
@@ -981,7 +989,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1575 tests across 53 files, 58 of them skipped — the skips are per-tree
+1586 tests across 54 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

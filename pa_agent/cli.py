@@ -14,9 +14,12 @@ result and still exits zero: a deterministic answer is not an error (D32).
 
 **This module is where every path is named and every port is constructed** — the
 four stores, the extraction runner, the verifier, the quote runner and the
-document index a packet's citations are validated against (REQ-41, REQ-52,
-REQ-74). Nothing below it holds a path or a credential, which is what makes the
-production adapters D25 wants a second implementation rather than a rewrite. It
+document index a packet's citations are validated against — built over **all
+three** hashed corpora, because a criterion cites a chart, a coverage claim
+cites the policy corpus and an accepted suggestion cites an FDA label (REQ-41,
+REQ-52, REQ-74, D133). Nothing below it holds a path or a credential, which is
+what makes the production adapters D25 wants a second implementation rather than
+a rewrite. It
 is also where every value that cannot be derived comes from: the clock (`_now`)
 and, until `T-105` builds the payer directory, the packet's recipient
 (`PLACEHOLDER_PAYER`) — D127's rule, D131's application of it.
@@ -742,15 +745,32 @@ def _verb_review(args) -> int:
 PLACEHOLDER_PAYER = "Simulated Payer <prior-auth@payer.invalid>"
 
 
-def _packet_index(document_ids, policy_store, patient_store) -> DocumentIndex:
+def _packet_index(
+    document_ids, policy_store, patient_store, knowledge_store
+) -> DocumentIndex:
     """The documents a packet's citations slice back through (REQ-74).
 
-    Built **here** because only the composition root may name both ports
-    (REQ-41) and a packet's spans point into both: a criterion cites the
-    patient's bundle and its notes, a coverage claim cites the corpus. That is
-    the scorer's rule (D75) and `workflow._document_for`'s, one surface over.
+    Built **here** because only the composition root may name a port (REQ-41),
+    and a packet's citations point into **all three** hashed corpora: a
+    criterion cites the patient's bundle and its notes, a coverage claim cites
+    the policy corpus, and an accepted suggestion's `effect` cites an FDA
+    label. That is the scorer's rule (D75) and `workflow._document_for`'s, one
+    surface over — and the third corpus is the one D131 did not count, so no
+    packet carrying an accepted suggestion could be assembled at all until
+    `T-134` (D133).
 
-    An id neither port serves is left out, and `form.assemble` then refuses the
+    **Three ports because three declare `get_document`.** The session store does
+    not: it records what the system answered and holds no citable document.
+    `tests/test_packet_index.py` derives that set from the store package rather
+    than listing it, so a fourth hashed corpus cannot reintroduce this defect by
+    being forgotten here.
+
+    The order of the stores is **not** a precedence rule — the three id spaces
+    are disjoint, measured, and that disjointness is asserted rather than
+    assumed, because a reorder is otherwise a mutation no committed chart can
+    catch (D133).
+
+    An id **no** port serves is left out, and `form.assemble` then refuses the
     packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`. Classifying it is the span
     validator's job, and deciding here what a missing document *means* would be
     the composition root answering a question `pa_agent.spans` exists to answer
@@ -758,7 +778,7 @@ def _packet_index(document_ids, policy_store, patient_store) -> DocumentIndex:
     """
     index = DocumentIndex()
     for document_id in document_ids:
-        for store in (patient_store, policy_store):
+        for store in (patient_store, policy_store, knowledge_store):
             try:
                 index.add(store.get_document(document_id))
             except KeyError:
@@ -837,6 +857,7 @@ def _verb_packet(args) -> int:
                 form.source_ids(determination=determination, review=review),
                 policy_store,
                 patient_store,
+                knowledge_store,
             ),
         )
     except form.PacketRefused as exc:

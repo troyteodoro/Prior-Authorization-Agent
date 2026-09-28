@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-75 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10, US-11 and US-12 closed with v1.2, v1.3 and v1.4; **US-13 is v1.5's and open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-104 plus T-126, T-127, T-128 and T-129, each with a runnable exit condition; T-105 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, T-133, which T-103 did *(D131)*, and T-134 and T-135, which T-104 did *(D132)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D132, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-104 plus T-126, T-127, T-128, T-129 and T-134, each with a runnable exit condition; T-105 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, T-133, which T-103 did *(D131)*, T-135, which T-104 did *(D132)*, and T-136 and T-137, which T-134 did *(D133)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D133, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -285,7 +285,9 @@ no clock, no store, and **no renderer**: `assemble` takes
 embeds it verbatim, because a second renderer is a second answer to one question
 (D129) and a `form.py` importing `cli.py` would join `BOTH_PLANES`. It validates
 every citation through `pa_agent.spans` against an index the composition root
-filled from the ids `source_ids` reports, and `citations()` is the one traversal
+filled from the ids `source_ids` reports — `cli._packet_index`, over **three**
+ports since `T-134`, because a packet's citations point into all three hashed
+corpora *(D133)* — and `citations()` is the one traversal
 the validator, the renderer and T-106's gate all read. Four refusal conditions
 under `PacketRefused`, three of them typed: an accepted red with no
 justification (**naming every** unjustified code), an acceptance naming a row
@@ -474,6 +476,22 @@ passing**, because the tests are written in terms of the thing that broke.
   with any passage returned, and a pair that *anchored* is a red gate — a
   yellow this corpus was not supposed to produce. The review's turns are
   counted beside the determination's (`HistoryRun`), never in A6.
+- **A packet's citations point into three corpora, and the index is built from
+  every port that serves a document** *(REQ-74, T-134, D133)*. A criterion cites
+  the chart, a coverage claim cites the policy corpus, and an accepted
+  suggestion's `effect` cites an **FDA label** — so `cli._packet_index` consults
+  the knowledge port too. D131 built it from two and wrote *a packet's spans
+  point into both*; the count was wrong and **no packet carrying an accepted
+  suggestion could be assembled at all**, while every gate stayed green because
+  `tests/test_form.py`'s red tests validate no span and its assembling tests use
+  a determination with no accepted suggestion. No behavioural test on a packet
+  without one can tell. The set of ports is therefore **derived** — every store
+  `Protocol` declaring `get_document`, which the session store does not — so a
+  fourth corpus cannot reintroduce it by being forgotten, and the store tuple's
+  **order** is not a precedence rule: the three id spaces are disjoint, measured,
+  and that disjointness is what is asserted, because a reorder is otherwise a
+  mutation no committed chart can catch. An id **no** port serves is still left
+  out and refused by `form.assemble` as `UNKNOWN_DOCUMENT` (D38).
 - **A red suggestion's justification lives in the review log, and a suggestion
   enters a packet only through a recorded acceptance** *(REQ-74, T-103, D131)*.
   `IcdSuggestion` is frozen, red carries **no citations by construction**, and
@@ -792,17 +810,34 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**88 of 88 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1575 tests across 53 files, 58 of
+**89 of 89 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1586 tests across 54 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
-IDs run to T-129 (T-126 through T-129 are off the path, above the roadmap's
-reservations), but numbering is not contiguous and D92 and D94 deleted six
-records between them, so the highest id is well above the count. **Nothing is
-open**; `T-130`, `T-131`, `T-132`, `T-133`, `T-134` and `T-135` are numbered
-with no record yet. **v1.5 is open and `T-103` and `T-104` closed its first two rows**
-*(D131, D132)*; next is `T-105`, simulated submission and tracking.
+IDs run to T-134 (T-126 through T-129 and T-134 are off the path, above the
+roadmap's reservations), but numbering is not contiguous and D92 and D94 deleted
+six records between them, so the highest id is well above the count. **Nothing
+is open**; `T-130`, `T-131`, `T-132`, `T-133`, `T-135`, `T-136` and `T-137` are
+numbered with no record yet. **v1.5 is open and `T-103` and `T-104` closed its first two
+rows** *(D131, D132)*, with `T-134` off the path behind them *(D133)*; next is
+`T-105`, simulated submission and tracking.
+
+**`T-134` closed off the path** *(D133)*: `cli._packet_index` consults the
+**knowledge** port as well as the patient and policy ones, so a packet carrying
+an accepted suggestion assembles — a suggestion's `effect` is a span into an FDA
+label, and D131's *a packet's spans point into both* counted two corpora where
+there are three. Sequenced ahead of `T-105` because `T-106`'s exit needs a
+committed packet **carrying a justified red**, which could not be assembled at
+all. The set of ports the index consults is derived from the store package
+rather than listed, `tests/test_planes.py` gained `ALL_READ_PLANES` — the exact
+set of modules reaching all three read corpora, which is `cli.py` and nothing
+else, a fact this repository had never written down — and `tests/test_packet_index.py`
+is where the verb that accepts a suggestion and the verb that packages one
+finally meet. It minted nothing — REQ-74 already said *through the port that
+serves its document*, and this close makes that true — and it found `T-136` and
+`T-137`, the second of them a claim on `Packet.supporting_documents` that only
+the packet this close made assemblable could falsify.
 
 **`T-127` and `T-128` are off the path** *(D120, D121)*. `T-127` re-read
 *Where this system degrades*: the eight unclaimed criteria sort three ways
@@ -854,18 +889,18 @@ copy and the report is the source.
 
 Open: **nothing. v1, v1.1, v1.2, v1.3 and v1.4 are all complete** —
 **A1–A12 all hold**, and US-12 is delivered. **v1.5 is open**: `T-103` and
-`T-104` closed rows 1 and 2 and the remaining rows are `T-105` and `T-106` —
-simulated submission and tracking, then the committed rendered packets.
+`T-104` closed rows 1 and 2, `T-134` closed off the path behind them, and the
+remaining rows are `T-105` and `T-106` — simulated submission and tracking, then
+the committed rendered packets.
 
 **`T-104` closed row 2** *(D132)*: `session review` appends. The log is a field
 on `Session`, `TRANSITIONS` gained the `IN_REVIEW` self-edge, and `IN_REVIEW`
 stopped being terminal with nothing outside the table edited — D127's argument
 paid off, one version after it was written and on a different edge than it
 guessed. It minted **REQ-75**, moved no determination, and found two things.
-`T-134`: `cli._packet_index` consults the patient and policy stores and never
-the knowledge store, so a packet carrying an accepted suggestion is refused with
-`UNKNOWN_DOCUMENT` — a suggestion's `effect` is a span into an FDA label, and
-the knowledge corpus is the third one D131's *both ports* did not count.
+`T-134`, **since closed** *(D133)*: `cli._packet_index` consulted the patient
+and policy stores and never the knowledge store, so a packet carrying an
+accepted suggestion was refused with `UNKNOWN_DOCUMENT`.
 `T-135`: a refusal test that compares a session's **bytes** holds *nothing
 changed* and not *nothing written*, because the adapter generates nothing — a
 `save` of the object just read reproduces the file. This row's own refusal tests
@@ -1425,7 +1460,7 @@ scripts/             check_gates, check_env, check_skeleton,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement,
                      run_quote_measurement, run_adk_quote_measurement
-tests/               52 files
+tests/               54 files
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and

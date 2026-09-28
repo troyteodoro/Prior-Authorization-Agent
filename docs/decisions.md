@@ -12222,3 +12222,250 @@ row's gate, so it is numbered `T-135` and not folded in *(working rule 6)*.
 No model call, no network. No recording, bundle, note, span, verdict, baseline
 or verifier claim moves — a review reaches no determination, which is the claim
 rather than a side effect.
+
+---
+
+## D133 — A packet's citations point into three corpora, and the index consults every port that serves a document
+
+**Context.** `T-134`, off the path, discovered in `T-104` (D132). v1.5's rows 1
+and 2 are closed, row 3 is `T-105` and nothing is open. This entry precedes the
+code (Article IX, working rule 5).
+
+**It blocks `T-106`.** That row's exit is two committed packets, *one carrying a
+justified red*, each rendering byte-identical to its fixture. No such packet can
+be assembled today, so the row cannot open, which is why a one-line defect is
+sequenced ahead of the version's remaining two rows rather than after them.
+
+### The measurement
+
+`cli._packet_index` builds the document index from the **patient and policy**
+stores. A suggestion's `effect` is a span into an **FDA label**, served by the
+**knowledge** store — the third hashed corpus (T-96, D118; its port T-97,
+D119) — so every packet carrying an accepted suggestion is refused. Reproduced
+end to end against a scratch session root, at the harness clock, on `E12`'s
+chart, the one the committed corpus colours red:
+
+```
+session create --patient a8edc52e… --procedure 43775 --icd10 E66.01
+session run <id> --as-of 2026-09-01 --suggest
+session review <id> --reviewer Sam --accept hydrochlorothiazide-hyperglycemia --code R73.9
+session review <id> --reviewer Sam --justify hydrochlorothiazide-hyperglycemia --code R73.9 \
+    --justification "…"
+session packet <id>
+→ exit 1
+  bad request: packet … cites spl_hydrochlorothiazide[3520:3643], which does
+  not slice back: UNKNOWN_DOCUMENT: 'spl_hydrochlorothiazide' is not in the
+  index; it holds ['Avelina400_Huels583_a8edc52e-….json']
+```
+
+So the headline capability `T-103` delivered — *the packet carries the accepted
+suggestions and their justifications* — could not be exercised at all, and the
+refusal was the one refusal in `form.py` that is supposed to mean *a citation no
+longer slices*.
+
+**Why every gate stayed green.** `tests/test_form.py` splits the two facts it
+needed and never joins them: its red tests exercise `form.accepted`, which
+returns `PacketSuggestion`s and validates no span, and its assembling tests use a
+determination with **no accepted suggestion**, so `form.citations` returns the
+determination's spans alone. No test in the repository built an index over a
+packet that cites a label. `tests/test_review_log.py` came one call short in the
+other direction: it drives `--accept` and `--justify` through the verb and then
+reads `form.accepted` in process, stopping before `assemble`. Two files each
+holding one half of the claim is the shape D65 argues about, arrived at by
+splitting rather than by choosing.
+
+### D131's two-plane sentence was wrong, and this entry corrects it
+
+D131 wrote *"only the composition root may name both ports (REQ-41), and a
+packet's spans point into both: a criterion cites the patient's bundle and its
+notes, a coverage claim cites the corpus"*, and built `_packet_index` from
+exactly those two. **Both** was a count, and the count was two documents short of
+the three corpora this repository ships. The sentence is not edited — the log is
+append-only and a reversal is a new entry — and the corrected claim is: **a
+packet's citations point into every corpus that can be cited by anything the
+packet carries, which since `T-96` is three.**
+
+The failure is instructive rather than careless: the knowledge corpus was made a
+**separate** plane on purpose (D118, D119), precisely so that *what a payer
+covers*, *what one chart says* and *what a drug is known to do* could not be
+confused for one another, and that separation is what made it easy to enumerate
+the planes a packet reads by writing down the two an older surface read.
+
+### Chosen — `_packet_index` takes the knowledge store as a third port
+
+One parameter, one tuple element, and the docstring's *both* becomes *three*. The
+composition root already constructs `LocalKnowledgeStore` in `_verb_packet` for
+the review, so this adds no construction and no path.
+
+**Rejected — moving the packet's document resolution behind an object `form.py`
+holds.** D131 rejected a resolver callable for **two** planes on the ground that
+`form.py` would then reach both and join `BOTH_PLANES`; with three it is worse,
+because the module that assembles a packet would become the one module in the
+package that can read every corpus. REQ-41's claim is that the CLI is the one
+place a store is constructed, and the index is a composition, not an assembly
+step.
+
+**Rejected — a fourth adapter, or a `stores/__init__` re-export, that serves
+"any document".** `stores/__init__.py` imports no submodule **on purpose**: a
+package-level re-export is the module that reaches every plane, and Article VI's
+walk would have to whitelist it. An "all corpora" adapter is the same object with
+a nicer name, and it would also decide document-id precedence in a place no test
+about packets would look.
+
+**Rejected — resolving the label span inside `history.py` and handing the packet
+a pre-sliced quote.** The quote is already on the span; what a packet needs is
+that the **offsets** address the committed bytes. A pre-sliced quote is a claim
+checked against itself, which is D127's *two encodings of the same text compare
+nothing* on a third surface.
+
+### Chosen — `BOTH_PLANES` says nothing new, and the three-plane reach is its own declaration
+
+`tests/test_planes.py`'s `BOTH_PLANES` is Article VI's **policy-and-patient**
+pair, asserted as an exact set, and it must keep meaning exactly that: `cli.py`
+is already its member, `form.py` is deliberately not, no module moves, and the
+set is unchanged by this close. Generalising it to *reaches more than one plane*
+would weaken the one claim it exists to make.
+
+So the missing declaration is added beside it rather than inside it:
+**`ALL_READ_PLANES`**, an exact set of the modules whose import closure reaches
+the policy, patient **and** knowledge corpora, with a reason each in
+`BOTH_PLANES`' idiom. Today it is exactly `{pa_agent.cli}`, and that is a fact
+this repository had never written down: the composition root has reached all three
+since `T-97`, and the only assertion about the knowledge plane was that nothing
+**else** reaches it.
+
+The **session** plane is deliberately outside that declaration, and the reason is
+the same derivation the port check below uses: a session store serves no
+`get_document` and holds no citable document, so it is not a corpus a packet's
+spans can point into. The three per-plane isolation tests — knowledge reaches
+neither other plane, neither plane reaches knowledge, the session plane reaches
+nothing and nothing reaches it — are untouched and keep holding as written. The
+planes are isolated from each other; only the composition root spans them.
+
+### Chosen — the set of ports the index consults is derived from the package, never listed
+
+A `knowledge_store` added by hand today is a fourth corpus forgotten tomorrow, on
+the same afternoon someone writes its manifest. So the check is over the
+**universe**: every module under `pa_agent/stores/` whose `Protocol` declares
+`get_document` is a port that serves a citable document, and `cli._packet_index`
+must both **take** it as a parameter and **iterate** it. The names are derived
+(`PolicyStore` → `policy_store`), so nothing in the test is a literal that a new
+corpus could satisfy by being absent. Three ports declare `get_document` today
+and the session store does not, which is the same line the paragraph above draws.
+
+This is `tests/test_docs_consistency.py::test_the_stated_port_count_is_the_adapter_count`'s
+shape — derive the count from the package that owns it and hold the copy to
+it — applied to a call rather than to prose.
+
+**Rejected — a runtime check that every store passed in is consulted.** It would
+pass vacuously for the store nobody passed, which is the defect.
+
+### Chosen — the tuple's order is checked to be *irrelevant*, not asserted to be right
+
+The obvious second mutation is to reorder the stores so an id served by two is
+resolved by the wrong one. **Measured: it is unreachable.** The three ports'
+document-id sets are disjoint — nine policy ids, five `spl_*` label ids, and the
+patient plane's bundle filenames and note paths — so the loop's `break` can only
+ever fire on one store, and no reorder changes any index this corpus can build.
+
+An unreachable mutation is not a caught one, so what is asserted is the property
+that makes it unreachable: **no document id is served by two ports**, probed
+through the public `get_document` in both directions (each port serves all of its
+own ids and raises `KeyError` on every id of the other two). That converts *the
+order does not matter* from an excuse into a check, and it is the check that
+fails first on the day a corpus ships an id another corpus already has — at which
+point the index build has to state a precedence, in code, with a reason.
+
+### Chosen — an id **no** port serves is still left out, and `form.assemble` still classifies it
+
+Unchanged and restated because it now looks like an omission with three stores
+instead of two. `_packet_index` leaves an unresolvable id out of the index and
+`assemble` refuses the packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`; deciding
+**here** what a missing document means would be the composition root answering a
+question `pa_agent.spans` exists to answer (D38). That is also the property this
+defect exercised correctly: the system refused rather than rendering a packet with
+a citation it had not checked.
+
+### What it mints
+
+**Nothing.** REQ-74 already states that every citation in an assembled packet
+slices back **through the port that serves its document**; the requirement was
+right and the composition root was one port short of it, so this close makes an
+existing statement true rather than adding one. `T-95` and `T-102` are the
+precedent: a close that checks an existing requirement mints nothing, and minting
+REQ-76 here would buy a passing coverage entry for a behaviour the spec already
+demands.
+
+### Reverses if
+
+A port acquires `get_document` and must deliberately stay **out** of a packet's
+index — at which point the derivation needs a declared exclusion with a stated
+reason, `check_gates.EXCLUDED`'s idiom, rather than a quietly shorter tuple. And
+separately if two corpora ever share a document id, which turns the store tuple
+from an irrelevant order into a precedence rule that has to be written down.
+
+### What it costs
+
+No model call, no network. No recording, bundle, note, span, verdict, baseline or
+verifier claim moves, and no determination changes by a byte: the review is
+recomputed as it already was, `_render` gains no key, and the only behaviour that
+changes is that a packet which was refused now assembles.
+
+### What the mutation pass found
+
+**Seven mutations, six caught, and the seventh survives the whole suite — which
+is the pass's substance rather than a hole in it.**
+
+| Mutation | Result |
+|---|---|
+| the knowledge store dropped from the tuple, the parameter kept | 6 failing tests |
+| the parameter removed — D131's exact two-port shape | 6 failing tests |
+| **the tuple reordered to `(knowledge, policy, patient)`** | **survives, 1525 passed** |
+| `ALL_READ_PLANES` emptied | 2 failing tests |
+| the port derivation made to skip `knowledge.py` | the guard for the guard fails |
+| the builder made to raise on an id no port serves | D38's test fails |
+| `form._review_spans` stopped reporting the effect's document | 3 failing tests |
+
+The reorder survives because it is **unobservable**, which is the measurement the
+paragraph above predicted rather than assumed: with three disjoint id spaces the
+loop's `break` fires on exactly one store for every id this corpus can produce.
+Pinning the tuple's order to kill it would pin a decision that is not one, and it
+would go stale the moment a port is added; asserting the disjointness instead says
+the true thing and fails on the day it stops being true. D65's rule in its other
+direction — where a behavioural test cannot separate two implementations, check
+the fact that makes them the same.
+
+The seventh mutation is the one worth keeping in mind: `source_ids` is the index's
+**only** input, so a traversal that stops reporting a document produces the same
+`UNKNOWN_DOCUMENT` refusal from the other end. It is caught here only because the
+suggestion's effect is the span this row's tests name.
+
+### Found and not fixed, numbered `T-136`
+
+**Nothing checks that `form.source_ids` reports every document `form.citations`
+needs.** The two traversals share `_determination_spans`, and `_review_spans` is a
+deliberate superset of what a packet carries (D131), so on this corpus they cannot
+disagree — but the relation itself is held by no command, and it is exactly the
+relation this defect violated one layer down: in the composition root here, in the
+pure module there. The check is a property over a hand-written review carrying
+every colour, and it is its own row rather than a clause folded into this one
+*(working rule 6)*.
+
+### Found and not fixed, numbered `T-137`
+
+**`Packet.supporting_documents` declares itself *every document id this packet
+cites* and is computed from the determination's spans alone.** Measured on the
+first packet this close made assemblable: the citation manifest names three
+documents and `supporting_documents` names one, omitting the label.
+
+It is worth naming precisely, because it is **this entry's own failure mode one
+field along**: the field's claim was true of every packet that could previously
+exist, since no packet with an accepted suggestion could be assembled at all, and
+it becomes false on the first one that can. A claim held only by the case that
+cannot arise is what `tests/test_form.py` was doing with its two halves.
+
+It is not folded in, because it is a **decision** and not a missing store: a
+prior-auth form's *supporting documents* box means the clinical records attached,
+and an FDA label is not one of this patient's records — so the honest fix may well
+be to correct the comment and the README row rather than the computation, and
+`T-106`'s fixture renders whichever answer wins *(working rule 6)*.

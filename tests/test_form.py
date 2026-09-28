@@ -149,12 +149,20 @@ def _session(determination: Determination, *, reviews=(), icd10=("E66.01",)) -> 
 
 
 def _index(document_ids, policies, patients) -> DocumentIndex:
-    """What `cli._packet_index` builds, over the ids `form.source_ids` reports.
+    """The **two-plane** index a determination's own citations need.
 
     Written out here rather than imported from `cli.py`, because importing the
     composition root into a test of the pure module would let the two drift
     together — and the ids come from `form.source_ids`, which is the traversal
     under test.
+
+    It is deliberately **not** `cli._packet_index`, which consults three ports: a
+    packet that carries an accepted suggestion cites an FDA label too, and this
+    private copy agreeing with a wrong `cli.py` is exactly how `T-134` stayed
+    invisible here. That claim belongs to the real builder and is checked against
+    it in `tests/test_packet_index.py` (D133); every packet assembled in this
+    file carries no accepted suggestion, so its citations are the
+    determination's alone.
     """
     index = DocumentIndex()
     for document_id in document_ids:
