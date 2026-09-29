@@ -175,19 +175,35 @@ def source_ids(
     return tuple(seen)
 
 
+def _cited_spans(
+    evidence: Sequence[EvidenceSpan], suggestions: Sequence[PacketSuggestion]
+) -> tuple[EvidenceSpan, ...]:
+    """The determination's spans, then each accepted suggestion's provenance
+    span and chart evidence.
+
+    **The one traversal**, taking the two values rather than the packet so that
+    `assemble` can walk it *before* it has a packet to walk. `citations` is the
+    public name over an assembled one; `Packet.cited_documents` is this
+    deduplicated. Writing the document list from a second walk a few lines away
+    is exactly what left it naming one document of two (D135).
+    """
+    spans: list[EvidenceSpan] = list(evidence)
+    for suggestion in suggestions:
+        spans.append(suggestion.effect)
+        spans.extend(suggestion.citations)
+    return tuple(spans)
+
+
 def citations(packet: Packet) -> tuple[EvidenceSpan, ...]:
     """Every span in this packet: the determination's, then each accepted
     suggestion's provenance span and chart evidence.
 
-    The one traversal. `assemble` validates what this returns, `render` writes
-    the manifest from it, and `T-106`'s gate counts it — so *every citation in
-    every packet slices back* is a claim about the same set in all three places.
+    `assemble` validates what this returns, `render` writes the manifest from
+    it, `Packet.cited_documents` is its document-level index, and `T-106`'s gate
+    counts it — so *every citation in every packet slices back* is a claim about
+    the same set in all of them.
     """
-    spans: list[EvidenceSpan] = list(packet.evidence)
-    for suggestion in packet.suggestions:
-        spans.append(suggestion.effect)
-        spans.extend(suggestion.citations)
-    return tuple(spans)
+    return _cited_spans(packet.evidence, packet.suggestions)
 
 
 # --------------------------------------------------------------------------
@@ -333,6 +349,12 @@ def assemble(
 
     suggestions = accepted(review, session.reviews, run_index)
     spans = _determination_spans(determination)
+    # The document index is the *packet's* citations deduplicated, not the
+    # determination's: an accepted suggestion's `effect` is a span into an FDA
+    # label, and a list built from `spans` alone omits it — true of every packet
+    # that could be assembled before `T-134` and false of the first one that
+    # could (D135). Same traversal `citations()` runs, one call earlier.
+    manifest = _cited_spans(spans, suggestions)
 
     packet = Packet(
         provenance=PacketProvenance(
@@ -349,9 +371,7 @@ def assemble(
         diagnosis_codes=session.intake.icd10_codes,
         determination=rendered_determination,
         evidence=spans,
-        supporting_documents=tuple(
-            dict.fromkeys(span.document_id for span in spans)
-        ),
+        cited_documents=tuple(dict.fromkeys(span.document_id for span in manifest)),
         suggestions=suggestions,
     )
 
@@ -403,6 +423,12 @@ def render(packet: Packet) -> str:
     (D131). The body is the form, then the accepted suggestions with their
     justifications, then the determination **verbatim** as the composition root
     rendered it, then the citation manifest `citations()` returns.
+
+    *Cited documents* and *Citation manifest* are one set at two granularities —
+    the index a reader scans and the offsets a reader checks. It is **not** an
+    attachments list: this packet attaches nothing, and calling it *supporting
+    documents* said otherwise of a `NOT_COVERED` packet that names two policy
+    documents and no chart (D135).
     """
     provenance = packet.provenance
     lines = [
@@ -452,9 +478,9 @@ def render(packet: Packet) -> str:
             lines.append(f"      cited: {_span_line(span)}")
     lines += [
         "",
-        f"Supporting documents ({len(packet.supporting_documents)})",
+        f"Cited documents ({len(packet.cited_documents)})",
     ]
-    for document_id in packet.supporting_documents:
+    for document_id in packet.cited_documents:
         lines.append(f"  {document_id}")
     manifest = citations(packet)
     lines += [

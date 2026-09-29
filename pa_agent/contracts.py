@@ -2746,10 +2746,11 @@ class Packet(BaseModel):
     """The prior authorization request, assembled and ready to transmit.
 
     **Every field is a live row of README's *A full prior-auth form, mapped to
-    these lanes* table**, except `provenance`, which says so. That table is this
-    model's field list and `tests/test_docs_consistency.py` holds the two
-    together in both directions, because it is the one thing in the README that
-    would silently disagree with the code as the packet grows (D131).
+    these lanes* table**, except `provenance` and `cited_documents`, which say
+    so. That table is this model's field list and
+    `tests/test_docs_consistency.py` holds the two together in both directions,
+    because it is the one thing in the README that would silently disagree with
+    the code as the packet grows (D131).
 
     `determination` is the **rendered** document, handed down from `cli._render`
     and embedded verbatim. `form.py` never re-renders one: a second renderer is a
@@ -2776,9 +2777,16 @@ class Packet(BaseModel):
     #: Clinical justification: the rendered determination and its spans.
     determination: dict[str, Any]
     evidence: tuple[EvidenceSpan, ...] = ()
-    #: Supporting documents: every document id this packet cites, first-cited
-    #: order.
-    supporting_documents: tuple[str, ...] = ()
+    #: Every document id this packet's citations point into, first-cited order:
+    #: `form.citations` deduplicated, written by `form.assemble` from the same
+    #: traversal and by nothing else.
+    #:
+    #: **Not the form's *supporting documents* box**, which is attachments — an
+    #: office note, an imaging report, a signed LOMN — and this packet attaches
+    #: nothing (REQ-70's line, one field along). It is a citation index: on a
+    #: `NOT_COVERED` packet it names the policy corpus and no chart at all, and
+    #: on one carrying an accepted suggestion it names an FDA label (D135).
+    cited_documents: tuple[str, ...] = ()
     #: The accepted ICD-10 suggestions, which are diagnosis codes a human put
     #: here (REQ-65).
     suggestions: tuple[PacketSuggestion, ...] = ()

@@ -73,6 +73,11 @@ AS_OF = date(2026, 9, 1)
 CITING_PATIENT = "07a5f345-3e7c-da0f-da0b-87fa252a5bfd"
 COVERED_CODE = "43775"
 
+#: Open vertical banded gastroplasty: the code NCD 100.1 non-covers for all
+#: beneficiaries with no date qualifier (D22, D28), so a determination over it
+#: short-circuits at the resolver and cites the policy corpus alone.
+NON_COVERED_CODE = "43842"
+
 #: `E12`'s chart, which `H6` grades: note-free by declaration, and the review
 #: colours its one candidate **red** with nothing on the chart (D119, D123).
 #: Verified at this close rather than assumed — `test_the_corpus_still_produces
@@ -261,8 +266,60 @@ def test_a_packet_validates_every_citation_and_says_how_many(citing, policies, p
     index = _index(ids, policies, patients)
     for span in manifest:
         assert validate_span(span, index), span
-    assert len(packet.supporting_documents) == len(ids) >= 3, (
-        "the bundle and both notes are cited, so three documents are named"
+
+    notes = {f"{CITING_PATIENT}/chart_note_{n}.txt" for n in (1, 2)}
+    cited = set(packet.cited_documents)
+    assert notes <= cited, (
+        f"the packet cites {sorted(cited)}; this chart's qualifying run straddles "
+        "both notes, so both are named at document level (D104)"
+    )
+    bundles = cited - notes
+    assert len(bundles) == 1 and CITING_PATIENT in next(iter(bundles)), (
+        f"the remaining cited document(s) are {sorted(bundles)}; a covered "
+        "determination over this chart cites its bundle and nothing else"
+    )
+    assert packet.cited_documents == tuple(
+        dict.fromkeys(span.document_id for span in manifest)
+    ), "the index is the manifest's documents, deduplicated in first-cited order"
+
+
+def test_a_short_circuited_packet_cites_the_policy_corpus_and_no_chart(
+    policies, patients, runner, verifier
+):
+    """`cited_documents` is a citation index, not the records attached (D135).
+
+    The measurement this row turned on. A `NOT_COVERED` determination answers at
+    the resolver, so the packet's every citation is a **policy** document and no
+    clinical record is named at all — which is why *the field is right and its
+    name is wrong* was not available: a list holding the payer's own LCD has
+    never been the supporting documents a prior-auth form asks for.
+
+    It is also the case that separates the two readings in the other direction.
+    A filter to the patient plane would empty this list, and every note-bearing
+    packet in this file would still pass.
+    """
+    determination = _determine(
+        policies, patients, runner, verifier, CITING_PATIENT, code=NON_COVERED_CODE
+    )
+    assert determination.outcome is DeterminationOutcome.NOT_COVERED, determination.outcome
+
+    ids = form.source_ids(determination=determination)
+    packet = form.assemble(
+        session=_session(determination),
+        run_index=0,
+        rendered_determination={"outcome": determination.outcome.value},
+        review=None,
+        payer="Payer <pa@payer.invalid>",
+        index=_index(ids, policies, patients),
+    )
+    assert packet.cited_documents == ("ncd_100_1", "a53028"), (
+        f"the packet names {packet.cited_documents}; the non-covered claim cites "
+        "the NCD's sentence with its scoping sentence and the code binding cites "
+        "the MAC's article (D22, D28)"
+    )
+    assert not any(CITING_PATIENT in document for document in packet.cited_documents), (
+        "a short-circuited determination reads no chart, so no clinical record "
+        "is cited — and the field says documents cited, not records attached"
     )
 
 

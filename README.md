@@ -70,14 +70,15 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3 and v1.4 are all complete, and v1.5 is under way.**
-90 of 90 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
+91 of 91 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
 the `session packet` verb, `T-104` added the review log beside it *(D131,
 D132)*, `T-134` gave the packet's citations the third corpus they point into
-*(D133)* and `T-105` sent the packet and tracked the answer *(D134)*, behind
-`T-129`'s national floor checked at load *(D124, D130)* — all
-ten zero-cost gates green, and acceptance gates A1–A12 holding. The suite
-collects 1693 tests (58 skip). **v1.5 finishes with `T-106`**: the two committed
-rendered packets.
+*(D133)*, `T-105` sent the packet and tracked the answer *(D134)* and `T-137`
+made the packet's own list of the documents it cites the manifest's, renamed for
+what it holds *(D135)*, behind `T-129`'s national floor checked at load *(D124,
+D130)* — all ten zero-cost gates green, and acceptance gates A1–A12 holding.
+The suite collects 1694 tests (58 skip). **v1.5 finishes with `T-106`**: the two
+committed rendered packets.
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -843,7 +844,7 @@ means here. Four lanes:
 | Disease severity markers | Structured observations *and* the note | The note's BMI reading is extracted by the model | The BMI threshold, the discrepancy tolerance | Criteria (a) and (b); reconciliation of the two independent BMI readings | Live |
 | Urgency indicator | Input flag | — | Could be a tree field (a different SLA, not a different rule) | Routing — Article I keeps prioritization out of the model | Not in v1 |
 | **Supporting documents** | | | | | |
-| Recent provider notes | Input documents | The model reads the note — its *only* tool | — | Quote anchoring, span validation, and the blind verifier's replay | Live (two notes per patient since T-81; the extractor reads one at a time) |
+| Recent provider notes | Input documents | The model reads the note — its *only* tool | — | Quote anchoring, span validation, and the blind verifier's replay; a cited note lands on the packet as **spans**, because this build attaches no document | Live (two notes per patient since T-81; the extractor reads one at a time) |
 | Diagnostic imaging / lab reports | Input documents | Same extraction lane: unstructured → cited claims | Criteria naming them would be tree data | Identical span validation — the mechanism does not care what kind of document it slices | Not in v1 |
 | Letter of medical necessity (LOMN) | **Output**, not input | Drafting narrative prose would be a model leaf | — | Every claim in it would carry a validated span; the verdicts it summarizes stay Python's | Not in v1 — the emitted packet (seven verdicts + gap list + citations) is the deterministic equivalent |
 
@@ -959,10 +960,13 @@ The prior-authorization request itself, assembled from one snapshot (v1.5).
 
 It prints an **email-shaped document** — the administrative fields, the code
 alignment, the accepted ICD-10 suggestions with their justifications, the
-determination verbatim as the commands above print it, and a numbered citation
-manifest. `--json` prints the structured packet instead, `--run N` picks a
-snapshot (default: the latest), and `--payer` sets the recipient, whose default
-is a declared placeholder until the payer directory lands.
+determination verbatim as the commands above print it, an index of the documents
+it cites, and a numbered citation manifest. Those last two are one set at two
+granularities, and they are a **citation** index rather than an attachments list:
+this packet attaches nothing, so a `NOT_COVERED` packet names the policy corpus
+and no chart at all *(D135)*. `--json` prints the structured packet instead,
+`--run N` picks a snapshot (default: the latest), and `--payer-id` names the
+recipient in the simulated payer directory.
 
 Two rules the assembly enforces, and both are refusals rather than warnings.
 **Every citation is re-validated** through the port that serves its document
@@ -1029,7 +1033,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1693 tests across 56 files, 58 of them skipped — the skips are per-tree
+1694 tests across 56 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

@@ -36,6 +36,14 @@ Four checks, and the last three are here because the first cannot see them.
   corpus can build. An unreachable mutation is not a caught one, so what is
   asserted is the property that makes it unreachable (D133).
 
+**`T-137` (D135) added to two of them rather than a fifth.** The packet this
+file assembles is the only one in the repository that can separate *the
+manifest's documents* from *the determination's* — every other packet carries no
+accepted suggestion, so the two sets are equal — which is why
+`Packet.cited_documents` is asserted here, in the object and in the rendered
+`.eml`, against ids read off the **patient store** rather than off the traversal
+under test.
+
 **Spends no model call and touches no network.** The one determination replays
 `T-15`'s extraction recording and `T-98`'s quote recording, the two replays
 `--suggest` has used since `T-99`.
@@ -221,6 +229,21 @@ def test_the_rendered_manifest_counts_the_label_citation(tmp_path):
     assert counted, "the rendered packet carries no citation manifest"
     assert int(counted.group(1)) >= 1, "the manifest counts nothing"
 
+    # The document index, rendered. `T-106` commits these bytes, so the section
+    # that names the corpora is asserted here rather than left to the object
+    # (D135): a list that held the label without printing it reads, to the payer,
+    # as a packet that opened one corpus.
+    listed = re.search(r"Cited documents \((\d+)\)\n((?:  \S.*\n)+)", rendered.stdout)
+    assert listed, "the rendered packet carries no document index"
+    documents = [line.strip() for line in listed.group(2).splitlines()]
+    assert int(listed.group(1)) == len(documents) == 2, (
+        f"the rendered index counts {listed.group(1)} and lists {documents}"
+    )
+    assert LABEL_DOCUMENT in documents, (
+        f"the rendered index names {documents}; the accepted suggestion's effect "
+        f"cites {LABEL_DOCUMENT} and the index is the manifest's documents (D135)"
+    )
+
 
 def test_an_unjustified_accepted_red_is_still_refused(tmp_path):
     """The refusal this close must not have bought its way past.
@@ -322,9 +345,18 @@ def test_the_index_slices_the_effect_span_out_of_the_hashed_label(
         f"the packet cites {len(manifest)} span(s); this chart's determination "
         "cites at least one and the accepted suggestion adds its effect"
     )
-    assert LABEL_DOCUMENT in packet.supporting_documents or any(
-        s.effect.document_id == LABEL_DOCUMENT for s in packet.suggestions
+    # Read off the **store**, not off the packet: a set compared to the
+    # traversal that built it agrees under every mutation of that traversal
+    # (D65's shape, and the reason this file never writes a span down either).
+    bundle = patients.get_observations(RED_PATIENT)[0].span.document_id
+    assert set(packet.cited_documents) == {bundle, LABEL_DOCUMENT}, (
+        f"the packet names {packet.cited_documents}; it cites this chart's "
+        f"bundle and the label the accepted suggestion's effect points into, "
+        "and nothing else (D135)"
     )
+    assert packet.cited_documents == tuple(
+        dict.fromkeys(span.document_id for span in manifest)
+    ), "the document index is the manifest's documents in first-cited order"
 
 
 def test_an_id_no_port_serves_is_left_out_rather_than_decided_here(

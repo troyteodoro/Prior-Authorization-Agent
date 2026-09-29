@@ -19,6 +19,19 @@ that follow *(D105)*.
 
 **What to do next: `v1.5`, row 4 — `T-106`**, the two committed rendered
 packets. **Nothing is open on this board.**
+**`T-137` closed off the path** *(D135)*: the packet's document list is the
+**manifest's** documents, deduplicated by the same traversal, and it is renamed
+`cited_documents`. It declared itself *every document id this packet cites* and
+was computed from the determination's spans alone — three spans over two
+documents cited, one named, on the packet `T-134` made assemblable. The row was
+written as a choice between correcting the computation and correcting the
+comment, and the **measurement** removed the second option: a `NOT_COVERED`
+packet's list is `ncd_100_1` and `a53028`, two policy documents and no chart, so
+the field has never held the clinical records a form's *supporting documents* box
+asks for. It attaches nothing either (REQ-70's line), which is why the name moved
+too and why the field is now declared a **non-form** field beside `provenance`.
+Sequenced before `T-106` because that row commits fixture bytes. It minted
+nothing and found `T-139`.
 **`T-105` closed row 3** *(D134)*: `session submit` writes the reviewed packet
 to a payer outbox and `session decide` closes the session on the payer's answer.
 `TRANSITIONS` gains three rows — `IN_REVIEW -> AWAITING_DECISION`,
@@ -224,12 +237,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Ninety tasks are on this board — IDs run to T-134; T-126 through T-129 and
-T-134 are off the path and above the roadmap's reservations; numbering is not
-contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 90 are closed and none is open**; `T-132`,
-`T-133`, `T-135`, `T-136`, `T-137` and `T-138` below are numbered and have no
-record yet, in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
+Ninety-one tasks are on this board — IDs run to T-137; T-126 through T-129,
+T-134 and T-137 are off the path and above the roadmap's reservations;
+numbering is not contiguous and D92 and D94 deleted six records between them,
+so the highest id is well above the count. **All 91 are closed and none is
+open**; `T-132`, `T-133`, `T-135`, `T-136`, `T-138` and `T-139` below are
+numbered and have no record yet, in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -265,8 +278,9 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-134` | **`cli._packet_index` never consults the knowledge store, so no packet carrying an accepted suggestion can be assembled.** A suggestion's `effect` is a span into an **FDA label** — `spl_hydrochlorothiazide[3520:3643]` on the one chart the corpus colours red — and `form.citations` includes it, but the index is built from the patient and policy stores alone, so `assemble` refuses the packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`. `LocalKnowledgeStore.get_document` already exists and serves it; D131's *a packet's spans point into both* counted two corpora and the knowledge corpus is the third (T-96, D118). Invisible to `tests/test_form.py` because its red tests exercise `form.accepted` and the assembling tests use a determination with no accepted suggestion, so no test builds an index over a packet that cites a label | **closed** (D133), before `T-105` opened — discovered in `T-104` by driving `session review --accept` and then `session packet` end to end, the first time the two verbs met. It blocked `T-106`, whose exit needs a packet carrying a justified red, which is why a one-line defect was sequenced ahead of the version's remaining rows |
 | `T-135` | **`tests/test_session_verbs.py::test_an_illegal_transition_is_a_bad_request_and_records_nothing` holds *nothing changed*, not *nothing written*.** It compares the session's bytes after a refused `session run`, and the adapter generates nothing (D127) — so a `store.save(session)` inserted **before** `advance()` raises reproduces the file exactly and the test stays green. REQ-71's claim is that an illegal transition is *never recorded*. Measured in `T-104`'s mutation pass on the same shape in `_verb_review`, where it survived the whole suite until `st_mtime_ns` was compared beside the bytes | **discovered in `T-104`** — the fix is one comparison, and `T-104`'s own two refusal tests carry it already; this row is `T-102`'s gate and `_verb_run`'s path, so it is numbered rather than folded in *(working rule 6)* |
 | `T-136` | **nothing checks that `form.source_ids` reports every document `form.citations` needs.** The index is built from `source_ids` alone, so a citation whose document that traversal omits is an `UncitedPacket` on a span that was fine — which is `T-134`'s defect one layer down, in the pure module rather than the composition root. The two traversals share `_determination_spans`, and `_review_spans` is a deliberate **superset** of what a packet carries (D131), so they cannot disagree on this corpus; the relation itself is held by no command. The check is a property over a hand-written review carrying every colour | **discovered in `T-134`** — the row that fixed the index found that its one input is unconstrained; not folded in, because it is a property over `form.py` and not a store the composition root forgot *(working rule 6)* |
-| `T-137` | **`Packet.supporting_documents` says it is *every document id this packet cites* and is computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest names three documents and `supporting_documents` names one, omitting the FDA label. Before `T-134` no packet with an accepted suggestion could be assembled, so the field's own comment was true of every packet that existed and false of the first one this close produced. Either the comment is wrong — the field is the determination's documents, which is what a prior-auth form's *supporting documents* box means — or the computation is; the two readings differ in what `T-106`'s fixture will render, and README's form table maps the field to *Recent provider notes* | **discovered in `T-134`** — a claim this close made reachable rather than one it broke, and it is a decision about what the box means rather than a missing store, so it is `T-103`'s surface and its own row *(working rule 6)* |
+| `T-137` | **`Packet.supporting_documents` said it was *every document id this packet cites* and was computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest is three spans over **two** documents and that field named **one**, omitting the FDA label — and on a `NOT_COVERED` packet it named two **policy** documents and no chart at all, which is what settled it. Before `T-134` no packet with an accepted suggestion could be assembled, so the claim was true of every packet that existed and false of the first one that could | **closed** (D135), before `T-106` opened — discovered in `T-134`, and sequenced ahead of `T-106` because that row commits fixture bytes and the two readings render different ones. The field is the manifest's documents, deduplicated by the **same** traversal, and renamed `cited_documents`: a form's supporting-documents box is attachments and this packet attaches nothing. It found `T-139` |
 | `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **discovered in `T-105`** — found while deciding where this row's *iff* validators had to be reachable from; not folded in, because choosing between a validating adapter and a parse is a design decision and it touches `T-102`'s and `T-104`'s verbs rather than this one's *(working rule 6)* |
+| `T-139` | **no check ties a verb's documented flags to its parser.** `README.md`'s packet section documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted `cli.PLACEHOLDER_PAYER` (D134), so the README told a reader to type a flag `argparse` rejects. The stale sentence is corrected in `T-137`'s close under working rule 12 — it is prose about the command whose output that row changes — but README documents all **eight** session verbs' flags and `test_docs_consistency.py` reads none of them: a flag renamed, removed or added leaves prose nothing re-derives. The check is a parse over README's command blocks against the declared options | **discovered in `T-137`** — one stale flag is a working-rule-12 reconciliation; the missing check over every documented flag is its own row *(working rule 6)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -3675,6 +3689,122 @@ today they cannot disagree — but the relation *every citation's document is in
 by no command over an arbitrary review. The check is a property over a
 hand-written review carrying every colour, which is its own row *(working rule
 6)*.
+
+### `[x] T-137` The packet's document list is a citation index, and it is named for what it holds
+
+**REQ:** mints nothing — REQ-74 already governs the packet's citations, and this
+close makes the packet's own account of them true *(T-95's, T-102's and T-134's
+precedent)* · **Depends:** T-103, whose `Packet` and traversal these are, and
+T-134, without which no packet that falsifies the claim could be assembled ·
+**Blocks:** `T-106`, whose fixture renders whichever answer wins ·
+**Discovered in:** T-134 *(D133)* · **Decided by:** D135 · **Gates:** A13
+(clause 2's artifact) · **Timebox:** half a day
+**Status:** **closed** (D135) — off the path, closed before `T-106` opened; the
+exit ran green and every gate with it. No model call, no network, and no
+recording, bundle, note, span, verdict, baseline or verifier claim moved.
+
+**Why it is its own task.** `T-134` made the packet that falsifies the claim
+assemblable and found the claim false on it. Folding the fix in would have
+buried a decision — *what does a form's supporting-documents box mean* — inside
+a row about a composition root, and the two readings render different bytes
+*(working rule 6)*. **Why it is sequenced here:** `T-106` commits fixture bytes
+and would have churned them.
+
+**The measurement, first.** Three packets, driven through the verbs, zero model
+calls.
+
+| Packet | `form.citations` | the field, as it stood |
+|---|---|---|
+| `a8edc52e` 43775 WA, one accepted and justified red (`R73.9`) | **3 spans over 2 documents** — the bundle twice, `spl_hydrochlorothiazide[3520:3643]` once | **1** — the bundle. The label is omitted |
+| `07a5f345` **43842** — `NOT_COVERED`, answered at the resolver | 3 spans over 2 documents, all policy | **2** — `ncd_100_1`, `a53028`. **No clinical record at all** |
+| `07a5f345` 43775 — the note-bearing covered chart | 13 spans over 3 documents | **3** — the bundle and both notes |
+
+D133 recorded the first row as *three documents*; three is the **span** count and
+the document count is two. The log is append-only, so D135 states it and does not
+edit D133.
+
+**The second row is what settled it.** The row was written as a choice between
+*the computation is wrong* and *the comment is wrong*, the second reading being
+that a prior-auth form's **supporting documents** box means the clinical records
+attached — in which case the field was right and its name, its docstring and
+README's row were what to fix. A `NOT_COVERED` packet names two **policy**
+documents and no chart, so the field has never held clinical records. Both halves
+were wrong, on different packets, and the second option would have written down a
+rule the code does not follow either.
+
+**What it delivers.** The list is the dedup of `form.citations` in first-cited
+order, computed by the **same** traversal: `_cited_spans(evidence, suggestions)`
+is the one walk, `citations(packet)` is the public name over an assembled packet
+and keeps its three readers, and `assemble` calls `_cited_spans` over the two
+values it is about to construct from — so there is no arrangement in which the
+stored list and the rendered manifest name different documents. The field is
+**renamed `cited_documents`**, because the name is a description too and *this
+packet attaches nothing* (REQ-70's line); the rendered section becomes `Cited
+documents (N)` above the numbered manifest. It joins `PACKET_NON_FORM_FIELDS`
+beside `provenance` with its reason, and README's **Recent provider notes** row
+maps to `evidence`, where a cited note actually lands.
+
+**The check, and the case that carries it.** A packet with **no** accepted
+suggestion cannot separate the two computations — the determination's spans and
+the packet's citations are the same set — so the relation is asserted in
+`tests/test_packet_index.py`, where the accepting verb and the packaging verb
+meet, on the packet `T-134` made assemblable: the document set is
+`{bundle, spl_hydrochlorothiazide}` with the bundle read off the **patient
+store** rather than off the packet, and the rendered index is parsed out of the
+`.eml` because `T-106` commits those bytes. `tests/test_form.py` keeps the
+note-bearing case and gains the `NOT_COVERED` one, which is the only committed
+packet that falsifies a clinical-records filter.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_form.py tests/test_packet_index.py \
+    tests/test_review_log.py tests/test_session_verbs.py \
+    tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: the packet carrying an accepted, justified red names **both** the
+chart it cites and the label its suggestion's effect points into, in the object
+and in the rendered `.eml`; that list is exactly the manifest's documents,
+deduplicated, in first-cited order; a `NOT_COVERED` packet names the policy
+corpus and no chart; README's form table and `Packet`'s fields still agree in
+both directions with the renamed field declared non-form; and every gate is
+green.
+
+**The mutation pass: seven mutations, zero survivors**, each run over
+`tests/test_form.py`, `tests/test_packet_index.py` and
+`tests/test_docs_consistency.py` with `--color=no` and `__pycache__` cleared
+between runs, restoring from a copy held outside the repository.
+
+| Mutation | Result |
+|---|---|
+| **the revert** — the list computed from the determination's spans alone | 2 failing tests, the object's and the rendered one's |
+| the one traversal stops reporting the accepted suggestion's `effect` | 3 failing tests |
+| the dedup dropped — one entry per span rather than per document | 4 failing tests |
+| the **rendered** index printed from `packet.evidence`, the object left right | 1 failing test — the `.eml` parse written for it |
+| **the rejected reading** — clinical records only, built from the criteria's spans | 3 failing tests, the `NOT_COVERED` packet's among them |
+| first-cited order replaced by `sorted()` | 2 failing tests, **neither of them the label packet's** |
+| the renamed field mapped from a form row *and* declared non-form | 1 failing test — the partition assertion |
+
+**Two of them carry the pass.** The revert is the defect itself, and it fails
+only on the packet carrying an accepted suggestion — every other packet in the
+repository agrees with it. And `sorted()` is caught by the **three**-document
+packet and the `NOT_COVERED` one and **not** by the two-document one, whose ids
+happen to sort into cited order: order is unobservable with one document and
+nearly unobservable with two, which is why the note-bearing case stayed in
+`tests/test_form.py` rather than being replaced by the newer one.
+
+**Found and not fixed, numbered `T-139`.** `README.md`'s packet section
+documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted
+`cli.PLACEHOLDER_PAYER` (D134); the sentence is corrected in this close under
+working rule 12, because it is prose about the command whose output this row
+changes. The **general** defect is that no check ties a verb's documented flags
+to its parser, and README documents all **eight** session verbs, so a flag
+renamed or removed
+leaves prose that reads like a usage error to whoever types it. The check is a
+parse over README's command blocks against `argparse`'s declared options, and it
+is its own row *(working rule 6)*.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

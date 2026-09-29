@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-77 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10, US-11 and US-12 closed with v1.2, v1.3 and v1.4; **US-13 is v1.5's and open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-105 plus T-126, T-127, T-128, T-129 and T-134, each with a runnable exit condition; T-106 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, T-133, which T-103 did *(D131)*, T-135, which T-104 did *(D132)*, T-136 and T-137, which T-134 did *(D133)*, and T-138, which T-105 did *(D134)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D134, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-105 plus T-126, T-127, T-128, T-129, T-134 and T-137, each with a runnable exit condition; T-106 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, T-133, which T-103 did *(D131)*, T-135, which T-104 did *(D132)*, T-136, which T-134 did *(D133)*, T-138, which T-105 did *(D134)*, and T-139, which T-137 did *(D135)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D135, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -306,8 +306,9 @@ embeds it verbatim, because a second renderer is a second answer to one question
 every citation through `pa_agent.spans` against an index the composition root
 filled from the ids `source_ids` reports — `cli._packet_index`, over **three**
 ports since `T-134`, because a packet's citations point into all three hashed
-corpora *(D133)* — and `citations()` is the one traversal
-the validator, the renderer and T-106's gate all read. Four refusal conditions
+corpora *(D133)* — and `_cited_spans` is the one traversal the validator, the
+renderer, `Packet.cited_documents` and T-106's gate all read, `citations()`
+being its public name over an assembled packet *(D135)*. Four refusal conditions
 under `PacketRefused`, three of them typed: an accepted red with no
 justification (**naming every** unjustified code), an acceptance naming a row
 the review does not hold, a citation that does not slice, and — on the base
@@ -512,6 +513,18 @@ passing**, because the tests are written in terms of the thing that broke.
   and that disjointness is what is asserted, because a reorder is otherwise a
   mutation no committed chart can catch. An id **no** port serves is still left
   out and refused by `form.assemble` as `UNKNOWN_DOCUMENT` (D38).
+- **A packet's document list is the *manifest's* documents, and a packet with no
+  accepted suggestion cannot tell that from the determination's** *(REQ-74,
+  T-137, D135)*. `Packet.cited_documents` is `form.citations` deduplicated,
+  written by `assemble` from the **same** `_cited_spans` call — not a second walk
+  a few lines away, which is what named one document of two on the first packet
+  that could carry a suggestion. The two sets are identical on every packet
+  without one, so the check lives in `tests/test_packet_index.py` on the packet
+  that separates them, with the expected ids read off the **patient store**
+  rather than off the traversal under test. It is **not** the form's supporting
+  documents: that box is attachments, this packet attaches nothing (REQ-70's
+  line), and on a `NOT_COVERED` packet the list is the policy corpus and no chart
+  — which is why it is declared a non-form field and why the name moved.
 - **A red suggestion's justification lives in the review log, and a suggestion
   enters a packet only through a recorded acceptance** *(REQ-74, T-103, D131)*.
   `IcdSuggestion` is frozen, red carries **no citations by construction**, and
@@ -872,18 +885,34 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**90 of 90 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1693 tests across 56 files, 58 of
+**91 of 91 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1694 tests across 56 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
-IDs run to T-134 (T-126 through T-129 and T-134 are off the path, above the
-roadmap's reservations), but numbering is not contiguous and D92 and D94 deleted
-six records between them, so the highest id is well above the count. **Nothing
-is open**; `T-130`, `T-131`, `T-132`, `T-133`, `T-135`, `T-136`, `T-137` and
-`T-138` are numbered with no record yet. **v1.5 is open and `T-103`, `T-104` and
-`T-105` closed its first three rows** *(D131, D132, D134)*, with `T-134` off the
-path behind them *(D133)*; next is `T-106`, the two committed rendered packets.
+IDs run to T-137 (T-126 through T-129, T-134 and T-137 are off the path, above
+the roadmap's reservations), but numbering is not contiguous and D92 and D94
+deleted six records between them, so the highest id is well above the count.
+**Nothing is open**; `T-130`, `T-131`, `T-132`, `T-133`, `T-135`, `T-136`,
+`T-138` and `T-139` are numbered with no record yet. **v1.5 is open and `T-103`,
+`T-104` and `T-105` closed its first three rows** *(D131, D132, D134)*, with
+`T-134` and `T-137` off the path behind them *(D133, D135)*; next is `T-106`,
+the two committed rendered packets.
+
+**`T-137` closed off the path** *(D135)*: `Packet.cited_documents` — renamed
+from `supporting_documents` — is the **citation manifest's** documents,
+deduplicated in first-cited order by the same traversal `form.citations` runs.
+It claimed to be *every document id this packet cites* and was computed from the
+determination's spans alone: measured, three spans over two documents cited and
+one named, on the packet `T-134` made assemblable. What removed the other
+reading — *the field is right and the comment is wrong, because a form's
+supporting-documents box means clinical records* — is a second measurement: a
+`NOT_COVERED` packet's list is `ncd_100_1` and `a53028`, two **policy**
+documents and no chart, so it has never held clinical records. The name moved
+because this packet **attaches nothing** (REQ-70's line), so it has no
+supporting-documents box to fill, and the field is declared **non-form** beside
+`provenance` while README's *Recent provider notes* row maps to `evidence`.
+It minted nothing and found `T-139`.
 
 **`T-105` closed row 3** *(D134)*: `session submit` writes the reviewed packet to
 a payer outbox and `session decide` closes the session on the payer's answer. The
@@ -918,7 +947,8 @@ else, a fact this repository had never written down — and `tests/test_packet_i
 is where the verb that accepts a suggestion and the verb that packages one
 finally meet. It minted nothing — REQ-74 already said *through the port that
 serves its document*, and this close makes that true — and it found `T-136` and
-`T-137`, the second of them a claim on `Packet.supporting_documents` that only
+`T-137`, the second of them a claim on the packet's own list of the documents
+it cites — `supporting_documents` then, `cited_documents` since D135 — that only
 the packet this close made assemblable could falsify.
 
 **`T-127` and `T-128` are off the path** *(D120, D121)*. `T-127` re-read

@@ -854,7 +854,10 @@ FORM_ROW_FIELDS: dict[str, tuple[str, ...]] = {
     "CPT / HCPCS procedure code": ("procedure_code",),
     "Step-therapy / prior-treatment log": ("determination", "evidence"),
     "Disease severity markers": ("determination", "evidence"),
-    "Recent provider notes": ("supporting_documents",),
+    #: A cited note lands in `evidence` as spans, not in an attachments box:
+    #: this packet attaches no document, so the form's *supporting documents*
+    #: lane has no live row and `cited_documents` is not one (D135).
+    "Recent provider notes": ("evidence",),
 }
 
 #: The `Packet` fields that are **not** form fields, each with its reason —
@@ -864,6 +867,12 @@ PACKET_NON_FORM_FIELDS: dict[str, str] = {
     "provenance": (
         "which session, which snapshot, which tree and which recipient — "
         "provenance a reviewable artifact carries and a paper form does not"
+    ),
+    "cited_documents": (
+        "every document this packet's citations point into, the chart and the "
+        "policy corpus and any FDA label alike — an index a reviewable artifact "
+        "carries and a paper form has no box for, because the form's supporting "
+        "documents box is attachments and this packet attaches nothing (D135)"
     ),
 }
 

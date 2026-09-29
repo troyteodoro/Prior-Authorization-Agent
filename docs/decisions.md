@@ -12768,3 +12768,203 @@ ships is not a requirement.
 
 Both are minted **here** because this close is what checks them (D109). v1.5's
 remaining statement, the zero-model-calls clause, is A13's fifth and `T-106`'s.
+
+---
+
+## D135 — The packet's document list is a citation index, not a form's attachments box, and it is named for what it holds
+
+**Context.** `T-137`, discovered in `T-134` (D133) and sequenced ahead of `T-106`
+because that row commits fixture bytes and the fixture renders whichever answer
+wins. `Packet.supporting_documents` declares itself *every document id this
+packet cites* and is computed from `_determination_spans` alone, so an accepted
+suggestion's `effect` — a span into an FDA label — never reaches it. Written
+before the code (Article IX, working rule 5).
+
+### What was measured
+
+Three packets, through the verbs, zero model calls.
+
+- **The packet `T-134` made assemblable** — `E12`'s chart
+  `a8edc52e-9800-0adb-c775-bd81183c355f`, 43775 in WA at the harness clock, one
+  accepted and justified red (`hydrochlorothiazide-hyperglycemia`, `R73.9`).
+  `form.citations` returns **3 spans over 2 documents**: the bundle
+  `Avelina400_Huels583_a8edc52e-…json` at `[1631403:1632260]` and
+  `[115807:116828]`, and `spl_hydrochlorothiazide` at `[3520:3643]`.
+  `supporting_documents` names **1** — the bundle. The label is omitted, which
+  is D133's finding; the count in that entry is the **span** count, and the
+  document count is two. The log is append-only, so it is corrected here rather
+  than edited there.
+- **A `NOT_COVERED` packet** — patient `07a5f345-3e7c-da0f-da0b-87fa252a5bfd`,
+  code 43842. `supporting_documents` names `('ncd_100_1', 'a53028')`: **two
+  policy documents and no clinical record at all.**
+- **A note-bearing covered packet** — the same patient at 43775. Thirteen spans
+  over three documents: the bundle and both chart notes, which is the case that
+  made the field look like a list of the patient's records.
+
+### The second measurement is what settles it
+
+The row was written as a choice between *the computation is wrong* and *the
+comment is wrong*, on the reading that a prior-auth form's **supporting
+documents** box means the clinical records attached — in which case the field
+was right and its name, its docstring and README's row were the things to fix.
+
+**That reading is not available, and the `NOT_COVERED` packet is why.** A packet
+whose determination short-circuits at the resolver names two documents from the
+**policy** corpus under a heading that claims they are the records supporting the
+request. The field has never held clinical records; it holds *whatever the
+determination happened to cite*, which is the chart on one packet and the payer's
+own LCD on the next. So both halves of the claim were wrong, on different
+packets, and *correct the description and leave the code* would have meant
+writing down a rule the code does not follow either.
+
+### Chosen — the field is every document the packet's citations point into, derived from the one traversal
+
+The docstring's sentence becomes true: the list is the dedup, in first-cited
+order, of `form.citations(packet)` — the determination's spans, then each
+accepted suggestion's `effect` and chart evidence. That is the traversal D131
+made single on purpose, and the defect closed here is what happens when a second
+answer to *what does this packet cite* is computed a few lines away from the
+first.
+
+So it is computed by **the same function**, not by a second walk that agrees.
+`form._cited_spans(evidence, suggestions)` is the traversal; `citations(packet)`
+is `_cited_spans(packet.evidence, packet.suggestions)` and keeps its name and its
+three readers untouched (`assemble` validates what it returns, `render` writes the
+manifest from it, `T-106`'s gate counts it); `assemble` calls `_cited_spans` over
+the same two values it is about to construct the packet from. One traversal, two
+entry points, and no arrangement of the arguments in which the stored list and the
+rendered manifest can name different documents.
+
+*Rejected — recomputing the list inside a `Packet` validator.* It would hold the
+relation on the contract, which is this repository's habit (D131's blank
+justification, D132's `run_index`), and it cannot be done without a second
+traversal: `contracts.py` cannot import `form.py`, so the validator would
+reimplement the walk and the two copies would be free to disagree — the defect
+again, one module over. `form.assemble` is the only construction of a `Packet`
+anywhere in the repository — measured, not held by a command — so the traversal
+stays where the assembly is, and the day a second constructor appears is the day
+the contract-level shape is worth its second walk.
+
+*Rejected — a `@computed_field`, so the value cannot be stored wrong at all.*
+Structurally the strongest shape, and rejected for the same import cycle: the
+property lives on the model, so the walk moves to `contracts.py` and `form.py`'s
+*the one traversal* becomes a delegate. It also makes the obvious test a
+tautology — a list derived from the manifest, compared to the manifest, agrees
+under every mutation of the shared walk (D65's shape). The check this row lands
+is written against the **documents the corpus puts in that packet**, named in the
+test, and not against the function that produced them.
+
+### Chosen — it is renamed `cited_documents`, because the name is a description too
+
+*Supporting documents* on a prior-authorization form is the attachments box: the
+office note, the imaging report, the letter of medical necessity — paper that
+travels with the request. **This packet attaches nothing.** REQ-70's line is that
+it names the documents it cites and carries the quotes, and nothing in it is a
+`Document`; there is no attachment for the box to hold. A list that names
+`ncd_100_1` under that heading tells the recipient that the payer's own coverage
+determination is a record supporting the request, which is not a small thing to
+say to the party reading it.
+
+`cited_documents` says what the value is, pairs with `citations()`, and the
+rendered section becomes `Cited documents (N)` above the numbered manifest — an
+index at document granularity over the same set, which is what a reader scans
+before reading offsets.
+
+*Rejected — keeping `supporting_documents` and correcting only the computation.*
+The row exists because a description drifted from its artifact, and a field's
+**name** is the description every future reader meets first — it is the copy that
+goes stale silently, working rule 12's own subject. Renaming is free today and
+costs a fixture diff from `T-106` onward, which is the entire reason this row is
+sequenced before it.
+
+### Chosen — it is not a form field, and README's *Recent provider notes* row maps to `evidence`
+
+`tests/test_docs_consistency.py` binds README's *A full prior-auth form, mapped
+to these lanes* table to `Packet`'s fields in both directions, and
+`supporting_documents` was mapped from **Recent provider notes**. It stops being
+mapped from anything: it joins `PACKET_NON_FORM_FIELDS` beside `provenance`,
+with its reason — *a paper form has no box listing every document our citations
+point into; a reviewable artifact needs one*.
+
+**Recent provider notes** stays live and maps to `evidence`, which is where a
+cited note actually lands: its spans, typed, validated, sliceable. That is a
+truer statement of what this build does with a note than *it is listed as an
+attachment*, and it leaves the form's supporting-documents lane with no live row
+— correctly, because this build attaches no document to anything.
+
+*Rejected — mapping the row to `cited_documents` as well.* It would keep a form
+row pointing at a field that also names the payer's LCD and an FDA label, which
+is the ambiguity this entry exists to remove.
+
+### Rejected — carrying both an attachment list and a citation index
+
+Two objects with two readers, and the honest answer for one of them today is the
+empty tuple on every packet this build can produce: there is no attachment,
+because there is no `Document` in a packet (REQ-70). A field whose only possible
+value is `()` asserts a capability the system does not have, and its check would
+be *it is still empty* — the shape D131 spent a mutation removing from
+`accepted()`, where a guard no input can reach is not a guard.
+
+### Rejected — deleting the field and leaving `citations()` alone
+
+The list is derivable, and a derived copy is what working rule 12 warns about.
+But the copy here is **inside the artifact**, not in prose about it: the `.eml` a
+payer receives needs a document-level index, and `--json`'s reader should not
+have to run a traversal to answer *which corpora did this open*. The rule that
+applies is the one D131 already applied to `determination` — the packet carries
+what it states, and the generated artifact owns the figure.
+
+### What holds it
+
+`tests/test_packet_index.py` is where the two verbs meet, so the relation is
+asserted there, on the packet that falsifies it: the list is exactly
+`{bundle, spl_hydrochlorothiazide}`, the label named as a literal and the bundle
+read off the **patient store** rather than back off the traversal under test —
+a set compared to the walk that built it agrees under every mutation of that
+walk (D65's shape). `tests/test_form.py` keeps the note-bearing case — the
+bundle and both notes — and gains the `NOT_COVERED` one, where the list is the
+policy corpus and no chart, because a corpus with one document per packet hides
+every mutation this field can carry.
+
+**The distinguishing case is named, and it is not the obvious one.** A packet
+with no accepted suggestion cannot separate the old computation from the new one:
+the determination's spans and the packet's citations are the same set. Only a
+packet carrying a suggestion can, and until `T-134` no such packet could be
+assembled — which is why this was true for two rows with every gate green.
+
+### What it costs
+
+No model call, no network. No recording, bundle, note, span, verdict, baseline,
+eval row or verifier claim moves; `_render` gains no key, so
+`BARE_DETERMINATION_KEYS` is unchanged; no store, port, tree or contract outside
+`Packet` is touched. The rendered `.eml` changes one section header and, on a
+packet carrying a suggestion, the ids under it — and no fixture exists to churn,
+which is the sequencing argument.
+
+### Reversal condition
+
+The day a packet actually carries an attachment — an imaging report, a signed
+LOMN, anything with bytes rather than a span — `attachments` is a new field with
+its own README row, and `cited_documents` is unchanged beside it. And if a later
+version gives `form.py` a way to ask which plane serves an id without importing a
+port, the clinical-records list becomes derivable rather than inferred from which
+traversal a span came from, and is worth carrying then.
+
+### What it mints
+
+**Nothing.** REQ-74 already says every citation in an assembled packet slices
+back through the port that serves its document, reported beside the count
+checked; this row makes the packet's own account of those citations true rather
+than stating a new requirement (`T-95`'s, `T-102`'s and `T-134`'s precedent).
+
+### Found and not fixed, numbered `T-139`
+
+**`README.md`'s packet section still documents `--payer`, deleted by `T-105`.**
+The sentence reads *`--payer` sets the recipient, whose default is a declared
+placeholder until the payer directory lands*; the directory landed, the flag is
+`--payer-id`, and `cli.PLACEHOLDER_PAYER` is gone (D134). Corrected here, because
+it is prose about the command whose output this row changes and working rule 12
+is part of every close — but the **general** defect is that no check ties the
+verbs' documented flags to their parsers, and README documents all **eight**
+session verbs. That is a parse over `README`'s command blocks against
+`argparse`'s declared options, and its own row.
