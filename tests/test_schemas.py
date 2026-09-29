@@ -416,11 +416,19 @@ def test_the_stores_package_imports_no_plane() -> None:
     All four ports, since T-100. `KnowledgeStore` was never added when T-97
     landed the third, so the claim this test makes was one port short of the
     package for two versions — a gap fixed here because this row edits the test
-    anyway (D127).
+    anyway (D127). **All six since T-105** (D134), which is the same gap: a port
+    named in one place and missing from this list is a re-export nothing forbids.
     """
     import pa_agent.stores as stores
 
-    for port in ("PolicyStore", "PatientStore", "KnowledgeStore", "SessionStore"):
+    for port in (
+        "PolicyStore",
+        "PatientStore",
+        "KnowledgeStore",
+        "SessionStore",
+        "PayerStore",
+        "OutboxStore",
+    ):
         assert not hasattr(stores, port), (
             f"pa_agent.stores re-exports {port}; a package-level alias is the "
             "module that reaches every plane (Article VI)"

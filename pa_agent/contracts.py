@@ -2108,10 +2108,22 @@ class SessionState(str, Enum):
     #: another; `DETERMINED -> DETERMINED` is legal because US-12 says a second
     #: run is a new snapshot and never an edit.
     DETERMINED = "DETERMINED"
-    #: Handed to the reviewer. v1.5 extends the table from here; in v1.4 it has
-    #: no outgoing transition and is therefore terminal *by the table* — never
-    #: by a flag on this member (D127).
+    #: Handed to the reviewer. `IN_REVIEW -> IN_REVIEW` is the append self-edge
+    #: US-13's *her edits append* asks for (T-104, D132), and `T-105` gave it an
+    #: edge out, so it has never been terminal by a flag on this member — only
+    #: ever by its row (D127).
     IN_REVIEW = "IN_REVIEW"
+    #: The packet has been written to a payer's outbox and nothing has come
+    #: back. Reachable **only** from `IN_REVIEW`: there is deliberately no
+    #: `DETERMINED -> AWAITING_DECISION` edge, because US-13's fourth bullet is
+    #: that refusal — the system never decides to transmit (T-105, D134).
+    AWAITING_DECISION = "AWAITING_DECISION"
+    #: The payer answered. **One** closing state carrying the answer as data
+    #: rather than three terminal states: approved and denied have the same next
+    #: action in this system — none — and `GapReason`'s discipline says two
+    #: values with one next action are one value. It is terminal *by the table*,
+    #: whose row for it is empty (T-105, D134).
+    DECIDED = "DECIDED"
 
     # No `terminal` here, and not only as a matter of taste. Terminality is a
     # fact about `pa_agent.session.TRANSITIONS`, so reading it from this class
@@ -2323,6 +2335,171 @@ class ReviewEntry(BaseModel):
         return self
 
 
+# --------------------------------------------------------------------------
+# Transmission and the payer's answer (T-105, D134)
+# --------------------------------------------------------------------------
+
+
+class PayerDecisionOutcome(str, Enum):
+    """What a payer answered. Closed, `GapReason`'s discipline (REQ-77).
+
+    Three values and **one** terminal state, which is the whole shape of D134.
+    `APPROVED` and `DENIED` have the same next action *in this system* — none —
+    so they are two outcomes and not two states; three terminal states would be
+    three identical empty rows in `pa_agent.session.TRANSITIONS`, the copy D127
+    refused one structure over.
+
+    `INFORMATION_REQUESTED` genuinely differs — gather, resubmit — and it is an
+    outcome here rather than a state because **this version builds no
+    resubmission edge**, and a state whose row is empty while it obviously wants
+    an outgoing one is a state that lies about being terminal. It becomes a state
+    in the version that gives it an edge.
+    """
+
+    APPROVED = "APPROVED"
+    DENIED = "DENIED"
+    INFORMATION_REQUESTED = "INFORMATION_REQUESTED"
+
+
+class SubmissionRecord(BaseModel):
+    """What left, where it went, and what it hashed to (REQ-77).
+
+    One of these exists **iff** the session is `AWAITING_DECISION` or `DECIDED`,
+    validated on `Session` in both directions — which is what makes *a session
+    acquires an outbox artifact exactly when it enters `AWAITING_DECISION`*
+    checkable from both ends: every session claiming to have been sent names
+    exactly one file and one hash, so a gate can open it, and no session in an
+    earlier state carries one.
+
+    `run_index` is here as well as inside `artifact_id`, and it is not redundant:
+    the id is a filename and this is the claim. A later naming scheme must not be
+    able to change which snapshot a session says it sent.
+
+    It carries **no document and no resource** — an id, a digest and counts.
+    Article VI's line is drawn at resources rather than at text (REQ-70), and
+    the text itself is in the outbox, which is where the thing that left lives.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The outbox key, derived from `(session_id, run_index)` by the composition
+    #: root. Opaque here.
+    artifact_id: str = Field(min_length=1)
+    #: sha256 of the rendered packet, so the recorded claim and the bytes on disk
+    #: are one comparison.
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    #: Which simulated payer it was addressed to, by `payer_id`. `decide` reads
+    #: the answering payer from here rather than from a flag, so a session cannot
+    #: record an answer from a payer it never wrote to.
+    payer_id: str = Field(min_length=1)
+    submitted_at: str = Field(min_length=1)
+    run_index: int = Field(ge=0)
+    #: How many citations the transmitted packet carried. A13's second clause is
+    #: *reported beside the count checked*, and this is that count for the
+    #: document that actually left.
+    citation_count: int = Field(ge=0)
+
+
+class PayerDecision(BaseModel):
+    """The payer's answer, recorded (REQ-77, US-13's fifth bullet).
+
+    **Two dates, on purpose.** `decided_on` is the payer's own and
+    `recorded_at` is this system's clock when the answer was entered.
+    Collapsing them makes a decision *recorded* a week late indistinguishable
+    from one *taken* a week late — D78's category, where an `as_of` rode along
+    on a claim and date-bound every digest, one object over.
+
+    `payer_id` is copied from the session's `SubmissionRecord` and never from a
+    flag. `reference` is the payer's own tracking string where there is one, and
+    absent rather than invented where there is not (D118's rule on a claim with
+    no source).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    outcome: PayerDecisionOutcome
+    #: The payer's date. Required: a decision with no date of its own is the
+    #: thing the pair above exists to keep apart.
+    decided_on: date
+    #: When this system was told. `cli._now()`'s, the one place a value that
+    #: cannot be derived comes from (D127).
+    recorded_at: str = Field(min_length=1)
+    payer_id: str = Field(min_length=1)
+    reference: str | None = None
+
+
+class SimulatedPayer(BaseModel):
+    """One recipient the payer directory serves (T-105, D134).
+
+    **Declared simulated, and the declaration is validated.** `simulated` may
+    only be `True`: a record that did not say so would be a claim about a real
+    organisation's prior-authorization mailbox, and no committed artifact in this
+    repository states one. The address must sit under RFC 2606's reserved
+    `.invalid` TLD for the same reason `form.MESSAGE_ID_DOMAIN` does — a packet
+    that escaped this repository could not be delivered anywhere.
+
+    It is a **contact**, not a policy: nothing here binds a code, a state or a
+    tree. The payer axis — a request resolving by payer as well as by code and
+    state — is v2.0's (D112, D125).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    payer_id: str = Field(min_length=1)
+    display_name: str = Field(min_length=1)
+    #: The mailbox the packet is addressed to. Under `.invalid`, always.
+    address: str = Field(min_length=1)
+    #: Only ever `True`. See the class docstring.
+    simulated: bool
+    #: Why this record exists and what it is not. Required, because a synthesized
+    #: artifact with no stated provenance is one a later reader takes for fetched.
+    note: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _it_declares_itself_and_cannot_be_delivered(self) -> "SimulatedPayer":
+        if self.simulated is not True:
+            raise ValueError(
+                f"payer {self.payer_id} does not declare itself simulated; a "
+                "record that does not is a claim about a real organisation's "
+                "prior-authorization mailbox, and no committed artifact states "
+                "one (D118's rule)"
+            )
+        if not self.address.endswith(".invalid"):
+            raise ValueError(
+                f"payer {self.payer_id} is addressed to {self.address!r}, which "
+                "is not under RFC 2606's reserved .invalid TLD; a packet that "
+                "escaped this repository must not be deliverable anywhere"
+            )
+        return self
+
+    @property
+    def recipient(self) -> str:
+        """The `To:` header value. Derived, so the directory is the one source."""
+        return f"{self.display_name} <{self.address}>"
+
+
+class OutboxArtifact(BaseModel):
+    """One rendered packet sitting in a payer's outbox (REQ-77).
+
+    Every field is **derivable from the outbox alone** — the two path segments,
+    the digest and the size — so the adapter generates nothing and a listing is a
+    fact about the directory rather than about when it was read. The clock lives
+    on `SubmissionRecord.submitted_at`, where the session records what it did
+    (D127's rule: a `datetime.now()` in a serializer makes a round trip pass on
+    the first write and fail on the second).
+
+    The body is **text** and is not carried here. The packet is `stdout` on disk
+    — REQ-70's line, drawn at resources rather than at text.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    payer_id: str = Field(min_length=1)
+    artifact_id: str = Field(min_length=1)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    byte_count: int = Field(ge=1)
+
+
 class SessionRun(BaseModel):
     """One determination this session produced, and the clock it ran against.
 
@@ -2339,6 +2516,13 @@ class SessionRun(BaseModel):
     as_of: date
     policy_version_id: str = Field(min_length=1)
     determination: Determination
+
+
+#: The states in which an outbox artifact exists, named once (T-105, D134).
+#: `Session`'s validator reads it rather than comparing twice: two comparisons
+#: about one rule eventually disagree, which is `Intake`'s normalisation argument
+#: (D128) on a validator instead of a field.
+SUBMITTED_STATES = (SessionState.AWAITING_DECISION, SessionState.DECIDED)
 
 
 class Session(BaseModel):
@@ -2365,6 +2549,11 @@ class Session(BaseModel):
     #: checked against a recording with nowhere to live (T-100's precedent with
     #: `Intake`).
     reviews: tuple[ReviewEntry, ...] = ()
+    #: What left, once something has (T-105, D134). Present **iff** the state is
+    #: `AWAITING_DECISION` or `DECIDED`, validated below in both directions.
+    submission: SubmissionRecord | None = None
+    #: The payer's answer. Present **iff** the state is `DECIDED`.
+    decision: PayerDecision | None = None
 
     @model_validator(mode="after")
     def _runs_match_the_state(self) -> Session:
@@ -2413,6 +2602,53 @@ class Session(BaseModel):
                     "reviewed, because a second run is a new snapshot of a "
                     "chart that may have moved (REQ-75)"
                 )
+        return self
+
+    @model_validator(mode="after")
+    def _a_submission_exists_exactly_when_one_was_sent(self) -> Session:
+        """REQ-77's *exactly when*, in **both** directions (T-105, D134).
+
+        A one-way rule — *`AWAITING_DECISION` needs a submission* — is satisfied
+        by a `DETERMINED` session that carries one anyway, and *no session in an
+        earlier state has one* is half the statement being minted. So both
+        directions are checked here, on the contract, where every construction
+        path meets them: a file edited by hand, a test, and the verb (which
+        re-validates before it writes, because `model_copy` runs no validator —
+        D132's measurement).
+        """
+        sent = self.state in SUBMITTED_STATES
+        if sent and self.submission is None:
+            raise ValueError(
+                f"session {self.session_id} is {self.state.value} and records no "
+                "submission; a session that has been sent names the artifact and "
+                "the hash, so the outbox can be opened and compared (REQ-77)"
+            )
+        if not sent and self.submission is not None:
+            raise ValueError(
+                f"session {self.session_id} is {self.state.value} and records a "
+                "submission; an artifact exists exactly when the session entered "
+                "AWAITING_DECISION, and no session in an earlier state has one "
+                "(REQ-77)"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _a_decision_exists_exactly_when_one_was_recorded(self) -> Session:
+        """The same rule on the closing state, and the same reason for both
+        directions. A `DECIDED` session with no answer is a session closed over
+        nothing; an `AWAITING_DECISION` one carrying an answer is a session that
+        is still waiting for something it has (T-105, D134)."""
+        if self.state is SessionState.DECIDED and self.decision is None:
+            raise ValueError(
+                f"session {self.session_id} is DECIDED and records no payer "
+                "decision; the outcome and the date it was taken are what "
+                "closing means (REQ-77, US-13)"
+            )
+        if self.state is not SessionState.DECIDED and self.decision is not None:
+            raise ValueError(
+                f"session {self.session_id} is {self.state.value} and records a "
+                "payer decision; a session with an answer is DECIDED"
+            )
         return self
 
 

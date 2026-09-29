@@ -1,8 +1,9 @@
 """The session lifecycle (T-100, D127, REQ-71).
 
 Gate A12's first clause — *every transition in the enum has a test and every
-illegal one raises* — which on a three-state enum means all **nine ordered
-pairs**, not just the legal ones.
+illegal one raises* — which on a three-state enum meant all **nine ordered
+pairs** and on `T-105`'s five-state enum means all **twenty-five**, not just the
+legal ones.
 
 **The legal set here is written out from the prose, not read from the code.**
 `LEGAL` below is transcribed from `docs/stories.md`'s US-12 and US-13 and spec
@@ -24,12 +25,16 @@ import pytest
 from pydantic import ValidationError
 
 from pa_agent.contracts import (
+    SUBMITTED_STATES,
     Determination,
     DeterminationOutcome,
     Intake,
+    PayerDecision,
+    PayerDecisionOutcome,
     Session,
     SessionRun,
     SessionState,
+    SubmissionRecord,
 )
 from pa_agent.session import TRANSITIONS, IllegalTransition, advance, is_terminal, legal
 
@@ -46,11 +51,21 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 #: - US-13: "her edits append to a review log beside the determination" ->
 #:   IN_REVIEW may become IN_REVIEW again, because *append* is plural and a log
 #:   a reviewer may add to once is not a log (T-104, D132).
+#: - US-13: "given a reviewed session, when Sam submits it, then ... the session
+#:   is `AWAITING_DECISION`" -> IN_REVIEW may become AWAITING_DECISION, and its
+#:   own fourth bullet — "given a session **not yet in review**, when submission
+#:   is attempted, then ... nothing written" — is why DETERMINED may **not**
+#:   (T-105, D134).
+#: - US-13: "given a payer's simulated decision, when it is recorded, then the
+#:   session **closes** with the outcome and the date" -> AWAITING_DECISION may
+#:   become DECIDED, and *closes* is why DECIDED has no row content at all.
 LEGAL: set[tuple[SessionState, SessionState]] = {
     (SessionState.CREATED, SessionState.DETERMINED),
     (SessionState.DETERMINED, SessionState.DETERMINED),
     (SessionState.DETERMINED, SessionState.IN_REVIEW),
     (SessionState.IN_REVIEW, SessionState.IN_REVIEW),
+    (SessionState.IN_REVIEW, SessionState.AWAITING_DECISION),
+    (SessionState.AWAITING_DECISION, SessionState.DECIDED),
 }
 
 ALL_PAIRS = list(itertools.product(SessionState, SessionState))
@@ -74,13 +89,42 @@ def _run(ran_at: str = "2026-09-25T00:00:00Z") -> SessionRun:
     )
 
 
+def _submission(run_index: int = 0) -> SubmissionRecord:
+    return SubmissionRecord(
+        artifact_id=f"s1-run{run_index}",
+        sha256="0" * 64,
+        payer_id="sim-national-a",
+        submitted_at="2026-09-25T01:00:00Z",
+        run_index=run_index,
+        citation_count=3,
+    )
+
+
+def _decision() -> PayerDecision:
+    return PayerDecision(
+        outcome=PayerDecisionOutcome.APPROVED,
+        decided_on="2026-09-26",
+        recorded_at="2026-09-27T00:00:00Z",
+        payer_id="sim-national-a",
+    )
+
+
 def _session(state: SessionState = SessionState.CREATED, runs: tuple = ()) -> Session:
+    """A session in `state`, carrying exactly what that state requires.
+
+    The two records are supplied **from the state** rather than always, because
+    `Session`'s rules are *iff* relations (T-105, D134): a `DETERMINED` session
+    carrying a submission is refused, and so is an `AWAITING_DECISION` one with
+    none. A helper that always passed both could not build half the enum.
+    """
     return Session(
         session_id="s1",
         created_at="2026-09-25T00:00:00Z",
         intake=Intake(patient_id="p", procedure_code="43775"),
         state=state,
         runs=runs,
+        submission=_submission() if state in SUBMITTED_STATES else None,
+        decision=_decision() if state is SessionState.DECIDED else None,
     )
 
 
@@ -155,25 +199,32 @@ def test_the_illegal_transition_names_both_ends_and_the_legal_set():
     assert "CREATED" in str(caught.value) and "IN_REVIEW" in str(caught.value)
 
 
-def test_no_state_is_terminal_once_the_review_log_appends():
-    """D127's argument, paid off — and the one line that did it.
+def test_exactly_one_state_is_terminal_and_the_table_is_why():
+    """D127's argument, paid off twice in two rows — and the lines that did it.
 
     `IN_REVIEW` was terminal in v1.4 **by the table**, and T-104 gave it the
-    append self-edge. Terminality followed with no flag moved, no member
-    edited and `is_terminal()` untouched, which is precisely what D127 said a
-    literal `terminal=True` on the member would have made impossible.
+    append self-edge; terminality followed with no flag moved, no member edited
+    and `is_terminal()` untouched, which is precisely what D127 said a literal
+    `terminal=True` on the member would have made impossible. **T-105 paid it off
+    in the other direction**: `DECIDED` arrived terminal because its row is empty,
+    and the diff to `pa_agent/session.py` is three rows of a dict (D134).
 
-    The message branch for a state with no successors is therefore unreachable
-    on this table. It is kept because `T-105`'s `DECIDED` is terminal and
-    restores it; what is asserted here is what is true now — `IN_REVIEW`'s
-    refusal names `IN_REVIEW` as its one successor, and nothing says *terminal*.
+    So the message branch for a state with no successors, unreachable at T-104
+    and kept for this row, is reachable again — and both branches are asserted
+    here, because a refusal that said *terminal* for `IN_REVIEW` and a refusal
+    that did not say it for `DECIDED` are the two ways this sentence goes wrong.
     """
-    assert not any(is_terminal(state) for state in SessionState)
+    assert [s for s in SessionState if is_terminal(s)] == [SessionState.DECIDED]
 
     with pytest.raises(IllegalTransition) as caught:
         advance(_session(SessionState.IN_REVIEW, (_run(),)), SessionState.DETERMINED)
-    assert caught.value.legal == ["IN_REVIEW"]
+    assert caught.value.legal == ["IN_REVIEW", "AWAITING_DECISION"]
     assert "terminal" not in str(caught.value)
+
+    with pytest.raises(IllegalTransition) as closed:
+        advance(_session(SessionState.DECIDED, (_run(),)), SessionState.DECIDED)
+    assert closed.value.legal == []
+    assert "terminal" in str(closed.value)
 
 
 # --------------------------------------------------------------------------
@@ -187,6 +238,7 @@ def test_terminal_is_read_off_the_table():
     for state in SessionState:
         assert is_terminal(state) is (TRANSITIONS[state] == ())
     assert is_terminal(SessionState.IN_REVIEW) is False
+    assert is_terminal(SessionState.DECIDED) is True
 
 
 def test_contracts_does_not_import_the_state_machine():
@@ -263,6 +315,115 @@ def test_a_created_session_carrying_a_run_is_refused():
 def test_a_determined_session_carrying_no_run_is_refused():
     with pytest.raises(ValidationError, match="carries\nno run|carries no run"):
         _session(SessionState.DETERMINED, ())
+
+
+# --------------------------------------------------------------------------
+# The submission and the decision exist **exactly when** (T-105, D134, REQ-77)
+# --------------------------------------------------------------------------
+
+
+def _raw(state: SessionState, **extra) -> Session:
+    """A session built field by field, bypassing `_session`'s state-driven pairing.
+
+    These four tests are about the rules `_session` exists to satisfy, so they
+    have to be able to build the shapes it cannot.
+    """
+    payload = dict(
+        session_id="s1",
+        created_at="2026-09-25T00:00:00Z",
+        intake=Intake(patient_id="p", procedure_code="43775"),
+        state=state,
+        runs=() if state is SessionState.CREATED else (_run(),),
+    )
+    payload.update(extra)
+    return Session(**payload)
+
+
+@pytest.mark.parametrize(
+    "state", [SessionState.AWAITING_DECISION, SessionState.DECIDED],
+    ids=lambda s: s.value,
+)
+def test_a_sent_session_with_no_submission_is_refused(state):
+    """Half of REQ-77's *exactly when*: a session that claims to have been sent
+    names the artifact and the hash, so a gate can open the outbox and compare."""
+    with pytest.raises(ValidationError, match="records no submission"):
+        _raw(state, decision=_decision() if state is SessionState.DECIDED else None)
+
+
+@pytest.mark.parametrize(
+    "state",
+    [SessionState.CREATED, SessionState.DETERMINED, SessionState.IN_REVIEW],
+    ids=lambda s: s.value,
+)
+def test_an_unsent_session_carrying_a_submission_is_refused(state):
+    """The other half, and the one a one-way rule loses.
+
+    *`AWAITING_DECISION` needs a submission* is satisfied by a `DETERMINED`
+    session that carries one anyway — and *no session in an earlier state has one*
+    is half the statement being minted (REQ-77, D134).
+    """
+    with pytest.raises(ValidationError, match="records a submission"):
+        _raw(state, submission=_submission())
+
+
+def test_a_decided_session_with_no_decision_is_refused():
+    """The outcome and the date it was taken are what closing means (US-13)."""
+    with pytest.raises(ValidationError, match="records no payer decision"):
+        _raw(SessionState.DECIDED, submission=_submission())
+
+
+@pytest.mark.parametrize(
+    "state",
+    [SessionState.CREATED, SessionState.DETERMINED, SessionState.IN_REVIEW,
+     SessionState.AWAITING_DECISION],
+    ids=lambda s: s.value,
+)
+def test_an_undecided_session_carrying_a_decision_is_refused(state):
+    """Both directions again. A session still awaiting an answer it already has
+    is a session whose state disagrees with what it holds (D31's shape, on a
+    field — the sentence `_runs_match_the_state` was written from)."""
+    with pytest.raises(ValidationError, match="records a payer decision"):
+        _raw(
+            state,
+            submission=_submission() if state in SUBMITTED_STATES else None,
+            decision=_decision(),
+        )
+
+
+def test_the_two_states_an_artifact_exists_in_are_named_once():
+    """`SUBMITTED_STATES` is read by the validator rather than compared twice.
+
+    Two comparisons about one rule eventually disagree, which is `Intake`'s
+    normalisation argument (D128) on a validator instead of a field. Pinned as a
+    literal transcribed from REQ-77's own sentence — *exactly when it enters
+    `AWAITING_DECISION`*, and it keeps the artifact once `DECIDED`.
+    """
+    assert SUBMITTED_STATES == (
+        SessionState.AWAITING_DECISION,
+        SessionState.DECIDED,
+    )
+
+
+def test_a_payer_decision_records_two_dates_that_are_not_the_same_field():
+    """D134's *two dates, on purpose*, as a field-level claim.
+
+    Collapsing them makes a decision **recorded** a week late indistinguishable
+    from one **taken** a week late — D78's category, where an `as_of` rode along
+    and date-bound every claim digest, one object over. A behavioural test cannot
+    see the difference, because a single-date implementation answers every
+    question this suite asks; what separates them is that both fields exist and
+    hold different values.
+    """
+    decision = PayerDecision(
+        outcome=PayerDecisionOutcome.DENIED,
+        decided_on="2026-09-01",
+        recorded_at="2026-09-20T12:00:00Z",
+        payer_id="sim-national-a",
+    )
+    assert {"decided_on", "recorded_at"} <= set(PayerDecision.model_fields)
+    assert decision.decided_on.isoformat() == "2026-09-01"
+    assert decision.recorded_at.startswith("2026-09-20")
+    assert decision.decided_on.isoformat() not in decision.recorded_at
 
 
 # --------------------------------------------------------------------------

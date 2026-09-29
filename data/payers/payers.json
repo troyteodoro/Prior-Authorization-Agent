@@ -1,0 +1,20 @@
+{
+  "note": "Simulated payer contacts. SYNTHESIZED BY THIS PROJECT: there is no upstream document, so this file is deliberately absent from every hashed manifest and from verify_sources.py, which verifies committed bytes against a public re-download (T-105, D134). It is v2.1's synthetic rule arriving early: an artifact the project synthesized declares itself synthetic and carries no fetched-corpus provenance. These are contacts, not coverage: nothing here binds a procedure code, a state or a criteria tree, and the payer axis is v2.0's (D112, D125).",
+  "addresses": "Every address is under RFC 2606's reserved .invalid TLD, so a packet that escaped this repository could not be delivered anywhere. pa_agent.contracts.SimulatedPayer refuses any other domain, and refuses a record that does not declare itself simulated.",
+  "payers": [
+    {
+      "payer_id": "sim-national-a",
+      "display_name": "Simulated National Payer A",
+      "address": "prior-auth@sim-national-a.invalid",
+      "simulated": true,
+      "note": "The default recipient. Stands in for a national payer's prior-authorization intake mailbox; named for its role because no committed artifact in this repository states a real one."
+    },
+    {
+      "payer_id": "sim-regional-b",
+      "display_name": "Simulated Regional Payer B",
+      "address": "prior-auth@sim-regional-b.invalid",
+      "simulated": true,
+      "note": "A second recipient, so that choosing one is a decision the CLI records rather than a constant. Two records also make the pinned count a figure a new entry has to move (D51)."
+    }
+  ]
+}

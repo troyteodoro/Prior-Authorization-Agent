@@ -36,7 +36,7 @@ declares it unclaimed and abstains rather than approving past it.
 explicit about what it does and does not prove.
 
 **And it is modular enough to sit inside a practice's back office.** The
-application is ports and adapters end to end: four storage ports keep the
+application is ports and adapters end to end: six storage ports keep the
 policy, patient and knowledge planes apart, four ports at the model boundary
 make every model call swappable and replayable, and the CLI is the single
 place an adapter is constructed — nothing else in the system knows where its
@@ -70,13 +70,14 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3 and v1.4 are all complete, and v1.5 is under way.**
-89 of 89 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
+90 of 90 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
 the `session packet` verb, `T-104` added the review log beside it *(D131,
-D132)* and `T-134` gave the packet's citations the third corpus they point into
-*(D133)*, behind `T-129`'s national floor checked at load *(D124, D130)* — all
+D132)*, `T-134` gave the packet's citations the third corpus they point into
+*(D133)* and `T-105` sent the packet and tracked the answer *(D134)*, behind
+`T-129`'s national floor checked at load *(D124, D130)* — all
 ten zero-cost gates green, and acceptance gates A1–A12 holding. The suite
-collects 1586 tests (58 skip). **v1.5 continues with `T-105`**: simulated submission and
-tracking, then the committed rendered packets.
+collects 1693 tests (58 skip). **v1.5 finishes with `T-106`**: the two committed
+rendered packets.
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -248,7 +249,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.424**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
-| A7 | 77 requirements: 75 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 79 requirements: 77 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -974,8 +975,47 @@ chart — is refused unless the reviewer wrote a justification, and the refusal
 names *every* unjustified code, not the first. The refusals exit `1`, print
 nothing to stdout, and say which code or which citation.
 
-Nothing is transmitted. The payer outbox and the tracking that follows are the
-rest of v1.5.
+### Sending it
+
+Transmission is a **lifecycle transition taken on an explicit verb** (v1.5).
+
+```bash
+./venv/bin/python -m pa_agent.cli session submit <session-id>
+./venv/bin/python -m pa_agent.cli session submit <session-id> --payer-id sim-regional-b
+```
+
+`submit` assembles the same packet the command above prints, writes it to the
+simulated payer's outbox as one `.eml`, records the artifact's id and **sha256**
+on the session, and moves it to `AWAITING_DECISION`. That file is the only thing
+on disk that changed besides the session recording it, so what the session claims
+to have sent can be opened and compared.
+
+It is legal **only from `IN_REVIEW`**. Submitting a session nobody reviewed exits
+`1`, naming the state it is in and what it may become, and writes nothing — the
+system never decides to transmit, and that is the transition table rather than a
+check the handler remembers. `--payer-id` picks a recipient from
+`data/payers/payers.json`; an unknown id is a bad request rather than a fallback
+to the default. Every recipient there declares itself simulated and is addressed
+under `.invalid`, the TLD RFC 2606 reserves, so a packet that escaped this
+repository could not be delivered anywhere.
+
+### Tracking the answer
+
+```bash
+./venv/bin/python -m pa_agent.cli session decide <session-id>       --outcome approved --decided-on 2026-09-20 --reference PA-4471
+```
+
+`decide` closes the session on the payer's answer: `approved`, `denied` or
+`information-requested`, with **two dates** — the one the payer took the decision
+on, which is required, and the clock this system was told at. They are separate
+fields on purpose, because collapsing them makes a decision *recorded* a week
+late read as one *taken* a week late. The answering payer is read off the
+submission rather than from a flag, so a session cannot record an answer from a
+payer it never wrote to.
+
+`DECIDED` is terminal — not by a flag, but because the transition table gives it
+no successor. The packet **stays** in the outbox: a decided session keeps the
+artifact it sent. Deciding a session nobody submitted exits `1` the same way.
 
 The live modes need a Gemini API key in `pa_agent/agent/.env` (gitignored — no
 real key ever appears in a tracked file).
@@ -989,7 +1029,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1586 tests across 54 files, 58 of them skipped — the skips are per-tree
+1693 tests across 56 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -1179,8 +1219,9 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      intake, session, contracts, model_pin, tiers, cli
   agent/             ADK path: extraction_agent, quote_agent, retrieval_agent,
                      tools, bounds
-  stores/            policy.py, patient.py, knowledge.py and session.py — four ports;
-                     __init__.py imports none of them, on purpose
+  stores/            six ports — policy.py, patient.py, knowledge.py,
+                     session.py, payer.py and outbox.py; __init__.py imports
+                     none of them, on purpose
 data/policies/       nine source documents, six value sets (SNOMED and
                      RxNorm), and four criteria trees — two bariatric
                      (ncd-100.1-jf-v1, ncd-100.1-jjm-v1), one rheumatology
@@ -1192,6 +1233,12 @@ data/knowledge/      the second hashed corpus — five FDA drug labels, the
                      prescription. **Not** the policy corpus, and a separate
                      manifest for that reason
 data/patients/       fourteen Synthea bundles + fourteen synthesized notes, hash-pinned
+data/payers/         the simulated payer directory (T-105) — committed and
+                     **synthesized**, so it is in no hashed manifest: there is
+                     no upstream to re-fetch, and every address is under RFC
+                     2606's reserved .invalid TLD
+data/sessions/       gitignored — the system's own record of what it answered
+data/outbox/         gitignored — the packets that left, one .eml per payer
 eval/                cases.json, baseline.json, report.md (generated), and the
                      committed recordings that make replay free — one set per
                      tier, the AI Studio one being what every gate replays

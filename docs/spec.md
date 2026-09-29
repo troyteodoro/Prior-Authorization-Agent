@@ -117,12 +117,14 @@ patient-data modules import no policy corpus and no index over it. The only type
 crossing is the compiled `Criterion`, enforced by an import-graph assertion.
 *(Art. VI)*
 
-**REQ-41** All data reaches the system through four storage ports,
-`PolicyStore`, `PatientStore`, `KnowledgeStore` and `SessionStore`. No module
-outside a store adapter opens a file path, holds a connection, names a storage
-location, or writes one. The ports are separate types with separate
-implementations; no single object satisfies more than one. *(Art. VI, D25; the
-third port T-97, D119; the fourth — and the first that writes — T-100, D127)*
+**REQ-41** All data reaches the system through six storage ports,
+`PolicyStore`, `PatientStore`, `KnowledgeStore`, `SessionStore`, `PayerStore` and
+`OutboxStore`. No module outside a store adapter opens a file path, holds a
+connection, names a storage location, or writes one. The ports are separate types
+with separate implementations; no single object satisfies more than one. *(Art.
+VI, D25; the third port T-97, D119; the fourth — and the first that writes —
+T-100, D127; the fifth and sixth T-105, D134, a shipped corpus and a write plane
+kept apart because they answer* what does empty mean *in opposite directions)*
 
 The ports are what makes a production database a second adapter rather than a
 rewrite. They are also how Article VI stops being a lint check: two planes become
@@ -657,6 +659,43 @@ input; and the stored runs are compared **off disk** across three reviews, since
 a one-review comparison passes a mutant that replaces the first entry. A
 retraction, if one is ever needed, is a **new entry** and never a deletion.
 *(T-104, D132)*
+
+**REQ-76** Transmission is a **lifecycle transition taken only on an explicit
+verb**, and only after `IN_REVIEW`. The system never decides to transmit: there
+is no `DETERMINED → AWAITING_DECISION` edge in the table, so submitting a session
+nobody reviewed is refused by the machine rather than by a check the handler has
+to remember. An order the table forbids is a **bad request, exit 1**, with the
+stderr line naming the current state **and its legal successors** and **nothing
+written** — checked against the **directory**, because a handler that rendered and
+wrote before checking the order returns the same exit code. There is **no fifth
+exit code**: four are published in `pa_agent/cli.py`'s docstring, `README.md` and
+REQ-29, and a fifth would encode a distinction that stderr line already carries.
+The three edges the table deliberately lacks each record a decision —
+`DETERMINED → AWAITING_DECISION` is the refusal above, `IN_REVIEW → DETERMINED`
+would orphan every `run_index` a review binds to (REQ-75), and
+`AWAITING_DECISION → IN_REVIEW` would un-send a packet the outbox cannot
+disclaim. *(Art. I; T-105, D134; D129's contract)*
+
+**REQ-77** A session acquires an **outbox artifact exactly when it enters
+`AWAITING_DECISION`**, records its `sha256`, and that artifact is submission's
+**only** side effect; no session in an earlier state has one, **and a decided
+session keeps its artifact**. The last clause is the directional form: the
+original statement — *every session in the outbox is `AWAITING_DECISION`* — is
+false the moment `session decide` runs, because the packet stays in the outbox
+while the session becomes `DECIDED`, and a requirement whose check has to avoid a
+verb the same version ships is not a requirement *(corrected by D131)*. The
+*exactly when* is validated in **both directions** on the contract, because a
+one-way rule is satisfied by a `DETERMINED` session that carries a submission
+anyway. The payer's answer closes the session as **one terminal state carrying an
+outcome**, not three: approved and denied have the same next action in this system
+— none — and `INFORMATION_REQUESTED` is an outcome rather than a state because this
+version builds no resubmission edge, and a state whose row is empty while it wants
+an outgoing one lies about being terminal. It records **two dates** — the payer's
+own and the clock this system was told at — because collapsing them makes a
+decision *recorded* late indistinguishable from one *taken* late. The recipient
+comes from a **synthesized, self-declared** payer directory that is in no hashed
+manifest and every address of which is under RFC 2606's reserved `.invalid` TLD.
+*(T-105, D134; US-13's fifth bullet)*
 
 ---
 
@@ -1409,8 +1448,8 @@ of the fields a prior authorization form carries; a review log the
 specialist appends to beside the determination, which is never edited;
 transmission to a simulated payer — an `.eml`-shaped file in a payer outbox,
 a `payers.json` of simulated contacts — on the specialist's explicit action
-after review; and the session tracked to `AWAITING_DECISION`, with a
-`session decide` stub that closes it. §1's "does not submit" is reworded by
+after review; and the session tracked to `AWAITING_DECISION`, with
+`session decide` closing it on the payer's outcome and the date it was taken. §1's "does not submit" is reworded by
 this version's entry to "transmits only on the reviewer's explicit action
 after review, and never decides to". **Zero model calls.**
 
@@ -1430,15 +1469,22 @@ after review, and never decides to". **Zero model calls.**
   appends cannot name the runs, which is the form D131 rewrote this row's exit
   into: *never edits* is a claim no behavioural test on this corpus separates
   from *edits and puts back the same value* *(D132)*.
-- Transmission is a lifecycle transition taken only on an explicit verb,
-  after `IN_REVIEW`; the system never decides to transmit. `T-105`'s.
-- A session acquires an outbox artifact **exactly when** it enters
-  `AWAITING_DECISION`, and no session in an earlier state has one; the outbox
-  is the only side effect of submission. `T-105`'s. **Corrected by D131** from
-  *"every session in the outbox is `AWAITING_DECISION`"*, which stops being
-  true the moment `session decide` runs — the packet stays in the outbox while
-  the session becomes `DECIDED`, so as written the statement was satisfiable
-  only by never running `decide` in the test that checked it.
+- **REQ-76**, minted by `T-105`. Transmission is a lifecycle transition taken
+  only on an explicit verb, after `IN_REVIEW`; the system never decides to
+  transmit, because there is no `DETERMINED → AWAITING_DECISION` edge for it to
+  take. An order the table forbids exits 1 naming the current state **and its
+  legal successors** and writes nothing — checked against the **directory**, not
+  the exit code — and there is **no fifth exit code** *(D129's contract, D134)*.
+- **REQ-77**, minted by `T-105`. A session acquires an outbox artifact **exactly
+  when** it enters `AWAITING_DECISION`, names its hash, and that artifact is
+  submission's only side effect; no session in an earlier state has one, **and a
+  decided session keeps its artifact**. **Corrected by D131** from *"every session
+  in the outbox is `AWAITING_DECISION`"*, which stops being true the moment
+  `session decide` runs — the packet stays in the outbox while the session becomes
+  `DECIDED`, so as written the statement was satisfiable only by never running
+  `decide` in the test that checked it. The payer's answer closes the session as
+  **one** terminal state carrying an outcome and **two dates**, its own and the
+  clock this system was told at *(D134)*.
 
 **Gate A13, rewritten before `T-103` opened** *(D131)*. Five clauses, each
 naming the task whose close checks it. As written it had no zero-model-calls

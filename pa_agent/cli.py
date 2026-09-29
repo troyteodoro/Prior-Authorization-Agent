@@ -4,6 +4,9 @@
     python -m pa_agent.cli --patient <uuid> --procedure 43775
     python -m pa_agent.cli --patient <uuid> --procedure 43775 --extraction adk
     python -m pa_agent.cli session packet <session-id>
+    python -m pa_agent.cli session submit <session-id>
+    python -m pa_agent.cli session decide <session-id> --outcome approved \
+        --decided-on 2026-09-28
 
 Prints one JSON document to stdout. For a determination it carries the outcome,
 the `policy_version_id` (REQ-4), the coverage claim it cites where there is one
@@ -13,7 +16,7 @@ serializes fields. For a code no policy governs it prints a `NO_POLICY_FOUND`
 result and still exits zero: a deterministic answer is not an error (D32).
 
 **This module is where every path is named and every port is constructed** — the
-four stores, the extraction runner, the verifier, the quote runner and the
+six stores, the extraction runner, the verifier, the quote runner and the
 document index a packet's citations are validated against — built over **all
 three** hashed corpora, because a criterion cites a chart, a coverage claim
 cites the policy corpus and an accepted suggestion cites an FDA label (REQ-41,
@@ -21,8 +24,9 @@ REQ-52, REQ-74, D133). Nothing below it holds a path or a credential, which is
 what makes the production adapters D25 wants a second implementation rather than
 a rewrite. It
 is also where every value that cannot be derived comes from: the clock (`_now`)
-and, until `T-105` builds the payer directory, the packet's recipient
-(`PLACEHOLDER_PAYER`) — D127's rule, D131's application of it.
+and the default recipient's id (`DEFAULT_PAYER_ID`) — D127's rule. Since `T-105`
+the recipient *string* is the payer directory's, so what the composition root
+supplies is which record to read and not what it says (D131, D134).
 
 `--extraction` picks the model leaf, and the default is the honest one:
 
@@ -40,6 +44,14 @@ unknown patient), 2 for a path the system has not built yet — the
 and 3 for a determination aborted over a criterion in `ERROR` (REQ-24, T-29,
 D76): one stderr line per errored criterion carrying the criterion id and its
 `error_code` (REQ-29), and nothing on stdout.
+
+**A lifecycle refusal is exit 1 and there is deliberately no fifth code.** An
+order the transition table forbids — reviewing a session that has determined
+nothing, submitting one that has not been reviewed, deciding one nobody sent — is
+*the request cannot be acted on as sent*, and the stderr line names the current
+state and its legal successors, which is what the person who typed the command
+has to go on. A fifth code would be a five-place documentation change encoding a
+distinction that line already carries (D129, D134, REQ-76).
 
 *Exit 2 currently has no reachable route from this entry point*: T-18 and T-19
 built the criteria path, and T-17 built the verifier this module now always
@@ -71,11 +83,14 @@ from pa_agent import (
 from pa_agent.contracts import (
     Determination,
     DeterminationAborted,
+    PayerDecision,
+    PayerDecisionOutcome,
     ReviewAction,
     ReviewEntry,
     Session,
     SessionRun,
     SessionState,
+    SubmissionRecord,
 )
 from pa_agent.determination import NoJurisdictionResult, NoPolicyResult, determine
 from pa_agent.index import DocumentIndex
@@ -85,6 +100,12 @@ from pa_agent.stores.session import (
     SessionExists,
     SessionNotFound,
 )
+from pa_agent.stores.outbox import (
+    DEFAULT_OUTBOX_ROOT,
+    LocalOutboxStore,
+    OutboxArtifactExists,
+)
+from pa_agent.stores.payer import LocalPayerStore, PayerNotFound
 from pa_agent.quotes import RecordedQuoteRunner
 from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.verifier import RecordedVerifierRunner
@@ -396,7 +417,9 @@ def _block_for(result, patient_id, policy_store, patient_store, knowledge_store,
 #: The verbs `session` takes. A literal set, tested against the subparsers the
 #: session parser declares, because dispatching on "any first positional" would
 #: make a typo a session command (D129).
-SESSION_VERBS = ("create", "list", "show", "run", "review", "packet")
+SESSION_VERBS = (
+    "create", "list", "show", "run", "review", "packet", "submit", "decide",
+)
 
 
 def _now() -> str:
@@ -413,6 +436,43 @@ def _now() -> str:
 def _session_store(root: Path | None) -> LocalSessionStore:
     """The fourth store, constructed here like the other three (REQ-41)."""
     return LocalSessionStore(root)
+
+
+def _payer_store() -> LocalPayerStore:
+    """The fifth store: who a packet may be addressed to (T-105, REQ-41).
+
+    No root argument, because it is a **committed** corpus and every other
+    committed corpus here is constructed the same way — `LocalPolicyStore()`,
+    `LocalPatientStore()`, `LocalKnowledgeStore()`. The two roots a flag can move
+    are the two the system **writes**, which is the line this pair of stores was
+    split along (D134).
+    """
+    return LocalPayerStore()
+
+
+def _outbox_store(root: Path | None) -> LocalOutboxStore:
+    """The sixth store, and the second that writes (T-105, REQ-41).
+
+    Takes a root for `_session_store`'s reason: a test that forgets it writes
+    into the working tree and the suite still passes, silently, which is the
+    whole failure mode `--sessions-root` exists for (D127).
+    """
+    return LocalOutboxStore(root)
+
+
+def _revalidated(session: Session) -> Session:
+    """The same session, run back through its own validators (T-105, D134).
+
+    **`model_copy(update=…)` runs no validator** — D132 measured that, and it is
+    why `session.review` re-checks a bound the contract already carries. The two
+    verbs below set `submission` and `decision`, whose rules are *iff* relations
+    with `state`, so without this the composition root could write a session
+    `get()` cannot read back: a well-formed write that fails on the next read.
+
+    One helper rather than a rule each verb remembers, because two places that
+    have to remember the same thing eventually do not.
+    """
+    return Session.model_validate(session.model_dump())
 
 
 def _intake_from(args) -> "intake_module.Intake":
@@ -735,14 +795,16 @@ def _verb_review(args) -> int:
     return 0
 
 
-#: The recipient a packet is addressed to until `T-105` builds the payer
-#: directory. **A declared placeholder, not a contact**: no committed artifact
-#: names a payer's prior-authorization mailbox, and an address written from
-#: memory is a claim enforced as though it had a source (D118's rule, D128's on
-#: ICD-10 grammar). It lives here because the composition root is where a value
-#: that cannot be derived comes from — `_now()`'s rule (D127) — and `T-105`
-#: replaces the *source* of the string with `payers.json`, not its shape (D131).
-PLACEHOLDER_PAYER = "Simulated Payer <prior-auth@payer.invalid>"
+#: Which simulated payer a packet is addressed to when nobody says. **The id,
+#: not the header string**: `T-103` held `PLACEHOLDER_PAYER` here because no
+#: committed artifact named a recipient, and `T-105` gave the repository one — so
+#: what changed is the *source* of that string and not its shape (D131, D134).
+#: The directory renders the header from the record, which is why a real address
+#: cannot reach a packet: `SimulatedPayer` refuses anything outside `.invalid`.
+#:
+#: It is a **default and not a fallback** — an unknown id raises `PayerNotFound`
+#: and exits 1 rather than quietly resolving to this one.
+DEFAULT_PAYER_ID = "sim-national-a"
 
 
 def _packet_index(
@@ -787,26 +849,15 @@ def _packet_index(
     return index
 
 
-def _verb_packet(args) -> int:
-    """Assemble the packet for one snapshot and print it.
+def _run_index_or_report(session: Session, requested: int | None) -> int | None:
+    """Which snapshot to package, or `None` having said why on stderr.
 
-    It prints the **rendered `.eml`** rather than a JSON record, because a packet
-    is a document and the other four verbs print records; `--json` prints the
-    structured `Packet` for a reader who wants the fields. `--run N` picks the
-    snapshot and defaults to the latest, because a session may hold several and
-    a packet is over one (D131).
-
-    The review is computed for every session whose determination carries a tree,
-    and it costs nothing: `--suggest` has replayed `T-98`'s quote recording since
-    `T-99` and every committed chart's notes are in it (D126).
+    Shared by `session packet` and `session submit`, because *there is no run 3*
+    is one answer and two copies of it would eventually be two. Resolved here
+    rather than left to `form.assemble`'s own refusal: reading the snapshot to
+    render it comes first, and an out-of-range index would be an `IndexError`
+    before the refusal could be raised.
     """
-    store = _session_store(args.sessions_root)
-    try:
-        session = store.get(args.session_id)
-    except SessionNotFound as exc:
-        print(f"bad request: {exc}", file=sys.stderr)
-        return 1
-
     if not session.runs:
         # Not an unbuilt path and not an error: the session exists and has
         # determined nothing, so there is no snapshot to assemble a packet over.
@@ -817,20 +868,33 @@ def _verb_packet(args) -> int:
             "asking for a packet",
             file=sys.stderr,
         )
-        return 1
+        return None
 
-    run_index = len(session.runs) - 1 if args.run is None else args.run
+    run_index = len(session.runs) - 1 if requested is None else requested
     if not 0 <= run_index < len(session.runs):
-        # Checked here rather than left to `form.assemble`'s own refusal, because
-        # reading the snapshot to render it comes first and an out-of-range index
-        # would be an `IndexError` before the refusal could be raised.
         print(
             f"bad request: session {session.session_id} holds "
             f"{len(session.runs)} run(s); there is no run {run_index}",
             file=sys.stderr,
         )
-        return 1
+        return None
+    return run_index
 
+
+def _assemble_packet(
+    session: Session, run_index: int, *, payer: str, submitted_at: str | None
+) -> form.Packet:
+    """One packet over one snapshot, with every port it needs built here (REQ-41).
+
+    Shared by `session packet`, which prints it, and `session submit`, which
+    sends it. One assembly, so the document a reviewer reads and the document
+    that leaves cannot differ — which is D129's *a second renderer is a second
+    answer to one question*, one layer up from the renderer.
+
+    The review is computed for every session whose determination carries a tree,
+    and it costs nothing: `--suggest` has replayed `T-98`'s quote recording since
+    `T-99` and every committed chart's notes are in it (D126).
+    """
     determination = session.runs[run_index].determination
     policy_store = LocalPolicyStore()
     patient_store = LocalPatientStore()
@@ -846,19 +910,68 @@ def _verb_packet(args) -> int:
             knowledge_store,
         ).review
 
+    return form.assemble(
+        session=session,
+        run_index=run_index,
+        rendered_determination=_render(determination),
+        review=review,
+        payer=payer,
+        index=_packet_index(
+            form.source_ids(determination=determination, review=review),
+            policy_store,
+            patient_store,
+            knowledge_store,
+        ),
+        submitted_at=submitted_at,
+    )
+
+
+def _artifact_id(session_id: str, run_index: int) -> str:
+    """The outbox key for one snapshot of one session.
+
+    Derived from the pair, so the outbox's collision guard and the lifecycle's
+    refusal of a second `submit` are about the same thing. `SubmissionRecord`
+    records `run_index` as a field as well, because this is a filename and that
+    is the claim — a later naming scheme must not be able to change what a
+    session says it sent.
+    """
+    return f"{session_id}-run{run_index}"
+
+
+def _verb_packet(args) -> int:
+    """Assemble the packet for one snapshot and print it.
+
+    It prints the **rendered `.eml`** rather than a JSON record, because a packet
+    is a document and the other four verbs print records; `--json` prints the
+    structured `Packet` for a reader who wants the fields. `--run N` picks the
+    snapshot and defaults to the latest, because a session may hold several and
+    a packet is over one (D131).
+
+    The recipient comes from the payer directory since `T-105` — the *source* of
+    that string changed and not its shape (D131, D134) — and it is the **same**
+    resolution `session submit` makes, so the draft a reviewer reads is addressed
+    to whoever the document that leaves will be.
+    """
+    store = _session_store(args.sessions_root)
     try:
-        packet = form.assemble(
-            session=session,
-            run_index=run_index,
-            rendered_determination=_render(determination),
-            review=review,
-            payer=args.payer,
-            index=_packet_index(
-                form.source_ids(determination=determination, review=review),
-                policy_store,
-                patient_store,
-                knowledge_store,
-            ),
+        session = store.get(args.session_id)
+    except SessionNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    run_index = _run_index_or_report(session, args.run)
+    if run_index is None:
+        return 1
+
+    try:
+        payer = _payer_store().get_payer(args.payer_id)
+    except PayerNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    try:
+        packet = _assemble_packet(
+            session, run_index, payer=payer.recipient, submitted_at=None
         )
     except form.PacketRefused as exc:
         # Every refusal is a bad request: a missing justification, a row the
@@ -875,6 +988,178 @@ def _verb_packet(args) -> int:
     return 0
 
 
+def _verb_submit(args) -> int:
+    """Write the packet to a payer's outbox and move the session on (REQ-76, REQ-77).
+
+    **Transmission is a lifecycle transition taken on an explicit verb and
+    nothing else.** There is no `DETERMINED -> AWAITING_DECISION` edge, so a
+    session that has not been reviewed cannot be sent: US-13's fourth bullet is
+    that refusal, and *the system never decides to transmit* is the table saying
+    so rather than a promise this function makes (D134).
+
+    **The order below is load-bearing and is not to be tidied.** `advance()`
+    raises before constructing anything, so it comes first — ahead of the payer,
+    the assembly and the write — and nothing exists on disk after a refusal.
+    That is why the tests assert the **outbox is empty** rather than that the exit
+    code is 1: a handler that rendered and wrote before checking the order
+    returns the same 1 (D129's rule, T-135's row).
+
+    It is also ahead of the run-bounds check, deliberately. A `CREATED` session
+    has no snapshot, and the answer a reviewer needs is the lifecycle's — *CREATED
+    may become DETERMINED* — not *this session holds 0 runs*.
+    """
+    store = _session_store(args.sessions_root)
+    try:
+        session = store.get(args.session_id)
+    except SessionNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    try:
+        moved = session_machine.advance(session, SessionState.AWAITING_DECISION)
+    except session_machine.IllegalTransition as exc:
+        # Before the payer is resolved, before the packet is assembled and before
+        # the outbox is touched. The stderr line names the current state and its
+        # legal successors, and there is no fifth exit code (D129, REQ-76).
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    run_index = _run_index_or_report(session, args.run)
+    if run_index is None:
+        return 1
+
+    try:
+        payer = _payer_store().get_payer(args.payer_id)
+    except PayerNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    submitted_at = _now()
+    try:
+        packet = _assemble_packet(
+            session, run_index, payer=payer.recipient, submitted_at=submitted_at
+        )
+    except form.PacketRefused as exc:
+        # A missing justification, a row the review does not hold or a citation
+        # that no longer slices. Every one of them is *this cannot be sent as it
+        # stands*, and nothing has been written (D131).
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    outbox = _outbox_store(args.outbox_root)
+    artifact_id = _artifact_id(session.session_id, run_index)
+    try:
+        artifact = outbox.put(
+            payer_id=payer.payer_id,
+            artifact_id=artifact_id,
+            body=form.render(packet),
+        )
+    except OutboxArtifactExists as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    submitted = _revalidated(
+        moved.model_copy(
+            update={
+                "submission": SubmissionRecord(
+                    artifact_id=artifact.artifact_id,
+                    sha256=artifact.sha256,
+                    payer_id=artifact.payer_id,
+                    submitted_at=submitted_at,
+                    run_index=run_index,
+                    citation_count=len(form.citations(packet)),
+                )
+            }
+        )
+    )
+    store.save(submitted)
+
+    print(json.dumps(
+        {
+            "session_id": submitted.session_id,
+            "state": submitted.state.value,
+            "submitted": True,
+            "outbox": str(outbox.root),
+            "submission": submitted.submission.model_dump(mode="json"),
+        },
+        indent=2,
+        ensure_ascii=False,
+    ))
+    return 0
+
+
+#: Each payer outcome, and the word that asks for it. A literal mapping in
+#: `REVIEW_ACTIONS`' shape, so the CLI vocabulary and the closed enum are held
+#: together by a test rather than by an argparse `choices` list that can drift
+#: from the enum it is spelled after (T-105, D134).
+DECISION_OUTCOMES = {
+    "approved": PayerDecisionOutcome.APPROVED,
+    "denied": PayerDecisionOutcome.DENIED,
+    "information-requested": PayerDecisionOutcome.INFORMATION_REQUESTED,
+}
+
+
+def _verb_decide(args) -> int:
+    """Close the session on the payer's answer (REQ-77, US-13's fifth bullet).
+
+    **Two dates.** `--decided-on` is the payer's own and is required; `_now()` is
+    when this system was told. Collapsing them makes a decision *recorded* a week
+    late read as one *taken* a week late (D134, D78's category).
+
+    The answering payer is read off the session's own `SubmissionRecord` and never
+    from a flag, so a session cannot record an answer from a payer it never wrote
+    to. The iff validator guarantees the record is there: `AWAITING_DECISION` is
+    the only state this transition is legal from.
+
+    **The artifact stays in the outbox.** Nothing here touches it, which is the
+    directional half of REQ-77 — §11's original wording said every session in the
+    outbox is `AWAITING_DECISION`, and that is false the moment this verb runs
+    (D131).
+    """
+    store = _session_store(args.sessions_root)
+    try:
+        session = store.get(args.session_id)
+    except SessionNotFound as exc:
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    try:
+        moved = session_machine.advance(session, SessionState.DECIDED)
+    except session_machine.IllegalTransition as exc:
+        # `DECIDED` is legal only from `AWAITING_DECISION`, so recording an
+        # answer for a session nobody submitted is refused here, naming the state
+        # it is in and what it may become (D129, REQ-76).
+        print(f"bad request: {exc}", file=sys.stderr)
+        return 1
+
+    decided = _revalidated(
+        moved.model_copy(
+            update={
+                "decision": PayerDecision(
+                    outcome=DECISION_OUTCOMES[args.outcome],
+                    decided_on=args.decided_on,
+                    recorded_at=_now(),
+                    payer_id=session.submission.payer_id,
+                    reference=args.reference,
+                )
+            }
+        )
+    )
+    store.save(decided)
+
+    print(json.dumps(
+        {
+            "session_id": decided.session_id,
+            "state": decided.state.value,
+            "terminal": session_machine.is_terminal(decided.state),
+            "decision": decided.decision.model_dump(mode="json"),
+        },
+        indent=2,
+        ensure_ascii=False,
+    ))
+    return 0
+
+
 VERB_HANDLERS = {
     "create": _verb_create,
     "list": _verb_list,
@@ -882,6 +1167,8 @@ VERB_HANDLERS = {
     "run": _verb_run,
     "review": _verb_review,
     "packet": _verb_packet,
+    "submit": _verb_submit,
+    "decide": _verb_decide,
 }
 
 
@@ -920,6 +1207,12 @@ def _session_main(argv: list[str]) -> int:
         type=Path,
         default=None,
         help=f"where sessions are written (default: {DEFAULT_SESSION_ROOT})",
+    )
+    parser.add_argument(
+        "--outbox-root",
+        type=Path,
+        default=None,
+        help=f"where submitted packets are written (default: {DEFAULT_OUTBOX_ROOT})",
     )
     verbs = parser.add_subparsers(dest="verb", required=True)
 
@@ -998,16 +1291,61 @@ def _session_main(argv: list[str]) -> int:
         help="which snapshot to package (default: the latest)",
     )
     packet.add_argument(
-        "--payer",
-        default=PLACEHOLDER_PAYER,
-        help=f"the recipient the packet is addressed to (default: "
-             f"{PLACEHOLDER_PAYER!r}, a declared placeholder until T-105 builds "
-             f"the payer directory)",
+        "--payer-id",
+        default=DEFAULT_PAYER_ID,
+        help=f"which simulated payer the packet is addressed to, by id from the "
+             f"payer directory (default: {DEFAULT_PAYER_ID}). An unknown id is a "
+             f"bad request, never a fallback",
     )
     packet.add_argument(
         "--json",
         action="store_true",
         help="print the structured Packet instead of the rendered .eml",
+    )
+
+    submit = verbs.add_parser(
+        "submit",
+        help="write the reviewed packet to a payer's outbox and await a decision",
+    )
+    submit.add_argument("session_id")
+    submit.add_argument(
+        "--run",
+        type=int,
+        default=None,
+        help="which snapshot to send (default: the latest)",
+    )
+    submit.add_argument(
+        "--payer-id",
+        default=DEFAULT_PAYER_ID,
+        help=f"which simulated payer to send to, by id (default: "
+             f"{DEFAULT_PAYER_ID})",
+    )
+
+    decide = verbs.add_parser(
+        "decide", help="record the payer's answer and close the session"
+    )
+    decide.add_argument("session_id")
+    decide.add_argument(
+        "--outcome",
+        required=True,
+        choices=tuple(DECISION_OUTCOMES),
+        help="what the payer answered. Approved and denied have the same next "
+             "action in this system — none — so they are two outcomes on one "
+             "closing state and not two states (D134)",
+    )
+    decide.add_argument(
+        "--decided-on",
+        type=date.fromisoformat,
+        required=True,
+        help="the date the payer took the decision. Required, and distinct from "
+             "the clock this system recorded it at: collapsing the two makes a "
+             "decision recorded late read as one taken late",
+    )
+    decide.add_argument(
+        "--reference",
+        default=None,
+        help="the payer's own tracking reference, where there is one. Absent "
+             "rather than invented where there is not",
     )
 
     args = parser.parse_args(argv)

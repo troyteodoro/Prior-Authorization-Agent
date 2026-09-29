@@ -61,6 +61,22 @@ KNOWLEDGE_ROOTS = ("pa_agent.stores.knowledge",)
 #: cannot read a chart" true of a module that reads neither.
 SESSION_ROOTS = ("pa_agent.stores.session", "pa_agent.session")
 
+#: The fifth and sixth ports (T-105, D134). Two roots and **not one**, because
+#: `payer` is a corpus the repository ships and `outbox` is output the system
+#: writes — the split D134 declined to put behind a single protocol. Each is a
+#: root of its own for `KNOWLEDGE_ROOTS`' reason: folding either into a plane
+#: would make "the policy plane cannot read a chart" true of a module that reads
+#: neither.
+#:
+#: **Neither is in `ALL_READ_PLANES` below, and the set's own definition is why.**
+#: That set is the modules reaching all three corpora a *citation* can address,
+#: derived in `tests/test_packet_index.py` from the ports declaring
+#: `get_document`. `PayerStore` declares none — a contact is not a document a span
+#: points into — and the outbox is a **write** plane, so it is not a read corpus
+#: at all. A packet's spans never point into either.
+PAYER_ROOTS = ("pa_agent.stores.payer",)
+OUTBOX_ROOTS = ("pa_agent.stores.outbox",)
+
 #: Modules that legitimately reach both planes, and why. Asserted as an exact
 #: set (D83) — a subset check would have hidden `retrieval`, which nobody's list
 #: had until the graph was parsed.
@@ -355,6 +371,46 @@ def test_no_other_plane_reaches_the_session_corpus(graph, root):
     assert not _reaches(graph, root, SESSION_ROOTS), (
         f"{root} reaches the session corpus"
     )
+
+
+@pytest.mark.parametrize("root", PAYER_ROOTS + OUTBOX_ROOTS)
+def test_the_transmission_planes_reach_no_other_plane(graph, root):
+    """The payer directory holds contacts and the outbox holds one rendered
+    document; neither holds a corpus, a chart or a session (T-105, REQ-70).
+
+    Both directions, as for the knowledge and session planes. A payer adapter that
+    could read a chart would be a third route around Article VI, and an outbox that
+    could read the policy corpus would be able to store one — while what it is
+    *for* is text somebody already read.
+    """
+    for other in (POLICY_ROOTS, PATIENT_ROOTS, KNOWLEDGE_ROOTS, SESSION_ROOTS):
+        assert not _reaches(graph, root, other), f"{root} reaches {other}"
+
+
+@pytest.mark.parametrize(
+    "root", POLICY_ROOTS + PATIENT_ROOTS + KNOWLEDGE_ROOTS + SESSION_ROOTS
+)
+def test_no_other_plane_reaches_the_transmission_planes(graph, root):
+    """And nothing reaches them. A criteria tree that could read who a packet was
+    sent to would be a rule deciding by precedent (Article VII), and a chart
+    adapter that could read the outbox would be a second copy of what left."""
+    assert not _reaches(graph, root, PAYER_ROOTS), f"{root} reaches the payer directory"
+    assert not _reaches(graph, root, OUTBOX_ROOTS), f"{root} reaches the outbox"
+
+
+def test_the_transmission_planes_are_not_three_corpus_modules(graph):
+    """The classification D134 had to make, asserted rather than assumed.
+
+    `ALL_READ_PLANES` is *reaches all three read corpora*, and a write plane is
+    not a read corpus. If either of these ever satisfied that predicate it would
+    mean the adapter had grown an import into a corpus, so the check is that they
+    do not — stated here because a set nobody may join is a set whose membership
+    rule is invisible.
+    """
+    for root in PAYER_ROOTS + OUTBOX_ROOTS:
+        assert root not in ALL_READ_PLANES
+        assert root not in BOTH_PLANES
+        assert not _reaches(graph, root, POLICY_ROOTS + PATIENT_ROOTS)
 
 
 def test_every_whitelist_entry_states_a_reason():

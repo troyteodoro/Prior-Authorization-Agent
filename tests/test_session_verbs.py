@@ -28,6 +28,7 @@ test nobody keeps.
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import subprocess
 import sys
@@ -37,7 +38,15 @@ from pathlib import Path
 import pytest
 
 from pa_agent import cli
-from pa_agent.contracts import Intake, Session, SessionRun, SessionState
+from pa_agent.contracts import (
+    Intake,
+    PayerDecisionOutcome,
+    Session,
+    SessionRun,
+    SessionState,
+)
+from pa_agent.stores.outbox import DEFAULT_OUTBOX_ROOT
+from pa_agent.stores.payer import LocalPayerStore
 from pa_agent.stores.session import DEFAULT_SESSION_ROOT, LocalSessionStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -65,10 +74,46 @@ def _session(root: Path, *args: str) -> subprocess.CompletedProcess:
     return _cli("session", "--sessions-root", str(root), *args)
 
 
+def _session_out(root: Path, outbox: Path, *args: str) -> subprocess.CompletedProcess:
+    """A session command that may write a packet. **Both** roots, always.
+
+    A separate helper rather than a defaulted argument on `_session`, so the AST
+    guard at the bottom of this file can require an outbox root on every call that
+    could produce one — a test that forgot it would write into `data/outbox/` in
+    the working tree and the suite would still pass (D127's failure mode, on the
+    root D134 added).
+    """
+    return _cli(
+        "session",
+        "--sessions-root", str(root),
+        "--outbox-root", str(outbox),
+        *args,
+    )
+
+
 def _created(root: Path, *args: str) -> str:
     proc = _session(root, "create", *args)
     assert proc.returncode == 0, proc.stderr
     return json.loads(proc.stdout)["session_id"]
+
+
+def _snapshot(root: Path) -> dict[str, tuple[bytes, int]]:
+    """Every file under `root`, with its bytes **and** its `st_mtime_ns`.
+
+    The timestamp is not decoration. T-104 measured that a `save()` inserted
+    before a refusal reproduces the session file exactly, because the adapter
+    generates nothing (D127) — so a byte comparison holds *nothing changed* where
+    the requirement says *never written*. `st_mtime_ns` moves on a same-content
+    rewrite and the bytes catch a changed one; neither alone is the check (D132,
+    D134).
+    """
+    if not root.exists():
+        return {}
+    return {
+        str(path.relative_to(root)): (path.read_bytes(), path.stat().st_mtime_ns)
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
 
 
 # --------------------------------------------------------------------------
@@ -526,6 +571,342 @@ def test_an_illegal_transition_is_a_bad_request_and_records_nothing(tmp_path):
 
 
 # --------------------------------------------------------------------------
+# Submission and tracking (T-105, D134, REQ-76, REQ-77)
+# --------------------------------------------------------------------------
+
+
+def _reviewed(root: Path) -> str:
+    """A session in `IN_REVIEW`, reached through the verbs and not written by hand.
+
+    Four processes, because that is the route a reviewer takes: create, run,
+    review, and then this returns the id. Building the state directly would test
+    the refusals against a shape the verbs cannot produce.
+    """
+    session_id = _created(
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+    )
+    ran = _session(root, "run", session_id, "--as-of", AS_OF)
+    assert ran.returncode == 0, ran.stderr
+    reviewed = _session(
+        root, "review", session_id, "--reviewer", "R. Chen", "--note", "Signed off."
+    )
+    assert reviewed.returncode == 0, reviewed.stderr
+    return session_id
+
+
+def _submitted(root: Path, outbox: Path) -> str:
+    session_id = _reviewed(root)
+    proc = _session_out(root, outbox, "submit", session_id)
+    assert proc.returncode == 0, proc.stderr
+    return session_id
+
+
+@pytest.mark.parametrize(
+    "reach,expected_legal",
+    [
+        ("created", ["DETERMINED"]),
+        ("determined", ["DETERMINED", "IN_REVIEW"]),
+    ],
+)
+def test_submitting_before_review_is_refused_and_writes_nothing(
+    tmp_path, reach, expected_legal
+):
+    """REQ-76, and the clause the **directory** holds rather than the exit code.
+
+    US-13's fourth bullet is this refusal: there is no `DETERMINED ->
+    AWAITING_DECISION` edge, so the system never decides to transmit. The stderr
+    line names the current state **and its legal successors**, and there is no
+    fifth exit code (D129).
+
+    What proves *writes nothing* is that the outbox does not exist. A handler that
+    rendered the packet, wrote it, and then checked the order would return the same
+    1 with a file on disk — which is T-135's row on the session file, one plane
+    over. The session's bytes **and** `st_mtime_ns` are compared for the same
+    reason: the adapter generates nothing, so a `save()` before the refusal
+    reproduces the file exactly (measured in T-104).
+    """
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+
+    session_id = _created(
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+    )
+    if reach == "determined":
+        assert _session(root, "run", session_id, "--as-of", AS_OF).returncode == 0
+
+    before = _snapshot(root)
+    proc = _session_out(root, outbox, "submit", session_id)
+
+    assert proc.returncode == 1
+    assert proc.stdout == ""
+    for name in expected_legal:
+        assert name in proc.stderr
+    assert not outbox.exists(), (
+        "a refused submission created the outbox; nothing is written until the "
+        "transition is legal (REQ-76)"
+    )
+    assert _snapshot(root) == before, (
+        "a refused submission rewrote the session; the bytes and st_mtime_ns are "
+        "compared together because a same-content rewrite moves only the second"
+    )
+
+
+def test_submitting_a_reviewed_session_writes_exactly_one_file(tmp_path):
+    """REQ-77's first half, end to end.
+
+    Exactly one artifact, whose sha256 is the hash the session records — so the
+    claim and the bytes are one comparison a gate can make — and nothing else on
+    disk moves except the session that now records it.
+    """
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _reviewed(root)
+
+    before = _snapshot(root)
+    proc = _session_out(root, outbox, "submit", session_id)
+    assert proc.returncode == 0, proc.stderr
+
+    printed = json.loads(proc.stdout)
+    assert printed["state"] == "AWAITING_DECISION"
+    assert printed["submitted"] is True
+
+    artifacts = sorted(outbox.rglob("*.eml"))
+    assert len(artifacts) == 1, f"submission wrote {artifacts}"
+    body = artifacts[0].read_bytes()
+
+    stored = LocalSessionStore(root).get(session_id)
+    assert stored.state is SessionState.AWAITING_DECISION
+    assert stored.submission is not None
+    assert stored.submission.sha256 == hashlib.sha256(body).hexdigest()
+    assert stored.submission.run_index == 0
+    assert stored.submission.citation_count > 0
+    assert artifacts[0].name == f"{stored.submission.artifact_id}.eml"
+    assert artifacts[0].parent.name == stored.submission.payer_id
+
+    after = _snapshot(root)
+    assert set(after) == set(before), "submission added or removed a session file"
+    changed = {name for name in after if after[name] != before[name]}
+    assert changed == {f"{session_id}.json"}, (
+        f"submission changed {sorted(changed)} under the session root; the outbox "
+        "artifact and the session that records it are the only side effects"
+    )
+
+
+def test_the_transmitted_packet_is_addressed_to_the_directorys_payer(tmp_path):
+    """The recipient's **source** moved to `payers.json` and its shape did not.
+
+    `T-103` held a placeholder constant here because no committed artifact named a
+    recipient (D131). The header is now rendered from a record that declares itself
+    simulated and sits under `.invalid`, so an address written from memory cannot
+    reach a packet (D134).
+    """
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _submitted(root, outbox)
+
+    stored = LocalSessionStore(root).get(session_id)
+    assert stored.submission.payer_id == cli.DEFAULT_PAYER_ID
+    payer = LocalPayerStore().get_payer(cli.DEFAULT_PAYER_ID)
+
+    body = (outbox / payer.payer_id / f"{stored.submission.artifact_id}.eml").read_text(
+        encoding="utf-8"
+    )
+    assert body.startswith(f"To: {payer.recipient}\n")
+    assert ".invalid>" in body.splitlines()[0]
+    # `Date:` is emitted only when the packet carries a submission timestamp
+    # (D131), and submission is the first thing that does.
+    assert f"Date: {stored.submission.submitted_at}" in body
+
+
+def test_an_unknown_payer_id_is_a_bad_request_and_writes_nothing(tmp_path):
+    """A default is not a fallback (D134). Quietly sending to a different
+    recipient than the one named is the one thing a directory must not do."""
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _reviewed(root)
+
+    before = _snapshot(root)
+    proc = _session_out(root, outbox, "submit", session_id, "--payer-id", "nope")
+    assert proc.returncode == 1
+    assert proc.stdout == ""
+    assert "no payer 'nope'" in proc.stderr
+    assert not outbox.exists()
+    assert _snapshot(root) == before
+
+
+def test_a_second_submission_of_the_same_snapshot_is_refused(tmp_path):
+    """Two guards, in order, and the first is the lifecycle's.
+
+    `AWAITING_DECISION` has no self-edge, so the second `submit` is refused before
+    the outbox is reached — and the artifact already there is untouched. The
+    outbox's own collision guard is the second line (unit-level in
+    `tests/test_outbox_store.py`), and it becomes the first on the day a
+    resubmission edge exists.
+    """
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _submitted(root, outbox)
+
+    before_sessions = _snapshot(root)
+    before_outbox = _snapshot(outbox)
+
+    proc = _session_out(root, outbox, "submit", session_id)
+    assert proc.returncode == 1
+    assert proc.stdout == ""
+    assert "AWAITING_DECISION" in proc.stderr
+    assert _snapshot(outbox) == before_outbox, "a refused resend rewrote the artifact"
+    assert _snapshot(root) == before_sessions
+
+
+def test_deciding_closes_the_session_with_the_outcome_and_both_dates(tmp_path):
+    """REQ-77's second half and US-13's fifth bullet, which A13 had in no clause
+    until D131 rewrote it.
+
+    **Two dates**: the payer's own and the clock this system was told at.
+    Collapsing them makes a decision recorded a week late read as one taken a week
+    late (D78's category, D134). The answering payer is read off the submission and
+    never from a flag.
+    """
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _submitted(root, outbox)
+
+    proc = _session_out(
+        root, outbox, "decide", session_id,
+        "--outcome", "approved", "--decided-on", "2026-09-20",
+        "--reference", "PA-4471",
+    )
+    assert proc.returncode == 0, proc.stderr
+    printed = json.loads(proc.stdout)
+    assert printed["state"] == "DECIDED"
+    assert printed["terminal"] is True
+
+    stored = LocalSessionStore(root).get(session_id)
+    assert stored.state is SessionState.DECIDED
+    assert stored.decision.outcome.value == "APPROVED"
+    assert stored.decision.decided_on.isoformat() == "2026-09-20"
+    assert stored.decision.reference == "PA-4471"
+    assert stored.decision.payer_id == stored.submission.payer_id
+    # The system's clock, and not the payer's date wearing its name.
+    assert stored.decision.recorded_at != "2026-09-20"
+    assert not stored.decision.recorded_at.startswith("2026-09-20")
+
+
+def test_the_artifact_stays_in_the_outbox_after_the_decision(tmp_path):
+    """§11's fourth statement had this backwards, and D131 corrected it.
+
+    *Every session in the outbox is `AWAITING_DECISION`* is false the moment
+    `decide` runs: the packet stays and the session becomes `DECIDED`. The
+    directional form is what is true and what is checked here — a session acquires
+    an artifact when it enters `AWAITING_DECISION`, **and a decided session keeps
+    it** (REQ-77).
+    """
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _submitted(root, outbox)
+
+    before = _snapshot(outbox)
+    assert len(before) == 1
+
+    proc = _session_out(
+        root, outbox, "decide", session_id,
+        "--outcome", "information-requested", "--decided-on", "2026-09-22",
+    )
+    assert proc.returncode == 0, proc.stderr
+
+    assert _snapshot(outbox) == before, (
+        "recording the decision touched the outbox; the artifact that left is not "
+        "the session's to edit"
+    )
+    stored = LocalSessionStore(root).get(session_id)
+    assert stored.state is SessionState.DECIDED
+    assert stored.submission is not None, (
+        "a decided session dropped its submission record; the directional half of "
+        "REQ-77 is that it keeps it"
+    )
+    assert stored.decision.outcome.value == "INFORMATION_REQUESTED"
+
+
+@pytest.mark.parametrize("reach", ["created", "determined", "reviewed"])
+def test_deciding_a_session_nobody_submitted_is_refused(tmp_path, reach):
+    """`DECIDED` is legal only from `AWAITING_DECISION`, so an answer for a
+    session nobody sent is exit 1 naming the state it is in and what it may
+    become. `IN_REVIEW` is the case the board's exit names (D131, REQ-76)."""
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+
+    if reach == "reviewed":
+        session_id = _reviewed(root)
+    else:
+        session_id = _created(
+            root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        )
+        if reach == "determined":
+            assert _session(root, "run", session_id, "--as-of", AS_OF).returncode == 0
+
+    before = _snapshot(root)
+    proc = _session_out(
+        root, outbox, "decide", session_id,
+        "--outcome", "denied", "--decided-on", "2026-09-20",
+    )
+    assert proc.returncode == 1
+    assert proc.stdout == ""
+    assert "DECIDED" in proc.stderr
+    assert not outbox.exists()
+    assert _snapshot(root) == before
+
+
+def test_decide_requires_the_payers_own_date(tmp_path):
+    """Required, because a payer decision with no date of its own is exactly what
+    the two-date pair exists to keep apart (D134)."""
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _submitted(root, outbox)
+    proc = _session_out(root, outbox, "decide", session_id, "--outcome", "approved")
+    assert proc.returncode != 0
+    assert proc.stdout == ""
+
+
+def test_the_cli_outcome_words_are_the_closed_enum():
+    """`DECISION_OUTCOMES` against `PayerDecisionOutcome`, in both directions.
+
+    `PREDICATES` against `PredicateKind`, one surface over (T-91, D110): an
+    argparse `choices` list spelled after an enum is a second vocabulary, and a
+    value in one and not the other is a word that parses and cannot be recorded, or
+    an outcome nothing can ask for.
+    """
+    assert set(cli.DECISION_OUTCOMES.values()) == set(PayerDecisionOutcome)
+    for word, outcome in cli.DECISION_OUTCOMES.items():
+        assert word == outcome.value.lower().replace("_", "-")
+
+
+def test_submit_and_packet_resolve_the_recipient_the_same_way(tmp_path):
+    """One assembly, so the draft a reviewer reads and the document that leaves
+    cannot be addressed differently (D134).
+
+    The comparison is over the headers rather than the whole body, because the
+    submitted packet carries a `Date:` the draft does not — that difference is
+    D131's, and it is the one thing that *should* differ.
+    """
+    root = tmp_path / "sessions"
+    outbox = tmp_path / "outbox"
+    session_id = _reviewed(root)
+
+    draft = _session(root, "packet", session_id)
+    assert draft.returncode == 0, draft.stderr
+
+    assert _session_out(root, outbox, "submit", session_id).returncode == 0
+    stored = LocalSessionStore(root).get(session_id)
+    sent = (
+        outbox / stored.submission.payer_id / f"{stored.submission.artifact_id}.eml"
+    ).read_text(encoding="utf-8")
+
+    assert draft.stdout.splitlines()[0] == sent.splitlines()[0]
+    assert "Date:" not in draft.stdout.split("\n\n", 1)[0]
+    assert "Date:" in sent.split("\n\n", 1)[0]
+
+
+# --------------------------------------------------------------------------
 # The surface is closed, and the default root is the repository's
 # --------------------------------------------------------------------------
 
@@ -558,36 +939,54 @@ def test_every_declared_verb_has_a_handler_and_a_subparser():
     assert declared == set(cli.SESSION_VERBS)
 
 
-def test_a_verb_this_version_does_not_have_is_refused(tmp_path):
-    """v1.5's remaining verbs are not silently accepted no-ops.
+def test_an_undeclared_verb_is_refused_and_every_declared_one_answers(tmp_path):
+    """The inverse of the test this replaces, and the reason for the swap (D134).
 
-    `review` left this list at `T-104` and `submit` and `decide` leave it at
-    `T-105`. The list shrinking is the point: a verb named here and shipped is
-    a test that would pass on a command that parses and does nothing.
+    Until this row the check read *v1.5's remaining verbs are not silently
+    accepted no-ops* over a list of `("submit", "decide")`. `T-105` ships both, so
+    that list is empty — and a loop over an empty list is a green test asserting
+    nothing, which is the shape T-95 found in A10 and D123 in A11.
+
+    What is checked instead is a claim that does not expire: a verb **no** version
+    declares is refused, and **every** verb in `SESSION_VERBS` answers. The second
+    half is what catches a handler nothing can reach; `--help` is used for it
+    because the verbs take different required arguments and what is under test is
+    that the subparser exists.
     """
-    for absent in ("submit", "decide"):
+    for absent in ("cancel", "withdraw", "sumbit"):
         proc = _session(tmp_path / "sessions", absent)
         assert proc.returncode != 0, absent
         assert proc.stdout == "", absent
 
+    for verb in cli.SESSION_VERBS:
+        proc = _session(tmp_path / "sessions", verb, "--help")
+        assert proc.returncode == 0, f"{verb}: {proc.stderr}"
+        assert verb in proc.stdout
 
-def test_the_default_session_root_is_the_repositorys_and_is_gitignored():
-    """The adapter's default, and the reason no test may use it.
 
-    A test that forgets `--sessions-root` writes into the working tree, and
-    the suite still passes — silently, which is the whole failure mode. The
-    root is asserted here and every test above passes `tmp_path`.
+def test_the_default_roots_are_the_repositorys_and_are_gitignored():
+    """The adapters' defaults, and the reason no test may use either.
+
+    A test that forgets `--sessions-root` or `--outbox-root` writes into the
+    working tree, and the suite still passes — silently, which is the whole
+    failure mode. Both roots are asserted here and every test above passes
+    `tmp_path`.
     """
     assert DEFAULT_SESSION_ROOT == REPO_ROOT / "data" / "sessions"
+    assert DEFAULT_OUTBOX_ROOT == REPO_ROOT / "data" / "outbox"
     ignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
     assert "data/sessions/" in ignore
+    assert "data/outbox/" in ignore
 
 
-def test_no_test_in_this_file_writes_to_the_default_root():
-    """The guard for the guard.
+def test_no_test_in_this_file_writes_to_a_default_root():
+    """The guard for the guard, on **both** write planes.
 
     Every helper here takes a root. If one stopped, this file would quietly
-    start writing into `data/sessions/` and nothing else would say so.
+    start writing into `data/sessions/` — or, since `T-105`, `data/outbox/` — and
+    nothing else would say so. `_session_out` needs two, and the count is
+    asserted rather than its presence, because one root passed twice would satisfy
+    a presence check and put a packet under the session root.
     """
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     for node in ast.walk(tree):
@@ -596,14 +995,21 @@ def test_no_test_in_this_file_writes_to_the_default_root():
         func = node.func
         if isinstance(func, ast.Name) and func.id == "_session":
             assert node.args, "_session() called with no root"
+        if isinstance(func, ast.Name) and func.id == "_session_out":
+            assert len(node.args) >= 2, (
+                f"_session_out() at line {node.lineno} was not given both a "
+                "session root and an outbox root"
+            )
         # Parsed rather than grepped: a substring scan for the constructor
         # matches *this test's own text*, which is a check that reports itself
         # and can never report anything else. Measured — the text form failed
         # on its first run, on itself.
-        if isinstance(func, ast.Name) and func.id == "LocalSessionStore":
+        if isinstance(func, ast.Name) and func.id in (
+            "LocalSessionStore", "LocalOutboxStore",
+        ):
             assert node.args or node.keywords, (
-                "a test constructed the adapter with no root, which writes "
-                "into data/sessions/ in the working tree"
+                f"a test constructed {func.id} with no root, which writes into "
+                "the working tree"
             )
 
 

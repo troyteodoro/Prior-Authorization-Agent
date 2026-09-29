@@ -29,9 +29,11 @@ from pa_agent.contracts import (
     DeterminationOutcome,
     Document,
     Intake,
+    PayerDecision,
     Session,
     SessionRun,
     SessionState,
+    SubmissionRecord,
 )
 from pa_agent.stores.session import (
     DEFAULT_SESSION_ROOT,
@@ -287,7 +289,21 @@ def test_no_corpus_type_is_reachable_from_a_session():
 #: plain `str` is invisible to it. Measured at this close: adding
 #: `cached_policy_text: str` to `SessionRun` — a field that can hold the entire
 #: policy corpus — passed all nineteen tests until this pin existed.
-SESSION_FIELDS = {"session_id", "created_at", "intake", "state", "runs", "reviews"}
+#: `submission` and `decision` joined at T-105 (D134) — an artifact id, a digest,
+#: counts and two dates. Neither is a `Document` or a resource: the transmitted
+#: text lives in the outbox, which is REQ-70's line drawn at resources rather
+#: than at text.
+SESSION_FIELDS = {
+    "session_id", "created_at", "intake", "state", "runs", "reviews",
+    "submission", "decision",
+}
+SUBMISSION_FIELDS = {
+    "artifact_id", "sha256", "payer_id", "submitted_at", "run_index",
+    "citation_count",
+}
+DECISION_FIELDS = {
+    "outcome", "decided_on", "recorded_at", "payer_id", "reference",
+}
 RUN_FIELDS = {"ran_at", "as_of", "policy_version_id", "determination"}
 #: `requesting_provider` and `servicing_provider` joined at T-103 (D131):
 #: identity **pass-through text**, never a `Practitioner` resource — Article VI's
@@ -309,6 +325,8 @@ def test_a_session_carries_exactly_these_fields():
     assert set(Session.model_fields) == SESSION_FIELDS
     assert set(SessionRun.model_fields) == RUN_FIELDS
     assert set(Intake.model_fields) == INTAKE_FIELDS
+    assert set(SubmissionRecord.model_fields) == SUBMISSION_FIELDS
+    assert set(PayerDecision.model_fields) == DECISION_FIELDS
 
 
 def _strings(value):

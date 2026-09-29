@@ -12469,3 +12469,302 @@ prior-auth form's *supporting documents* box means the clinical records attached
 and an FDA label is not one of this patient's records — so the honest fix may well
 be to correct the comment and the README row rather than the computation, and
 `T-106`'s fixture renders whichever answer wins *(working rule 6)*.
+
+---
+
+## D134 — Transmission is one table row and one recorded artifact; the payer's answer is data on one closing state
+
+**Context.** Row 3 of v1.5. `T-103` landed the packet (D131), `T-104` the review
+log (D132), `T-134` the document index the first of those needed (D133); nothing
+is open. This row ships `session submit` and `session decide`, the payer
+directory they address and the outbox they write, and it mints the two §11
+statements D131 assigned to it — the second in the **directional** form D131
+corrected, because the original is false the moment `decide` runs. Written
+before the code (Article IX, working rule 5).
+
+The exit was rewritten before this row opened, also by D131: *illegal orders
+raise* contradicts D129, whose contract is exit 1 naming the current state and
+its legal successors; *decide closes it* dropped US-13's outcome and date; and
+nothing said the outbox is the **only** side effect. Everything below answers the
+rewritten exit.
+
+### Chosen — two states, three table rows, and `is_terminal()` is not touched
+
+```python
+TRANSITIONS = {
+    CREATED:           (DETERMINED,),
+    DETERMINED:        (DETERMINED, IN_REVIEW),
+    IN_REVIEW:         (IN_REVIEW, AWAITING_DECISION),
+    AWAITING_DECISION: (DECIDED,),
+    DECIDED:           (),
+}
+```
+
+`SessionState` gains exactly `AWAITING_DECISION` and `DECIDED`, and the diff to
+`pa_agent/session.py` is three rows of a dict. **`DECIDED` becomes terminal
+without a line outside the table being edited** — `is_terminal()` reads the row
+and answers `True` because the row is empty. That is D127's argument paid off a
+**second** time in two rows: T-104 made `IN_REVIEW` stop being terminal the same
+way, and D127 predicted *this* edge as the one that would falsify a literal
+`terminal=True` on the member. The import-time `set(TRANSITIONS) ==
+set(SessionState)` assertion keeps holding, so a third state added without a row
+still fails at load.
+
+`IllegalTransition`'s terminal branch — unreachable on T-104's table and kept for
+exactly this row (D132) — is reachable again: `DECIDED`'s refusal reads *may
+become nothing — it is terminal*.
+
+*Rejected — a `terminal` flag on the two new members.* It is the copy D127
+refused, and this row is the second consecutive close that would have had to
+edit it.
+
+*Rejected — a `submit()`/`decide()` pair in `pa_agent/session.py` beside
+`advance()`.* It reads well and it is what a third writer of the session plane
+will want, but it buys one property this row does not need: `advance()` already
+refuses the order before anything is constructed, and the coupling between a
+state and its record is a fact about the **object**, so it belongs on the
+contract where every construction path meets it — a file edited by hand, a test,
+v2.2's UI. **Reverses if** a second surface writes a session, at which point the
+pair lands in the machine so the two writers cannot disagree about what a
+submission is.
+
+**Three edges are absent on purpose**, and each absence is a decision:
+
+- **`DETERMINED -> AWAITING_DECISION`** — submitting without review. US-13's
+  fourth bullet *is* this refusal (*given a session not yet in review, when
+  submission is attempted, then … nothing written; the system never decides to
+  transmit*), so an edge here would delete a story bullet rather than add a
+  convenience.
+- **`IN_REVIEW -> DETERMINED`** — re-running after review. Every `ReviewEntry`
+  binds to a `run_index` (REQ-75), so appending a snapshot after a review leaves
+  entries bound to a run nobody is packaging; US-13 does not ask for it, and the
+  shape that would be right is *review the new snapshot*, which is a new
+  `IN_REVIEW` entry and not a walk backwards.
+- **`AWAITING_DECISION -> IN_REVIEW`** — un-sending. The packet has left the
+  building; an outbox with a file in it cannot support a session claiming not to
+  have submitted, and the iff validator below would have to be relaxed to
+  express it.
+
+### Chosen — one closing state, and the payer's answer is data on it
+
+`DECIDED`, carrying a `PayerDecision`: an outcome from a closed enum
+(`APPROVED`, `DENIED`, `INFORMATION_REQUESTED`), the payer's **own** date, the
+timestamp this system was **told**, the payer id and an optional reference.
+
+**Not three terminal states.** `GapReason`'s discipline is that two values with
+the same next action are one value, and approved and denied have the same next
+action *in this system* — none. Three terminal states would put three identical
+empty rows in `TRANSITIONS`, which is the copy D127 refused one structure over.
+Information-requested genuinely differs (gather, resubmit), and it is an
+**outcome** here rather than a state for a reason that is about the table and not
+about taste: this version builds no resubmission edge, and a state whose row is
+empty while it obviously wants an outgoing edge is a state that lies about being
+terminal. It becomes a state in the version that builds resubmission — the
+version in which it acquires an edge.
+
+**Two dates, on purpose.** `decided_on` is the payer's, `recorded_at` is this
+system's clock when the answer was entered. Collapsing them makes a decision
+*recorded* a week late indistinguishable from one *taken* a week late, which is
+D78's category — `as_of` riding along on a claim and date-binding every
+digest — one object over. Only `recorded_at` comes from `_now()`; `decided_on` is
+a required flag, because a payer decision with no date of its own is the thing the
+pair exists to keep apart.
+
+*Rejected — `DECIDED` plus a free-text `outcome` string.* An open vocabulary here
+is a lifecycle whose terminal meaning is whatever somebody typed, and `ErrorCode`
+and `GapReason` are the precedent for closing it.
+
+*Rejected — reading the payer id from a flag on `decide`.* It is already on the
+submission, and a second source would let a session record an answer from a payer
+it never wrote to. `decide` reads `session.submission.payer_id`, which the iff
+validator guarantees is there.
+
+### Chosen — a submission record and a decision record, with **iff** validators
+
+`Session` gains `submission: SubmissionRecord | None` and `decision:
+PayerDecision | None`. The submission record names the artifact id, its sha256,
+the payer id, the timestamp, the `run_index` packaged and the packet's citation
+count. Two validators, both **in both directions**:
+
+- a submission exists **iff** the state is `AWAITING_DECISION` or `DECIDED`;
+- a decision exists **iff** the state is `DECIDED`.
+
+That is what makes A13's fourth clause checkable **from both ends**: every
+session claiming to have been sent names exactly one file and one hash, so the
+gate can open it, and no session in an earlier state carries one. A one-way rule
+(*`AWAITING_DECISION` needs a submission*) is satisfied by a `DETERMINED` session
+that carries one anyway, which is precisely the *no session in an earlier state
+has one* half of the statement being minted.
+
+The `run_index` on the record is not redundant with the artifact id even though
+the id is derived from it: the id is a filename and the field is the claim, and a
+later artifact naming scheme must not silently change what run a session says it
+sent.
+
+**`model_copy` runs no validator** (D132's measurement), so the two verbs
+re-validate the session **before** the adapter writes — `Session.model_validate`
+over the copy. Without it the iff validators are unreachable from the only path
+that sets these fields, and the failure mode is D132's exactly: a well-formed
+write that fails on the next `get()`. The re-validation is one named helper in
+`cli.py`, not a rule each verb remembers.
+
+*Rejected — a single `SessionOutcome` field holding both records.* They are set
+at different transitions by different verbs, and a field two verbs write is a
+field whose iff rule has to name which half is present.
+
+### Chosen — two new store modules, not one
+
+`pa_agent/stores/payer.py` — a **shipped read corpus** of simulated contacts. And
+`pa_agent/stores/outbox.py` — **system output**, the first writer after the
+session adapter. Both in `stores/session.py`'s shape: a `@runtime_checkable
+Protocol`, a file-backed adapter that does not inherit it, typed faults carrying
+what was asked for and what the store holds, and a traversal guard on every id
+that reaches a path. `stores/__init__.py` still imports no submodule.
+
+**One module for both is the mistake to avoid.** It would put a gitignored write
+root and a tracked read corpus behind one protocol, which is the separation D127
+spent a section making and the reason `data/sessions/` is not in a manifest.
+
+**Writing the outbox through the session adapter is worse.** That module's
+docstring is *four reads and one write, because that is what the four verbs
+ask*, and the outbox holds a **rendered packet** — a different plane, whose
+contents are not a `Session` and whose listing answers a different question.
+
+**The `put` collision raises.** A sent packet is not re-sendable, so an artifact
+id the outbox already holds is `OutboxArtifactExists` — `SessionExists`' argument
+on a second store, and the thing overwritten would be the document somebody was
+sent. The lifecycle refuses the second `submit` first (`AWAITING_DECISION` has no
+self-edge), so this guard is the second line rather than the first; it becomes
+the first on the day a resubmission edge exists, which is why it is written now
+rather than left to that row.
+
+**The asymmetry is stated so D127's inversion does not spread by imitation.**
+The outbox's listing may return `[]` — it is output, and empty means nobody has
+submitted, which is `session list` on a fresh clone exactly. The payer directory
+**raises** on a missing or empty file: it is a corpus the repository ships, and
+an empty one is a broken checkout reported as *no payer exists to send to*, which
+is D31 unmodified and the sentence `LocalKnowledgeStore` already refuses. `get`
+raises on both, for D31's reason in the half that never inverted.
+
+*Rejected — one `TransmissionStore` with `list_payers` and `put`.* The two
+answers to *what does empty mean* are opposite, and a protocol holding both has
+to document the exception rather than the rule.
+
+### Chosen — `data/payers/payers.json` is committed and deliberately **not** in `verify_sources.py`
+
+That gate verifies committed bytes against a **public re-download**. This file is
+**synthesized**: there is no upstream, so its manifest record would carry no URL
+and `--fetch` would have nothing to fetch — a hashed record asserting provenance
+it does not have, which is D19's failure in a new costume. It is v2.1's synthetic
+rule arriving early: *a policy artifact the project synthesized declares itself
+synthetic and carries no fetched-corpus provenance*.
+
+There is a second reason, and it is about the checked claims. *Nine policy
+documents* and *five FDA labels* are counts
+`tests/test_docs_consistency.py` re-derives from those two manifests; a payer
+record entering either one could raise a number that is a claim about what this
+system adjudicates against. Two corpora stay two.
+
+So `tests/test_payers.py` holds the file instead: every record declares itself
+`simulated` and carries all of its fields; **every address ends in `.invalid`**
+(RFC 2606's reserved TLD — a packet that escaped this repository could not be
+delivered anywhere, which is the same argument `form.MESSAGE_ID_DOMAIN` already
+rests on); the record count is pinned as a literal (D51's move, so a new payer is
+a visible diff); and **no payer id appears in either hashed manifest**, which is
+the check that the two corpora did not quietly become one.
+
+*Rejected — adding it to `data/policies/sources.json`.* It would make the policy
+corpus nine documents and a contact list, and the gate would have a record it
+cannot fetch. *Rejected — generating the payer at runtime from a constant in
+`cli.py`.* That is `PLACEHOLDER_PAYER` with more steps, and §11 names
+`payers.json` as the artifact.
+
+### Chosen — the packet in the outbox is **text**, in REQ-70's own words
+
+Article VI's line is drawn at **resources rather than at text**: a determination's
+quoted spans travel with it exactly as they reach the CLI's stdout. The outbox
+holds the rendered `.eml` — the same bytes `session packet` prints — and carries
+no `Document` and no FHIR resource. The packet is stdout on disk.
+
+The new records' field sets are pinned as literals (D51's shape, D127's
+application of it to `Session`), so a field added to carry a bundle, a document
+or a policy text fails where a reviewer reads its name. The structural walk over
+`Session`'s model graph sees models and cannot see a corpus inside a `str`, which
+is the measurement D127 recorded.
+
+### Chosen — the payer directory replaces `PLACEHOLDER_PAYER`'s **source** on both verbs
+
+D131 said this row replaces the source of the recipient string and not its shape.
+So `--payer-id` resolves through the directory on `submit` **and** on `packet`,
+and `PLACEHOLDER_PAYER` is deleted rather than left as a second answer to *who is
+this addressed to*. A draft printed to a reviewer and the document written to the
+outbox must name the same recipient, or the thing she checked is not the thing
+that left.
+
+*Rejected — keeping `--payer` as a free-text override beside `--payer-id`.* Two
+flags for one header is two sources, and the free-text one can name a real
+organisation, which is what `.invalid` and the `simulated` declaration exist to
+prevent.
+
+### Chosen — nothing is written until the transition is legal, and the directory is the check
+
+`_verb_submit`'s order is load-bearing and stated here so it is not reordered as
+tidy-up: `get` the session, then `advance(session, AWAITING_DECISION)` — which
+raises **before** constructing anything — then resolve the run, the payer and the
+packet, then `put`, then re-validate and save. So the refusal tests assert the
+**outbox is empty**, not that the exit code is 1: a handler that rendered and
+wrote before checking the order returns the same 1 (D129's rule, and T-135's
+row).
+
+The legality check is **first**, ahead of the run-bounds check, because a
+`CREATED` session has no snapshot and the answer a reviewer needs is the
+lifecycle's, not *this session holds 0 runs*. And the byte comparison alone is not
+enough on the session file: T-104 measured that a `save()` before a refusal
+reproduces the file exactly, because the adapter generates nothing (D127), so
+`st_mtime_ns` is compared **beside** the bytes wherever a test asserts nothing
+was written.
+
+### What it costs
+
+No model call, no network. No recording, bundle, note, span, verdict, baseline,
+eval row or verifier claim moves — this row produces no verdict at all, so D113's
+tax does not apply (D131). `main()`'s parser block and the `args_in[0] ==
+"session"` literal are untouched; `_render` gains no key, so
+`BARE_DETERMINATION_KEYS` is unchanged; `advance()`, `is_terminal()` and
+`SessionRun` are unchanged; the session adapter's `_serialize` is unchanged.
+`STORAGE_SCAN_EXEMPT` stays **one module wide** — the storage scan skips
+`pa_agent.stores.*` by prefix, so two new adapters need no entry — and
+`BOTH_PLANES` and `ALL_READ_PLANES` gain nothing: both new modules import
+`contracts` only, and `cli.py` was already in both.
+
+**Neither new plane joins `ALL_READ_PLANES`, and the reason is the set's own
+definition.** That set is the modules reaching all three **read corpora** a
+citation can address, derived in `tests/test_packet_index.py` from the ports that
+declare `get_document`. The payer directory declares none — a contact is not a
+document a span points into — and the outbox is a **write** plane, so it is not a
+corpus at all. They are declared as roots of their own, isolated in both
+directions like the knowledge and session planes, and the three existing
+per-plane isolation tests are untouched.
+
+The storage-port count moves **4 → 6**, which is stated in five places and pinned
+by `test_the_stated_port_count_is_the_adapter_count`. The README's mermaid diagram
+does **not** gain them: that diagram is the engine, and a test asserts exactly
+three `Protocol`s at the **model** boundary (D121).
+
+### What it mints
+
+**REQ-76** — transmission is a lifecycle transition taken only on an explicit
+verb, after `IN_REVIEW`; the system never decides to transmit; an order the table
+forbids exits 1 naming the current state and its legal successors and writes
+nothing, and there is **no fifth exit code** (D129).
+
+**REQ-77** — a session acquires an outbox artifact exactly when it enters
+`AWAITING_DECISION`, names its hash, and that artifact is submission's only side
+effect; no session in an earlier state has one, **and a decided session keeps
+its artifact**. The last clause is D131's directional correction: §11's original
+wording — *every session in the outbox is `AWAITING_DECISION`* — is false after
+`decide`, and a requirement whose check has to avoid a verb the same version
+ships is not a requirement.
+
+Both are minted **here** because this close is what checks them (D109). v1.5's
+remaining statement, the zero-model-calls clause, is A13's fifth and `T-106`'s.

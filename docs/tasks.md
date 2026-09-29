@@ -17,8 +17,24 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v1.5`, row 3 — `T-105`**, simulated submission and
-tracking. **Nothing is open on this board.**
+**What to do next: `v1.5`, row 4 — `T-106`**, the two committed rendered
+packets. **Nothing is open on this board.**
+**`T-105` closed row 3** *(D134)*: `session submit` writes the reviewed packet
+to a payer outbox and `session decide` closes the session on the payer's answer.
+`TRANSITIONS` gains three rows — `IN_REVIEW -> AWAITING_DECISION`,
+`AWAITING_DECISION -> DECIDED` and `DECIDED -> ()` — and **`DECIDED` is terminal
+because its row is empty**, with `is_terminal()`, the enum and every line outside
+the table untouched: D127's argument for deriving terminality paid off a second
+time in two rows, and in the opposite direction to T-104's. Three edges are
+**absent on purpose**, each a decision — submitting without review is US-13's own
+refusal, re-running after review would orphan every `run_index`, and un-sending is
+a claim the outbox cannot support. The payer's answer closes the session as **one**
+state carrying an outcome and **two dates**, its own and the clock this system was
+told at. Two new ports, not one: a **shipped, synthesized** payer directory that
+raises on an empty read and an **output** outbox that answers `[]`. It minted
+**REQ-76** and **REQ-77** — the second in the directional form D131 corrected,
+because *every session in the outbox is `AWAITING_DECISION`* is false the moment
+`decide` runs. It found `T-138`.
 **`T-134` closed off the path** *(D133)*: `cli._packet_index` consults the
 **knowledge** port as well as the patient and policy ones, so a packet carrying
 an accepted suggestion assembles. A suggestion's `effect` is a span into an FDA
@@ -208,12 +224,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-Eighty-nine tasks are on this board — IDs run to T-134; T-126 through T-129 and
+Ninety tasks are on this board — IDs run to T-134; T-126 through T-129 and
 T-134 are off the path and above the roadmap's reservations; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 89 are closed and none is open**; `T-132`,
-`T-133`, `T-135`, `T-136` and `T-137` below are numbered and have no record yet,
-in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
+is well above the count. **All 90 are closed and none is open**; `T-132`,
+`T-133`, `T-135`, `T-136`, `T-137` and `T-138` below are numbered and have no
+record yet, in this board's usual shape. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
 built, paused, and then deleted. They stay because the board records what
 happened *(D70, extended by D72; reordered by D74, reconciled by D79, paused by
@@ -250,6 +266,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-135` | **`tests/test_session_verbs.py::test_an_illegal_transition_is_a_bad_request_and_records_nothing` holds *nothing changed*, not *nothing written*.** It compares the session's bytes after a refused `session run`, and the adapter generates nothing (D127) — so a `store.save(session)` inserted **before** `advance()` raises reproduces the file exactly and the test stays green. REQ-71's claim is that an illegal transition is *never recorded*. Measured in `T-104`'s mutation pass on the same shape in `_verb_review`, where it survived the whole suite until `st_mtime_ns` was compared beside the bytes | **discovered in `T-104`** — the fix is one comparison, and `T-104`'s own two refusal tests carry it already; this row is `T-102`'s gate and `_verb_run`'s path, so it is numbered rather than folded in *(working rule 6)* |
 | `T-136` | **nothing checks that `form.source_ids` reports every document `form.citations` needs.** The index is built from `source_ids` alone, so a citation whose document that traversal omits is an `UncitedPacket` on a span that was fine — which is `T-134`'s defect one layer down, in the pure module rather than the composition root. The two traversals share `_determination_spans`, and `_review_spans` is a deliberate **superset** of what a packet carries (D131), so they cannot disagree on this corpus; the relation itself is held by no command. The check is a property over a hand-written review carrying every colour | **discovered in `T-134`** — the row that fixed the index found that its one input is unconstrained; not folded in, because it is a property over `form.py` and not a store the composition root forgot *(working rule 6)* |
 | `T-137` | **`Packet.supporting_documents` says it is *every document id this packet cites* and is computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest names three documents and `supporting_documents` names one, omitting the FDA label. Before `T-134` no packet with an accepted suggestion could be assembled, so the field's own comment was true of every packet that existed and false of the first one this close produced. Either the comment is wrong — the field is the determination's documents, which is what a prior-auth form's *supporting documents* box means — or the computation is; the two readings differ in what `T-106`'s fixture will render, and README's form table maps the field to *Recent provider notes* | **discovered in `T-134`** — a claim this close made reachable rather than one it broke, and it is a decision about what the box means rather than a missing store, so it is `T-103`'s surface and its own row *(working rule 6)* |
+| `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **discovered in `T-105`** — found while deciding where this row's *iff* validators had to be reachable from; not folded in, because choosing between a validating adapter and a parse is a design decision and it touches `T-102`'s and `T-104`'s verbs rather than this one's *(working rule 6)* |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -416,7 +433,7 @@ chose *(D131)*.
 |---|---|---|---|---|
 | 1 | the form | `T-103` | **closed** (D131) | `form.py` assembles the packet and `session packet` prints it; every citation in it slices back through the port that serves its document, with the count reported; a suggestion enters only through a recorded acceptance; an accepted red without a justification is refused, naming **every** unjustified ICD-10 code; `form.py` names no path, no clock and no renderer, checked by parsing. **Rewritten before open** *(D131)* |
 | 2 | the review log | `T-104` | **closed** (D132) | `session review` appends, never edits — `session.review()` names `runs` nowhere, checked by parsing — and the determination's bytes are unchanged after **any number of** reviews, compared off disk; a review of a snapshot that does not exist is refused. **Rewritten before open** *(D131)*: *never edits* is a claim no behavioural test on this corpus separates from *edits and puts back the same value* |
-| 3 | simulated submission and tracking | `T-105` | pending | `session submit` writes the packet to a payer outbox and moves the session to `AWAITING_DECISION`, and that file is the **only** thing on disk that changed; `session decide` closes it recording the payer's outcome and the date it was taken; an order the table forbids exits 1, names the current state and its legal successors, and writes nothing — checked against the **directory**, not the exit code. **Rewritten before open** *(D131)*: *illegal orders raise* contradicts D129, and *decide closes it* dropped US-13's outcome and date |
+| 3 | simulated submission and tracking | `T-105` | **closed** (D134) | `session submit` writes the packet to a payer outbox and moves the session to `AWAITING_DECISION`, and that file is the **only** thing on disk that changed; `session decide` closes it recording the payer's outcome and the date it was taken; an order the table forbids exits 1, names the current state and its legal successors, and writes nothing — checked against the **directory**, not the exit code. **Rewritten before open** *(D131)*: *illegal orders raise* contradicts D129, and *decide closes it* dropped US-13's outcome and date |
 | 4 | the rendered packet | `T-106` | pending | **two** committed packets, one carrying a justified red and one none, each rendering byte-identical to its committed fixture **and identical when rendered twice**; each fixture session's determination **re-derived** from the live engine and compared; zero model calls; every gate green. **Rewritten before open** *(D131)*: *one packet* is a sample of one, *byte-stable* did not say against what (D127), and nothing re-derived the fixture (D91) |
 
 ### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
@@ -3088,6 +3105,167 @@ and would survive the same write-before-refusal mutation that this row's fifth
 mutant was, for the same reason: the adapter generates nothing, so writing the
 object just read reproduces the file. That test is `T-102`'s gate over
 `_verb_run`, so the comparison it needs is its own row.
+
+### `[x] T-105` Simulated submission and tracking
+
+**REQ:** mints 76, 77 · **Depends:** T-103, T-104, and T-134 for the index a
+packet needs · **Blocks:** T-106 · **Decided by:** D134 ·
+**Gates:** A13 (clause 4) · **Timebox:** two days
+**Status:** **closed** (D134) — opened and closed 2026-09-29; the exit ran green
+and every gate with it. No model call, no network. No recording, bundle, note,
+span, verdict, baseline, eval row or verifier claim moved — this row produces no
+verdict at all, so D113's tax does not apply. `_render` gained no key and
+`BARE_DETERMINATION_KEYS` is unchanged.
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_session_verbs.py tests/test_session.py \
+      tests/test_outbox_store.py tests/test_payers.py -q --color=no
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: `session submit` writes the reviewed packet to a payer outbox and
+moves the session to `AWAITING_DECISION`, that artifact is the **only** thing on
+disk that changed, and its sha256 is the hash the session records; `session
+decide` closes the session recording the payer's outcome and **the date it was
+taken** beside the clock this system was told at; an order the table forbids
+exits 1, names the current state and its legal successors, and writes nothing —
+checked against the **directory**, not the exit code.
+
+**What it delivers.** `pa_agent/session.py` gains **three rows of a dict** and
+nothing else:
+
+```
+IN_REVIEW:         (IN_REVIEW, AWAITING_DECISION)
+AWAITING_DECISION: (DECIDED,)
+DECIDED:           ()
+```
+
+`contracts.py` gains `AWAITING_DECISION` and `DECIDED` on `SessionState`,
+`PayerDecisionOutcome`, `SubmissionRecord`, `PayerDecision`, `SimulatedPayer`,
+`OutboxArtifact`, two fields on `Session` and the two *iff* validators over
+them. `stores/payer.py` and `stores/outbox.py` are the fifth and sixth ports,
+`data/payers/payers.json` the directory, `data/outbox/` the gitignored write
+root, and `cli.py` gains `_verb_submit`, `_verb_decide`, `--outbox-root`,
+`--payer-id`, two store builders and `_revalidated`.
+
+**`DECIDED` is terminal because its row is empty**, and that is the sentence to
+notice: `is_terminal()` is untouched, no member carries a flag, and nothing
+outside `TRANSITIONS` was edited. D127 refused a literal `terminal=True` on the
+enum on the ground that v1.5 would contradict it; T-104 falsified it in one
+direction when `IN_REVIEW` stopped being terminal, and this row falsifies it in
+the other. The `IllegalTransition` message's terminal branch, unreachable since
+T-104 and kept for this row, is reachable again.
+
+**Three edges are absent on purpose, and each absence is a decision.**
+`DETERMINED -> AWAITING_DECISION` is US-13's fourth bullet — *the system never
+decides to transmit* — so an edge there would delete a story bullet rather than
+add a convenience. `IN_REVIEW -> DETERMINED` would leave every `ReviewEntry`
+bound to a `run_index` nobody is packaging (REQ-75). `AWAITING_DECISION ->
+IN_REVIEW` would un-send a packet an outbox with a file in it cannot disclaim.
+
+**One closing state, not three.** `GapReason`'s discipline: approved and denied
+have the same next action in this system — none — so they are two outcomes and
+not two states, and three terminal states would be three identical empty rows.
+`INFORMATION_REQUESTED` genuinely differs, and it is an **outcome** here because
+this version builds no resubmission edge; a state whose row is empty while it
+obviously wants an outgoing one lies about being terminal. It becomes a state in
+the version that gives it an edge.
+
+**Two dates, on purpose.** `decided_on` is the payer's and `recorded_at` is the
+clock this system was told at. Collapsing them makes a decision *recorded* a week
+late indistinguishable from one *taken* a week late — D78's category, where an
+`as_of` rode along on a claim and date-bound every digest, one object over. The
+answering payer is read off the session's own `SubmissionRecord` and never from a
+flag, so a session cannot record an answer from a payer it never wrote to.
+
+**Two store modules, not one, and the asymmetry is written down.** A payer
+directory that **reads a shipped corpus** and an outbox that **writes system
+output**: one protocol over both would put a gitignored write root and a tracked
+read corpus behind one type, which is the separation D127 spent a section making,
+and writing the outbox through the session adapter would falsify that module's
+docstring. So the outbox's listing may answer `[]` — it is output, and empty means
+nobody has submitted — while the payer directory **raises** on a missing or empty
+file, because a shipped corpus that is empty is a broken checkout and *there is
+nobody to send to* is the well-formed empty answer every downstream check would
+agree with (D31, unmodified). `stores/__init__.py` now states both halves so the
+inversion does not spread by imitation to a seventh port.
+
+**`data/payers/payers.json` is committed and deliberately in no hashed
+manifest.** `verify_sources.py` compares committed bytes to a **public
+re-download**, and this file is synthesized: there is no upstream, so its record
+would carry no URL and `--fetch` nothing to fetch. It is v2.1's synthetic rule
+arriving early. It also stays out because *nine policy documents* and *five FDA
+labels* are counts `tests/test_docs_consistency.py` re-derives from those two
+manifests, and a payer record able to raise either would make two corpora one.
+`tests/test_payers.py` holds the file instead: every record declares itself
+simulated and carries its fields, **every address ends in `.invalid`** (RFC
+2606's reserved TLD, `form.MESSAGE_ID_DOMAIN`'s argument on the other header),
+the record count is pinned at **two** as a literal (D51), and no payer id appears
+in either hashed manifest.
+
+**The order inside `_verb_submit` is load-bearing.** `advance()` raises before
+constructing anything, so it comes **first** — ahead of the payer, the assembly
+and the write — and nothing exists on disk after a refusal. It is also ahead of
+the run-bounds check, because a `CREATED` session has no snapshot and the answer a
+reviewer needs is the lifecycle's, not *this session holds 0 runs*.
+
+**`model_copy` runs no validator, so the write path re-validates.** D132 measured
+that and answered it for the review path by duplicating one bound inside
+`review()`. Here the rules are *iff* relations between `state` and two new
+fields, and `cli._revalidated` runs the session back through its own validators
+before the adapter writes — otherwise the composition root could write a session
+`get()` cannot read back, which is a well-formed write that fails on the next
+read.
+
+**The recipient's source moved and its shape did not.** `PLACEHOLDER_PAYER` is
+gone; `--payer-id` resolves through the directory on `submit` **and** on
+`packet`, because a draft the reviewer reads and a document that leaves must name
+the same recipient. A default is not a fallback: an unknown id is exit 1.
+
+**The mutation pass: seven mutations, zero survivors.**
+
+| # | Mutation | Killed by |
+|---|---|---|
+| 1 | `AWAITING_DECISION` added to `DETERMINED`'s row | `test_the_table_is_exactly_what_the_documents_declare` (the `LEGAL` literal), `test_every_ordered_pair_is_legal_or_raises[DETERMINED-AWAITING_DECISION]`, `test_submitting_before_review_is_refused_and_writes_nothing[determined]` |
+| 2 | `DECIDED` added to `IN_REVIEW`'s row | the same `LEGAL` literal, the ordered-pair case, `test_exactly_one_state_is_terminal_and_the_table_is_why`, `test_deciding_a_session_nobody_submitted_is_refused[reviewed]` |
+| 3 | the artifact written **before** the order is checked | both `test_submitting_before_review_is_refused_and_writes_nothing` cases and `test_a_second_submission_of_the_same_snapshot_is_refused` |
+| 4 | the two dates collapsed (`recorded_at` set to the payer's date) | `test_deciding_closes_the_session_with_the_outcome_and_both_dates` |
+| 5 | the submission *iff* validator dropped | `test_a_sent_session_with_no_submission_is_refused` (2) and `test_an_unsent_session_carrying_a_submission_is_refused` (3) |
+| 6 | the decision *iff* validator dropped | `test_a_decided_session_with_no_decision_is_refused` and `test_an_undecided_session_carrying_a_decision_is_refused` (4) |
+| 7 | the payer directory answering `[]` instead of raising | `test_a_missing_directory_raises_rather_than_serving_nobody`, `test_an_empty_directory_raises` |
+
+**Three of them are the pass's substance.** The `LEGAL` literal is the only thing
+that catches an **added** edge, and it catches both of the edge mutants — it is
+transcribed from US-12's and US-13's own sentences and never read back from
+`TRANSITIONS`, so a table that grew in code and not in the documents fails there
+and nowhere else. Mutation 3 returns **exit 1 either way**: the advance still
+raises, one statement later, so the exit-code assertion passes and the
+**empty-directory** assertion is what fails — T-104's finding one verb over, and
+the reason this row's refusal tests check the directory and compare `st_mtime_ns`
+beside the bytes. And mutation 7 is caught **only** by the two tests written for
+it, because the committed directory is never empty and nothing else in the suite
+can reach the branch — an absence asserted over a corpus that is never in the
+state being asserted about.
+
+**What it mints.** **REQ-76** and **REQ-77**, with the coverage mapping and the
+pinned count in the same commit. REQ-77 is minted in the **directional** form
+D131 corrected to: §11's original wording — *every session in the outbox is
+`AWAITING_DECISION`* — is false the moment `decide` runs, and a requirement whose
+check has to avoid a verb the same version ships is not a requirement. v1.5's
+last statement is A13's zero-model-calls clause and is `T-106`'s.
+
+**Found and not fixed, numbered `T-138`.** Two of the three verbs that write a
+session never re-validate what they wrote. `_verb_submit` and `_verb_decide` pass
+their result through `_revalidated` because their fields are *iff* relations
+`model_copy` cannot see; `_verb_run` and `_verb_review` do not, so
+`Session`'s own validators are unreachable from the two paths that have been
+writing since v1.4 — D132 answered that for one of them by duplicating a bound
+inside `review()`, and the general relation is held by no command. No behavioural
+test separates the shapes, because every object those verbs build is coherent by
+construction. The fix is a choice between a validating adapter and a parse, which
+is a decision and touches `T-102`'s and `T-104`'s verbs rather than this one's
+*(working rule 6)*.
 
 ---
 

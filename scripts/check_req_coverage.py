@@ -133,6 +133,10 @@ MAPPING: dict[str, str] = {
     # The packet, review and transmission (T-103, D131; T-104, D132).
     "REQ-74": "tests/test_form.py",
     "REQ-75": "tests/test_review_log.py",
+    # T-105 (D134). Transmission is a table row taken on a verb, and the outbox
+    # artifact exists exactly when the session is AWAITING_DECISION or DECIDED.
+    "REQ-76": "tests/test_session_verbs.py",
+    "REQ-77": "tests/test_session_verbs.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

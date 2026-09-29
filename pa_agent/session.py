@@ -15,7 +15,9 @@ D127's departure from `ErrorCode`'s idiom: terminality is a fact about the
 table, and a flag on the member would be a copy that v1.5 contradicts. **It
 did, at T-104** — `IN_REVIEW` gained the append self-edge and stopped being
 terminal with no line outside `TRANSITIONS` edited (D132). D127 guessed the
-wrong edge and the right mechanism.
+wrong edge and the right mechanism. **And again at T-105**, in the other
+direction: `DECIDED` arrived terminal because its row is empty, and the diff to
+this module is three rows of a dict (D134).
 
 **Nothing here writes.** `advance()` and `review()` each return a new `Session`
 or raise, and the caller persists — so "an illegal transition raises and is
@@ -40,11 +42,11 @@ class IllegalTransition(ValueError):
 
     def __init__(self, frm: SessionState, to: SessionState) -> None:
         legal = [s.value for s in TRANSITIONS[frm]]
-        # The `terminal` branch is unreachable on v1.5's table — `IN_REVIEW`
-        # acquired the append self-edge and no state has an empty row any more
-        # (D132). It is kept rather than deleted because `T-105`'s `DECIDED` is
-        # terminal and restores it; a message branch deleted here and re-added
-        # one row later is churn in the sentence a refused reviewer reads.
+        # The `terminal` branch went unreachable at `T-104`, when `IN_REVIEW`
+        # acquired the append self-edge and no state had an empty row any more
+        # (D132), and was kept rather than deleted because `T-105`'s `DECIDED`
+        # would restore it. It did: `DECIDED`'s row is empty, so a move out of a
+        # closed session reads *may become nothing — it is terminal* (D134).
         super().__init__(
             f"cannot move a session from {frm.value} to {to.value}; "
             f"{frm.value} may become {legal or 'nothing — it is terminal'}"
@@ -88,13 +90,34 @@ class NoSuchSnapshot(ValueError):
 #:   make that true: terminality is read off this table, so D127's argument for
 #:   deriving it rather than declaring it is paid off here rather than restated.
 #:
+#: - US-13: *when Sam submits it … the session is `AWAITING_DECISION`* — so
+#:   `IN_REVIEW -> AWAITING_DECISION`, and **only** from there (T-105, D134).
+#: - US-13: *given a payer's simulated decision, when it is recorded, then the
+#:   session closes* — so `AWAITING_DECISION -> DECIDED`, and `DECIDED` has no
+#:   row content at all, which is the **only** thing that makes it terminal.
+#:
 #: `CREATED -> IN_REVIEW` is **absent on purpose**: reviewing a session that has
 #: determined nothing is reviewing an empty packet, and `Session`'s own
 #: validator already refuses a non-`CREATED` state with no run.
+#:
+#: Three more absences, each a decision rather than an omission (D134):
+#:
+#: - `DETERMINED -> AWAITING_DECISION` — submitting without review. US-13's
+#:   fourth bullet *is* this refusal: *the system never decides to transmit*, so
+#:   an edge here would delete a story bullet rather than add a convenience.
+#: - `IN_REVIEW -> DETERMINED` — re-running after a review. Every `ReviewEntry`
+#:   binds to a `run_index` (REQ-75), so appending a snapshot afterwards leaves
+#:   entries bound to a run nobody is packaging, and US-13 does not ask for it.
+#: - `AWAITING_DECISION -> IN_REVIEW` — un-sending. The packet has left; an
+#:   outbox with a file in it cannot support a session claiming not to have
+#:   submitted, and `Session`'s submission validator would have to be relaxed to
+#:   express it.
 TRANSITIONS: dict[SessionState, tuple[SessionState, ...]] = {
     SessionState.CREATED: (SessionState.DETERMINED,),
     SessionState.DETERMINED: (SessionState.DETERMINED, SessionState.IN_REVIEW),
-    SessionState.IN_REVIEW: (SessionState.IN_REVIEW,),
+    SessionState.IN_REVIEW: (SessionState.IN_REVIEW, SessionState.AWAITING_DECISION),
+    SessionState.AWAITING_DECISION: (SessionState.DECIDED,),
+    SessionState.DECIDED: (),
 }
 
 assert set(TRANSITIONS) == set(SessionState), (
@@ -117,8 +140,9 @@ def is_terminal(state: SessionState) -> bool:
     fact about the table above, and a literal on the enum would be a copy —
     which T-104 falsified: `IN_REVIEW` gained the append self-edge and this
     function started answering `False` for it with nothing here edited (D132).
-    Every state's row is non-empty in v1.5, so nothing is terminal until
-    `T-105`'s `DECIDED`.
+    `T-105` then paid the argument off in the other direction — `DECIDED` is
+    terminal because its row is empty, and no member, no flag and no line of this
+    function was touched to make it so (D134). It is the only terminal state.
 
     It lives **here and not on `SessionState`** for a second reason, measured
     rather than guessed: a property on the enum means `contracts` imports
