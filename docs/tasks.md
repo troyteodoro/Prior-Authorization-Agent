@@ -17,8 +17,27 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v1.5`, row 4 — `T-106`**, the two committed rendered
-packets. **Nothing is open on this board.**
+**What to do next: `v1.6`, row 1 — `T-107`**, the tree-declared extraction
+schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
+a version opens when the previous one closes, and the opening row writes its own
+record *(D97's rule)*.
+**`v1.5` is closed and A13 holds** *(T-106, D136)*. The packet Sam sends exists
+end to end: assembled, reviewed, sent, tracked, and now **pinned as bytes** —
+`T-106` committed two rendered packets under `tests/fixtures/packets/`, one
+carrying a justified red suggestion and one carrying none, and compared each
+three ways: the render against the committed bytes, the render against itself
+twice, and each fixture session's determination against **what the engine
+produces today**. That third comparison is D91's finding made structural, and
+the mutation pass measured why it is not redundant: a fixture regenerated from a
+mutated engine passes every byte comparison and fails only that one. It is also
+D127's own named reversal, taken in the shape it named — *a committed fixture
+rather than a tracked live root* — so `data/sessions/` and `data/outbox/` stay
+gitignored. It minted **nothing**, added **no script and no eleventh gate**, and
+edited no module under `pa_agent/`. It also ran A13's five-clause audit, named
+the command that holds each, and found two things: `T-140`, that no check ties
+README's acceptance-gate table to the spec's gate list — which is how A11 and
+A12 closed without a row in it — and `T-141`, that nothing holds *the suite as a
+whole spends no model call*.
 **`T-137` closed off the path** *(D135)*: the packet's document list is the
 **manifest's** documents, deduplicated by the same traversal, and it is renamed
 `cited_documents`. It declared itself *every document id this packet cites* and
@@ -281,6 +300,8 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-137` | **`Packet.supporting_documents` said it was *every document id this packet cites* and was computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest is three spans over **two** documents and that field named **one**, omitting the FDA label — and on a `NOT_COVERED` packet it named two **policy** documents and no chart at all, which is what settled it. Before `T-134` no packet with an accepted suggestion could be assembled, so the claim was true of every packet that existed and false of the first one that could | **closed** (D135), before `T-106` opened — discovered in `T-134`, and sequenced ahead of `T-106` because that row commits fixture bytes and the two readings render different ones. The field is the manifest's documents, deduplicated by the **same** traversal, and renamed `cited_documents`: a form's supporting-documents box is attachments and this packet attaches nothing. It found `T-139` |
 | `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **discovered in `T-105`** — found while deciding where this row's *iff* validators had to be reachable from; not folded in, because choosing between a validating adapter and a parse is a design decision and it touches `T-102`'s and `T-104`'s verbs rather than this one's *(working rule 6)* |
 | `T-139` | **no check ties a verb's documented flags to its parser.** `README.md`'s packet section documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted `cli.PLACEHOLDER_PAYER` (D134), so the README told a reader to type a flag `argparse` rejects. The stale sentence is corrected in `T-137`'s close under working rule 12 — it is prose about the command whose output that row changes — but README documents all **eight** session verbs' flags and `test_docs_consistency.py` reads none of them: a flag renamed, removed or added leaves prose nothing re-derives. The check is a parse over README's command blocks against the declared options | **discovered in `T-137`** — one stale flag is a working-rule-12 reconciliation; the missing check over every documented flag is its own row *(working rule 6)* |
+| `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **discovered in `T-106`** *(D136)* — the local instance is fixed and the general check is its own row *(working rule 6)*; it is free and belongs with `T-139`, the other prose-to-artifact parse |
+| `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **discovered in `T-106`** *(D136)*, while auditing A13 clause by clause — `T-128`'s shape, a check a close named and no commit added |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -357,7 +378,7 @@ this round and closed as REQ-73 *(D124, D130)*.
 | v1.2 | cross-practice round one: rheumatoid arthritis, then ultrasound; rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
-| v1.5 | the form, review, simulated submission and tracking, headless · **in progress** | US-13 | T-103–T-106 | none | A13 |
+| v1.5 | the form, review, simulated submission and tracking, headless · **closed** | US-13 | T-103–T-106 | none | A13 ✓ |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
@@ -431,6 +452,12 @@ determination, never an edit to it; transmission to a simulated payer on her
 action, and the session tracked to awaiting a decision. Spec §1's "does not
 submit" is reworded by this version's entry. **Zero model calls.**
 
+**All four rows are closed; v1.5 is closed and A13 holds** *(T-106, D136)*,
+with `T-134` and `T-137` closed off the path behind rows 2 and 3. The version's
+evidence is the suite rather than a report section — none of A13's clauses is a
+rate — so the close ran the audit instead: five clauses, the command that holds
+each named one at a time, in `T-95`'s shape on A10.
+
 **`T-103` opened the version** *(D131)*, which also **rewrote A13** — five
 clauses instead of three, each naming the task whose close checks it — corrected
 §11's outbox statement into the directional form `decide` does not falsify, and
@@ -448,7 +475,7 @@ chose *(D131)*.
 | 1 | the form | `T-103` | **closed** (D131) | `form.py` assembles the packet and `session packet` prints it; every citation in it slices back through the port that serves its document, with the count reported; a suggestion enters only through a recorded acceptance; an accepted red without a justification is refused, naming **every** unjustified ICD-10 code; `form.py` names no path, no clock and no renderer, checked by parsing. **Rewritten before open** *(D131)* |
 | 2 | the review log | `T-104` | **closed** (D132) | `session review` appends, never edits — `session.review()` names `runs` nowhere, checked by parsing — and the determination's bytes are unchanged after **any number of** reviews, compared off disk; a review of a snapshot that does not exist is refused. **Rewritten before open** *(D131)*: *never edits* is a claim no behavioural test on this corpus separates from *edits and puts back the same value* |
 | 3 | simulated submission and tracking | `T-105` | **closed** (D134) | `session submit` writes the packet to a payer outbox and moves the session to `AWAITING_DECISION`, and that file is the **only** thing on disk that changed; `session decide` closes it recording the payer's outcome and the date it was taken; an order the table forbids exits 1, names the current state and its legal successors, and writes nothing — checked against the **directory**, not the exit code. **Rewritten before open** *(D131)*: *illegal orders raise* contradicts D129, and *decide closes it* dropped US-13's outcome and date |
-| 4 | the rendered packet | `T-106` | pending | **two** committed packets, one carrying a justified red and one none, each rendering byte-identical to its committed fixture **and identical when rendered twice**; each fixture session's determination **re-derived** from the live engine and compared; zero model calls; every gate green. **Rewritten before open** *(D131)*: *one packet* is a sample of one, *byte-stable* did not say against what (D127), and nothing re-derived the fixture (D91) |
+| 4 | the rendered packet | `T-106` | **closed** (D136) | **two** committed packets, one carrying a justified red and one none, each rendering byte-identical to its committed fixture **and identical when rendered twice**; each fixture session's determination **re-derived** from the live engine and compared; zero model calls; every gate green. **Rewritten before open** *(D131)*: *one packet* is a sample of one, *byte-stable* did not say against what (D127), and nothing re-derived the fixture (D91) |
 
 ### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
 
@@ -3805,6 +3832,144 @@ renamed or removed
 leaves prose that reads like a usage error to whoever types it. The check is a
 parse over README's command blocks against `argparse`'s declared options, and it
 is its own row *(working rule 6)*.
+
+### `[x] T-106` The two committed rendered packets, and v1.5's gate
+
+**REQ:** mints nothing — REQ-74 already governs a packet's citations and
+REQ-70/75/76/77 what a session holds; this close **checks** them over the real
+rendered surface rather than over objects a test built *(T-95's, T-102's,
+T-134's and T-137's precedent)* · **Depends:** T-103 (the packet and the verb),
+T-104 (the review log the acceptance lives in), T-105 (the payer directory the
+recipient is resolved from), T-134 (without which the red fixture could not be
+assembled) and T-137 (whose rename these bytes carry) · **Blocks:** nothing —
+this is v1.5's last row · **Decided by:** D136 · **Gates:** **A13**, all five
+clauses; clause 2's *re-checked over the committed fixture* and clause 5's
+*zero model calls* are this row's · **Timebox:** one day
+**Status:** **closed** (D136) — row 4 of v1.5 and **the version**; the exit ran
+green and every gate with it. No model call, no network, and no recording,
+bundle, note, span, verdict, baseline or verifier claim moved. **No module under
+`pa_agent/` was edited**, which is the row's shape: it is a check over the
+surface the four rows built.
+
+**What it delivers.** Two committed fixtures under `tests/fixtures/packets/`,
+each a `session.json` and the `packet.eml` it renders to, and
+`tests/test_packet_fixtures.py`, which compares them **three ways**. This is the
+first thing in the repository to re-read a **session** from a committed file —
+D127's own named reversal, taken in the shape it named: *a committed fixture
+rather than a tracked live root*. `data/sessions/` and `data/outbox/` stay
+gitignored output.
+
+| Fixture | Chart | Review log | Renders |
+|---|---|---|---|
+| `accepted_red` | `a8edc52e`, 43775 in WA | `ACCEPT_SUGGESTION` then `JUSTIFY_SUGGESTION` on `hydrochlorothiazide-hyperglycemia`, **sharing one timestamp** | 1 accepted red with its justification, **3 spans over 2 documents** — the bundle and `spl_hydrochlorothiazide` |
+| `no_suggestion` | `07a5f345`, 43775 | one `NOTE` | no suggestion, **9 spans over 3 documents** — the bundle and both chart notes |
+
+**Why these two shapes.** `accepted_red` is the only packet this repository can
+produce that reaches the **knowledge** corpus and the only one that exercises the
+justification path — every claim about a packet carrying a suggestion is
+invisible on a packet without one, which is how D133's defect survived two rows
+with every gate green. `no_suggestion` is the widest render the corpus produces,
+and its review log is non-empty while contributing nothing to the bytes, so *the
+log is read* and *only an acceptance enters* are both live in a committed
+artifact. The two entries of the red fixture's log **share an `at`**, exactly as
+the verbs wrote them: a reader that sorted on the timestamp could not tell which
+came last, which is the case D131's log-order rule exists for.
+
+**The three comparisons, and why one would not do.** None implies another.
+
+1. **The render equals the committed bytes** — the only one that can see a change
+   nobody meant to make.
+2. **Rendering twice is identical**, in process and across the process boundary
+   the committed file already is. D127 measured that one write and two writes
+   fail different mutations.
+3. **The determination is re-derived from the live engine and compared** —
+   D91's finding made structural. Without it the fixture is a recording of an
+   answer, and a recording's free half drifts while every gate stays green,
+   because what gets checked is the recording's coherence with itself.
+
+**No new script, and the gate count stays 10.** A `--verify` builder would need a
+`GATES` or `EXCLUDED` entry, and a `GATES` entry moves the count 10 → 11 —
+`CLAUDE.md` twice, `README.md`, `check_gates.py`'s docstring — to buy a check
+`pytest` already runs. The fixture is data; the suite reads it. Regeneration is
+the product's own verb, and the recipe is in the test module rather than in a
+flag, because an `--update-fixture` switch makes comparison 1 self-fulfilling by
+typing one word *(D136)*.
+
+**Why a committed fixture is possible at all.** `form.py` imports no clock, which
+`tests/test_form.py::test_form_names_no_clock` parses for. Every date in a packet
+arrives on the `Session`, stamped by `cli._now()`; `Message-ID` is a digest of
+`(session_id, run_index)` and there is no `From:` at all. This row is the
+month-later comparison that parse says it is waiting for, and it re-asserts the
+behavioural half: every ISO date in the rendered packet is a substring of the
+session that produced it.
+
+**A13, clause by clause, with the command that holds each.** The audit `T-95` ran
+on A10 and D123 ran on A11. All five hold; the full list is in D136.
+
+| Clause | Held by |
+|---|---|
+| 1 · no accepted red without a justification, over a non-empty set of reds, naming **every** code | `tests/test_form.py` (`test_the_corpus_still_produces_a_red_suggestion` is the denominator) and `tests/test_packet_index.py` through the verb |
+| 2 · every citation slices back, count reported — *re-checked over the committed fixture* | `tests/test_form.py`, `tests/test_packet_index.py`, and this row's `test_every_citation_in_the_committed_fixture_slices_back` |
+| 3 · the log appends and the determination's bytes are unchanged, by parsing and by bytes | `tests/test_review_log.py` |
+| 4 · the artifact exists exactly when `AWAITING_DECISION`; an illegal submit exits 1 and writes nothing; `decide` records the outcome and the date | `tests/test_session_verbs.py` |
+| 5 · **zero model calls in any gate** | `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network` for the gate **list**; this row's `test_rendering_the_committed_fixtures_builds_no_model_client` for the version's own surface |
+
+Clause 5's residue is stated rather than smoothed over: nothing holds *the suite
+as a whole spends no model call*. It is `T-141`.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_packet_fixtures.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means: both committed packets render byte-identically through
+`session packet` and in process, twice each; every ISO date in them is a value
+the session carries; every citation slices back through the port that serves its
+document, 3 spans and 9; each fixture's determination is what the engine produces
+today for the same request at the same `as_of`; a model client is never built;
+and every gate is green.
+
+**The mutation pass: five mutations, zero survivors**, run over
+`tests/test_packet_fixtures.py` with `--color=no`, `__pycache__` cleared between
+runs and every mutated file restored from a copy held **outside** the repository.
+`tests/test_notes.py::test_regenerating_the_corpus_is_byte_identical` was
+deselected, and the corpus was restored from git and re-verified afterwards.
+
+| Mutation | Result |
+|---|---|
+| a header key added to the renderer | 6 failing tests — all three byte comparisons, on both fixtures |
+| a **clock** stamped into the header, at microsecond resolution | 11 failing tests across two files, including `test_form.py`'s own determinism and no-clock checks |
+| the same clock **stable within a day** | 9 failing tests; the render-twice assertions **pass** and the committed-bytes comparison is what catches it |
+| a fixture **regenerated from a mutated engine** (a `detail` string changed, the engine then restored) | **2 failing tests, and they are only the re-derivation's.** Every byte comparison passes, because the packet still renders exactly what the fixture holds |
+| the one traversal stops carrying the accepted suggestion's spans | 5 failing tests — the span count, the two-corpora check and the bytes |
+| one fixture's `packet.eml` deleted | 6 failing tests, `test_the_fixture_count_is_pinned` naming it; the whole directory deleted fails 11 |
+
+**The fourth row is the pass.** It is the mutation the row exists for: a fixture
+that agrees with a renderer and disagrees with the engine is exactly D91's
+recording whose free half drifted, and it is caught by **one** test and by
+nothing else in the repository. A close that had committed the bytes and stopped
+would have shipped that hole.
+
+**The sixth is why the count is a literal** *(D51's move)*. Deleting a fixture
+directory is a red suite rather than a suite that quietly checks one packet.
+
+**One mutation was named and not run**, because it is unreachable: replacing
+`form._latest_by_row`'s log order with a sort on `at`. Python's sort is stable
+and the red fixture's two entries share a timestamp, so the sort reproduces log
+order on every input this corpus can build. That is why the fixture asserts the
+**property** — the two entries share an `at` — rather than the behaviour *(D65's
+shape)*.
+
+**Found and fixed here, under working rule 12.** `README.md`'s acceptance-gate
+table stopped at A10 and its heading read *A1–A10 all hold*, while the same
+file's status section said A1–A12: A11 closed with `T-99` and A12 with `T-102`,
+and neither added its row. A11's figures are re-derived from `eval/report.md`,
+which owns them; A12's and A13's are written from spec §11. **The general defect
+— that no check ties that table to the spec's gate list — is `T-140`.**
+
+**Found and not fixed:** `T-140` and `T-141`, above and in D136.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

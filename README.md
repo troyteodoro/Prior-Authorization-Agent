@@ -69,16 +69,17 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1, v1.2, v1.3 and v1.4 are all complete, and v1.5 is under way.**
-91 of 91 tasks closed, **none open** — `T-103` opened v1.5 with the packet and
-the `session packet` verb, `T-104` added the review log beside it *(D131,
-D132)*, `T-134` gave the packet's citations the third corpus they point into
-*(D133)*, `T-105` sent the packet and tracked the answer *(D134)* and `T-137`
+**v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and no version is
+open.** 92 of 92 tasks closed, **none open** — `T-103` opened v1.5 with the
+packet and the `session packet` verb, `T-104` added the review log beside it
+*(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
+into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
 made the packet's own list of the documents it cites the manifest's, renamed for
-what it holds *(D135)*, behind `T-129`'s national floor checked at load *(D124,
-D130)* — all ten zero-cost gates green, and acceptance gates A1–A12 holding.
-The suite collects 1694 tests (58 skip). **v1.5 finishes with `T-106`**: the two
-committed rendered packets.
+what it holds *(D135)*, and `T-106` closed the version by committing the two
+rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
+at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
+A1–A13 holding. The suite collects 1716 tests (58 skip). **v1.6 opens next**,
+with `T-107`.
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -123,7 +124,7 @@ committed rendered packets.
   `session create | list | show | run` over a fourth storage port, an intake
   that validates the same object from a JSON document an upstream system sent or
   from flags a person typed, and a lifecycle Python walks *(D127, D128, D129)*.
-- **v1.5** is under way, and it is the packet. `T-103` built
+- **v1.5** is complete, and it is the packet. `T-103` built
   `pa_agent/form.py` and the `session packet` verb: the determination, the
   identity fields, the diagnosis codes and the ICD-10 suggestions the reviewer
   **accepted** — assembled into an email-shaped document whose every citation is
@@ -136,8 +137,23 @@ committed rendered packets.
   blocked the fixtures — gave the packet's document index the **third** corpus
   its citations point into: a suggestion's effect is a span into an FDA label,
   so every packet carrying an accepted suggestion was refused until it was
-  built from all three ports *(D132, D133)*. Transmission to a simulated payer
-  and the tracking that follows are `T-105` and `T-106`.
+  built from all three ports *(D132, D133)*. `T-105` sent it: `session submit`
+  writes the reviewed packet to a **simulated** payer's outbox — synthesized
+  contacts, every address under `.invalid` — on the reviewer's explicit action
+  and never on the system's, and `session decide` closes the session on the
+  payer's outcome and the date it was taken; three edges are absent from the
+  lifecycle table on purpose, one of them being *submit without review* *(D134)*.
+  `T-137` then made the packet's own list of the documents it cites the citation
+  manifest's, and renamed it, because a form's *supporting documents* box means
+  attachments and this packet attaches nothing *(D135)*. `T-106` closed the
+  version by **committing two rendered packets as bytes** — one carrying a
+  justified red suggestion, one carrying none — and comparing each three ways:
+  against the committed file, against a second render, and, the one that matters,
+  each fixture session's determination against **what the engine produces
+  today**. A fixture that agrees with the renderer and disagrees with the engine
+  is a recording whose free half has drifted, which is a failure this project has
+  already had once *(D91)*; the mutation pass confirmed that one comparison is
+  the only thing in the repository that catches it *(D136)*.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -240,7 +256,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 
 ### Every acceptance gate, and what it reads
 
-**Acceptance gates A1–A10 all hold.**
+**Acceptance gates A1–A13 all hold.**
 
 | Gate | Result |
 |---|---|
@@ -254,6 +270,9 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
+| A11 | **12 of 12** candidates the knowledge table finds graded across 9 rows; precision **1.000** on the colours that *assert* — green and yellow — over **n = 1**, against an all-red baseline with **no denominator at all**; zero suggestions without a source row; zero verdict drift |
+| A12 | every lifecycle transition tested and every illegal one raising with nothing recorded; a session round-trips byte-stable **written twice**; the plane check extended to the fourth plane in both directions |
+| A13 | zero packets carrying an **accepted** red with no justification, over a non-empty set of reds, the refusal naming every unjustified code; every packet citation slicing back through the port that serves its document, **with the count reported** and re-checked over two committed fixtures; the review log append-only and the determination's bytes unchanged after any number of reviews; an outbox artifact existing exactly when the session is `AWAITING_DECISION`, a forbidden submission exiting 1 and writing nothing, `decide` closing with the outcome and the date; **zero model calls in any gate** |
 
 ### How the project got here
 
@@ -404,7 +423,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound — the rules engine only | US-10 | **complete** |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
 | v1.4 | sessions and intake, headless | US-12 | **complete** |
-| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | **in progress** |
+| v1.5 | the form, review, simulated submission and tracking, headless | US-13 | **complete** |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
 | v2.0 | the payer axis: national and regional coverage | US-16 | planned |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
@@ -1033,7 +1052,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1694 tests across 56 files, 58 of them skipped — the skips are per-tree
+1716 tests across 57 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -1250,6 +1269,8 @@ spike/spike_001/     the founding extraction spike — still a gate and a
                      regression corpus; see "What the spike taught"
 scripts/             the gates, the measurement scripts, and the corpus tooling
 tests/               the suite, including the AST-level pins
+  fixtures/packets/  the two committed rendered packets (T-106) — the only
+                     tracked session bytes in the repository
 docs/                constitution, spec, stories, tasks, decisions
 ```
 

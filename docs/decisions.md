@@ -12968,3 +12968,321 @@ is part of every close — but the **general** defect is that no check ties the
 verbs' documented flags to their parsers, and README documents all **eight**
 session verbs. That is a parse over `README`'s command blocks against
 `argparse`'s declared options, and its own row.
+
+---
+
+## D136 — The rendered packet is a committed fixture under `tests/`, compared three ways, and its determination is re-derived rather than trusted
+
+**Context.** `T-106`, v1.5's fourth row and the one that closes the version. Its
+exit was rewritten before it opened *(D131)*: **two** committed packets, one
+carrying a justified red suggestion and one carrying none, each rendering
+byte-identical to its committed fixture **and** identical when rendered twice,
+each fixture session's determination **re-derived** from the live engine and
+compared, zero model calls, every gate green. Written before the code (Article
+IX, working rule 5).
+
+The row also owes the version its gate. **A13's fifth clause is this row's** and
+it is version-wide — *zero model calls in any gate* — and its second clause says
+*re-checked over the committed fixture by `T-106`*. So this entry ends with the
+five-clause audit `T-95` ran on A10 and `D123` ran on A11, one clause at a time,
+naming the command that holds each.
+
+### Chosen — the fixtures live under `tests/fixtures/packets/`, and that is D127's named reversal being taken
+
+`D127` refused to track `data/sessions/`, and closed with a condition rather than
+a rule: *reverses if a session ever needs to be re-read by a gate — v1.5's
+rendered packet is the candidate, and it would be a **committed fixture** rather
+than a tracked live root*. That day is today, and the shape it named is the shape
+taken: two directories under `tests/fixtures/packets/`, each holding a
+`session.json` and the `packet.eml` it renders to. `data/sessions/` and
+`data/outbox/` stay gitignored output, untouched by this row.
+
+**It is not under `data/`.** Everything under `data/` is a corpus with an
+upstream: `verify_sources.py --offline` re-hashes the policy nine and the five
+labels, `select_patients.py --verify` re-hashes fourteen bundles and recomputes
+every declared clone, and `notes/manifest.json` pins a document per note. A
+packet has no upstream — it is this system's own output over this system's own
+recordings — so a third root under `data/` would be a corpus that no manifest
+can pin and that `--verify` would have to be taught to skip. Worse, it would sit
+in the two directories a mutation run is already known to damage
+(`synthesize_notes.py --generate` rmtrees one, `select_patients.py
+--declare-additions` writes another), and the fixture is the artifact a mutation
+run has to be able to trust.
+
+*Rejected — a tracked `data/sessions/`.* That is D127's own rejection and it has
+not stopped being right: a store the tests write to has no business being
+tracked, and every local `session create` would dirty the working tree.
+
+### Chosen — three comparisons, because they catch three different mutations
+
+One comparison would read as thoroughness and hold one claim.
+
+1. **The render equals the committed bytes.** This is what catches a key added
+   to the packet renderer, a section reordered, a count that stops counting. It
+   is the only one of the three that can see a change nobody meant to make.
+2. **Rendering twice is identical.** `D127` measured this distinction on the
+   session adapter: one write passes a serializer that stamps a clock-derived or
+   randomised value, two writes fail it. It is why the `.eml` is hand-rolled
+   rather than `EmailMessage.as_string()` (D131), and here it is asserted
+   across a **process** boundary as well — the committed bytes were produced by
+   one process and the comparison runs in another, so a value that is stable
+   within a run and not across runs is caught by comparison 1 and named by
+   comparison 2.
+3. **The determination is re-derived from the live engine and compared.** This
+   is the one the row exists for. Without it the fixture is a recording of an
+   answer, and `D91` is the entry about what happens to a recording's free half:
+   `eval/agentic/results.json`'s oracle columns sat two tasks stale describing a
+   path with no verifier in it, while every gate stayed green because
+   `verify()` checked the recording's internal coherence and not its agreement
+   with today's code. A committed packet is exactly that shape — it embeds a
+   determination, and the renderer's own tests would keep passing over a
+   determination the engine no longer produces. So each fixture session's
+   request is re-run through `determine()` at the run's own `as_of`, with the
+   recorded extraction and verifier runners the verb builds, and the result is
+   compared to the stored one field for field.
+
+The three are not redundant in any direction: 1 cannot see a clock (it renders
+once), 2 cannot see a wrong constant (both renders agree), 3 cannot see the
+renderer at all.
+
+*Rejected — generating the fixture at test time and comparing the render to it.*
+The renderer compared to itself. A mutation appears on both sides and the
+comparison is self-fulfilling — `D135` rejected a `@computed_field` for this
+exact reason, and `D131` spent a mutation finding a check no input could reach.
+A fixture that a test writes is not a fixture.
+
+*Rejected — comparing a digest of the render instead of the bytes.* Cheaper to
+store and it makes every failure unreadable: *sha256 differs* names no line,
+where a text diff names the section. The two files are 5,926 and 11,434 bytes;
+there is nothing to buy.
+
+### Chosen — no new script, and therefore no eleventh gate
+
+A `scripts/build_packet_fixtures.py --verify` is the obvious shape and it is
+declined. `tests/test_check_gates.py` fails on a tracked script in neither
+`GATES` nor `EXCLUDED`, so it would have to be classified: a `GATES` entry takes
+the count **10 → 11**, which moves `CLAUDE.md` in two places, `README.md`,
+`check_gates.py`'s own docstring and the gate list every task record quotes — to
+buy a re-check `pytest` already runs, since the fixture is data and the suite
+reads it. An `EXCLUDED` entry keeps the count and buys nothing at all.
+
+**The fixture is data, the suite reads it, and the count stays 10.**
+
+*The regeneration path is the product's own command*, which is the reason no
+builder is needed. A close that deliberately changes the renderer copies the
+fixture's `session.json` into a scratch root and redirects the verb:
+
+```
+cp tests/fixtures/packets/<name>/session.json /tmp/root/<name>.json
+python -m pa_agent.cli session --sessions-root /tmp/root packet <name> \
+  > tests/fixtures/packets/<name>/packet.eml
+```
+
+That recipe is in the test module, beside the comparison it repairs. It is
+deliberately **not** a flag on the test: an `--update-fixture` environment
+variable is a way to make comparison 1 self-fulfilling by typing one word, which
+is the failure `eval/run_eval.py --update-baseline` guards by demanding a commit
+(D27) and which a two-line `cp` does not invite.
+
+### Chosen — the two fixtures are the two shapes, and which two is not arbitrary
+
+**`accepted_red`** — `E12`'s chart `a8edc52e`, 43775 in WA at the harness clock,
+`--accept` and `--justify` on `hydrochlorothiazide-hyperglycemia` (`R73.9`). This
+is the packet `T-134` made assemblable and `T-137` corrected the document list
+of: the **only** shape in this repository that reaches the knowledge corpus (a
+suggestion's `effect` is a span into an FDA label) and the **only** one that
+exercises the justification path. Every claim about a packet carrying a
+suggestion is invisible on a packet without one, which is how D133's defect
+survived two rows with every gate green.
+
+**`no_suggestion`** — `E4`'s chart `07a5f345` at 43775, whose qualifying run
+straddles both chart notes, with a `NOTE` entry in its review log and no
+acceptance. It cites **three documents over nine spans**, which is the largest
+rendered surface the corpus produces, and its review log is non-empty while
+contributing nothing to the bytes — so *the log is read* and *only an acceptance
+enters* are both live in a committed artifact rather than only in a test's own
+objects.
+
+*Rejected — the `NOT_COVERED` packet as the second fixture.* It is the packet
+`D135` turned on and `tests/test_form.py` already holds it behaviourally. As a
+fixture it buys the smallest render in the corpus — a short circuit cites two
+policy documents and no chart — where the second fixture's job is to put the
+widest render under byte comparison.
+
+*Rejected — a third fixture carrying a `Date:` header.* `session packet` passes
+`submitted_at=None` always; the submitted form is the outbox artifact, which is
+`T-105`'s and already compared against the verb's own render by
+`tests/test_session_verbs.py::test_submit_and_packet_resolve_the_recipient_the_same_way`.
+Two packets is the exit; a third would be a shape no verb prints.
+
+### Why byte-stability holds at all, stated as the structural fact it is
+
+**`form.py` imports no clock.** Not as a convention — as a parsed assertion:
+`tests/test_form.py::test_form_names_no_clock` walks the module's AST and refuses
+an import of `datetime`, `time` or `calendar` and any `.now()`, `.today()` or
+`.utcnow()` attribute. Every date in a packet therefore arrives **on the
+`Session`**: `created_at`, each run's `ran_at` and `as_of`, each
+`ReviewEntry.at`, and the submission's timestamp, all stamped by `cli._now()`,
+the one clock this system has (D127). A committed fixture is possible because the
+only values the renderer cannot derive are values somebody else already wrote
+down.
+
+The same holds for the two values a library would randomise: `Message-ID` is a
+sha256 of `(session_id, run_index)` at the reserved `.invalid` domain, and there
+is no `From:` at all, because nothing in this repository names who sends (D131).
+
+The fixture is what makes those three parse-level and unit-level checks
+*answerable a month later*, which is what their own docstrings say they are
+waiting for.
+
+### The fixtures are parsed, not grepped, and the count is a literal
+
+`Session.model_validate_json` reads each `session.json`, so a fixture that has
+drifted from the contract is a **red suite** rather than a string comparison
+against a blob that no longer means anything. The alternative — grepping the
+`.eml` for a code and a justification — is what a fixture is for avoiding: it
+would pass over a session the system can no longer load.
+
+The **count** is a pinned literal, `D51`'s move on a third file (the tree's
+provisional constants were pinned at zero, the knowledge table's thresholds at
+five). Deleting a fixture directory is then a visible diff and a red suite,
+rather than a quieter suite that still passes over whatever is left.
+
+### Zero model calls, and where the clause is actually held
+
+A13's fifth clause is *zero model calls in any gate*, and it decomposes into two
+halves that are held by two different things. This is stated rather than
+smoothed over, because `T-95` found two of A10's three clauses held by nothing
+and this row is the same audit one version on.
+
+- **The nine script gates** are held by
+  `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`,
+  which derives the costly set from `EXCLUDED`'s own reasons and asserts no gate
+  names one, that `verify_sources.py` appears only with `--offline`, and that
+  `select_patients.py` and the spike appear only with `--verify`.
+- **This version's own surface** is held here: `pa_agent.tiers.client_for` is
+  patched to raise, and both fixtures assemble and render to their committed
+  bytes with it in place. `tiers.py` is *the one place a client is built*
+  (T-90, D106) and every runner takes an **injected** client, so a render that
+  completes without one cannot have called a model. That is the strongest claim
+  available without importing `google.genai` into the test path.
+
+**What no command holds is the `pytest` gate as a whole** — *no test anywhere in
+the suite spends a model call*. It is true, and it is true structurally (every
+test's runner is a `Recorded*` or an injected double), but nothing asserts it.
+That is numbered `T-141` rather than folded in (working rule 6).
+
+### What it costs
+
+No model call, no network. No recording, bundle, note, span, verdict, baseline,
+eval row or verifier claim moves. No module under `pa_agent/` is edited: the
+renderer, the assembler, the contracts, the verbs and the six ports are
+unchanged, which is the row's shape — it is a check over the surface four rows
+built, not a change to it. Two fixture directories and one test file are added;
+`data/sessions/` and `data/outbox/` stay gitignored.
+
+### Reversal condition
+
+**The day the fixture's determination stops being re-derivable for nothing.** A
+live extraction round — v1.6's, on new charts — would mean a fixture whose
+determination cannot be recomputed by a gate, at which point it is a *recording*
+and it needs `--rescore`'s shape: a committed measurement, re-derived for free
+from what was recorded, with the free half re-derived on every run because
+that is the half that drifts (D91). Comparison 3 is the thing that would have to
+change, and it is the thing that would have to be replaced rather than dropped.
+
+Separately: if a later version gives the packet a second renderer — v2.2's UI is
+the candidate, and `T-116` is already written as a byte comparison between the
+two surfaces — these fixtures become that comparison's input rather than the
+CLI's alone, and the directory stops being named for the verb that writes it.
+
+### What it mints
+
+**Nothing.** REQ-74 already says every citation in an assembled packet slices
+back through the port that serves its document, reported beside the count
+checked; REQ-70, REQ-75, REQ-76 and REQ-77 already say what a session holds, how
+a review is recorded and when an artifact exists. This close **checks** those
+statements over the real rendered surface rather than over objects a test built,
+which is `T-95`'s, `T-102`'s, `T-134`'s and `T-137`'s precedent: a version's last
+row mints nothing when the statements were minted by the rows that checked them.
+The REQ count stays **79**.
+
+A requirement was considered and declined: *a packet renders identically twice*
+is a property of the renderer, and REQ-74's clause plus the parsed no-clock
+assertion already say why — a numbered statement would name a fixture, and the
+fixture is a check, not a requirement.
+
+### A13, clause by clause, and the command that holds each
+
+The audit this row owes the version.
+
+1. *Zero packets carrying an accepted red with no justification, over a
+   non-empty set of reds the corpus produces, the refusal naming every
+   unjustified code* — `pytest tests/test_form.py tests/test_packet_index.py`.
+   The non-emptiness is
+   `test_the_corpus_still_produces_a_red_suggestion`; the refusal is
+   `test_a_red_accepted_without_a_justification_is_refused_naming_the_code`,
+   with `test_two_unjustified_reds_are_both_named` on the hand-built two-red
+   case and `test_an_unjustified_accepted_red_is_still_refused` through the verb.
+2. *Every citation in every packet slices back through the port that serves its
+   document, reported beside the count checked; re-checked over the committed
+   fixture by `T-106`* — `pytest tests/test_form.py tests/test_packet_index.py
+   tests/test_packet_fixtures.py`. The fixture half is
+   `test_every_citation_in_the_committed_fixture_slices_back`, which builds the
+   index through the real `cli._packet_index` and reports 3 spans for one
+   fixture and 9 for the other.
+3. *The review log is append-only and the determination's bytes are unchanged
+   after any number of reviews, held by parsing as well as by bytes* —
+   `pytest tests/test_review_log.py`:
+   `test_the_append_writes_state_and_reviews_and_names_no_run` is the parse,
+   `test_three_reviews_append_in_order_and_the_determination_is_untouched` is
+   the off-disk byte comparison across three reviews.
+4. *A session acquires an outbox artifact exactly when it enters
+   `AWAITING_DECISION` and no session in an earlier state has one; an illegal
+   submission exits 1 naming the current state and writes nothing; `decide`
+   closes it with the outcome and the date* — `pytest
+   tests/test_session_verbs.py`:
+   `test_submitting_a_reviewed_session_writes_exactly_one_file`,
+   `test_submitting_before_review_is_refused_and_writes_nothing`,
+   `test_deciding_closes_the_session_with_the_outcome_and_both_dates`, with
+   `Session`'s two *iff* validators behind them.
+5. *Zero model calls in any gate* — `pytest tests/test_check_gates.py
+   tests/test_packet_fixtures.py`, split as stated above, with the residue
+   numbered `T-141`.
+
+**All five hold.** None of them is a rate, which is why v1.5 adds no
+`eval/report.md` section (D131) and why this audit is the version's evidence.
+
+### Found and fixed here, because it is prose about the gate this row closes
+
+**`README.md`'s acceptance-gate table stops at A10 and its heading says
+*A1–A10 all hold*, while the same file's status section says A1–A12.** A11
+closed with `T-99` (D126) and A12 with `T-102` (D129), and neither added its
+row. Corrected here with A11's figures re-derived from `eval/report.md`, which
+owns them, and A12's and A13's written from spec §11 — because working rule 12
+makes the copies part of every close and this is the table A13's row belongs in.
+
+**The general defect is that no check ties that table to the spec's gate list**,
+which is why two versions could close without noticing. `T-140`.
+
+### Found and not fixed, numbered `T-140` and `T-141`
+
+**`T-140` — no check ties `README.md`'s acceptance-gate table to spec §7 and
+§11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside the
+table against `eval/report.md` (A2, A3, A5, A6) and the A7 row against the
+coverage gate, but nothing asserts that a row **exists** for every gate the spec
+declares, so a version can close with its gate absent from the table — which is
+what A11 and A12 did. The check is a parse of spec §7 and §11's gate ids against
+the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s
+shape.
+
+**`T-141` — no command holds *the suite spends no model call*.** A13's fifth
+clause is checked over the gate **list** and, since this row, over the packet
+path; the `pytest` gate itself is held only structurally, by every test using a
+`Recorded*` runner or an injected double. A measurement key is present in a
+working checkout (`pa_agent/agent/.env`), so a test that built a live runner
+would spend money and pass. The shape is an autouse guard that fails on a real
+request, or a parse asserting every `client_for` call site outside
+`pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or
+behind a non-default `--extraction` mode. It is `T-128`'s shape — the check a
+close named and no commit added.

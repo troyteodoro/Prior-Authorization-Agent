@@ -1,0 +1,163 @@
+{
+  "session_id": "accepted_red",
+  "created_at": "2026-09-01T00:00:00+00:00",
+  "intake": {
+    "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
+    "procedure_code": "43775",
+    "state": "WA",
+    "icd10_codes": [
+      "E66.01"
+    ],
+    "requesting_provider": "Referring Clinic",
+    "servicing_provider": "Bariatric Surgery Service"
+  },
+  "state": "IN_REVIEW",
+  "runs": [
+    {
+      "ran_at": "2026-09-01T00:00:01+00:00",
+      "as_of": "2026-09-01",
+      "policy_version_id": "ncd-100.1-jf-v1",
+      "determination": {
+        "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
+        "procedure_code": "43775",
+        "policy_version_id": "ncd-100.1-jf-v1",
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "coverage_claim": null,
+        "exclusion_evidence": [],
+        "criterion_results": [
+          {
+            "criterion_id": "a",
+            "verdict": "MET",
+            "spans": [
+              {
+                "document_id": "Avelina400_Huels583_a8edc52e-9800-0adb-c775-bd81183c355f.json",
+                "char_start": 1631403,
+                "char_end": 1632260,
+                "quote": null
+              }
+            ],
+            "gap_reason": null,
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "most recent BMI 35.0 on 2026-08-15 vs threshold 35.0"
+          },
+          {
+            "criterion_id": "b",
+            "verdict": "MET",
+            "spans": [
+              {
+                "document_id": "Avelina400_Huels583_a8edc52e-9800-0adb-c775-bd81183c355f.json",
+                "char_start": 115807,
+                "char_end": 116828,
+                "quote": null
+              }
+            ],
+            "gap_reason": null,
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "active comorbidities in the value set: 59621000"
+          },
+          {
+            "criterion_id": "c1",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "no documented supervised weight-management encounter"
+          },
+          {
+            "criterion_id": "c2",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "no qualifying run for the recency window to apply to"
+          },
+          {
+            "criterion_id": "c3",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "no encounters, so no run to measure"
+          },
+          {
+            "criterion_id": "c4",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "c3 identified no qualifying run to scope to"
+          },
+          {
+            "criterion_id": "c5",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "c3 identified no qualifying run to scope to"
+          }
+        ],
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "verification",
+            "input_tokens": 1032,
+            "output_tokens": 43,
+            "wall_time_ms": 689.0003749867901
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "verification",
+            "input_tokens": 1055,
+            "output_tokens": 38,
+            "wall_time_ms": 670.6710839644074
+          }
+        ]
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "at": "2026-09-01T00:10:00+00:00",
+      "reviewer": "Sam",
+      "action": "ACCEPT_SUGGESTION",
+      "run_index": 0,
+      "row_id": "hydrochlorothiazide-hyperglycemia",
+      "icd10_code": "R73.9",
+      "justification": null,
+      "note": null
+    },
+    {
+      "at": "2026-09-01T00:10:00+00:00",
+      "reviewer": "Sam",
+      "action": "JUSTIFY_SUGGESTION",
+      "run_index": 0,
+      "row_id": "hydrochlorothiazide-hyperglycemia",
+      "icd10_code": "R73.9",
+      "justification": "Thiazide is active and the analyte was never drawn; coding review asked.",
+      "note": null
+    }
+  ],
+  "submission": null,
+  "decision": null
+}

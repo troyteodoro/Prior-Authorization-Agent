@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1, v1.2, v1.3 and v1.4 complete, A1–A12 hold *(D104, D106, D116, D126, D129)*; **v1.5 in progress** *(T-103, D131)*; the versions after it are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; **no version is open**; the versions after v1.5 are §11, and v1.6 opens with `T-107` *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -1159,7 +1159,7 @@ load-bearing; a table that sorts prettily is not.
 | v1.2 | cross-practice round one: rheumatoid arthritis, then diagnostic ultrasound; the rules engine only · **closed** | US-10 | T-91–T-95 | one verifier round per row that cites *(D113)* | A10 ✓ |
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
-| v1.5 | the form, review, simulated submission and tracking, headless · **in progress** | US-13 | T-103–T-106 | none | A13 |
+| v1.5 | the form, review, simulated submission and tracking, headless · **closed** | US-13 | T-103–T-106 | none | A13 ✓ |
 | v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
@@ -1510,6 +1510,15 @@ is what the kill-criteria note forbids.
    and writes nothing; and `session decide` closes the session recording the
    payer's outcome and the date it was taken *(T-105)*.
 5. Zero model calls in any gate *(T-106)*.
+
+**All five clauses hold** *(T-106, D136)*, and the close named the command
+behind each one at a time rather than reporting the gate green — `T-95`'s audit
+of A10, one version on. Clause 2's *re-checked over the committed fixture* and
+clause 5's *zero model calls* are `T-106`'s own; clause 5 is held for the gate
+**list** by `tests/test_check_gates.py` and for this version's surface by the
+fixture render completing with the one client builder patched to raise, and its
+residue — *the suite as a whole spends nothing*, true but asserted by no
+command — is numbered `T-141` rather than counted as held.
 
 **This version adds no eval row, no verifier claim and no `eval/report.md`
 section**, and that is deliberate *(D131)*. None of A13's clauses is a **rate**:

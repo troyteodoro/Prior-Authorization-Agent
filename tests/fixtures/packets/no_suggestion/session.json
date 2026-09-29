@@ -1,0 +1,221 @@
+{
+  "session_id": "no_suggestion",
+  "created_at": "2026-09-01T00:00:00+00:00",
+  "intake": {
+    "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+    "procedure_code": "43775",
+    "state": null,
+    "icd10_codes": [
+      "E66.01"
+    ],
+    "requesting_provider": "Referring Clinic",
+    "servicing_provider": "Bariatric Surgery Service"
+  },
+  "state": "IN_REVIEW",
+  "runs": [
+    {
+      "ran_at": "2026-09-01T00:00:01+00:00",
+      "as_of": "2026-09-01",
+      "policy_version_id": "ncd-100.1-jf-v1",
+      "determination": {
+        "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+        "procedure_code": "43775",
+        "policy_version_id": "ncd-100.1-jf-v1",
+        "outcome": "NOT_MET",
+        "coverage_claim": null,
+        "exclusion_evidence": [],
+        "criterion_results": [
+          {
+            "criterion_id": "a",
+            "verdict": "MET",
+            "spans": [
+              {
+                "document_id": "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json",
+                "char_start": 2157681,
+                "char_end": 2158813,
+                "quote": null
+              }
+            ],
+            "gap_reason": null,
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "most recent BMI 35.89 on 2025-09-19 vs threshold 35.0"
+          },
+          {
+            "criterion_id": "b",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "0 active condition(s) intersect the value set; 1 required. Absence of a documented comorbidity is not evidence of its absence (D40)."
+          },
+          {
+            "criterion_id": "c1",
+            "verdict": "MET",
+            "spans": [
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+                "char_start": 275,
+                "char_end": 479,
+                "quote": "01/13/2026 - Program visit. Interval history reviewed. Weight 84.9 kg, BMI\n35.9. Nutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 25 minutes, three days per week."
+              },
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+                "char_start": 481,
+                "char_end": 692,
+                "quote": "02/10/2026 - Program visit. Interval history reviewed. Weight 84.7 kg, BMI\n35.8. Nutrition counseling provided; meal plan held at 1600 kcal. Exercise log\nshows 30 minutes of stationary cycling, four days weekly."
+              },
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+                "char_start": 364,
+                "char_end": 559,
+                "quote": "03/12/2026 - Routine supervised program visit. Weight 84.4 kg, BMI 35.7.\nNutrition counseling provided; meal plan held at 1600 kcal. Continues\nsupervised exercise, 25 minutes, five days per week."
+              },
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+                "char_start": 824,
+                "char_end": 1021,
+                "quote": "05/14/2026 - Routine supervised program visit. Weight 84.2 kg, BMI 35.6.\nReviewed the 1800 kcal reduced-calorie meal plan; patient adherent. Reports 15\nminutes of brisk walking, four days per week."
+              },
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+                "char_start": 1023,
+                "char_end": 1241,
+                "quote": "06/11/2026 - Scheduled program follow-up. No new complaints. Weight 84.2 kg,\nBMI 35.6. Discussed portion control and protein intake on the 1400 kcal plan.\nContinues supervised exercise, 30 minutes, three days per week."
+              }
+            ],
+            "gap_reason": null,
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "5 documented supervised encounter(s)"
+          },
+          {
+            "criterion_id": "c2",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "no qualifying run for the recency window to apply to"
+          },
+          {
+            "criterion_id": "c3",
+            "verdict": "NOT_MET",
+            "spans": [
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+                "char_start": 275,
+                "char_end": 479,
+                "quote": "01/13/2026 - Program visit. Interval history reviewed. Weight 84.9 kg, BMI\n35.9. Nutrition counseling provided; meal plan held at 1400 kcal. Continues\nsupervised exercise, 25 minutes, three days per week."
+              },
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+                "char_start": 481,
+                "char_end": 692,
+                "quote": "02/10/2026 - Program visit. Interval history reviewed. Weight 84.7 kg, BMI\n35.8. Nutrition counseling provided; meal plan held at 1600 kcal. Exercise log\nshows 30 minutes of stationary cycling, four days weekly."
+              },
+              {
+                "document_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+                "char_start": 364,
+                "char_end": 559,
+                "quote": "03/12/2026 - Routine supervised program visit. Weight 84.4 kg, BMI 35.7.\nNutrition counseling provided; meal plan held at 1600 kcal. Continues\nsupervised exercise, 25 minutes, five days per week."
+              }
+            ],
+            "gap_reason": null,
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": {
+              "observed": 3.0,
+              "required": 4.0,
+              "unit": "consecutive_months"
+            },
+            "detail": "longest run of consecutive months is 3; 4 required"
+          },
+          {
+            "criterion_id": "c4",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "c3 identified no qualifying run to scope to"
+          },
+          {
+            "criterion_id": "c5",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "spans": [],
+            "gap_reason": "NO_EVIDENCE_RETRIEVED",
+            "error_code": null,
+            "error_detail": null,
+            "discrepancies": [],
+            "shortfall": null,
+            "detail": "c3 identified no qualifying run to scope to"
+          }
+        ],
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 940,
+            "output_tokens": 465,
+            "wall_time_ms": 1664.0698330011219
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1098,
+            "output_tokens": 747,
+            "wall_time_ms": 2231.1492080334574
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "verification",
+            "input_tokens": 1129,
+            "output_tokens": 53,
+            "wall_time_ms": 909.0761250117794
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "verification",
+            "input_tokens": 954,
+            "output_tokens": 39,
+            "wall_time_ms": 766.1353750154376
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "verification",
+            "input_tokens": 819,
+            "output_tokens": 49,
+            "wall_time_ms": 840.4523748904467
+          }
+        ]
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "at": "2026-09-01T00:10:00+00:00",
+      "reviewer": "Sam",
+      "action": "NOTE",
+      "run_index": 0,
+      "row_id": null,
+      "icd10_code": null,
+      "justification": null,
+      "note": "Reviewed the gap list; requesting the missing months from the clinic."
+    }
+  ],
+  "submission": null,
+  "decision": null
+}

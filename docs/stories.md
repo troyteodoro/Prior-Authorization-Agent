@@ -456,6 +456,17 @@ and an exit reachable only through `T-105`'s verb is a row closing on the next
 row's work *(D131)*.
 **Note:** this version rewords spec §1's "does not submit" to "transmits only
 on the reviewer's explicit action after review, and never decides to" *(D131)*.
+**Status:** **closed** — all four of v1.5's rows are done and **A13 holds**
+*(T-103 through T-106; D131, D132, D134, D136, with `T-134` and `T-137` off the
+path behind rows 2 and 3, D133 and D135)*. Every bullet above is reachable from a
+command: the review log appends beside a determination whose bytes are unchanged,
+an accepted red is refused unless a justification is written and the refusal
+names every unjustified code, the packet leaves on Sam's explicit `submit` and
+never on the system's decision, a forbidden order exits 1 and writes nothing, and
+`decide` closes the session with the outcome and the date. `T-106` pinned the two
+rendered packets as **bytes** and re-derived each fixture's determination from the
+live engine, which is what makes *the packet that leaves is one I signed off on*
+a comparison rather than a claim *(D136)*.
 
 ---
 

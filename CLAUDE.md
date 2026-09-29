@@ -29,9 +29,9 @@ an instruction typed into a prompt.
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-77 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10, US-11 and US-12 closed with v1.2, v1.3 and v1.4; **US-13 is v1.5's and open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-105 plus T-126, T-127, T-128, T-129, T-134 and T-137, each with a runnable exit condition; T-106 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, T-133, which T-103 did *(D131)*, T-135, which T-104 did *(D132)*, T-136, which T-134 did *(D133)*, T-138, which T-105 did *(D134)*, and T-139, which T-137 did *(D135)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D135, kill criteria, open questions. Append-only. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and not yet open**. |
+| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-134 and T-137, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open, as are T-130 and T-131, which T-99 discovered and numbered *(D126)*, T-132, which T-129 did *(D130)*, T-133, which T-103 did *(D131)*, T-135, which T-104 did *(D132)*, T-136, which T-134 did *(D133)*, T-138, which T-105 did *(D134)*, T-139, which T-137 did *(D135)*, and T-140 and T-141, which T-106 did *(D136)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D136, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -885,19 +885,20 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**91 of 91 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1694 tests across 56 files, 58 of
+**92 of 92 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1716 tests across 57 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
-IDs run to T-137 (T-126 through T-129, T-134 and T-137 are off the path, above
+IDs run to T-141 (T-126 through T-129, T-134 and T-137 are off the path, above
 the roadmap's reservations), but numbering is not contiguous and D92 and D94
 deleted six records between them, so the highest id is well above the count.
 **Nothing is open**; `T-130`, `T-131`, `T-132`, `T-133`, `T-135`, `T-136`,
-`T-138` and `T-139` are numbered with no record yet. **v1.5 is open and `T-103`,
-`T-104` and `T-105` closed its first three rows** *(D131, D132, D134)*, with
-`T-134` and `T-137` off the path behind them *(D133, D135)*; next is `T-106`,
-the two committed rendered packets.
+`T-138`, `T-139`, `T-140` and `T-141` are numbered with no record yet.
+**v1.5 is closed and A13 holds** — `T-103`, `T-104`, `T-105` and `T-106` closed
+its four rows *(D131, D132, D134, D136)*, with `T-134` and `T-137` off the path
+behind them *(D133, D135)*. **No version is open**; v1.6 opens with `T-107`, and
+closing v1.5 does not open it.
 
 **`T-137` closed off the path** *(D135)*: `Packet.cited_documents` — renamed
 from `supporting_documents` — is the **citation manifest's** documents,
@@ -999,10 +1000,35 @@ tolerance sweep, and **A6 53 model calls / 55,585 input / 7,870 output /
 replay's own clock. Read them from `eval/report.md`, which is generated; these are a
 copy and the report is the source.
 
-Open: **nothing. v1, v1.1, v1.2, v1.3 and v1.4 are all complete** —
-**A1–A12 all hold**, and US-12 is delivered. **v1.5 is open**: `T-103`, `T-104`
-and `T-105` closed rows 1 through 3, `T-134` closed off the path behind them, and
-the remaining row is `T-106` — the two committed rendered packets.
+Open: **nothing. v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete** —
+**A1–A13 all hold**, and US-13 is delivered. v1.6 is the next version and is
+**not open**.
+
+**`T-106` closed row 4 and the version** *(D136)*: two rendered packets are
+**committed bytes** under `tests/fixtures/packets/` — one carrying an accepted,
+justified red suggestion and one carrying none — each compared **three ways**,
+because the three catch three different mutations. The render equals the
+committed file; rendering **twice** is identical, in process and across the
+process boundary the file already is; and each fixture session's determination is
+**re-derived from the live engine** and compared field for field. The third is
+what the row exists for: without it the fixture is a recording of an answer, and
+D91 is the entry about a recording's free half drifting while every gate stays
+green. Measured in the mutation pass — a fixture regenerated from a mutated
+engine **passes every byte comparison** and fails only the re-derivation, and
+nothing else in the repository catches it. The fixtures are **parsed**
+(`Session.model_validate_json`) and their **count is a literal** (D51's move), so
+a drifted fixture and a deleted one are both a red suite. It is D127's own named
+reversal — *a committed fixture rather than a tracked live root* — so
+`data/sessions/` and `data/outbox/` stay gitignored. **No new script and no
+eleventh gate**: a `--verify` builder would need a `GATES` or `EXCLUDED` entry and
+a `GATES` entry moves the count 10 → 11 to buy what `pytest` already runs, so the
+regeneration recipe is the product's own verb, written in the test module. It
+edited **no module under `pa_agent/`**, minted **nothing**, ran A13's five-clause
+audit naming the command behind each, and found `T-140` (no check ties README's
+acceptance-gate table to the spec's gate list — which is how A11 and A12 closed
+without a row in it) and `T-141` (nothing holds *the suite as a whole spends no
+model call*; the gate **list** and the packet path are held, the suite is held
+only structurally).
 
 **`T-104` closed row 2** *(D132)*: `session review` appends. The log is a field
 on `Session`, `TRANSITIONS` gained the `IN_REVIEW` self-edge, and `IN_REVIEW`
@@ -1583,7 +1609,11 @@ scripts/             check_gates, check_env, check_skeleton,
                      select_patients, synthesize_notes, run_extraction,
                      run_adk_extraction, run_verifier_measurement,
                      run_quote_measurement, run_adk_quote_measurement
-tests/               56 files
+tests/               57 files
+  fixtures/packets/  T-106's two committed packets (D136) — accepted_red and
+                     no_suggestion, each a session.json and the packet.eml it
+                     renders to. The only tracked session bytes in the repo;
+                     data/sessions/ and data/outbox/ stay gitignored (D127)
 docs/                constitution, spec, stories, tasks, decisions — exactly
                      the five of the precedence table and nothing else (D93
                      deleted the sixth, a plan doc that governed nothing and
