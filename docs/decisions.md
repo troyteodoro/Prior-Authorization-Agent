@@ -13487,3 +13487,71 @@ it costs nothing.
 ### What it mints
 
 Nothing. REQ-71 is the statement, and this makes `session run`'s test hold it.
+
+## D140 — The session adapter validates every session it writes, and the composition root's `_revalidated` is removed
+
+**Context.** `T-138`, off the path, the fourth of the numbered rows cleared
+before v1.6 opens. Written before the code (Article IX, working rule 5).
+
+`model_copy(update=…)` runs no validator (D132). Four verbs write a session.
+`_verb_submit` and `_verb_decide` pass their `model_copy` through
+`cli._revalidated` before `store.save`. `_verb_run` and `_verb_review` write
+whatever `session.advance()` and `session.review()` return, and both of those
+are `model_copy`s. So `Session`'s four model validators (runs match the state,
+every review binds to a snapshot, a submission exists iff sent, a decision
+exists iff recorded) are reachable from two of the four write paths. D132
+answered that for the review path by **duplicating** its bound inside
+`review()`. The general relation, that every write is checked, is held by no
+command. The row named two shapes and left the choice to this entry.
+
+### Chosen — `LocalSessionStore` re-validates in `_serialize`, the one function both writes go through
+
+`create` and `save` both write `self._serialize(session)`, so validating there
+covers every writer that exists and every one that will: a fifth verb, a
+script, a test helper. The session is run back through
+`Session.model_validate(session.model_dump())`. A failure raises pydantic's
+`ValidationError` **before** the file is opened, so a refused write leaves the
+file's bytes and its `st_mtime_ns` untouched. That is D132's standard for
+*never recorded*, and the new tests assert it in that form.
+
+**`cli._revalidated` is removed, with its two call sites.** Once the adapter
+checks, the helper becomes a check that no input can fail. Deleting it would
+survive every test in the repository, and D131 refused exactly that shape: a
+guard that cannot fail is not a guard. Keeping both would also mean two
+answers to *where is a session checked before it is written*, and the next
+writer would have to guess which one it was meant to call.
+
+**`session.review()`'s own bound stays.** `review()` is a pure function with
+callers that never reach an adapter: the tests, and any future caller holding
+a session in memory. Its check refuses at the point of the mistake, with a
+message about the review, rather than at the point of the write with a message
+about a model. D132's argument for it was never only that the adapter did not
+check.
+
+*Rejected — a parse asserting every `Session` `model_copy` reaches the adapter
+through `_revalidated`.* It checks a convention rather than the write. A writer
+that builds a session some other way (`model_construct`, a dict, a new helper
+with a different name) satisfies the parse and writes an unreadable file. A
+check at the one function every write passes through cannot be routed around
+without editing the adapter.
+
+*Rejected — validating in `get()` only.* That is already the case, and it is
+the failure being fixed: the write succeeds and the next read fails, so the
+error surfaces in the verb after the one that caused it.
+
+### What it costs
+
+One `model_dump` and one `model_validate` per write. Sessions are written once
+per verb invocation, and at that scale the cost is not measurable.
+
+### Reversal condition
+
+Reverses if a second session adapter arrives (a database, say) and the
+validation has to be shared. It would then move to a port-level helper both
+adapters call, because a check each adapter has to remember is the arrangement
+this entry removes from the composition root.
+
+### What it mints
+
+Nothing. REQ-71, REQ-75 and REQ-77 already state the relations the validators
+check. This entry makes them hold on every write, not only on two of them.

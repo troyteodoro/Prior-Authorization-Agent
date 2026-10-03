@@ -165,10 +165,20 @@ class LocalSessionStore:
     # ------------------------------------------------------------------
 
     def _serialize(self, session: Session) -> str:
-        """The bytes one session becomes. Deterministic, and generates nothing."""
+        """The bytes one session becomes. Deterministic, and generates nothing.
+
+        **Every write is validated here**, before any file is opened (T-138,
+        D140). `model_copy(update=…)` runs no validator (D132), and
+        `advance()`, `review()` and the submit and decide verbs all hand this
+        adapter a `model_copy`. So the session is run back through its own
+        validators, and a session `get()` could not read back is refused rather
+        than written. `create` and `save` both come through this one function,
+        which is why the check lives here and not in either of them.
+        """
+        checked = Session.model_validate(session.model_dump())
         return (
             json.dumps(
-                session.model_dump(mode="json"),
+                checked.model_dump(mode="json"),
                 indent=2,
                 ensure_ascii=False,
             )

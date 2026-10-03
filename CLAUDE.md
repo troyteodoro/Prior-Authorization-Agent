@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-77 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and not yet open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-130, T-132, T-134, T-135 and T-137, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open, as is T-131, which T-99 discovered and numbered *(D126)*, T-133, which T-103 did *(D131)*, T-136, which T-134 did *(D133)*, T-138, which T-105 did *(D134)*, T-139, which T-137 did *(D135)*, and T-140 and T-141, which T-106 did *(D136)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D139, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-130, T-132, T-134, T-135, T-137 and T-138, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open, as is T-131, which T-99 discovered and numbered *(D126)*, T-133, which T-103 did *(D131)*, T-136, which T-134 did *(D133)*, T-139, which T-137 did *(D135)*, and T-140 and T-141, which T-106 did *(D136)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D140, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -570,14 +570,18 @@ passing**, because the tests are written in terms of the thing that broke.
   of the run-bounds check, because a `CREATED` session has no snapshot and the
   answer a reviewer needs is the lifecycle's.
 - **A session's submission and decision are *iff* relations with its state, and
-  the write path re-validates** *(REQ-77, T-105, D134)*. A submission exists iff
+  the adapter re-validates every write** *(REQ-77, T-105, D134, T-138, D140)*. A submission exists iff
   the state is `AWAITING_DECISION` or `DECIDED`, a decision iff `DECIDED`, both
   directions on the contract — a one-way rule is satisfied by a `DETERMINED`
   session carrying a submission anyway, which is exactly the *no session in an
   earlier state has one* half of the statement. `model_copy` runs no validator
-  (D132), so `cli._revalidated` runs the session back through its own validators
-  before the adapter writes; without it the root writes a session `get()` cannot
-  read back. **`T-138` is the two verbs that still do not.**
+  (D132), and all four verbs that write a session hand the adapter one, so
+  `LocalSessionStore._serialize` runs the session back through its own
+  validators before any file is opened. Without that, a verb writes a session
+  `get()` cannot read back, and the failure surfaces one verb later. **Do not
+  add a second validator in the composition root**: D140 removed
+  `cli._revalidated` because, once the adapter checks, it is a guard no input
+  can fail, and `tests/test_session_store.py` parses `cli.py` to keep it gone.
 - **`DECIDED` is terminal because its row is empty, and `INFORMATION_REQUESTED`
   is an outcome rather than a state** *(T-105, D134)*. Approved and denied have
   the same next action in this system — none — so `GapReason`'s discipline makes
@@ -885,16 +889,19 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**95 of 95 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1727 tests across 57 files, 58 of
+**96 of 96 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1733 tests across 57 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
 IDs run to T-141 (every id above T-125 is off the path, above the roadmap's
 reservations, D137), but numbering is not contiguous and D92 and D94
 deleted six records between them, so the highest id is well above the count.
-**Nothing is open**; `T-131`, `T-133`, `T-136`, `T-138`,
+**Nothing is open**; `T-131`, `T-133`, `T-136`,
 `T-139`, `T-140` and `T-141` are numbered with no record yet.
+**`T-138` closed off the path** *(D140)*: the session adapter validates every
+write, so the `run` and `review` verbs' `model_copy`s are checked like
+`submit`'s and `decide`'s, and `cli._revalidated` is removed.
 **`T-135` closed off the path** *(D139)*: `session run`'s refusal test holds
 the file's `st_mtime_ns` beside its bytes, as `session review`'s did.
 **`T-130` closed off the path** *(D138)*: `history.review()` cites the

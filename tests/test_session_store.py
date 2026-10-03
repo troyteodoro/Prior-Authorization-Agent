@@ -23,6 +23,7 @@ import json
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from pa_agent.contracts import (
     Determination,
@@ -30,6 +31,9 @@ from pa_agent.contracts import (
     Document,
     Intake,
     PayerDecision,
+    PayerDecisionOutcome,
+    ReviewAction,
+    ReviewEntry,
     Session,
     SessionRun,
     SessionState,
@@ -241,6 +245,84 @@ def test_a_run_appended_through_the_store_keeps_the_earlier_one(root):
     store.save(advance(store.get("s1"), SessionState.DETERMINED, run=_run("second")))
 
     assert [r.ran_at for r in store.get("s1").runs] == ["first", "second"]
+
+
+# --------------------------------------------------------------------------
+# Every write is validated, because model_copy validates nothing (T-138, D140)
+# --------------------------------------------------------------------------
+
+
+def _on_disk(root: Path, session_id: str) -> tuple[bytes, int]:
+    """Bytes **and** `st_mtime_ns`: a refused write is *never recorded*, which
+    bytes alone cannot tell from a same-content rewrite (D132)."""
+    path = root / f"{session_id}.json"
+    return path.read_bytes(), path.stat().st_mtime_ns
+
+
+def _a_review(run_index: int) -> ReviewEntry:
+    return ReviewEntry(
+        at="2026-09-25T11:00:00Z", reviewer="a reviewer",
+        action=ReviewAction.NOTE, run_index=run_index, note="a note",
+    )
+
+
+def _submission() -> SubmissionRecord:
+    return SubmissionRecord(
+        artifact_id="a1", sha256="0" * 64, payer_id="p1",
+        submitted_at="2026-09-25T12:00:00Z", run_index=0, citation_count=0,
+    )
+
+
+#: One incoherent `model_copy` per validator, each the shape a verb's own path
+#: produces: `advance()` (run), `review()` (review), and the submit and decide
+#: verbs. Every one of them used to be written without a check on two of the
+#: four paths.
+INCOHERENT = {
+    "determined-with-no-run": {"runs": ()},
+    "review-of-a-run-not-held": {"reviews": (_a_review(run_index=1),)},
+    "submission-while-determined": {"submission": _submission()},
+    "decision-while-determined": {
+        "decision": PayerDecision(
+            outcome=PayerDecisionOutcome.APPROVED, decided_on="2026-09-30",
+            recorded_at="2026-10-01T09:00:00Z", payer_id="p1",
+        )
+    },
+}
+
+
+@pytest.mark.parametrize("update", INCOHERENT.values(), ids=INCOHERENT.keys())
+def test_saving_a_session_its_own_validators_refuse_writes_nothing(root, update):
+    """The adapter re-validates before it opens the file (D140).
+
+    Before `T-138`, `save` wrote these: `get()` then refused the file, one verb
+    after the one that caused it.
+    """
+    store = LocalSessionStore(root)
+    store.create(_session())
+    store.save(_session(state=SessionState.DETERMINED, runs=(_run(),)))
+    before = _on_disk(root, "s1")
+
+    incoherent = store.get("s1").model_copy(update=update)
+    with pytest.raises(ValidationError):
+        store.save(incoherent)
+    assert _on_disk(root, "s1") == before
+    store.get("s1")  # what is on disk still reads back
+
+
+def test_creating_a_session_its_own_validators_refuse_writes_nothing(root):
+    incoherent = _session().model_copy(update={"runs": (_run(),)})
+    with pytest.raises(ValidationError):
+        LocalSessionStore(root).create(incoherent)
+    assert not (root / "s1.json").exists()
+
+
+def test_the_composition_root_carries_no_second_validator():
+    """`cli._revalidated` was a check no input could fail once the adapter
+    checks, so deleting it would have survived every test (D131's shape). It
+    is gone, and this keeps it gone (D140)."""
+    tree = ast.parse((PACKAGE / "cli.py").read_text(encoding="utf-8"))
+    defined = {n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}
+    assert "_revalidated" not in defined
 
 
 # --------------------------------------------------------------------------

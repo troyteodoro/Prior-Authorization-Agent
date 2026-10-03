@@ -21,6 +21,10 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-138` closed off the path** *(D140)*: the session adapter validates every
+session it writes, in the one function `create` and `save` share, so the four
+verbs' `model_copy`s are all checked. `cli._revalidated` is removed: once the
+adapter checks, it is a guard no input can fail.
 **`T-135` closed off the path** *(D139)*: `session run`'s refusal test compares
 `st_mtime_ns` beside the bytes, so a write that reproduces the file is a red
 test. It holds REQ-71's *never recorded* the way `session review`'s already did.
@@ -269,11 +273,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-95 tasks are on this board — IDs run to T-141, and every id above T-125 is
+96 tasks are on this board — IDs run to T-141, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 95 are closed and none is open**;
-`T-131`, `T-133`, `T-136`, `T-138`, `T-139`, `T-140` and `T-141` below
+is well above the count. **All 96 are closed and none is open**;
+`T-131`, `T-133`, `T-136`, `T-139`, `T-140` and `T-141` below
 are numbered and have no record yet, in this board's usual shape. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
@@ -313,7 +317,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-135` | **`tests/test_session_verbs.py::test_an_illegal_transition_is_a_bad_request_and_records_nothing` holds *nothing changed*, not *nothing written*.** It compares the session's bytes after a refused `session run`, and the adapter generates nothing (D127) — so a `store.save(session)` inserted **before** `advance()` raises reproduces the file exactly and the test stays green. REQ-71's claim is that an illegal transition is *never recorded*. Measured in `T-104`'s mutation pass on the same shape in `_verb_review`, where it survived the whole suite until `st_mtime_ns` was compared beside the bytes | **closed** (D139), before v1.6 opened — discovered in `T-104`. The test now compares `st_mtime_ns` beside the bytes, and a `store.save` ahead of the refusal, which passed it at open, is a red test |
 | `T-136` | **nothing checks that `form.source_ids` reports every document `form.citations` needs.** The index is built from `source_ids` alone, so a citation whose document that traversal omits is an `UncitedPacket` on a span that was fine — which is `T-134`'s defect one layer down, in the pure module rather than the composition root. The two traversals share `_determination_spans`, and `_review_spans` is a deliberate **superset** of what a packet carries (D131), so they cannot disagree on this corpus; the relation itself is held by no command. The check is a property over a hand-written review carrying every colour | **discovered in `T-134`** — the row that fixed the index found that its one input is unconstrained; not folded in, because it is a property over `form.py` and not a store the composition root forgot *(working rule 6)* |
 | `T-137` | **`Packet.supporting_documents` said it was *every document id this packet cites* and was computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest is three spans over **two** documents and that field named **one**, omitting the FDA label — and on a `NOT_COVERED` packet it named two **policy** documents and no chart at all, which is what settled it. Before `T-134` no packet with an accepted suggestion could be assembled, so the claim was true of every packet that existed and false of the first one that could | **closed** (D135), before `T-106` opened — discovered in `T-134`, and sequenced ahead of `T-106` because that row commits fixture bytes and the two readings render different ones. The field is the manifest's documents, deduplicated by the **same** traversal, and renamed `cited_documents`: a form's supporting-documents box is attachments and this packet attaches nothing. It found `T-139` |
-| `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **discovered in `T-105`** — found while deciding where this row's *iff* validators had to be reachable from; not folded in, because choosing between a validating adapter and a parse is a design decision and it touches `T-102`'s and `T-104`'s verbs rather than this one's *(working rule 6)* |
+| `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **closed** (D140), before v1.6 opened — discovered in `T-105`. The adapter re-validates in `_serialize`, before any file is opened, so all four write paths are checked. `cli._revalidated` is removed, because once the adapter checks it is a guard no input can fail (D131) |
 | `T-139` | **no check ties a verb's documented flags to its parser.** `README.md`'s packet section documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted `cli.PLACEHOLDER_PAYER` (D134), so the README told a reader to type a flag `argparse` rejects. The stale sentence is corrected in `T-137`'s close under working rule 12 — it is prose about the command whose output that row changes — but README documents all **eight** session verbs' flags and `test_docs_consistency.py` reads none of them: a flag renamed, removed or added leaves prose nothing re-derives. The check is a parse over README's command blocks against the declared options | **discovered in `T-137`** — one stale flag is a working-rule-12 reconciliation; the missing check over every documented flag is its own row *(working rule 6)* |
 | `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **discovered in `T-106`** *(D136)* — the local instance is fixed and the general check is its own row *(working rule 6)*; it is free and belongs with `T-139`, the other prose-to-artifact parse |
 | `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **discovered in `T-106`** *(D136)*, while auditing A13 clause by clause — `T-128`'s shape, a check a close named and no commit added |
@@ -4101,6 +4105,45 @@ after the session is read. It **passed** the test as it stood at open, and it
 fails the strengthened test. With `pa_agent/cli.py` restored and `__pycache__`
 cleared, the test passes three runs in a row, so the time comparison does not
 make it flaky.
+
+### `[x] T-138` Every session write is validated, by the adapter
+
+**REQ:** mints nothing. REQ-71, REQ-75 and REQ-77 state the relations ·
+**Depends:** T-100, T-104, T-105 · **Blocks:** nothing · **Discovered in:**
+T-105 *(D134)* · **Decided by:** D140 · **Gates:** none · **Timebox:** half a
+day
+**Status:** **closed** (D140). Off the path, closed before v1.6 opened. The exit
+ran green and every gate with it. No verdict, recording or fixture byte moved.
+
+**The decision the row deferred.** It named two shapes: a validating adapter,
+or a parse asserting every `model_copy` reaches the adapter through
+`cli._revalidated`. D140 takes the adapter. The validation is in
+`LocalSessionStore._serialize`, the one function `create` and `save` both
+write through, and it runs before any file is opened. `cli._revalidated` and
+its two call sites are removed, because once the adapter checks, the helper is
+a guard no input can fail (D131). `session.review()` keeps its own bound,
+because it is a pure function with callers that never reach an adapter.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_session_store.py tests/test_session_verbs.py tests/test_review_log.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- an incoherent `model_copy` is refused by `save` with the file's bytes and
+  `st_mtime_ns` unchanged, and what is on disk still reads back. There is one
+  case per `Session` validator, in the shape each verb's own path produces:
+  a run state with no run, a review naming a run the session does not hold, a
+  submission while `DETERMINED`, and a decision while `DETERMINED`;
+- `create` refuses a `CREATED` session carrying a run and writes no file;
+- `cli.py` defines no `_revalidated`, checked by parsing.
+
+**Mutation pass.** `_serialize` was set to dump the session it is handed
+without validating it. All five refusal tests went red: the four `save` cases
+and the `create` one. With the fix restored and `__pycache__` cleared, the 140
+tests across the four session test files pass.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

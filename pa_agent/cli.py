@@ -460,21 +460,6 @@ def _outbox_store(root: Path | None) -> LocalOutboxStore:
     return LocalOutboxStore(root)
 
 
-def _revalidated(session: Session) -> Session:
-    """The same session, run back through its own validators (T-105, D134).
-
-    **`model_copy(update=…)` runs no validator** — D132 measured that, and it is
-    why `session.review` re-checks a bound the contract already carries. The two
-    verbs below set `submission` and `decision`, whose rules are *iff* relations
-    with `state`, so without this the composition root could write a session
-    `get()` cannot read back: a well-formed write that fails on the next read.
-
-    One helper rather than a rule each verb remembers, because two places that
-    have to remember the same thing eventually do not.
-    """
-    return Session.model_validate(session.model_dump())
-
-
 def _intake_from(args) -> "intake_module.Intake":
     """One `Intake` from whichever route the caller used.
 
@@ -1058,19 +1043,19 @@ def _verb_submit(args) -> int:
         print(f"bad request: {exc}", file=sys.stderr)
         return 1
 
-    submitted = _revalidated(
-        moved.model_copy(
-            update={
-                "submission": SubmissionRecord(
-                    artifact_id=artifact.artifact_id,
-                    sha256=artifact.sha256,
-                    payer_id=artifact.payer_id,
-                    submitted_at=submitted_at,
-                    run_index=run_index,
-                    citation_count=len(form.citations(packet)),
-                )
-            }
-        )
+    # The adapter re-validates what it writes, so the iff relations between
+    # `submission` and `state` are checked on this `model_copy` too (D140).
+    submitted = moved.model_copy(
+        update={
+            "submission": SubmissionRecord(
+                artifact_id=artifact.artifact_id,
+                sha256=artifact.sha256,
+                payer_id=artifact.payer_id,
+                submitted_at=submitted_at,
+                run_index=run_index,
+                citation_count=len(form.citations(packet)),
+            )
+        }
     )
     store.save(submitted)
 
@@ -1132,18 +1117,16 @@ def _verb_decide(args) -> int:
         print(f"bad request: {exc}", file=sys.stderr)
         return 1
 
-    decided = _revalidated(
-        moved.model_copy(
-            update={
-                "decision": PayerDecision(
-                    outcome=DECISION_OUTCOMES[args.outcome],
-                    decided_on=args.decided_on,
-                    recorded_at=_now(),
-                    payer_id=session.submission.payer_id,
-                    reference=args.reference,
-                )
-            }
-        )
+    decided = moved.model_copy(
+        update={
+            "decision": PayerDecision(
+                outcome=DECISION_OUTCOMES[args.outcome],
+                decided_on=args.decided_on,
+                recorded_at=_now(),
+                payer_id=session.submission.payer_id,
+                reference=args.reference,
+            )
+        }
     )
     store.save(decided)
 
