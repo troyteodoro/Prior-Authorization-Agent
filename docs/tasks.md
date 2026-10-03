@@ -21,6 +21,10 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-133` closed off the path** *(D142)*: README's and CLAUDE.md's case counts,
+their module lists and the bare test-file count are re-derived from their
+owners, every occurrence, and number words now read to ninety-nine. Two more
+stale copies were live at open.
 **`T-136` closed off the path** *(D141)*: an index filled from `form.source_ids`
 alone now has to validate every packet a review of every colour allows, under
 all eight acceptance patterns. It held at open, and nothing checked it.
@@ -276,11 +280,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-97 tasks are on this board — IDs run to T-141, and every id above T-125 is
+98 tasks are on this board — IDs run to T-141, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 97 are closed and none is open**;
-`T-131`, `T-133`, `T-139`, `T-140` and `T-141` below
+is well above the count. **All 98 are closed and none is open**;
+`T-131`, `T-139`, `T-140` and `T-141` below
 are numbered and have no record yet, in this board's usual shape. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
@@ -315,7 +319,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-131` | **A2's 0.90 threshold is printed and held by no command.** `eval/report.md` states it and `build_report.py --verify` only byte-compares a re-render, so a regeneration in which precision fell to 0.5 passes every gate. `T-99` gated A11's threshold with a test; A2's, A3's and A5's are still prose. T-95's finding about A10, in a third place | **discovered in `T-99`** — gating one threshold made the absence of the others legible; not folded in, because three gates acquiring commands is its own row |
 | `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **closed** (D130), before v1.6 opened |
 | `T-132` | **this board's own task count is a copy nothing re-derives.** `tests/test_docs_consistency.py` counts the closed-record headings and holds `README.md` and `CLAUDE.md` to them; the board's own prose — *"Eighty-two tasks are on this board … 81 are closed and 1 is open"* — was correct when D124 wrote it at `773c209` and was four closes stale by `T-129`, with every gate green. D108's own failure, on the document that **owns** the figure. Same class, found in the same pass: spec §11's opening line read *"v1.3 is in progress"* while its own table three lines below marked v1.3 and v1.4 closed | **closed** (D137), before v1.6 opened — discovered in `T-129`, and found stale again at open: *Ninety-one … IDs run to T-137* against 92 records and T-141, and spec §11 calling a closed v1.5 *in progress*. Both are now re-derived from the board's records, its *Off the path* table and §11's own table |
-| `T-133` | **three more copies with no owner.** `README.md`'s *eval harness* section read *Twenty-eight labeled cases* while `eval/report.md` — which owns the figure — said 33; `test_the_readmes_corpus_figures_come_from_the_report` checks the copy in P3's bullet and scans no other, which is the every-occurrence weakness `test_every_stated_suite_size_is_the_suites_size` was rebuilt to fix, one figure over. Its repository layout listed the `pa_agent/` modules by hand and had been missing `quotes`, `intake` and `session` since `T-98`, `T-100` and `T-101` — a list the package itself owns. And `CLAUDE.md`'s layout read *tests/ 47 files* against 52: `test_every_stated_suite_size_is_the_suites_size` matches *N tests across M files* and a bare file count is invisible to it. All three are reconciled in `T-103`'s close under working rule 12; the three checks are this row's | **discovered in `T-103`** — `T-132` is the same class on the board's own prose; these three are README's and CLAUDE.md's, against owners outside the document, so they are one row and not folded into that one *(working rule 6)* |
+| `T-133` | **three more copies with no owner.** `README.md`'s *eval harness* section read *Twenty-eight labeled cases* while `eval/report.md` — which owns the figure — said 33; `test_the_readmes_corpus_figures_come_from_the_report` checks the copy in P3's bullet and scans no other, which is the every-occurrence weakness `test_every_stated_suite_size_is_the_suites_size` was rebuilt to fix, one figure over. Its repository layout listed the `pa_agent/` modules by hand and had been missing `quotes`, `intake` and `session` since `T-98`, `T-100` and `T-101` — a list the package itself owns. And `CLAUDE.md`'s layout read *tests/ 47 files* against 52: `test_every_stated_suite_size_is_the_suites_size` matches *N tests across M files* and a bare file count is invisible to it. All three are reconciled in `T-103`'s close under working rule 12; the three checks are this row's | **closed** (D142), before v1.6 opened — discovered in `T-103`. Every labeled-case count, every enumerated eval range, both layouts' module lists and the bare test-file count are re-derived from their owners. Two more stale copies were live at open: `H1-H4` in CLAUDE.md and README's `agent/` line |
 | `T-134` | **`cli._packet_index` never consults the knowledge store, so no packet carrying an accepted suggestion can be assembled.** A suggestion's `effect` is a span into an **FDA label** — `spl_hydrochlorothiazide[3520:3643]` on the one chart the corpus colours red — and `form.citations` includes it, but the index is built from the patient and policy stores alone, so `assemble` refuses the packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`. `LocalKnowledgeStore.get_document` already exists and serves it; D131's *a packet's spans point into both* counted two corpora and the knowledge corpus is the third (T-96, D118). Invisible to `tests/test_form.py` because its red tests exercise `form.accepted` and the assembling tests use a determination with no accepted suggestion, so no test builds an index over a packet that cites a label | **closed** (D133), before `T-105` opened — discovered in `T-104` by driving `session review --accept` and then `session packet` end to end, the first time the two verbs met. It blocked `T-106`, whose exit needs a packet carrying a justified red, which is why a one-line defect was sequenced ahead of the version's remaining rows |
 | `T-135` | **`tests/test_session_verbs.py::test_an_illegal_transition_is_a_bad_request_and_records_nothing` holds *nothing changed*, not *nothing written*.** It compares the session's bytes after a refused `session run`, and the adapter generates nothing (D127) — so a `store.save(session)` inserted **before** `advance()` raises reproduces the file exactly and the test stays green. REQ-71's claim is that an illegal transition is *never recorded*. Measured in `T-104`'s mutation pass on the same shape in `_verb_review`, where it survived the whole suite until `st_mtime_ns` was compared beside the bytes | **closed** (D139), before v1.6 opened — discovered in `T-104`. The test now compares `st_mtime_ns` beside the bytes, and a `store.save` ahead of the refusal, which passed it at open, is a red test |
 | `T-136` | **nothing checks that `form.source_ids` reports every document `form.citations` needs.** The index is built from `source_ids` alone, so a citation whose document that traversal omits is an `UncitedPacket` on a span that was fine — which is `T-134`'s defect one layer down, in the pure module rather than the composition root. The two traversals share `_determination_spans`, and `_review_spans` is a deliberate **superset** of what a packet carries (D131), so they cannot disagree on this corpus; the relation itself is held by no command. The check is a property over a hand-written review carrying every colour | **closed** (D141), before v1.6 opened — discovered in `T-134`. A property over a hand-written review of every colour, under all eight acceptance patterns, with the index filled from `source_ids` alone; dropping either kind of review span is a red test |
@@ -4179,6 +4183,45 @@ The review is hand-written because the corpus produces no yellow (T-98).
 suggestion's `effect` was removed: 8 tests went red. The line collecting its
 chart citations was removed: 7 went red. With the module restored and
 `__pycache__` cleared, all 44 tests in the file pass.
+
+### `[x] T-133` Case counts, module lists and the test-file count, each held to its owner
+
+**REQ:** mints nothing. Working rule 12 is the statement · **Depends:**
+nothing · **Blocks:** nothing · **Discovered in:** T-103 *(D131)* · **Decided
+by:** D142 · **Gates:** none · **Timebox:** half a day
+**Status:** **closed** (D142). Off the path, closed before v1.6 opened. The exit
+ran green and every gate with it. No module under `pa_agent/` was changed.
+
+**Measured at open: two more copies of the same class were live.** CLAUDE.md's
+`cases.json` line read *33 labeled rows (… + H1-H4)*, an enumeration summing to
+28. README's `agent/` line named *tools, bounds*, which are not modules, and
+omitted `agent.py`. And `NUMBER_WORDS` stopped at *thirty*, so *Thirty-three
+labeled cases* was a phrase every scan skipped rather than read.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- every *N labeled cases* or *N labeled rows* in `README.md` and `CLAUDE.md`
+  is the report's count, in digits or words up to ninety-nine;
+- every `XN-XM` range in CLAUDE.md's eval-set enumerations ends at family `X`'s
+  last row in `eval/cases.json`;
+- both layouts' `pa_agent/`, `agent/` and `stores/` entries name exactly the
+  modules on disk, in both directions;
+- CLAUDE.md's bare `tests/ N files` is the number of `tests/test_*.py`.
+
+**Mutation pass.** The adversarial cases are tests in the file and run on every
+suite: a compound-word miscount appended to README, `H1-H9` reverted to
+`H1-H4`, a module dropped from the list and a nonexistent one added. All four
+are refused. The two live drifts above failed the new checks before they were
+reconciled, which is the same result measured on the real documents.
+
+**Found and fixed here, under working rule 12:** CLAUDE.md's `H1-H4` and
+README's `agent/` line.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

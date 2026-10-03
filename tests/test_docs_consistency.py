@@ -88,15 +88,19 @@ def collected() -> int:
 
 #: Small counts are written as words in this project's prose, so a check on
 #: them has to read both forms.
-NUMBER_WORDS = {
-    "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
-    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
-    "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
-    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
-    "twenty": 20, "twenty-one": 21, "twenty-two": 22, "twenty-three": 23,
-    "twenty-four": 24, "twenty-five": 25, "twenty-six": 26,
-    "twenty-seven": 27, "twenty-eight": 28, "twenty-nine": 29, "thirty": 30,
-}
+#: Generated to ninety-nine: it stopped at *thirty*, so *Thirty-three labeled
+#: cases* was not a count to any check, and a figure a check cannot read is
+#: skipped rather than failed (T-133, D142).
+_UNITS = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+          "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
+          "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
+_TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60,
+         "seventy": 70, "eighty": 80, "ninety": 90}
+NUMBER_WORDS = {word: value for value, word in enumerate(_UNITS)}
+for _tens_word, _tens in _TENS.items():
+    NUMBER_WORDS[_tens_word] = _tens
+    for _unit in range(1, 10):
+        NUMBER_WORDS[f"{_tens_word}-{_UNITS[_unit]}"] = _tens + _unit
 
 
 def _as_count(token: str) -> int | None:
@@ -897,6 +901,149 @@ def test_claude_md_names_every_eval_row_family(claude):
             f"CLAUDE.md's enumeration of the eval set names no {family!r} row: "
             f"{enumeration!r}"
         )
+
+
+
+# --------------------------------------------------------------------------
+# Three more copies with an owner outside the document (T-133, D142)
+# --------------------------------------------------------------------------
+
+
+def _report_case_count(report: str) -> int:
+    match = re.search(r"(\d+) labeled cases\.", report)
+    assert match, "the report's case count moved"
+    return int(match.group(1))
+
+
+def _case_count_errors(texts: dict[str, str], expected: int) -> list[str]:
+    errors = []
+    for name, text in texts.items():
+        flat = " ".join(text.split())
+        claims = _counted_phrases(flat, r"(\S+) labeled (?:cases|rows)\b")
+        if not claims:
+            errors.append(f"{name} no longer states a labeled-case count")
+        for value, phrase in claims:
+            if value != expected:
+                errors.append(f"{name} says {phrase!r}; the report says {expected}")
+    return errors
+
+
+def test_every_labeled_case_count_is_the_reports(readme, claude, report):
+    """README read *Twenty-eight labeled cases* against 33, and P3's check
+    looked at one bullet. Every occurrence, digits or words (D142)."""
+    assert _case_count_errors(
+        {"README.md": readme, "CLAUDE.md": claude}, _report_case_count(report)
+    ) == []
+
+
+def test_the_case_count_check_reads_a_compound_number_word(readme, report):
+    """It could not: `NUMBER_WORDS` stopped at thirty, so the stale copy was a
+    phrase the scan skipped rather than one it failed (D142)."""
+    expected = _report_case_count(report)
+    wrong = f"Thirty-{_UNITS[(expected % 10) + 1] if expected % 10 < 9 else 'one'}"
+    mutant = readme.replace("labeled cases", "labeled cases", 1) + f"\n{wrong} labeled cases.\n"
+    assert _as_count(wrong) not in (None, expected)
+    assert _case_count_errors({"README.md": mutant}, expected)
+
+
+def _range_errors(claude: str) -> list[str]:
+    cases = json.loads((REPO_ROOT / "eval" / "cases.json").read_text(encoding="utf-8"))["cases"]
+    highest: dict[str, int] = {}
+    for case in cases:
+        match = re.fullmatch(r"([A-Z]+)(\d+)", case["case_id"])
+        if match:
+            family, number = match.group(1), int(match.group(2))
+            highest[family] = max(highest.get(family, 0), number)
+    flat = " ".join(claude.split())
+    errors = []
+    for sentence in re.findall(r"(\S+ labeled rows.*?\))", flat) + re.findall(
+        r"holds \S+ labeled rows — (.*?) — all `PASS`", flat
+    ):
+        for family, end in re.findall(r"`?([A-Z]+)\d+`?\s*[-–]\s*`?\1?(\d+)`?", sentence):
+            if family in highest and int(end) != highest[family]:
+                errors.append(f"CLAUDE.md enumerates {family}..{family}{end}; the last is {family}{highest[family]}")
+    return errors
+
+
+def test_every_enumerated_eval_range_ends_at_its_family_s_last_row(claude):
+    """*33 labeled rows (… + H1-H4)* sums to 28: T-99's H5–H9 went into the
+    count and not the range. Naming the family is not reaching its end (D142)."""
+    assert _range_errors(claude) == []
+    assert _range_errors(claude.replace("H1-H9", "H1-H4"))
+
+
+def _layout_entry(text: str, key: str) -> str:
+    """One entry of a document's *Repository layout* block, continuation lines
+    included, flattened."""
+    layout = text[text.index("```", text.index("pa_agent/            ") - 400):]
+    lines = layout.splitlines()
+    for i, line in enumerate(lines):
+        match = re.match(rf"^(\s*){re.escape(key)}\s{{2,}}(.*)$", line)
+        if not match:
+            continue
+        indent = len(line) - len(line.lstrip()) + len(key)
+        body = [match.group(2)]
+        for following in lines[i + 1:]:
+            stripped = following.lstrip()
+            if not stripped or len(following) - len(stripped) <= indent:
+                break
+            body.append(stripped)
+        return " ".join(body)
+    raise AssertionError(f"the layout has no {key!r} entry; re-read it here")
+
+
+def _listed_modules(entry: str) -> set[str]:
+    """The identifiers an entry lists: the first word of each item, after any
+    `label:` prefix, with parentheticals dropped."""
+    entry = entry.split(":", 1)[1] if re.match(r"^[A-Za-z ]+:", entry) else entry
+    items = re.split(r",\s*|\s+and\s+", re.sub(r"\([^)]*\)", "", entry))
+    return {item.split()[0] for item in items if item.split()}
+
+
+def _modules(directory: Path) -> set[str]:
+    return {p.stem for p in directory.glob("*.py") if p.stem != "__init__"}
+
+
+def _layout_errors(name: str, text: str) -> list[str]:
+    errors = []
+    for key, directory in (("pa_agent/", PACKAGE_DIR), ("agent/", PACKAGE_DIR / "agent")):
+        listed = _listed_modules(_layout_entry(text, key))
+        actual = _modules(directory)
+        if listed != actual:
+            errors.append(
+                f"{name}'s {key} entry is missing {sorted(actual - listed)} and "
+                f"names {sorted(listed - actual)}, which are not modules"
+            )
+    stores = {s for s in re.findall(r"(\w+)\.py", _layout_entry(text, "stores/")) if s != "__init__"}
+    if stores != _modules(PACKAGE_DIR / "stores"):
+        errors.append(f"{name}'s stores/ entry names {sorted(stores)}")
+    return errors
+
+
+PACKAGE_DIR = REPO_ROOT / "pa_agent"
+
+
+@pytest.mark.parametrize("name", ["README.md", "CLAUDE.md"])
+def test_the_layouts_module_lists_are_the_package(name, readme, claude):
+    """README's list was missing `quotes`, `intake` and `session` for three
+    tasks; its `agent/` line named *tools, bounds*, which are not modules. The
+    package owns the list (D142)."""
+    text = readme if name == "README.md" else claude
+    assert _layout_errors(name, text) == []
+
+
+def test_the_layout_check_refuses_a_missing_and_an_invented_module(claude):
+    assert _layout_errors("CLAUDE.md", claude.replace("intake, session,", "session,", 1))
+    assert _layout_errors("CLAUDE.md", claude.replace("intake, session,", "intake, session, ghost,", 1))
+
+
+def test_claude_md_s_bare_test_file_count_is_the_file_count(claude):
+    """*tests/ 47 files* against 52: the suite-size check reads *N tests across
+    M files* and a bare count is invisible to it (D142)."""
+    files = len(list((REPO_ROOT / "tests").glob("test_*.py")))
+    stated = re.findall(r"^tests/\s+(\S+) files", claude, re.M)
+    assert stated, "CLAUDE.md's layout no longer states a test-file count"
+    assert [_as_count(n) for n in stated] == [files] * len(stated)
 
 
 # --------------------------------------------------------------------------

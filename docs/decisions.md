@@ -13618,3 +13618,65 @@ first thing to check at that change is this test's builder.
 Nothing. REQ-74 states that every citation in a packet slices back through the
 port that serves its document. This is the check that the index those ports
 fill is large enough.
+
+## D142 — README's and CLAUDE.md's case counts, module lists and test-file count are each re-derived from their owner, every occurrence
+
+**Context.** `T-133`, off the path, the sixth of the numbered rows cleared before
+v1.6 opens. Written before the code (Article IX, working rule 5).
+
+The row names three copies that drifted with every gate green: README's
+*eval harness* section read *Twenty-eight labeled cases* against the report's
+33; the README layout's `pa_agent/` list was missing three modules; and
+CLAUDE.md's layout read *tests/ 47 files* against 52. All three were reconciled
+by hand at `T-103`'s close, and the row is their checks.
+
+**Measured at open, two more of the same class were live.** CLAUDE.md's
+`cases.json` layout line reads *33 labeled rows (§6's 15 + NP1 + J1 + RA1-RA3 +
+US1-US4 + H1-H4)*, an enumeration that sums to 28, because T-99's `H5`–`H9`
+went into the count and not into the range. And README's `agent/` line names
+*tools, bounds*, which are not modules, and omits `agent.py`. A third gap
+explains why the first copy was invisible even to a scan: `_as_count` reads
+number words only up to *thirty*, so *Thirty-three labeled cases* is not a
+count to it at all.
+
+### Chosen — four checks, each scanning every occurrence
+
+1. **Labeled cases.** Every `N labeled cases` and `N labeled rows` in
+   `README.md` and `CLAUDE.md` equals the report's own *N labeled cases.*,
+   whether N is written in digits or words. `NUMBER_WORDS` is extended to
+   ninety-nine, generated rather than typed out, so a compound number word is
+   a count and not silently skipped. Skipping is worse than failing, because a
+   skip looks like coverage.
+2. **Enumerated ranges.** Every `XN-XM` range in CLAUDE.md's eval-set sentences
+   ends at the highest id of family `X` in `eval/cases.json`.
+   `test_claude_md_names_every_eval_row_family` already requires every family
+   to be named. It cannot see that a named family stops short.
+3. **Module lists.** In both documents' repository layouts, the `pa_agent/`
+   entry names exactly the top-level modules, the `agent/` entry exactly that
+   subpackage's modules, and the `stores/` entry exactly the store adapters'
+   files. "Exactly" runs in both directions: a module missing from the list is
+   the drift that happened, and a name in the list with no module is the same
+   drift after a deletion. `__init__` is excluded throughout. README's `agent/`
+   line is rewritten to name its modules.
+4. **The bare test-file count.** CLAUDE.md's `tests/ N files` equals the number
+   of `tests/test_*.py`, the same definition
+   `test_every_stated_suite_size_is_the_suites_size` uses for its *across M
+   files*.
+
+*Rejected — delete the copies instead.* The layout lists are how a reader finds
+a module, and the case count is A1's figure. D108 deleted copies that earned
+nothing, and these earn their place.
+
+*Rejected — generate the layout blocks.* Same reason as D137: a generated
+block inside a hand-written document is a second owner.
+
+### Reversal condition
+
+Reverses for clause 3 if the layout blocks stop being lists of module names
+(an annotated tree, say). The parse would then need a different grammar or
+would pass over a block it no longer understands. It asserts the entries exist,
+so a reformat is a red test rather than a silent pass.
+
+### What it mints
+
+Nothing. These are checks on documents, under working rule 12.
