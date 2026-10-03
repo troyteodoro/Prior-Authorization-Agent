@@ -13445,3 +13445,45 @@ pinning one is cheaper than maintaining it.
 Nothing. No REQ states *the code has no unbound names*. REQ-59 is the statement
 that makes the branch unreachable, and REQ-63 governs the citation that
 `on_chart` carries.
+
+## D139 — `session run`'s refusal test compares the file's modification time beside its bytes
+
+**Context.** `T-135`, off the path, the third of the numbered rows cleared
+before v1.6 opens. Written before the code (Article IX, working rule 5).
+
+`tests/test_session_verbs.py::test_an_illegal_transition_is_a_bad_request_and_records_nothing`
+compares the session file's bytes after a refused `session run`. REQ-71 says an
+illegal transition is **never recorded**. A byte comparison holds only *nothing
+changed*: the session adapter generates nothing (D127), so a
+`store.save(session)` written ahead of the refusal reproduces the file exactly.
+`T-104` measured this on `_verb_review`, where the same mutation survived the
+whole suite until `st_mtime_ns` joined the comparison (D132). This row is the
+same comparison on `T-102`'s verb.
+
+### Chosen — the bytes and `st_mtime_ns`, read together before and after
+
+It is the shape `tests/test_review_log.py::_untouched` already uses, so the two
+verbs' refusal tests now hold the same claim. The mutation it must kill is
+`store.save(session)` inserted in `_verb_run` immediately after the session is
+read. That is the earliest point a write can happen, so if the check catches a
+write there, it catches one anywhere before the refusal.
+
+*Rejected — patch `LocalSessionStore.save` to raise inside the test.* The test
+runs the verb as a subprocess, which is the point of a CLI exit-code test, so
+in-process patching does not reach it. Moving it in-process would test a
+different surface from the one REQ-71's exit-1 half is stated over.
+
+*Rejected — a shared helper module for the two test files.* Two call sites
+of a two-line read do not earn a module. The docstring points at
+`_untouched` as the source of the shape.
+
+### Reversal condition
+
+Reverses if the session adapter ever stamps something into each write: a
+`saved_at`, a revision counter. Bytes would then separate a rewrite on their
+own, and the time comparison would be redundant. It is kept until then, because
+it costs nothing.
+
+### What it mints
+
+Nothing. REQ-71 is the statement, and this makes `session run`'s test hold it.

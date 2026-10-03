@@ -545,9 +545,14 @@ def test_an_illegal_transition_is_a_bad_request_and_records_nothing(tmp_path):
     self-edge — but it gained no edge back to `DETERMINED`, so this refusal is
     what it was. The state is still written directly rather than reached through
     `session review`, because what is under test is this verb's exit-code
-    mapping and not the other verb's. The bytes are compared after the refusal:
-    a machine that advanced and then failed to persist would look identical to
-    one that refused.
+    mapping and not the other verb's.
+
+    The bytes **and** `st_mtime_ns` are compared after the refusal (T-135,
+    D139). Bytes alone hold *nothing changed*, and REQ-71 says *never
+    recorded*: the adapter generates nothing, so a `store.save(session)` ahead
+    of the refusal reproduces the file exactly. That mutation passed this test
+    until the modification time joined it, which is
+    `tests/test_review_log.py::_untouched`'s shape (D132).
     """
     root = tmp_path / "sessions"
     session_id = _created(
@@ -558,14 +563,15 @@ def test_an_illegal_transition_is_a_bad_request_and_records_nothing(tmp_path):
     store = LocalSessionStore(root)
     determined = store.get(session_id)
     store.save(determined.model_copy(update={"state": SessionState.IN_REVIEW}))
-    before = (root / f"{session_id}.json").read_bytes()
+    path = root / f"{session_id}.json"
+    before = (path.read_bytes(), path.stat().st_mtime_ns)
 
     proc = _session(root, "run", session_id, "--as-of", AS_OF)
     assert proc.returncode == 1
     assert proc.stdout == ""
     assert "IN_REVIEW" in proc.stderr
-    assert (root / f"{session_id}.json").read_bytes() == before, (
-        "a refused transition rewrote the session; REQ-71 says it is never "
+    assert (path.read_bytes(), path.stat().st_mtime_ns) == before, (
+        "a refused transition wrote the session; REQ-71 says it is never "
         "recorded"
     )
 

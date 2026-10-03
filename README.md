@@ -70,7 +70,7 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and no version is
-open.** 94 of 94 tasks closed, **none open** — `T-103` opened v1.5 with the
+open.** 95 of 95 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
