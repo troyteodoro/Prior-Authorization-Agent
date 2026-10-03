@@ -26,6 +26,7 @@ never in the package (D78's rule).
 from __future__ import annotations
 
 import ast
+import builtins
 import json
 from datetime import date
 from pathlib import Path
@@ -122,7 +123,7 @@ def products_for(row: MedicationEffectRow, *codes: str) -> dict[str, CodedValueS
     }
 
 
-def a_medication(code: str = "999", status: str = "active", system: str = RXNORM):
+def a_medication(code: str = "999", status: str = "active", system: str | None = RXNORM):
     return Medication(code=code, system=system, status=status, display="a product")
 
 
@@ -243,6 +244,111 @@ def test_a_completed_prescription_is_not_a_candidate():
     drug also carries an active one."""
     row = a_row()
     assert run(row, medications=[a_medication(status="completed")]).suggestions == ()
+
+
+def test_a_prescription_declaring_no_system_is_not_a_candidate_and_does_not_raise():
+    """`T-130`'s row said this raised `NameError`. It cannot: `admits` refuses
+    a resource with no system, so the prescription never becomes a candidate
+    and never reaches the line that named an unbound `expansion` (D138). This
+    passes on the unfixed code too, which is why the parse below exists."""
+    row = a_row()
+    review = run(row, medications=[a_medication(code="999", system=None)])
+    assert review.suggestions == () and review.withheld == ()
+
+
+def _module_level_names(tree: ast.Module) -> set[str]:
+    names: set[str] = set()
+    for statement in tree.body:
+        nodes = ast.walk(statement) if isinstance(statement, (ast.If, ast.Try)) else [statement]
+        for node in nodes:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                names.add(node.name)
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                names.update((a.asname or a.name).split(".")[0] for a in node.names)
+            elif isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                for target in targets:
+                    names.update(n.id for n in ast.walk(target) if isinstance(n, ast.Name))
+    return names
+
+
+def _bound_in(function: ast.AST) -> set[str]:
+    bound: set[str] = set()
+    for node in ast.walk(function):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            bound.add(node.id)
+        elif isinstance(node, ast.arg):
+            bound.add(node.arg)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node is not function:
+            bound.add(node.name)
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            bound.add(node.name)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            bound.update((a.asname or a.name).split(".")[0] for a in node.names)
+        elif isinstance(node, (ast.Global, ast.Nonlocal)):
+            bound.update(node.names)
+        elif isinstance(node, ast.MatchAs) and node.name:
+            bound.add(node.name)
+    return bound
+
+
+def unbound_loads(source: str) -> list[tuple[int, str]]:
+    """Every name a function loads that nothing in scope binds (D138).
+
+    Deliberately coarse: a name bound *anywhere* in a function counts as bound
+    throughout it. That cannot catch a use before assignment, and it does not
+    have to — `T-130` was a name bound in a different function entirely.
+    """
+    tree = ast.parse(source)
+    known = _module_level_names(tree) | set(dir(builtins)) | {"__file__", "__name__"}
+    found: list[tuple[int, str]] = []
+
+    def visit(node: ast.AST, enclosing: set[str]) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                scope = enclosing | _bound_in(child)
+                found.extend(
+                    (n.lineno, n.id)
+                    for n in ast.walk(child)
+                    if isinstance(n, ast.Name)
+                    and isinstance(n.ctx, ast.Load)
+                    and n.id not in scope | known
+                )
+                visit(child, scope)
+            else:
+                visit(child, enclosing)
+
+    visit(tree, set())
+    return sorted(set(found))
+
+
+def test_no_function_under_pa_agent_loads_a_name_nothing_binds():
+    """`review()` read `expansion.system`, and `expansion` was a local of
+    `candidate_rows`. No behavioural test can reach the branch (D65's shape),
+    so every function in the package is parsed instead (T-130, D138)."""
+    modules = sorted(PACKAGE.rglob("*.py"))
+    assert len(modules) > 20, "the package stopped being found"
+    findings = {
+        f"{path.relative_to(REPO_ROOT)}:{line} {name}"
+        for path in modules
+        for line, name in unbound_loads(path.read_text(encoding="utf-8"))
+    }
+    assert findings == set()
+
+
+def test_the_unbound_name_parse_finds_the_defect_it_was_written_for():
+    """The parse follows its input: `T-130`'s own line, put back, is found."""
+    source = (PACKAGE / "history.py").read_text(encoding="utf-8")
+    fixed = "            system=expansion.system,"
+    assert fixed in source
+    mutant = source.replace(
+        "        expansion = products[row.ingredient.code]\n", ""
+    ).replace(
+        "_active_medications(medications, expansion)",
+        "_active_medications(medications, products[row.ingredient.code])",
+    )
+    assert mutant != source
+    assert [name for _, name in unbound_loads(mutant)] == ["expansion"]
 
 
 # --------------------------------------------------------------------------

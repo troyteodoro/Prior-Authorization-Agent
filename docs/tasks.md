@@ -21,6 +21,11 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-130` closed off the path** *(D138)*: `history.review()` cites the
+expansion's system rather than naming a variable bound in another function, and
+every function under `pa_agent/` is now parsed for a name nothing binds. The
+row's stated `NameError` could not fire, because `admits` refuses a prescription
+with no system. The branch was dead, which is why the check is a parse.
 **`T-132` closed off the path** *(D137)*, the first of the ten numbered rows
 cleared before v1.6 opens: this board's own task count, its highest id and its
 list of rows numbered without a record are now re-derived from the records and
@@ -261,10 +266,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-93 tasks are on this board — IDs run to T-141, and every id above T-125 is
+94 tasks are on this board — IDs run to T-141, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 93 are closed and none is open**; `T-130`,
+is well above the count. **All 94 are closed and none is open**;
 `T-131`, `T-133`, `T-135`, `T-136`, `T-138`, `T-139`, `T-140` and `T-141` below
 are numbered and have no record yet, in this board's usual shape. Both figures
 are re-derived from the records and the table by
@@ -296,7 +301,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-126` | the README restructured behind a checked architecture diagram; no version needs it, and its id sits above the roadmap's reservations, which run to T-125 | after `T-95` *(D117)* |
 | `T-127` | *Where this system degrades* re-read: the unclaimed criteria sorted three ways, corpus growth assigned to v1.6's round, Palmetto's `d` note corrected to D107, the measured yellow's deferral recorded — documents only, zero model calls | after `T-97` *(D120)* |
 | `T-128` | the README-structure test `T-126`'s exit named and no commit added: the diagram compared to `workflow.STEPS`, the resolver's result types, the three ports and the store adapters, every check refusing a mutant; zero model calls | after `T-127` *(D121)* |
-| `T-130` | `pa_agent/history.py`'s `review()` reads `medication.system or expansion.system` and **never binds `expansion`** — it is a local of `candidate_rows`. Verified by AST: bound in `candidate_rows`, used and unbound in `review`. `Medication.system` is `str \| None`, so an active prescription carrying no system raises `NameError` where the code means to fall back. Every committed bundle codes RxNorm, so nothing fires today and no behavioural test on this corpus can reach it | **discovered in `T-99`** — `--suggest` is what makes it reachable off-corpus, so it is numbered here and fixed in its own row *(working rule 6)* |
+| `T-130` | `pa_agent/history.py`'s `review()` reads `medication.system or expansion.system` and **never binds `expansion`** — it is a local of `candidate_rows`. Verified by AST: bound in `candidate_rows`, used and unbound in `review`. `Medication.system` is `str \| None`, so an active prescription carrying no system raises `NameError` where the code means to fall back. Every committed bundle codes RxNorm, so nothing fires today and no behavioural test on this corpus can reach it | **closed** (D138), before v1.6 opened — discovered in `T-99`. Measured at open, the `NameError` cannot fire: `admits` refuses a resource with no system, so the fallback was dead code naming an unbound variable. `review` now cites the expansion's system, and every function under `pa_agent/` is parsed for a name nothing binds |
 | `T-131` | **A2's 0.90 threshold is printed and held by no command.** `eval/report.md` states it and `build_report.py --verify` only byte-compares a re-render, so a regeneration in which precision fell to 0.5 passes every gate. `T-99` gated A11's threshold with a test; A2's, A3's and A5's are still prose. T-95's finding about A10, in a third place | **discovered in `T-99`** — gating one threshold made the absence of the others legible; not folded in, because three gates acquiring commands is its own row |
 | `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **closed** (D130), before v1.6 opened |
 | `T-132` | **this board's own task count is a copy nothing re-derives.** `tests/test_docs_consistency.py` counts the closed-record headings and holds `README.md` and `CLAUDE.md` to them; the board's own prose — *"Eighty-two tasks are on this board … 81 are closed and 1 is open"* — was correct when D124 wrote it at `773c209` and was four closes stale by `T-129`, with every gate green. D108's own failure, on the document that **owns** the figure. Same class, found in the same pass: spec §11's opening line read *"v1.3 is in progress"* while its own table three lines below marked v1.3 and v1.4 closed | **closed** (D137), before v1.6 opened — discovered in `T-129`, and found stale again at open: *Ninety-one … IDs run to T-137* against 92 records and T-141, and spec §11 calling a closed v1.5 *in progress*. Both are now re-derived from the board's records, its *Off the path* table and §11's own table |
@@ -4028,6 +4033,46 @@ All five go red.
 closed. The enumerated list of off-path ids above the reservations was replaced
 in both documents by the statement that does not drift: every id above T-125 is
 off the path *(D137)*.
+
+### `[x] T-130` `review()` cites the expansion's system, and the package loads no unbound name
+
+**REQ:** mints nothing. REQ-59 is what makes the branch unreachable, and
+REQ-63 governs the citation it builds · **Depends:** T-97 · **Blocks:** nothing
+· **Discovered in:** T-99 *(D126)* · **Decided by:** D138 · **Gates:** none ·
+**Timebox:** two hours
+**Status:** **closed** (D138). Off the path, closed before v1.6 opened. The exit
+ran green and every gate with it. No verdict, suggestion, span, recording or
+baseline moved.
+
+**Measured at open: the row's failure cannot occur.** The row said a
+prescription declaring no system raises `NameError`. `review` only reaches the
+line through `_active_medications`, which filters on
+`CodedValueSet.admits(code, system)`, and `admits` refuses a resource with no
+system (REQ-59). So `medication.system or expansion.system` never evaluates its
+right side. The defect is a dead fallback naming a variable bound in
+`candidate_rows`, and no behavioural test can reach it (D65's shape).
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_history.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- `review` binds the expansion it filters by and cites `expansion.system`;
+- a prescription declaring no system is neither a suggestion nor a withheld
+  candidate, and nothing raises;
+- no function or lambda in any module under `pa_agent/` loads a name that
+  nothing in scope binds, checked by parsing;
+- that parse, run on `T-130`'s own line put back, finds `expansion` and nothing
+  else.
+
+**Mutation pass.** With the committed `pa_agent/history.py` restored over the
+fix, the package-wide parse goes red on `pa_agent/history.py:353 expansion`
+and the behavioural test **stays green**. That second result is the reason the
+parse exists. With the fix restored, all 56 tests in the file pass.
+`__pycache__` was cleared between runs.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 

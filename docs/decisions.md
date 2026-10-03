@@ -13368,3 +13368,80 @@ states out of the table's *Delivers* cell, because clause 4 reads them there.
 
 Nothing. This is a check on documents, not on the system. No REQ governs prose
 agreement, and working rule 12 is already the statement this checks.
+
+## D138 — `review()` cites the expansion's system, and no function under `pa_agent/` may load a name it cannot bind
+
+**Context.** `T-130`, off the path, the second of the numbered rows cleared
+before v1.6 opens. Written before the code (Article IX, working rule 5).
+
+The row as numbered at `T-99` reads: `history.review()` builds its `on_chart`
+concept with `system=medication.system or expansion.system`, `expansion` is a
+local of `candidate_rows` and is never bound in `review`, and so *an active
+prescription carrying no system raises `NameError` where the code means to fall
+back*.
+
+**Measured at open, the second half is wrong.** The `NameError` cannot fire,
+and the no-system prescription the row describes never reaches that line.
+`review` only builds `on_chart` from `_active_medications(...)`, which filters
+on `CodedValueSet.admits(m.code, m.system)`, and `admits` is
+`system == self.system and code in self.codes` (REQ-59, D111): a resource that
+declares no system is not a member. So every medication that reaches line 353
+already has `medication.system == expansion.system`, a non-empty string, and
+the `or` never evaluates its right side. The defect is real, but it is a
+**dead fallback naming an unbound variable**, not a crash. That is D65's shape:
+no input any test can build tells the code apart from the fixed version, so
+the check has to be a parse.
+
+### Chosen — bind the expansion and cite its system
+
+`review` binds `expansion = products[row.ingredient.code]`, the lookup the line
+above it already makes, and passes it to `_active_medications`. `on_chart`
+takes `system=expansion.system`. That value equals the medication's on every
+input that reaches it, is never `None`, and states where the vocabulary claim
+comes from: the set the medication was admitted by.
+
+*Rejected — `system=medication.system`, deleting the fallback.* It is the same
+value at runtime but typed `str | None` where `CodedConcept` wants a system.
+The `None` it admits is the very case `admits` already excludes, so the type
+would describe an input that cannot occur.
+
+*Rejected — leave it, since it cannot fire.* An unbound name in a branch
+nothing reaches stays a `NameError` the day `admits` is widened, or the day a
+second caller hands `review` a pre-filtered list. The cost of fixing it is one
+binding.
+
+### Chosen — a parse over every function in `pa_agent/`, not only this one
+
+The check is an AST walk that collects, for every function and lambda in every
+tracked module under `pa_agent/`, the names it loads that are neither bound in
+it or an enclosing function, nor module-level, nor builtins. Measured at open
+over all tracked modules, the result is exactly **one** finding,
+`pa_agent/history.py:353 expansion`, and zero false positives. Holding the whole
+package therefore costs nothing over holding one file, and a second instance
+anywhere else would otherwise need its own row. It lives in
+`tests/test_history.py`, beside the behavioural tests of the function it was
+written for, and it parses rather than imports so it cannot be satisfied by a
+module that happens not to execute the branch.
+
+*Rejected — `pyflakes`.* It is the standard tool for exactly this, but it is
+an undeclared dependency. `check_env.py` would have to pin it, and the
+environment every recorded number was produced by would move for one rule
+(D49).
+
+*Rejected — a behavioural test alone.* There is one, and it holds that a
+prescription declaring no system is not a candidate and does not raise. But it
+passes on the unfixed code, because the line is unreachable. That is the reason
+the parse exists.
+
+### Reversal condition
+
+Reverses toward a linter if the package acquires enough scoping constructs —
+`global`, class-body comprehensions, `exec` — that the walk starts reporting
+false positives. At that point the walk is reimplementing a linter badly, and
+pinning one is cheaper than maintaining it.
+
+### What it mints
+
+Nothing. No REQ states *the code has no unbound names*. REQ-59 is the statement
+that makes the branch unreachable, and REQ-63 governs the citation that
+`on_chart` carries.

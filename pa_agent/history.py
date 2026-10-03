@@ -347,10 +347,12 @@ def review(
     withheld: list[WithheldCandidate] = []
 
     for row in candidate_rows(rows, products, medications):
-        matched = _active_medications(medications, products[row.ingredient.code])
-        medication = _most_recent(matched)
+        expansion = products[row.ingredient.code]
+        medication = _most_recent(_active_medications(medications, expansion))
         on_chart = CodedConcept(
-            system=medication.system or expansion.system,
+            # `admits` matched in this set's system, so this is the
+            # medication's own system and never None (REQ-59, D138).
+            system=expansion.system,
             code=medication.code,
             display=medication.display,
         )
