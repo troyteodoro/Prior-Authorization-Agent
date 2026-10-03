@@ -1131,8 +1131,9 @@ changed is that the replayed numbers are no longer from a single tier.
 ## 11. Versions after v1
 
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
-is closed, and **v1.2, v1.3 and v1.4 are closed too** *(T-95/D116, T-99/D126,
-T-102/D129)*; **v1.5 is in progress**, opened by `T-103` *(D131)*. This section fixes what
+is closed, and **v1.2, v1.3, v1.4 and v1.5 are closed too** *(T-95/D116,
+T-99/D126, T-102/D129, T-106/D136)*; no version is open, and v1.6 opens with
+`T-107`. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are

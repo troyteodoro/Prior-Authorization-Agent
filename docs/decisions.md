@@ -13286,3 +13286,85 @@ request, or a parse asserting every `client_for` call site outside
 `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or
 behind a non-default `--extraction` mode. It is `T-128`'s shape — the check a
 close named and no commit added.
+
+## D137 — The board's own prose is held to the board's own records, and spec §11's opening to its own table
+
+**Context.** `T-132`, off the path, opened after v1.5 closed and before v1.6
+opens: the owner asked for the board's numbered-but-unrecorded rows to be closed
+before the next version starts, and this one goes first because the defect it
+names was **live at open**. Written before the code (Article IX, working rule 5).
+
+Measured at open, at `dfe61f6` with all ten gates green:
+
+- `docs/tasks.md`'s own paragraph read *"Ninety-one tasks are on this board — IDs
+  run to T-137 … **All 91 are closed**"* against **92** closed record headings
+  and a highest numbered id of **T-141**, and its list of rows *numbered and
+  with no record yet* named six of the ten — `T-130`, `T-131`, `T-140` and
+  `T-141` were missing. `T-106`'s close moved every one of those figures and
+  reconciled none, under working rule 12, which is exactly the failure this row
+  was numbered for at `T-129`'s close.
+- Spec §11's opening read *"**v1.5 is in progress**, opened by `T-103`"* while
+  the same section's table, nine lines below, marks v1.5 `· **closed**` with
+  `A13 ✓`. The same shape `T-129` found with *"v1.3 is in progress"*, one
+  version on.
+
+`tests/test_docs_consistency.py` already re-derives the closed count from the
+record headings and holds `README.md` and `CLAUDE.md` to it. It never read the
+board's own prose, so the document that **owns** the figure was the one copy
+nothing checked.
+
+### Chosen — derive the four figures from the board's own structure
+
+Three things on the board are structural and cannot drift relative to each
+other: the record headings (`### \`[x] T-NNN\``), the *Off the path* table's
+first column, and the version table in spec §11. The prose copies are checked
+against those:
+
+1. **The task count.** The number in *"N tasks are on this board"* equals the
+   number of record headings, and *"All N are closed and none is open"* is
+   allowed only when every heading is `[x]`.
+2. **The highest id.** *"IDs run to T-N"* equals the highest id that is either
+   a record or a row of the *Off the path* table. A reserved row with no record
+   is not "in use", but a numbered off-path row is, because the board numbers it
+   so that a later close can cite it.
+3. **The numbered-without-record list.** The set of ids the prose says are
+   *numbered and have no record yet* equals the *Off the path* table's ids minus
+   the record ids. When that set is empty the sentence must be gone, not left
+   naming rows that now have records.
+4. **Spec §11's opening.** No version the opening calls *in progress* is marked
+   `**closed**` in the section's own table, and every version the table marks
+   closed is named in the opening.
+
+`CLAUDE.md` carries copies of 2 and 3 in its *Current state*, and they drifted
+in the same close. They are checked by the same derivation, because a copy that
+is reconciled by hand every close but not compared is the failure working rule
+12 was written to stop.
+
+**One copy is removed instead of checked.** The board's *"T-126 through T-129,
+T-134 and T-137 are off the path and above the roadmap's reservations"*, and
+`CLAUDE.md`'s copy of it, enumerate a set that grows with every off-path close.
+The true statement is shorter and does not drift: **every id above T-125 is off
+the path.** Both documents now say that.
+
+*Rejected — rewrite the prose so it states no count at all.* The board's
+paragraph is the first thing a fresh session reads after *What to do next*, and
+the count is how a reader sees that the board grew. A figure with a check is
+worth more than no figure. D108 removed figures only where a pin would be
+friction nobody satisfies, and this one has to be touched at every close anyway.
+
+*Rejected — generate the paragraph.* The board is a hand-written document with
+a narrative register. A generated block inside it becomes a second owner of the
+same figures, which is the arrangement D108 refused for `eval/report.md`'s
+copies.
+
+### Reversal condition
+
+Reverses if the board stops numbering discovered work in the *Off the path*
+table. Clause 3 then needs a different source for "numbered", or it would pass
+vacuously over an empty table. It also reverses if spec §11 moves its version
+states out of the table's *Delivers* cell, because clause 4 reads them there.
+
+### What it mints
+
+Nothing. This is a check on documents, not on the system. No REQ governs prose
+agreement, and working rule 12 is already the statement this checks.

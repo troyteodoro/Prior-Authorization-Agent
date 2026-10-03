@@ -269,6 +269,171 @@ def test_both_documents_report_the_board_s_own_task_count(readme, claude, closed
 
 
 # --------------------------------------------------------------------------
+# The board owns its own counts, and its own prose is a copy too (T-132, D137)
+# --------------------------------------------------------------------------
+
+
+def _records(board: str) -> dict[int, str]:
+    """task id -> its state mark (`x`, ` `, `~`, `!`), from the record headings."""
+    return {
+        int(n): mark
+        for mark, n in re.findall(r"^### `\[(.)\] T-(\d+)`", board, re.M)
+    }
+
+
+def _off_path_ids(board: str) -> set[int]:
+    """The ids in the first column of the board's *Off the path* table."""
+    start = board.index("\nOff the path.")
+    table = board[start:board.index("\n\n", board.index("\n|", start))]
+    return {int(n) for n in re.findall(r"^\| `T-(\d+)` \|", table, re.M)}
+
+
+def _numbered_without_record(text: str, sentence: str) -> set[int] | None:
+    """The ids `text` lists before `sentence`, or None when it lists none.
+
+    The list is the run of backticked ids immediately ahead of the sentence,
+    so a rewording that splits the run is a red test rather than a silent
+    shorter list.
+    """
+    flat = " ".join(text.split())
+    match = re.search(
+        r"((?:`T-\d+`(?:,| and|, and)?\s*)+)" + re.escape(sentence), flat
+    )
+    if not match:
+        return None
+    return {int(n) for n in re.findall(r"T-(\d+)", match.group(1))}
+
+
+def _board_paragraph(board: str) -> str:
+    """The board's own paragraph about itself, and nothing else.
+
+    Closed records quote the figures that were true at their close (*IDs run
+    to T-137* appears in two), and those are history, never checked.
+    """
+    at = board.index("tasks are on this board")
+    return board[board.rindex("\n\n", 0, at):board.index("\n\n", at)]
+
+
+def _board_prose_errors(board: str) -> list[str]:
+    """Every way the board's own paragraph disagrees with the board (D137)."""
+    records = _records(board)
+    numbered = _off_path_ids(board) - set(records)
+    highest = max(set(records) | _off_path_ids(board))
+    paragraph = _board_paragraph(board)
+    flat = " ".join(paragraph.split())
+    errors = []
+
+    stated = _counted_phrases(flat, r"(\S+) tasks are on this board")
+    if [value for value, _ in stated] != [len(records)]:
+        errors.append(f"says {stated} tasks are on the board; there are {len(records)} records")
+
+    all_closed = re.findall(r"All (\d+) are closed and none is open", flat)
+    if all(mark == "x" for mark in records.values()):
+        if [int(n) for n in all_closed] != [len(records)]:
+            errors.append(f"says all {all_closed} are closed; {len(records)} records are")
+    elif all_closed:
+        errors.append("says every task is closed while a record is not `[x]`")
+
+    ran_to = [int(n) for n in re.findall(r"IDs run to T-(\d+)", flat)]
+    if ran_to != [highest]:
+        errors.append(f"says IDs run to {ran_to}; the highest numbered id is T-{highest}")
+
+    listed = _numbered_without_record(paragraph, " below are numbered and have no record yet")
+    if (listed or set()) != numbered:
+        errors.append(
+            f"lists {sorted(listed or ())} as numbered with no record; "
+            f"the table and the records say {sorted(numbered)}"
+        )
+    return errors
+
+
+def _claude_md_errors(claude: str, board: str) -> list[str]:
+    """CLAUDE.md's copies of the same two figures (D137)."""
+    records = _records(board)
+    numbered = _off_path_ids(board) - set(records)
+    highest = max(set(records) | _off_path_ids(board))
+    errors = []
+    ran_to = {int(n) for n in re.findall(r"IDs run to T-(\d+)", " ".join(claude.split()))}
+    if ran_to != {highest}:
+        errors.append(f"CLAUDE.md says IDs run to {sorted(ran_to)}; the board's highest is T-{highest}")
+    listed = _numbered_without_record(claude, " are numbered with no record yet")
+    if (listed or set()) != numbered:
+        errors.append(
+            f"CLAUDE.md lists {sorted(listed or ())} as numbered with no record; "
+            f"the board says {sorted(numbered)}"
+        )
+    return errors
+
+
+def _spec_opening_errors(spec: str) -> list[str]:
+    """Spec §11's opening paragraph against the version table below it."""
+    section = spec[spec.index("## 11."):]
+    opening = " ".join(section[:section.index("\n\n", section.index("\n\n") + 2)].split())
+    closed = set()
+    for line in section.splitlines():
+        match = re.match(r"\| (v\d[\d.]*) \| (.*?) \|", line.strip())
+        if match and "**closed**" in match.group(2):
+            closed.add(match.group(1))
+    assert closed, "spec §11's table no longer marks any version closed"
+    errors = []
+    for version in re.findall(r"(v\d[\d.]*) is in progress", opening):
+        if version in closed:
+            errors.append(f"spec §11 opens by calling {version} in progress; its table marks it closed")
+    for version in sorted(closed):
+        if not re.search(rf"\b{re.escape(version)}\b", opening):
+            errors.append(f"spec §11's table marks {version} closed and its opening never names it")
+    return errors
+
+
+def test_the_board_s_own_prose_agrees_with_its_records():
+    """It read *Ninety-one … IDs run to T-137 … All 91 are closed* against 92
+    records and a highest id of T-141, at a commit with every gate green.
+
+    The board owns the counts (working rule 12), and its own paragraph is a
+    copy of them, so it is re-derived from the record headings and the *Off the
+    path* table like any other copy (D137).
+    """
+    board = TASKS.read_text(encoding="utf-8")
+    assert _board_prose_errors(board) == []
+
+
+def test_claude_md_s_id_range_and_unrecorded_list_come_from_the_board(claude):
+    board = TASKS.read_text(encoding="utf-8")
+    assert _claude_md_errors(claude, board) == []
+
+
+def test_spec_11_s_opening_agrees_with_its_own_table():
+    """It read *v1.5 is in progress* with v1.5 marked closed nine lines below,
+    and *v1.3 is in progress* the time before (T-129, T-132)."""
+    assert _spec_opening_errors(SPEC.read_text(encoding="utf-8")) == []
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        pytest.param(lambda b, n: b.replace(f"{n} are closed", f"{n - 1} are closed"), id="closed-count"),
+        pytest.param(lambda b, n: re.sub(r"IDs run to T-(\d+)", lambda m: f"IDs run to T-{int(m.group(1)) - 1}", b), id="highest-id"),
+        pytest.param(lambda b, n: b.replace("\n| `T-81` |", "\n| `T-199` | numbered | here |\n| `T-81` |", 1), id="number-a-new-row"),
+        pytest.param(lambda b, n: b.replace("none is open**;", "none is open**; `T-132` below are numbered and have no record yet;", 1), id="list-a-recorded-id"),
+    ],
+)
+def test_the_board_prose_check_refuses_a_mutated_board(mutate):
+    """The check has to follow its input (T-99's adversarial shape): each
+    mutant is one way the paragraph went stale at `T-129` or `T-106`."""
+    board = TASKS.read_text(encoding="utf-8")
+    mutant = mutate(board, len(_records(board)))
+    assert mutant != board, "the mutation no longer applies; re-read the paragraph"
+    assert _board_prose_errors(mutant), "a stale paragraph passed the check"
+
+
+def test_the_spec_opening_check_refuses_a_version_left_in_progress():
+    spec = SPEC.read_text(encoding="utf-8")
+    closed = [v for v in re.findall(r"\| (v\d[\d.]*) \| [^|]*\*\*closed\*\*", spec)]
+    mutant = spec.replace("## 11.", f"## 11.\n\n{closed[-1]} is in progress.", 1)
+    assert _spec_opening_errors(mutant)
+
+
+# --------------------------------------------------------------------------
 # The report owns every measured figure
 # --------------------------------------------------------------------------
 
