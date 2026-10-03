@@ -25,6 +25,8 @@ names no clock (a clock-derived `Date:` renders identically *once*, and
 from __future__ import annotations
 
 import ast
+import hashlib
+import itertools
 import json
 import re
 from datetime import date
@@ -34,9 +36,11 @@ import pytest
 
 from pa_agent import form
 from pa_agent.contracts import (
+    CodedConcept,
     Determination,
     DeterminationOutcome,
     Document,
+    EffectSignal,
     EvidenceSpan,
     HistoryReview,
     IcdSuggestion,
@@ -419,6 +423,138 @@ def test_a_packet_with_an_empty_determination_is_refused(citing, policies, patie
             payer="Payer <pa@payer.invalid>",
             index=_index(form.source_ids(determination=citing), policies, patients),
         )
+
+
+# --------------------------------------------------------------------------
+# `source_ids` covers every citation a packet can carry (T-136, D141)
+# --------------------------------------------------------------------------
+
+
+def _span(document_id: str, start: int = 0) -> EvidenceSpan:
+    return EvidenceSpan(document_id=document_id, char_start=start, char_end=start + 5)
+
+
+def _every_colour_review() -> HistoryReview:
+    """Green, yellow and red, each citing documents no other span uses.
+
+    Hand-written because the corpus produces one red and no yellow (T-98), so
+    a corpus review could not reach the yellow branch at all.
+    """
+    rxnorm = "http://www.nlm.nih.gov/research/umls/rxnorm"
+    drug = CodedConcept(system=rxnorm, code="1", display="a drug")
+
+    def suggestion(row_id, colour, effect_doc, citations=(), **extra):
+        return IcdSuggestion(
+            row_id=row_id, colour=colour, icd10_code=f"X0{len(row_id)}.0",
+            icd10_title="An effect", effect_display="an effect",
+            effect=_span(effect_doc), medication=drug, ingredient=drug,
+            citations=citations, **extra,
+        )
+
+    return HistoryReview(
+        patient_id="p1",
+        policy_version_id="a-tree-v1",
+        suggestions=(
+            suggestion(
+                "green", SuggestionColour.GREEN, "label-green",
+                citations=(_span("chart-observation"),),
+                signal=EffectSignal(
+                    system="http://loinc.org", code="2160-0", comparator="gt",
+                    threshold=1.3, unit="mg/dL", constant_name="a_threshold",
+                ),
+                observed_value=2.0, observed_on=date(2026, 1, 1),
+            ),
+            suggestion(
+                "yellow", SuggestionColour.YELLOW, "label-yellow",
+                citations=(_span("chart-note"),),
+            ),
+            suggestion("red", SuggestionColour.RED, "label-red"),
+        ),
+    )
+
+
+def _determination_citing(document_id: str) -> Determination:
+    return Determination(
+        patient_id="p1",
+        procedure_code="43775",
+        policy_version_id="a-tree-v1",
+        outcome=DeterminationOutcome.NOT_COVERED,
+        exclusion_evidence=(_span(document_id),),
+    )
+
+
+def _acceptances(review: HistoryReview, rows) -> tuple[ReviewEntry, ...]:
+    entries = []
+    for suggestion in review.suggestions:
+        if suggestion.row_id not in rows:
+            continue
+        entries.append(_entry(ReviewAction.ACCEPT_SUGGESTION,
+                              row_id=suggestion.row_id, code=suggestion.icd10_code))
+        if suggestion.colour is SuggestionColour.RED:
+            entries.append(_entry(ReviewAction.JUSTIFY_SUGGESTION,
+                                  row_id=suggestion.row_id, code=suggestion.icd10_code,
+                                  justification="Reviewed; the analyte was never drawn."))
+    return tuple(entries)
+
+
+def _index_from(document_ids) -> DocumentIndex:
+    index = DocumentIndex()
+    for document_id in document_ids:
+        text = "x" * 40
+        index.add(Document(document_id=document_id, text=text,
+                           sha256=hashlib.sha256(text.encode()).hexdigest()))
+    return index
+
+
+def _assemble_over(determination, review, rows):
+    session = _session(determination, reviews=_acceptances(review, rows))
+    return form.assemble(
+        session=session, run_index=0,
+        rendered_determination={"outcome": determination.outcome.value},
+        review=review, payer="a payer",
+        index=_index_from(form.source_ids(determination=determination, review=review)),
+    )
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [frozenset(c) for n in range(4) for c in itertools.combinations(("green", "yellow", "red"), n)],
+    ids=lambda rows: "+".join(sorted(rows)) or "none",
+)
+def test_an_index_filled_from_source_ids_validates_every_packet_the_review_allows(rows):
+    """`source_ids` is the only input to the index, so it has to name every
+    document any accepted subset can cite (D141)."""
+    determination = _determination_citing("chart-bundle")
+    review = _every_colour_review()
+    packet = _assemble_over(determination, review, rows)
+    sources = set(form.source_ids(determination=determination, review=review))
+    assert set(packet.cited_documents) <= sources
+    assert {s.row_id for s in packet.suggestions} == rows
+
+
+def test_the_fully_accepted_packet_cites_every_document_kind():
+    """Non-vacuity: the property above is checked over a packet citing all six."""
+    determination = _determination_citing("chart-bundle")
+    packet = _assemble_over(determination, _every_colour_review(), {"green", "yellow", "red"})
+    assert set(packet.cited_documents) == {
+        "chart-bundle", "label-green", "chart-observation",
+        "label-yellow", "chart-note", "label-red",
+    }
+
+
+def test_a_source_traversal_that_drops_effects_refuses_the_packet(monkeypatch):
+    """The property follows its input: `T-134`'s defect, put back one layer
+    down, is a refused packet and not a quiet one."""
+    real = form._review_spans
+
+    def without_effects(review):
+        effects = {s.effect for s in review.suggestions} if review else set()
+        return tuple(span for span in real(review) if span not in effects)
+
+    monkeypatch.setattr(form, "_review_spans", without_effects)
+    with pytest.raises(form.UncitedPacket):
+        _assemble_over(_determination_citing("chart-bundle"),
+                       _every_colour_review(), {"red"})
 
 
 # --------------------------------------------------------------------------

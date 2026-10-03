@@ -13555,3 +13555,66 @@ this entry removes from the composition root.
 
 Nothing. REQ-71, REQ-75 and REQ-77 already state the relations the validators
 check. This entry makes them hold on every write, not only on two of them.
+
+## D141 — `form.source_ids` is held to cover every citation an assembled packet can carry, over every acceptance pattern
+
+**Context.** `T-136`, off the path, the fifth of the numbered rows cleared
+before v1.6 opens. Written before the code (Article IX, working rule 5).
+
+The composition root fills a packet's index from `form.source_ids` alone, and
+`assemble` validates every span in `form.citations` against that index. If
+`source_ids` omits a document a citation needs, a correct span is refused as
+`UncitedPacket`. That is `T-134`'s defect one layer down, in the pure module
+rather than in the composition root. The two traversals share
+`_determination_spans`, and `_review_spans` is a deliberate superset of what a
+packet carries (D131), so on this corpus they cannot disagree. But no command
+holds the relation: a `_review_spans` that stopped collecting a suggestion's
+`effect` (the FDA-label span `T-134` was about) would refuse every packet
+carrying an accepted suggestion, and the only test that would notice is
+`tests/test_packet_index.py`'s one corpus packet.
+
+### Chosen — a property over a hand-written review carrying every colour, under every acceptance pattern
+
+One review carries a green, a yellow and a red suggestion. Each colour's
+`effect` and chart citations sit in documents no other span uses, so a
+traversal that drops any one kind of span leaves a document out. For each of
+the eight subsets of accepted rows (red always justified, so every subset is a
+legal packet), the test:
+
+- builds the index from **`source_ids` and nothing else**;
+- assembles, which must not raise;
+- checks that every document in `cited_documents` is in `source_ids`.
+
+The all-accepted packet must cite all six documents (the determination's own
+plus five from the review), so the property cannot hold vacuously over packets
+that cite little. An adversarial case swaps in a `_review_spans` that drops
+effects and requires `assemble` to refuse (T-99's shape: the check follows its
+input).
+
+The review is hand-written on purpose. The committed corpus produces one red
+and no yellow (T-98: 0 of 60 pairs anchored), so a corpus-built review could not
+exercise the yellow branch at all.
+
+*Rejected — make `source_ids` call `_cited_spans` over every suggestion,
+merging the two traversals.* `source_ids` has to answer before acceptance is
+known, so its input is the whole review, while `_cited_spans` takes the
+accepted subset. Merging them would mean inventing an *accept everything*
+argument for one caller. The superset relation is the design, and this is its
+check.
+
+*Rejected — a parse asserting `_review_spans` reads `effect` and `citations`.*
+It holds today's field names and not the relation. A third span-bearing field
+on `IcdSuggestion` would pass the parse and fail the packet.
+
+### Reversal condition
+
+Reverses if `IcdSuggestion` gains a span-bearing field that `_cited_spans`
+reads and the hand-written review does not populate. The property then has to
+grow a fourth document kind, or it passes over a branch it never builds. The
+first thing to check at that change is this test's builder.
+
+### What it mints
+
+Nothing. REQ-74 states that every citation in a packet slices back through the
+port that serves its document. This is the check that the index those ports
+fill is large enough.

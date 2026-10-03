@@ -21,6 +21,9 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-136` closed off the path** *(D141)*: an index filled from `form.source_ids`
+alone now has to validate every packet a review of every colour allows, under
+all eight acceptance patterns. It held at open, and nothing checked it.
 **`T-138` closed off the path** *(D140)*: the session adapter validates every
 session it writes, in the one function `create` and `save` share, so the four
 verbs' `model_copy`s are all checked. `cli._revalidated` is removed: once the
@@ -273,11 +276,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-96 tasks are on this board — IDs run to T-141, and every id above T-125 is
+97 tasks are on this board — IDs run to T-141, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 96 are closed and none is open**;
-`T-131`, `T-133`, `T-136`, `T-139`, `T-140` and `T-141` below
+is well above the count. **All 97 are closed and none is open**;
+`T-131`, `T-133`, `T-139`, `T-140` and `T-141` below
 are numbered and have no record yet, in this board's usual shape. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
@@ -315,7 +318,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-133` | **three more copies with no owner.** `README.md`'s *eval harness* section read *Twenty-eight labeled cases* while `eval/report.md` — which owns the figure — said 33; `test_the_readmes_corpus_figures_come_from_the_report` checks the copy in P3's bullet and scans no other, which is the every-occurrence weakness `test_every_stated_suite_size_is_the_suites_size` was rebuilt to fix, one figure over. Its repository layout listed the `pa_agent/` modules by hand and had been missing `quotes`, `intake` and `session` since `T-98`, `T-100` and `T-101` — a list the package itself owns. And `CLAUDE.md`'s layout read *tests/ 47 files* against 52: `test_every_stated_suite_size_is_the_suites_size` matches *N tests across M files* and a bare file count is invisible to it. All three are reconciled in `T-103`'s close under working rule 12; the three checks are this row's | **discovered in `T-103`** — `T-132` is the same class on the board's own prose; these three are README's and CLAUDE.md's, against owners outside the document, so they are one row and not folded into that one *(working rule 6)* |
 | `T-134` | **`cli._packet_index` never consults the knowledge store, so no packet carrying an accepted suggestion can be assembled.** A suggestion's `effect` is a span into an **FDA label** — `spl_hydrochlorothiazide[3520:3643]` on the one chart the corpus colours red — and `form.citations` includes it, but the index is built from the patient and policy stores alone, so `assemble` refuses the packet with `UncitedPacket`/`UNKNOWN_DOCUMENT`. `LocalKnowledgeStore.get_document` already exists and serves it; D131's *a packet's spans point into both* counted two corpora and the knowledge corpus is the third (T-96, D118). Invisible to `tests/test_form.py` because its red tests exercise `form.accepted` and the assembling tests use a determination with no accepted suggestion, so no test builds an index over a packet that cites a label | **closed** (D133), before `T-105` opened — discovered in `T-104` by driving `session review --accept` and then `session packet` end to end, the first time the two verbs met. It blocked `T-106`, whose exit needs a packet carrying a justified red, which is why a one-line defect was sequenced ahead of the version's remaining rows |
 | `T-135` | **`tests/test_session_verbs.py::test_an_illegal_transition_is_a_bad_request_and_records_nothing` holds *nothing changed*, not *nothing written*.** It compares the session's bytes after a refused `session run`, and the adapter generates nothing (D127) — so a `store.save(session)` inserted **before** `advance()` raises reproduces the file exactly and the test stays green. REQ-71's claim is that an illegal transition is *never recorded*. Measured in `T-104`'s mutation pass on the same shape in `_verb_review`, where it survived the whole suite until `st_mtime_ns` was compared beside the bytes | **closed** (D139), before v1.6 opened — discovered in `T-104`. The test now compares `st_mtime_ns` beside the bytes, and a `store.save` ahead of the refusal, which passed it at open, is a red test |
-| `T-136` | **nothing checks that `form.source_ids` reports every document `form.citations` needs.** The index is built from `source_ids` alone, so a citation whose document that traversal omits is an `UncitedPacket` on a span that was fine — which is `T-134`'s defect one layer down, in the pure module rather than the composition root. The two traversals share `_determination_spans`, and `_review_spans` is a deliberate **superset** of what a packet carries (D131), so they cannot disagree on this corpus; the relation itself is held by no command. The check is a property over a hand-written review carrying every colour | **discovered in `T-134`** — the row that fixed the index found that its one input is unconstrained; not folded in, because it is a property over `form.py` and not a store the composition root forgot *(working rule 6)* |
+| `T-136` | **nothing checks that `form.source_ids` reports every document `form.citations` needs.** The index is built from `source_ids` alone, so a citation whose document that traversal omits is an `UncitedPacket` on a span that was fine — which is `T-134`'s defect one layer down, in the pure module rather than the composition root. The two traversals share `_determination_spans`, and `_review_spans` is a deliberate **superset** of what a packet carries (D131), so they cannot disagree on this corpus; the relation itself is held by no command. The check is a property over a hand-written review carrying every colour | **closed** (D141), before v1.6 opened — discovered in `T-134`. A property over a hand-written review of every colour, under all eight acceptance patterns, with the index filled from `source_ids` alone; dropping either kind of review span is a red test |
 | `T-137` | **`Packet.supporting_documents` said it was *every document id this packet cites* and was computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest is three spans over **two** documents and that field named **one**, omitting the FDA label — and on a `NOT_COVERED` packet it named two **policy** documents and no chart at all, which is what settled it. Before `T-134` no packet with an accepted suggestion could be assembled, so the claim was true of every packet that existed and false of the first one that could | **closed** (D135), before `T-106` opened — discovered in `T-134`, and sequenced ahead of `T-106` because that row commits fixture bytes and the two readings render different ones. The field is the manifest's documents, deduplicated by the **same** traversal, and renamed `cited_documents`: a form's supporting-documents box is attachments and this packet attaches nothing. It found `T-139` |
 | `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **closed** (D140), before v1.6 opened — discovered in `T-105`. The adapter re-validates in `_serialize`, before any file is opened, so all four write paths are checked. `cli._revalidated` is removed, because once the adapter checks it is a guard no input can fail (D131) |
 | `T-139` | **no check ties a verb's documented flags to its parser.** `README.md`'s packet section documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted `cli.PLACEHOLDER_PAYER` (D134), so the README told a reader to type a flag `argparse` rejects. The stale sentence is corrected in `T-137`'s close under working rule 12 — it is prose about the command whose output that row changes — but README documents all **eight** session verbs' flags and `test_docs_consistency.py` reads none of them: a flag renamed, removed or added leaves prose nothing re-derives. The check is a parse over README's command blocks against the declared options | **discovered in `T-137`** — one stale flag is a working-rule-12 reconciliation; the missing check over every documented flag is its own row *(working rule 6)* |
@@ -4144,6 +4147,38 @@ Green means:
 without validating it. All five refusal tests went red: the four `save` cases
 and the `create` one. With the fix restored and `__pycache__` cleared, the 140
 tests across the four session test files pass.
+
+### `[x] T-136` `form.source_ids` covers every citation a packet can carry
+
+**REQ:** mints nothing. REQ-74 is the statement · **Depends:** T-103, T-134 ·
+**Blocks:** nothing · **Discovered in:** T-134 *(D133)* · **Decided by:** D141 ·
+**Gates:** none · **Timebox:** two hours
+**Status:** **closed** (D141). Off the path, closed before v1.6 opened. The exit
+ran green and every gate with it. No module under `pa_agent/` was changed: the
+property held at open, and nothing checked it.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_form.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- over a hand-written review carrying a green, a yellow and a red suggestion,
+  each citing documents no other span uses, every one of the eight subsets of
+  accepted rows assembles against an index filled from `form.source_ids`
+  **alone**, and its `cited_documents` are a subset of `source_ids`;
+- the fully accepted packet cites all six documents, so the property is not
+  vacuous;
+- a `_review_spans` that drops effects makes `assemble` refuse the packet.
+
+The review is hand-written because the corpus produces no yellow (T-98).
+
+**Mutation pass.** In the real `form._review_spans`, the line collecting each
+suggestion's `effect` was removed: 8 tests went red. The line collecting its
+chart citations was removed: 7 went red. With the module restored and
+`__pycache__` cleared, all 44 tests in the file pass.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 
