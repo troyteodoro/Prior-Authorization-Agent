@@ -13739,3 +13739,57 @@ vacuous pass.
 ### What it mints
 
 Nothing. This is a check on documents, under working rule 12.
+
+## D144 — README's acceptance-gate table has a row for exactly the gates that hold, and every *A1–AN hold* claim names the last of them
+
+**Context.** `T-140`, off the path, the eighth of the numbered rows cleared
+before v1.6 opens. Written before the code (Article IX, working rule 5).
+
+A11 closed with `T-99` and A12 with `T-102`, and neither added a row to
+README's acceptance-gate table, whose heading went on reading *A1–A10 all
+hold*. `T-106` wrote the rows by hand. `tests/test_docs_consistency.py` pins
+the *figures* in four rows against `eval/report.md` and the A7 row against the
+coverage gate, but nothing asserts a row **exists** for each gate that holds.
+
+**Measured at open.** README's table and its heading agree with the spec.
+CLAUDE.md does not: its *Current state* reads *Delivered: US-1 through US-7,
+US-9 and US-10, and acceptance gates A1–A10 all hold*, three versions stale,
+beside a paragraph forty lines on that says A1–A13 hold. Reconciled here under
+working rule 12.
+
+### Chosen — the held set is derived from the spec, and the table and every current-state claim are held to it
+
+**Which gates hold** is read from spec §7 and §11, never from README: every
+gate in §7's table (A1–A9, v1's), plus every gate in §11's gates-by-version
+table whose version §11's version table marks `**closed**`. That is how §11
+states a version is done, and it is what `T-132`'s check already holds §11's
+own opening to.
+
+Then:
+
+1. README's gate table has a row for **exactly** that set, in id order. A
+   missing row is the drift that happened. A row for a gate whose version has
+   not closed is a claim nothing has earned.
+2. Every *acceptance gates A1–AN* and every *A1–AN holding* in README and
+   CLAUDE.md names the highest held gate. Those two phrasings are the
+   current-state claims. A version-scoped sentence such as *v1 and v1.1 are both
+   complete — A1–A9 all hold* is history that stays true, and the check does
+   not read it.
+
+*Rejected — derive the held set from README's own table.* That checks the copy
+against itself, which is the arrangement every entry from D108 on refuses.
+
+*Rejected — check every `A1–AN` in both documents.* It would flag correct
+version-scoped history and get suppressed. D108's line is that a pin on a
+figure that is not wrong is friction.
+
+### Reversal condition
+
+Reverses if §11 stops marking closed versions in its version table, or if
+gates stop mapping one-to-one onto versions. The held set then needs a
+different source. The check asserts that §11's tables parse and that the held
+set includes A1–A9, so a reformat is a red test.
+
+### What it mints
+
+Nothing. This is a check on documents, under working rule 12.

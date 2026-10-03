@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-77 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and not yet open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-130, T-132, T-133, T-134, T-135, T-136, T-137, T-138 and T-139, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open, as is T-131, which T-99 discovered and numbered *(D126)*, and T-140 and T-141, which T-106 did *(D136)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D143, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-130, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139 and T-140, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open, as is T-131, which T-99 discovered and numbered *(D126)*, and T-141, which T-106 did *(D136)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D144, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -889,16 +889,19 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**99 of 99 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1754 tests across 57 files, 58 of
+**100 of 100 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1757 tests across 57 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
 IDs run to T-141 (every id above T-125 is off the path, above the roadmap's
 reservations, D137), but numbering is not contiguous and D92 and D94
 deleted six records between them, so the highest id is well above the count.
-**Nothing is open**; `T-131`,
-`T-140` and `T-141` are numbered with no record yet.
+**Nothing is open**; `T-131` and
+`T-141` are numbered with no record yet.
+**`T-140` closed off the path** *(D144)*: README's gate table and every current
+*A1–AN* claim are held to the gates spec §7 and §11 say hold. This file's
+*Delivered* sentence read A1–A10 at open.
 **`T-139` closed off the path** *(D143)*: README's and this file's documented
 flags are checked against `cli.py`'s parsers in both directions.
 **`T-133` closed off the path** *(D142)*: every labeled-case count, every
@@ -989,8 +992,8 @@ had added: the README's diagram is compared to `workflow.STEPS`, the
 resolver's result types and their routing, the three ports and the store
 adapters, and a renamed step is a red suite.
 
-Delivered: **US-1 through US-7, US-9 and US-10**, and **acceptance gates
-A1–A10 all hold**. `python -m pa_agent.cli --patient
+Delivered: **US-1 through US-7 and US-9 through US-13**, and **acceptance
+gates A1–A13 all hold**. `python -m pa_agent.cli --patient
 <uuid> --procedure 43775` prints a real determination — seven criterion
 verdicts, spans that slice back, a gap list and Article X's counters — for zero
 model calls, because the default extraction runner replays T-15's recording.

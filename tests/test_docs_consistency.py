@@ -1198,6 +1198,74 @@ def test_the_flag_checks_refuse_a_renamed_and_an_added_flag(readme, declared_fla
 
 
 # --------------------------------------------------------------------------
+# The spec owns which acceptance gates hold (T-140, D144)
+# --------------------------------------------------------------------------
+
+
+def _held_gates(spec: str) -> list[int]:
+    """§7's gates, plus every §11 gate whose version §11 marks closed."""
+    section7 = spec[spec.index("## 7. Acceptance criteria"):]
+    section7 = section7[: section7.index("\n## ", 1)]
+    held = {int(n) for n in re.findall(r"^\| A(\d+) \|", section7, re.M)}
+
+    section11 = spec[spec.index("## 11."):]
+    closed = {
+        match.group(1)
+        for match in re.finditer(r"^\| (v\d[\d.]*) \| ([^|]*) \|", section11, re.M)
+        if "**closed**" in match.group(2)
+    }
+    by_version = re.findall(r"^\| A(\d+) \| (v\d[\d.]*) \|", section11, re.M)
+    assert by_version, "spec §11's gates-by-version table no longer parses"
+    held |= {int(gate) for gate, version in by_version if version in closed}
+    assert set(range(1, 10)) <= held, "§7's gates stopped parsing"
+    return sorted(held)
+
+
+def _gate_table_errors(readme: str, held: list[int]) -> list[str]:
+    rows = [int(n) for n in re.findall(r"^\| A(\d+) \| ", readme, re.M)]
+    errors = []
+    if rows != held:
+        errors.append(
+            f"README's gate table has rows {['A%d' % n for n in rows]}; the spec says "
+            f"{['A%d' % n for n in held]} hold"
+        )
+    return errors
+
+
+def _range_claim_errors(texts: dict[str, str], held: list[int]) -> list[str]:
+    errors = []
+    pattern = r"(?i:acceptance gates)\s+\**A1[–-]A(\d+)|A1[–-]A(\d+) holding"
+    for name, text in texts.items():
+        flat = " ".join(text.split())
+        for match in re.finditer(pattern, flat):
+            stated = int(match.group(1) or match.group(2))
+            if stated != held[-1]:
+                errors.append(f"{name} says {match.group(0)!r}; A{held[-1]} is the last that holds")
+    return errors
+
+
+def test_the_readme_gate_table_has_a_row_for_exactly_the_gates_that_hold(readme):
+    """A11 and A12 closed without a row, under a heading reading *A1–A10 all
+    hold* (T-106, D144)."""
+    assert _gate_table_errors(readme, _held_gates(SPEC.read_text(encoding="utf-8"))) == []
+
+
+def test_every_current_gate_range_claim_names_the_last_gate_that_holds(readme, claude):
+    """CLAUDE.md read *acceptance gates A1–A10 all hold* three versions after
+    A13 did (D144)."""
+    held = _held_gates(SPEC.read_text(encoding="utf-8"))
+    assert _range_claim_errors({"README.md": readme, "CLAUDE.md": claude}, held) == []
+
+
+def test_the_gate_checks_refuse_a_missing_row_and_a_stale_range(readme):
+    held = _held_gates(SPEC.read_text(encoding="utf-8"))
+    last = f"| A{held[-1]} | "
+    without_last = "\n".join(l for l in readme.splitlines() if not l.startswith(last))
+    assert _gate_table_errors(without_last, held)
+    assert _range_claim_errors({"README.md": f"Acceptance gates A1–A{held[-1] - 1} all hold."}, held)
+
+
+# --------------------------------------------------------------------------
 # The report owns spec §10's P3 as well
 # --------------------------------------------------------------------------
 

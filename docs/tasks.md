@@ -21,6 +21,9 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-140` closed off the path** *(D144)*: README's gate table has a row for
+exactly the gates spec §7 and §11 say hold, and every current *A1–AN* claim in
+README and CLAUDE.md names the last of them.
 **`T-139` closed off the path** *(D143)*: every flag a documented command uses
 is one its parser declares, and every declared flag is documented, read from
 `cli.py` by parsing. `--reject` and `--outbox-root` were undocumented at open.
@@ -283,11 +286,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-99 tasks are on this board — IDs run to T-141, and every id above T-125 is
+100 tasks are on this board — IDs run to T-141, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 99 are closed and none is open**;
-`T-131`, `T-140` and `T-141` below
+is well above the count. **All 100 are closed and none is open**;
+`T-131` and `T-141` below
 are numbered and have no record yet, in this board's usual shape. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
@@ -329,7 +332,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-137` | **`Packet.supporting_documents` said it was *every document id this packet cites* and was computed from the determination's spans alone.** Measured on the packet `T-134` made assemblable: the citation manifest is three spans over **two** documents and that field named **one**, omitting the FDA label — and on a `NOT_COVERED` packet it named two **policy** documents and no chart at all, which is what settled it. Before `T-134` no packet with an accepted suggestion could be assembled, so the claim was true of every packet that existed and false of the first one that could | **closed** (D135), before `T-106` opened — discovered in `T-134`, and sequenced ahead of `T-106` because that row commits fixture bytes and the two readings render different ones. The field is the manifest's documents, deduplicated by the **same** traversal, and renamed `cited_documents`: a form's supporting-documents box is attachments and this packet attaches nothing. It found `T-139` |
 | `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **closed** (D140), before v1.6 opened — discovered in `T-105`. The adapter re-validates in `_serialize`, before any file is opened, so all four write paths are checked. `cli._revalidated` is removed, because once the adapter checks it is a guard no input can fail (D131) |
 | `T-139` | **no check ties a verb's documented flags to its parser.** `README.md`'s packet section documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted `cli.PLACEHOLDER_PAYER` (D134), so the README told a reader to type a flag `argparse` rejects. The stale sentence is corrected in `T-137`'s close under working rule 12 — it is prose about the command whose output that row changes — but README documents all **eight** session verbs' flags and `test_docs_consistency.py` reads none of them: a flag renamed, removed or added leaves prose nothing re-derives. The check is a parse over README's command blocks against the declared options | **closed** (D143), before v1.6 opened — discovered in `T-137`. Both directions: every documented flag is declared for its verb, and every declared flag is documented. `--reject` and `--outbox-root` were undocumented at open |
-| `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **discovered in `T-106`** *(D136)* — the local instance is fixed and the general check is its own row *(working rule 6)*; it is free and belongs with `T-139`, the other prose-to-artifact parse |
+| `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **closed** (D144), before v1.6 opened — discovered in `T-106`. The held set is derived from spec §7 and §11; README's table has exactly those rows, and every current *A1–AN* claim names the last. CLAUDE.md's *A1–A10 all hold* was live at open |
 | `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **discovered in `T-106`** *(D136)*, while auditing A13 clause by clause — `T-128`'s shape, a check a close named and no commit added |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
@@ -4259,6 +4262,38 @@ Green means:
 renamed back to `--payer` in README is refused forward, and a flag added to
 `submit`'s declared set is refused in reverse. The reverse check run on README
 as committed at open reports exactly `--outbox-root` and `--reject`.
+
+### `[x] T-140` README's gate table, and every *A1–AN hold*, held to the gates the spec says hold
+
+**REQ:** mints nothing. Working rule 12 is the statement · **Depends:** nothing
+· **Blocks:** nothing · **Discovered in:** T-106 *(D136)* · **Decided by:**
+D144 · **Gates:** none · **Timebox:** two hours
+**Status:** **closed** (D144). Off the path, closed before v1.6 opened. The exit
+ran green and every gate with it. No module under `pa_agent/` was changed.
+
+**Measured at open.** README's table and its heading agreed with the spec,
+because `T-106` had written A11–A13's rows by hand. CLAUDE.md did not: *Delivered:
+US-1 through US-7, US-9 and US-10, and acceptance gates A1–A10 all hold*, three
+versions stale. Reconciled here.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- the held set is spec §7's gates plus every §11 gate whose version §11's own
+  table marks closed, never read from README;
+- README's gate table has a row for exactly that set, in order;
+- every *acceptance gates A1–AN* and *A1–AN holding* in README and CLAUDE.md
+  names the last held gate. Version-scoped history (*v1 and v1.1 … A1–A9*) is
+  not read.
+
+**Mutation pass.** The adversarial cases run on every suite: README with its
+last gate row removed is refused, and so is a heading naming one gate short.
+CLAUDE.md's stale sentence failed the new check before it was reconciled.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 
