@@ -13680,3 +13680,62 @@ so a reformat is a red test rather than a silent pass.
 ### What it mints
 
 Nothing. These are checks on documents, under working rule 12.
+
+## D143 — Every flag a documented command uses is one its parser declares, and every declared flag is documented
+
+**Context.** `T-139`, off the path, the seventh of the numbered rows cleared
+before v1.6 opens. Written before the code (Article IX, working rule 5).
+
+README's packet section documented `--payer` after `T-105` had replaced it with
+`--payer-id` (D134), so it told a reader to type a flag `argparse` rejects.
+`T-137` corrected the sentence. Nothing re-derives the rest: README documents
+the bare form and all eight session verbs, and `CLAUDE.md`'s *Commands* block
+documents seven of them, and no test reads either against the parsers.
+
+**Measured at open.** Forward, every flag in every documented command line is
+declared for its verb: no live drift. Reverse, two declared flags are mentioned
+nowhere in README: `session review --reject`, one of the four actions the
+section's own prose lists, and the session parser's `--outbox-root`, the
+counterpart of the `--sessions-root` README does document.
+
+### Chosen — read both sides by parsing, and check both directions
+
+**Declared.** Parsed out of `pa_agent/cli.py`'s AST, not introspected from a
+live parser. The bare parser is built inline in `main()`, and D129 pins that
+block as unedited, so extracting a builder to make it introspectable would
+edit the one block that must not move. The session parser is built inside
+`_session_main`. The parse collects each `add_parser("verb")`, the
+`add_argument` calls on that variable and on any group made from it, the flags
+`_add_model_flags` adds where it is called, and the top-level session options
+that every verb accepts.
+
+**Documented.** Every line in `README.md` and `CLAUDE.md` that begins with an
+invocation of `pa_agent.cli`, with its `\` continuations joined and tokenized
+by `shlex`, so a quoted value is never read as a flag.
+
+**Forward:** every flag on a documented line is declared for that verb, or for
+the bare form when there is no verb. **Reverse:** every declared flag is
+mentioned somewhere in README. A flag can be documented in prose rather than
+in an example (`--sessions-root` is), and requiring an example line for each
+of the 28 flags would be friction nobody satisfies (D108). Every declared verb
+must also have at least one documented command line.
+
+*Rejected — compare against `--help` output.* The help strings mention other
+flags (`--tier`'s help names `--extraction recorded`), so the declared set
+would be polluted by prose, and the reverse check would pass on a flag that
+only another flag's help mentions.
+
+*Rejected — forward direction only.* That is the drift that happened, but the
+row's own statement includes *a flag added*. `--reject` and `--outbox-root`
+show it is not hypothetical.
+
+### Reversal condition
+
+Reverses if the CLI moves off `argparse`, or if verbs stop being built as
+`add_parser` assignments in one function. The parse would then find no verbs.
+It asserts that it finds all eight, so that change is a red test rather than a
+vacuous pass.
+
+### What it mints
+
+Nothing. This is a check on documents, under working rule 12.

@@ -70,7 +70,7 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and no version is
-open.** 98 of 98 tasks closed, **none open** — `T-103` opened v1.5 with the
+open.** 99 of 99 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,7 +78,7 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A13 holding. The suite collects 1750 tests (58 skip). **v1.6 opens next**,
+A1–A13 holding. The suite collects 1754 tests (58 skip). **v1.6 opens next**,
 with `T-107`.
 
 - **v1** delivered the determination end to end: two short circuits, seven
@@ -952,6 +952,8 @@ What the reviewer did, appended beside the determination and never into it
       --justify hydrochlorothiazide-hyperglycemia --code R73.9 \
       --justification "Thiazide exposure documented; monitoring ordered."
 ./venv/bin/python -m pa_agent.cli session review <session-id> --reviewer "R. Chen" \
+      --reject hydrochlorothiazide-hyperglycemia --code R73.9
+./venv/bin/python -m pa_agent.cli session review <session-id> --reviewer "R. Chen" \
       --note "Discussed with the surgeon; proceeding."
 ```
 
@@ -1016,7 +1018,8 @@ to have sent can be opened and compared.
 It is legal **only from `IN_REVIEW`**. Submitting a session nobody reviewed exits
 `1`, naming the state it is in and what it may become, and writes nothing — the
 system never decides to transmit, and that is the transition table rather than a
-check the handler remembers. `--payer-id` picks a recipient from
+check the handler remembers. `--outbox-root` moves the outbox the way
+`--sessions-root` moves the store. `--payer-id` picks a recipient from
 `data/payers/payers.json`; an unknown id is a bad request rather than a fallback
 to the default. Every recipient there declares itself simulated and is addressed
 under `.invalid`, the TLD RFC 2606 reserves, so a packet that escaped this
@@ -1052,7 +1055,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1750 tests across 57 files, 58 of them skipped — the skips are per-tree
+1754 tests across 57 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

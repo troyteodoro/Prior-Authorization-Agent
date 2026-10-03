@@ -28,9 +28,11 @@ Two things are deliberately **not** checked, and both matter:
 
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -1044,6 +1046,155 @@ def test_claude_md_s_bare_test_file_count_is_the_file_count(claude):
     stated = re.findall(r"^tests/\s+(\S+) files", claude, re.M)
     assert stated, "CLAUDE.md's layout no longer states a test-file count"
     assert [_as_count(n) for n in stated] == [files] * len(stated)
+
+
+# --------------------------------------------------------------------------
+# The parser owns the flags (T-139, D143)
+# --------------------------------------------------------------------------
+
+CLI_SOURCE = REPO_ROOT / "pa_agent" / "cli.py"
+SESSION_VERBS = {"create", "list", "show", "run", "review", "packet", "submit", "decide"}
+
+
+def _option_strings(call: ast.Call) -> set[str]:
+    return {
+        a.value for a in call.args
+        if isinstance(a, ast.Constant) and isinstance(a.value, str) and a.value.startswith("-")
+    }
+
+
+def _is_call_to(node: ast.AST, attr: str) -> bool:
+    return isinstance(node, ast.Call) and getattr(node.func, "attr", None) == attr
+
+
+def _declared_flags(source: str) -> tuple[set[str], set[str], dict[str, set[str]]]:
+    """(bare form, every session verb, per verb), read from `cli.py`'s AST.
+
+    Parsed rather than introspected: the bare parser is built inline in
+    `main()` and D129 pins that block as unedited, so there is no builder to
+    call without editing the one block that must not move (D143).
+    """
+    tree = ast.parse(source)
+    functions = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
+
+    def added(function: ast.FunctionDef) -> set[str]:
+        return set().union(*(
+            _option_strings(n) for n in ast.walk(function) if _is_call_to(n, "add_argument")
+        ), set())
+
+    model = added(functions["_add_model_flags"])
+    bare = added(functions["main"])
+
+    body = functions["_session_main"]
+    owner: dict[str, str] = {}
+    verbs: dict[str, set[str]] = {}
+    for node in ast.walk(body):
+        if not (isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)):
+            continue
+        name = node.targets[0].id
+        if _is_call_to(node.value, "add_parser"):
+            owner[name] = node.value.args[0].value
+        elif _is_call_to(node.value, "add_mutually_exclusive_group") or _is_call_to(
+            node.value, "add_argument_group"
+        ):
+            owner[name] = owner.get(node.value.func.value.id, node.value.func.value.id)
+    for node in ast.walk(body):
+        if _is_call_to(node, "add_parser"):
+            verbs.setdefault(node.args[0].value, set())
+    every_verb: set[str] = set()
+    for node in ast.walk(body):
+        if _is_call_to(node, "add_argument"):
+            variable = node.func.value.id
+            if variable == "parser":
+                every_verb |= _option_strings(node)
+            else:
+                verbs[owner[variable]] |= _option_strings(node)
+        elif isinstance(node, ast.Call) and getattr(node.func, "id", None) == "_add_model_flags":
+            verbs[owner[node.args[0].id]] |= model
+    return bare, every_verb, verbs
+
+
+def _documented_commands(text: str) -> list[tuple[int, list[str]]]:
+    """Every invocation line, `\\` continuations joined, tokenized by `shlex`
+    so a quoted value is never read as a flag."""
+    commands = []
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        start = i
+        line = lines[i].strip()
+        if re.match(r"^(?:\./venv/bin/)?python3? -m pa_agent\.cli\b", line):
+            while line.endswith("\\") and i + 1 < len(lines):
+                i += 1
+                line = line[:-1] + " " + lines[i].strip()
+            tokens = shlex.split(line.split("  #")[0])
+            commands.append((start + 1, tokens[tokens.index("pa_agent.cli") + 1:]))
+        i += 1
+    return commands
+
+
+def _flag_errors(name: str, text: str, declared) -> list[str]:
+    bare, every_verb, verbs = declared
+    errors = []
+    for line, tokens in _documented_commands(text):
+        if tokens and tokens[0] == "session":
+            verb = next((t for t in tokens[1:] if not t.startswith("-")), None)
+            allowed = every_verb | verbs.get(verb, set())
+            if verb not in verbs:
+                errors.append(f"{name}:{line} documents `session {verb}`, which is not a verb")
+                continue
+        else:
+            allowed = bare
+        for token in tokens:
+            flag = token.split("=", 1)[0]
+            if flag.startswith("--") and flag not in allowed:
+                errors.append(f"{name}:{line} documents {flag}, which its parser does not declare")
+    return errors
+
+
+def _undocumented(readme: str, declared) -> list[str]:
+    bare, every_verb, verbs = declared
+    mentioned = set(re.findall(r"(?<![\w-])(--[a-z][a-z0-9-]*)", readme))
+    errors = [
+        f"{flag} is declared and README never mentions it"
+        for flag in sorted((bare | every_verb | set().union(*verbs.values())) - mentioned)
+    ]
+    shown = {
+        next((t for t in tokens[1:] if not t.startswith("-")), None)
+        for _, tokens in _documented_commands(readme) if tokens and tokens[0] == "session"
+    }
+    errors += [f"`session {verb}` has no documented command line" for verb in sorted(set(verbs) - shown)]
+    return errors
+
+
+@pytest.fixture(scope="module")
+def declared_flags():
+    declared = _declared_flags(CLI_SOURCE.read_text(encoding="utf-8"))
+    assert set(declared[2]) == SESSION_VERBS, "the verb parse stopped finding the verbs"
+    assert {"--patient", "--procedure"} <= declared[0], "the bare parse stopped finding flags"
+    return declared
+
+
+@pytest.mark.parametrize("name", ["README.md", "CLAUDE.md"])
+def test_every_documented_flag_is_one_its_parser_declares(name, readme, claude, declared_flags):
+    """README documented `--payer` after `T-105` renamed it `--payer-id`,
+    which is a usage error for whoever types it (T-137, D143)."""
+    text = readme if name == "README.md" else claude
+    assert _documented_commands(text), f"{name} documents no command"
+    assert _flag_errors(name, text, declared_flags) == []
+
+
+def test_every_declared_flag_and_verb_is_documented(readme, declared_flags):
+    """A flag added is drift too: `--reject` and `--outbox-root` were
+    declared and mentioned nowhere at open (D143)."""
+    assert _undocumented(readme, declared_flags) == []
+
+
+def test_the_flag_checks_refuse_a_renamed_and_an_added_flag(readme, declared_flags):
+    assert _flag_errors("README.md", readme.replace("--payer-id", "--payer"), declared_flags)
+    bare, every_verb, verbs = declared_flags
+    added = {**verbs, "submit": verbs["submit"] | {"--priority"}}
+    assert _undocumented(readme, (bare, every_verb, added))
 
 
 # --------------------------------------------------------------------------
