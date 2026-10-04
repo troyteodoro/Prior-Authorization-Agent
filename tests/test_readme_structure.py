@@ -336,7 +336,8 @@ def test_the_diagram_walks_workflow_steps_in_order(diagram):
 
 def test_short_circuit_one_names_every_resolver_result_and_routes_it(diagram):
     results = _result_types()
-    assert len(results) == 5, f"resolve_sc1 declares {len(results)} results; re-read the diagram"
+    # Six since T-118 (D162): `NoPayerTree` joined the answers that end here.
+    assert len(results) == 6, f"resolve_sc1 declares {len(results)} results; re-read the diagram"
     assert set(results.values()) == {True, False}, "some results continue and some end"
     check_short_circuit(diagram, results)
 

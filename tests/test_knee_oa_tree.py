@@ -141,15 +141,15 @@ def test_every_hyaluronan_code_resolves_here_and_texas_is_unserved(store, tree):
         "J7326", "J7327", "J7328", "J7329", "J7331", "J7332",
     ]
     for code in codes:
-        ref = store.resolve(code, "IA")
+        ref = store.resolve(code, "IA", "medicare")
         assert ref is not None and ref.policy_version_id == TREE_ID, code
         assert ref.coverage is CoverageStatus.CONTRACTOR_DETERMINED
     # The injection's own CPT code is not bound (D154), and the sleep tree
     # still answers E0601 in the same state: nothing collides.
-    assert store.resolve("20610", "IA") is None
-    assert store.resolve("E0601", "IA").policy_version_id == "pap-osa-dme-jd-v1"
+    assert store.resolve("20610", "IA", "medicare") is None
+    assert store.resolve("E0601", "IA", "medicare").policy_version_id == "pap-osa-dme-jd-v1"
     with pytest.raises(UnknownJurisdiction):
-        store.resolve("J7325", "TX")
+        store.resolve("J7325", "TX", "medicare")
 
 
 def test_every_binding_and_the_coverage_claim_slice_back(tree):

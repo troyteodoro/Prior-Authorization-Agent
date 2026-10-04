@@ -16049,3 +16049,156 @@ clause 3 settles which governs.
   - the slug pattern dropped;
   - a `"medicare"` literal at each of the three construction sites.
 - **Zero model calls.**
+
+## D162 — A request names its payer, and resolution is by payer, code and state
+
+**Context.** `T-118`, v2.0's row 2. Written before the code (Article IX,
+working rule 5). The board's exit is *"two payers binding one code in one
+state resolve to one tree each, neither by load order; an unserved payer is
+its own answer, distinct from an unserved state (REQ-55's shape)"*. D161
+moved the request's payer here, because a request field that nothing
+dispatches on is a comment (D110).
+
+**Measured at open.**
+- **The binding index is keyed `(state, code)`.** A second payer's tree that
+  binds 43775 in Washington raises `resolution would depend on load order`
+  at the first resolve, whichever payer the request meant.
+- **The request carries no payer.** `Intake`, `intake.ALLOWED_KEYS`, the
+  bare parser, `session create`, `determine()` and `PolicyStore.resolve()`
+  have no place for one.
+- **The bundles name payers, and most are not Medicare.** Synthea writes an
+  `ExplanationOfBenefit.insurer` on every claim. Counted per bundle, the
+  dominant insurer is Medicare on five of the thirty-two. The rest are
+  UnitedHealthcare, Humana, Medicaid, Aetna, Cigna, Anthem, a dual-eligible
+  plan, or `NO_INSURANCE`. Several bundles change insurer over the
+  patient's life.
+- **About 160 call sites name a request without a payer.** That is roughly
+  43 `determine(` calls, 67 `resolve` calls and 53 CLI invocations in
+  `tests/`, plus every eval row.
+
+### Chosen
+
+1. **Every request names its payer, with no default and no fallback.**
+   - `Intake.payer` is a required slug. `payer` is a required intake key.
+   - `--payer` is required on the bare form and on `session create`. Each
+     form reports a missing payer the way it already reports a missing
+     procedure:
+     - the bare form through argparse's `required=True`, unchanged since
+       D129;
+     - `session create` through `MalformedIntake`, which exits 1.
+   - The argument is required on `determine()` and `PolicyStore.resolve()`.
+     Every eval row declares `"payer": "medicare"`.
+   - *Rejected — read it from the bundle, as D100 does for state.* Measured
+     above: on twenty-seven of thirty-two charts that resolves to a payer no
+     tree declares. The chart's claim history is simulated billing, not the
+     eligibility a request is made under.
+   - *Rejected — optional, resolving across payers and refusing only when
+     two bind.* While the corpus holds one payer this always answers under
+     Medicare. It is the quiet default D31 refuses, and it becomes visible
+     only when `T-120` makes some rows ambiguous.
+   - *Rejected — a `medicare` default.* D31's move: it turns *never stated*
+     into a value.
+   - **The owner chose this at open**, with the churn stated.
+2. **Resolution keys on `(payer, state, code)`**, and the order of the
+   refusals is fixed:
+   - **No tree declares the payer → `NO_PAYER_TREE`**, carrying the payers
+     the store does serve. This is a sixth resolver type, `NoPayerTree`,
+     mapped from a typed `UnknownPayer` fault, the same shape as REQ-55's.
+     It is not a determination, not a denial and not a bad request: it exits
+     0 and leaves a session `CREATED`.
+   - **The payer is checked before the state.** For a payer no tree serves,
+     *which states does it serve* has no answer.
+   - **The payer is served but not in this state → `NO_JURISDICTION_TREE`**,
+     whose `known_states` are now **that payer's** states. Listing another
+     payer's states would name answers this request cannot get.
+   - **The load-order collision raise stays, scoped to one payer.** Two
+     trees of the same payer binding one code in one state is still a
+     transcription error.
+   - **The national-set consistency check is scoped to one payer.** Those
+     sets transcribe the NCD, and another payer's sets are not the NCD. What
+     *national* means for a non-Medicare payer is `T-119`'s.
+3. **A payer outside the slug grammar is a bad request, exit 1, on both
+   forms.** A request naming `Medicare` is refused, not lowercased. A
+   normaliser would be a second payer vocabulary, and that vocabulary would
+   decide which tree answers. The pattern becomes one constant shared by
+   `Jurisdiction`, `Determination` and `Intake`.
+4. **The determination's payer still comes from the tree** (D161), and by
+   construction it equals the request's. A test checks that on every eval
+   row. No runtime guard is added, because one would be a check no input can
+   fail (D140).
+5. **REQ-82 is minted** by splitting spec §11's second statement:
+   - *a request names a payer and resolves by payer, code and state;*
+   - *two payers binding one code in one state resolve to one tree each,
+     independent of load order;*
+   - *a payer no tree declares is its own answer, distinct from a state no
+     tree serves.*
+
+   The scope half stays a statement until `T-119` (D109).
+6. **The two committed packet fixtures' intakes gain the field** by text
+   insertion. The packet renders no intake payer, so the `.eml` bytes should
+   not move, and the fixture test checks that.
+7. **The exit:**
+
+    ```
+    ./venv/bin/python -m pytest tests/test_payer_resolution.py tests/test_payer_axis.py tests/test_resolver.py tests/test_intake.py tests/test_session_verbs.py tests/test_packet_fixtures.py tests/test_docs_consistency.py -q --color=no \
+     && ./venv/bin/python eval/run_eval.py \
+     && ./venv/bin/python scripts/check_req_coverage.py \
+     && ./venv/bin/python scripts/check_gates.py
+    ```
+
+    Green means:
+    - on a copied corpus with a second payer's tree binding the same codes
+      in the same states, each payer resolves to its own tree;
+    - the answers are identical when the load order is reversed;
+    - two trees of one payer still raise;
+    - an unserved payer is `NO_PAYER_TREE` even in an unserved state;
+    - a served payer in another payer's state is `NO_JURISDICTION_TREE`
+      naming only its own states;
+    - the CLI refuses a missing or malformed payer and answers an unserved
+      one;
+    - every eval row's determination names the request's payer, and
+      `run_eval.py` holds its baseline unchanged;
+    - REQ-82 maps to a check;
+    - zero model calls.
+
+### Reversal condition
+
+- **Clause 1** reverses if a request source that cannot name a payer has to
+  be served, for example an upstream system whose documents carry none. The
+  shape to reach for then is D100's: explicit wins, otherwise a source
+  measured to agree. A default is not that shape.
+- **The bundle route in clause 1** reopens if the corpus's charts are
+  selected or declared under the payer their requests name. That is a
+  corpus decision, not a resolution one.
+- **Clause 2's order** reverses if a payer is ever served nationally under
+  one tree. Then *payer unserved* and *state unserved* stop being nested
+  questions.
+
+### Measured
+
+- **No figure moved.** `run_eval.py` reports no drift against the baseline,
+  and the agentic and verifier recordings replay unchanged.
+  `build_report.py --verify` holds the committed report, because the payer
+  enters no prompt and no tool payload.
+- **The suite took every request site.** About 160 call sites were each
+  given `payer="medicare"`: in `tests/`, the eval harnesses, and the replay
+  paths of `scripts/run_extraction.py` and
+  `scripts/run_verifier_measurement.py`. None of those scripts was run live.
+- **The report spelled the cache key by hand.** `eval/build_report.py`
+  rebuilt `run_eval`'s key as a literal four-tuple, so the payer reached the
+  harness and missed the report, and the report found no determinations at
+  all. The key is now one function, `run_eval.cache_key`, that both read.
+- **The agentic recordings carry no payer.** Their rows were measured
+  before T-118, when every tree was Medicare's. `run_agentic_eval.PAYER`
+  names that payer as a historical default, in the same way `PROCEDURE` and
+  `AS_OF` already name the request a pre-T-110 row was made at. A row
+  measured from now on records its own payer.
+- **A missing `--payer` exits 2 on the bare form and 1 on
+  `session create`.** That is the existing split for `--procedure` (D129):
+  the bare parser declares it `required=True`, and the session route
+  refuses through `MalformedIntake`. A malformed payer exits 1 on both.
+- **Mutation pass.** Eleven mutants; ten caught on the first run. The
+  survivor, a default on `Intake.payer`, reaches no route test because both
+  routes refuse first. It is caught now by loading a stored session with
+  its payer removed, which is the path that reaches the contract directly.
+- **Zero model calls.**

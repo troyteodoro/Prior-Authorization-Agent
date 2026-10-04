@@ -143,7 +143,7 @@ def _reviewed(root: Path, *, justify: bool = True) -> str:
     when they met.
     """
     created = _session_cmd(
-        root, "create", "--patient", RED_PATIENT, "--procedure", COVERED_CODE,
+        root, "create", "--patient", RED_PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare",
         "--state", "WA", "--icd10", "E66.01",
     )
     assert created.returncode == 0, created.stderr
@@ -276,7 +276,7 @@ def _session_over(determination, entries) -> Session:
         intake=Intake(
             patient_id=determination.patient_id,
             procedure_code=determination.procedure_code,
-            icd10_codes=("E66.01",),
+            icd10_codes=("E66.01",), payer="medicare",
         ),
         state=SessionState.IN_REVIEW,
         runs=(

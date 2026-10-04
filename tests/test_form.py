@@ -128,7 +128,7 @@ def _determine(policies, patients, runner, verifier, patient_id, code=COVERED_CO
         patient_store=patients,
         as_of=AS_OF,
         extraction_runner=runner,
-        verifier=verifier,
+        verifier=verifier, payer="medicare",
     )
 
 
@@ -142,7 +142,7 @@ def _session(determination: Determination, *, reviews=(), icd10=("E66.01",)) -> 
             procedure_code=determination.procedure_code,
             icd10_codes=icd10,
             requesting_provider="Referring Clinic",
-            servicing_provider="Bariatric Surgery Service",
+            servicing_provider="Bariatric Surgery Service", payer="medicare",
         ),
         state=SessionState.DETERMINED,
         runs=(
@@ -812,7 +812,7 @@ def _hand_packet(**overrides) -> Packet:
     )
     session = Session(
         session_id="hand-session", created_at="2026-09-01T00:00:00+00:00",
-        intake=Intake(patient_id="p1", procedure_code="43775"),
+        intake=Intake(patient_id="p1", procedure_code="43775", payer="medicare"),
         state=SessionState.DETERMINED,
         runs=(SessionRun(ran_at="r", as_of=AS_OF,
                          policy_version_id="ncd-100.1-jf-v1",

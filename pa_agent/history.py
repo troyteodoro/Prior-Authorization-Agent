@@ -108,7 +108,8 @@ def review_scope(result: object) -> str | None:
     it asks is the true one anyway: *does this result carry a tree*.
 
     **What lacks one is narrower than it looks** *(D126, correcting D123)*.
-    `NoPolicyResult` and `NoJurisdictionResult` are not `Determination`s and
+    `NoPolicyResult`, `NoJurisdictionResult` and, since T-118,
+    `NoPayerResult` are not `Determination`s and
     carry no `policy_version_id`. A `NOT_COVERED` determination **does** carry
     one — both short circuits fire after a tree is resolved — so it reviews
     like any other chart, and `would_affect` has value sets to test membership

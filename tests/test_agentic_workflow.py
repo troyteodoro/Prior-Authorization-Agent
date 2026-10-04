@@ -926,7 +926,7 @@ def test_the_same_gathered_evidence_yields_the_same_verdicts(
     gathers what the fixed one gathers, the criteria cannot tell them apart —
     because it is the same criteria code reading the same bundle."""
     patient_id, _document_id = e1
-    ref = policy_store.resolve(CONTRACTOR_CODE, "WA")
+    ref = policy_store.resolve(CONTRACTOR_CODE, "WA", "medicare")
     # "What the fixed one gathers" is every note the chart holds — two since
     # T-81 (D104) — so the well-behaved plan reads and names both.
     document_ids = [n.document_id for n in patient_store.get_notes(patient_id)]
@@ -967,7 +967,7 @@ def test_the_agentic_path_walks_the_same_graph(
     patient_id, document_id = e1
     run = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
-        extraction_runner=runner, policy_ref=policy_store.resolve(CONTRACTOR_CODE, "WA"),
+        extraction_runner=runner, policy_ref=policy_store.resolve(CONTRACTOR_CODE, "WA", "medicare"),
         patient_id=patient_id, as_of=AS_OF,
         planner=_planner(_full_run(patient_id, document_id)),
         verifier=AcceptAllVerifier(),
@@ -1006,7 +1006,7 @@ def test_a_planner_that_skips_a_note_changes_a_verdict_and_nothing_raises(
                 notes=patient_store.get_notes(case_patients["E5"]),
             )
 
-    ref = policy_store.resolve(CONTRACTOR_CODE, "WA")
+    ref = policy_store.resolve(CONTRACTOR_CODE, "WA", "medicare")
     correct = run_criteria_workflow(
         policy_store=policy_store, patient_store=patient_store,
         extraction_runner=runner, policy_ref=ref, patient_id=e1_patient,
@@ -1080,7 +1080,7 @@ def test_the_gathered_set_includes_the_document_the_structured_facts_came_from(
 
     run = module._run_one(
         policy_store, patient_store, runner, FixedRetrievalPlanner(),
-        patient_id, AcceptAllVerifier(),
+        patient_id, AcceptAllVerifier(), payer="medicare",
     )
     gathered = module._gathered(run)
 
@@ -1136,7 +1136,7 @@ def test_the_fixed_planner_records_no_tool_calls_rather_than_none(
     fixed = FixedRetrievalPlanner()
     run = module._run_one(
         policy_store, patient_store, runner, fixed, case_patients["E1"],
-        AcceptAllVerifier(),
+        AcceptAllVerifier(), payer="medicare",
     )
     assert module._planner_tool_calls(run, fixed.name) == []
     assert run.traces, "the run recorded no trace at all, so the filter proves nothing"

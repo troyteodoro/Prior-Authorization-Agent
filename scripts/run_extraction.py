@@ -810,7 +810,7 @@ def _charts_declaring(kind: FactKind) -> list[str]:
         if not patient_id or patient_id in wanted:
             continue
         state = case.get("state") or store.get_jurisdiction_state(patient_id)
-        ref = policies.resolve(case["procedure_code"], state)
+        ref = policies.resolve(case["procedure_code"], state, case["payer"])
         if ref is None:
             continue
         tree = policies.get_tree(ref.policy_version_id)

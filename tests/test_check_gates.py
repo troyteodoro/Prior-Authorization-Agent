@@ -383,7 +383,7 @@ def test_a_live_extraction_run_from_the_suite_fails_locally_and_spends_nothing()
     _guard_environment_is_in_place()
     proc = subprocess.run(
         [sys.executable, "-m", "pa_agent.cli", "--patient", LIVE_PROBE_PATIENT,
-         "--procedure", "43775", "--extraction", "direct", "--as-of", "2026-09-01"],
+         "--procedure", "43775", "--payer", "medicare", "--extraction", "direct", "--as-of", "2026-09-01"],
         cwd=REPO_ROOT, capture_output=True, text=True, timeout=120,
     )
     assert proc.returncode == 3, proc.stderr[-500:]

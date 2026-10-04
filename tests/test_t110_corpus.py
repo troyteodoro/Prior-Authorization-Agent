@@ -111,7 +111,7 @@ def test_each_row_answers_what_it_labels(row, cases, harness):
     result = determine(
         LocalPolicyStore(), case["procedure_code"], case["patient_id"],
         LocalPatientStore(), date.fromisoformat(case.get("as_of") or "2026-09-01"),
-        harness._recorded_runner(), harness._recorded_verifier(),
+        harness._recorded_runner(), harness._recorded_verifier(), payer="medicare",
     )
     expect = case["expect"]
     assert result.outcome.value == expect["outcome"]
@@ -171,7 +171,7 @@ def test_h13_is_yellow_through_the_gates_own_replay(cases, harness):
     case = cases["H13"]
     determination = determine(
         LocalPolicyStore(), case["procedure_code"], case["patient_id"], LocalPatientStore(),
-        AS_OF, harness._recorded_runner(), harness._recorded_verifier(),
+        AS_OF, harness._recorded_runner(), harness._recorded_verifier(), payer="medicare",
     )
     run = harness._review(
         case, determination, LocalPolicyStore(), LocalPatientStore(),

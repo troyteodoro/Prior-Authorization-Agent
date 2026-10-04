@@ -109,7 +109,7 @@ def _run(policy_store, patient_store, runner, patient_id, verifier):
         policy_store=policy_store,
         patient_store=patient_store,
         extraction_runner=runner,
-        policy_ref=policy_store.resolve(CONTRACTOR_CODE, "WA"),
+        policy_ref=policy_store.resolve(CONTRACTOR_CODE, "WA", "medicare"),
         patient_id=patient_id,
         as_of=AS_OF,
         verifier=verifier,

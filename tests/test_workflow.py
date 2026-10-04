@@ -115,7 +115,7 @@ def case_patients() -> dict[str, str]:
 
 @pytest.fixture(scope="module")
 def ref(policy_store):
-    resolved = policy_store.resolve(CONTRACTOR_CODE, "WA")
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "WA", "medicare")
     assert resolved is not None
     return resolved
 
@@ -607,7 +607,7 @@ def test_a_non_covered_code_answers_with_a_runner_that_cannot_be_called(
         patient_store=patient_store,
         as_of=AS_OF,
         extraction_runner=NullExtractionRunner("E3 is sc1"),
-        state="WA",
+        state="WA", payer="medicare",
     )
     assert determination.outcome.value == "NOT_COVERED"
     assert determination.model_calls == 0
@@ -623,7 +623,7 @@ def test_an_ungoverned_code_answers_with_a_runner_that_cannot_be_called(
         patient_store=patient_store,
         as_of=AS_OF,
         extraction_runner=NullExtractionRunner("no policy governs this code"),
-        state="WA",
+        state="WA", payer="medicare",
     )
     assert type(result).__name__ == "NoPolicyResult"
 
@@ -641,7 +641,7 @@ def test_sc2_answers_with_a_runner_that_cannot_be_called(
         patient_id=t2dm["patient_id"],
         patient_store=patient_store,
         as_of=E2_AS_OF,
-        extraction_runner=NullExtractionRunner("E2 is sc2"),
+        extraction_runner=NullExtractionRunner("E2 is sc2"), payer="medicare",
     )
     assert determination.outcome.value == "NOT_COVERED"
     assert determination.model_calls == 0
@@ -1120,7 +1120,7 @@ def test_the_selection_step_reads_c2s_window_from_the_tree():
         patient_id="p",
         procedure_code="43775",
         as_of=date(2026, 9, 1),
-        policy_ref=store.resolve("43775", "WA"),
+        policy_ref=store.resolve("43775", "WA", "medicare"),
         tree=tree,
         events=_two_run_events(),
     )
@@ -1150,7 +1150,7 @@ def test_the_selection_step_reads_c3s_minimum_from_the_tree():
         patient_id="p",
         procedure_code="43775",
         as_of=date(2026, 9, 1),
-        policy_ref=store.resolve("43775", "WA"),
+        policy_ref=store.resolve("43775", "WA", "medicare"),
         tree=tree,
         # Recent run of three months: below c3's minimum, so it cannot qualify
         # jointly and the long stale run is selected by the fallback.
@@ -1175,7 +1175,7 @@ def test_the_selection_step_reads_c3s_minimum_from_the_tree():
 
 @pytest.fixture(scope="module")
 def palmetto_ref(policy_store):
-    resolved = policy_store.resolve(CONTRACTOR_CODE, "AL")
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "AL", "medicare")
     assert resolved is not None
     assert resolved.policy_version_id == "ncd-100.1-jjm-v1"
     return resolved

@@ -104,7 +104,7 @@ def runner(recording) -> RecordedExtractionRunner:
 
 @pytest.fixture(scope="module")
 def ref(policy_store):
-    resolved = policy_store.resolve(CONTRACTOR_CODE, "WA")
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "WA", "medicare")
     assert resolved is not None
     return resolved
 
@@ -212,7 +212,7 @@ def test_a_raising_model_call_errors_after_the_budget_and_the_count_is_checked(
     # and stderr names every errored criterion with its code (REQ-29).
     fresh = _RaisingRunner(ExtractionFailure.CALL_FAILED)
     monkeypatch.setattr(cli, "_build_runner", lambda *args, **kwargs: fresh)
-    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE])
+    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare"])
     out, err = capsys.readouterr()
     assert rc == 3
     assert out == "", "no Determination is emitted over an ERROR (REQ-24)"
@@ -269,7 +269,7 @@ def test_a_corrupted_payload_reaches_exit_three_through_the_real_cli(
         [
             sys.executable, "-m", "pa_agent.cli",
             "--patient", e1_patient,
-            "--procedure", CONTRACTOR_CODE,
+            "--procedure", CONTRACTOR_CODE, "--payer", "medicare",
             "--recording", str(path),
         ],
         capture_output=True,
@@ -313,7 +313,7 @@ def test_a_span_past_the_document_end_errors_on_first_occurrence(
         "_build_runner",
         lambda *args, **kwargs: _TamperingRunner(runner),
     )
-    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE])
+    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare"])
     out, err = capsys.readouterr()
     assert rc == 3
     assert out == ""
@@ -355,7 +355,7 @@ def test_a_raising_predicate_errors_its_criterion_and_only_its_criterion(
 
     # Through the CLI: the default recorded runner replays for free, and the
     # monkeypatched predicate is the only fault in the chain.
-    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE])
+    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare"])
     out, err = capsys.readouterr()
     assert rc == 3
     assert out == ""
@@ -642,7 +642,7 @@ def test_a_retrieval_failure_reaches_the_cli_as_exit_three(
     planner = _RaisingPlanner()
     monkeypatch.setattr(workflow_module, "FixedRetrievalPlanner", lambda: planner)
 
-    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE])
+    rc = cli.main(["--patient", e1_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare"])
     out, err = capsys.readouterr()
 
     assert rc == 3, "a fault is exit 3; exit 1 is a bad request (REQ-29, D76)"
@@ -715,7 +715,7 @@ def test_an_under_cited_not_met_errors_its_criterion_and_reaches_exit_three(
     assert "CitationInsufficient" in (errored.error_detail or "")
     assert errored.gap_reason is None, "a fault names no next action (Art. IV)"
 
-    rc = cli.main(["--patient", e6_patient, "--procedure", CONTRACTOR_CODE])
+    rc = cli.main(["--patient", e6_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare"])
     out, err = capsys.readouterr()
     assert rc == 3 and out == ""
     assert "criterion c4" in err and "PREDICATE_EXCEPTION" in err
@@ -738,7 +738,7 @@ def test_the_honest_citation_on_the_same_patient_passes(
 
 @pytest.fixture(scope="module")
 def palmetto_ref(policy_store):
-    resolved = policy_store.resolve(CONTRACTOR_CODE, "AL")
+    resolved = policy_store.resolve(CONTRACTOR_CODE, "AL", "medicare")
     assert resolved is not None and resolved.policy_version_id == "ncd-100.1-jjm-v1"
     return resolved
 

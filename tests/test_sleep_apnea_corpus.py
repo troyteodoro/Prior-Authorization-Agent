@@ -137,7 +137,7 @@ def test_each_row_replays_end_to_end_for_zero_model_calls(case, manifests, store
     determination = determine(
         LocalPolicyStore(), "E0601", patient_id=patient_id, patient_store=store,
         as_of=AS_OF, extraction_runner=_runner("sleep_apnea_workup.json"),
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
     verdicts = {r.criterion_id: r.verdict.value for r in determination.criterion_results}
     b, outcome = EXPECTED[case]
@@ -158,7 +158,7 @@ def test_a_sleep_chart_read_from_the_weight_management_recording_is_an_error(man
         determine(
             LocalPolicyStore(), "E0601", patient_id=patient_id, patient_store=store,
             as_of=AS_OF, extraction_runner=_runner("results.json"),
-            verifier=AcceptAllVerifier(),
+            verifier=AcceptAllVerifier(), payer="medicare",
         )
     results = caught.value.results
     assert {r.criterion_id for r in results} == {"a", "b"}

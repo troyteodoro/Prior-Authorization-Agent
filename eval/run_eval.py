@@ -606,6 +606,19 @@ def _recorded_runner() -> Any:
 
 
 
+def cache_key(case: dict[str, Any], as_of: Any) -> tuple[Any, ...]:
+    """The request a cached determination answers — one definition, read by
+    `_determine` and by `eval/build_report.py`, so a field the request gains
+    (the payer, T-118, D162) cannot reach one and miss the other."""
+    return (
+        case.get("patient_id"),
+        case["procedure_code"],
+        as_of,
+        case.get("state"),
+        case["payer"],
+    )
+
+
 def _determine(
     case: dict[str, Any],
     policy_store: Any,
@@ -630,7 +643,7 @@ def _determine(
     """
     if case.get("as_of") is not None:
         as_of = date.fromisoformat(case["as_of"])
-    key = (case.get("patient_id"), case["procedure_code"], as_of, case.get("state"))
+    key = cache_key(case, as_of)
     if cache is not None and key in cache:
         return cache[key]
     result = determine(
@@ -644,6 +657,8 @@ def _determine(
         # T-87 (D100): a row names its state, or the patient's bundle does. A
         # patientless row (E3, NP1) carries one explicitly.
         state=case.get("state"),
+        # T-118 (D162): every row names its payer, with no fallback (REQ-82).
+        payer=case["payer"],
     )
     if cache is not None:
         cache[key] = result
@@ -816,6 +831,7 @@ def _synthetic_case(**overrides: Any) -> dict[str, Any]:
         # T-87 (D100): every request names a state; the self-check's fakes
         # accept any and the harness passes it through like a real row's.
         "state": "WA",
+        "payer": "medicare",
         "expect": {"outcome": "NOT_COVERED", "max_model_calls": 0},
     }
     case.update(overrides)
@@ -876,7 +892,7 @@ def self_check() -> list[tuple[str, bool, str]]:
         def __init__(self, exc: Exception) -> None:
             self._exc = exc
 
-        def resolve(self, procedure_code: str, state: str) -> None:
+        def resolve(self, procedure_code: str, state: str, payer: str) -> None:
             raise self._exc
 
     checks: list[tuple[str, tuple[str, str | None], tuple[str, str | None]]] = []
@@ -1000,7 +1016,7 @@ def self_check() -> list[tuple[str, bool, str]]:
         """resolve() returns None: the port's documented answer for a code no
         policy governs, which `resolve_sc1` maps to `NoPolicyFound` (REQ-1)."""
 
-        def resolve(self, procedure_code: str, state: str) -> None:
+        def resolve(self, procedure_code: str, state: str, payer: str) -> None:
             return None
 
     # ---- D75's branches: REQ-1's shape, criterion-scoped rows, A3 ----------

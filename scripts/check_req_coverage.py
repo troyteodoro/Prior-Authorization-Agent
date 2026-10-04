@@ -151,6 +151,9 @@ MAPPING: dict[str, str] = {
     # dropped.
     "REQ-80": "tests/test_build_report.py",
     "REQ-81": "tests/test_payer_axis.py",
+    # T-118 (D162): resolution by payer, code and state, held on a copied
+    # corpus with a second payer's tree, in both load orders.
+    "REQ-82": "tests/test_payer_resolution.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

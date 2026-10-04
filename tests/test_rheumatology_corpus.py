@@ -129,7 +129,7 @@ def _determine(patients, policies, patient_id):
         patient_store=patients,
         as_of=AS_OF,
         extraction_runner=_RaisingRunner(),
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
 
 
@@ -428,7 +428,7 @@ def test_a_tree_that_reads_no_note_never_reaches_the_runner_on_a_note_bearing_ch
     determination = determine(
         policies, "93975", patient_id=bariatric_chart_in_palmetto,
         patient_store=patients, as_of=AS_OF,
-        extraction_runner=_RaisingRunner(), verifier=AcceptAllVerifier(),
+        extraction_runner=_RaisingRunner(), verifier=AcceptAllVerifier(), payer="medicare",
     )
     assert determination.model_calls == 0
     assert determination.metrics == []

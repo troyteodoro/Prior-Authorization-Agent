@@ -134,7 +134,7 @@ def e8_patient(case_patients) -> str:
 
 @pytest.fixture(scope="module")
 def e3_determination(store) -> Determination:
-    result = determine(store, E3_CODE, patient_id=None, state="WA")
+    result = determine(store, E3_CODE, patient_id=None, state="WA", payer="medicare")
     assert isinstance(result, Determination)
     return result
 
@@ -187,7 +187,7 @@ def test_e3_carries_no_patient_when_none_was_consulted(e3_determination):
 
 
 def test_an_ungoverned_code_yields_no_policy_result(store):
-    result = determine(store, FOREIGN_CODE, state="WA")
+    result = determine(store, FOREIGN_CODE, state="WA", payer="medicare")
     assert isinstance(result, NoPolicyResult)
     assert not isinstance(result, Determination)
     assert result.procedure_code == FOREIGN_CODE
@@ -212,9 +212,9 @@ def test_a_covered_code_refuses_to_answer_without_a_patient(store):
     patient is adjudicating nobody, which D32 already refused at the contract
     level; refusing it here means the request never gets that far."""
     with pytest.raises(NotImplementedError, match="needs a patient"):
-        determine(store, COVERED_CODE, state="WA")
+        determine(store, COVERED_CODE, state="WA", payer="medicare")
     with pytest.raises(NotImplementedError, match="needs a patient"):
-        determine(store, CONTRACTOR_CODE, state="WA")
+        determine(store, CONTRACTOR_CODE, state="WA", payer="medicare")
 
 
 def test_a_covered_code_refuses_to_answer_without_an_extraction_runner(
@@ -239,7 +239,7 @@ def test_a_covered_code_refuses_to_answer_without_an_extraction_runner(
             COVERED_CODE,
             patient_id=e1_patient,
             patient_store=patient_store,
-            as_of=AS_OF,
+            as_of=AS_OF, payer="medicare",
         )
 
 
@@ -248,7 +248,7 @@ def test_the_refusal_names_the_runners_a_caller_could_pass(store, patient_store,
     with pytest.raises(NotImplementedError) as excinfo:
         determine(
             store, COVERED_CODE, patient_id=e1_patient,
-            patient_store=patient_store, as_of=AS_OF,
+            patient_store=patient_store, as_of=AS_OF, payer="medicare",
         )
     message = str(excinfo.value)
     for name in ("RecordedExtractionRunner", "DirectExtractionRunner", "AdkExtractionRunner"):
@@ -452,7 +452,7 @@ def _run_cli(*args: str) -> subprocess.CompletedProcess:
 
 
 def test_the_cli_prints_e3s_determination_and_exits_zero():
-    proc = _run_cli("--patient", "X", "--procedure", E3_CODE, "--state", "WA")
+    proc = _run_cli("--patient", "X", "--procedure", E3_CODE, "--payer", "medicare", "--state", "WA")
     assert proc.returncode == 0, proc.stderr
     printed = json.loads(proc.stdout)
     assert printed["outcome"] == "NOT_COVERED"
@@ -464,7 +464,7 @@ def test_the_cli_prints_e3s_determination_and_exits_zero():
 
 
 def test_the_cli_reports_no_policy_found_without_denying():
-    proc = _run_cli("--patient", "X", "--procedure", FOREIGN_CODE, "--state", "WA")
+    proc = _run_cli("--patient", "X", "--procedure", FOREIGN_CODE, "--payer", "medicare", "--state", "WA")
     assert proc.returncode == 0, proc.stderr
     printed = json.loads(proc.stdout)
     assert printed["result"] == "NO_POLICY_FOUND"
@@ -481,7 +481,7 @@ def test_the_cli_answers_a_covered_code_end_to_end(e1_patient):
     the instrumentation Article X wants beside it.
     """
     proc = _run_cli(
-        "--patient", e1_patient, "--procedure", CONTRACTOR_CODE,
+        "--patient", e1_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare",
         "--as-of", AS_OF.isoformat(),
     )
     assert proc.returncode == 0, proc.stderr
@@ -528,11 +528,11 @@ def test_the_cli_pins_its_answer_to_an_as_of(e1_patient):
     script that would measure it. Either way the date reached the criteria —
     that is what changed the claims."""
     pinned = _run_cli(
-        "--patient", e1_patient, "--procedure", CONTRACTOR_CODE,
+        "--patient", e1_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare",
         "--as-of", AS_OF.isoformat(),
     )
     stale = _run_cli(
-        "--patient", e1_patient, "--procedure", CONTRACTOR_CODE,
+        "--patient", e1_patient, "--procedure", CONTRACTOR_CODE, "--payer", "medicare",
         "--as-of", "2030-01-01",
     )
     assert pinned.returncode == 0
@@ -560,7 +560,7 @@ def test_the_unbuilt_path_handler_still_maps_to_exit_two():
 
 def test_the_cli_exits_one_on_an_unknown_patient():
     """A bad request is not an answer and not an unbuilt path (D41)."""
-    proc = _run_cli("--patient", "nobody-here", "--procedure", COVERED_CODE)
+    proc = _run_cli("--patient", "nobody-here", "--procedure", COVERED_CODE, "--payer", "medicare")
     assert proc.returncode == 1
     assert "bad request" in proc.stderr
     assert proc.stdout == ""
@@ -579,7 +579,7 @@ def _determine_case(store, patient_store, runner, patient_id, code=CONTRACTOR_CO
         patient_store=patient_store,
         as_of=AS_OF,
         extraction_runner=runner,
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
     assert isinstance(result, Determination)
     return result
@@ -715,7 +715,7 @@ def test_a_contractor_determination_cites_the_delegation_and_the_exercise(store)
     document that declines to decide, and the MAC's exercise of the delegation is
     the other half of the answer. Both quotes, and they are not the same quote.
     """
-    ref = store.resolve(CONTRACTOR_CODE, "WA")
+    ref = store.resolve(CONTRACTOR_CODE, "WA", "medicare")
     assert ref is not None
     citations = contractor_citations(ref.coverage_claim)
     assert len(citations) == 2, (
@@ -736,7 +736,7 @@ def test_a_contractor_determination_cites_the_delegation_and_the_exercise(store)
 
 def test_the_contractor_citations_slice_back_out_of_the_corpus(store):
     """Article III: both halves are spans into hashed documents, not prose."""
-    ref = store.resolve(CONTRACTOR_CODE, "WA")
+    ref = store.resolve(CONTRACTOR_CODE, "WA", "medicare")
     assert ref is not None
     index = DocumentIndex()
     for document_id in ("ncd_100_1", "a53028"):
@@ -777,20 +777,20 @@ def test_a_request_with_neither_state_nor_patient_is_refused_not_defaulted(store
     """The mutation D100 names: a missing state silently resolved under
     Jurisdiction F is P1's confident wrong answer with one more layer."""
     with pytest.raises(NotImplementedError, match="state"):
-        determine(store, E3_CODE)
+        determine(store, E3_CODE, payer="medicare")
     with pytest.raises(NotImplementedError, match="state"):
-        determine(store, FOREIGN_CODE)
+        determine(store, FOREIGN_CODE, payer="medicare")
 
 
 def test_an_unserved_state_is_its_own_result_and_not_a_determination(store):
-    result = determine(store, E3_CODE, state="TX")
+    result = determine(store, E3_CODE, state="TX", payer="medicare")
     assert isinstance(result, NoJurisdictionResult)
     assert not isinstance(result, (Determination, NoPolicyResult))
     assert result.state == "TX" and "WA" in result.known_states
 
 
 def test_the_cli_answers_an_unserved_state_with_exit_zero():
-    proc = _run_cli("--patient", "X", "--procedure", E3_CODE, "--state", "TX")
+    proc = _run_cli("--patient", "X", "--procedure", E3_CODE, "--payer", "medicare", "--state", "TX")
     assert proc.returncode == 0, proc.stderr
     printed = json.loads(proc.stdout)
     assert printed["result"] == "NO_JURISDICTION_TREE"
@@ -800,7 +800,7 @@ def test_the_cli_answers_an_unserved_state_with_exit_zero():
 def test_the_cli_refuses_an_unknown_patient_without_a_state_as_a_bad_request():
     """Exit 1, not 0 and not 2: the state cannot be read from a bundle that
     does not exist, and nothing defaults it (D100)."""
-    proc = _run_cli("--patient", "X", "--procedure", E3_CODE)
+    proc = _run_cli("--patient", "X", "--procedure", E3_CODE, "--payer", "medicare")
     assert proc.returncode == 1, proc.stdout
     assert "no patient" in proc.stderr
 
@@ -821,9 +821,9 @@ def test_suggest_emits_the_block_and_leaves_every_verdict_byte_identical(e1_pati
     removing the one key `--suggest` adds, so any drift anywhere else in the
     determination is a diff.
     """
-    plain = _run_cli("--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01")
+    plain = _run_cli("--patient", e1_patient, "--procedure", "43775", "--payer", "medicare", "--as-of", "2026-09-01")
     suggested = _run_cli(
-        "--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01", "--suggest"
+        "--patient", e1_patient, "--procedure", "43775", "--payer", "medicare", "--as-of", "2026-09-01", "--suggest"
     )
     assert plain.returncode == 0, plain.stderr
     assert suggested.returncode == 0, suggested.stderr
@@ -848,9 +848,9 @@ def test_the_reviews_turns_never_enter_the_determinations_counters(e1_patient):
     determination's counter and must not move for them, or A6's figure would
     quietly start including a cost that is not a determination's (D122).
     """
-    plain = _run_cli("--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01")
+    plain = _run_cli("--patient", e1_patient, "--procedure", "43775", "--payer", "medicare", "--as-of", "2026-09-01")
     suggested = _run_cli(
-        "--patient", e1_patient, "--procedure", "43775", "--as-of", "2026-09-01", "--suggest"
+        "--patient", e1_patient, "--procedure", "43775", "--payer", "medicare", "--as-of", "2026-09-01", "--suggest"
     )
     assert plain.returncode == 0 and suggested.returncode == 0
 
@@ -866,8 +866,8 @@ def test_the_reviews_turns_never_enter_the_determinations_counters(e1_patient):
 @pytest.mark.parametrize(
     "args, expected",
     [
-        (("--procedure", FOREIGN_CODE, "--state", "WA"), "NO_POLICY_FOUND"),
-        (("--procedure", "43775", "--state", "TX"), "NO_JURISDICTION_TREE"),
+        (("--procedure", FOREIGN_CODE, "--payer", "medicare", "--state", "WA"), "NO_POLICY_FOUND"),
+        (("--procedure", "43775", "--payer", "medicare", "--state", "TX"), "NO_JURISDICTION_TREE"),
     ],
 )
 def test_a_request_no_tree_governs_declines_the_block_by_name(e1_patient, args, expected):
@@ -904,7 +904,7 @@ def test_a_not_covered_determination_reviews_rather_than_declining(e1_patient):
     D123 said it declines; that was inferred from an eval label omitting the
     key rather than from the object.
     """
-    proc = _run_cli("--patient", e1_patient, "--procedure", E3_CODE, "--state", "WA", "--suggest")
+    proc = _run_cli("--patient", e1_patient, "--procedure", E3_CODE, "--payer", "medicare", "--state", "WA", "--suggest")
     assert proc.returncode == 0, proc.stderr
     printed = json.loads(proc.stdout)
     assert printed["outcome"] == "NOT_COVERED"

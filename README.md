@@ -57,7 +57,7 @@ key:
 ```bash
 python3.12 -m venv venv
 ./venv/bin/pip install -r requirements.txt
-./venv/bin/python -m pa_agent.cli --patient 49092fd9-d5bf-24e2-474b-00041a279a47 --procedure 43775
+./venv/bin/python -m pa_agent.cli --patient 49092fd9-d5bf-24e2-474b-00041a279a47 --procedure 43775 --payer medicare
 ```
 
 The last command prints a real determination — seven criterion verdicts, evidence
@@ -70,7 +70,7 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 are all complete.**
-110 of 110 tasks closed, **none open** — `T-103` opened v1.5 with the
+111 of 111 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,7 +78,7 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A14 holding. The suite collects 2159 tests (161 skip). **`T-107` opened v1.6**
+A1–A14 holding. The suite collects 2177 tests (161 skip). **`T-107` opened v1.6**
 *(D149)*: a tree now declares the fact kinds its extraction produces, a tree
 declaring none reads no note, and a recording replays only under the prompt
 version it was measured with. **`T-108` added practice three** *(D150)*: CPAP
@@ -107,7 +107,12 @@ sometimes looped, and it retries a malformed answer once. Both tiers score 25
 of 25 with zero errors, A1–A14 holding. **`T-117` opened v2.0** *(D161)*:
 every tree declares the payer whose coverage it compiles (`medicare` on all
 six), and every determination, stored session and packet records its tree's
-payer (REQ-81). **v2.0's `T-118`, resolution by payer, is next.**
+payer (REQ-81). **`T-118` made the payer part of the request** *(D162)*:
+every request names one, with no default and no fallback to the chart, and
+resolution is by payer, code and state. Two payers binding one code in one
+state resolve to one tree each in either load order, and a payer no tree
+declares is its own answer, `NO_PAYER_TREE` (REQ-82). **v2.0's `T-119`, scope
+and the national pairing, is next.**
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -314,7 +319,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.509**, accounted for per `gap_reason` — the rise is the later practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 152 model calls / 143,832 in / 20,682 out / 139.5s across thirty-five determinations, from instrumentation |
-| A7 | 83 requirements: 81 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 84 requirements: 82 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **33 criteria across six trees and five practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -623,18 +628,18 @@ cannot launder its bugs through the validator.
 
 ## How it works
 
-A request goes in — a patient, a procedure code and a state — and a reviewable
+A request goes in — a patient, a procedure code, a payer and a state — and a reviewable
 determination comes out. Between them are two short circuits and one fixed
 graph. **No model decides any of it**: the model reads notes and proposes
 citations, and Python decides everything that can change a verdict.
 
 ```mermaid
 flowchart TD
-    REQ(["request · patient, procedure code, state"]) --> CLI
+    REQ(["request · patient, procedure code, payer, state"]) --> CLI
     CLI["cli.py — the one place an adapter is constructed"] --> SC1
 
     SC1{"resolver.py · short circuit 1<br/>procedure-set membership"}
-    SC1 -->|NotCovered · NoPolicyFound · NoJurisdictionTree| OUT
+    SC1 -->|NotCovered · NoPolicyFound · NoJurisdictionTree · NoPayerTree| OUT
     SC1 -->|Resolved · ResolvedByContractor| SC2
 
     SC2{"determination.py · short circuit 2<br/>the NCD's categorical exclusion"}
@@ -973,13 +978,14 @@ predicate — which is the point.
 ### A determination
 
 ```bash
-./venv/bin/python -m pa_agent.cli --patient 49092fd9-d5bf-24e2-474b-00041a279a47 --procedure 43775
+./venv/bin/python -m pa_agent.cli --patient 49092fd9-d5bf-24e2-474b-00041a279a47 --procedure 43775 --payer medicare
 ```
 
 | Flag | Meaning |
 |---|---|
 | `--patient <id>` | required — the patient identifier |
 | `--procedure <code>` | required — the requested CPT/HCPCS code |
+| `--payer <slug>` | required — the payer the request is made under, spelled as a tree declares it (`medicare` on every committed tree). Never defaulted and never read from the chart; a payer no tree declares is its own answer, `NO_PAYER_TREE` (REQ-82) |
 | `--extraction recorded\|direct\|adk` | which model leaf reads the notes. Default `recorded` replays the committed extraction for **zero model calls**; `direct` (raw `google-genai`) and `adk` spend live calls |
 | `--recording <path>` | the recording replayed under `--extraction recorded` |
 | `--tool-fetch` | with `--extraction adk`: the agent fetches the note through its `read_note` tool instead of receiving it in the message |
@@ -989,7 +995,7 @@ predicate — which is the point.
 | `--suggest` | emit the medical-history review beside the verdicts, which are unchanged (REQ-65). Replays T-98's quote recording, so it spends nothing |
 
 Exit codes: `0` an answer (honest abstentions included), `1` a bad request —
-an unknown patient, and from the session verbs a malformed intake, an unknown
+an unknown patient or a payer outside the slug grammar, and from the session verbs a malformed intake, an unknown
 session or an illegal lifecycle order; `2` an unbuilt path; `3` a determination
 aborted because a criterion is in `ERROR` — the criterion id and error code go
 to stderr, nothing to stdout.
@@ -1001,9 +1007,9 @@ the parser above, so every invocation on this page works exactly as it did
 before they existed.
 
 ```bash
-./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 --state WA
+./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 --payer medicare --state WA
 ./venv/bin/python -m pa_agent.cli session create --intake request.json
-./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 \
+./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 --payer medicare \
       --icd10 E66.01 --requesting-provider "Referring Clinic"
 ./venv/bin/python -m pa_agent.cli session list
 ./venv/bin/python -m pa_agent.cli session run <session-id> --as-of 2025-01-01
@@ -1021,8 +1027,8 @@ bare invocation prints for the same request. `--sessions-root` moves the store;
 the default is `data/sessions/`, which is gitignored because a session is the
 system's own output rather than evidence it can re-derive.
 
-A request no tree governs — a code no policy covers, or a state no tree serves
-— prints its answer, exits `0` and leaves the session `CREATED`: nothing was
+A request no tree governs — a code no policy covers, a state no tree serves,
+or a payer no tree declares — prints its answer, exits `0` and leaves the session `CREATED`: nothing was
 determined, so there is no snapshot to keep.
 
 ### The review log
@@ -1140,7 +1146,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-2159 tests across 66 files, 161 of them skipped — the skips are per-tree
+2177 tests across 67 files, 161 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

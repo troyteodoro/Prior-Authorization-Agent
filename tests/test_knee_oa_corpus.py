@@ -152,7 +152,7 @@ def test_each_row_replays_end_to_end_for_zero_model_calls(case, manifests, rows,
     determination = determine(
         LocalPolicyStore(), "J7325", patient_id=patient_id, patient_store=store,
         as_of=date.fromisoformat(rows[case]["as_of"]), extraction_runner=_runner(RECORDING),
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
     verdicts = {r.criterion_id: r.verdict.value for r in determination.criterion_results}
     a, b, d, outcome = EXPECTED[case]
@@ -168,7 +168,7 @@ def test_knee3_ages_into_met_under_the_harness_date(manifests, store):
     determination = determine(
         LocalPolicyStore(), "J7325", patient_id=manifests["KNEE3"]["patient_id"],
         patient_store=store, as_of=date(2026, 9, 1), extraction_runner=_runner(RECORDING),
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
     d = next(r for r in determination.criterion_results if r.criterion_id == "d")
     assert d.verdict is CriterionVerdict.MET
@@ -183,7 +183,7 @@ def test_a_knee_chart_read_from_another_kinds_recording_is_an_error(manifests, r
             LocalPolicyStore(), "J7325", patient_id=manifests[case]["patient_id"],
             patient_store=store, as_of=date.fromisoformat(rows[case]["as_of"]),
             extraction_runner=_runner("results.json", "sleep_apnea_workup.json"),
-            verifier=AcceptAllVerifier(),
+            verifier=AcceptAllVerifier(), payer="medicare",
         )
     results = caught.value.results
     assert {r.criterion_id for r in results} == {"a", "b", "d"}

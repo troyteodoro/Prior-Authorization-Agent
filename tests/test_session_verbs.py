@@ -189,9 +189,9 @@ def test_the_unbuilt_path_handler_survived_the_refactor():
 @pytest.mark.parametrize(
     "args",
     [
-        ("--patient", PATIENT, "--procedure", COVERED_CODE, "--as-of", AS_OF),
-        ("--patient", "X", "--procedure", "43842", "--state", "WA"),
-        ("--patient", "X", "--procedure", FOREIGN_CODE, "--state", "WA"),
+        ("--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--as-of", AS_OF),
+        ("--patient", "X", "--procedure", "43842", "--payer", "medicare", "--state", "WA"),
+        ("--patient", "X", "--procedure", FOREIGN_CODE, "--payer", "medicare", "--state", "WA"),
     ],
     ids=["covered", "not-covered", "no-policy"],
 )
@@ -244,24 +244,24 @@ def test_the_bare_forms_document_still_carries_exactly_these_keys():
     every other key here is what `T-25` and `T-99` between them settled.
     """
     determination = json.loads(
-        _cli("--patient", PATIENT, "--procedure", COVERED_CODE,
+        _cli("--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare",
              "--state", "WA", "--as-of", AS_OF).stdout
     )
     assert set(determination) == BARE_DETERMINATION_KEYS
 
     suggested = json.loads(
-        _cli("--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA",
+        _cli("--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA",
              "--as-of", AS_OF, "--suggest").stdout
     )
     assert set(suggested) == BARE_DETERMINATION_KEYS | {"icd_suggestions"}
 
     no_policy = json.loads(
-        _cli("--patient", "X", "--procedure", FOREIGN_CODE, "--state", "WA").stdout
+        _cli("--patient", "X", "--procedure", FOREIGN_CODE, "--payer", "medicare", "--state", "WA").stdout
     )
     assert set(no_policy) == BARE_NO_POLICY_KEYS
 
     no_tree = json.loads(
-        _cli("--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "TX").stdout
+        _cli("--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "TX").stdout
     )
     assert set(no_tree) == BARE_NO_JURISDICTION_KEYS
 
@@ -273,11 +273,11 @@ def test_a_missing_required_flag_still_exits_two():
     that the collision predates this row. Pinned so the collision is a known
     fact rather than a surprise.
     """
-    assert _cli("--procedure", COVERED_CODE).returncode == 2
+    assert _cli("--procedure", COVERED_CODE, "--payer", "medicare").returncode == 2
 
 
 def test_an_unknown_patient_is_still_a_bad_request():
-    proc = _cli("--patient", "NOSUCH", "--procedure", COVERED_CODE, "--state", "WA")
+    proc = _cli("--patient", "NOSUCH", "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA")
     assert proc.returncode == 1
     assert proc.stdout == ""
     assert "bad request" in proc.stderr
@@ -309,7 +309,7 @@ def test_create_list_show_run_round_trip_a_determination(tmp_path):
     """
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
 
     listed = json.loads(_session(root, "list").stdout)
@@ -347,7 +347,7 @@ def test_a_second_run_appends_a_snapshot_and_never_edits_the_first(tmp_path):
     """
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     _session(root, "run", session_id, "--as-of", AS_OF)
     first = json.loads(_session(root, "show", session_id).stdout)["runs"][0]
@@ -374,13 +374,13 @@ def test_the_determination_is_byte_identical_to_the_bare_forms(tmp_path):
     """
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     ran = _session(root, "run", session_id, "--as-of", AS_OF)
     through_the_verb = json.loads(ran.stdout)["determination"]
 
     bare = _cli(
-        "--patient", PATIENT, "--procedure", COVERED_CODE,
+        "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare",
         "--state", "WA", "--as-of", AS_OF,
     )
     assert bare.returncode == 0, bare.stderr
@@ -393,7 +393,7 @@ def test_suggest_reaches_the_verb_and_still_changes_no_verdict(tmp_path):
     """`--suggest` on `session run` is the same block the bare form emits."""
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     ran = _session(root, "run", session_id, "--as-of", AS_OF, "--suggest")
     assert ran.returncode == 0, ran.stderr
@@ -401,7 +401,7 @@ def test_suggest_reaches_the_verb_and_still_changes_no_verdict(tmp_path):
     assert "icd_suggestions" in determination
 
     bare = _cli(
-        "--patient", PATIENT, "--procedure", COVERED_CODE,
+        "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare",
         "--state", "WA", "--as-of", AS_OF, "--suggest",
     )
     rendered = json.dumps(determination, indent=2, ensure_ascii=False) + "\n"
@@ -423,7 +423,7 @@ def test_a_code_no_policy_governs_answers_and_records_nothing(tmp_path):
     """
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", "X", "--procedure", FOREIGN_CODE, "--state", "WA"
+        root, "--patient", "X", "--procedure", FOREIGN_CODE, "--payer", "medicare", "--state", "WA"
     )
     ran = _session(root, "run", session_id)
     assert ran.returncode == 0, ran.stderr
@@ -443,10 +443,10 @@ def test_that_answer_is_the_bare_forms_answer(tmp_path):
     """The two surfaces agree about a request neither can determine."""
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", "X", "--procedure", FOREIGN_CODE, "--state", "WA"
+        root, "--patient", "X", "--procedure", FOREIGN_CODE, "--payer", "medicare", "--state", "WA"
     )
     through_the_verb = json.loads(_session(root, "run", session_id).stdout)
-    bare = _cli("--patient", "X", "--procedure", FOREIGN_CODE, "--state", "WA")
+    bare = _cli("--patient", "X", "--procedure", FOREIGN_CODE, "--payer", "medicare", "--state", "WA")
     rendered = (
         json.dumps(through_the_verb["determination"], indent=2, ensure_ascii=False)
         + "\n"
@@ -463,7 +463,7 @@ def test_that_answer_is_the_bare_forms_answer(tmp_path):
     "args",
     [
         ("create", "--patient", "X"),
-        ("create", "--procedure", COVERED_CODE),
+        ("create", "--procedure", COVERED_CODE, "--payer", "medicare"),
         ("create",),
     ],
     ids=["no-procedure", "no-patient", "neither"],
@@ -510,6 +510,7 @@ def test_an_intake_document_and_the_flags_create_the_same_session(tmp_path):
             {
                 "patient_id": PATIENT,
                 "procedure_code": COVERED_CODE,
+                "payer": "medicare",
                 "state": "WA",
                 "icd10_codes": [" e66.01 ", "E66.01", "z68.41"],
             }
@@ -520,7 +521,7 @@ def test_an_intake_document_and_the_flags_create_the_same_session(tmp_path):
     from_flags = _created(
         root,
         "--patient", PATIENT,
-        "--procedure", COVERED_CODE,
+        "--procedure", COVERED_CODE, "--payer", "medicare",
         "--state", "WA",
         "--icd10", " e66.01 ", "E66.01", "z68.41",
     )
@@ -531,7 +532,7 @@ def test_an_intake_document_and_the_flags_create_the_same_session(tmp_path):
 
 def test_an_unknown_session_is_a_bad_request(tmp_path):
     root = tmp_path / "sessions"
-    _created(root, "--patient", "X", "--procedure", COVERED_CODE, "--state", "WA")
+    _created(root, "--patient", "X", "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA")
     for verb in ("show", "run"):
         proc = _session(root, verb, "nosuchsession")
         assert proc.returncode == 1, verb
@@ -558,7 +559,7 @@ def test_an_illegal_transition_is_a_bad_request_and_records_nothing(tmp_path):
     """
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     _session(root, "run", session_id, "--as-of", AS_OF)
 
@@ -591,7 +592,7 @@ def _reviewed(root: Path) -> str:
     the refusals against a shape the verbs cannot produce.
     """
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     ran = _session(root, "run", session_id, "--as-of", AS_OF)
     assert ran.returncode == 0, ran.stderr
@@ -637,7 +638,7 @@ def test_submitting_before_review_is_refused_and_writes_nothing(
     outbox = tmp_path / "outbox"
 
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     if reach == "determined":
         assert _session(root, "run", session_id, "--as-of", AS_OF).returncode == 0
@@ -847,7 +848,7 @@ def test_deciding_a_session_nobody_submitted_is_refused(tmp_path, reach):
         session_id = _reviewed(root)
     else:
         session_id = _created(
-            root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+            root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
         )
         if reach == "determined":
             assert _session(root, "run", session_id, "--as-of", AS_OF).returncode == 0

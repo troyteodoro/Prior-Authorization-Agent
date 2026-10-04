@@ -88,7 +88,7 @@ def _created(root: Path, *args: str) -> str:
 def _determined(root: Path, patient: str = PATIENT, as_of: str = AS_OF) -> str:
     """One session with a snapshot, which is the state a review may be taken in."""
     session_id = _created(
-        root, "--patient", patient, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", patient, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     ran = _session(root, "run", session_id, "--as-of", as_of)
     assert ran.returncode == 0, ran.stderr
@@ -155,7 +155,7 @@ def test_reviewing_a_created_session_is_refused_and_writes_nothing(tmp_path):
     """
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     before = _untouched(root, session_id)
 
@@ -407,7 +407,7 @@ def _determination_session(state=SessionState.DETERMINED, runs=1, reviews=()):
     return Session(
         session_id="s1",
         created_at="2026-09-25T00:00:00Z",
-        intake=Intake(patient_id="p", procedure_code=COVERED_CODE),
+        intake=Intake(patient_id="p", procedure_code=COVERED_CODE, payer="medicare"),
         state=state,
         runs=tuple(run for _ in range(runs)),
         reviews=reviews,
@@ -547,7 +547,7 @@ def test_the_entries_the_verb_wrote_are_the_ones_the_packet_reader_reads(tmp_pat
     """
     root = tmp_path / "sessions"
     session_id = _created(
-        root, "--patient", RED_PATIENT, "--procedure", COVERED_CODE, "--state", "WA"
+        root, "--patient", RED_PATIENT, "--procedure", COVERED_CODE, "--payer", "medicare", "--state", "WA"
     )
     assert _session(root, "run", session_id, "--as-of", RED_AS_OF).returncode == 0
 

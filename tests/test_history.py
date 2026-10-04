@@ -1015,7 +1015,7 @@ def corpus_review():
     def review_for(patient_id: str, procedure_code: str):
         tree = policy.get_tree(
             policy.resolve(
-                procedure_code, patient.get_jurisdiction_state(patient_id)
+                procedure_code, patient.get_jurisdiction_state(patient_id), "medicare"
             ).policy_version_id
         )
         sets = {}
@@ -1116,7 +1116,7 @@ def corpus_run():
     def run_for(patient_id: str, procedure_code: str) -> history.HistoryRun:
         tree = policy.get_tree(
             policy.resolve(
-                procedure_code, patient.get_jurisdiction_state(patient_id)
+                procedure_code, patient.get_jurisdiction_state(patient_id), "medicare"
             ).policy_version_id
         )
         sets = {}

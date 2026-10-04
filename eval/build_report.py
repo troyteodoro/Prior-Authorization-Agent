@@ -221,9 +221,7 @@ def _determination_for(case: dict[str, Any], cache: dict[Any, Any]) -> Any:
         if case.get("as_of") is not None
         else harness.EVAL_AS_OF
     )
-    return cache.get(
-        (case.get("patient_id"), case["procedure_code"], as_of, case.get("state"))
-    )
+    return cache.get(harness.cache_key(case, as_of))
 
 
 # --------------------------------------------------------------------------
@@ -1386,7 +1384,7 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
     # report reads — zero calls, recorded extraction.
     direct: dict[str, list[bool]] = {}
     bound: dict[str, list[bool]] = {}
-    for (patient_id, procedure_code, as_of, _state), determination in cache.items():
+    for (patient_id, procedure_code, as_of, _state, _payer), determination in cache.items():
         if not isinstance(determination, Determination):
             continue
         if patient_id not in gathered_by_patient:

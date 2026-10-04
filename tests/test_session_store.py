@@ -85,7 +85,7 @@ def _session(
         session_id=session_id,
         created_at=created_at,
         intake=Intake(
-            patient_id="07a5f345", procedure_code="43775", icd10_codes=("E66.01",)
+            patient_id="07a5f345", procedure_code="43775", icd10_codes=("E66.01",), payer="medicare"
         ),
         state=state,
         runs=runs,
@@ -392,8 +392,9 @@ RUN_FIELDS = {"ran_at", "as_of", "policy_version_id", "determination"}
 #: identity **pass-through text**, never a `Practitioner` resource — Article VI's
 #: line is drawn at resources, not at text, which is the same reason
 #: `icd10_codes` is a tuple of strings and not a list of `Condition`s.
+#: `payer` joined at T-118 (D162): the request's, required, read by resolution.
 INTAKE_FIELDS = {
-    "patient_id", "procedure_code", "state", "icd10_codes",
+    "patient_id", "procedure_code", "payer", "state", "icd10_codes",
     "requesting_provider", "servicing_provider",
 }
 

@@ -39,6 +39,9 @@ ALLOWED_KEYS = frozenset(
     {
         "patient_id",
         "procedure_code",
+        # T-118 (D162): the payer the request is made under, matched against a
+        # tree's payer by resolution. Required below.
+        "payer",
         "state",
         "icd10_codes",
         # T-103 (D131): identity pass-through, carried and read by no predicate.
@@ -49,10 +52,13 @@ ALLOWED_KEYS = frozenset(
     }
 )
 
-#: The two a request cannot be without. `state` is optional because `None`
-#: means *read it from the bundle*, which is the CLI's own default (REQ-55),
-#: and `icd10_codes` because a request with no diagnosis codes is ordinary.
-REQUIRED_KEYS = ("patient_id", "procedure_code")
+#: The three a request cannot be without. `payer` joined in T-118 (REQ-82,
+#: D162): it has no bundle fallback, because the chart's claim history names
+#: an insurer that is not the eligibility a request is made under. `state` is
+#: optional because `None` means *read it from the bundle*, which is the CLI's
+#: own default (REQ-55), and `icd10_codes` because a request with no diagnosis
+#: codes is ordinary.
+REQUIRED_KEYS = ("patient_id", "procedure_code", "payer")
 
 
 class MalformedIntake(ValueError):
@@ -105,6 +111,7 @@ def from_json(text: str) -> Intake:
     return _build(
         patient_id=payload["patient_id"],
         procedure_code=payload["procedure_code"],
+        payer=payload["payer"],
         state=payload.get("state"),
         icd10=payload.get("icd10_codes", ()),
         requesting_provider=payload.get("requesting_provider"),
@@ -116,6 +123,7 @@ def from_flags(
     *,
     patient: str,
     procedure: str,
+    payer: str,
     state: str | None = None,
     icd10: Sequence[str] = (),
     requesting_provider: str | None = None,
@@ -130,6 +138,7 @@ def from_flags(
     return _build(
         patient_id=patient,
         procedure_code=procedure,
+        payer=payer,
         state=state,
         icd10=icd10,
         requesting_provider=requesting_provider,
@@ -141,6 +150,7 @@ def _build(
     *,
     patient_id: Any,
     procedure_code: Any,
+    payer: Any,
     state: Any,
     icd10: Any,
     requesting_provider: Any = None,
@@ -168,6 +178,7 @@ def _build(
         return Intake(
             patient_id=patient_id,
             procedure_code=procedure_code,
+            payer=payer,
             state=state,
             icd10_codes=codes,
             requesting_provider=requesting_provider,

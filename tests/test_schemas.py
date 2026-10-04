@@ -550,10 +550,10 @@ def test_resolve_reports_membership_facts(policy_store: LocalPolicyStore) -> Non
     parenthetical. D31 records the miss; the replacement asserts behavior, not
     message substrings. The sc1 judgment tests live in `tests/test_resolver.py`.
     """
-    ref = policy_store.resolve("43842", "WA")
+    ref = policy_store.resolve("43842", "WA", "medicare")
     assert ref is not None and ref.coverage.value == "nationally_non_covered"
     assert ref.policy_version_id == TREE_VERSION
-    assert policy_store.resolve("99213", "WA") is None, (
+    assert policy_store.resolve("99213", "WA", "medicare") is None, (
         "a code no tree binds resolves to None — NO_POLICY_FOUND, which is not "
         "a denial (D26)"
     )

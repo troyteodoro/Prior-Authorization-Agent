@@ -465,6 +465,7 @@ def test_the_fixture_determination_is_what_the_live_engine_produces(
         runner=runner,
         verifier=verifier,
         state=session.intake.state,
+        payer=session.intake.payer,
     )
     assert code == 0 and live is not None, (
         f"re-running {name}'s request reported {code}; a fixture whose request "

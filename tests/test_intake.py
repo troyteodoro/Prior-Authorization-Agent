@@ -43,27 +43,27 @@ INTAKE = REPO_ROOT / "pa_agent" / "intake.py"
 AGREEING = [
     (
         "codes needing case, stripping and de-duplication",
-        '{"patient_id": "p1", "procedure_code": "43775", "state": "AL",'
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": "medicare", "state": "AL",'
         ' "icd10_codes": ["  e11.9 ", "E11.9", "z68.41"]}',
-        {"patient": "p1", "procedure": "43775", "state": "AL",
+        {"patient": "p1", "procedure": "43775", "payer": "medicare", "state": "AL",
          "icd10": ["  e11.9 ", "E11.9", "z68.41"]},
     ),
     (
         "no state — None means read it from the bundle (REQ-55)",
-        '{"patient_id": "p2", "procedure_code": "J1745",'
+        '{"patient_id": "p2", "procedure_code": "J1745", "payer": "medicare",'
         ' "icd10_codes": ["m06.9"]}',
-        {"patient": "p2", "procedure": "J1745", "icd10": ["m06.9"]},
+        {"patient": "p2", "procedure": "J1745", "payer": "medicare", "icd10": ["m06.9"]},
     ),
     (
         "no codes at all — their absence is not an error",
-        '{"patient_id": "p3", "procedure_code": "93975", "state": "IA"}',
-        {"patient": "p3", "procedure": "93975", "state": "IA"},
+        '{"patient_id": "p3", "procedure_code": "93975", "payer": "medicare", "state": "IA"}',
+        {"patient": "p3", "procedure": "93975", "payer": "medicare", "state": "IA"},
     ),
     (
         "codes given, state given, order preserved across duplicates",
-        '{"patient_id": "p4", "procedure_code": "43775", "state": "WA",'
+        '{"patient_id": "p4", "procedure_code": "43775", "payer": "medicare", "state": "WA",'
         ' "icd10_codes": ["z68.41", "e11.9", "Z68.41"]}',
-        {"patient": "p4", "procedure": "43775", "state": "WA",
+        {"patient": "p4", "procedure": "43775", "payer": "medicare", "state": "WA",
          "icd10": ["z68.41", "e11.9", "Z68.41"]},
     ),
 ]
@@ -116,7 +116,7 @@ def test_normalisation_happens_on_the_contract_and_not_in_this_module():
 
     # And the contract really does it, so the assertions above are not vacuous.
     assert Intake(
-        patient_id="p", procedure_code="x", icd10_codes=(" e11.9 ", "E11.9")
+        patient_id="p", procedure_code="x", icd10_codes=(" e11.9 ", "E11.9"), payer="medicare"
     ).icd10_codes == ("E11.9",)
 
 
@@ -124,7 +124,7 @@ def test_a_flag_route_cannot_transpose_the_patient_and_the_procedure():
     """`from_flags` is keyword-only. Two non-empty strings validate either way
     round, so positional arguments would let a caller swap them silently."""
     with pytest.raises(TypeError):
-        from_flags("p1", "43775")  # type: ignore[misc]
+        from_flags("p1", "43775", payer="medicare")  # type: ignore[misc]
 
 
 # --------------------------------------------------------------------------
@@ -143,45 +143,63 @@ MALFORMED = [
     ("a JSON null", "null", "must be a JSON object"),
     ("no fields at all", "{}", "missing required field"),
     ("no procedure", '{"patient_id": "p1"}', "missing required field"),
-    ("no patient", '{"procedure_code": "43775"}', "missing required field"),
+    ("no patient", '{"procedure_code": "43775", "payer": "medicare"}', "missing required field"),
     (
         "an unknown field",
-        '{"patient_id": "p1", "procedure_code": "43775", "procedure": "x"}',
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": "medicare", "procedure": "x"}',
         "unknown field",
     ),
     (
         "an empty patient id",
-        '{"patient_id": "", "procedure_code": "43775"}',
+        '{"patient_id": "", "procedure_code": "43775", "payer": "medicare"}',
         "at least 1 character",
     ),
     (
         "an empty procedure code",
-        '{"patient_id": "p1", "procedure_code": ""}',
+        '{"patient_id": "p1", "procedure_code": "", "payer": "medicare"}',
         "at least 1 character",
     ),
     (
         "a numeric patient id",
-        '{"patient_id": 1, "procedure_code": "43775"}',
+        '{"patient_id": 1, "procedure_code": "43775", "payer": "medicare"}',
         "valid string",
     ),
     (
         "codes as a bare string",
-        '{"patient_id": "p1", "procedure_code": "43775", "icd10_codes": "E11.9"}',
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": "medicare", "icd10_codes": "E11.9"}',
         "list of codes",
     ),
     (
         "a blank code in the list",
-        '{"patient_id": "p1", "procedure_code": "43775", "icd10_codes": ["  "]}',
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": "medicare", "icd10_codes": ["  "]}',
         "blank",
     ),
     (
         "a numeric code in the list",
-        '{"patient_id": "p1", "procedure_code": "43775", "icd10_codes": [119]}',
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": "medicare", "icd10_codes": [119]}',
+        "valid string",
+    ),
+    # T-118 (D162): the payer is required, and spelled in the tree's grammar.
+    # Refused, never lowercased — a normaliser would be a second vocabulary
+    # deciding which tree answers.
+    (
+        "no payer",
+        '{"patient_id": "p1", "procedure_code": "43775"}',
+        "missing required field",
+    ),
+    (
+        "a payer outside the slug grammar",
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": "Medicare"}',
+        "should match pattern",
+    ),
+    (
+        "a payer of the wrong type",
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": 1}',
         "valid string",
     ),
     (
         "a state of the wrong type",
-        '{"patient_id": "p1", "procedure_code": "43775", "state": 5}',
+        '{"patient_id": "p1", "procedure_code": "43775", "payer": "medicare", "state": 5}',
         "valid string",
     ),
 ]
@@ -221,11 +239,11 @@ def test_the_malformed_table_exercises_more_than_key_presence():
 def test_the_flag_route_refuses_the_same_shapes():
     """The two routes share `_build`, so the contract's refusals reach both."""
     with pytest.raises(MalformedIntake, match="at least 1 character"):
-        from_flags(patient="", procedure="43775")
+        from_flags(patient="", procedure="43775", payer="medicare")
     with pytest.raises(MalformedIntake, match="list of codes"):
-        from_flags(patient="p1", procedure="43775", icd10="E11.9")
+        from_flags(patient="p1", procedure="43775", icd10="E11.9", payer="medicare")
     with pytest.raises(MalformedIntake, match="blank"):
-        from_flags(patient="p1", procedure="43775", icd10=["  "])
+        from_flags(patient="p1", procedure="43775", icd10=["  "], payer="medicare")
 
 
 def test_one_fault_type_covers_every_route_and_shape():

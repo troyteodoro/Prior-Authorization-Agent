@@ -34,10 +34,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-81 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A14 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's, A13 v1.5's and A14 v1.6's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131, and A14 at v1.6's last row, D155). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-82 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A14 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's, A13 v1.5's and A14 v1.6's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131, and A14 at v1.6's last row, D155). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-14 closed with v1.2 through v1.6 *(D160 closed US-14 on both tiers)*; **US-16 is v2.0's, next** — the roadmap runs v2.0, v2.1, then v2.2 *(D125)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-110 plus T-117, T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141, T-142, T-146 and T-147, each with a runnable exit condition; T-118 through T-125 are reserved rows whose records are written when they open, and so are v2.2's T-111 through T-116. `T-143`, `T-144`, `T-145` and `T-148` are numbered with no record yet, off the path *(D150, D154, D155, D161)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D161, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-110 plus T-117, T-118, T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141, T-142, T-146 and T-147, each with a runnable exit condition; T-119 through T-125 are reserved rows whose records are written when they open, and so are v2.2's T-111 through T-116. `T-143`, `T-144`, `T-145` and `T-148` are numbered with no record yet, off the path *(D150, D154, D155, D161)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D162, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -144,8 +144,8 @@ model call and touches no network. Everything else tracked under `scripts/`,
 Run the system:
 
 ```bash
-./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775   # a real determination, zero model calls
-./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775
+./venv/bin/python -m pa_agent.cli --patient <uuid> --procedure 43775 --payer medicare   # a real determination, zero model calls
+./venv/bin/python -m pa_agent.cli session create --patient <uuid> --procedure 43775 --payer medicare
 ./venv/bin/python -m pa_agent.cli session run <session-id>
 ./venv/bin/python -m pa_agent.cli session review <session-id> --reviewer NAME --note TEXT
 ./venv/bin/python -m pa_agent.cli session packet <session-id>          # the .eml; --json for the fields
@@ -197,7 +197,8 @@ constructed (REQ-41); everything else receives ports.
 
 **Two short circuits, then a fixed graph.** `resolver.py` answers sc1 from
 procedure-set membership (`NotCovered` / `NoPolicyFound` / `ResolvedByContractor`
-/ `Resolved` — four types, never one type with a field). `determination.py`
+/ `Resolved`, and the two unserved answers `NoJurisdictionTree` / `NoPayerTree` —
+distinct types, never one type with a field). `determination.py`
 answers sc2, the national T2DM-with-BMI-under-35 exclusion. Both spend zero model
 calls. Anything surviving both enters `workflow.py`.
 
@@ -663,6 +664,16 @@ passing**, because the tests are written in terms of the thing that broke.
   fires citing what fired it, or it is silent. `ExclusionKind` is dispatched
   the way `PredicateKind` is, and an unimplemented kind raises at load — an
   exclusion silently skipped approves past a denial the policy states.
+- **A request's payer is never defaulted and never read from the chart**
+  *(REQ-82, T-118, D162)*. Resolution keys on `(payer, state, code)`, and the
+  payer is asked **before** the state: an unserved payer is `NO_PAYER_TREE`
+  even in an unserved state, and `NO_JURISDICTION_TREE`'s `known_states` are
+  the requested payer's alone. Synthea's claim history names an insurer, and on
+  most bundles it is not Medicare, so a bundle fallback in D100's shape would
+  answer most charts with a payer no tree declares. Every committed tree is
+  Medicare's, so the committed corpus cannot tell payer-keyed resolution from
+  resolution that ignores the payer. `tests/test_payer_resolution.py` holds it
+  on a copied corpus with a second payer's tree, in both load orders.
 - **A state is served by one tree *per practice*, not by one tree** *(T-92,
   D111)*. Palmetto GBA serves the same seven states for bariatric surgery and
   for infliximab. The collision that matters is a **code** bound for one state
@@ -940,9 +951,8 @@ A status line and pointers, capped at 30 lines by
 `tests/test_docs_consistency.py` *(D148)*. A closed task's account is in its
 board record and its decision entry, never here.
 
-- **Next:** `v2.0`, row 2 — `T-118`, resolution by payer, and the request's
-  payer with it. Read the board's *Path to v1* first. `T-117` opened v2.0
-  *(D161)*.
+- **Next:** `v2.0`, row 3 — `T-119`, scope and the national pairing. Read the
+  board's *Path to v1* first. `T-118` closed row 2 *(D162)*.
 - **Open:** no task.
 - **Unclaimed on purpose:** REQ-44 and REQ-47. Amendment 1 reserves the whole
   decision procedure to Python, so no verdict exists that a model could

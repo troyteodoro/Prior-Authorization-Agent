@@ -169,7 +169,7 @@ def _determine(chart: _Chart, code: str = US_CODE, as_of: date = AS_OF):
         patient_store=chart,
         as_of=as_of,
         extraction_runner=_RaisingRunner(),
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
 
 
@@ -196,14 +196,14 @@ def test_one_state_serves_three_practices_and_each_code_resolves_to_one_tree(sto
     """Alabama is in L35755's own contractor table, so the state Palmetto
     serves twice is served a third time — and nothing collides, because the
     collision that matters is a *code* bound twice (D111's rule, D114)."""
-    serving = {t.policy_version_id for t in store.trees_for_state(PALMETTO_STATE)}
+    serving = {t.policy_version_id for t in store.trees_for("medicare", PALMETTO_STATE)}
     assert {TREE_ID, "ncd-100.1-jjm-v1", "infliximab-ra-jjm-v1"} <= serving
 
-    assert store.resolve(US_CODE, PALMETTO_STATE).policy_version_id == TREE_ID
-    assert store.resolve(BARIATRIC_CODE, PALMETTO_STATE).policy_version_id == (
+    assert store.resolve(US_CODE, PALMETTO_STATE, "medicare").policy_version_id == TREE_ID
+    assert store.resolve(BARIATRIC_CODE, PALMETTO_STATE, "medicare").policy_version_id == (
         "ncd-100.1-jjm-v1"
     )
-    assert store.resolve("J1745", PALMETTO_STATE).policy_version_id == (
+    assert store.resolve("J1745", PALMETTO_STATE, "medicare").policy_version_id == (
         "infliximab-ra-jjm-v1"
     )
 
@@ -212,15 +212,15 @@ def test_both_group_one_codes_resolve_to_this_tree(store):
     """A57591's Group 1 paragraph names two codes and the tree binds both;
     neither the conditions nor the frequency limit distinguishes them."""
     for code in (US_CODE, US_CODE_LIMITED):
-        assert store.resolve(code, WPS_STATE).policy_version_id == TREE_ID
+        assert store.resolve(code, WPS_STATE, "medicare").policy_version_id == TREE_ID
 
 
 def test_an_unlisted_ultrasound_code_in_a_served_state_is_no_policy_found(store):
     """D26's distinction, on a third jurisdiction. Iowa *is* served, so an
     unbound code is 'no policy governs this code' and not 'no tree serves this
     state' — different answers with different next actions (REQ-55)."""
-    assert store.resolve(UNLISTED_CODE, WPS_STATE) is None
-    assert store.trees_for_state(WPS_STATE)
+    assert store.resolve(UNLISTED_CODE, WPS_STATE, "medicare") is None
+    assert store.trees_for("medicare", WPS_STATE)
 
 
 def test_a_bariatric_request_in_a_wps_state_changed_answer_with_this_tree(store):
@@ -231,13 +231,13 @@ def test_a_bariatric_request_in_a_wps_state_changed_answer_with_this_tree(store)
     this state and binds no such code*. Both are right at their own moment and
     they are different answers, which is the distinction D26 and REQ-55 keep
     apart (D114)."""
-    assert store.trees_for_state(WPS_STATE)
-    assert store.resolve(BARIATRIC_CODE, WPS_STATE) is None
+    assert store.trees_for("medicare", WPS_STATE)
+    assert store.resolve(BARIATRIC_CODE, WPS_STATE, "medicare") is None
 
 
 def test_an_unserved_state_raises_rather_than_falling_back(store):
     with pytest.raises(UnknownJurisdiction):
-        store.resolve(US_CODE, UNSERVED_STATE)
+        store.resolve(US_CODE, UNSERVED_STATE, "medicare")
 
 
 # --------------------------------------------------------------------------

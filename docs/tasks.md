@@ -17,9 +17,17 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v2.0`, row 2 — `T-118`**, resolution by payer, and the
-request's payer with it. **Nothing is open on this board**; `T-118` writes its
-record when it opens *(D97's rule)*.
+**What to do next: `v2.0`, row 3 — `T-119`**, scope and the national
+pairing. **Nothing is open on this board**; `T-119` writes its record when it
+opens *(D97's rule)*.
+**`T-118` closed v2.0's row 2** *(D162)*: every request names its payer, with
+no default and no fallback to the chart. Resolution is by payer, code and
+state. Two payers binding one code in one state resolve to one tree each in
+either load order, and a payer no tree declares is its own answer,
+`NO_PAYER_TREE`, asked before the state. That is REQ-82. Medicare is the
+dominant insurer in the claim history of five bundles of thirty-two. Whether
+the corpus should agree with the requests made on it is a corpus question,
+recorded in D162 and not numbered.
 **`T-117` opened v2.0 and closed its row 1** *(D161)*: every tree declares,
 on its jurisdiction, the payer whose coverage it compiles (`medicare` on all
 six), and every determination records its tree's payer. That is REQ-81. The
@@ -356,10 +364,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-110 tasks are on this board — IDs run to T-148, and every id above T-125 is
+111 tasks are on this board — IDs run to T-148, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 110 are closed and none is open**; `T-143`,
+is well above the count. **All 111 are closed and none is open**; `T-143`,
 `T-144`, `T-145` and `T-148` below are numbered and have no record yet, and
 each writes its record when it opens. Both figures
 are re-derived from the records and the table by
@@ -628,7 +636,7 @@ it operationalizes.
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the payer on the tree and the request | `T-117` | **closed** (D161) | every loaded tree declares a payer; a tree that does not raises at load; every determination records it. **Rewritten at open** *(D161)*: the request's payer moves to `T-118`, where resolution reads it, because a request field nothing dispatches on is a comment (D110) |
-| 2 | resolution by payer | `T-118` | pending | two payers binding one code in one state resolve to one tree each, neither by load order; an unserved payer is its own answer, distinct from an unserved state (REQ-55's shape) |
+| 2 | resolution by payer | `T-118` | **closed** (D162) | two payers binding one code in one state resolve to one tree each, neither by load order; an unserved payer is its own answer, distinct from an unserved state (REQ-55's shape) |
 | 3 | scope, and the national pairing | `T-119` | pending | every tree declares national or regional; a regional tree names the national tree it operationalizes, and a regional tree naming none raises at load. **The floor clause moved to `T-129`** *(D124)* and closed there as REQ-73 *(D130)* — the constant-versus-floor comparison landed before v1.6, because a nationally quantified NCD is what makes it live |
 | 4 | the second payer's tree | `T-120` | pending | a second payer's tree loaded and resolved beside Medicare's; every eval row `PASS`; every gate green |
 
@@ -4090,6 +4098,81 @@ are `T-148`'s.
 Every committed tree is Medicare's, so the three literal mutants are caught
 only by the tests that run a request through a copied corpus whose Noridian
 tree names `sim_payer_x`.
+
+### `[x] T-118` A request names its payer, and resolution is by payer, code and state
+
+**REQ:** mints 82 · **Depends:** T-117 · **Blocks:** T-119, T-120 ·
+**Decided by:** D162 · **Gates:** A16 (second of four rows) ·
+**Timebox:** one day · **Zero model calls.**
+**Status:** **closed** (D162). The exit ran green and every gate with it.
+
+**Measured at open.**
+- The binding index is keyed `(state, code)`, so a second payer's tree
+  binding 43775 in Washington raises on load order.
+- The request carries no payer anywhere: not on `Intake`, the intake keys,
+  either CLI form, `determine()` or `PolicyStore.resolve()`.
+- The bundles name insurers. Medicare is the dominant one on five of the
+  thirty-two, so a bundle fallback would leave most charts with a payer no
+  tree declares.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_payer_resolution.py tests/test_payer_axis.py tests/test_resolver.py tests/test_intake.py tests/test_session_verbs.py tests/test_packet_fixtures.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- on a copied corpus with a second payer's tree binding the same codes in
+  the same states, each payer resolves to its own tree, and the answers are
+  identical with the load order reversed;
+- two trees of one payer still raise;
+- an unserved payer is `NO_PAYER_TREE`, even in an unserved state;
+- a served payer in another payer's state is `NO_JURISDICTION_TREE` naming
+  only its own states;
+- the CLI refuses a missing or malformed payer and answers an unserved one;
+- every eval row's determination names the request's payer, and the
+  baseline does not move;
+- REQ-82 maps to a check;
+- zero model calls.
+
+**What it delivers.**
+- `Intake.payer`, a required slug, and the payer grammar as one constant,
+  `PAYER_PATTERN`, shared by the tree, the determination and the request.
+- A required `--payer` on the bare form and on `session create`, and a
+  required `payer` key on a JSON intake. A payer outside the grammar is a
+  bad request, exit 1, and is never lowercased.
+- `PolicyStore.resolve(code, state, payer)`. The binding index is keyed
+  `(payer, state, code)`. The load-order collision and the national-set
+  check are each scoped to one payer.
+- `UnknownPayer`, `resolver.NoPayerTree` and `determination.NoPayerResult`.
+  The CLI renders `NO_PAYER_TREE`, exits 0 and leaves a session `CREATED`.
+  `NO_JURISDICTION_TREE` now names the requested payer's states only.
+- `"payer": "medicare"` on all 57 eval rows and on both packet fixtures'
+  intakes. The `.eml` bytes did not move, and neither did the baseline, a
+  recording or the report.
+- One cache-key function in `eval/run_eval.py`, read by
+  `eval/build_report.py`. The report had been re-spelling the key by hand
+  and missed the payer.
+- REQ-82, and `tests/test_payer_resolution.py`.
+
+**Mutation pass.** Eleven mutants. Ten were caught on the first run:
+- the payer dropped from the index key, or from the collision key;
+- the state asked before the payer;
+- unscoped `known_states`;
+- the national check made global, or dropped;
+- `"medicare"` hardcoded in `resolve_sc1`;
+- the bare form's grammar check dropped;
+- `payer` dropped from `REQUIRED_KEYS`;
+- `NoPayerTree` folded into `NoJurisdictionTree`.
+
+**One survived: a default on `Intake.payer`.** Both routes refuse a missing
+payer before the contract is built, so no route test reaches it. A stored
+session does reach it, because it validates straight into `Intake`. A test
+now loads a session with the payer removed and requires the load to fail,
+and the mutant is caught.
 
 ## Attached to no story
 

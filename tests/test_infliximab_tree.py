@@ -148,7 +148,7 @@ def _determine(chart: _Chart):
         patient_store=chart,
         as_of=AS_OF,
         extraction_runner=_RaisingRunner(),
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
 
 
@@ -169,11 +169,11 @@ def tree(store):
 
 def test_one_state_serves_two_practices_and_each_code_resolves_to_one_tree(store):
     """The rule T-92 replaced would have refused to load this store at all."""
-    serving = {t.policy_version_id for t in store.trees_for_state(PALMETTO_STATE)}
+    serving = {t.policy_version_id for t in store.trees_for("medicare", PALMETTO_STATE)}
     assert {TREE_ID, "ncd-100.1-jjm-v1"} <= serving
 
-    infliximab = store.resolve(J_CODE, PALMETTO_STATE)
-    bariatric = store.resolve(BARIATRIC_CODE, PALMETTO_STATE)
+    infliximab = store.resolve(J_CODE, PALMETTO_STATE, "medicare")
+    bariatric = store.resolve(BARIATRIC_CODE, PALMETTO_STATE, "medicare")
     assert infliximab is not None and infliximab.policy_version_id == TREE_ID
     assert bariatric is not None
     assert bariatric.policy_version_id == "ncd-100.1-jjm-v1"
@@ -183,7 +183,7 @@ def test_the_j_code_is_contractor_determined_and_cites_both_halves(store):
     """Part B drug coverage is the contractor's under 1862(a)(1)(A), so the
     claim is the statute and the corroborating quote is Palmetto applying it —
     D33's two-part shape, and the reason the outcome type is distinct."""
-    result = resolve_sc1(store, J_CODE, PALMETTO_STATE)
+    result = resolve_sc1(store, J_CODE, PALMETTO_STATE, "medicare")
     assert isinstance(result, ResolvedByContractor)
     claim = result.policy_ref.coverage_claim
     assert claim.document_id == "l35677"
@@ -198,7 +198,7 @@ def test_a_practice_no_tree_serves_in_this_state_is_no_policy_found(store):
     rheumatology tree for it. `NO_POLICY_FOUND` is the honest answer — no policy
     *here* binds the code — and it is not a denial (D26). `NO_JURISDICTION_TREE`
     keeps its own meaning: no tree serves the state at all (REQ-55)."""
-    assert isinstance(resolve_sc1(store, J_CODE, NORIDIAN_STATE), NoPolicyFound)
+    assert isinstance(resolve_sc1(store, J_CODE, NORIDIAN_STATE, "medicare"), NoPolicyFound)
 
 
 # --------------------------------------------------------------------------

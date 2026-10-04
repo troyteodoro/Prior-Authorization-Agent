@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 complete, A1–A14 hold *(D104, D106, D116, D126, D129, D136, D160)*; v1.6 was opened by `T-107` *(D149)*, read closed by `T-110` on one tier *(D155)*, reopened when the owner read A14 on both *(D156, D157)*, and closed by `T-147` *(D160)*; v2.0 was opened by `T-117` *(D161)*; the versions after v1.6 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 complete, A1–A14 hold *(D104, D106, D116, D126, D129, D136, D160)*; v1.6 was opened by `T-107` *(D149)*, read closed by `T-110` on one tier *(D155)*, reopened when the owner read A14 on both *(D156, D157)*, and closed by `T-147` *(D160)*; v2.0 was opened by `T-117` *(D161)*, and `T-118` closed its second row *(D162)*; the versions after v1.6 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -224,6 +224,16 @@ tree that produced it, so no answer is read as another payer's. The payer is
 not the authority that wrote the rule: a Medicare tree's authority is its MAC.
 *(T-117, D161; v2.0's first statement, split from §11's — the request's payer
 and the tree's scope stay statements until `T-118` and `T-119` check them)*
+
+**REQ-82** Every request names the payer it is made under — a slug, required
+and never defaulted, and never read from the chart — and resolves by payer,
+procedure code and state. Two payers binding one code in one state resolve to
+one tree each, and neither answer depends on the order the trees were loaded.
+A payer no tree declares is its own answer, `NO_PAYER_TREE`, carrying the
+payers the store does serve; it is checked before the state, and it is never
+`NO_JURISDICTION_TREE`, whose states are the requested payer's own. Neither is
+a denial or a bad request. *(T-118, D162; v2.0's second statement, split from
+§11's — the tree's scope stays a statement until `T-119` checks it)*
 
 **REQ-53** A model's tool allowlist is declared per agent and is single-plane. The
 extraction agent receives patient-plane tools only; no module holds both the
@@ -1185,7 +1195,8 @@ changed is that the replayed numbers are no longer from a single tier.
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
 is closed, and **v1.2, v1.3, v1.4, v1.5 and v1.6 are closed too** *(T-95/D116,
 T-99/D126, T-102/D129, T-106/D136, T-147/D160)*. **v2.0 is in progress**,
-opened by `T-117`, which minted REQ-81 *(D161)*. This section fixes what
+opened by `T-117`, which minted REQ-81 *(D161)*; `T-118` minted REQ-82
+*(D162)*. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are
@@ -1678,10 +1689,11 @@ check itself, which `T-129` landed ahead of v1.6 as REQ-73 *(D124, D130)*.
 
 - ~~Every tree declares the payer whose coverage it compiles~~ — **minted by
   `T-117` as REQ-81** *(D161)*, with every determination recording it.
-- Every tree declares whether its scope is national or regional; a request
-  names a payer and resolves by payer, code and state, and two payers binding
-  one code in one state resolve to one tree each. *(Split by D161; `T-118` and
-  `T-119` mint it.)*
+- ~~A request names a payer and resolves by payer, code and state, and two
+  payers binding one code in one state resolve to one tree each~~ — **minted
+  by `T-118` as REQ-82** *(D162)*, with an unserved payer its own answer.
+- Every tree declares whether its scope is national or regional. *(Split by
+  D161 and D162; `T-119` mints it.)*
 - A regional tree declares the national tree it operationalizes. The floor
   relation over that pairing was `T-129`'s statement and is **REQ-73**, minted
   there *(D124, D130)*.

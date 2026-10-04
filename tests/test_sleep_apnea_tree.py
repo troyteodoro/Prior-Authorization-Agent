@@ -167,15 +167,15 @@ def test_the_tree_declares_its_practice_kinds_letters_and_jurisdiction(tree):
 
 
 def test_e0601_resolves_here_and_its_neighbours_do_not(store):
-    ref = store.resolve("E0601", "IA")
+    ref = store.resolve("E0601", "IA", "medicare")
     assert ref is not None and ref.policy_version_id == TREE_ID
     assert ref.coverage is CoverageStatus.NATIONALLY_COVERED
     # The bi-level device the same LCD names is not bound: its criterion D, a
     # failed E0601 trial, is outside this tree (D150).
-    assert store.resolve("E0470", "IA") is None
+    assert store.resolve("E0470", "IA", "medicare") is None
     # A state no tree serves stays REQ-55's answer, never a default (D111).
     with pytest.raises(UnknownJurisdiction):
-        store.resolve("E0601", "TX")
+        store.resolve("E0601", "TX", "medicare")
 
 
 def test_the_binding_and_the_coverage_claim_slice_back(tree):

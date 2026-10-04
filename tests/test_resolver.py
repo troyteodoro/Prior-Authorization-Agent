@@ -60,7 +60,7 @@ def store() -> LocalPolicyStore:
 
 
 def test_e3s_code_resolves_not_covered(store):
-    result = resolve_sc1(store, E3_CODE, "WA")
+    result = resolve_sc1(store, E3_CODE, "WA", "medicare")
     assert isinstance(result, NotCovered)
     assert result.procedure_code == E3_CODE
     assert result.policy_version_id == TREE_VERSION, (
@@ -70,7 +70,7 @@ def test_e3s_code_resolves_not_covered(store):
 
 
 def test_an_unknown_code_resolves_no_policy_found(store):
-    result = resolve_sc1(store, FOREIGN_CODE, "WA")
+    result = resolve_sc1(store, FOREIGN_CODE, "WA", "medicare")
     assert isinstance(result, NoPolicyFound)
     assert result.procedure_code == FOREIGN_CODE
 
@@ -78,8 +78,8 @@ def test_an_unknown_code_resolves_no_policy_found(store):
 def test_the_two_absent_from_covered_answers_are_different_types(store):
     """D26's defect, asserted on the results themselves: both 43842 and 99213
     are absent from the covered set, and they must not resolve alike."""
-    denial = resolve_sc1(store, E3_CODE, "WA")
-    silence = resolve_sc1(store, FOREIGN_CODE, "WA")
+    denial = resolve_sc1(store, E3_CODE, "WA", "medicare")
+    silence = resolve_sc1(store, FOREIGN_CODE, "WA", "medicare")
     assert type(denial) is not type(silence)
     assert not isinstance(silence, NotCovered)
 
@@ -90,7 +90,7 @@ def test_the_two_absent_from_covered_answers_are_different_types(store):
 
 
 def test_not_covered_carries_a_claim_that_slices_back(store):
-    claim = resolve_sc1(store, E3_CODE, "WA").coverage_claim
+    claim = resolve_sc1(store, E3_CODE, "WA", "medicare").coverage_claim
     document = store.get_document(claim.document_id)
     assert document.slice(claim) == claim.quote, (
         "the resolver's denial does not slice back to its quote; it is citing "
@@ -101,7 +101,7 @@ def test_not_covered_carries_a_claim_that_slices_back(store):
 def test_the_claim_is_scoped_by_the_non_covered_sentence(store):
     """A bullet alone names a procedure. The scoping sentence is the denial,
     and it must arrive with the claim so T-25 can cite both (D28)."""
-    claim = resolve_sc1(store, E3_CODE, "WA").coverage_claim
+    claim = resolve_sc1(store, E3_CODE, "WA", "medicare").coverage_claim
     assert claim.scoping_quote is not None
     assert "non-covered for all Medicare beneficiaries" in claim.scoping_quote.quote
     scope_doc = store.get_document(claim.scoping_quote.document_id)
@@ -114,7 +114,7 @@ def test_the_claim_is_scoped_by_the_non_covered_sentence(store):
 
 
 def test_a_covered_code_resolves_to_the_tree(store):
-    result = resolve_sc1(store, COVERED_CODE, "WA")
+    result = resolve_sc1(store, COVERED_CODE, "WA", "medicare")
     assert isinstance(result, Resolved)
     assert result.policy_ref.policy_version_id == TREE_VERSION
     assert result.policy_ref.coverage is CoverageStatus.NATIONALLY_COVERED
@@ -130,7 +130,7 @@ def test_a_covered_code_resolves_to_the_tree(store):
 
 
 def test_the_store_reports_the_contractor_fact_without_raising(store):
-    ref = store.resolve(CONTRACTOR_CODE, "WA")
+    ref = store.resolve(CONTRACTOR_CODE, "WA", "medicare")
     assert ref is not None, (
         "the store hid a membership fact T-38 landed and spanned. Facts live "
         "in the port; refusal lives in the resolver (D31)."
@@ -141,11 +141,11 @@ def test_the_store_reports_the_contractor_fact_without_raising(store):
 def test_a_contractor_code_is_a_third_outcome(store):
     """The exit condition's phrase, on types: distinct from both `NOT_COVERED`
     and a covered code, and from no-policy silence while we are at it."""
-    result = resolve_sc1(store, CONTRACTOR_CODE, "WA")
+    result = resolve_sc1(store, CONTRACTOR_CODE, "WA", "medicare")
     assert isinstance(result, ResolvedByContractor)
     for other in (NotCovered, Resolved, NoPolicyFound):
         assert not isinstance(result, other)
-    assert type(result) is not type(resolve_sc1(store, COVERED_CODE, "WA")), (
+    assert type(result) is not type(resolve_sc1(store, COVERED_CODE, "WA", "medicare")), (
         "a delegated procedure resolved as the same type as a nationally "
         "covered one; the merge D33 exists to forbid is back"
     )
@@ -154,7 +154,7 @@ def test_a_contractor_code_is_a_third_outcome(store):
 def test_the_contractor_outcome_proceeds_to_the_tree(store):
     """Same flow as covered (D33): the ref names a loadable tree and records
     the membership fact, and REQ-4's version id rides along."""
-    result = resolve_sc1(store, CONTRACTOR_CODE, "WA")
+    result = resolve_sc1(store, CONTRACTOR_CODE, "WA", "medicare")
     assert result.policy_ref.policy_version_id == TREE_VERSION
     assert result.policy_ref.coverage is CoverageStatus.CONTRACTOR_DETERMINED
     tree = store.get_tree(result.policy_ref.policy_version_id)
@@ -165,7 +165,7 @@ def test_the_delegation_and_the_macs_exercise_both_slice_back(store):
     """REQ-42's two citations (Art. III): the NCD's delegation is the claim,
     and the MAC's exercise of it is the corroborating quote. An artifact citing
     the NCD alone would cite a document that deliberately does not answer."""
-    claim = resolve_sc1(store, CONTRACTOR_CODE, "WA").policy_ref.coverage_claim
+    claim = resolve_sc1(store, CONTRACTOR_CODE, "WA", "medicare").policy_ref.coverage_claim
     assert claim.document_id == "ncd_100_1"
     assert "may determine coverage" in claim.quote
     assert store.get_document(claim.document_id).slice(claim) == claim.quote
@@ -208,7 +208,7 @@ def test_no_model_is_imported_by_the_resolver():
 
 def test_no_result_type_can_carry_call_metrics(store):
     for code in (E3_CODE, FOREIGN_CODE, COVERED_CODE, CONTRACTOR_CODE):
-        result = resolve_sc1(store, code, "WA")
+        result = resolve_sc1(store, code, "WA", "medicare")
         assert "metrics" not in type(result).model_fields, (
             "a resolution result grew a metrics field; sc1 is reached with "
             "zero model calls by construction (REQ-2, A4)"
@@ -252,7 +252,7 @@ def test_the_resolver_imports_nothing_from_the_patient_plane():
 
 def test_resolution_is_deterministic(store):
     for code in (E3_CODE, FOREIGN_CODE, COVERED_CODE, CONTRACTOR_CODE):
-        assert resolve_sc1(store, code, "WA") == resolve_sc1(store, code, "WA")
+        assert resolve_sc1(store, code, "WA", "medicare") == resolve_sc1(store, code, "WA", "medicare")
 
 
 # --------------------------------------------------------------------------
@@ -265,8 +265,8 @@ def test_the_same_code_resolves_to_a_different_tree_in_a_different_state(store):
     """REQ-1 since T-87: the tree is the one whose jurisdiction names the
     state. Both trees bind 43775 as contractor-determined; the version a
     determination records is the state's."""
-    noridian = resolve_sc1(store, CONTRACTOR_CODE, "WA")
-    palmetto = resolve_sc1(store, CONTRACTOR_CODE, "AL")
+    noridian = resolve_sc1(store, CONTRACTOR_CODE, "WA", "medicare")
+    palmetto = resolve_sc1(store, CONTRACTOR_CODE, "AL", "medicare")
     assert isinstance(noridian, ResolvedByContractor)
     assert isinstance(palmetto, ResolvedByContractor)
     assert noridian.policy_ref.policy_version_id == "ncd-100.1-jf-v1"
@@ -275,7 +275,7 @@ def test_the_same_code_resolves_to_a_different_tree_in_a_different_state(store):
 
 @pytest.mark.parametrize("state", ["AL", "GA", "NC", "SC", "TN", "VA", "WV"])
 def test_every_palmetto_state_reaches_the_palmetto_tree(store, state):
-    resolved = resolve_sc1(store, CONTRACTOR_CODE, state)
+    resolved = resolve_sc1(store, CONTRACTOR_CODE, state, "medicare")
     assert resolved.policy_ref.policy_version_id == "ncd-100.1-jjm-v1"
 
 
@@ -284,7 +284,7 @@ def test_an_unserved_state_is_a_fifth_answer_not_none_and_not_a_raise(store):
     serve, and it is a type a caller has to acknowledge — never `None`, which
     would read as NO_POLICY_FOUND (D26), and never an exception, which would
     reach the CLI beside an unknown patient (D100)."""
-    result = resolve_sc1(store, CONTRACTOR_CODE, "TX")
+    result = resolve_sc1(store, CONTRACTOR_CODE, "TX", "medicare")
     assert isinstance(result, NoJurisdictionTree)
     assert result.state == "TX" and result.procedure_code == CONTRACTOR_CODE
     assert "WA" in result.known_states and "AL" in result.known_states
@@ -294,7 +294,7 @@ def test_an_unserved_state_is_a_fifth_answer_not_none_and_not_a_raise(store):
 
 def test_the_store_itself_raises_a_typed_error_for_an_unserved_state(store):
     with pytest.raises(UnknownJurisdiction) as caught:
-        store.resolve(CONTRACTOR_CODE, "TX")
+        store.resolve(CONTRACTOR_CODE, "TX", "medicare")
     assert caught.value.state == "TX"
     assert sorted(caught.value.known_states) == caught.value.known_states
 
@@ -303,17 +303,17 @@ def test_no_policy_found_is_still_no_policy_found_under_the_second_tree(store):
     """The two absences stay apart in both jurisdictions: a code no tree
     binds is NO_POLICY_FOUND under Palmetto's tree exactly as under
     Noridian's, and an unserved state is something else again."""
-    assert isinstance(resolve_sc1(store, FOREIGN_CODE, "AL"), NoPolicyFound)
-    assert isinstance(resolve_sc1(store, FOREIGN_CODE, "WA"), NoPolicyFound)
-    assert isinstance(resolve_sc1(store, FOREIGN_CODE, "TX"), NoJurisdictionTree)
+    assert isinstance(resolve_sc1(store, FOREIGN_CODE, "AL", "medicare"), NoPolicyFound)
+    assert isinstance(resolve_sc1(store, FOREIGN_CODE, "WA", "medicare"), NoPolicyFound)
+    assert isinstance(resolve_sc1(store, FOREIGN_CODE, "TX", "medicare"), NoJurisdictionTree)
 
 
 def test_e3s_denial_is_the_ncds_in_both_jurisdictions(store):
     """43842 is nationally non-covered; both trees transcribe the NCD's sets,
     so the denial cites the NCD under either state and records that state's
     version (REQ-4)."""
-    noridian = resolve_sc1(store, E3_CODE, "WA")
-    palmetto = resolve_sc1(store, E3_CODE, "GA")
+    noridian = resolve_sc1(store, E3_CODE, "WA", "medicare")
+    palmetto = resolve_sc1(store, E3_CODE, "GA", "medicare")
     assert isinstance(noridian, NotCovered) and isinstance(palmetto, NotCovered)
     assert noridian.coverage_claim.document_id == palmetto.coverage_claim.document_id == "ncd_100_1"
     assert noridian.policy_version_id != palmetto.policy_version_id
@@ -346,7 +346,7 @@ def test_two_trees_binding_one_code_for_one_state_refuse_to_load(tmp_path):
     duplicate["jurisdiction"]["states"] = ["AL"]
     store = LocalPolicyStore(_root_with(tmp_path, duplicate))
     with pytest.raises(ValueError, match="resolution would depend on load order"):
-        store.resolve(CONTRACTOR_CODE, "WA")
+        store.resolve(CONTRACTOR_CODE, "WA", "medicare")
 
 
 def test_two_practices_may_serve_one_state(tmp_path):
@@ -366,9 +366,9 @@ def test_two_practices_may_serve_one_state(tmp_path):
     other.pop("procedure_sets")
     store = LocalPolicyStore(_root_with(tmp_path, other))
 
-    serving = {t.policy_version_id for t in store.trees_for_state("AL")}
+    serving = {t.policy_version_id for t in store.trees_for("medicare", "AL")}
     assert {"ncd-100.1-jjm-v1", "another-practice-v1"} <= serving
-    bariatric = store.resolve(CONTRACTOR_CODE, "AL")
+    bariatric = store.resolve(CONTRACTOR_CODE, "AL", "medicare")
     assert bariatric is not None
     assert bariatric.policy_version_id == "ncd-100.1-jjm-v1", (
         "a second tree over the same states changed which tree a bariatric "
@@ -390,7 +390,7 @@ def test_two_trees_disagreeing_about_a_national_set_refuse_to_load(tmp_path):
     sets["nationally_covered"].append(moved)
     store = LocalPolicyStore(_root_with(tmp_path, tree))
     with pytest.raises(ValueError, match="cannot disagree"):
-        store.resolve(CONTRACTOR_CODE, "WA")
+        store.resolve(CONTRACTOR_CODE, "WA", "medicare")
 
 
 def test_the_resolver_dispatches_on_the_store_fact_and_the_state_alone():

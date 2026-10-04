@@ -20,6 +20,9 @@ sets (D31). This module owns the judgment REQ-1, REQ-2 and REQ-42 describe:
 - no tree for the state → `NoJurisdictionTree` (REQ-55, D100). Resolution is
   by procedure code *and* state since T-87; a state the store does not serve
   is a fifth answer, never `None` and never a bad request.
+- no tree declares the request's payer → `NoPayerTree` (REQ-82, D162). Since
+  T-118 a request resolves by payer, code and state, and a payer the store
+  does not serve is a sixth answer, checked before the state.
 
 The results are distinct types rather than one type with a status string, so
 "a policy says no", "no policy says anything" and "delegated, and the MAC
@@ -36,7 +39,12 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from pa_agent.contracts import CoverageClaim, CoverageStatus
-from pa_agent.stores.policy import PolicyRef, PolicyStore, UnknownJurisdiction
+from pa_agent.stores.policy import (
+    PolicyRef,
+    PolicyStore,
+    UnknownJurisdiction,
+    UnknownPayer,
+)
 
 
 class NotCovered(BaseModel):
@@ -86,12 +94,13 @@ class NoPolicyFound(BaseModel):
 
 
 class NoJurisdictionTree(BaseModel):
-    """REQ-55 (T-87, D100): no tree in the store governs the request's state.
+    """REQ-55 (T-87, D100): no tree of the request's payer governs its state.
 
     The fifth answer, and a different one from `NoPolicyFound`: that one says
     the governing tree binds the code nowhere; this one says there is no
     governing tree to ask. Neither is a denial. It carries the states the
-    store does serve, so the answer names what it can do.
+    store serves **for the requested payer** (D162), so the answer names what
+    this request could get.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -101,12 +110,41 @@ class NoJurisdictionTree(BaseModel):
     known_states: list[str] = Field(default_factory=list)
 
 
+class NoPayerTree(BaseModel):
+    """REQ-82 (T-118, D162): no tree in the store declares the request's payer.
+
+    The sixth answer. It is not `NoJurisdictionTree`: that one says the payer
+    is served somewhere but not in this state, and this one says the payer is
+    served nowhere, so a state was never asked about. Neither is a denial or a
+    bad request. It carries the payers the store does serve.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    procedure_code: str = Field(min_length=1)
+    payer: str = Field(min_length=1)
+    known_payers: list[str] = Field(default_factory=list)
+
+
 def resolve_sc1(
-    store: PolicyStore, procedure_code: str, state: str
-) -> NotCovered | Resolved | ResolvedByContractor | NoPolicyFound | NoJurisdictionTree:
-    """Resolve a code under a state's tree and apply short-circuit sc1."""
+    store: PolicyStore, procedure_code: str, state: str, payer: str
+) -> (
+    NotCovered
+    | Resolved
+    | ResolvedByContractor
+    | NoPolicyFound
+    | NoJurisdictionTree
+    | NoPayerTree
+):
+    """Resolve a code under a payer's tree for a state and apply short-circuit sc1."""
     try:
-        ref = store.resolve(procedure_code, state)
+        ref = store.resolve(procedure_code, state, payer)
+    except UnknownPayer as exc:
+        return NoPayerTree(
+            procedure_code=procedure_code,
+            payer=exc.payer,
+            known_payers=exc.known_payers,
+        )
     except UnknownJurisdiction as exc:
         return NoJurisdictionTree(
             procedure_code=procedure_code, state=exc.state, known_states=exc.known_states

@@ -459,7 +459,7 @@ def test_a_determination_over_a_mismatched_recording_is_an_error_never_an_absten
             patient_store=LocalPatientStore(),
             as_of=date.fromisoformat(case.get("as_of", "2026-09-01")),
             extraction_runner=RecordedExtractionRunner.from_records(records),
-            verifier=AcceptAllVerifier(),
+            verifier=AcceptAllVerifier(), payer="medicare",
         )
     results = caught.value.results
     assert results, "an abort must name the criteria it errored"

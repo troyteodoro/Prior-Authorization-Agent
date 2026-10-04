@@ -66,6 +66,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import uuid
 
@@ -81,6 +82,7 @@ from pa_agent import (
     session as session_machine,
 )
 from pa_agent.contracts import (
+    PAYER_PATTERN,
     Determination,
     DeterminationAborted,
     PayerDecision,
@@ -92,7 +94,12 @@ from pa_agent.contracts import (
     SessionState,
     SubmissionRecord,
 )
-from pa_agent.determination import NoJurisdictionResult, NoPolicyResult, determine
+from pa_agent.determination import (
+    NoJurisdictionResult,
+    NoPayerResult,
+    NoPolicyResult,
+    determine,
+)
 from pa_agent.index import DocumentIndex
 from pa_agent.stores.session import (
     DEFAULT_SESSION_ROOT,
@@ -165,7 +172,7 @@ def _suggestion_block(result, review) -> dict:
 
 
 def _render(
-    result: Determination | NoPolicyResult | NoJurisdictionResult,
+    result: Determination | NoPolicyResult | NoJurisdictionResult | NoPayerResult,
     block: dict | None = None,
 ) -> dict:
     """The one JSON document. A **pure renderer**: it is handed the
@@ -175,6 +182,19 @@ def _render(
     function in v1.4 (T-102), and a renderer that builds its own side content
     is one the second caller has to reimplement or work around.
     """
+    if isinstance(result, NoPayerResult):
+        rendered = {
+            "result": "NO_PAYER_TREE",
+            "procedure_code": result.procedure_code,
+            "payer": result.payer,
+            "known_payers": list(result.known_payers),
+            "note": "no criteria tree in the store declares this payer; this is "
+                    "not a denial, not a bad request, and not a state no tree "
+                    "serves (REQ-82, D162)",
+        }
+        if block is not None:
+            rendered["icd_suggestions"] = block
+        return rendered
     if isinstance(result, NoJurisdictionResult):
         rendered = {
             "result": "NO_JURISDICTION_TREE",
@@ -367,7 +387,7 @@ def _review(result, patient_id: str, policy_store, patient_store, knowledge_stor
 
 def _determine_or_report(
     policy_store, procedure, *, patient_id, patient_store, as_of, runner,
-    verifier, state,
+    verifier, state, payer,
 ):
     """One determination, or the exit code its fault maps to.
 
@@ -386,6 +406,7 @@ def _determine_or_report(
             extraction_runner=runner,
             verifier=verifier,
             state=state,
+            payer=payer,
         )
     except NotImplementedError as exc:
         # The message names what is missing (D27's pattern).
@@ -500,9 +521,18 @@ def _intake_from(args) -> "intake_module.Intake":
             "session create needs --intake, or --patient and --procedure "
             "together; a session with no request is not a session"
         )
+    if args.payer is None:
+        # T-118 (D162): no default and no bundle fallback. The flag route
+        # refuses here and the JSON route through `REQUIRED_KEYS`, so both
+        # are `MalformedIntake` and exit 1.
+        raise intake_module.MalformedIntake(
+            "session create needs --payer: a request names the payer it is "
+            "made under, and none is assumed (REQ-82, D162)"
+        )
     return intake_module.from_flags(
         patient=args.patient,
         procedure=args.procedure,
+        payer=args.payer,
         state=args.state,
         icd10=args.icd10,
         requesting_provider=args.requesting_provider,
@@ -639,6 +669,7 @@ def _verb_run(args) -> int:
         runner=runner,
         verifier=verifier,
         state=session.intake.state,
+        payer=session.intake.payer,
     )
     if result is None:
         return code
@@ -1223,6 +1254,10 @@ def _session_main(argv: list[str]) -> int:
                         help="a JSON intake an upstream system produced")
     create.add_argument("--patient", default=None)
     create.add_argument("--procedure", default=None)
+    create.add_argument("--payer", default=None,
+                        help="the payer the request is made under, as a tree "
+                             "declares it (e.g. medicare). Required; never "
+                             "read from the chart (REQ-82)")
     create.add_argument("--state", default=None)
     create.add_argument("--icd10", nargs="*", default=(),
                         help="ICD-10 codes the request carries (recorded, and "
@@ -1371,6 +1406,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--patient", required=True, help="patient identifier")
     parser.add_argument("--procedure", required=True, help="procedure code")
     parser.add_argument(
+        "--payer",
+        required=True,
+        help="the payer the request is made under, as a tree declares it "
+             "(e.g. medicare). Required and never read from the chart: a "
+             "payer no tree declares is its own answer, NO_PAYER_TREE (REQ-82)",
+    )
+    parser.add_argument(
         "--extraction",
         choices=("recorded", "direct", "adk"),
         default="recorded",
@@ -1419,6 +1461,16 @@ def main(argv: list[str] | None = None) -> int:
              "name rather than reporting an empty review (D123).",
     )
     args = parser.parse_args(argv)
+    if not re.fullmatch(PAYER_PATTERN, args.payer):
+        # The session route refuses this through `Intake`; the bare route
+        # builds no `Intake`, so it checks the same constant here (D162).
+        # Refused, never lowercased: a normaliser would be a second payer
+        # vocabulary deciding which tree answers.
+        print(
+            f"bad request: payer {args.payer!r} does not match {PAYER_PATTERN}",
+            file=sys.stderr,
+        )
+        return 1
 
     store = LocalPolicyStore()
     patient_store = LocalPatientStore()
@@ -1439,6 +1491,7 @@ def main(argv: list[str] | None = None) -> int:
         runner=runner,
         verifier=verifier,
         state=args.state,
+        payer=args.payer,
     )
     if result is None:
         return code

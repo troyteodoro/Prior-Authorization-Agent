@@ -108,7 +108,7 @@ def test_e2_returns_not_covered_with_zero_model_calls(
         COVERED_CODE,
         patient_id=t2dm_patient["patient_id"],
         patient_store=patient_store,
-        as_of=E2_AS_OF,
+        as_of=E2_AS_OF, payer="medicare",
     )
     assert isinstance(result, Determination)
     assert result.outcome is DeterminationOutcome.NOT_COVERED
@@ -127,7 +127,7 @@ def test_e2s_both_citations_survive_t11(
         COVERED_CODE,
         patient_id=t2dm_patient["patient_id"],
         patient_store=patient_store,
-        as_of=E2_AS_OF,
+        as_of=E2_AS_OF, payer="medicare",
     )
     policy_index = DocumentIndex()
     policy_index.add(policy_store.get_document("ncd_100_1"))
@@ -153,7 +153,7 @@ def test_e2_is_distinguishable_from_a_criteria_failure(
         COVERED_CODE,
         patient_id=t2dm_patient["patient_id"],
         patient_store=patient_store,
-        as_of=E2_AS_OF,
+        as_of=E2_AS_OF, payer="medicare",
     )
     assert result.coverage_claim is not None
     assert result.exclusion_evidence
@@ -185,7 +185,7 @@ def _expect_fall_through(
         patient_store=patient_store,
         as_of=as_of,
         extraction_runner=runner,
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
     assert isinstance(determination, Determination)
     assert determination.outcome is not DeterminationOutcome.NOT_COVERED, (
@@ -273,7 +273,7 @@ def test_sc1_still_answers_first_for_a_non_covered_code(
         NON_COVERED_CODE,
         patient_id=t2dm_patient["patient_id"],
         patient_store=patient_store,
-        as_of=E2_AS_OF,
+        as_of=E2_AS_OF, payer="medicare",
     )
     assert result.outcome is DeterminationOutcome.NOT_COVERED
     assert result.exclusion_evidence == [], "sc1's denial cites no patient facts"

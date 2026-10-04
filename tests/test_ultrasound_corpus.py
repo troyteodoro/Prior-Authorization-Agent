@@ -108,7 +108,7 @@ def _determine(patients, policies, patient_id, code=US_CODE, as_of=AS_OF):
         patient_store=patients,
         as_of=as_of,
         extraction_runner=_RaisingRunner(),
-        verifier=AcceptAllVerifier(),
+        verifier=AcceptAllVerifier(), payer="medicare",
     )
 
 
@@ -182,7 +182,7 @@ def test_the_charts_are_in_a_state_the_ultrasound_tree_serves(patients, policies
     for patient_id in (BASE, US1, US2):
         state = patients.get_jurisdiction_state(patient_id)
         assert state == WPS_STATE_CODE
-        assert policies.resolve(US_CODE, state).policy_version_id == TREE_ID
+        assert policies.resolve(US_CODE, state, "medicare").policy_version_id == TREE_ID
 
 
 # --------------------------------------------------------------------------
@@ -307,7 +307,7 @@ def test_us3_abstains_on_the_frequency_criterion_and_never_answers_met(
 def test_us4_is_no_policy_found_in_a_state_that_is_served(patients, policies):
     result = _determine(patients, policies, BASE, code=UNLISTED_CODE)
     assert type(result).__name__ == "NoPolicyResult"
-    assert policies.trees_for_state(WPS_STATE_CODE)
+    assert policies.trees_for("medicare", WPS_STATE_CODE)
 
 
 def test_every_cited_span_slices_back_into_the_bundle_it_names(patients, policies):

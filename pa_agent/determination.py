@@ -48,6 +48,7 @@ from pa_agent.contracts import (
 from pa_agent.criteria import ExclusionInputs, evaluate_exclusion
 from pa_agent.resolver import (
     NoJurisdictionTree,
+    NoPayerTree,
     NoPolicyFound,
     NotCovered,
     Resolved,
@@ -89,6 +90,21 @@ class NoJurisdictionResult(BaseModel):
     known_states: list[str] = Field(default_factory=list)
 
 
+class NoPayerResult(BaseModel):
+    """REQ-82 (T-118, D162): no tree declares the request's payer.
+
+    The sibling of `NoJurisdictionResult` and, like it, not a
+    `Determination`: no policy was consulted, so there is no
+    `policy_version_id` to record. Carries the payers the store does serve.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    procedure_code: str = Field(min_length=1)
+    payer: str = Field(min_length=1)
+    known_payers: list[str] = Field(default_factory=list)
+
+
 def resolve_state(
     state: str | None, patient_id: str | None, patient_store: PatientStore | None
 ) -> str:
@@ -115,7 +131,9 @@ def determine(
     extraction_runner: ExtractionRunner | None = None,
     verifier: VerifierRunner | None = None,
     state: str | None = None,
-) -> Determination | NoPolicyResult | NoJurisdictionResult:
+    *,
+    payer: str,
+) -> Determination | NoPolicyResult | NoJurisdictionResult | NoPayerResult:
     """Assemble the determination for a request.
 
     sc1 needs only the policy store. sc2 (REQ-3, D41) additionally needs the
@@ -132,10 +150,25 @@ def determine(
     `policy_version_id` and a version is one MAC's tree. What is refused is
     answering a criteria request without a chart — see
     `_criteria_determination`.
+
+    Since T-118 every request also names its `payer`, keyword-only and
+    required (REQ-82, D162). It is never defaulted and never read from the
+    chart: Synthea's claim history is simulated billing, not the eligibility
+    a request is made under.
     """
     resolution = resolve_sc1(
-        store, procedure_code, resolve_state(state, patient_id, patient_store)
+        store,
+        procedure_code,
+        resolve_state(state, patient_id, patient_store),
+        payer,
     )
+
+    if isinstance(resolution, NoPayerTree):
+        return NoPayerResult(
+            procedure_code=resolution.procedure_code,
+            payer=resolution.payer,
+            known_payers=resolution.known_payers,
+        )
 
     if isinstance(resolution, NoJurisdictionTree):
         return NoJurisdictionResult(

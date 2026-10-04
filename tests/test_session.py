@@ -121,7 +121,7 @@ def _session(state: SessionState = SessionState.CREATED, runs: tuple = ()) -> Se
     return Session(
         session_id="s1",
         created_at="2026-09-25T00:00:00Z",
-        intake=Intake(patient_id="p", procedure_code="43775"),
+        intake=Intake(patient_id="p", procedure_code="43775", payer="medicare"),
         state=state,
         runs=runs,
         submission=_submission() if state in SUBMITTED_STATES else None,
@@ -332,7 +332,7 @@ def _raw(state: SessionState, **extra) -> Session:
     payload = dict(
         session_id="s1",
         created_at="2026-09-25T00:00:00Z",
-        intake=Intake(patient_id="p", procedure_code="43775"),
+        intake=Intake(patient_id="p", procedure_code="43775", payer="medicare"),
         state=state,
         runs=() if state is SessionState.CREATED else (_run(),),
     )

@@ -140,6 +140,10 @@ TREE_VERSION = "ncd-100.1-jf-v1"
 PROCEDURE = "43775"
 #: T-06 pinned the ground truth here and every recency verdict moves with it.
 AS_OF = date(2026, 9, 1)
+#: The payer every row recorded before T-118 was made under (D162). Every tree
+#: then was Medicare's, so a recorded row that names no payer was a Medicare
+#: request; a row measured since names its own, read from the eval row.
+PAYER = "medicare"
 CASES_PATH = REPO_ROOT / "eval" / "cases.json"
 
 EXIT_OK = 0
@@ -322,6 +326,7 @@ def _patients() -> list[dict]:
         result = determine(
             policy_store, case["procedure_code"], patient_id, patient_store,
             as_of, runner, verifier, state=case.get("state"),
+            payer=case["payer"],
         )
         if not isinstance(result, Determination) or not result.criterion_results:
             continue
@@ -331,6 +336,7 @@ def _patients() -> list[dict]:
             "procedure_code": case["procedure_code"],
             "as_of": as_of.isoformat(),
             "state": case.get("state"),
+            "payer": case["payer"],
         }
     return list(patients.values())
 
@@ -360,6 +366,7 @@ def _recorded_verifier():
 def _run_one(
     policy_store, patient_store, runner, planner, patient_id, verifier,
     procedure_code: str = PROCEDURE, as_of: date = AS_OF, state: str | None = None,
+    *, payer: str,
 ) -> WorkflowRun:
     """The whole run, not just its determination (T-80, D91).
 
@@ -375,7 +382,9 @@ def _run_one(
         # T-87 (D100): resolved under the patient's own state, read from the
         # bundle — the tool surface the planner sees is unchanged.
         policy_ref=policy_store.resolve(
-            procedure_code, state or patient_store.get_jurisdiction_state(patient_id)
+            procedure_code,
+            state or patient_store.get_jurisdiction_state(patient_id),
+            payer,
         ),
         patient_id=patient_id,
         as_of=as_of,
@@ -390,6 +399,7 @@ def _request(row: dict) -> dict:
         "procedure_code": row.get("procedure_code", PROCEDURE),
         "as_of": date.fromisoformat(row["as_of"]) if row.get("as_of") else AS_OF,
         "state": row.get("state"),
+        "payer": row.get("payer", PAYER),
     }
 
 
@@ -520,6 +530,7 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
             "procedure_code": entry["procedure_code"],
             "as_of": entry["as_of"],
             **({"state": entry["state"]} if entry.get("state") else {}),
+            "payer": entry["payer"],
             "oracle": {
                 "outcome": oracle.outcome.value,
                 "verdicts": _verdicts(oracle),

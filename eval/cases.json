@@ -9,6 +9,7 @@
       "description": "Non-covered procedure requested",
       "patient_id": null,
       "procedure_code": "43842",
+      "payer": "medicare",
       "procedure": "Open vertical banded gastroplasty",
       "coverage_claim": {
         "document_id": "ncd_100_1",
@@ -54,6 +55,7 @@
       "description": "Clean approval, all criteria met",
       "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "'All criteria met' is E1's label, so all seven are pinned - the one row where that is transcription from §6 rather than labeling from the observed run (D75, spec §8).",
       "expect": {
@@ -91,6 +93,7 @@
       "description": "BMI below 35 with active T2DM: the categorical exclusion (sc2)",
       "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
       "procedure_code": "43644",
+      "payer": "medicare",
       "procedure": "Laparoscopic Roux-en-Y gastric bypass",
       "as_of": "2024-12-01",
       "note": "Two deliberate choices (D75). A nationally covered code: sc2 names the nationally covered procedures and skips contractor-determined requests (D41, REQ-42), so 43775 cannot exercise it. An in-window as_of: the patient's BMI 34.26 is observed 2024-03-15, deliberately stale at EVAL_AS_OF so E7 can reach the criteria path on this same chart; sc2 refuses stale evidence (D41), so E2 runs where the measurement is current.",
@@ -106,6 +109,7 @@
       "description": "Program run of 3 consecutive months, gap in month 4",
       "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "NOT_MET",
@@ -124,6 +128,7 @@
       "description": "Program complete but ended 14 months ago",
       "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "NOT_MET, never INSUFFICIENT_EVIDENCE: the evidence exists and falls outside the recency window (REQ-16, REQ-32, Art. IV).",
       "expect": {
@@ -143,6 +148,7 @@
       "description": "Weight recorded monthly, BMI recorded in 2 of 4 months",
       "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "NOT_MET",
@@ -161,6 +167,7 @@
       "description": "No weight-management documentation anywhere",
       "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "Same chart as E2, at the harness clock: the BMI that fires sc2 in 2024 is stale here, so the criteria path runs and c1 abstains. The overall NOT_MET is criterion (a)'s - the stale BMI is outside its lookback (REQ-16) - and c1's abstention is the labeled claim.",
       "expect": {
@@ -181,6 +188,7 @@
       "description": "Note asserts program completion; no visit detail",
       "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "The refusal test: an assertion is never counted as an event (REQ-35), so zero wm_events reach c3 and the gap names what to collect - the visit notes behind the claim.",
       "expect": {
@@ -201,6 +209,7 @@
       "description": "Missed-visit dates present in the gap month",
       "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "The honesty test: the trap dates in the gap month are non-encounters (REQ-9) and must not bridge the run. Shares E4's chart and run; the label is that c3 stays NOT_MET with the traps present.",
       "expect": {
@@ -220,6 +229,7 @@
       "description": "Structured 39.23, note 45.0: beyond tolerance, same side of 35.0",
       "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "Criterion-scoped (D72): the structured value stands, criterion (a) is MET, and the disagreement is one discrepancies[] entry, never a gap. The overall NOT_MET is E6's - same patient, same run.",
       "expect": {
@@ -240,6 +250,7 @@
       "description": "Structured 34.6, note 36.2: disagreement crosses 35.0",
       "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "INSUFFICIENT_EVIDENCE",
@@ -259,6 +270,7 @@
       "description": "Structured 37.65, note 37.6: below tolerance",
       "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "expect": {
         "outcome": "MET",
@@ -278,6 +290,7 @@
       "description": "Two supervised programs, one qualifying, one not",
       "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "MET on the qualifying run: the non-qualifying program on the same chart must not drag c3 down.",
       "expect": {
@@ -297,6 +310,7 @@
       "description": "BMI exactly 35.0: criterion (a) boundary inclusive",
       "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "The structured most-recent BMI is exactly 35.0 via the declared synthetic observation (T-41, D73). The chart is note-free by declaration, so zero model calls and every notes criterion abstains - the overall INSUFFICIENT_EVIDENCE is theirs; (a)'s inclusive boundary is the labeled claim.",
       "expect": {
@@ -316,6 +330,7 @@
       "description": "Qualifying run documented across two chart notes",
       "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "Shares E1's determination (same patient, procedure, as_of). The labeled claim is the citation spread: the manifest assigns the four-month run's March and April visits to chart_note_1.txt and its May and June visits to chart_note_2.txt (T-81, D104), so c3 MET must cite spans in both documents.",
       "expect": {
@@ -336,6 +351,7 @@
       "description": "A code no bariatric policy governs",
       "patient_id": null,
       "procedure_code": "99213",
+      "payer": "medicare",
       "procedure": "Office or other outpatient visit, established patient",
       "note": "Outside §6, added by D75: REQ-1's answer is a NoPolicyResult, not a denial and not a determination (D32), and the scorer matches it by type. A1 reads §6's fourteen; this row is the fifteenth on purpose.",
       "expect": {
@@ -351,6 +367,7 @@
       "description": "E4's chart re-addressed into Palmetto GBA's territory: no run-length criterion",
       "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "The patient is a declared clone of E4's (data/patients/manifest.json, synthetic_patients; T-88, D102) with an Alabama address, and the state is read from the bundle, so the row passes none. The label is transcribed from L34576 and the manifest: the LCD states no consecutive-month run length, so c3 is absent rather than failed; the January-March run ended within 12 months of as_of and documents diet and activity in every month, so c2 and c5 are MET where Noridian scopes them out behind c3's shortfall (E4). Since T-110 (D155) c4 and d are claimed through the bariatric_surgical_workup kind, and this chart's notes are E4's bytes: every program visit states a weight, so each month of the January-March run carries one and c4 is MET; neither note documents any component of a multidisciplinary evaluation, so d abstains with NO_EVIDENCE_RETRIEVED -- a chart silent about an evaluation has not recorded that none took place (D40). They abstained with NOT_EVALUATED_BY_THIS_SYSTEM before, and the change is the tree's, not the chart's. The overall INSUFFICIENT_EVIDENCE is d's and b's, which the chart lacks under either tree; the labeled claim is the shape - the same bytes are a shortfall in one jurisdiction and not a criterion in the other. The budget is two replayed calls per note -- one per declared fact kind -- plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -384,6 +401,7 @@
       "description": "The second practice: the diagnosis and the concurrent drug the LCD names",
       "patient_id": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "A Synthea chart in Palmetto GBA's territory (T-93, D113), so the state is read from the bundle and the row passes none. Transcribed from L35677 through infliximab_ra_jjm.json and the chart's coded facts, never from a run: the active rheumatoid arthritis condition is criterion (a)'s value-set membership and the active methotrexate order is (b)'s, both MET citing the resource itself, in each set's declared code system (REQ-59). c, d and e read a note since T-110 (D155) -- a stated NYHA class, a tuberculosis screen, a disease-activity level in words -- and this chart is note-free by declaration, so each abstains with NO_EVIDENCE_RETRIEVED: there is no note to state the fact, which is a different next action from v1.2's NOT_EVALUATED_BY_THIS_SYSTEM, and the reason the label moved. The overall INSUFFICIENT_EVIDENCE is theirs alone. The labeled claim is the whole shape: five criteria answered, two of them on arithmetic over coded resources and three abstaining for want of a note, none of NCD 100.1's -- the letters collide across the two practices and the criteria do not (D110). The budget is Article V's and nothing else's: one replayed verifier call per cited verdict (2 here), and no extraction call at all, because a chart with no note gives the runner nothing to read.",
       "expect": {
@@ -426,6 +444,7 @@
       "description": "The combination limitation: infliximab beside another biologic",
       "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA1's chart with one appended etanercept order -- a declared clone, because Synthea's rheumatoid arthritis module orders no biologic and no JAK inhibitor at any population size (T-93, D113; D73's shape). L35677's LIMITATIONS paragraph calls that combination 'not medically reasonable and necessary and therefore, not covered', so the answer is NOT_COVERED and no criterion is evaluated: an exclusion fires before the graph and has no verdict to abstain with (REQ-60, D41's shape). The labeled claim is the pair -- the same bytes plus one prescription turn an approvable chart into a denial, and the denial cites the prescription that fired it rather than asserting an absence. The budget is Article V's and nothing else's: one replayed verifier call per cited verdict (none here, since an exclusion answers before any criterion), and no extraction call at all, because this tree declares no note criterion for a runner to be reached by.",
       "expect": {
@@ -441,6 +460,7 @@
       "description": "The concurrent drug is not on the chart: abstain, never deny",
       "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "A second Synthea chart from RA1's run (T-93, D113): the same active rheumatoid arthritis condition, so (a) is MET on the same arithmetic, and no methotrexate order anywhere in the bundle -- not active, not completed. (b) therefore abstains with NO_EVIDENCE_RETRIEVED naming what to collect, and never NOT_MET: L35677 covers a patient unable to tolerate methotrexate whose reason is documented in the record, this system does not read that record, and a chart with no prescription has not recorded that the patient is not taking the drug (D40's asymmetry, carried to medications by D111). Pinning both verdicts on one chart is the point -- the diagnosis criterion and the drug criterion answer differently on the same patient, which is what a criterion-scoped row is for (D75). The budget is Article V's and nothing else's: one replayed verifier call per cited verdict (1 here), and no extraction call at all, because this tree declares no note criterion for a runner to be reached by.",
       "expect": {
@@ -465,6 +485,7 @@
       "description": "The third practice: an indication the LCD supports and a prior study outside the frequency interval",
       "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
       "procedure_code": "93975",
+      "payer": "medicare",
       "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
       "note": "A Synthea chart in WPS's territory or a declared clone of it (T-94, D114), so the state is read from the bundle and the row passes none. Transcribed from L35755 and A57591 through us_abdominal_visceral_j5_j8.json and the chart's coded facts, never from a run: the chart's four active conditions -- essential hypertension and chronic kidney disease stages 2, 3 and 4 -- are criterion (a)'s value-set membership in the set's declared system (REQ-59). c, d and e are declared unclaimed by the tree -- two are claims about why the study was ordered and what else is planned, and the third is a clinical judgment about a differential -- so they abstain and are never omitted (REQ-58). The letters are this document's and collide with both other practices': `a` is a diagnosis set here and a BMI comparison under NCD 100.1 (D110). Criterion (b) is the new arithmetic: the chart's one prior abdominal vascular study was performed 2024-06-17, more than the twelve months L35755 states, so the criterion is MET citing that study. No as_of is pinned and none is needed -- the MET direction is monotone in time, a study past twelve months stays past (D114). The budget is Article V's alone: one replayed verifier call per cited verdict, and no extraction call, because this tree declares no note criterion and the chart carries no note.",
       "expect": {
@@ -507,6 +528,7 @@
       "description": "The frequency limit: a prior study inside the twelve-month interval",
       "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
       "procedure_code": "93975",
+      "payer": "medicare",
       "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
       "as_of": "2026-09-01",
       "note": "A Synthea chart in WPS's territory or a declared clone of it (T-94, D114), so the state is read from the bundle and the row passes none. Transcribed from L35755 and A57591 through us_abdominal_visceral_j5_j8.json and the chart's coded facts, never from a run: the chart's four active conditions -- essential hypertension and chronic kidney disease stages 2, 3 and 4 -- are criterion (a)'s value-set membership in the set's declared system (REQ-59). c, d and e are declared unclaimed by the tree -- two are claims about why the study was ordered and what else is planned, and the third is a clinical judgment about a differential -- so they abstain and are never omitted (REQ-58). The letters are this document's and collide with both other practices': `a` is a diagnosis set here and a BMI comparison under NCD 100.1 (D110). This chart is US1's chart with a different procedure copied and re-coded: the prior study was performed 2026-05-25 instead of 2024-06-17, and nothing else differs. Criterion (b) is therefore NOT_MET citing that study, with a structured shortfall of 3 months against the 12 the document states, and the overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). **This row pins its own as_of**: the NOT_MET direction ages out -- the same chart answers MET once the study is a year old -- and a label that turns on the harness clock is a baseline that goes red on a date nobody chose (E2's precedent, D114).",
@@ -550,6 +572,7 @@
       "description": "No prior study documented: the frequency criterion abstains and never answers MET",
       "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
       "procedure_code": "93975",
+      "payer": "medicare",
       "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
       "note": "A Synthea chart in WPS's territory or a declared clone of it (T-94, D114), so the state is read from the bundle and the row passes none. Transcribed from L35755 and A57591 through us_abdominal_visceral_j5_j8.json and the chart's coded facts, never from a run: the chart's four active conditions -- essential hypertension and chronic kidney disease stages 2, 3 and 4 -- are criterion (a)'s value-set membership in the set's declared system (REQ-59). c, d and e are declared unclaimed by the tree -- two are claims about why the study was ordered and what else is planned, and the third is a clinical judgment about a differential -- so they abstain and are never omitted (REQ-58). The letters are this document's and collide with both other practices': `a` is a diagnosis set here and a BMI comparison under NCD 100.1 (D110). This is the generated chart the two clones derive from, and it carries no abdominal vascular study at all. Criterion (b) abstains with NO_EVIDENCE_RETRIEVED rather than answering MET: a chart that records no study has not recorded that none was performed elsewhere, which is the asymmetry D40 set for comorbidities and D114 carried to procedures -- and a MET here would have no span to cite, which REQ-5 refuses. The three rows together are the predicate's three answers over three charts that differ by one resource.",
       "expect": {
@@ -593,6 +616,7 @@
       "description": "An ultrasound code no tree binds in a state that is served",
       "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
       "procedure_code": "76700",
+      "payer": "medicare",
       "procedure": "Ultrasound, abdominal, real time with image documentation; complete",
       "note": "76700 is a non-vascular abdominal ultrasound, and no tree in this store binds it. Iowa *is* served -- by the third practice's tree, which binds 93975 and 93976 -- so this is NO_POLICY_FOUND and not NO_JURISDICTION_TREE: no policy governs this code here, which is a different answer from no tree serving the state at all (D26, REQ-55, D114). The second such row in the set, in a second jurisdiction, and it cites nothing, so it costs no verifier call.",
       "expect": {
@@ -607,6 +631,7 @@
       "description": "A drug's known effect the chart measures and does not code: the green suggestion",
       "patient_id": "455d3f7d-3b99-dad6-c0b2-d5405144e793",
       "procedure_code": "93975",
+      "payer": "medicare",
       "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
       "note": "The medical-history review's own row, and the only chart in the corpus that can carry it: measured across all fourteen bundles, every candidate whose signal crossed its threshold already coded the condition and every uncoded one had no observation of that analyte at all (D119). So this chart carries two declared resources -- an active lisinopril order copied from its own active order with the code swapped, and a creatinine copied from its own lipid panel with the code and value swapped -- both appended, both recomputed by select_patients.py --verify. Transcribed from the knowledge table and the chart's coded facts, never from a run: ZESTRIL's label states renal impairment, the row's ICD-10 code is N28.9 from NLM Clinical Tables, the declared creatinine of 2.1 mg/dL crosses the row's declared 1.3, and the chart codes none of the five SNOMED concepts that would mean the condition is already carried -- so Python colours it green and cites the observation. would_affect names criterion (a) because that criterion's value set admits the CKD codes a chart carrying this condition would hold, which is the one non-empty would_affect this corpus can produce (REQ-66). The chart is in Alabama, which L35755's own contractor table serves, so 93975 resolves to the ultrasound tree; it carries no indication code and no prior study, so every criterion abstains and none cites anything. The budget is therefore zero: an abstention is not a verifier claim, and this tree declares no note criterion.",
       "expect": {
@@ -662,6 +687,7 @@
       "description": "One chart, both reasons a candidate is withheld: already coded, and measured but not crossed",
       "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
       "procedure_code": "93975",
+      "payer": "medicare",
       "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
       "note": "US1's chart and US1's determination -- the row adds no verdict claim and shares the cached run, so the criteria stay labeled once (D75). What it labels is the review, and this chart is the pair H1 turns on: the **same drug** at a **crossing** creatinine of 2.80 mg/dL, withheld because the chart codes chronic kidney disease stages 2, 3 and 4 and end-stage renal disease, citing all four. Its hydrochlorothiazide is the second reason, and a different one: 67 glucose results topping out at 98.74 against the row's declared 126, so the chart measured the thing and answered no. That is withheld and not red -- red means nothing on the chart, and a suggestion the record refutes is a false suggestion (D119). Zero suggestions is therefore the claim, and the withheld list is what makes it mean something: with a broken ingredient expansion nothing matches, every chart yields no candidates, and an empty-suggestions row would pass while the feature did nothing.",
       "expect": {
@@ -688,6 +714,7 @@
       "description": "A drug's known effect with nothing on the chart either way: the red suggestion",
       "patient_id": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Injection, infliximab, excludes biosimilar, 10 mg",
       "note": "RA1's chart and RA1's determination, shared from the cache; this row labels only the review. The active methotrexate order the infliximab tree's criterion (b) turns on is also a row of the knowledge table, so the same prescription that satisfies a coverage criterion raises a documentation question: the label states neutropenia, the chart carries no neutrophil count anywhere, and no condition coding drug-induced neutropenia. Nothing on the chart supports it and nothing refutes it, so the colour is red and the suggestion cites nothing -- the prescription is what makes it a candidate and is never evidence of the condition (D119). Red is honest here without any quote source because the chart is note-free by declaration (RA1's reason): there is no note to read, so this is the chart saying nothing rather than the system not looking. A note-bearing chart in the same state raises instead, which is T-98's row. would_affect is empty and says why: no value set this tree names admits 47318007.",
       "expect": {
@@ -712,6 +739,7 @@
       "description": "A note-bearing chart with a table drug and no structured signal: red with the quotes consulted",
       "patient_id": "bc6748d3-3a0f-9734-7730-4518f5b268fb",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "E8's chart and E8's determination, shared from the cache (D75); this row labels only the review, and it is the row the chart was waiting for. The chart carries an active lisinopril order, no creatinine anywhere, no condition coding any renal disease, and two notes that mention neither the drug nor the kidney -- so the review cannot colour the candidate without reading them, and with no quote source it raises rather than answering red (D90, D119). The quote source here is RecordedQuoteRunner over eval/history/results.json: the model was asked, on both notes, for verbatim passages documenting each of the table's five conditions by display -- never the drug -- and returned none, so nothing anchored and the candidate is red. That is what red means, nothing on the chart, proved by a recording rather than assumed (D122). The suggestion cites nothing and adds no verifier claim, so max_model_calls is E8's 3 and max_review_model_calls is the review's own count: one turn per note, two notes, no re-ask fired. would_affect is empty and says why: no value set ncd-100.1-jf-v1 names admits the CKD codes the row declares. The measured yellow is T-110's (D120).",
       "expect": {
@@ -737,6 +765,7 @@
       "description": "The second note-consulting review: a candidate the chart already codes",
       "patient_id": "49092fd9-d5bf-24e2-474b-00041a279a47",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "E7's chart and E7's determination, shared from the cache (D75); this row labels only the review. Derived from the bundle and the table, not from a run: the chart carries an active lisinopril order and codes two of the five SNOMED concepts the row declares as already-carrying the condition (431855005, 431856006), so the candidate is withheld ALREADY_CODED citing them -- and never red, because red means nothing on the chart and this chart answers (REQ-65, D119). It is the second note-bearing review row after H4: two notes are consulted through RecordedQuoteRunner for two turns, because run_review asks every note about every table row whenever the chart has a candidate at all, and the withhold is decided before any quote is read. Zero suggestions is the claim; the withheld list is what makes it mean something.",
       "expect": {
@@ -759,6 +788,7 @@
       "description": "A table drug whose analyte the chart never measured: the red suggestion",
       "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "E12's chart and E12's determination, shared from the cache (D75); this row labels only the review. Derived from the bundle and the table: an active hydrochlorothiazide order makes the row a candidate, the chart codes none of the SNOMED concepts that would mean hyperglycemia is already carried, and it holds no glucose observation at all -- zero readings of LOINC 2345-7 anywhere. Nothing supports the condition and nothing refutes it, so Python colours it red and the suggestion cites nothing. Red is honest here with no quote source because E12's chart is note-free by declaration (T-41, D73): there is no note to read, so this is the chart saying nothing rather than the system not looking (D90). would_affect is empty: no value set ncd-100.1-jf-v1 names admits 80394007.",
       "expect": {
@@ -783,6 +813,7 @@
       "description": "Both withhold reasons on one chart, under the third practice's tree",
       "patient_id": "53126ee7-0f8a-b494-fb3c-921069a1605b",
       "procedure_code": "93975",
+      "payer": "medicare",
       "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
       "note": "US3's chart and US3's determination, shared from the cache (D75); this row labels only the review. Derived from the bundle and the table: hydrochlorothiazide is a candidate whose analyte the chart measured 67 times, topping out at 98.74 mg/dL against the row's declared threshold of 126 -- the chart measured the thing and answered no, which is withheld SIGNAL_NOT_CROSSED and not red (REQ-64, D119). Lisinopril is a candidate the chart already codes, four of the five declared SNOMED concepts, so it is withheld ALREADY_CODED. Zero suggestions, two withheld, sorted by row_id as score compares them. The chart is note-free, so no quote source is consulted and none is needed.",
       "expect": {
@@ -810,6 +841,7 @@
       "description": "A review beside a NOT_COVERED determination: the tree is there, so the review runs",
       "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA2's chart and RA2's determination, shared from the cache (D75); this row labels only the review, and it is the row that settles D123's clause 4. A NOT_COVERED determination carries a policy_version_id -- both short circuits fire after a tree is resolved (determination.py:147 and :181) -- so the review runs like any other chart and would_affect has value sets to test membership in. D123 said NOT_COVERED declines the block; that was inferred from E2's label omitting the key rather than from the object, and D126 corrects it by measurement. Derived from the bundle and the table: an active methotrexate order, no neutrophil count anywhere, no condition coding drug-induced neutropenia, so the colour is red and the suggestion cites nothing. The chart is note-free (RA1's reason), so red is honest with no quote source. would_affect is empty: no value set infliximab-ra-jjm-v1 names admits 47318007.",
       "expect": {
@@ -835,6 +867,7 @@
       "description": "The same two withholds on a second chart of the third practice's cohort",
       "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
       "procedure_code": "93975",
+      "payer": "medicare",
       "procedure": "Duplex scan of arterial inflow and venous outflow of abdominal, retroperitoneal and pelvic organs",
       "note": "US2's chart and US2's determination, shared from the cache (D75), which is why this row carries US2's own as_of: the cache key is (patient, procedure, as_of, state) and a row that omitted it would compute a second determination rather than share one. This row labels only the review. Derived from the bundle and the table, identically to H7 and on a different chart: hydrochlorothiazide measured 67 times, topping out at 98.74 against 126, withheld SIGNAL_NOT_CROSSED; lisinopril already coded four ways, withheld ALREADY_CODED. Two charts of one cohort answering the same way is what makes the withheld list a measurement rather than a coincidence.",
       "expect": {
@@ -863,6 +896,7 @@
       "description": "Branch 1: an index of at least 15 per hour and 30 events",
       "patient_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9",
       "procedure_code": "E0601",
+      "payer": "medicare",
       "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
       "note": "Criterion b, branch 1: the report states an AHI of 27 and a recording time of 6.4 hours, and Python computes 172.8 events -- past 15 per hour and 30 events -- so b is MET citing the test, its index and its hours, all in the report. The chart codes essential hypertension, which branch 1 does not read. The overall outcome is INSUFFICIENT_EVIDENCE because c and d abstain (REQ-20). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -904,6 +938,7 @@
       "description": "Branch 2, documented by the note: an index in the band and excessive daytime sleepiness",
       "patient_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e",
       "procedure_code": "E0601",
+      "payer": "medicare",
       "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
       "note": "Criterion b, branch 2: an RDI of 9 over 6.1 hours is 54.9 events, inside the band from 5 with its minimum of 10, and the consultation documents excessive daytime sleepiness. The chart codes none of the band's comorbidities, so the note's finding is the whole of the documentation; b is MET citing the test in one document and the finding in the other. The model labelled the passage; whether the label qualifies is the tree's list, read by Python (Art. II). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -945,6 +980,7 @@
       "description": "Branch 2, documented by the coded record alone: an index in the band and an active ischemic heart disease",
       "patient_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed",
       "procedure_code": "E0601",
+      "payer": "medicare",
       "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
       "note": "Criterion b, branch 2: an AHI of 12 over 5.8 hours is 69.6 events, inside the band, and neither note documents a listed finding -- but the chart codes an active ischemic heart disease condition in osa_qualifying_comorbidities, so b is MET citing the test and that Condition resource. This is the row for reading the band's comorbidities from the chart as well as from the note (D150). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -986,6 +1022,7 @@
       "description": "An index below the band",
       "patient_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8",
       "procedure_code": "E0601",
+      "payer": "medicare",
       "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
       "note": "Criterion b: an AHI of 3 is below the band's floor of 5, so b is NOT_MET citing the test and its index, with a structured shortfall of 3 events per hour against 5 that step_sufficiency re-derives from the cited test alone (D99). The chart's coded ischemic heart disease does not rescue it: the band starts at 5. The overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1027,6 +1064,7 @@
       "description": "An index in the band with nothing documented",
       "patient_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb",
       "procedure_code": "E0601",
+      "payer": "medicare",
       "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
       "note": "Criterion b: an RDI of 8 over 6.5 hours is 52 events, inside the band with its minimum met, and neither the notes nor the coded record documents a listed finding or comorbidity, so b abstains with NO_EVIDENCE_RETRIEVED -- a chart that records no daytime sleepiness has not recorded that there is none (D40). The consultation carries a telephone contact and a denied symptom, the two non-facts the sleep kind's instruction names; neither became an evaluation or a finding. An abstention cites nothing, so the budget is one verifier call fewer. A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1068,6 +1106,7 @@
       "description": "Branch 1's index without its event minimum: a recording that ended after 1.5 hours",
       "patient_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd",
       "procedure_code": "E0601",
+      "payer": "medicare",
       "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
       "note": "Criterion b: an AHI of 16 reaches branch 1's index, and over 1.5 hours it is 24 events against the minimum of 30, so b is NOT_MET citing the test, its index and its hours, with a structured shortfall of 24 events against 30. Branch 2 cannot apply, because its band ends below 15. The multiplication is Python's; the report states the index and the time and neither the product nor a verdict (Art. II, D150). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1109,6 +1148,7 @@
       "description": "The fourth practice's one table drug: red with the quotes consulted",
       "patient_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9",
       "procedure_code": "E0601",
+      "payer": "medicare",
       "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
       "note": "OSA1's chart and OSA1's determination, shared from the cache (D75); this row labels only the review. It exists because the knowledge table finds a candidate on this chart -- an active hydrochlorothiazide order -- and A11 grades every candidate the code produces (D123, D152). Derived from the bundle and the table, never from a run: the chart carries no glucose observation and no condition coding hyperglycaemia, so nothing structured answers the row and it is not withheld, and the two notes -- a sleep consultation and a sleep study report -- document no blood glucose at all. The quote source is RecordedQuoteRunner over eval/history/results.json, extended with this round's notes under T-98's unchanged configuration (D152): the model was asked, on both notes, for verbatim passages documenting each of the table's five conditions by display, and returned none, so the candidate is red. It cites nothing and adds no verifier claim, so max_model_calls is OSA1's 4 and max_review_model_calls is one turn per note. would_affect is empty: the one value set pap-osa-dme-jd-v1 names is the band's comorbidities, which admits none of the codes the row declares.",
       "expect": {
@@ -1134,6 +1174,7 @@
       "description": "Every claimed criterion MET",
       "patient_id": "301841f6-8434-da01-2702-df18b88875fe",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2026-04-01",
       "note": "Criterion a: the follow-up visit documents knee pain limiting walking and standing, and morning stiffness, so a is MET citing both. Criterion b: the diagnosis visit's knee radiograph reports joint space narrowing and osteophytes, so b is MET citing the radiograph and both findings. Criterion d: naproxen and a home exercise program both began 09/07/2018, over seven years before the request, so d is MET citing both starts. The overall outcome is INSUFFICIENT_EVIDENCE because c and e abstain (REQ-20). A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
@@ -1179,6 +1220,7 @@
       "description": "A knee radiograph reporting none of the four findings",
       "patient_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2025-12-01",
       "note": "Criterion b: the diagnosis visit's knee radiograph states the joint spaces are preserved and names osteophytes, sclerosis and cysts only as absent, so it is documented with no finding and b abstains with NO_EVIDENCE_RETRIEVED. L39529 introduces its findings with 'such as', so a radiograph without them has not shown that radiologic evidence is absent, and the criterion never answers NOT_MET (D154). a is MET on the follow-up's pain and crepitus; d is MET on naproxen and a home exercise program begun 04/16/2024. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
@@ -1224,6 +1266,7 @@
       "description": "Conservative therapy shorter than three months",
       "patient_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2026-05-01",
       "note": "Criterion d: naproxen began 01/22/2026, but physical therapy -- the only nonpharmacologic therapy documented -- began at the follow-up visit on 04/26/2026, zero whole months before the request date of 05/01/2026. L39529 joins the two legs with 'and', so d is NOT_MET citing both starts, one in each document, with a structured shortfall of 0 months against 3 that step_sufficiency re-derives from the cited starts alone (D99). The overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). a and b are MET. Under the harness date d would be MET -- four months of physical therapy by 09/01/2026 -- which is why this row pins its as_of. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
@@ -1269,6 +1312,7 @@
       "description": "Every symptom documented only as denied",
       "patient_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2026-05-01",
       "note": "Criterion a: the follow-up visit records that the patient denies knee pain and morning stiffness, and the extractor's instruction names a denied symptom as a non-fact, so a abstains with NO_EVIDENCE_RETRIEVED -- never NOT_MET, because a chart that records no symptom has not recorded that there is none (D40). b is MET on joint space narrowing and subchondral cysts; d is MET on naproxen and a home exercise program begun 10/10/2023. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
@@ -1314,6 +1358,7 @@
       "description": "A hip radiograph and a knee radiograph never performed",
       "patient_id": "f231c369-5e58-5b03-69e2-848843288674",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2025-11-01",
       "note": "Criterion b: the diagnosis visit documents a radiograph of the hip, which reports osteophytes, and knee radiographs scheduled for 08/19/2020 that the patient did not attend. The extractor's instruction names both as non-facts, so no knee radiograph is documented and b abstains with NO_EVIDENCE_RETRIEVED. a is MET on pain and crepitus; d is MET on naproxen and a home exercise program begun 08/12/2020. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
@@ -1359,6 +1404,7 @@
       "description": "No nonpharmacologic therapy documented",
       "patient_id": "ccd1fb43-d261-0165-2aff-c68031df8682",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2026-03-01",
       "note": "Criterion d: naproxen began 08/04/2004, and the follow-up visit records that outpatient physical therapy was offered and the patient declined, which the extractor's instruction names as a non-fact. No nonpharmacologic therapy is documented, so d abstains with NO_EVIDENCE_RETRIEVED: a leg the notes do not document is not a leg shown to be skipped (D154). The chart carries physical therapy procedures from 2018 for a neck injury, which the tree does not read. a and b are MET. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
@@ -1404,6 +1450,7 @@
       "description": "Two knee radiographs, the later one reporting findings",
       "patient_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2026-08-01",
       "note": "Criterion b: the first knee radiograph, 06/22/2023, reports none of the four findings; the second, 07/09/2026, reports joint space narrowing and osteophytes, so b is MET citing the later radiograph and its two findings, both in document 2. The chart's diagnosis encounter of 01/30/2023 was virtual, so document 1 is the in-person visit after it, which reports naproxen and a home exercise program begun 01/30/2023; d is MET citing both. a is MET. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
@@ -1449,6 +1496,7 @@
       "description": "The fifth practice's first table drug: red with the quotes consulted",
       "patient_id": "f231c369-5e58-5b03-69e2-848843288674",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2025-11-01",
       "note": "KNEE5's chart and KNEE5's determination, shared from the cache (D75); this row labels only the review. It exists because the knowledge table finds a candidate on this chart -- an active lisinopril order -- and A11 grades every candidate the code produces (D123, D152, D154). Derived from the bundle and the table, never from a run: the chart codes no chronic kidney disease, so nothing withholds the row as already coded, and it carries no serum creatinine under the table's LOINC 2160-0 -- its creatinine observations are coded 38483-4, which the table's signal does not name -- so nothing structured answers it. The two notes, an orthopedic visit and a follow-up, document no renal finding. The quote source is RecordedQuoteRunner over eval/history/results.json, extended with this round's notes under T-98's unchanged configuration (D152, D154): the model was asked, on both notes, for passages documenting each of the table's five conditions by display, and returned none, so the candidate is red. It cites nothing and adds no verifier claim, so max_model_calls is KNEE5's 4 and max_review_model_calls is one turn per note. would_affect is empty: hyaluronan-knee-oa-j5-j8-v1 names no value set.",
@@ -1475,6 +1523,7 @@
       "description": "The fifth practice's second table chart: both candidates withheld as already coded",
       "patient_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31",
       "procedure_code": "J7325",
+      "payer": "medicare",
       "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
       "as_of": "2026-08-01",
       "note": "KNEE7's chart and KNEE7's determination, shared from the cache (D75); this row labels only the review. The knowledge table finds two candidates on this chart -- active lisinopril and hydrochlorothiazide orders -- and A11 grades every candidate the code produces (D123, D152, D154). Derived from the bundle and the table, never from a run: the chart already codes chronic kidney disease stage 1 (SNOMED 431855005) and hyperglycemia (80394007), each in its row's already_coded list, so both candidates are withheld with ALREADY_CODED and neither is suggested (REQ-64). Withheld is not red: the chart answers the question. No note is consulted for a withheld row, so the review spends at most one turn per note, and the row adds no verifier claim; max_model_calls is KNEE7's 5.",
@@ -1503,6 +1552,7 @@
       "description": "Palmetto's tree with c4 and d documented: the first approval under ncd-100.1-jjm-v1",
       "patient_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "E1's chart as a declared clone re-addressed into Georgia (T-110, D155), so the state is read from the bundle and the request resolves to Palmetto's tree. Its two notes are new documents rendered from its own fact manifest. c4: the supervised program visits of 03/10, 04/14, 05/12 and 06/09/2026 each state a weight, so every month of the March-June run carries one and c4 is MET citing the four weights, two in each document. d: the primary care referral (03/24/2026) and the bariatric surgeon's evaluation (04/28/2026) are in the first document and the psychological (05/26/2026) and nutritional (06/23/2026) evaluations in the second, all four fewer than six whole months before as_of, so d is MET citing all four. a and b are E1's coded facts and c1, c2 and c5 its program's, all MET, so the determination is MET. Transcribed from L34576 through ncd_100_1_jjm.json and the manifest, never from a run. The budget is two replayed extraction calls per note -- one per declared fact kind -- plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1546,6 +1596,7 @@
       "description": "Palmetto's c4 and d NOT_MET: a month with no weight, and a stale component",
       "patient_id": "0d2a9302-c054-58ca-a292-e3703314dcd4",
       "procedure_code": "43775",
+      "payer": "medicare",
       "procedure": "Stand-alone laparoscopic sleeve gastrectomy",
       "note": "E1's chart as a declared clone re-addressed into Tennessee (T-110, D155). c4: the 05/12/2026 program visit documents diet and activity and states that the patient declined to be weighed, so May is a month of the run with no weight and c4 is NOT_MET citing that visit, with a shortfall of one month that step_sufficiency re-derives from the citation alone (D99); the visit is still a supervised encounter, so c1, c2 and c5 are unchanged. d: the four components are each documented, but the psychological evaluation is dated 11/04/2025, nine whole months before as_of against L34576's six, so d is NOT_MET citing all four components -- three in the first document, one in the second -- with the stale one's age as the shortfall. a and b are MET. The overall outcome is NOT_MET (REQ-20). Transcribed from L34576 and the manifest, never from a run. The budget is two replayed extraction calls per note plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1589,6 +1640,7 @@
       "description": "The rheumatoid tree with every contraindication answered and the activity stated: the first approval under infliximab-ra-jjm-v1",
       "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA1's chart as a declared clone carrying two notes (T-110, D155). The 12/09/2025 rheumatology visit states no history of heart failure, so c is MET, and a DAS28-CRP of 5.6 with high disease activity stated in words, so e is MET; the 01/08/2026 pre-biologic visit reports a negative interferon-gamma release assay, so d is MET. a and b are RA1's coded facts, MET. Every criterion is MET, so the determination is MET. Transcribed from L35677 through infliximab_ra_jjm.json and the manifest, never from a run; both visit dates are encounters of the chart's own. The budget is one replayed extraction call per note -- the tree declares one fact kind -- plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1631,6 +1683,7 @@
       "description": "The rheumatoid tree's three note criteria NOT_MET",
       "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA1's chart as a declared clone whose notes state every contraindication L35677 names (T-110, D155). The 11/09/2025 visit states heart failure with NYHA class III, an excluded class, so c is NOT_MET; it also states a CDAI of 8.0 with low disease activity in words, which is not moderately or severely active, so e is NOT_MET. The 12/09/2025 visit reports a positive interferon-gamma release assay and records that treatment of latent tuberculosis was recommended and the patient deferred it, which is not a treatment begun, so d is NOT_MET (D155's direction: the chart records the contraindicating finding, and 'treated' is documentation the requester holds). Each NOT_MET re-derives from what it cites (D99). a and b are MET. The overall outcome is NOT_MET. Transcribed from L35677 and the manifest, never from a run. The budget is one replayed extraction call per note plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1673,6 +1726,7 @@
       "description": "A treated positive screen, an allowed NYHA class, and a note that states no activity level: the note-bearing abstention",
       "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA1's chart as a declared clone (T-110, D155). The 06/11/2025 visit reports a positive interferon-gamma release assay; the 10/10/2025 visit records rifampin for latent tuberculosis infection begun 07/11/2025, so d is MET citing the screen in the first document and the treatment in the second. The same visit states heart failure with NYHA class II, which is not an excluded class, so c is MET. It records that the joints were examined and that disease activity was not formally scored, so no level is stated in words and e abstains with NO_EVIDENCE_RETRIEVED -- the abstention on a note-bearing chart that T-110's exit asks for, distinct from RA1's, where there is no note at all. a and b are MET; the overall outcome is INSUFFICIENT_EVIDENCE. Transcribed from L35677 and the manifest, never from a run. The budget is one replayed extraction call per note plus one replayed verifier call per cited verdict.",
       "expect": {
@@ -1715,6 +1769,7 @@
       "description": "The measured yellow: a note states the table effect, and the verifier stands behind it",
       "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA4's chart and RA4's determination, shared from the cache (D75); this row labels only the review, and it is the measured yellow D120 deferred to v1.6 (T-110, D155). The chart carries an active methotrexate order, no neutrophil count under the table's LOINC 751-8, and no condition coding drug-induced neutropenia, so nothing structured answers the candidate and nothing withholds it. The second note states an absolute neutrophil count of 1.2 x10^3/uL consistent with neutropenia. The quote recording asked both notes for passages documenting each of the table's five conditions by display -- never the drug -- and the passage anchors in the second note, so the candidate is yellow citing it; Article V's verifier receives it as a (candidate, quotes) claim with no drug, no code and no colour, and the history verifier recording holds its acceptance on both tiers. would_affect is empty: no value set infliximab-ra-jjm-v1 names admits 47318007. The review budget is one quote turn per note plus the one history verifier call.",
       "expect": {
@@ -1740,6 +1795,7 @@
       "description": "RA5's methotrexate candidate: red with the quotes consulted",
       "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA5's chart and RA5's determination, shared from the cache (D75); this row labels only the review. It exists because the knowledge table finds a candidate on this chart -- the active methotrexate order -- and A11 grades every candidate the code produces (D123, D152). Derived from the bundle and the table: no neutrophil count, no neutropenia coding, and two notes that state heart failure, disease activity and a tuberculosis screen and no table effect, so with both notes consulted the candidate is red and cites nothing. would_affect is empty.",
       "expect": {
@@ -1765,6 +1821,7 @@
       "description": "RA6's methotrexate candidate: red with the quotes consulted",
       "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
       "procedure_code": "J1745",
+      "payer": "medicare",
       "procedure": "Infliximab, intravenous infusion, for rheumatoid arthritis",
       "note": "RA6's chart and RA6's determination, shared from the cache (D75); this row labels only the review, for H14's reason. Its notes state a tuberculosis screen and treatment, heart failure and an unscored examination, and no table effect, so with both notes consulted the methotrexate candidate is red and cites nothing. would_affect is empty.",
       "expect": {

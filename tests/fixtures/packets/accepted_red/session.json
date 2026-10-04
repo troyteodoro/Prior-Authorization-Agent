@@ -4,6 +4,7 @@
   "intake": {
     "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
     "procedure_code": "43775",
+    "payer": "medicare",
     "state": "WA",
     "icd10_codes": [
       "E66.01"

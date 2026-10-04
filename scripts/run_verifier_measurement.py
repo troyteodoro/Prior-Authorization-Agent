@@ -188,7 +188,10 @@ def enumerate_claims() -> dict[str, dict]:
             if case.get("as_of")
             else DEFAULT_AS_OF
         )
-        key = (case.get("patient_id"), case["procedure_code"], as_of, case.get("state"))
+        key = (
+            case.get("patient_id"), case["procedure_code"], as_of,
+            case.get("state"), case["payer"],
+        )
         if key in seen:
             continue
         seen.add(key)
@@ -201,6 +204,7 @@ def enumerate_claims() -> dict[str, dict]:
             extraction_runner=runner,
             verifier=collector,
             state=case.get("state"),
+            payer=case["payer"],
         )
     return collector.claims
 
@@ -363,7 +367,10 @@ def enumerate_history_claims() -> dict[str, dict]:
         if "suggestions" not in case.get("expect", {}) or not case.get("patient_id"):
             continue
         as_of = date.fromisoformat(case["as_of"]) if case.get("as_of") else DEFAULT_AS_OF
-        key = (case["patient_id"], case["procedure_code"], as_of, case.get("state"))
+        key = (
+            case["patient_id"], case["procedure_code"], as_of,
+            case.get("state"), case["payer"],
+        )
         if key in seen:
             continue
         seen.add(key)
@@ -371,6 +378,7 @@ def enumerate_history_claims() -> dict[str, dict]:
             policy_store, case["procedure_code"], patient_id=case["patient_id"],
             patient_store=patient_store, as_of=as_of, extraction_runner=runner,
             verifier=criteria_claims, state=case.get("state"),
+            payer=case["payer"],
         )
         if history.review_scope(result) is None:
             continue

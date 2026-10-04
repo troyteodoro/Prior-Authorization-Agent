@@ -1,9 +1,10 @@
 """REQ-81: every tree declares its payer, and every determination records it
 (T-117, D161).
 
-v2.0's first row. Resolution does not read the payer yet — that is `T-118`'s —
-so this file holds the two things that can already go wrong silently: a tree
-that names no payer, and a determination whose payer is not its tree's.
+v2.0's first row. Resolution reads the payer since `T-118` (REQ-82, D162),
+which `tests/test_payer_resolution.py` holds; this file holds the two things
+that went wrong silently before it: a tree that names no payer, and a
+determination whose payer is not its tree's.
 
 **The copy is checked against its source, not against a literal.** Every
 committed tree is Medicare's, so a determination hardcoding `"medicare"` would
@@ -151,7 +152,10 @@ def test_a_short_circuit_copies_a_payer_that_is_not_medicare(renamed_payer_store
     Washington, and the answer names the tree's payer, whatever it is."""
     from pa_agent.determination import determine
 
-    result = determine(renamed_payer_store, "43842", state="WA")
+    # The request names the renamed tree's payer: since T-118 resolution keys on
+    # it (D162), so a `medicare` request in Washington now reaches no tree of
+    # this payer that binds 43842.
+    result = determine(renamed_payer_store, "43842", state="WA", payer="sim_payer_x")
     assert isinstance(result, Determination)
     assert result.outcome.value == "NOT_COVERED"
     assert result.payer == "sim_payer_x"
@@ -172,6 +176,7 @@ def test_every_patient_path_copies_a_payer_that_is_not_medicare(
     module = _eval_module()
     cases = json.loads((REPO_ROOT / "eval" / "cases.json").read_text(encoding="utf-8"))
     case = copy.deepcopy(next(c for c in cases["cases"] if c["case_id"] == case_id))
+    case["payer"] = "sim_payer_x"
     result = module._determine(
         case, renamed_payer_store, LocalPatientStore(), module._recorded_runner(),
         module.EVAL_AS_OF, None, module._recorded_verifier(),
@@ -186,7 +191,7 @@ def test_the_rendered_determination_names_its_payer():
     from pa_agent import cli
     from pa_agent.determination import determine
 
-    rendered = cli._render(determine(LocalPolicyStore(), "43842", state="WA"))
+    rendered = cli._render(determine(LocalPolicyStore(), "43842", state="WA", payer="medicare"))
     assert rendered["payer"] == "medicare"
 
 

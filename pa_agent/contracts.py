@@ -684,6 +684,15 @@ class SourceRef(BaseModel):
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
+#: The payer grammar, shared by the tree that declares a payer, the
+#: determination that records one and the request that names one (T-118,
+#: D162). One constant so the three cannot drift: a request is matched against
+#: a tree's payer by equality, and a request spelled outside the grammar is
+#: refused rather than normalised — a normaliser would be a second vocabulary
+#: deciding which tree answers.
+PAYER_PATTERN = r"^[a-z][a-z0-9_]*$"
+
+
 class Jurisdiction(BaseModel):
     """Who published the constants. Not decoration — see D21.
 
@@ -704,7 +713,7 @@ class Jurisdiction(BaseModel):
     #: keys on a state (T-118) and chooses no arithmetic by it, which is D110's
     #: test. Absent from `get_policy_context`'s payload, which is built field by
     #: field (D45).
-    payer: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9_]*$")
+    payer: str = Field(min_length=1, pattern=PAYER_PATTERN)
     contractor: str | None = None
     states: list[str] = Field(default_factory=list)
     note: str | None = None
@@ -2065,7 +2074,7 @@ class Determination(BaseModel):
     #: rule cannot be read correctly; this is the half of that a reader needs to
     #: not quote one payer's answer as another's. Required: a default would turn
     #: *never recorded* into a value (D31).
-    payer: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9_]*$")
+    payer: str = Field(min_length=1, pattern=PAYER_PATTERN)
     outcome: DeterminationOutcome
     # The denial's citation, copied from the resolver so the reviewable
     # artifact cites itself (Art. III, US-1's "with the reason"). Only valid
@@ -2666,6 +2675,12 @@ class Intake(BaseModel):
 
     patient_id: str = Field(min_length=1)
     procedure_code: str = Field(min_length=1)
+    #: The payer the request is made under, matched by equality against a
+    #: tree's `jurisdiction.payer` (T-118, REQ-82, D162). Required and never
+    #: read from the chart: Synthea's claim history names Medicare as the
+    #: dominant insurer on five bundles of thirty-two, and a simulated billing
+    #: record is not the eligibility a request is made under.
+    payer: str = Field(min_length=1, pattern=PAYER_PATTERN)
     #: `None` means *read it from the bundle*, which is the CLI's own default
     #: (REQ-55). An invented default here would be a jurisdiction nobody asked
     #: for.
