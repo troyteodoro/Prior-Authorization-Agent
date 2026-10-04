@@ -24,6 +24,10 @@ appended notes **failed** on the AI Studio tool-fetch path, and the failure is
 recorded as a finding with its classified reason and no payload, never
 re-run (D71, D103) — so the figure is pinned like the fabrication figure, and
 every check below that reads a payload reads the notes that have one.
+
+**Thirty-eight since T-109** (D154): the knee charts' fourteen were appended
+the same way. One of them failed on the same path the same way, and is
+recorded the same way.
 """
 
 from __future__ import annotations
@@ -75,19 +79,21 @@ DECIDED_FABRICATED: dict[str, int] = {
     "adk_results_tool_fetch_vertex.json": 0,
 }
 
-#: Notes each recording holds: T-98's twelve and T-108's twelve (D122, D152).
-MEASURED_NOTES = 24
+#: Notes each recording holds: T-98's twelve, T-108's twelve and T-109's
+#: fourteen (D122, D152, D154).
+MEASURED_NOTES = 38
 
 #: Notes recorded as failed, per recording — findings, kept with their
 #: classified reason and never re-run (D71). D152 records the one: on AI
 #: Studio's tool-fetch path the model wrote ADK's injected `set_model_response`
-#: call as text, and the answer did not parse.
+#: call as text, and the answer did not parse. D154 records the second, on the
+#: same path, in the same shape.
 DECIDED_FAILED: dict[str, int] = {
     "results.json": 0,
     "results_vertex.json": 0,
     "adk_results_inline.json": 0,
     "adk_results_inline_vertex.json": 0,
-    "adk_results_tool_fetch.json": 1,
+    "adk_results_tool_fetch.json": 2,
     "adk_results_tool_fetch_vertex.json": 0,
 }
 
@@ -162,8 +168,8 @@ def test_every_note_still_hashes_to_what_was_measured(recordings, filename, stor
         )
         checked += 1
     assert checked == MEASURED_NOTES, (
-        f"{checked} notes checked; twelve were measured by T-98 and twelve "
-        "appended by T-108 (D122, D152)"
+        f"{checked} notes checked; twelve were measured by T-98, twelve "
+        "appended by T-108 and fourteen by T-109 (D122, D152, D154)"
     )
 
 
@@ -263,14 +269,15 @@ def test_the_model_offsets_are_still_unusable(recordings, filename) -> None:
 
 
 def test_the_direct_recording_answers_every_manifest_note_by_content(recordings, rows, store) -> None:
-    """Twenty-six notes on file, twenty-four measured: the declared clone's two
+    """Forty notes on file, thirty-eight measured: the declared clone's two
     are byte-identical to its source's and replay under their own ids (T-88,
     D102). This is the runner every gate hands `run_review`. The sleep charts'
-    twelve are in it since T-108 (D152)."""
+    twelve are in it since T-108 (D152), the knee charts' fourteen since T-109
+    (D154)."""
     payload = recordings["results.json"]
     runner = RecordedQuoteRunner.from_records(payload["notes"], payload["rows_asked"], model=payload["model"])
     manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
-    assert len(manifest["notes"]) == 26
+    assert len(manifest["notes"]) == 40
     for entry in manifest["notes"]:
         document = store.get_document(entry["document_id"])
         result = runner.run(document.document_id, document.text, rows)

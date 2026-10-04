@@ -14771,3 +14771,256 @@ version stays last (D125).
 
 Nothing. §11's statements stay statements until the row that checks each one
 closes (D109).
+
+## D154 — Practice four is hyaluronan injection for knee osteoarthritis under WPS's L39529, and it is read through a third fact kind
+
+**Context.** `T-109`, v1.6 row 3. Written before the code (Article IX, working
+rule 5). Spec §11 leaves practice four as *one imaging or therapy domain chosen
+at open*, and US-14 asks for it to be evaluated *all the way through the notes*.
+D97's rule writes the row's record now. The board's exit — *as row 2* — is
+rewritten below into `T-108`'s exit over this row's files.
+
+**Measured at open.**
+- **Cardiac rehabilitation for chronic heart failure (NCD 20.10.1) was the
+  first candidate, and it fails on two counts.** The NCD quantifies well (an
+  ejection fraction of 35% or less, six weeks of therapy, six weeks and six
+  months of stability), and Transmittal 3058 names 93797 and 93798. But no MAC
+  publishes an LCD or article for it: the MCD's final-LCD listing (968 rows)
+  carries none. A tree with no MAC document has no states the corpus can
+  source, and a national tree serving every state turns REQ-55's
+  `NO_JURISDICTION_TREE` into `NO_POLICY_FOUND` everywhere, which is `T-119`'s
+  scope. And Synthea writes the NYHA class as a structured observation
+  (LOINC 88020-3, a `valueCodeableConcept`), so nothing the NCD asks for is a
+  note fact. A fact kind would not be earned (D116's rule).
+- **WPS's L39529, *Intraarticular Knee Injections of Hyaluronan*, fetches
+  credential-free**, and so does its billing article **A56157**. WPS is the
+  A/B MAC for Iowa (J-5), where the recorded Synthea run on disk was generated.
+  L39529's covered indications are five bullets joined by *"ALL of the
+  following"*: the patient is symptomatic; the diagnosis is supported by
+  radiologic evidence *"such as joint space narrowing, subchondral sclerosis,
+  osteophytes and sub-chondral cysts"*; other diagnoses excluded *"if
+  appropriate"*; *"failed at least 3 months of conservative therapy"*,
+  nonpharmacologic **and**, if not contraindicated, simple analgesics or
+  NSAIDs; and failed aspiration and corticosteroid injection *when* effusion or
+  inflammation is present.
+- **A56157 names the HCPCS codes in prose.** Its two dosing tables give each J
+  code beside the preparation it denotes (`J7325`, *Synvisc*), and HCPCS Level
+  II codes are not behind the AMA licence modal that hides A56852's and A56432's
+  CPT tables (D101, D111).
+- **No national document quantifies this**: there is no NCD for
+  viscosupplementation, so REQ-73's floor has nothing to bound.
+- **Synthea writes none of the three facts.** `modules/osteoarthritis.json`
+  emits the condition (SNOMED 239873007), the diagnosis encounter, a pain score
+  and a naproxen order (RxNorm 849574). It writes no symptom description, no
+  knee radiograph and no exercise programme. The symptoms, the radiograph and
+  the nonpharmacologic therapy are note facts or nothing. That earns a third
+  fact kind.
+- **The recorded Iowa run holds the cohort.** Seven charts in `output_us`
+  carry an active 239873007 and an active 849574 order: `ccd1fb43`,
+  `f231c369`, `5f82b330`, `301841f6`, `cf2b2ac2`, `3a4493b8`, `f93eb18e`. None
+  is committed. Two carry a knowledge-table drug: `f231c369` lisinopril, and
+  `5f82b330` lisinopril and hydrochlorothiazide. `5f82b330`'s diagnosis
+  encounter is virtual (`VR`).
+- **WPS's contractor table has a defect in a committed tree.** L39529 and
+  L35755 both list **forty-eight** states under Part A contract 05901.
+  `us-abdominal-visceral-j5-j8-v1` declares Alabama alone from that row. This
+  row does not edit that tree; it is `T-144`.
+
+### Chosen
+
+1. **Practice four is hyaluronan injection (viscosupplementation) for knee
+   osteoarthritis, compiled from L39529 and A56157 for WPS J-5 and J-8**:
+   `hyaluronan-knee-oa-j5-j8-v1`, practice `orthopedics`. The states are the
+   six J-5 and J-8 A/B contracts list: IA, KS, MO, NE, IN and MI. Contract
+   05901 is left out. A beneficiary's state does not select a Part A contract
+   that lists forty-eight states, and declaring them would make this tree serve
+   requests in Texas and forty-one other states. Every coverage claim is
+   `contractor_determined`, because no NCD covers the service.
+2. **Criteria, lettered in L39529's bullet order.**
+
+   | id | Criterion | Evaluation |
+   |---|---|---|
+   | `a` | The patient is symptomatic | deterministic, new `note_knee_symptoms` |
+   | `b` | Radiologic evidence of osteoarthritis of the knee | deterministic, new `note_knee_radiographic_findings` |
+   | `c` | Other diagnoses excluded, if appropriate | **unclaimed**: *"if appropriate"* is the clinician's judgment, and the exclusion is a differential no resource records |
+   | `d` | At least 3 months of conservative therapy failed | deterministic, new `note_conservative_therapy_duration` |
+   | `e` | Failed aspiration and corticosteroid injection, when effusion or inflammation is significant | **unclaimed**: whether inflammation *"is a significant component"* is a judgment, and the requirement is conditional on it |
+
+   A repeat series has its own three conditions. It is a different request,
+   and this tree evaluates an initial series. The LIMITATIONS paragraph's
+   denials are not compiled: other joints, post-arthroplasty, imaging guidance
+   and switching agents. Each denies a different claim line or a different
+   history, and none can approve past c and e, which no chart can satisfy.
+3. **`note_knee_symptoms`.** `MET` citing every documented symptom whose
+   category is in the criterion's `qualifying_symptoms`: pain limiting daily
+   activities, pain interrupting sleep, crepitus, knee stiffness. That list is
+   L39529's own sentence. Otherwise it abstains. It never answers `NOT_MET`: a
+   chart that records no stiffness has not recorded that there is none (D40).
+4. **`note_knee_radiographic_findings`.** `MET` when any knee radiograph dated
+   on or before `as_of` documents a finding in `qualifying_findings`. It cites
+   the latest such radiograph and its qualifying findings. Otherwise it
+   abstains, including on a radiograph that documents none of the four. **No
+   `NOT_MET`**, because the LCD's list is open (*"such as"*). A radiograph
+   without the four named findings has not shown that radiologic evidence is
+   absent. *Rejected — `NOT_MET` on a radiograph with none of the four:* it
+   would deny on a list the document says is illustrative.
+5. **`note_conservative_therapy_duration`.** The criterion declares
+   `required_therapies` — `nonpharmacologic` and `simple_analgesic_or_nsaid`,
+   the LCD's *"and"* — and `min_months`, 3. For each required category, the
+   earliest documented start on or before `as_of` is taken. Months are
+   `_months_between` that start and `as_of`, the arithmetic every other month
+   count here uses, and they are computed in Python.
+   - Every category documented and the shortest at least 3 months: `MET`,
+     citing each category's earliest start.
+   - Every category documented and the shortest below 3: `NOT_MET`, shortfall
+     `(months, 3, months_of_conservative_therapy)`, citing the same.
+   - A category undocumented: an abstention. The pharmacologic leg is
+     conditional on no contraindication, and a chart silent about one has not
+     shown the leg was required and skipped. A reviewer lifts it with the
+     contraindication or the prescription.
+
+   Measured to `as_of`, not to a follow-up visit: the request is made on
+   `as_of`, and failure is the patient still being symptomatic then, which is
+   criterion `a`.
+6. **The third fact kind: `knee_osteoarthritis_workup`.** It extracts:
+   - documented symptoms, each labelled with one of four categories;
+   - knee radiographs, each with its date, a quote and its findings, each
+     finding labelled with one of four categories;
+   - conservative therapies, each with its start date and one of two
+     categories.
+
+   The model labels; whether a label qualifies is a Python membership test
+   against the criterion's declared list (Art. II), as `sleep_apnea_workup`'s
+   findings are. It is registered in `FACT_SCHEMAS` with its own response model,
+   instruction, builder, locator and prompt version. Its digest is pinned. It
+   folds through `_fold_generic`, the fold REQ-79 built for every kind but
+   `weight_management`, and it constructs no `WmEvent`. **REQ-79 is exercised
+   by a third kind rather than amended**: this row is the first one where the
+   generic boundary is reused, not built.
+7. **The narrowers become one factory over the criterion's fact kind.**
+   `_cited_workup` named the sleep kind. The knee kinds get the same narrowing
+   through a factory keyed by `PREDICATE_FACT_KIND`, so no kind name is written
+   into the sufficiency path a third time. The sleep narrower is rebuilt through
+   it, unchanged in what it keeps.
+8. **The cohort is selected from the recorded Iowa run.**
+   `select_patients.py --select-knee-osteoarthritis` reads `output_us` from disk,
+   runs no Java, and adopts every chart carrying an active 239873007 and an
+   active 849574 order: seven. Both knowledge-table charts stay in. D152
+   rejected a rule shaped to avoid the instrument.
+9. **Every date a note emits is the chart's own or declared, one fact per
+   document (D104).**
+   - Document 1 is the diagnosis visit, dated on the chart's 239873007 onset
+     encounter. Its naproxen start is the chart's own order date. On
+     `5f82b330`, whose onset encounter is virtual, document 1 is the chart's
+     next in-person encounter, and it reports the starts made at the
+     telehealth visit.
+   - Document 2 is a follow-up visit, dated on a later encounter of the chart.
+   - Symptoms, radiograph findings and the exercise programme's start are
+     declared in the fact manifest, because no generator writes them (D43).
+   - Each visit's own date is a declared fact, `knee_visits`, so the
+     date-accounting checks in `tests/test_notes.py` cover it. The extractor
+     is not asked for visits.
+10. **Seven rows, `KNEE1`–`KNEE7`, each pinning its own `as_of`**, since `d`
+    ages. They split as follows:
+    - three verdicts `MET` (`KNEE1`);
+    - a radiograph documenting none of the four, so `b` abstains (`KNEE2`);
+    - the exercise programme begun at the follow-up visit, so `d` is
+      `NOT_MET` (`KNEE3`);
+    - symptoms documented only as denied, so `a` abstains (`KNEE4`);
+    - a radiograph of the hip and a knee radiograph ordered and never done, so
+      `b` abstains (`KNEE5`);
+    - no nonpharmacologic therapy, so `d` abstains (`KNEE6`);
+    - an older radiograph with none of the four and a newer one with two
+      (`KNEE7`).
+
+    Rows `H11` and `H12` grade the two charts' table candidates, because A11
+    grades every candidate the code produces (D123, D152).
+11. **Model calls, all in this session and sequential.**
+    - The knee extraction, direct runner, both tiers: fourteen notes, at most
+      two calls each per tier.
+    - The verifier, **extended rather than re-measured** with this round's new
+      claims, under the unchanged `verifier-v7`, on both tiers. D151 removed
+      the `--extend` mode because nothing used it; this row uses it. The
+      configuration is unchanged, so re-measuring the 49 recorded claims would
+      be a second sample of claims already held. It would also move the token
+      counts `T-106`'s fixtures embed, for no change in any verdict. D152's
+      reasoning, applied to the verifier recording.
+    - The six quote recordings, extended with the fourteen notes (D152).
+
+### Rejected
+
+- **Cardiac rehabilitation (NCD 20.10.1).** No MAC document, so no sourced
+  states, and no note fact, as measured above. Its national floor would have
+  been the round's second, which is not what this row is for.
+- **Home oxygen (NCD 240.2, L33797).** Synthea writes oxygen saturation as a
+  structured observation, so no note fact is earned. It is also a DME MAC LCD
+  beside L33718, the practice three just added.
+- **Bone mass measurement (NCD 150.3, L36460 and L39268).** Its frequency limit
+  is `procedure_value_set_interval`'s arithmetic again (D114). Its indications
+  are five alternatives, and REQ-21 lists every unsatisfied leg of a satisfied
+  disjunction as a gap (D150's reason for one criterion with branches).
+- **Hyperbaric oxygen (NCD 20.29).** No chart in the three recorded runs
+  carries a diabetic lower-extremity wound.
+- **A fifth Synthea run in a state another WPS knee-injection candidate
+  covers.** It would be a non-byte-stable generation (D73) to obtain charts the
+  Iowa run already holds.
+- **Reading the pharmacologic leg from the structured naproxen order.**
+  - It needs an RxNorm set for *"NSAIDS"*, a class the LCD does not enumerate,
+    so the set would be the compiler's list with no span (Article III).
+  - It would split one criterion's evidence across two planes that could
+    disagree about one start date.
+
+  The note states the start, dated on the chart's own order, and the order
+  stays where the history review reads it.
+- **A diagnosis criterion over the coded osteoarthritis.** L39529 does not
+  state one as a bullet. A56157's ICD-10 list is a billing support list, and
+  compiling it as a criterion would be inventing a sixth indication.
+- **Binding one J code.** Every preparation the dosing tables name is the
+  same service under the same criteria. Binding one would make the others
+  `NO_POLICY_FOUND`, which says the corpus is silent when it is not (D26).
+- **The ADK runner for the new kind.** `T-143`'s, for D150's reason.
+
+### Reversal condition
+
+- **Clause 4** reverses toward a `NOT_MET` if a WPS revision closes the list of
+  radiographic findings.
+- **Clause 5** reverses toward a follow-up date if a reviewer reads *"has
+  failed"* as assessed at the last visit rather than at the request.
+- **Clause 1's states** move with `T-119`'s national and regional scope, or
+  with `T-144`'s reading of contract 05901.
+- **Clause 8** reverses if a Synthea release writes a knee radiograph or an
+  exercise programme. Those facts would then be structured and reconciled
+  with the note.
+
+### What it mints
+
+Nothing. REQ-79 is exercised by a third kind. §11's *compatibility account
+covers four practices* is `T-110`'s.
+
+### Measured
+
+- **The knee extraction, direct runner, both tiers.** Fourteen notes, one
+  call each, no re-ask on either tier. Every labelled symptom, radiograph,
+  finding set and therapy was read on both: 12 of 12 symptoms, 7 of 7
+  radiographs with their findings, 13 of 13 therapies. No denied symptom, hip
+  radiograph, unperformed radiograph or declined therapy was read as a fact,
+  and all 42 spans anchored. Fourteen calls per tier.
+- **The verifier, extended.** Sixteen new claims, because two rows' symptom
+  claims quote the same rendered sentences and share a digest. Accepted 16 of
+  16 on AI Studio and on Vertex. The recording now holds 65 claims a tier, the
+  49 already held unchanged in bytes, so `T-106`'s fixtures did not move.
+- **The six quote recordings, extended** with the fourteen notes. No passage
+  returned for any of the seventy new `(note, condition)` pairs on any
+  recording. **One more note failed on AI Studio's ADK tool-fetch path**
+  (`KNEE4/2`, `UNPARSEABLE`), the shape D152 recorded: a finding, kept with
+  its classified reason and no payload, never re-run. That recording now holds
+  two failed notes of thirty-eight.
+- **A11's denominator is sixteen.** `f231c369`'s lisinopril is red with both
+  notes consulted (`H11`); `5f82b330`'s lisinopril and hydrochlorothiazide are
+  both withheld, the chart already coding chronic kidney disease stage 1 and
+  hyperglycemia (`H12`).
+- **Naming.** The board counts practices from v1.2's round, so this is
+  *practice four* there; the code, the report and the trees count from the
+  bariatric control, so it is the fifth practice in each. Both counts are kept
+  as they stood. The spec's *four practices* for A14 is `T-110`'s to settle.
+

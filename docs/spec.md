@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; **v1.6 is in progress**, opened by `T-107` *(D149)*, its second row closed by `T-108` *(D150)*; the versions after v1.5 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; **v1.6 is in progress**, opened by `T-107` *(D149)*, its second row closed by `T-108` *(D150)* and its third by `T-109` *(D154)*; the versions after v1.5 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -997,11 +997,11 @@ instance above was one run's behaviour and the mechanism is the standing
 answer to its recurrence. What it cannot recover is a claim the model never
 quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
-### P3 — Twenty patients, eleven documents, 40 cases *(was six, five, fifteen)*
+### P3 — Twenty-seven patients, thirteen documents, 49 cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
-than a percentage point in every table. A precision of 1.000 over thirty
-`MET` calls against a base rate of 0.405 is a real result and a small one; it
+than a percentage point in every table. A precision of 1.000 over forty-six
+`MET` calls against a base rate of 0.422 is a real result and a small one; it
 says the approach does not obviously fail, and nothing more. Since T-88 the
 set is sixteen rows over eight bundles, one of them a declared clone that
 shares its note's bytes with its source *(D102)*; the count moved by one row
@@ -1031,8 +1031,11 @@ denominator five rows larger. Since T-108 it is **40** rows over twenty bundles,
 twenty-six notes and eleven documents *(D150, D152)*: the fourth practice's six
 Synthea charts, the first note-bearing charts outside bariatric surgery, with
 `OSA1`–`OSA6` and `H10`, and two documents including the first national one
-that quantifies. That is the growth D120 assigned to v1.6's round, where it
-rode with a re-measurement rather than being a task of its own.
+that quantifies. Since T-109 it is **49** rows over twenty-seven bundles, forty
+notes and thirteen documents *(D154)*: the fifth practice's seven Synthea charts
+from the same run, with `KNEE1`–`KNEE7`, `H11` and `H12`, and an LCD and its
+billing article under no NCD. That is the growth D120 assigned to v1.6's round,
+where it rode with a re-measurement rather than being a task of its own.
 
 ### P4 — The ground truth is a first draft
 
@@ -1567,7 +1570,10 @@ types; `STEPS` stays a fixed tuple (Article I). Candidates, confirmed at
 open: CPAP for obstructive sleep apnea under NCD 240.4, a **nationally
 quantified** NCD, unlike 100.1 — **confirmed by `T-108`** as
 `pap-osa-dme-jd-v1`, compiled from the DME MACs' L33718 for Noridian's
-Jurisdiction D *(D150)*; and one imaging or therapy domain. The
+Jurisdiction D *(D150)*; and one imaging or therapy domain — **chosen and
+confirmed by `T-109`** as hyaluronan injection for knee osteoarthritis,
+`hyaluronan-knee-oa-j5-j8-v1`, compiled from WPS's L39529 and A56157 for
+Jurisdictions 5 and 8 *(D154)*. The
 criteria v1.2 and v1.3 deferred land here *(D120)*: Palmetto's `c4` and
 `d`; the rheumatoid tree's `c`, `d` and `e` where a note states the fact,
 abstaining where none does; and the measured yellow. The ultrasound tree's

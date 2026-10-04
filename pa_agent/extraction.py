@@ -35,10 +35,17 @@ from pa_agent.anchor import AnchoredSpan, anchor
 from pa_agent.contracts import (
     CallMetrics,
     ClinicalEvaluation,
+    ConservativeTherapy,
+    ConservativeTherapyCategory,
     DocumentedFinding,
     EvidenceSpan,
     FactKind,
+    KneeRadiograph,
+    KneeSymptom,
+    KneeSymptomCategory,
     ProgramAssertion,
+    RadiographicFinding,
+    RadiographicFindingCategory,
     RunTrace,
     SleepFindingCategory,
     SleepTest,
@@ -1036,6 +1043,231 @@ def _locate_sleep(payload: dict, path: str) -> tuple[dict, str]:
 
 
 # --------------------------------------------------------------------------
+# The third fact kind: the knee osteoarthritis workup (T-109, REQ-79, D154)
+#
+# Built the way the sleep kind is: its own response model, instruction,
+# builder, locator and prompt version, through the same anchorer and the same
+# re-ask core, into the same result type. Nothing here constructs a `WmEvent`.
+# --------------------------------------------------------------------------
+
+#: The knee kind's configuration: its instruction, and T-89's re-ask unchanged.
+KNEE_PROMPT_VERSION = "t109-knee-oa-workup-v1/t89-reask-v1"
+
+
+class ExtractedKneeSymptom(BaseModel):
+    category: KneeSymptomCategory = Field(
+        description="Which of the listed knee symptoms the passage documents as present."
+    )
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class ExtractedRadiographicFinding(BaseModel):
+    category: RadiographicFindingCategory = Field(
+        description="Which of the listed findings the radiograph reports as present."
+    )
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class ExtractedKneeRadiograph(BaseModel):
+    date: str = Field(description="The date the radiograph was taken, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+    findings: list[ExtractedRadiographicFinding] = Field(default_factory=list)
+
+
+class ExtractedConservativeTherapy(BaseModel):
+    category: ConservativeTherapyCategory = Field(
+        description="Whether the therapy is nonpharmacologic or a simple analgesic or NSAID."
+    )
+    start_date: str = Field(description="The date the therapy began, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class KneeOsteoarthritisWorkupExtraction(BaseModel):
+    symptoms: list[ExtractedKneeSymptom] = Field(default_factory=list)
+    radiographs: list[ExtractedKneeRadiograph] = Field(default_factory=list)
+    conservative_therapies: list[ExtractedConservativeTherapy] = Field(default_factory=list)
+
+
+KNEE_INSTRUCTION = """\
+You extract structured facts from a clinical note for a prior authorization
+review of a hyaluronan injection into the knee. Return only what the schema
+defines. Do not explain.
+
+A symptom is a knee symptom the note documents as PRESENT in the patient. Return
+one for each passage documenting any of the following, with the category that
+names it:
+
+  pain_limiting_daily_activities   knee pain that interferes with daily
+                                   activities such as walking or standing
+  pain_interrupting_sleep          knee pain that wakes the patient or
+                                   interrupts sleep
+  crepitus                         crepitus of the knee
+  knee_stiffness                   stiffness of the knee
+
+  quote        text copied verbatim and contiguously from the note. It must
+               appear in the note character for character.
+  char_start   the offset of the quote's first character, counting from 0 at
+  char_end     the start of the note, and one past its last character
+
+Never return a symptom the note denies or records as absent or resolved.
+
+A radiograph is one plain radiograph (X-ray) OF THE KNEE that was performed.
+For each one return:
+
+  date                    the date it was taken, normalized to YYYY-MM-DD
+  quote                   text copied verbatim and contiguously from the note,
+                          showing the radiograph and its date
+  char_start, char_end    as above
+  findings                one entry for each of the following the radiograph
+                          reports as present, with the category that names it
+                          and a verbatim quote stating it:
+                            joint_space_narrowing, subchondral_sclerosis,
+                            osteophytes, subchondral_cysts
+                          Empty if it reports none of them. Never return a
+                          finding the report states is absent.
+
+Never return a radiograph of any other joint, and never return one that was
+ordered or scheduled but not performed.
+
+A conservative_therapy is one treatment for the knee the note documents the
+patient as having started. For each one return:
+
+  category      nonpharmacologic for a home exercise program, physical therapy,
+                education or a weight-loss program; simple_analgesic_or_nsaid
+                for acetaminophen or a non-steroidal anti-inflammatory drug
+  start_date    the date the therapy began, normalized to YYYY-MM-DD. Never
+                substitute the date of the visit that mentions it.
+  quote         text copied verbatim and contiguously from the note, showing
+                the therapy and the date it began
+  char_start, char_end    as above
+
+Never return a therapy that was only recommended, offered or declined.
+
+Return every qualifying symptom, radiograph and therapy in the note. Do not
+filter by date, by recency, or by which looks most relevant. Choosing among
+them happens elsewhere.
+"""
+
+
+def build_knee_result(
+    document_id: str, text: str, payload: dict, metrics: CallMetrics | None = None
+) -> ExtractionResult:
+    """The knee kind's trust boundary: a payload in, anchored facts out.
+
+    `build_sleep_result`'s shape over another schema (REQ-79): every quote goes
+    through `_anchor_or_drop`, a quote Python cannot locate is a drop with the
+    payload path the re-ask needs, and a radiograph finding whose own phrase
+    cannot be located is dropped from the radiograph rather than kept without
+    a span (D15's rule). Facts land on `result.facts`; the `WmEvent`-shaped
+    fields stay empty.
+    """
+    extraction = KneeOsteoarthritisWorkupExtraction.model_validate(payload)
+    result = ExtractionResult(
+        document_id=document_id, kind=FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
+        metrics=metrics, raw=payload,
+    )
+
+    for index, raw in enumerate(extraction.symptoms):
+        located = _anchor_or_drop(
+            document_id, text, raw.quote, raw.char_start, raw.char_end,
+            result.dropped, "symptom_quote_unanchorable", result.anchored_spans,
+            path=f"symptoms[{index}].quote",
+        )
+        if located is None:
+            continue
+        result.facts.append(KneeSymptom(category=raw.category, span=located.to_span()))
+
+    for index, raw in enumerate(extraction.radiographs):
+        at = f"radiographs[{index}]"
+        located = _anchor_or_drop(
+            document_id, text, raw.quote, raw.char_start, raw.char_end,
+            result.dropped, "radiograph_quote_unanchorable", result.anchored_spans,
+            path=f"{at}.quote",
+        )
+        if located is None:
+            continue
+        try:
+            when = date.fromisoformat(raw.date)
+        except ValueError:
+            result.dropped.append({"reason": "unparseable_date", "quote": raw.date})
+            continue
+        near = (located.char_start, located.char_end)
+        findings: list[RadiographicFinding] = []
+        for position, finding in enumerate(raw.findings):
+            located_finding = _anchor_or_drop(
+                document_id, text, finding.quote, finding.char_start, finding.char_end,
+                result.dropped, "finding_quote_unanchorable", result.anchored_spans,
+                near, path=f"{at}.findings[{position}].quote",
+            )
+            if located_finding is None:
+                continue
+            findings.append(
+                RadiographicFinding(category=finding.category, span=located_finding.to_span())
+            )
+        result.facts.append(
+            KneeRadiograph(
+                radiograph_date=when, span=located.to_span(), findings=tuple(findings)
+            )
+        )
+
+    for index, raw in enumerate(extraction.conservative_therapies):
+        located = _anchor_or_drop(
+            document_id, text, raw.quote, raw.char_start, raw.char_end,
+            result.dropped, "therapy_quote_unanchorable", result.anchored_spans,
+            path=f"conservative_therapies[{index}].quote",
+        )
+        if located is None:
+            continue
+        try:
+            began = date.fromisoformat(raw.start_date)
+        except ValueError:
+            result.dropped.append({"reason": "unparseable_date", "quote": raw.start_date})
+            continue
+        result.facts.append(
+            ConservativeTherapy(category=raw.category, start_date=began, span=located.to_span())
+        )
+
+    return result
+
+
+_KNEE_PATH = re.compile(
+    r"^(?:(symptoms|radiographs|conservative_therapies)\[(\d+)\]\.quote"
+    r"|radiographs\[(\d+)\]\.findings\[(\d+)\]\.quote)$"
+)
+
+
+def _locate_knee(payload: dict, path: str) -> tuple[dict, str]:
+    """`_locate`'s counterpart for the knee payload, nested findings included:
+    the container and key a path names, or `KeyError` for one naming nothing in
+    this payload -- a model-invented path is never applied (T-89's rule, D154)."""
+    match = _KNEE_PATH.match(path)
+    if match is None:
+        raise KeyError(path)
+    collection, index, outer, inner = match.groups()
+    if collection is not None:
+        items = payload.get(collection) or []
+        position = int(index)
+        if position >= len(items):
+            raise KeyError(path)
+        return items[position], "quote"
+    radiographs = payload.get("radiographs") or []
+    if int(outer) >= len(radiographs):
+        raise KeyError(path)
+    findings = radiographs[int(outer)].get("findings") or []
+    if int(inner) >= len(findings):
+        raise KeyError(path)
+    return findings[int(inner)], "quote"
+
+
+# --------------------------------------------------------------------------
 # The fact-kind registry (T-107, REQ-78, D147, D149)
 # --------------------------------------------------------------------------
 
@@ -1078,7 +1310,8 @@ class FactSchema:
 #: The closed registry a tree's `fact_kinds` selects from. The first entry is
 #: the configuration every weight-management recording was measured under,
 #: unchanged: `Extraction`, `INSTRUCTION`, `build_result`, `_locate`,
-#: `PROMPT_VERSION`. The second is the sleep workup's (T-108, D150).
+#: `PROMPT_VERSION`. The second is the sleep workup's (T-108, D150); the
+#: third the knee osteoarthritis workup's (T-109, D154).
 FACT_SCHEMAS: dict[FactKind, FactSchema] = {
     FactKind.WEIGHT_MANAGEMENT: FactSchema(
         kind=FactKind.WEIGHT_MANAGEMENT,
@@ -1095,5 +1328,13 @@ FACT_SCHEMAS: dict[FactKind, FactSchema] = {
         build=build_sleep_result,
         locate=_locate_sleep,
         prompt_version=SLEEP_PROMPT_VERSION,
+    ),
+    FactKind.KNEE_OSTEOARTHRITIS_WORKUP: FactSchema(
+        kind=FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
+        response_model=KneeOsteoarthritisWorkupExtraction,
+        instruction=KNEE_INSTRUCTION,
+        build=build_knee_result,
+        locate=_locate_knee,
+        prompt_version=KNEE_PROMPT_VERSION,
     ),
 }

@@ -1,0 +1,63 @@
+{
+  "patient_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e",
+  "bundle": "Shin962_Kira861_Boyer713_f93eb18e-0e0b-a9b8-e167-6d96292a859e.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "KNEE4"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "knee_visits": [
+    {
+      "date": "2023-10-10",
+      "document": "chart_note_1.txt",
+      "setting": "in_person"
+    },
+    {
+      "date": "2026-04-24",
+      "document": "chart_note_2.txt",
+      "setting": "in_person"
+    }
+  ],
+  "knee_symptoms": [],
+  "denied_symptoms": [
+    {
+      "category": "knee_pain",
+      "document": "chart_note_2.txt"
+    },
+    {
+      "category": "knee_stiffness",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "knee_radiographs": [
+    {
+      "date": "2023-10-10",
+      "document": "chart_note_1.txt",
+      "findings": [
+        "joint_space_narrowing",
+        "subchondral_cysts"
+      ]
+    }
+  ],
+  "conservative_therapies": [
+    {
+      "date": "2023-10-10",
+      "document": "chart_note_1.txt",
+      "therapy": "naproxen",
+      "category": "simple_analgesic_or_nsaid"
+    },
+    {
+      "date": "2023-10-10",
+      "document": "chart_note_1.txt",
+      "therapy": "home_exercise",
+      "category": "nonpharmacologic"
+    }
+  ],
+  "rationale": "KNEE4: no symptom documented as present. The follow-up visit records that the patient denies knee pain and morning stiffness, and the extractor's instruction names a denied symptom as a non-fact, so a abstains with NO_EVIDENCE_RETRIEVED -- never NOT_MET, because a chart that records no symptom has not recorded that there is none (D40). b and d are MET. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json and the chart's own facts, never from a run (T-109, D154). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Document 1 is a clinic visit and document 2 a follow-up visit, each dated on an encounter of the chart's own; the naproxen start is the chart's own order date, written at the diagnosis encounter. The symptoms, the radiographs and their findings and the nonpharmacologic therapy are declared here, because no generator writes them (D43, D154). One fact per document (D104). c and e are declared unclaimed by the tree -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58)."
+}

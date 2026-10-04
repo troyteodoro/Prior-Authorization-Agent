@@ -33,6 +33,7 @@ from pa_agent.contracts import (
     CategoricalExclusion,
     ClinicalEvaluation,
     CodedValueSet,
+    ConservativeTherapy,
     Condition,
     Criterion,
     CriterionResult,
@@ -43,6 +44,8 @@ from pa_agent.contracts import (
     ExclusionMatch,
     FactKind,
     GapReason,
+    KneeRadiograph,
+    KneeSymptom,
     Medication,
     Observation,
     PredicateKind,
@@ -597,6 +600,170 @@ def evaluate_evaluation_before_sleep_test(
     )
 
 
+# --------------------------------------------------------------------------
+# T-109 (D154): the knee osteoarthritis workup. Three predicates over the
+# facts the `knee_osteoarthritis_workup` kind extracted. The model labelled
+# each fact with a category; whether a category qualifies is a membership test
+# against the list the criterion declares, here (Art. II).
+# --------------------------------------------------------------------------
+
+
+def _abstain(criterion: Criterion, detail: str) -> CriterionResult:
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+        gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
+        detail=detail,
+    )
+
+
+def evaluate_knee_symptoms(
+    criterion: Criterion, symptoms: list[KneeSymptom]
+) -> CriterionResult:
+    """L39529's *"The patient is symptomatic"* (T-109, D154).
+
+    `MET` citing every documented symptom in `qualifying_symptoms`; an
+    abstention otherwise. Never `NOT_MET`: a chart that records no stiffness
+    has not recorded that there is none (D40), and a denied symptom is never
+    extracted as one.
+    """
+    qualifying = frozenset(criterion.require("qualifying_symptoms"))
+    documented = [s for s in symptoms if s.category.value in qualifying]
+    if not documented:
+        return _abstain(
+            criterion,
+            f"no knee symptom in {sorted(qualifying)} is documented as present. "
+            "A chart that records none has not recorded that there is none (D40).",
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=[s.span for s in documented],
+        detail="documented: " + ", ".join(sorted({s.category.value for s in documented})),
+    )
+
+
+def evaluate_knee_radiographic_findings(
+    criterion: Criterion, radiographs: list[KneeRadiograph], as_of: date
+) -> CriterionResult:
+    """L39529's radiologic evidence of osteoarthritis of the knee (T-109, D154).
+
+    `MET` when any knee radiograph dated on or before `as_of` documents a
+    finding in `qualifying_findings`, citing the latest such radiograph and its
+    qualifying findings. Otherwise an abstention, **including on a radiograph
+    that documents none of them**: the document introduces its four findings
+    with *"such as"*, so the list is open, and a radiograph without the four has
+    not shown that radiologic evidence is absent. Denying on an illustrative
+    list is the move D154 rejects.
+    """
+    qualifying = frozenset(criterion.require("qualifying_findings"))
+    eligible = [r for r in radiographs if r.radiograph_date <= as_of]
+    if not eligible:
+        return _abstain(
+            criterion,
+            f"no knee radiograph dated on or before {as_of.isoformat()} is "
+            "documented in the notes",
+        )
+    supporting = [
+        r for r in eligible if any(f.category.value in qualifying for f in r.findings)
+    ]
+    if not supporting:
+        dates = ", ".join(sorted({r.radiograph_date.isoformat() for r in eligible}))
+        return _abstain(
+            criterion,
+            f"{len(eligible)} knee radiograph(s) documented ({dates}), none "
+            f"reporting a finding in {sorted(qualifying)}. L39529's list is open "
+            "('such as'), so this is not evidence that none is present (D154).",
+        )
+    latest = max(
+        supporting,
+        key=lambda r: (r.radiograph_date, r.span.document_id, r.span.char_start),
+    )
+    findings = [f for f in latest.findings if f.category.value in qualifying]
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=[latest.span] + [f.span for f in findings],
+        detail=(
+            f"knee radiograph of {latest.radiograph_date.isoformat()} reports "
+            + ", ".join(sorted({f.category.value for f in findings}))
+        ),
+    )
+
+
+def evaluate_conservative_therapy_duration(
+    criterion: Criterion, therapies: list[ConservativeTherapy], as_of: date
+) -> CriterionResult:
+    """L39529's *"failed at least 3 months of conservative therapy"* (T-109,
+    D154), as arithmetic over documented start dates.
+
+    For each category in `required_therapies` the earliest documented start on
+    or before `as_of` is taken, and the months from it to `as_of` are counted
+    in whole calendar months (`_months_between`, the count every other month
+    criterion here uses). The shortest of those is the patient's conservative
+    therapy, because the document joins its two legs with *"and"*:
+
+    - every category documented and the shortest at or above `min_months`:
+      `MET`, citing each category's earliest start;
+    - every category documented and the shortest below it: `NOT_MET`, with a
+      structured shortfall, citing the same;
+    - a category undocumented: an abstention. The pharmacologic leg is
+      conditional on no contraindication, and a chart silent about one has not
+      shown the leg was required and skipped.
+    """
+    required = list(criterion.require("required_therapies"))
+    min_months = int(criterion.require("min_months"))
+
+    earliest: list[ConservativeTherapy] = []
+    missing: list[str] = []
+    for category in required:
+        started = [
+            t for t in therapies
+            if t.category.value == category and t.start_date <= as_of
+        ]
+        if not started:
+            missing.append(category)
+            continue
+        earliest.append(
+            min(started, key=lambda t: (t.start_date, t.span.document_id, t.span.char_start))
+        )
+    if missing:
+        return _abstain(
+            criterion,
+            f"no {' or '.join(missing)} therapy begun on or before "
+            f"{as_of.isoformat()} is documented; L39529 requires both legs of "
+            "conservative therapy, the pharmacologic one unless contraindicated",
+        )
+
+    months = min(_months_between(t.start_date, as_of) for t in earliest)
+    spans = [t.span for t in earliest]
+    begun = "; ".join(
+        f"{t.category.value} since {t.start_date.isoformat()}" for t in earliest
+    )
+    if months < min_months:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.NOT_MET,
+            spans=spans,
+            shortfall=Shortfall(
+                observed=months, required=min_months, unit="months_of_conservative_therapy"
+            ),
+            detail=(
+                f"{begun}: {months} month(s) of conservative therapy by "
+                f"{as_of.isoformat()}; {min_months} required"
+            ),
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=spans,
+        detail=(
+            f"{begun}: {months} month(s) of conservative therapy by "
+            f"{as_of.isoformat()}; {min_months} required"
+        ),
+    )
+
+
 def evaluate_excluded_medication(
     exclusion: CategoricalExclusion,
     medications: list[Medication],
@@ -1120,13 +1287,21 @@ def _value_set(criterion: Criterion, inputs: PredicateInputs) -> CodedValueSet:
         ) from None
 
 
-def _workup(inputs: PredicateInputs, fact_type: type) -> list:
-    """The sleep workup's facts of one contract type, in fold order (D150)."""
+def _workup(
+    inputs: PredicateInputs,
+    fact_type: type,
+    kind: FactKind = FactKind.SLEEP_APNEA_WORKUP,
+) -> list:
+    """One fact kind's facts of one contract type, in fold order (D150). The
+    sleep workup's by default; the knee binders name theirs (D154)."""
     return [
         fact
-        for fact in inputs.facts.get(FactKind.SLEEP_APNEA_WORKUP, ())
+        for fact in inputs.facts.get(kind, ())
         if isinstance(fact, fact_type)
     ]
+
+
+_KNEE = FactKind.KNEE_OSTEOARTHRITIS_WORKUP
 
 
 def _require_run(inputs: PredicateInputs) -> QualifyingRun:
@@ -1186,6 +1361,19 @@ PREDICATES: dict[PredicateKind, Predicate] = {
     PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: (
         lambda c, i: evaluate_evaluation_before_sleep_test(
             c, _workup(i, SleepTest), _workup(i, ClinicalEvaluation), i.as_of
+        )
+    ),
+    PredicateKind.NOTE_KNEE_SYMPTOMS: lambda c, i: evaluate_knee_symptoms(
+        c, _workup(i, KneeSymptom, _KNEE)
+    ),
+    PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS: (
+        lambda c, i: evaluate_knee_radiographic_findings(
+            c, _workup(i, KneeRadiograph, _KNEE), i.as_of
+        )
+    ),
+    PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION: (
+        lambda c, i: evaluate_conservative_therapy_duration(
+            c, _workup(i, ConservativeTherapy, _KNEE), i.as_of
         )
     ),
 }
@@ -1345,23 +1533,32 @@ def _cited_procedures(
     )
 
 
-def _cited_workup(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateInputs:
-    """The workup and the chart's conditions reduced to what a verdict cited.
+def _cited_facts(
+    kind: FactKind,
+) -> Callable[[PredicateInputs, list[EvidenceSpan]], PredicateInputs]:
+    """A narrower over fact kind `kind`: its facts and the chart's conditions
+    reduced to what a verdict cited (T-109, D154).
 
     A fact is kept when its own span is cited — a sleep test by the passage
-    documenting it, not by its index's phrase — so a `NOT_MET` that cited the
-    wrong test re-derives over the test it did cite (T-108, D150).
+    documenting it, not by its index's phrase; a therapy by the passage stating
+    its start — so a `NOT_MET` that cited the wrong fact re-derives over the
+    fact it did cite (T-108, D150). One factory, keyed by the kind, so no fact
+    kind's name is written into the sufficiency path once per kind.
     """
-    kept = tuple(
-        fact
-        for fact in inputs.facts.get(FactKind.SLEEP_APNEA_WORKUP, ())
-        if fact.span in cited
-    )
-    return replace(
-        inputs,
-        facts={**inputs.facts, FactKind.SLEEP_APNEA_WORKUP: kept},
-        conditions=tuple(c for c in inputs.conditions if c.span in cited),
-    )
+
+    def narrow(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateInputs:
+        kept = tuple(fact for fact in inputs.facts.get(kind, ()) if fact.span in cited)
+        return replace(
+            inputs,
+            facts={**inputs.facts, kind: kept},
+            conditions=tuple(c for c in inputs.conditions if c.span in cited),
+        )
+
+    return narrow
+
+
+#: The sleep workup's narrower, through the factory (T-108, D150; D154).
+_cited_workup = _cited_facts(FactKind.SLEEP_APNEA_WORKUP)
 
 
 def _cited_run(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateInputs:
@@ -1372,7 +1569,9 @@ def _cited_run(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateI
 #: kind -> how to reduce the inputs to what a verdict cited (T-86, D99; D110).
 #: `NOTE_EVENT_COUNT` and `CONDITION_VALUE_SET_MEMBERSHIP` are absent because
 #: neither can answer `NOT_MET` — both abstain instead (D13, D40) — so a
-#: `NOT_MET` from either is already a defect, and it is reported as one.
+#: `NOT_MET` from either is already a defect, and it is reported as one. The
+#: knee symptom and radiograph kinds are absent for the same reason (D154):
+#: both abstain where another kind would deny.
 NARROWERS: dict[
     PredicateKind, Callable[[PredicateInputs, list[EvidenceSpan]], PredicateInputs]
 ] = {
@@ -1384,6 +1583,7 @@ NARROWERS: dict[
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: _cited_run,
     PredicateKind.NOTE_SLEEP_TEST_INDEX: _cited_workup,
     PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: _cited_workup,
+    PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION: _cited_facts(_KNEE),
 }
 
 

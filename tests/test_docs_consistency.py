@@ -673,7 +673,7 @@ def test_the_readmes_per_practice_table_comes_from_the_report(readme, report):
         for line in per_practice.splitlines()
         if line.startswith("| ") and "---" not in line and not line.startswith("| Practice")
     ]
-    assert len(rows) == 4, "the report renders one row per practice"
+    assert len(rows) == 5, "the report renders one row per practice"
 
     for row in rows:
         cells = [cell.strip() for cell in row.strip("|").split("|")]
@@ -989,7 +989,7 @@ def test_every_enumerated_eval_range_ends_at_its_family_s_last_row(claude):
     """*33 labeled rows (… + H1-H4)* sums to 28: T-99's H5–H9 went into the
     count and not the range. Naming the family is not reaching its end (D142)."""
     assert _range_errors(claude) == []
-    assert _range_errors(claude.replace("H1-H10", "H1-H4"))
+    assert _range_errors(claude.replace("H1-H12", "H1-H4"))
 
 
 def _layout_entry(text: str, key: str) -> str:

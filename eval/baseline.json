@@ -70,6 +70,14 @@
       "status": "PASS",
       "reason_class": null
     },
+    "H11": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "H12": {
+      "status": "PASS",
+      "reason_class": null
+    },
     "H2": {
       "status": "PASS",
       "reason_class": null
@@ -103,6 +111,34 @@
       "reason_class": null
     },
     "J1": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "KNEE1": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "KNEE2": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "KNEE3": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "KNEE4": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "KNEE5": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "KNEE6": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "KNEE7": {
       "status": "PASS",
       "reason_class": null
     },

@@ -2,6 +2,8 @@
 
     python scripts/run_verifier_measurement.py            # spends one model call per unique claim
     python scripts/run_verifier_measurement.py --rescore  # re-checks the recording, no calls
+    python scripts/run_verifier_measurement.py --extend   # measures only the claims the
+                                                          # recording lacks (T-109, D154)
 
 `pytest tests/test_verifier.py` verifies what this writes and spends nothing —
 T-15's split (D17, D45): a gate that calls a model is slow, rate-limited, and
@@ -55,10 +57,11 @@ from pa_agent.verifier import (  # noqa: E402
 
 CASES_PATH = REPO_ROOT / "eval" / "cases.json"
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
-#: Every fact kind's AI Studio recording; the second is T-108's (D150).
+#: Every fact kind's AI Studio recording; the second is T-108's (D150), the third T-109's (D154).
 EXTRACTION_RECORDINGS = (
     EXTRACTION_RESULTS,
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+    REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
 )
 OUT_DIR = REPO_ROOT / "eval" / "verifier"
 OUT_PATH = OUT_DIR / "results.json"
@@ -177,26 +180,9 @@ def enumerate_claims() -> dict[str, dict]:
     return collector.claims
 
 
-def measure(tier: str = MEASURED_TIER) -> int:
-    load_env()
-    from pa_agent.tiers import client_for, tier_of
-
-    client = client_for(tier)
-    live = LiveVerifierRunner(client, model=VERIFIER_MODEL)
-
-    # Enumerated from the **AI Studio** extraction recording on every tier, on
-    # purpose (D106). A claim digest is the criterion, the verdict and the
-    # sliced quote (D78); enumerating from a Vertex extraction would move the
-    # quotes and therefore every digest, and two recordings sharing no keys are
-    # not a column but two unrelated files. Keyed alike, the cross-tier join is
-    # exact and free.
-    claims = enumerate_claims()
-    print(
-        f"{len(claims)} unique claims · model {VERIFIER_MODEL} · "
-        f"tier {tier_of(client)} · prompt {PROMPT_VERSION} · "
-        f"claims enumerated from {' + '.join(p.name for p in EXTRACTION_RECORDINGS)}"
-    )
-
+def _measure_claims(live, claims: dict[str, dict]) -> tuple[list[dict], list[dict]]:
+    """One live call per claim, retried only on a call failure. Shared by the
+    whole measurement and the extension, so both record the same shape."""
     records: list[dict] = []
     rejections: list[dict] = []
     for index, (digest, payload) in enumerate(claims.items(), start=1):
@@ -231,6 +217,106 @@ def measure(tier: str = MEASURED_TIER) -> int:
         print(f"  [{index}/{len(claims)}] {label}: {marker}")
         if not answer.accept:
             rejections.append(record)
+    return records, rejections
+
+
+def extend(tier: str = MEASURED_TIER) -> int:
+    """Measure only the claims the recording lacks, and append them (T-109, D154).
+
+    D152's move on the verifier recording. The configuration is unchanged -- the
+    same prompt version, model and tier -- so the claims already recorded are
+    not measured again: a second sample of a held measurement would move the
+    token counts `T-106`'s fixtures embed for no change in any verdict. It
+    refuses a recording measured under another prompt, model or tier, and one
+    holding a claim the gates no longer produce: each is a new measurement of
+    everything (D45).
+    """
+    out_path = out_path_for(tier)
+    if not out_path.exists():
+        sys.exit(f"nothing to extend at {out_path}; run without --extend first")
+    recording = json.loads(out_path.read_text(encoding="utf-8"))
+    for field, expected in (
+        ("prompt_version", PROMPT_VERSION),
+        ("model", VERIFIER_MODEL),
+        ("tier", tier),
+    ):
+        if recording.get(field) != expected:
+            sys.exit(
+                f"{out_path.name} records {field} {recording.get(field)!r}; this "
+                f"run is {expected!r}. A changed configuration is a new "
+                "measurement of every claim, not an extension (D45)."
+            )
+    claims = enumerate_claims()
+    held = {r["digest"] for r in recording["claims"]}
+    stale = held - set(claims)
+    if stale:
+        sys.exit(
+            f"{len(stale)} recorded claim(s) are produced by no gate any more; "
+            "re-measure whole rather than extend over a recording that "
+            "describes another corpus"
+        )
+    missing = {d: p for d, p in claims.items() if d not in held}
+    if not missing:
+        print("every enumerated claim is recorded; nothing to extend")
+        return EXIT_OK
+
+    load_env()
+    from pa_agent.tiers import client_for, tier_of
+
+    client = client_for(tier)
+    if tier_of(client) != recording["tier"]:
+        sys.exit(f"client is {tier_of(client)!r}; the recording is {recording['tier']!r}")
+    live = LiveVerifierRunner(client, model=VERIFIER_MODEL)
+    print(
+        f"{len(missing)} new claim(s) of {len(claims)} · model {VERIFIER_MODEL} · "
+        f"tier {tier_of(client)} · prompt {PROMPT_VERSION}"
+    )
+    records, rejections = _measure_claims(live, missing)
+    recording["claims"] = recording["claims"] + records
+    recording["claims_enumerated_from"] = " + ".join(
+        p.name for p in EXTRACTION_RECORDINGS
+    )
+    recording.setdefault("extensions", []).append({
+        "task": "T-109",
+        "decision": "D154",
+        "measured_at": datetime.now(timezone.utc).isoformat(),
+        "claims": len(records),
+    })
+    recording["aggregate"] = aggregate(recording["claims"])
+    out_path.write_text(
+        json.dumps(recording, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"\nwrote {out_path.relative_to(REPO_ROOT)}")
+    report(recording)
+    if rejections:
+        print(f"\n{len(rejections)} REJECTION(S) — review before committing:")
+        for record in rejections:
+            print(f"  {record['criterion_id']}/{record['verdict']}: {record['reason']}")
+        return EXIT_REJECTIONS
+    return EXIT_OK
+
+
+def measure(tier: str = MEASURED_TIER) -> int:
+    load_env()
+    from pa_agent.tiers import client_for, tier_of
+
+    client = client_for(tier)
+    live = LiveVerifierRunner(client, model=VERIFIER_MODEL)
+
+    # Enumerated from the **AI Studio** extraction recording on every tier, on
+    # purpose (D106). A claim digest is the criterion, the verdict and the
+    # sliced quote (D78); enumerating from a Vertex extraction would move the
+    # quotes and therefore every digest, and two recordings sharing no keys are
+    # not a column but two unrelated files. Keyed alike, the cross-tier join is
+    # exact and free.
+    claims = enumerate_claims()
+    print(
+        f"{len(claims)} unique claims · model {VERIFIER_MODEL} · "
+        f"tier {tier_of(client)} · prompt {PROMPT_VERSION} · "
+        f"claims enumerated from {' + '.join(p.name for p in EXTRACTION_RECORDINGS)}"
+    )
+
+    records, rejections = _measure_claims(live, claims)
 
     payload_out = {
         "task": PROVENANCE[tier],
@@ -348,6 +434,8 @@ def main() -> int:
     tier = named_tier(sys.argv)
     if "--rescore" in sys.argv:
         return rescore(tier)
+    if "--extend" in sys.argv:
+        return extend(tier)
     return measure(tier)
 
 

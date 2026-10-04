@@ -1,0 +1,2068 @@
+{
+  "task": "T-109",
+  "decision": "D154",
+  "supersedes": null,
+  "measured_at": "2026-10-04T08:50:39.282283+00:00",
+  "rescored_at": null,
+  "model": "gemini-3.5-flash-lite",
+  "tier": "vertex",
+  "kind": "knee_osteoarthritis_workup",
+  "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+  "reask_rounds": 1,
+  "temperature": 0.0,
+  "schema_note": "The third fact kind's recording: documented knee symptoms, knee radiographs with their findings, and conservative therapies with their start dates. Its own file and its own scorer, for the second kind's reason (D150, D154).",
+  "aggregate": {
+    "notes": 14,
+    "labeled_symptoms": 12,
+    "extracted_symptoms": 12,
+    "symptoms_matched": 12,
+    "denied_symptoms_extracted": 0,
+    "labeled_radiographs": 7,
+    "extracted_radiographs": 7,
+    "matched_radiographs": 7,
+    "finding_agreements": 7,
+    "finding_total": 7,
+    "labeled_therapies": 13,
+    "extracted_therapies": 13,
+    "matched_therapies": 13,
+    "traps": 3,
+    "traps_extracted": 0,
+    "spans_emitted": 42,
+    "spans_anchored": 42,
+    "spans_normalized": 11,
+    "model_offsets_usable": 0,
+    "reask_notes": 0,
+    "reask_targets": 0,
+    "reask_recovered": 0,
+    "reask_calls": 0,
+    "model_calls": 14,
+    "total_input_tokens": 27358,
+    "total_output_tokens": 3705,
+    "total_wall_time_ms": 19659.4
+  },
+  "notes": [
+    {
+      "note_id": "KNEE1/1",
+      "corpus": "synthesized",
+      "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "bfdec7decd591cd4ce1e638c9b0d8d37dd6e53c79be5a3fe03938a7ad43d790a",
+      "cases": [
+        "KNEE1"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [],
+        "radiographs": [
+          {
+            "date": "2018-09-07",
+            "findings": [
+              "joint_space_narrowing",
+              "osteophytes"
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "date": "2018-09-07",
+            "category": "nonpharmacologic"
+          },
+          {
+            "date": "2018-09-07",
+            "category": "simple_analgesic_or_nsaid"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2018-09-07",
+            "span": {
+              "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+              "char_start": 352,
+              "char_end": 519,
+              "quote": "09/07/2018 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint."
+            },
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "span": {
+                  "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+                  "char_start": 442,
+                  "char_end": 471,
+                  "quote": "Medial joint space narrowing."
+                }
+              },
+              {
+                "category": "osteophytes",
+                "span": {
+                  "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+                  "char_start": 472,
+                  "char_end": 519,
+                  "quote": "Marginal osteophytes at the\ntibiofemoral joint."
+                }
+              }
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2018-09-07",
+            "span": {
+              "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+              "char_start": 531,
+              "char_end": 595,
+              "quote": "Naproxen sodium 220 mg by mouth twice daily, started 09/07/2018."
+            }
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2018-09-07",
+            "span": {
+              "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+              "char_start": 596,
+              "char_end": 665,
+              "quote": "Home exercise program for quadriceps strengthening, begun 09/07/2018."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1979,
+        "output_tokens": 437,
+        "wall_time_ms": 2235.8352080045734
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (2236ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1979,
+            "output_tokens": 437,
+            "wall_time_ms": 2235.8352080045734
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2018-09-07",
+            "quote": "09/07/2018 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint.",
+            "char_start": 139,
+            "char_end": 313,
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "quote": "Medial joint space narrowing.",
+                "char_start": 223,
+                "char_end": 252
+              },
+              {
+                "category": "osteophytes",
+                "quote": "Marginal osteophytes at the\ntibiofemoral joint.",
+                "char_start": 253,
+                "char_end": 312
+              }
+            ]
+          }
+        ],
+        "conservative_therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2018-09-07",
+            "quote": "Naproxen sodium 220 mg by mouth twice daily, started 09/07/2018.",
+            "char_start": 328,
+            "char_end": 393
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2018-09-07",
+            "quote": "Home exercise program for quadriceps strengthening, begun 09/07/2018.",
+            "char_start": 394,
+            "char_end": 464
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 1,
+        "extracted_radiographs": 1,
+        "matched_radiographs": 1,
+        "finding_agreements": 1,
+        "finding_total": 1,
+        "finding_disagreements": [],
+        "labeled_therapies": 2,
+        "extracted_therapies": 2,
+        "matched_therapies": 2,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 5,
+        "spans_anchored": 5,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE1/2",
+      "corpus": "synthesized",
+      "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "0f0a6f16f453a4002904c70d304398b095c96b91fa1b963af6c134e03eaa6ca4",
+      "cases": [
+        "KNEE1"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [
+          "knee_stiffness",
+          "pain_limiting_daily_activities"
+        ],
+        "denied_symptoms": [],
+        "radiographs": [],
+        "therapies": [],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "span": {
+              "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt",
+              "char_start": 358,
+              "char_end": 452,
+              "quote": "right knee pain that limits walking to about two blocks and makes prolonged standing difficult"
+            }
+          },
+          {
+            "category": "knee_stiffness",
+            "span": {
+              "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt",
+              "char_start": 462,
+              "char_end": 526,
+              "quote": "morning stiffness of the right knee lasting about twenty minutes"
+            }
+          }
+        ],
+        "radiographs": [],
+        "therapies": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1916,
+        "output_tokens": 152,
+        "wall_time_ms": 1084.390167001402
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1084ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1916,
+            "output_tokens": 152,
+            "wall_time_ms": 1084.390167001402
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "quote": "right knee pain that limits walking to about two blocks and makes prolonged standing difficult",
+            "char_start": 242,
+            "char_end": 339
+          },
+          {
+            "category": "knee_stiffness",
+            "quote": "morning stiffness of the right knee lasting about twenty minutes",
+            "char_start": 357,
+            "char_end": 421
+          }
+        ],
+        "radiographs": [],
+        "conservative_therapies": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [
+          "knee_stiffness",
+          "pain_limiting_daily_activities"
+        ],
+        "extracted_symptoms": [
+          "knee_stiffness",
+          "pain_limiting_daily_activities"
+        ],
+        "symptoms_matched": 2,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 0,
+        "extracted_radiographs": 0,
+        "matched_radiographs": 0,
+        "finding_agreements": 0,
+        "finding_total": 0,
+        "finding_disagreements": [],
+        "labeled_therapies": 0,
+        "extracted_therapies": 0,
+        "matched_therapies": 0,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 1,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE3/1",
+      "corpus": "synthesized",
+      "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "7c2a9842a17976fcc8ade3fc0739ea12d2b729e8f6763e660d442f0084c87986",
+      "cases": [
+        "KNEE3"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [],
+        "radiographs": [
+          {
+            "date": "2026-01-22",
+            "findings": [
+              "osteophytes",
+              "subchondral_sclerosis"
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "date": "2026-01-22",
+            "category": "simple_analgesic_or_nsaid"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2026-01-22",
+            "span": {
+              "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+              "char_start": 361,
+              "char_end": 550,
+              "quote": "01/22/2026 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Marginal osteophytes at the tibiofemoral joint. Subchondral\nsclerosis of the medial tibial plateau."
+            },
+            "findings": [
+              {
+                "category": "osteophytes",
+                "span": {
+                  "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+                  "char_start": 451,
+                  "char_end": 498,
+                  "quote": "Marginal osteophytes at the tibiofemoral joint."
+                }
+              },
+              {
+                "category": "subchondral_sclerosis",
+                "span": {
+                  "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+                  "char_start": 499,
+                  "char_end": 550,
+                  "quote": "Subchondral sclerosis of the medial tibial plateau."
+                }
+              }
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2026-01-22",
+            "span": {
+              "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+              "char_start": 562,
+              "char_end": 626,
+              "quote": "Naproxen sodium 220 mg by mouth twice daily, started 01/22/2026."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1963,
+        "output_tokens": 358,
+        "wall_time_ms": 1483.8458750018617
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1484ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1963,
+            "output_tokens": 358,
+            "wall_time_ms": 1483.8458750018617
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2026-01-22",
+            "quote": "01/22/2026 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Marginal osteophytes at the tibiofemoral joint. Subchondral\nsclerosis of the medial tibial plateau.",
+            "char_start": 216,
+            "char_end": 372,
+            "findings": [
+              {
+                "category": "osteophytes",
+                "quote": "Marginal osteophytes at the tibiofemoral joint.",
+                "char_start": 298,
+                "char_end": 345
+              },
+              {
+                "category": "subchondral_sclerosis",
+                "quote": "Subchondral sclerosis of the medial tibial plateau.",
+                "char_start": 346,
+                "char_end": 372
+              }
+            ]
+          }
+        ],
+        "conservative_therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2026-01-22",
+            "quote": "Naproxen sodium 220 mg by mouth twice daily, started 01/22/2026.",
+            "char_start": 393,
+            "char_end": 456
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 1,
+        "extracted_radiographs": 1,
+        "matched_radiographs": 1,
+        "finding_agreements": 1,
+        "finding_total": 1,
+        "finding_disagreements": [],
+        "labeled_therapies": 1,
+        "extracted_therapies": 1,
+        "matched_therapies": 1,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 4,
+        "spans_anchored": 4,
+        "spans_normalized": 1,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE3/2",
+      "corpus": "synthesized",
+      "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "2867a36c3e359de85d6bfa7b3f9569338591ad45892f939f8ed3e0af4e08b489",
+      "cases": [
+        "KNEE3"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [
+          "knee_stiffness",
+          "pain_interrupting_sleep"
+        ],
+        "denied_symptoms": [],
+        "radiographs": [],
+        "therapies": [
+          {
+            "date": "2026-04-26",
+            "category": "nonpharmacologic"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [
+          {
+            "category": "pain_interrupting_sleep",
+            "span": {
+              "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt",
+              "char_start": 359,
+              "char_end": 415,
+              "quote": "Reports right knee pain that wakes the patient at night."
+            }
+          },
+          {
+            "category": "knee_stiffness",
+            "span": {
+              "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt",
+              "char_start": 416,
+              "char_end": 489,
+              "quote": "Reports morning stiffness of the right knee lasting about twenty minutes."
+            }
+          }
+        ],
+        "radiographs": [],
+        "therapies": [
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2026-04-26",
+            "span": {
+              "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt",
+              "char_start": 501,
+              "char_end": 560,
+              "quote": "Outpatient physical therapy for the knee, begun 04/26/2026."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1937,
+        "output_tokens": 236,
+        "wall_time_ms": 1300.5351669999072
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1301ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1937,
+            "output_tokens": 236,
+            "wall_time_ms": 1300.5351669999072
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [
+          {
+            "category": "pain_interrupting_sleep",
+            "quote": "Reports right knee pain that wakes the patient at night.",
+            "char_start": 218,
+            "char_end": 274
+          },
+          {
+            "category": "knee_stiffness",
+            "quote": "Reports morning stiffness of the right knee lasting about twenty minutes.",
+            "char_start": 275,
+            "char_end": 349
+          }
+        ],
+        "radiographs": [],
+        "conservative_therapies": [
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2026-04-26",
+            "quote": "Outpatient physical therapy for the knee, begun 04/26/2026.",
+            "char_start": 361,
+            "char_end": 420
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [
+          "knee_stiffness",
+          "pain_interrupting_sleep"
+        ],
+        "extracted_symptoms": [
+          "knee_stiffness",
+          "pain_interrupting_sleep"
+        ],
+        "symptoms_matched": 2,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 0,
+        "extracted_radiographs": 0,
+        "matched_radiographs": 0,
+        "finding_agreements": 0,
+        "finding_total": 0,
+        "finding_disagreements": [],
+        "labeled_therapies": 1,
+        "extracted_therapies": 1,
+        "matched_therapies": 1,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 2,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE7/1",
+      "corpus": "synthesized",
+      "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "17c4bac646c90fd91586c539d7b85c80b93d7b758144d5f99ad775afe91440b2",
+      "cases": [
+        "KNEE7"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [],
+        "radiographs": [
+          {
+            "date": "2023-06-22",
+            "findings": []
+          }
+        ],
+        "therapies": [
+          {
+            "date": "2023-01-30",
+            "category": "nonpharmacologic"
+          },
+          {
+            "date": "2023-01-30",
+            "category": "simple_analgesic_or_nsaid"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2023-06-22",
+            "span": {
+              "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+              "char_start": 354,
+              "char_end": 527,
+              "quote": "06/22/2023 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Joint spaces preserved. No osteophytes, subchondral sclerosis\nor subchondral cysts."
+            },
+            "findings": []
+          }
+        ],
+        "therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2023-01-30",
+            "span": {
+              "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+              "char_start": 566,
+              "char_end": 629,
+              "quote": "Naproxen sodium 220 mg by mouth twice daily, started 01/30/2023"
+            }
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2023-01-30",
+            "span": {
+              "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+              "char_start": 653,
+              "char_end": 722,
+              "quote": "Home exercise program for quadriceps strengthening, begun 01/30/2023."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1990,
+        "output_tokens": 322,
+        "wall_time_ms": 1427.071165991947
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1427ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1990,
+            "output_tokens": 322,
+            "wall_time_ms": 1427.071165991947
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2023-06-22",
+            "quote": "06/22/2023 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Joint spaces preserved. No osteophytes, subchondral sclerosis\nor subchondral cysts.",
+            "char_start": 218,
+            "char_end": 352,
+            "findings": []
+          }
+        ],
+        "conservative_therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2023-01-30",
+            "quote": "Naproxen sodium 220 mg by mouth twice daily, started 01/30/2023",
+            "char_start": 381,
+            "char_end": 444
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2023-01-30",
+            "quote": "Home exercise program for quadriceps strengthening, begun 01/30/2023.",
+            "char_start": 472,
+            "char_end": 539
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 1,
+        "extracted_radiographs": 1,
+        "matched_radiographs": 1,
+        "finding_agreements": 1,
+        "finding_total": 1,
+        "finding_disagreements": [],
+        "labeled_therapies": 2,
+        "extracted_therapies": 2,
+        "matched_therapies": 2,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE7/2",
+      "corpus": "synthesized",
+      "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "0db42e1e53d6f6f2737353f254b6d68dd78b1b740ba891df376243825ba67e6c",
+      "cases": [
+        "KNEE7"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [
+          "knee_stiffness",
+          "pain_limiting_daily_activities"
+        ],
+        "denied_symptoms": [],
+        "radiographs": [
+          {
+            "date": "2026-07-09",
+            "findings": [
+              "joint_space_narrowing",
+              "osteophytes"
+            ]
+          }
+        ],
+        "therapies": [],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "span": {
+              "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+              "char_start": 352,
+              "char_end": 455,
+              "quote": "Reports right knee pain that limits walking to about two blocks and makes prolonged standing difficult."
+            }
+          },
+          {
+            "category": "knee_stiffness",
+            "span": {
+              "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+              "char_start": 456,
+              "char_end": 529,
+              "quote": "Reports morning stiffness of the right knee lasting about twenty minutes."
+            }
+          }
+        ],
+        "radiographs": [
+          {
+            "date": "2026-07-09",
+            "span": {
+              "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+              "char_start": 539,
+              "char_end": 706,
+              "quote": "07/09/2026 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint."
+            },
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "span": {
+                  "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+                  "char_start": 629,
+                  "char_end": 658,
+                  "quote": "Medial joint space narrowing."
+                }
+              },
+              {
+                "category": "osteophytes",
+                "span": {
+                  "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+                  "char_start": 659,
+                  "char_end": 706,
+                  "quote": "Marginal osteophytes at the\ntibiofemoral joint."
+                }
+              }
+            ]
+          }
+        ],
+        "therapies": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1965,
+        "output_tokens": 378,
+        "wall_time_ms": 1555.8961250062566
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1556ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1965,
+            "output_tokens": 378,
+            "wall_time_ms": 1555.8961250062566
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "quote": "Reports right knee pain that limits walking to about two blocks and makes prolonged standing difficult.",
+            "char_start": 218,
+            "char_end": 319
+          },
+          {
+            "category": "knee_stiffness",
+            "quote": "Reports morning stiffness of the right knee lasting about twenty minutes.",
+            "char_start": 320,
+            "char_end": 393
+          }
+        ],
+        "radiographs": [
+          {
+            "date": "2026-07-09",
+            "quote": "07/09/2026 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint.",
+            "char_start": 412,
+            "char_end": 580,
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "quote": "Medial joint space narrowing.",
+                "char_start": 506,
+                "char_end": 535
+              },
+              {
+                "category": "osteophytes",
+                "quote": "Marginal osteophytes at the\ntibiofemoral joint.",
+                "char_start": 536,
+                "char_end": 580
+              }
+            ]
+          }
+        ],
+        "conservative_therapies": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [
+          "knee_stiffness",
+          "pain_limiting_daily_activities"
+        ],
+        "extracted_symptoms": [
+          "knee_stiffness",
+          "pain_limiting_daily_activities"
+        ],
+        "symptoms_matched": 2,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 1,
+        "extracted_radiographs": 1,
+        "matched_radiographs": 1,
+        "finding_agreements": 1,
+        "finding_total": 1,
+        "finding_disagreements": [],
+        "labeled_therapies": 0,
+        "extracted_therapies": 0,
+        "matched_therapies": 0,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 5,
+        "spans_anchored": 5,
+        "spans_normalized": 2,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE6/1",
+      "corpus": "synthesized",
+      "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "12e676aec80965527bf06ab39bd1a07d43cd3c53892a957f821d6a23771ea595",
+      "cases": [
+        "KNEE6"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [],
+        "radiographs": [
+          {
+            "date": "2004-08-04",
+            "findings": [
+              "joint_space_narrowing",
+              "osteophytes"
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "date": "2004-08-04",
+            "category": "simple_analgesic_or_nsaid"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2004-08-04",
+            "span": {
+              "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+              "char_start": 358,
+              "char_end": 525,
+              "quote": "08/04/2004 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint."
+            },
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "span": {
+                  "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+                  "char_start": 448,
+                  "char_end": 476,
+                  "quote": "Medial joint space narrowing"
+                }
+              },
+              {
+                "category": "osteophytes",
+                "span": {
+                  "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+                  "char_start": 478,
+                  "char_end": 524,
+                  "quote": "Marginal osteophytes at the\ntibiofemoral joint"
+                }
+              }
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2004-08-04",
+            "span": {
+              "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+              "char_start": 537,
+              "char_end": 601,
+              "quote": "Naproxen sodium 220 mg by mouth twice daily, started 08/04/2004."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1957,
+        "output_tokens": 352,
+        "wall_time_ms": 1552.9392500029644
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1553ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1957,
+            "output_tokens": 352,
+            "wall_time_ms": 1552.9392500029644
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2004-08-04",
+            "quote": "08/04/2004 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint.",
+            "char_start": 218,
+            "char_end": 353,
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "quote": "Medial joint space narrowing",
+                "char_start": 286,
+                "char_end": 314
+              },
+              {
+                "category": "osteophytes",
+                "quote": "Marginal osteophytes at the\ntibiofemoral joint",
+                "char_start": 316,
+                "char_end": 352
+              }
+            ]
+          }
+        ],
+        "conservative_therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2004-08-04",
+            "quote": "Naproxen sodium 220 mg by mouth twice daily, started 08/04/2004.",
+            "char_start": 366,
+            "char_end": 431
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 1,
+        "extracted_radiographs": 1,
+        "matched_radiographs": 1,
+        "finding_agreements": 1,
+        "finding_total": 1,
+        "finding_disagreements": [],
+        "labeled_therapies": 1,
+        "extracted_therapies": 1,
+        "matched_therapies": 1,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 4,
+        "spans_anchored": 4,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE6/2",
+      "corpus": "synthesized",
+      "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "c1f4c6f81fc8bc88617a5f4838ccab628c42c494e2b508d9df9f3790dd3b3ab0",
+      "cases": [
+        "KNEE6"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [
+          "pain_interrupting_sleep",
+          "pain_limiting_daily_activities"
+        ],
+        "denied_symptoms": [],
+        "radiographs": [],
+        "therapies": [],
+        "traps": [
+          {
+            "date": "2026-02-03",
+            "reason": "therapy_declined"
+          }
+        ]
+      },
+      "facts": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "span": {
+              "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt",
+              "char_start": 364,
+              "char_end": 458,
+              "quote": "right knee pain that limits walking to about two blocks and makes prolonged standing difficult"
+            }
+          },
+          {
+            "category": "pain_interrupting_sleep",
+            "span": {
+              "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt",
+              "char_start": 468,
+              "char_end": 515,
+              "quote": "right knee pain that wakes the patient at night"
+            }
+          }
+        ],
+        "radiographs": [],
+        "therapies": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1938,
+        "output_tokens": 153,
+        "wall_time_ms": 1371.7997080093483
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1372ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1938,
+            "output_tokens": 153,
+            "wall_time_ms": 1371.7997080093483
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "quote": "right knee pain that limits walking to about two blocks and makes prolonged standing difficult",
+            "char_start": 218,
+            "char_end": 313
+          },
+          {
+            "category": "pain_interrupting_sleep",
+            "quote": "right knee pain that wakes the patient at night",
+            "char_start": 329,
+            "char_end": 376
+          }
+        ],
+        "radiographs": [],
+        "conservative_therapies": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [
+          "pain_interrupting_sleep",
+          "pain_limiting_daily_activities"
+        ],
+        "extracted_symptoms": [
+          "pain_interrupting_sleep",
+          "pain_limiting_daily_activities"
+        ],
+        "symptoms_matched": 2,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 0,
+        "extracted_radiographs": 0,
+        "matched_radiographs": 0,
+        "finding_agreements": 0,
+        "finding_total": 0,
+        "finding_disagreements": [],
+        "labeled_therapies": 0,
+        "extracted_therapies": 0,
+        "matched_therapies": 0,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 1,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE2/1",
+      "corpus": "synthesized",
+      "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "ef9d475990b52d6e70212e2dbaeb5be443943b474caa814e47467eb94b361b63",
+      "cases": [
+        "KNEE2"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [],
+        "radiographs": [
+          {
+            "date": "2024-04-16",
+            "findings": []
+          }
+        ],
+        "therapies": [
+          {
+            "date": "2024-04-16",
+            "category": "nonpharmacologic"
+          },
+          {
+            "date": "2024-04-16",
+            "category": "simple_analgesic_or_nsaid"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2024-04-16",
+            "span": {
+              "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+              "char_start": 356,
+              "char_end": 556,
+              "quote": "04/16/2024 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Joint spaces preserved. No osteophytes, subchondral sclerosis\nor subchondral cysts. Soft tissues unremarkable."
+            },
+            "findings": []
+          }
+        ],
+        "therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2024-04-16",
+            "span": {
+              "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+              "char_start": 568,
+              "char_end": 632,
+              "quote": "Naproxen sodium 220 mg by mouth twice daily, started 04/16/2024."
+            }
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2024-04-16",
+            "span": {
+              "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+              "char_start": 633,
+              "char_end": 702,
+              "quote": "Home exercise program for quadriceps strengthening, begun 04/16/2024."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1989,
+        "output_tokens": 326,
+        "wall_time_ms": 1478.7182089930866
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1479ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1989,
+            "output_tokens": 326,
+            "wall_time_ms": 1478.7182089930866
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2024-04-16",
+            "quote": "04/16/2024 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Joint spaces preserved. No osteophytes, subchondral sclerosis\nor subchondral cysts. Soft tissues unremarkable.",
+            "char_start": 218,
+            "char_end": 393,
+            "findings": []
+          }
+        ],
+        "conservative_therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2024-04-16",
+            "quote": "Naproxen sodium 220 mg by mouth twice daily, started 04/16/2024.",
+            "char_start": 409,
+            "char_end": 472
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2024-04-16",
+            "quote": "Home exercise program for quadriceps strengthening, begun 04/16/2024.",
+            "char_start": 473,
+            "char_end": 542
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 1,
+        "extracted_radiographs": 1,
+        "matched_radiographs": 1,
+        "finding_agreements": 1,
+        "finding_total": 1,
+        "finding_disagreements": [],
+        "labeled_therapies": 2,
+        "extracted_therapies": 2,
+        "matched_therapies": 2,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE2/2",
+      "corpus": "synthesized",
+      "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "f86ca3bde61e417ac36191996b2de1cd9df57d58d656abd861d10028a199cd6f",
+      "cases": [
+        "KNEE2"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [
+          "crepitus",
+          "pain_limiting_daily_activities"
+        ],
+        "denied_symptoms": [],
+        "radiographs": [],
+        "therapies": [],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "span": {
+              "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt",
+              "char_start": 354,
+              "char_end": 457,
+              "quote": "Reports right knee pain that limits walking to about two blocks and makes prolonged standing difficult."
+            }
+          },
+          {
+            "category": "crepitus",
+            "span": {
+              "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt",
+              "char_start": 458,
+              "char_end": 529,
+              "quote": "Crepitus is palpable over the right knee through flexion and extension."
+            }
+          }
+        ],
+        "radiographs": [],
+        "therapies": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1923,
+        "output_tokens": 155,
+        "wall_time_ms": 1080.6288339954335
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1081ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1923,
+            "output_tokens": 155,
+            "wall_time_ms": 1080.6288339954335
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "quote": "Reports right knee pain that limits walking to about two blocks and makes prolonged standing difficult.",
+            "char_start": 269,
+            "char_end": 371
+          },
+          {
+            "category": "crepitus",
+            "quote": "Crepitus is palpable over the right knee through flexion and extension.",
+            "char_start": 372,
+            "char_end": 444
+          }
+        ],
+        "radiographs": [],
+        "conservative_therapies": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [
+          "crepitus",
+          "pain_limiting_daily_activities"
+        ],
+        "extracted_symptoms": [
+          "crepitus",
+          "pain_limiting_daily_activities"
+        ],
+        "symptoms_matched": 2,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 0,
+        "extracted_radiographs": 0,
+        "matched_radiographs": 0,
+        "finding_agreements": 0,
+        "finding_total": 0,
+        "finding_disagreements": [],
+        "labeled_therapies": 0,
+        "extracted_therapies": 0,
+        "matched_therapies": 0,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 2,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE5/1",
+      "corpus": "synthesized",
+      "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "1dbe940b3120e36a20c2fbcb424892cb78ffbedbbf44cc09da61542d093d8851",
+      "cases": [
+        "KNEE5"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [],
+        "radiographs": [],
+        "therapies": [
+          {
+            "date": "2020-08-12",
+            "category": "nonpharmacologic"
+          },
+          {
+            "date": "2020-08-12",
+            "category": "simple_analgesic_or_nsaid"
+          }
+        ],
+        "traps": [
+          {
+            "date": "2020-08-12",
+            "reason": "hip_radiograph"
+          },
+          {
+            "date": "2020-08-19",
+            "reason": "radiograph_not_performed"
+          }
+        ]
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [],
+        "therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2020-08-12",
+            "span": {
+              "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+              "char_start": 590,
+              "char_end": 654,
+              "quote": "Naproxen sodium 220 mg by mouth twice daily, started 08/12/2020."
+            }
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2020-08-12",
+            "span": {
+              "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+              "char_start": 655,
+              "char_end": 724,
+              "quote": "Home exercise program for quadriceps strengthening, begun 08/12/2020."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 2001,
+        "output_tokens": 213,
+        "wall_time_ms": 1209.5374999917112
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1210ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 2001,
+            "output_tokens": 213,
+            "wall_time_ms": 1209.5374999917112
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [],
+        "conservative_therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2020-08-12",
+            "quote": "Naproxen sodium 220 mg by mouth twice daily, started 08/12/2020.",
+            "char_start": 435,
+            "char_end": 498
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2020-08-12",
+            "quote": "Home exercise program for quadriceps strengthening, begun 08/12/2020.",
+            "char_start": 499,
+            "char_end": 569
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 0,
+        "extracted_radiographs": 0,
+        "matched_radiographs": 0,
+        "finding_agreements": 0,
+        "finding_total": 0,
+        "finding_disagreements": [],
+        "labeled_therapies": 2,
+        "extracted_therapies": 2,
+        "matched_therapies": 2,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE5/2",
+      "corpus": "synthesized",
+      "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "7e936c5a2dc38afc8cb2ba6ef2c5414ab8c0e45484fb54cbbd3a136cb3b1e390",
+      "cases": [
+        "KNEE5"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [
+          "crepitus",
+          "pain_limiting_daily_activities"
+        ],
+        "denied_symptoms": [],
+        "radiographs": [],
+        "therapies": [],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "span": {
+              "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt",
+              "char_start": 360,
+              "char_end": 454,
+              "quote": "right knee pain that limits walking to about two blocks and makes prolonged standing difficult"
+            }
+          },
+          {
+            "category": "crepitus",
+            "span": {
+              "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt",
+              "char_start": 456,
+              "char_end": 526,
+              "quote": "Crepitus is palpable over the right knee through flexion and extension"
+            }
+          }
+        ],
+        "radiographs": [],
+        "therapies": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1918,
+        "output_tokens": 154,
+        "wall_time_ms": 1159.3453339883126
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1159ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1918,
+            "output_tokens": 154,
+            "wall_time_ms": 1159.3453339883126
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [
+          {
+            "category": "pain_limiting_daily_activities",
+            "quote": "right knee pain that limits walking to about two blocks and makes prolonged standing difficult",
+            "char_start": 331,
+            "char_end": 427
+          },
+          {
+            "category": "crepitus",
+            "quote": "Crepitus is palpable over the right knee through flexion and extension",
+            "char_start": 429,
+            "char_end": 498
+          }
+        ],
+        "radiographs": [],
+        "conservative_therapies": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [
+          "crepitus",
+          "pain_limiting_daily_activities"
+        ],
+        "extracted_symptoms": [
+          "crepitus",
+          "pain_limiting_daily_activities"
+        ],
+        "symptoms_matched": 2,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 0,
+        "extracted_radiographs": 0,
+        "matched_radiographs": 0,
+        "finding_agreements": 0,
+        "finding_total": 0,
+        "finding_disagreements": [],
+        "labeled_therapies": 0,
+        "extracted_therapies": 0,
+        "matched_therapies": 0,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 2,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE4/1",
+      "corpus": "synthesized",
+      "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "be86e5f4bd11904537348c0a798cdac3a44d43868aa0f95e4b4cdb3d89c3f5d3",
+      "cases": [
+        "KNEE4"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [],
+        "radiographs": [
+          {
+            "date": "2023-10-10",
+            "findings": [
+              "joint_space_narrowing",
+              "subchondral_cysts"
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "date": "2023-10-10",
+            "category": "nonpharmacologic"
+          },
+          {
+            "date": "2023-10-10",
+            "category": "simple_analgesic_or_nsaid"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2023-10-10",
+            "span": {
+              "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+              "char_start": 354,
+              "char_end": 522,
+              "quote": "10/10/2023 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Subchondral cysts in the medial\nfemoral condyle."
+            },
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "span": {
+                  "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+                  "char_start": 444,
+                  "char_end": 473,
+                  "quote": "Medial joint space narrowing."
+                }
+              },
+              {
+                "category": "subchondral_cysts",
+                "span": {
+                  "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+                  "char_start": 474,
+                  "char_end": 522,
+                  "quote": "Subchondral cysts in the medial\nfemoral condyle."
+                }
+              }
+            ]
+          }
+        ],
+        "therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2023-10-10",
+            "span": {
+              "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+              "char_start": 534,
+              "char_end": 598,
+              "quote": "Naproxen sodium 220 mg by mouth twice daily, started 10/10/2023."
+            }
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2023-10-10",
+            "span": {
+              "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+              "char_start": 599,
+              "char_end": 668,
+              "quote": "Home exercise program for quadriceps strengthening, begun 10/10/2023."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1979,
+        "output_tokens": 442,
+        "wall_time_ms": 1892.5826249906095
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1893ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1979,
+            "output_tokens": 442,
+            "wall_time_ms": 1892.5826249906095
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [
+          {
+            "date": "2023-10-10",
+            "quote": "10/10/2023 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Subchondral cysts in the medial\nfemoral condyle.",
+            "char_start": 218,
+            "char_end": 358,
+            "findings": [
+              {
+                "category": "joint_space_narrowing",
+                "quote": "Medial joint space narrowing.",
+                "char_start": 290,
+                "char_end": 319
+              },
+              {
+                "category": "subchondral_cysts",
+                "quote": "Subchondral cysts in the medial\nfemoral condyle.",
+                "char_start": 320,
+                "char_end": 358
+              }
+            ]
+          }
+        ],
+        "conservative_therapies": [
+          {
+            "category": "simple_analgesic_or_nsaid",
+            "start_date": "2023-10-10",
+            "quote": "Naproxen sodium 220 mg by mouth twice daily, started 10/10/2023.",
+            "char_start": 381,
+            "char_end": 444
+          },
+          {
+            "category": "nonpharmacologic",
+            "start_date": "2023-10-10",
+            "quote": "Home exercise program for quadriceps strengthening, begun 10/10/2023.",
+            "char_start": 445,
+            "char_end": 515
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 1,
+        "extracted_radiographs": 1,
+        "matched_radiographs": 1,
+        "finding_agreements": 1,
+        "finding_total": 1,
+        "finding_disagreements": [],
+        "labeled_therapies": 2,
+        "extracted_therapies": 2,
+        "matched_therapies": 2,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 5,
+        "spans_anchored": 5,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "KNEE4/2",
+      "corpus": "synthesized",
+      "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "b3c996be14d2d684e37809f9fac6352d897ad5182e6e3a3438ab2e836010bee3",
+      "cases": [
+        "KNEE4"
+      ],
+      "kind": "knee_osteoarthritis_workup",
+      "labels": {
+        "symptoms": [],
+        "denied_symptoms": [
+          "knee_pain",
+          "knee_stiffness"
+        ],
+        "radiographs": [],
+        "therapies": [],
+        "traps": []
+      },
+      "facts": {
+        "symptoms": [],
+        "radiographs": [],
+        "therapies": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1903,
+        "output_tokens": 27,
+        "wall_time_ms": 826.2726249959087
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t109-knee-oa-workup-v1/t89-reask-v1",
+        "document_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (826ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1903,
+            "output_tokens": 27,
+            "wall_time_ms": 826.2726249959087
+          }
+        ]
+      },
+      "raw": {
+        "symptoms": [],
+        "radiographs": [],
+        "conservative_therapies": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_symptoms": [],
+        "extracted_symptoms": [],
+        "symptoms_matched": 0,
+        "denied_symptoms_extracted": [],
+        "labeled_radiographs": 0,
+        "extracted_radiographs": 0,
+        "matched_radiographs": 0,
+        "finding_agreements": 0,
+        "finding_total": 0,
+        "finding_disagreements": [],
+        "labeled_therapies": 0,
+        "extracted_therapies": 0,
+        "matched_therapies": 0,
+        "unlabeled_therapies": [],
+        "traps_extracted": [],
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    }
+  ]
+}

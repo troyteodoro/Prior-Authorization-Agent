@@ -35,9 +35,9 @@ an instruction typed into a prompt.
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-79 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and open** — `T-107` and `T-108` closed its first two rows *(D149, D150)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-108 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-109 through T-125 are reserved rows whose records are written when they open. `T-143` is numbered with no record yet, off the path *(D150)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D153, kill criteria, open questions. Append-only. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and open** — `T-107`, `T-108` and `T-109` closed its first three rows *(D149, D150, D154)*. |
+| `docs/tasks.md` | The board. Task records T-00 through T-109 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-110 through T-125 are reserved rows whose records are written when they open. `T-143` and `T-144` are numbered with no record yet, off the path *(D150, D154)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D154, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -933,10 +933,10 @@ A status line and pointers, capped at 30 lines by
 `tests/test_docs_consistency.py` *(D148)*. A closed task's account is in its
 board record and its decision entry, never here.
 
-- **Next:** `v1.6`, row 3 — `T-109`, practice four. Read the board's *Path to
-  v1* first. The second fact kind, its fold and REQ-79 exist *(D150)*; a
-  practice whose notes state another kind of fact registers a third.
-- **Open:** no task. v1.6 is in progress; `T-107` and `T-108` closed rows 1–2.
+- **Next:** `v1.6`, row 4 — `T-110`, the deferred criteria and the
+  four-practice account. Read the board's *Path to v1* first. Three fact kinds
+  exist and every one folds through `FACT_FOLDS` *(D150, D154)*.
+- **Open:** no task. v1.6 is in progress; `T-107`–`T-109` closed rows 1–3.
 - **Unclaimed on purpose:** REQ-44 and REQ-47. Amendment 1 reserves the whole
   decision procedure to Python, so no verdict exists that a model could
   determine without doing something reserved. They are declared in spec §5's
@@ -994,6 +994,18 @@ Where everything else lives — each is the owner, and this file keeps no copy:
   by two practices and nothing collides. **Synthea writes no
   apnea-hypopnea index**, which is why the index is a note fact and earned the
   second fact kind.
+
+  The two added by T-109 are WPS's **L39529** (*Intraarticular Knee Injections
+  of Hyaluronan*) and **A56157**, its billing article, whose dosing tables name
+  every hyaluronan J code in prose — HCPCS Level II, outside the AMA licence
+  modal *(D154)*. **No NCD covers viscosupplementation**, so the tree has no
+  national floor and every coverage claim is `contractor_determined`. Its
+  radiographic findings are introduced by *"such as"*, an open list, which is
+  why a radiograph without them abstains rather than failing. The tree serves
+  J-5's and J-8's six A/B states only: the table's Part A contract 05901 lists
+  forty-eight states, and `us-abdominal-visceral-j5-j8-v1`'s reading of that
+  row is `T-144`'s. **Synthea writes no knee radiograph, symptom description or
+  exercise programme**, which is what earned the third fact kind.
 
   The two added by T-94 are
   WPS's **L35755** (*Non-Invasive Abdominal / Visceral Vascular Studies*) and
@@ -1121,8 +1133,8 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      and outbox.py. __init__ imports none.
 data/policies/
   source/            ncd_100_1, a53028, r931cp, l34576, a56852, l35677, a56432,
-                     l35755, a57591, ncd_240_4, l33718 + sources.json,
-                     answers.json (q1–q16)
+                     l35755, a57591, ncd_240_4, l33718, l39529, a56157 +
+                     sources.json, answers.json (q1–q19)
   value_sets/        obesity_comorbidities, rheumatoid_arthritis,
                      abdominal_visceral_vascular_indications and
                      abdominal_visceral_vascular_studies (SNOMED — the last two
@@ -1145,10 +1157,14 @@ data/policies/
                      pap-osa-dme-jd-v1 (T-108, D150) — the fourth practice,
                      the first to read notes of a second fact kind, two
                      national floors on one criterion
+  hyaluronan_knee_oa_j5_j8.json
+                     L39529's knee hyaluronan tree for WPS J-5/J-8,
+                     hyaluronan-knee-oa-j5-j8-v1 (T-109, D154) — the fifth
+                     practice, a third fact kind, no NCD over it
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it
-  bundles/           twenty Synthea v4.0.0 bundles — six from the base seed,
+  bundles/           twenty-seven Synthea v4.0.0 bundles — six from the base seed,
                      one carrying the declared synthetic BMI-35.0 observation
                      (T-41, D73; E12's patient is note-free by declaration),
                      one declared clone of E4's chart re-addressed into
@@ -1160,9 +1176,11 @@ data/patients/
                      carrying one of the patient's own procedures re-coded as
                      a prior study (T-94, D114), and the sleep apnea cohort —
                      six charts selected by rule from the same Iowa run,
-                     no fifth Synthea run (T-108, D150). Every clone is
+                     no fifth Synthea run (T-108, D150), and the knee
+                     osteoarthritis cohort — seven more charts by rule from
+                     that run (T-109, D154). Every clone is
                      recomputed by --verify
-  notes/             twenty-six chart notes, two per note-bearing chart as
+  notes/             forty chart notes, two per note-bearing chart as
                      <patient_id>/chart_note_1.txt and chart_note_2.txt (T-81,
                      D104), the clone's byte-identical to its source's per
                      document; plus notes/manifest.json — a second, separate
@@ -1172,7 +1190,7 @@ data/patients/
 data/knowledge/      the knowledge corpus (T-96, D118) — **not** the policy
                      corpus, and a separate manifest for that reason
   sources.json       five FDA labels, hashed; verified by the same
-                     verify_sources.py --offline that verifies the policy eleven
+                     verify_sources.py --offline that verifies the policy thirteen
   source/            the extracted SPL text, one file per RxNorm ingredient
   medication_effects.json
                      the reviewed table: five rows, one per (ingredient,
@@ -1200,9 +1218,10 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 40 labeled rows (§6's 15 + NP1 + J1 +
-                     RA1-RA3 + US1-US4 + H1-H10 + OSA1-OSA6; D75, D102, D104,
-                     D113, D114, D119, D122, D126, D150, D152)
+  cases.json         the eval set — 49 labeled rows (§6's 15 + NP1 + J1 +
+                     RA1-RA3 + US1-US4 + H1-H12 + OSA1-OSA6 + KNEE1-KNEE7;
+                     D75, D102, D104, D113, D114, D119, D122, D126, D150,
+                     D152, D154)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it;
@@ -1212,21 +1231,24 @@ eval/
                      three re-measured by T-81 on the two-note corpus (D104);
                      and *_vertex.json beside each, T-90's second tier (D106);
                      sleep_apnea_workup[_vertex].json — the second fact kind's
-                     recording, its own file and scorer (T-108, D150)
+                     recording, its own file and scorer (T-108, D150);
+                     knee_osteoarthritis_workup[_vertex].json — the third's
+                     (T-109, D154)
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91),
                      measured fresh by T-81 over all seven charts (D104)
-  verifier/          results.json — T-17's recording, 49 claims since T-108,
+  verifier/          results.json — T-17's recording, 65 claims since T-109,
                      re-measured whole by T-89, T-81, T-93, T-94 and T-108,
-                     and on both tiers; `verifier-v7` since D151
-                     (D78, D102, D103, D104, D113, D115, D151). The history claim's
+                     extended by T-109, and on both tiers; `verifier-v7`
+                     since D151
+                     (D78, D102, D103, D104, D113, D115, D151, D154). The history claim's
                      recording, history_results.json, is T-110's (D122)
   history/           T-98's six quote recordings (D122): results.json and
                      results_vertex.json (direct), adk_results_inline[_vertex]
                      .json and adk_results_tool_fetch[_vertex].json —
-                     twenty-four notes × five conditions each since T-108's
-                     extension (D152), no pair with a passage, one note
-                     recorded as failed on AI Studio tool-fetch;
+                     thirty-eight notes × five conditions each since T-109's
+                     extension (D152, D154), no pair with a passage, two
+                     notes recorded as failed on AI Studio tool-fetch;
                      results.json is the one every gate replays
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient

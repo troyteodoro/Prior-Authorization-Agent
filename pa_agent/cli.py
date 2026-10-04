@@ -123,6 +123,7 @@ DEFAULT_RECORDING = REPO_ROOT / "eval" / "extraction" / "results.json"
 #: `--recording` names the weight-management file.
 KIND_RECORDINGS: tuple[Path, ...] = (
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+    REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
 )
 DEFAULT_VERIFIER_RECORDING = REPO_ROOT / "eval" / "verifier" / "results.json"
 DEFAULT_QUOTE_RECORDING = REPO_ROOT / "eval" / "history" / "results.json"

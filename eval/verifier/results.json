@@ -2,7 +2,7 @@
   "task": "T-17",
   "model": "gemini-3.5-flash-lite",
   "tier": "ai_studio",
-  "claims_enumerated_from": "results.json + sleep_apnea_workup.json",
+  "claims_enumerated_from": "results.json + sleep_apnea_workup.json + knee_osteoarthritis_workup.json",
   "prompt_version": "verifier-v7",
   "measured_at": "2026-10-04T07:49:21.499078+00:00",
   "claims": [
@@ -1945,15 +1945,664 @@
         "output_tokens": 55,
         "wall_time_ms": 782.8480829921318
       }
+    },
+    {
+      "digest": "2f9e9575c9628557a2d3f58506ef0a01af38dd9da8d0bf3485d2bdb4b1b78d6c",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "The patient is symptomatic: knee pain limiting daily activities or interrupting sleep, crepitus, or knee stiffness",
+          "constants": {
+            "qualifying_symptoms": {
+              "value": [
+                "pain_limiting_daily_activities",
+                "pain_interrupting_sleep",
+                "crepitus",
+                "knee_stiffness"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "right knee pain that limits\nwalking to about two blocks and makes prolonged standing difficult",
+          "morning stiffness of the right knee lasting about twenty minutes"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly support the presence of qualifying symptoms, specifically knee pain limiting daily activities and knee stiffness.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly support the presence of qualifying symptoms, specifically knee pain limiting daily activities and knee stiffness."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 773,
+        "output_tokens": 37,
+        "wall_time_ms": 747.1120830014115
+      }
+    },
+    {
+      "digest": "e652ce76c50a8b3f23597832ddb037145014a0196100269a9dc6b799768c24e6",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Radiologic evidence of osteoarthritis of the knee",
+          "constants": {
+            "qualifying_findings": {
+              "value": [
+                "joint_space_narrowing",
+                "subchondral_sclerosis",
+                "osteophytes",
+                "subchondral_cysts"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "09/07/2018 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint.",
+          "Medial joint space narrowing",
+          "Marginal osteophytes"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly support the presence of joint space narrowing and osteophytes, which are qualifying findings for osteoarthritis of the knee.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly support the presence of joint space narrowing and osteophytes, which are qualifying findings for osteoarthritis of the knee."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 791,
+        "output_tokens": 41,
+        "wall_time_ms": 668.1611249950947
+      }
+    },
+    {
+      "digest": "1ae50bb97010398df3e6c78981d06a3a0190aedc211a70573542a5b1ee9bf029",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated",
+          "constants": {
+            "min_months": {
+              "value": 3,
+              "comparison": ">="
+            },
+            "required_therapies": {
+              "value": [
+                "nonpharmacologic",
+                "simple_analgesic_or_nsaid"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Home exercise program for quadriceps strengthening, begun 09/07/2018.",
+          "Naproxen sodium 220 mg by mouth twice daily, started 09/07/2018."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes provide evidence of nonpharmacologic therapy and an NSAID starting on the same date, supporting the MET verdict without re-adjudicating the duration or therapy types.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes provide evidence of nonpharmacologic therapy and an NSAID starting on the same date, supporting the MET verdict without re-adjudicating the duration or therapy types."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 805,
+        "output_tokens": 51,
+        "wall_time_ms": 648.6425420007436
+      }
+    },
+    {
+      "digest": "2a56b78fefadfdec6b73bf5b53fa19bc4ba7f86a08a39fd8ba8ee6982560e7d1",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "The patient is symptomatic: knee pain limiting daily activities or interrupting sleep, crepitus, or knee stiffness",
+          "constants": {
+            "qualifying_symptoms": {
+              "value": [
+                "pain_limiting_daily_activities",
+                "pain_interrupting_sleep",
+                "crepitus",
+                "knee_stiffness"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "right knee pain that limits\nwalking to about two blocks and makes prolonged standing difficult",
+          "Crepitus\nis palpable over the right knee through flexion and extension"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes provide direct evidence of qualifying symptoms including knee pain limiting daily activities and palpable crepitus, fully supporting the MET verdict.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes provide direct evidence of qualifying symptoms including knee pain limiting daily activities and palpable crepitus, fully supporting the MET verdict."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 777,
+        "output_tokens": 42,
+        "wall_time_ms": 680.8407500066096
+      }
+    },
+    {
+      "digest": "c100083097ee55c11584fe14f3d5050f1c8ff5fa65c15d890114ff0504efbde0",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated",
+          "constants": {
+            "min_months": {
+              "value": 3,
+              "comparison": ">="
+            },
+            "required_therapies": {
+              "value": [
+                "nonpharmacologic",
+                "simple_analgesic_or_nsaid"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Home exercise program for quadriceps strengthening, begun 04/16/2024.",
+          "Naproxen sodium 220 mg by mouth twice daily, started 04/16/2024."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes document nonpharmacologic therapy and NSAID use starting on 04/16/2024, satisfying the criteria.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes document nonpharmacologic therapy and NSAID use starting on 04/16/2024, satisfying the criteria."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 805,
+        "output_tokens": 46,
+        "wall_time_ms": 627.0403329981491
+      }
+    },
+    {
+      "digest": "482c3f39b161c9c5cbfeff7a98e2d6864fd48fbfdff53310cd8e0b0109716c36",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "The patient is symptomatic: knee pain limiting daily activities or interrupting sleep, crepitus, or knee stiffness",
+          "constants": {
+            "qualifying_symptoms": {
+              "value": [
+                "pain_limiting_daily_activities",
+                "pain_interrupting_sleep",
+                "crepitus",
+                "knee_stiffness"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "right knee pain that wakes\nthe patient at night",
+          "morning stiffness of the right knee lasting\nabout twenty minutes"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly support the qualifying symptoms of knee pain interrupting sleep and knee stiffness.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly support the qualifying symptoms of knee pain interrupting sleep and knee stiffness."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 769,
+        "output_tokens": 33,
+        "wall_time_ms": 626.3816249993397
+      }
+    },
+    {
+      "digest": "52eea020b916788538afb4901a216bbf9e9429e39990a26dbf096bf9e1f90baf",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Radiologic evidence of osteoarthritis of the knee",
+          "constants": {
+            "qualifying_findings": {
+              "value": [
+                "joint_space_narrowing",
+                "subchondral_sclerosis",
+                "osteophytes",
+                "subchondral_cysts"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "01/22/2026 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Marginal osteophytes at the tibiofemoral joint. Subchondral\nsclerosis of the medial tibial plateau.",
+          "Marginal osteophytes at the tibiofemoral joint.",
+          "Subchondral\nsclerosis of the medial tibial plateau."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes explicitly document qualifying findings of osteophytes and subchondral sclerosis which satisfy the radiologic evidence criteria for osteoarthritis of the knee.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes explicitly document qualifying findings of osteophytes and subchondral sclerosis which satisfy the radiologic evidence criteria for osteoarthritis of the knee."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 808,
+        "output_tokens": 44,
+        "wall_time_ms": 747.2919160063611
+      }
+    },
+    {
+      "digest": "578743819cc534d1c0e62c4f764108fa5286b5ca6923a76735b30e45325a1604",
+      "criterion_id": "d",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated",
+          "constants": {
+            "min_months": {
+              "value": 3,
+              "comparison": ">="
+            },
+            "required_therapies": {
+              "value": [
+                "nonpharmacologic",
+                "simple_analgesic_or_nsaid"
+              ]
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "Outpatient physical therapy for the knee, begun 04/26/2026",
+          "Naproxen sodium 220 mg by mouth twice daily, started 01/22/2026."
+        ]
+      },
+      "accept": true,
+      "reason": "The claim is NOT_MET, and the provided quotes are directly on topic as evidence for conservative therapy.",
+      "raw": {
+        "accept": true,
+        "reason": "The claim is NOT_MET, and the provided quotes are directly on topic as evidence for conservative therapy."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 807,
+        "output_tokens": 37,
+        "wall_time_ms": 660.0740830035647
+      }
+    },
+    {
+      "digest": "6fade2a8152cd1b8a081681904e5a0a6dd4006ed8afc935e901e4dec2b79d956",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Radiologic evidence of osteoarthritis of the knee",
+          "constants": {
+            "qualifying_findings": {
+              "value": [
+                "joint_space_narrowing",
+                "subchondral_sclerosis",
+                "osteophytes",
+                "subchondral_cysts"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "10/10/2023 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Subchondral cysts in the medial\nfemoral condyle.",
+          "Medial joint space narrowing.",
+          "Subchondral cysts in the medial\nfemoral condyle."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly state qualifying radiographic findings of joint space narrowing and subchondral cysts for osteoarthritis of the knee, which are consistent with the MET verdict.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly state qualifying radiographic findings of joint space narrowing and subchondral cysts for osteoarthritis of the knee, which are consistent with the MET verdict."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 801,
+        "output_tokens": 48,
+        "wall_time_ms": 677.9434999916703
+      }
+    },
+    {
+      "digest": "18d1e234c7a31bc8a2e0991a4ba15f0cb66c07805fa3323c59389d00319dabd4",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated",
+          "constants": {
+            "min_months": {
+              "value": 3,
+              "comparison": ">="
+            },
+            "required_therapies": {
+              "value": [
+                "nonpharmacologic",
+                "simple_analgesic_or_nsaid"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Home exercise program for quadriceps strengthening, begun 10/10/2023.",
+          "Naproxen sodium 220 mg by mouth twice daily, started 10/10/2023."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes document the use of a nonpharmacologic home exercise program and an NSAID starting on the same date, which together satisfy the conservative therapy requirements.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes document the use of a nonpharmacologic home exercise program and an NSAID starting on the same date, which together satisfy the conservative therapy requirements."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 805,
+        "output_tokens": 48,
+        "wall_time_ms": 772.8196660027606
+      }
+    },
+    {
+      "digest": "a49e6f29c628ae8ae2cbca525fb7acbe4b6b9d01f3eb52f7be7d0f4b700605e9",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated",
+          "constants": {
+            "min_months": {
+              "value": 3,
+              "comparison": ">="
+            },
+            "required_therapies": {
+              "value": [
+                "nonpharmacologic",
+                "simple_analgesic_or_nsaid"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Home exercise program for quadriceps strengthening, begun 08/12/2020.",
+          "Naproxen sodium 220 mg by mouth twice daily, started 08/12/2020."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes provide evidence of nonpharmacologic therapy and an NSAID starting on 08/12/2020, and the derived duration and threshold satisfaction are accepted as computed.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes provide evidence of nonpharmacologic therapy and an NSAID starting on 08/12/2020, and the derived duration and threshold satisfaction are accepted as computed."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 805,
+        "output_tokens": 55,
+        "wall_time_ms": 655.1833330013324
+      }
+    },
+    {
+      "digest": "a41c0f63b271f1f658569b65b506bc4b74a84da647f74c116b3662d5d2a5cd66",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "The patient is symptomatic: knee pain limiting daily activities or interrupting sleep, crepitus, or knee stiffness",
+          "constants": {
+            "qualifying_symptoms": {
+              "value": [
+                "pain_limiting_daily_activities",
+                "pain_interrupting_sleep",
+                "crepitus",
+                "knee_stiffness"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "right knee pain that limits\nwalking to about two blocks and makes prolonged standing difficult",
+          "right knee pain that wakes the patient at night"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly evidence qualifying symptoms of knee pain limiting daily activities and interrupting sleep, which are consistent with the MET verdict.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly evidence qualifying symptoms of knee pain limiting daily activities and interrupting sleep, which are consistent with the MET verdict."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 772,
+        "output_tokens": 41,
+        "wall_time_ms": 763.0178750114283
+      }
+    },
+    {
+      "digest": "e946ec59b6e821862328f27b84d06de4b2116bc6d860dc71882032a55565645a",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Radiologic evidence of osteoarthritis of the knee",
+          "constants": {
+            "qualifying_findings": {
+              "value": [
+                "joint_space_narrowing",
+                "subchondral_sclerosis",
+                "osteophytes",
+                "subchondral_cysts"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "08/04/2004 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint.",
+          "Medial joint space narrowing.",
+          "Marginal osteophytes at the\ntibiofemoral joint."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly document qualifying radiologic findings of osteoarthritis including joint space narrowing and marginal osteophytes.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly document qualifying radiologic findings of osteoarthritis including joint space narrowing and marginal osteophytes."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 800,
+        "output_tokens": 36,
+        "wall_time_ms": 609.7014169936301
+      }
+    },
+    {
+      "digest": "65ff5e383682fc63a22f176be695b21ae43b63f22bab4c4e2e2fd22957c4cd7f",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "The patient is symptomatic: knee pain limiting daily activities or interrupting sleep, crepitus, or knee stiffness",
+          "constants": {
+            "qualifying_symptoms": {
+              "value": [
+                "pain_limiting_daily_activities",
+                "pain_interrupting_sleep",
+                "crepitus",
+                "knee_stiffness"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Reports right knee pain that limits\nwalking to about two blocks and makes prolonged standing difficult.",
+          "Reports\nmorning stiffness of the right knee lasting about twenty minutes."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly support the presence of qualifying symptoms, specifically daily activity limitation and knee stiffness, which satisfy the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly support the presence of qualifying symptoms, specifically daily activity limitation and knee stiffness, which satisfy the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 778,
+        "output_tokens": 40,
+        "wall_time_ms": 697.2120419959538
+      }
+    },
+    {
+      "digest": "b4eb8833aaaa23cf47901c66cf55aba1cf27a72de7133346605de197815d62f1",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Radiologic evidence of osteoarthritis of the knee",
+          "constants": {
+            "qualifying_findings": {
+              "value": [
+                "joint_space_narrowing",
+                "subchondral_sclerosis",
+                "osteophytes",
+                "subchondral_cysts"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "07/09/2026 - Weight-bearing radiographs of the right knee, standing AP and\nlateral views: Medial joint space narrowing. Marginal osteophytes at the\ntibiofemoral joint.",
+          "Medial joint space narrowing.",
+          "Marginal osteophytes at the\ntibiofemoral joint."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes directly document qualifying radiologic findings of osteoarthritis including medial joint space narrowing and marginal osteophytes.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes directly document qualifying radiologic findings of osteoarthritis including medial joint space narrowing and marginal osteophytes."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 800,
+        "output_tokens": 36,
+        "wall_time_ms": 639.2239999986487
+      }
+    },
+    {
+      "digest": "8d83bf7ce10525242e745ea7440f9ac99fe2c4fa40815d408757332b77a8e7e6",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated",
+          "constants": {
+            "min_months": {
+              "value": 3,
+              "comparison": ">="
+            },
+            "required_therapies": {
+              "value": [
+                "nonpharmacologic",
+                "simple_analgesic_or_nsaid"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Home exercise program for quadriceps strengthening, begun 01/30/2023.",
+          "Naproxen sodium 220 mg by mouth twice daily, started 01/30/2023 at a\ntelehealth visit."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes document participation in both nonpharmacologic therapy and an NSAID starting from the required date, supporting the MET verdict with high citation fidelity.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes document participation in both nonpharmacologic therapy and an NSAID starting from the required date, supporting the MET verdict with high citation fidelity."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 812,
+        "output_tokens": 45,
+        "wall_time_ms": 588.1124589941464
+      }
     }
   ],
   "aggregate": {
-    "claims": 49,
-    "accepted": 49,
+    "claims": 65,
+    "accepted": 65,
     "rejected": 0,
-    "model_calls": 49,
-    "input_tokens": 54830,
-    "output_tokens": 2082,
-    "wall_time_ms": 36056.2
-  }
+    "model_calls": 65,
+    "input_tokens": 67538,
+    "output_tokens": 2762,
+    "wall_time_ms": 46864.9
+  },
+  "extensions": [
+    {
+      "task": "T-109",
+      "decision": "D154",
+      "measured_at": "2026-10-04T08:52:14.335607+00:00",
+      "claims": 16
+    }
+  ]
 }

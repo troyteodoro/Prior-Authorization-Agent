@@ -1,0 +1,24 @@
+LINN COUNTY ORTHOPEDICS AND SPORTS MEDICINE
+Patient: Daniel959, Ollie731                     MRN: 435879
+DOB: 1992-05-17                       Sex: F
+Document 1 of 2
+
+ORTHOPEDIC CLINIC VISIT
+
+01/22/2026 - Seen in person in clinic by J. Brandt, MD for evaluation of the
+right knee.
+
+HISTORY OF PRESENT ILLNESS
+Referred for evaluation of the right knee.
+
+IMAGING
+01/22/2026 - Weight-bearing radiographs of the right knee, standing AP and
+lateral views: Marginal osteophytes at the tibiofemoral joint. Subchondral
+sclerosis of the medial tibial plateau.
+
+TREATMENT
+Naproxen sodium 220 mg by mouth twice daily, started 01/22/2026.
+
+ASSESSMENT AND PLAN
+Osteoarthritis of the right knee. Continue the treatment above and return for
+reassessment.

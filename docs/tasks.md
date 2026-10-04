@@ -17,9 +17,22 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v1.6`, row 3 — `T-109`**, practice four. **Nothing is open
-on this board**; v1.6 is in progress, and its next row writes its own record
-when it opens *(D97's rule)*.
+**What to do next: `v1.6`, row 4 — `T-110`**, the criteria v1.2 and v1.3
+deferred and the four-practice account. **Nothing is open on this board**; v1.6
+is in progress, and its next row writes its own record when it opens *(D97's
+rule)*.
+**`T-109` closed v1.6's row 3** *(D154)*: practice four is hyaluronan injection
+for knee osteoarthritis, compiled from WPS's L39529 and its billing article
+A56157 for Jurisdictions 5 and 8 — an LCD no NCD stands over, so no national
+floor. Synthea writes no symptom description, knee radiograph or exercise
+programme, so those are note facts, and they earned the third fact kind,
+`knee_osteoarthritis_workup`, with three predicate kinds over it; it is the
+first practice to reuse REQ-79's generic boundary rather than build it. Seven
+charts selected by rule from the recorded Iowa run, fourteen notes, rows
+`KNEE1`–`KNEE7`, `H11` and `H12`; the extraction recorded on both tiers, the
+verifier recording and the six quote recordings extended with the round's
+claims and notes under unchanged configurations. `T-144` is numbered off the
+path.
 **`T-108` closed v1.6's row 2** *(D150, D151, D152)*: practice three is CPAP
 (E0601) for obstructive sleep apnea, compiled from L33718 for Noridian's DME
 Jurisdiction D under NCD 240.4 — the first national document here that
@@ -317,11 +330,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-105 tasks are on this board — IDs run to T-143, and every id above T-125 is
+106 tasks are on this board — IDs run to T-144, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 105 are closed and none is open**; `T-143` below
-is numbered and has no record yet, and writes its record when it opens. Both figures
+is well above the count. **All 106 are closed and none is open**; `T-143` and
+`T-144` below are numbered and have no record yet, and each writes its record
+when it opens. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
@@ -366,6 +380,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **closed** (D146), before v1.6 opened — discovered in `T-106`. An autouse guard refuses non-loopback connections and lookups in process, and every child inherits a placeholder key, a missing credentials file and a refused proxy; a live CLI run from the suite fails locally with exit 3 |
 | `T-142` | **CLAUDE.md's *Current state* had grown back to about 500 of its 1,666 lines**, one paragraph per closed task, each a copy of a board record and a decision entry, while the file's own header said the narrative had been moved out *(D70)*. `tests/test_docs_consistency.py` **required** CLAUDE.md to carry copies of figures other artifacts own (the suite size, the task count, the highest id, A2, A5, A6, the current gate range, the test-file count), so the check enforced the duplication that `T-132`–`T-140` kept repairing. Documents and one test file; zero model calls | **closed** (D148), before v1.6 opened, ahead of `T-107` — discovered in the review that wrote D147. *Current state* is a status line capped at 30 lines by a test, and every check that required a CLAUDE.md copy now requires its absence |
 | `T-143` | **the ADK extraction leaf builds only the weight-management agent.** `AdkExtractionRunner.run` refuses any kind whose schema is not `Extraction` and `INSTRUCTION`, so `--extraction adk` on a request under `pap-osa-dme-jd-v1` raises `NotImplementedError`, which the CLI reports as an unbuilt path, rather than reading the notes under another kind's prompt. Its agent's description, its tool-fetch message and its output schema are weight-management text, and generalising them changes the prompt every ADK extraction recording was measured under (D45), so it is a measurement, not a refactor: an agent built from each `FactSchema`, and the sleep kind's two ADK recordings per tier. The direct and recorded runners are generic since `T-108` | not sequenced — discovered in `T-108` *(D150)*; nothing in v1.6's rows reads the ADK extraction path for the new kind |
+| `T-144` | **`us-abdominal-visceral-j5-j8-v1` declares Alabama from a contractor-table row that lists forty-eight states.** L35755's table lists every state but Minnesota and New York under WPS's Part A contract 05901, and the ultrasound tree's jurisdiction note reads that row as *"Alabama under contract 05901"* — the first state of the list. L39529's table carries the same row. A beneficiary's state does not select a Part A contract with a national footprint, so either the tree should drop Alabama or it serves forty-seven more states, and the second would turn REQ-55's `NO_JURISDICTION_TREE` into `NO_POLICY_FOUND` for every out-of-state request in the corpus. No eval row reaches the ultrasound tree from Alabama, so nothing behavioural separates the readings; it is a decision about one committed tree and every row resolving through it, not part of the practice that found it (working rule 6) | not sequenced — discovered in `T-109` *(D154)*; nothing in v1.6's rows resolves a request in Alabama under the ultrasound tree |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -555,7 +570,7 @@ re-measured differential.
 |---|---|---|---|---|
 | 1 | the declared extraction schema | `T-107` | **closed** (D149) | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load; **and a tree that declares no fact type reads no note** — extended by *(D113)*, which measured a rheumatology determination extracting both notes of a chart whose events no criterion consumes; **and a recorded payload replayed under a fact schema it was not measured with raises** — extended by *(D147)*, because replay is keyed by note bytes alone and a second schema would otherwise replay the first's payload |
 | 2 | practice three | `T-108` | **closed** (D150, D151, D152) | CPAP for obstructive sleep apnea under NCD 240.4 and L33718: source, tree, patients, notes, rows, recording on both tiers, the second fact kind and the generic trust boundary (REQ-79); `run_eval.py` green. **Rewritten at open** *(D150)*: the one-line exit named six deliverables and checked one |
-| 3 | practice four | `T-109` | pending | as row 2 |
+| 3 | practice four | `T-109` | **closed** (D154) | hyaluronan injection for knee osteoarthritis under WPS's L39529 and A56157: source, tree, patients, notes, rows, recording on both tiers, the third fact kind; `run_eval.py` green. **Rewritten at open** *(D154)*: T-108's exit over this row's files |
 | 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | pending | Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
 
 ### v2.0 — The payer axis: national and regional coverage *(D112, reordered by D125)*
@@ -3578,6 +3593,105 @@ predicate an identity narrower re-derives the same answer, so
 what `_cited_workup` keeps was added, and it went red. After the pass the
 notes, bundles and manifests were checked against git and both `--verify`
 modes passed.
+
+### `[x] T-109` Practice four: hyaluronan injection for knee osteoarthritis, read through a third fact kind
+
+**REQ:** none minted; exercises 57, 58, 78, 79 · **Depends:** T-107, T-108 ·
+**Blocks:** T-110 · **Decided by:** D154 · **Gates:** A14 (third of four rows) ·
+**Timebox:** two days plus three measurement rounds
+**Status:** **closed** (D154). The exit ran green and every gate with it. Three
+measurement rounds, each an extension or a new recording under an unchanged
+configuration: the knee extraction on both tiers, the verifier extended with the
+round's sixteen new claims on both tiers, and the six quote recordings extended
+with the fourteen notes. No earlier verdict, span, baseline status, recorded
+claim or packet fixture moved.
+
+**Measured at open.**
+- NCD 20.10.1 (cardiac rehabilitation for chronic heart failure) quantifies,
+  but no MAC publishes a document for it, and Synthea writes its NYHA class as
+  a structured observation. It earns neither a jurisdiction nor a fact kind.
+- WPS's L39529 and its article A56157 fetch credential-free. A56157 names every
+  hyaluronan J code in its dosing tables, outside the AMA licence modal.
+- Synthea writes the knee osteoarthritis condition and a naproxen order, and no
+  symptom, radiograph or exercise programme. Seven charts in the recorded Iowa
+  run carry both.
+
+**Exit:** *rewritten at open (D154)* from *as row 2*: `T-108`'s exit over this
+row's files.
+
+```
+./venv/bin/python scripts/verify_sources.py --offline \
+ && ./venv/bin/python scripts/select_patients.py --verify \
+ && ./venv/bin/python scripts/synthesize_notes.py --verify \
+ && ./venv/bin/python -m pytest tests/test_knee_oa_tree.py tests/test_knee_oa_corpus.py tests/test_fact_kinds.py tests/test_criteria_tree.py tests/test_predicate_kinds.py -q --color=no \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --rescore \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --tier vertex --rescore \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- L39529 and A56157 are in the hashed corpus with answers that slice back, and
+  the eleven documents already committed are carried forward byte-identical;
+- `hyaluronan-knee-oa-j5-j8-v1` loads beside the five trees already there,
+  declares `knee_osteoarthritis_workup`, and binds every J code A56157's dosing
+  tables name. J7325 in Iowa resolves to it, J7325 in Texas is
+  `NO_JURISDICTION_TREE`, and E0601 in Iowa still resolves to the sleep tree;
+- each new predicate kind answers every verdict it can, on hand-written charts,
+  and the one `NOT_MET` re-derives from what it cites;
+- `knee_osteoarthritis_workup` is registered, its digest pinned beside its
+  version, and it folds through `_fold_generic` and constructs no `WmEvent`
+  (REQ-79);
+- seven charts are in the pinned population, selected mechanically from the
+  recorded Iowa run, and `--verify` re-derives their facts from the bytes;
+- fourteen notes are rendered, one fact per document, every date the chart's
+  own or the manifest's, and every note already committed is byte-identical;
+- the knee recording exists on both tiers, every quote anchored or recorded as
+  dropped, and it replays under its own prompt version only;
+- `KNEE1`–`KNEE7`, `H11` and `H12` are `PASS` against the baseline, and the
+  verifier recording holds every new claim on both tiers, coherent.
+
+**What it delivers.** Two documents, L39529 and A56157, and three answers read
+from them. `hyaluronan-knee-oa-j5-j8-v1` with three predicate kinds,
+`note_knee_symptoms`, `note_knee_radiographic_findings` and
+`note_conservative_therapy_duration`, and thirteen J codes bound. The third fact
+kind with its own schema, instruction, builder, nested-path locator and pinned
+digest, folded through `_fold_generic`; narrowers now come from one factory
+keyed by fact kind. `select_patients.py --select-knee-osteoarthritis`, seven
+charts, fourteen notes, eval rows `KNEE1`–`KNEE7`, `H11` and `H12`, and a
+`--extend` mode on the verifier measurement.
+
+**What it measured.** The knee extraction read every declared symptom,
+radiograph, finding set and therapy on both tiers — 12 of 12, 7 of 7, 13 of 13 —
+and none of the denied symptom, the hip radiograph, the unperformed study or the
+declined therapy, one call per note, no re-ask. The verifier accepted the
+sixteen new claims on both tiers, including the round's one `NOT_MET`. The
+quote recordings returned no passage for any new pair; one more note failed on
+AI Studio's ADK tool-fetch path, in D152's shape, recorded and not re-run.
+
+**What it found.** WPS's contractor table lists forty-eight states under Part A
+contract 05901, and the ultrasound tree reads that row as Alabama alone. This
+tree leaves the row out; the ultrasound tree's reading is `T-144`, numbered off
+the path. The board calls this practice four and the code calls it the fifth,
+because they count from different starts (D154).
+
+**Not built, on purpose.** The ADK extraction leaf for the new kind is still
+`T-143`'s. L39529's repeat-series conditions and its LIMITATIONS denials are
+outside the tree: the request is an initial series, and no denial can approve
+past c and e, which no chart satisfies.
+
+**Mutation pass.** Thirteen mutants over `pa_agent/`, run against the exit's
+test files plus `test_workflow.py` and `test_fault_injection.py`, with
+`__pycache__` cleared between runs and the package compared by checksum after
+restore; all thirteen caught. Any symptom counting, a radiograph without the
+four answering `NOT_MET`, a radiograph after the clock counted, the
+three-month boundary made exclusive, the longer leg deciding, a missing leg
+treated as satisfied, a therapy after the clock counted, an identity narrower,
+the knee binder reading the sleep kind, an unanchorable finding kept, the
+nested locator returning the radiograph, the knee fold dropped, and one word of
+the instruction changed (caught only by the digest pin).
 
 ## Attached to no story
 

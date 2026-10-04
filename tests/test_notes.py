@@ -129,6 +129,10 @@ def _facts(manifest: dict) -> list[dict]:
     # T-108 (D150): the sleep charts' dated facts, one document each.
     facts += manifest.get("sleep_evaluations", [])
     facts += manifest.get("sleep_tests", [])
+    # T-109 (D154): the knee charts' dated facts, one document each.
+    facts += manifest.get("knee_visits", [])
+    facts += manifest.get("knee_radiographs", [])
+    facts += manifest.get("conservative_therapies", [])
     return facts
 
 

@@ -175,13 +175,18 @@ NOTE_EVENT_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE,
 )
 
-#: The kinds that read the sleep apnea workup a note documents (T-108, D150).
+#: The kinds that read a workup a note documents: the sleep apnea one (T-108,
+#: D150) and the knee osteoarthritis one (T-109, D154).
 #: Note-consuming like `NOTE_EVENT_KINDS`, so `step_criteria_c` evaluates them
 #: and an extraction fault resolves them to `ERROR`; their own tuple because
 #: they read `facts`, never `events`, and no qualifying run scopes them.
 NOTE_WORKUP_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST,
     PredicateKind.NOTE_SLEEP_TEST_INDEX,
+    # T-109 (D154): the knee osteoarthritis workup's three, the same shape.
+    PredicateKind.NOTE_KNEE_SYMPTOMS,
+    PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS,
+    PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION,
 )
 #: Everything `step_criteria_c` evaluates: every kind decided from a note.
 NOTE_KINDS: tuple[PredicateKind, ...] = NOTE_EVENT_KINDS + NOTE_WORKUP_KINDS
@@ -534,6 +539,7 @@ FACT_FOLDS: dict[
 ] = {
     FactKind.WEIGHT_MANAGEMENT: _fold_weight_management,
     FactKind.SLEEP_APNEA_WORKUP: _fold_generic,
+    FactKind.KNEE_OSTEOARTHRITIS_WORKUP: _fold_generic,
 }
 
 

@@ -249,6 +249,32 @@ DOCUMENTS: list[dict[str, str]] = [
         # criteria are compiled from (D150).
         "note": "names E0601 and E0470 in prose in its INITIAL COVERAGE section (D150)",
     },
+    # T-109 (D154): the fifth practice's two documents. No NCD covers
+    # viscosupplementation, so the LCD is the only coverage text and its
+    # constants are WPS's. A56157 is its billing article, whose dosing tables
+    # name every hyaluronan J code beside the preparation it denotes -- HCPCS
+    # Level II, outside the AMA licence modal that hides CPT tables (D101).
+    {
+        "document_id": "l39529",
+        "title": "LCD L39529 - Intraarticular Knee Injections of Hyaluronan",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=39529",
+        "authority": "mac_jurisdiction_j5_j8",
+        "publisher": "Wisconsin Physicians Service Insurance Corporation (A/B MAC, "
+                     "Jurisdictions 5 and 8)",
+        "filename": "l39529.txt",
+    },
+    {
+        "document_id": "a56157",
+        "title": "Article A56157 - Billing and Coding: Intraarticular Knee "
+                 "Injections of Hyaluronan",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleId=56157",
+        "authority": "mac_jurisdiction_j5_j8",
+        "publisher": "Wisconsin Physicians Service Insurance Corporation (A/B MAC, "
+                     "Jurisdictions 5 and 8)",
+        "filename": "a56157.txt",
+        "note": "names every hyaluronan HCPCS code beside its preparation in its "
+                "two dosing tables (D154)",
+    },
 ]
 
 
@@ -625,6 +651,53 @@ ANSWERS: list[dict[str, Any]] = [
                 "D111). The same sentence names E0470, which this tree does not "
                 "bind: its criterion D, a failed E0601 trial, is outside the "
                 "tree, so E0470 resolves NO_POLICY_FOUND (D150).",
+    },
+    # T-109 (D154): the fifth practice's constants and its code bindings.
+    {
+        "question_id": "q17",
+        "question": "Does L39529 quantify the conservative therapy a patient "
+                    "must have failed, and which therapies does it require?",
+        "feeds": "the hyaluronan tree's criterion d",
+        "answer": "yes - at least 3 months, of nonpharmacologic therapy and, if "
+                  "not contraindicated, simple analgesics or NSAIDs",
+        "document_id": "l39529",
+        "quote": "The patient has failed at least 3 months of conservative therapy.",
+        "note": "No NCD covers viscosupplementation, so this is the only "
+                "quantity and it is WPS's; there is no national floor to bound "
+                "it (REQ-73). The two lines below the sentence define the "
+                "therapy, joined by 'and', which is why the criterion requires "
+                "both categories (D154).",
+        "corroborating_quote": {
+            "document_id": "l39529",
+            "quote": "Nonpharmacologic therapy (such as but not limited to home "
+                     "exercise program, education, weight loss, physical therapy "
+                     "if indicated); and",
+        },
+    },
+    {
+        "question_id": "q18",
+        "question": "Is L39529's list of radiographic findings closed?",
+        "feeds": "the hyaluronan tree's criterion b",
+        "answer": "no - the findings are introduced by 'such as'",
+        "document_id": "l39529",
+        "quote": "The clinical diagnosis is supported by radiologic evidence of "
+                 "osteoarthritis of the knee such as joint space narrowing, "
+                 "subchondral sclerosis, osteophytes and sub-chondral cysts.",
+        "note": "An open list, which is why a radiograph documenting none of the "
+                "four is an abstention rather than a NOT_MET (D154).",
+    },
+    {
+        "question_id": "q19",
+        "question": "Does any document in the corpus name the HCPCS codes for "
+                    "the hyaluronan preparations?",
+        "feeds": "the hyaluronan tree's contractor_determined bindings",
+        "answer": "yes - A56157's two dosing tables name thirteen J codes, each "
+                  "beside the preparation it denotes",
+        "document_id": "a56157",
+        "quote": "J7325\nper 1 mg\nSynvisc\n3 weekly injections",
+        "note": "HCPCS Level II codes are CMS's, so they are outside the AMA "
+                "licence modal that hides A56852's and A56432's CPT tables (D101, "
+                "D111). Each code is bound beside its first row (D154).",
     },
 ]
 

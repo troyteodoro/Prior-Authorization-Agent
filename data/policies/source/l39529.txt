@@ -1,0 +1,730 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05101 - MAC A
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05102 - MAC B
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05201 - MAC A
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05202 - MAC B
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05301 - MAC A
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05302 - MAC B
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05401 - MAC A
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05402 - MAC B
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05901 - MAC A
+
+J - 05
+
+Alabama
+Alaska
+Arizona
+Arkansas
+California - Entire State
+Colorado
+Connecticut
+Delaware
+Florida
+Georgia
+Hawaii
+Idaho
+Illinois
+Indiana
+Iowa
+Kansas
+Kentucky
+Louisiana
+Maine
+Maryland
+Massachusetts
+Michigan
+Mississippi
+Missouri - Entire State
+Montana
+Nebraska
+Nevada
+New Hampshire
+New Jersey
+New Mexico
+North Carolina
+North Dakota
+Ohio
+Oklahoma
+Oregon
+Pennsylvania
+Rhode Island
+South Carolina
+South Dakota
+Tennessee
+Texas
+Utah
+Vermont
+Virginia
+Washington
+West Virginia
+Wisconsin
+Wyoming
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08101 - MAC A
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08102 - MAC B
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08201 - MAC A
+
+J - 08
+
+Michigan
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08202 - MAC B
+
+J - 08
+
+Michigan
+
+LCD Information
+
+Document Information
+
+Source LCD ID
+
+N/A
+
+LCD ID
+
+L39529
+
+Original ICD-9 LCD ID
+
+Not Applicable
+
+LCD Title
+
+Intraarticular Knee Injections of Hyaluronan
+
+Proposed LCD in Comment Period
+
+N/A
+
+Source Proposed LCD
+
+DL39529
+
+Original Effective Date
+
+For services performed on or after 06/11/2023
+
+Revision Effective Date
+
+For services performed on or after 05/01/2025
+
+Revision Ending Date
+
+N/A
+
+Retirement Date
+
+N/A
+
+Notice Period Start Date
+
+04/27/2023
+
+Notice Period End Date
+
+06/10/2023
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+Issue
+
+Issue Description
+
+This LCD outlines limited coverage for this service with specific details under Coverage Indications, Limitations and/or Medical Necessity.
+
+Issue - Explanation of Change Between Proposed LCD and Final LCD
+
+Grammatical changes made throughout with no change in coverage.
+
+CMS National Coverage Policy
+
+This LCD supplements but does not replace, modify or supersede existing Medicare applicable National Coverage Determinations (NCDs) or payment policy rules and regulations for intra-articular injection of hyaluronate polymers. Federal statute and subsequent Medicare regulations regarding provision and payment for medical services are lengthy. They are not repeated in this LCD. Neither Medicare payment policy rules nor this LCD replace, modify or supersede applicable state statutes regarding medical practice or other health practice professions acts, definitions and/or scopes of practice. All providers who report services for Medicare payment must fully understand and follow all existing laws, regulations and rules for Medicare payment for intra-articular injection of hyaluronate polymers and must properly submit only valid claims for them. Please review and understand them and apply the medical necessity provisions in the policy within the context of the manual rules. Relevant CMS manual instructions and policies may be found in the following Internet-Only Manuals (IOMs) published on the CMS Web site:
+
+IOM Citations
+
+CMS IOM Publication 100-02, Medicare Benefit Policy Manual, Chapter 15 Covered Medical and Other Health Services, § 50.3 Incident-to Requirements and 50.4.1 Approved Use Of Drug.
+
+CMS IOM Publication 100-04, Medicare Claims Processing Manual, Chapter 17 Drugs and Biologicals, § 40 Discarded Drugs and Biologicals and 90.2 Drugs, Biologicals, and Radiopharmaceuticals.
+
+CMS IOM Publication 100-08, Medicare Program Integrity Manual, Chapter 13 Local Coverage Determinations, § 13.5.4 Reasonable and Necessary Provision in an LCD.
+
+Social Security Act (Title XVIII) Standard References
+
+Title XVIII of the Social Security Act, Section 1833(e) states that no payment shall be made to any provider for any claim that lacks the necessary information to process the claim.
+
+Title XVIII of the Social Security Act, Section 1862(a)(1)(A) states that no Medicare payment shall be made for items or services which are not reasonable and necessary for the diagnosis or treatment of illness or injury.
+
+Title XVIII of the Social Security Act, Section 1862(a)(7). This section excludes routine physical examinations.
+
+Coverage Guidance
+
+Coverage Indications, Limitations, and/or Medical Necessity
+
+Compliance with the provisions in this policy may be monitored and addressed through post payment data analysis and subsequent medical review audits.
+
+History/Background and/or General Information
+
+Hyaluronic acid, also known as hyaluronan or hyaluronate, is a naturally occurring substance found in the synovial fluid surrounding joints. Osteoarthritic joints are found to have lower concentrations of hyaluronic acid.1 Intra-articular injection of hyaluronic acid, also known as viscosupplementation, has been proposed as a means of restoring the normal viscoelasticity of the synovial fluid in individuals with osteoarthritis.
+
+Viscosupplementation is most commonly used to treat symptoms of osteoarthritis of the knee. Osteoarthritis (OA) results from articular cartilage failure due to the complex interplay of genetic, metabolic, biochemical and biomechanical factors with a secondary component of inflammation. The primary symptom of osteoarthritis of the knee is pain, however, because cartilage is aneural, significant radiographic findings are often noted in asymptomatic individuals imaged for other reasons.
+
+Typical candidates for viscosupplementation are those with knee osteoarthritis who have failed to improve with other non-surgical treatments. Several synthetic preparations of hyaluronic acid-based polymers have been approved by the U.S. Food and Drug Administration (FDA) and are indicated for the treatment of pain in OA of the knee in patients who have failed to respond adequately to conservative non-pharmacologic therapy and simple analgesics (e.g., acetaminophen) or non-steroidal anti-inflammatory drugs (NSAIDS).2
+
+By adding hyaluronic acid to the existing joint fluid of an osteoarthritic knee, the goal is to:
+
+Facilitate better knee movement
+
+Reduce pain
+
+Perhaps slow osteoarthritis progression3
+
+The most recent research, however, has not found viscosupplementation to be effective at significantly reducing pain or improving function. Although some patients report pain relief with the procedure, others are not helped by the injections.1
+
+Covered Indications
+
+Viscosupplementation therapy for the knee via intra-articular injections of hyaluronic preparations will be considered medically reasonable and necessary when ALL of the following conditions are met:
+
+The patient is symptomatic. Such symptoms may include pain which interferes with the activities of daily living such as ambulation and prolonged standing, or pain interrupting sleep, crepitus, and/or knee stiffness.
+
+The clinical diagnosis is supported by radiologic evidence of osteoarthritis of the knee such as joint space narrowing, subchondral sclerosis, osteophytes and sub-chondral cysts.
+
+If appropriate, other diagnoses have been excluded by appropriate evaluation and management services, laboratory and imaging studies (i.e., the pain and functional disability is not considered likely to be due to a diagnosis other than osteoarthritis of the knee).
+
+The patient has failed at least 3 months of conservative therapy. Conservative therapy is defined as:
+
+Nonpharmacologic therapy (such as but not limited to home exercise program, education, weight loss, physical therapy if indicated); and
+
+If not contraindicated, simple analgesics and (e.g., acetaminophen) or NSAIDS per hyaluronan product prescribing information.
+
+The patient has failed to respond to aspiration of the knee when effusion is present and intra-articular corticosteroid injection therapy when inflammation is a significant component of the patient’s symptoms and intra-articular corticosteroids are not contraindicated.
+
+A repeat series* of hyaluronan knee injection(s) for patients who have responded to a prior series is considered to be reasonable and necessary under the following circumstances:
+
+Symptoms have recurred AND,
+
+At least 6 months have elapsed since the prior series of injections AND,
+
+There was significant improvement in pain and functional capacity achieved with the prior series of injections using a standardized assessment tool OR
+
+There is significant reduction in the doses of NSAID medications taken or reduction in the number of intra-articular steroid injections to the knees during the 6-month period following the injection(s).
+
+*Note: A series is defined as a set of injections for each joint and each treatment (initial or repeat).
+
+Limitations
+The following are considered not reasonable and necessary and therefore will be denied:
+
+Drugs and biologicals and other products approved for marketing by the FDA are considered safe and effective when used for indications specified on the labeling. The labeling lists the safe and effective, i.e., medically reasonable and necessary dosage and frequency. Therefore, doses and frequencies that exceed the accepted standard of recommended dosage and/or frequency, as described in the package insert, are considered not reasonable and necessary and therefore, not subject to coverage.
+
+Intra-articular injections of other therapeutic agents, such as corticosteroids, should not be performed in the same knee during the course of viscosupplementation therapy unless there is documented medical necessity (e.g., for documented reactions requiring the use of the additional therapeutic agent).
+
+Viscosupplementation of joints other than the knee(s) are considered not reasonable and necessary and are not subject to coverage.
+
+Imaging procedures (e.g., arthrography, CT scan, MRI) for the purpose of visualization of the knee to provide guidance for needle placement are considered not medically reasonable and necessary and will not be covered. The only imaging procedures that may be considered reasonable and necessary for the purpose of needle guidance for viscosupplementation are fluoroscopy or ultrasound. If needle guidance is utilized, the documentation must support that the presentation of the patient’s affected knee on the day of the procedure makes needle insertion problematic. Routine use of fluoroscopy or ultrasound guidance may result in a pre-payment medical review of records. No other imaging modality for the purpose of needle guidance and placement will be covered. The imaging modality used for the purpose of needle guidance must be reported appropriately and in conjunction with the appropriate intra-articular injection procedure code for the knee. For coding information on the use of imaging procedures with viscosupplementation of the knee, please refer to the companion Article A56157, Billing and Coding: Intraarticular Knee Injections of Hyaluronan.
+
+If the hyaluronan preparation is denied, then any associated procedure code(s) (e.g., intra-articular injection, fluoroscopy, ultrasound) would be considered not medically reasonable and necessary.
+
+The course of treatment must consist of the use of one agent for the entire course of treatment. Therefore, initiating a course of treatment with one agent, then switching before completion to a different agent is considered not medically reasonable and necessary. Example: Treatment is initiated with Synvisc. After the application of 2 doses, the provider switches to Synvisc-One. The Synvisc-One would not be considered medically reasonable and necessary.
+
+Coverage of viscosupplementation therapy of the knee assumes that knee arthroplasty is not being considered as a current treatment option.
+
+Viscosupplementation is considered not medically reasonable and necessary following total or partial knee arthroplasty.
+
+Viscosupplementation is considered not medically reasonable and necessary at the end of a knee surgical procedure or during the postoperative period following a knee surgical procedure (e.g., anterior cruciate ligament [ACL] reconstruction or arthroscopic meniscectomy). It would be expected that use of viscosupplementation would not be initiated until after the patient has made a full recovery from the knee surgery (individualized for each patient); and the patient is symptomatic with a diagnosis of osteoarthritis; and clinical presentation meets the covered indications as stated.
+
+Viscosupplementation is considered not medically reasonable and necessary and will not be covered for the any of the following:
+
+When the diagnosis is anything other than osteoarthritis
+
+As the initial treatment of osteoarthritis of the knee
+
+When failure of/or contraindication to conservative therapy and/or corticosteroid injections are not documented in the medical record
+
+When a repeat series of injections is initiated prior to 6 months after completion of the previous course of treatment
+
+When a repeat series of injections is administered when there was no symptomatic/functional improvement evidenced from the previous series of injections
+
+Topical application of hyaluronate preparations
+
+Provider Qualifications
+
+Services will be considered medically reasonable and necessary only if both of the following criteria are met:
+
+All aspects of the procedure and its related care are within the scope of practice of the provider’s professional licensure; and
+
+All procedures are performed by appropriately trained providers in the appropriate setting. Patient safety and quality of care mandate that healthcare professionals who perform intra-articular injections for treatment of osteoarthritis of the knee are appropriately trained and are competent to perform all aspects of these procedures safely and effectively. The core curriculum of any training program should include the performance and management of the procedures addressed in this policy with documentation of trainee competency assessment included by formal examination and case history document review.
+
+*At a minimum, training must cover and develop an understanding of anatomy and drug pharmacodynamics and kinetics, proficiency in evaluation, diagnosis and management of diseases necessitating the procedures, technical performance of the procedure and performing and interpreting medically reasonable imaging modalities required for procedure performance (imaging technique, contrast material use, and image interpretation) as well as the evaluation, diagnosis and management of potential complications from the intervention.
+
+Acceptable training or certification may be evidenced by any 1 of the following means:
+
+Satisfactory completion of an Accreditation Council for Graduate Medical Education (ACGME) or American Osteopathic Association (AOA) accredited residency and/or fellowship program in a relevant specialty; or
+
+Board certification in a relevant specialty by an American Board of Medical Specialties (ABMS) member board or equivalent AOA board; or
+
+Satisfactory completion of an accredited non-physician practitioner educational program that provides substantially equal content and scope as those mentioned in bullets 1 or 2 above and includes the minimum requirements stated in the preceding paragraph (see * above), with trainee competency directly assessed by state licensure examination or certification examination by a nationally recognized accrediting agency and maintenance of a case log of procedures performed; or
+
+Demonstration of satisfactory performance of the specific services in this policy on a regular basis over the 5 years immediately preceding implementation of this policy. Medicare considers an average of 10 services per month to meet this requirement and may be substantiated by Medicare or other payer claim history supported by patient medical records of appropriate care, procedural performance and outcomes.
+
+Reimbursement for procedures utilizing imaging may be made to providers who meet training requirements for the procedures in this policy when permitted under relevant state professional practice acts.
+
+Documentation of training and licensures must be made available to Medicare upon request.
+
+Please refer to the Local Coverage Article: Billing and Coding: Intraarticular Knee Injections of Hyaluronan , A56157, for coding guidelines and drug wastage information.
+
+Notice: Services performed for any given diagnosis must meet all the indications and limitations stated in this policy, the general requirements for medical necessity as stated in CMS payment policy manuals, any and all existing CMS national coverage determinations, and all Medicare payment rules.
+
+The redetermination process may be utilized for consideration of services performed outside of the reasonable and necessary requirements in this LCD.
+
+Summary of Evidence
+
+Technology Assessment Systematic Review
+
+Newberry et al4 conducted a systematic review for effectiveness of hyaluronic acid in the treatment of severe degenerative joint disease (DJD) of the knee. The Coverage and Analysis Group at the Centers for Medicare and Medicaid Services (CMS) requested from The Technology Assessment Program (TAP) at the Agency for Healthcare Research and Quality (AHRQ), a review of the evidence that intraarticular injections of hyaluronic acid (HA) in individuals with degenerative joint disease (osteoarthritis [OA]) of the knee improve function and quality of life (QoL) and that they delay or prevent the need for total knee replacement (TKR), specifically for individuals age 65 and over. The results of the systematic review were as follows: Only 1 randomized controlled trial (RCT) reported on delay or avoidance of TKR as a pre-specified outcome of interest and found a non-statistically significantly longer delay of TKR compared with placebo; 2 RCTs reported TKR only as a secondary outcome; and 13 published observational studies reported on TKR as an outcome in HA-treated participants.
+
+Eighteen RCTs that enrolled participants of average age 65 or older reported on functional outcomes of intra-articular HA injection: pooled analysis of 10 sham-injection placebo-controlled, assessor-blinded trials showed a standardized mean difference of -0.23 (95% CI -0.34, -0.02) significantly favoring HA at 6 months’ follow-up. Durability of effect could not be assessed because of the short duration of most studies. Too few head-to-head trials were available to assess superiority of one product over another. Three RCTs that compared changes in QoL/Health-Related (HR) QoL between HA- and placebo-treated participants reported no differences between active treatment and placebo. Two recent large, good quality systematic reviews that conducted meta-analysis of the effects of HA on pain and function (pooling 71 and 52 RCTs for the outcome of pain, respectively) showed a significant and clinically important effect of HA on both outcomes among adults of all ages, but a subgroup analysis that included only the largest double-blind placebo-controlled studies reduced the average effect of HA to less than the prespecified minimum clinically important difference. Studies of intra-articular HA reported few serious adverse events, with no statistically significant difference in the rates of serious or non-serious adverse events between HA- and placebo-treated groups.
+
+The authors concluded that trials enrolling older participants show a small, statistically significant effect of HA on function and relatively few serious adverse events; however, no studies limited participation to those 65 years or older. No conclusions can be drawn from the available literature on delay or avoidance of TKR using HA. Studies that can compare large numbers of treated and untreated individuals, preferably with a randomized design, are needed to answer this question.
+
+Evidence-Based Guidelines
+
+The Department of Veterans Affairs (VA) and The Department of Defense (DoD) Evidence Based Clinical Practice Guideline for Non-surgical Management of the Hip and Knee Osteoarthritis Guideline Summary5 states there is insufficient evidence to recommend for or against the use of intra-articular hyaluronate/hylan injection in patients with osteoarthritis of the knee; however, it may be considered for patients who have not responded adequately to nonpharmacologic measures and who have an inadequate response, intolerable adverse events, or contraindications to other pharmacologic therapies.
+
+The National Institute for Health and Care Excellence (NICE) Clinical Guideline Osteoarthritis: care and management6 recommendations include: do not offer intra-articular hyaluronan injections for the management of osteoarthritis.
+
+The American Academy of Orthopaedic Surgeons (AAOS) Treatment of Osteoarthritis of the Knee: Evidence-Based Guideline, 2nd Edition7, is based on a systematic review of the current scientific and clinical research. This guideline contains 15 recommendations, replaces the 2008 AAOS clinical practice guideline, and was reevaluated earlier than the 5-year recommendation of the National Guideline Clearinghouse because of methodologic concerns regarding the evidence used in the first guideline. The current guideline does not support the use of viscosupplementation for the treatment of osteoarthritis of the knee. In addition, the work group highlighted the need for better research in the treatment of knee osteoarthritis.
+
+Hochberg et al8 (American College of Rheumatology 2012 recommendations for the use of nonpharmacologic and pharmacologic therapies in osteoarthritis of the hand, hip, and knee) conditionally recommended for the initial management of patients with knee OA included acetaminophen, oral and topical NSAIDs, tramadol, and intraarticular corticosteroid injections. Intraarticular hyaluronate injections, duloxetine, and opioids were conditionally recommended in patients who had an inadequate response to initial therapy.
+
+Published Literature
+
+Filardo et al9 conducted a double-blind randomized controlled trial to evaluate the effects, in terms of pain control and functional recovery, provided by a single HA injection performed at the end of arthroscopic meniscectomy. The results showed no major adverse events were reported using HA postoperatively. A statistically significant increase in all the clinical scores was reported in both treatment groups, but no significant intergroup difference was documented at any follow-up evaluation. No difference was observed also in the objective measurements. The mean time to return to full sports activity was not different between groups, and a comparable satisfaction rate was recorded in both treatment groups. The authors concluded that early postoperative viscosupplementation did not provide significant clinical benefits after arthroscopic meniscectomy. Despite the lack of major adverse events, the administration of a single HA injection at the end of the surgical procedure is not a successful strategy to provide either faster functional recovery or symptomatic improvement after meniscectomy.
+
+DiMartino et al10 conducted a double-blind, randomized controlled trial to evaluate pain control and functional recovery provided by a single injection of HA performed the day after anterior cruciate ligament (ACL) reconstruction. The results showed no severe adverse events were documented after early viscosupplementation. A significant improvement was documented in both treatment groups. Significant differences were documented in the transpatellar circumference at 60 days and in active range of motion (ROM) at 30 days postoperatively; patients who received HA had better values compared with the placebo group (P equal to .022 and .027, respectively). No statistically relevant intergroup differences were found in the clinical scores. The authors concluded that the study documented no adverse events and had some positive findings in terms of active ROM recovery and transpatellar circumference reduction. However, the early postoperative application of viscosupplementation did not lead to significant improvement in clinical scores after ACL reconstruction.
+
+Berkoff et al11 conducted a review to determine the effect of ultrasound guidance on the accuracy of needle placement, clinical outcomes, and cost-effectiveness in comparison with anatomical landmark-guided intra-articular large joint injections, with particular emphasis on the knee. A total of 13 relevant studies were identified; 5 studied the knee, 7 studied the shoulder, 1 used both the knee and shoulder, and none studied the hip. Ultrasound was used in 7 studies; the remaining studies utilized air arthrography, fluoroscopy, magnetic resonance arthrography, or magnetic resonance imaging. Across all studies (using all imaging modalities and all joints), needle placement accuracy ranged from 63% to 100% with ultrasound and from 39% to 100% with conventional anatomical guidance. Imaging guidance improved the accuracy of intra-articular injections of the knee (96.7% versus 81.0%, P less than 0.001) and shoulder (97.3% versus 65.4%, P less than 0.001). In particular, ultrasound guidance of knee injections resulted in better accuracy than anatomical guidance (95.8% versus 77.8%, P less than 0.001), yielding an odds ratio of 6.4 (95% confidence interval 2.9-14). Ultrasound guidance notably improves injection accuracy in the target intra-articular joint space of large joints including the knee. The enhanced injection accuracy achieved with ultrasound needle guidance directly improves patient-reported clinical outcomes and cost-effectiveness.
+
+Analysis of Evidence (Rationale for Determination)
+
+Various polymers of hyaluronic acid have been approved and marketed as implanted prosthetic devices. Clinical practice guidelines for the treatment of knee osteoarthritis have conflicting recommendations for intra-articular hyaluronic acid treatment for knee osteoarthritis.12 The systematic review by the technology assessment program4 reported a small, statistically significant effect of HA on function. Clinical studies of sodium hyaluronate and hylan G-F 20 have demonstrated that injection of these agents into the joint space of osteoarthritic knees is sometimes marginally more effective than placebo procedures in reduction of pain and improvement in functional capacity in some patients. These marginal beneficial results are more pronounced with the larger molecular weight compound hylan G-F 20. There is no data indicating that these agents reverse or retard the osteoarthritic process in the injected joints. The long-term effects of repeated injections are unknown.
+
+Literature evaluating pain control and functional recovery of viscosupplementation performed at the end of arthroscopic meniscectomy or in the postoperative period after ACL reconstruction does not demonstrate significant clinical benefits.9-10
+
+Literature suggests that fluoroscopy or ultrasound guidance may improve injection accuracy in the target intra-articular joint space of large joints including the knee. The use of other imaging procedures for viscosupplement injections has not been established as having an improvement on health outcomes.
+
+Proposed Process Information
+
+Synopsis of Changes
+
+Changes
+Fields Changed
+
+N/A
+
+Associated Information
+
+Sources of Information
+
+Bibliography
+
+Open Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+Contractor Advisory Committee (CAC) Meetings
+
+Meeting Date
+Meeting States
+Meeting Information
+
+N/A
+
+MAC Meeting Information URLs
+
+N/A
+
+Proposed LCD Posting Date
+
+Comment Period Start Date
+
+Comment Period End Date
+
+Reason for Proposed LCD
+
+Requestor Information
+
+This request was MAC initiated.
+
+Requestor Name
+Requestor Letter
+
+View Letter
+
+N/A
+
+Contact for Comments on Proposed LCD
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph:
+
+N/A
+
+Group 1 Codes:
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+
+General Information
+
+Associated Information
+
+Refer to Local Coverage Article: Billing and Coding: Intraarticular Knee Injections of Hyaluronan, A56157, for all coding information.
+
+Documentation Requirements
+
+All documentation must be maintained in the patient's medical record and made available to the contractor upon request.
+
+Every page of the record must be legible and include appropriate patient identification information (e.g., complete name, dates of service[s]). The documentation must include the legible signature of the physician or non-physician practitioner responsible for and providing the care to the patient.
+
+The medical record documentation must support the medical necessity of the services as stated in this policy.
+
+The medical records must document that the patient has symptomatic osteoarthritis of the knee, the nature of the symptoms and the functional limitations using a standardized assessment tool.
+
+Radiographic confirmation of osteoarthritis of the knee in the form of an x-ray report and/or notation in the record must accompany the clinical description.
+
+The medical record must include documentation that supports that conservative therapy was attempted prior to viscosupplementation therapy. If conservative therapy and/or corticosteroid injections were contraindicated or failed, the reason(s) must be supported in the documentation submitted for review.
+
+The medical record must indicate whether 1 or both knees are being treated and in the former instance, which knee is being treated.
+
+If fluoroscopy or ultrasound is used for needle guidance with the intra-articular injection, documentation must support that the presentation of the patient’s affected knee on the day of the procedure makes needle insertion problematic.
+
+If intra-articular injections of other therapeutic agents, such as corticosteroids, are performed in the same knee during the course of viscosupplementation therapy, the reason(s) requiring the use of the additional therapeutic agent must be documented.
+
+The frequency of injections and the dosage given must be clearly indicated.
+
+The response to treatment must be noted. Medical records should describe the assessment tool utilized. Repeat courses of viscosupplementation in the absence of documentation of response to the previous course of treatment will be considered not reasonable and necessary and not subject to coverage.
+
+Utilization Guidelines
+
+In accordance with CMS Ruling 95-1 (V), utilization of these services should be consistent with locally acceptable standards of practice.
+
+Depending on the hyaluronan preparation used, a series may consist of a single intra-articular injection or 2 to 5 weekly intra-articular injections per knee.
+
+The maximum allowable frequency of injection(s) for the initial or repeat series is as follows:
+
+HYALURonan Preparation
+Duration of Treatment per Series*
+
+Synvisc-One, Gel-One, Monovisc, Durolane
+Single injection per knee
+
+Hymovis
+2 weekly injections per knee
+
+Euflexxa, Gelsyn-3, Synvisc, Visco-3, TriVisc, Synojoynt, triluron
+3 weekly injections per knee
+
+Orthovisc
+3-4 weekly injections per knee
+
+Hyalgan, Supartz, Genvisc 850
+3-5 weekly injections per knee
+
+*Note: The duration of treatment per series is from the FDA medication package insert full prescribing information.
+
+For additional information on drug dosing and the proper number of units to report per dose, please refer to the Local Coverage Article: Billing and Coding: Intraarticular Knee Injections of Hyaluronan, A56157.
+
+Sources of Information
+
+Other Contractors Policies
+
+Novitas Solutions, Inc. LCD L35427 Hyaluronan Acid Therapies for Osteoarthritis of the Knee.
+
+UnitedHealthCare Medical Policy Number: CS110.N. Sodium Hyaluronate. Effective Date June 1, 2018.
+
+Bibliography
+
+American Academy of Orthopaedic Surgeons. Viscosupplementation Treatment for Knee Arthritis. OrthoInfo. Last Reviewed February 2021. https://orthoinfo.aaos.org/en/treatment/viscosupplementation-treatment-for-knee-arthritis/. Accessed March 13, 2025.
+
+U.S. Food and Drug Administration (FDA) approval letters and manufacturer’s inserts. Devices@FDA.https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/CFRSearch.cfm?CFRPart=170&showFR=1&subpartNode=21:3.0.1.1.1.5 . Accessed March 20, 2025.
+
+Vad VB. Hyaluronic Acid Injections for Knee Osteoarthritis. Arthritis-Health. Updated 03/28/2019. https://www.arthritis-health.com/treatment/injections/viscosupplementation-knee-osteoarthritis. Accessed March 7, 2025.
+
+Newberry SJ, Fitzgerald JD, Maglione MA, et al. Systematic Review for Effectiveness of Hyaluronic Acid in the Treatment of Severe Degenerative Joint Disease (DJD) of the Knee. Rockville (MD): Agency for Healthcare Research and Quality (US); July 23, 2015.
+
+VA/DoD Clinical Practice Guideline for Non-Surgical Management of Hip and Knee Osteoarthritis Guideline Summary. Prepared by The Osteoarthritis Working Group. V1.0; 2014. https://www.healthquality.va.gov/. Accessed March 20, 2025.
+
+National Institute for Health and Care Excellence (NICE) Clinical Guideline Osteoarthritis: care and management. Updated October 19, 2022. Nice.org.uk/guidance/cg177. Accessed March 20, 2025.
+
+American Academy of Orthopaedic Surgeons, Treatment of Osteoarthritis of the Knee Evidence-Based Guideline, 2nd Edition, Adopted by the American Academy of Orthopaedic Surgeons Board of Directors May 18, 2013.
+
+Hochberg MC, Altman RD, April KT, et al. American College of Rheumatology 2012 recommendations for the use of nonpharmacologic and pharmacologic therapies in osteoarthritis of the hand, hip, and knee. Arthritis Care Res. 2012 Apr;64(4):465-74.
+
+Filardo G, Di Matteo B, Tentoni F, et al. No Effects of Early Viscosupplementation After Arthroscopic Partial Meniscectomy: A Randomized Controlled Trial. Am J Sports Med. 2016 Dec;44(12):3119-3125.
+
+Di Martino A, Tentoni F, Di Matteo B, et al. Early Viscosupplementation After Anterior Cruciate Ligament Reconstruction: A Randomized Controlled Trial. Am J Sports Med. 2016 Oct;44(10):2572-2578.
+
+Berkoff DJ, Miller LE, Block JE. Clinical utility of ultrasound guidance for intra-articular knee injections: a review. Clin Interv Aging. 2012;7:89-95. doi: 10.2147/CIA.S29265.
+
+Altman RD, Schemitsch E, Bedi A. Assessment of clinical practice guideline methodology for the treatment of knee osteoarthritis with intra-articular hyaluronic acid. Semin Arthritis Rheum. 2015 Oct;45(2):132-9. doi: 10.1016/j.semarthrit.2015.04.013.
+
+Aetna Policy Number: 0179. Viscosupplementation. Last Reviewed 04/13/2018.
+
+Altman R, Hackel J, Niazi F, Shaw P, Nicholls M. Efficacy and safety of repeated courses of hyaluronic acid injections for knee osteoarthritis: A systematic review. Semin Arthritis Rheum. 2018 Oct;48(2):168-175. doi: 10.1016/j.semarthrit.2018.01.009.
+
+American Medical Association (AMA) CPT Assistant. Coding Clarification: Hip Arthrography. June 2012, Volume 22, Issue 6, page 14.
+
+Bert JM and Waddell DD. Viscosupplementation with Hylan G-F 20 in Patients with Osteoarthrosis of the Knee. Ther Adv Musculoskelet Dis. 2010 Jun; 2(3): 127–132. doi: 10.1177/1759720X10370930.
+
+Florida Blue Medical Coverage Guideline 09-J10000-22 Viscosupplementation, Hyaluronan Injections (e.g. Synvisc®). Revised 04/01/2021.
+
+Maricar N, Parkes MJ, Callaghan MJ, Felson DT, O'Neill TW. Where and how to inject the knee a systematic review. Semin Arthritis Rheum. 2013 Oct;43(2):195-203. doi: 10.1016/j.semarthrit.2013.04.010.
+
+Telikicherla M, Kamath SU. Accuracy of Needle Placement into the Intra-Articular Space of the Knee in Osteoarthritis Patients for Viscosupplementation. J Clin Diagn Res. 2016 Feb;10(2):RC15-7. doi: 10.7860/JCDR/2016/17127.7275.
+
+U.S. Food and Drug Administration (FDA) approval letters and manufacturer’s inserts. Devices@FDA. https://www.accessdata.fda.gov/cdrh_docs/pdf17/P170016D.pdf. Accessed March 20, 2025.
+
+U.S. Food and Drug Administration (FDA) approval letters and manufacturer’s inserts. Devices@FDA. https://www.accessdata.fda.gov/cdrh_docs/pdf18/P180040C.pdf. Accessed March 20, 2025.
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+Reasons for Change
+
+05/01/2025
+
+R1
+
+Posted 05/01/2025 Typographical and grammatical errors made throughout with no change in coverage. Review completed 03/25/2025.
+
+Other
+
+N/A
+
+Associated Documents
+
+Attachments
+
+N/A
+
+Related Local Coverage Documents
+
+Articles
+A56157 - Billing and Coding: Intraarticular Knee Injections of Hyaluronan
+A59369 - Response to Comments: Intraarticular Knee Injections of Hyaluronan
+LCDs
+DL39529 - Intraarticular Knee Injections of Hyaluronan (MCD Archive Site)
+
+Related National Coverage Documents
+
+NCDs
+N/A
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+04/22/2025
+05/01/2025 - N/A
+Currently in Effect
+
+You are here
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+N/A

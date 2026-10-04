@@ -86,6 +86,9 @@ KIND_ORIGIN: dict[PredicateKind, tuple[str, str]] = {
     PredicateKind.PROCEDURE_VALUE_SET_INTERVAL: ("diagnostic_ultrasound", "T-94"),
     PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: ("sleep_medicine", "T-108"),
     PredicateKind.NOTE_SLEEP_TEST_INDEX: ("sleep_medicine", "T-108"),
+    PredicateKind.NOTE_KNEE_SYMPTOMS: ("orthopedics", "T-109"),
+    PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS: ("orthopedics", "T-109"),
+    PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION: ("orthopedics", "T-109"),
 }
 
 EXIT_OK = 0
@@ -1901,14 +1904,16 @@ def _caveats_section() -> list[str]:
         "source rather than against a label. Re-labeling and review ride "
         "with the corpus expansion of a later version.",
         "- **This system determines coverage as one contractor would, for "
-        "each of four contractors' documents and four practices.** NCD 100.1 "
+        "each of four contractors' documents and five practices.** NCD 100.1 "
         "quantifies nothing — no months, no visit counts, no recency. Every "
         "constant in a criteria tree comes from its MAC's document — A53028 "
         "for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J "
         "and M, L35677 for the same MAC's infliximab policy (T-92, D111), "
         "L35755 for WPS's abdominal and visceral vascular studies (T-94, "
-        "D114), and L33718, the DME MACs' joint PAP LCD, compiled for "
-        "Noridian's Jurisdiction D (T-108, D150) — and a request resolves by "
+        "D114), L33718, the DME MACs' joint PAP LCD, compiled for "
+        "Noridian's Jurisdiction D (T-108, D150), and L39529 for WPS's knee "
+        "hyaluronan injections, under no NCD (T-109, D154) — and a request "
+        "resolves by "
         "procedure code and state, to one tree per practice (D21, D29, D100, "
         "D111). NCD 240.4 is the one national document that quantifies, and "
         "the PAP tree's two thresholds are checked against it at load "
@@ -1932,13 +1937,17 @@ def _caveats_section() -> list[str]:
         "(D119) — an active lisinopril order and a creatinine above the "
         "knowledge table's threshold, each copied from one the chart already "
         "held with one or two fields swapped — because no chart in the corpus "
-        "could otherwise produce a green suggestion. The last six are the "
+        "could otherwise produce a green suggestion. The next six are the "
         "fourth practice, and the first note-bearing charts outside bariatric "
         "surgery: "
         "Synthea charts from the recorded Iowa run carrying obstructive sleep "
         "apnea, each a consultation and a sleep study report whose index, "
         "recording time and findings the fact manifests declare, because no "
-        "generator writes them (T-108, D150). Rates "
+        "generator writes them (T-108, D150). The last seven are the fifth: "
+        "Synthea charts from the same run carrying knee osteoarthritis and the "
+        "naproxen order written at its diagnosis, each a clinic visit and a "
+        "follow-up whose symptoms, knee radiographs and exercise programme "
+        "the fact manifests declare, for the same reason (T-109, D154). Rates "
         "over a set this size move by large steps; one case is worth more "
         "than a percentage point in every table above.",
         "",

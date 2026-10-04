@@ -1,0 +1,63 @@
+{
+  "patient_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344",
+  "bundle": "Ollie731_An125_Daniel959_3a4493b8-ecb6-f853-700c-aed20b0b9344.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "KNEE3"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "knee_visits": [
+    {
+      "date": "2026-01-22",
+      "document": "chart_note_1.txt",
+      "setting": "in_person"
+    },
+    {
+      "date": "2026-04-26",
+      "document": "chart_note_2.txt",
+      "setting": "in_person"
+    }
+  ],
+  "knee_symptoms": [
+    {
+      "category": "pain_interrupting_sleep",
+      "document": "chart_note_2.txt"
+    },
+    {
+      "category": "knee_stiffness",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "denied_symptoms": [],
+  "knee_radiographs": [
+    {
+      "date": "2026-01-22",
+      "document": "chart_note_1.txt",
+      "findings": [
+        "osteophytes",
+        "subchondral_sclerosis"
+      ]
+    }
+  ],
+  "conservative_therapies": [
+    {
+      "date": "2026-01-22",
+      "document": "chart_note_1.txt",
+      "therapy": "naproxen",
+      "category": "simple_analgesic_or_nsaid"
+    },
+    {
+      "date": "2026-04-26",
+      "document": "chart_note_2.txt",
+      "therapy": "physical_therapy",
+      "category": "nonpharmacologic"
+    }
+  ],
+  "rationale": "KNEE3: conservative therapy too short. Naproxen began 01/22/2026, three months before the request, but physical therapy -- the only nonpharmacologic therapy documented -- began at the follow-up visit on 04/26/2026, zero whole months before the request date of 05/01/2026. L39529 joins the two legs with 'and', so d is NOT_MET citing both starts, with a structured shortfall of 0 months against 3 that step_sufficiency re-derives from the cited starts alone (D99). The overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). a and b are MET. The row pins its own as_of, because d ages into MET in August 2026. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json and the chart's own facts, never from a run (T-109, D154). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Document 1 is a clinic visit and document 2 a follow-up visit, each dated on an encounter of the chart's own; the naproxen start is the chart's own order date, written at the diagnosis encounter. The symptoms, the radiographs and their findings and the nonpharmacologic therapy are declared here, because no generator writes them (D43, D154). One fact per document (D104). c and e are declared unclaimed by the tree -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58)."
+}

@@ -70,7 +70,7 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and v1.6 is in
-progress.** 105 of 105 tasks closed, **none open** — `T-103` opened v1.5 with the
+progress.** 106 of 106 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,7 +78,7 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A13 holding. The suite collects 1921 tests (103 skip). **`T-107` opened v1.6**
+A1–A13 holding. The suite collects 2037 tests (151 skip). **`T-107` opened v1.6**
 *(D149)*: a tree now declares the fact kinds its extraction produces, a tree
 declaring none reads no note, and a recording replays only under the prompt
 version it was measured with. **`T-108` added practice three** *(D150)*: CPAP
@@ -86,7 +86,11 @@ for obstructive sleep apnea under NCD 240.4 — the first national document here
 that quantifies, both thresholds now floors checked at load — read from the
 notes through a second fact kind, because no generator writes an
 apnea-hypopnea index; the trust boundary is generic over kinds (REQ-79).
-**`T-109` is next.**
+**`T-109` added practice four** *(D154)*: hyaluronan injection for knee
+osteoarthritis under WPS's L39529, an LCD no NCD stands over, read from the
+notes through a third fact kind — symptoms, knee radiographs and conservative
+therapy, none of which Synthea writes — and the first practice to reuse the
+generic trust boundary rather than build it. **`T-110` is next.**
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -189,10 +193,11 @@ compatibility* section *(T-95, D116)*.
 |---|---|---|---|---|---|
 | bariatric surgery | 2 | 14 | 0 | 12 | 2 |
 | diagnostic ultrasound | 1 | 5 | 1 | 1 | 3 |
+| orthopedics | 1 | 5 | 0 | 3 | 2 |
 | rheumatology | 1 | 5 | 1 | 1 | 3 |
 | sleep medicine | 1 | 4 | 0 | 2 | 2 |
 
-**28 criteria across five trees and four practices, zero omitted** — which is
+**33 criteria across six trees and five practices, zero omitted** — which is
 gate A10's first clause, and the reason the account is generated rather than
 asserted: a criterion missing from that table is a criterion missing from the
 engine. There is no fourth class in it. A tree naming a predicate kind the
@@ -268,17 +273,17 @@ in any gate* had been pinned against two of the three scripts that spend them
 
 | Gate | Result |
 |---|---|
-| A1 | 40 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.405** base rate and an always-`MET` baseline scoring exactly that |
-| A3 | **zero** `MET` verdicts with an invalid span, over 127 spans checked |
+| A1 | 49 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.422** base rate and an always-`MET` baseline scoring exactly that |
+| A3 | **zero** `MET` verdicts with an invalid span, over 164 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.475**, accounted for per `gap_reason` — the rise is the later practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
-| A6 | 76 model calls / 78,698 in / 10,232 out / 71.4s across twenty-three determinations, from instrumentation |
+| A5 | abstention **0.551**, accounted for per `gap_reason` — the rise is the later practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A6 | 107 model calls / 103,917 in / 14,573 out / 100.0s across thirty determinations, from instrumentation |
 | A7 | 81 requirements: 79 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
-| A10 | **28 criteria across five trees and four practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
-| A11 | **13 of 13** candidates the knowledge table finds graded across 10 rows; precision **1.000** on the colours that *assert* — green and yellow — over **n = 1**, against an all-red baseline with **no denominator at all**; zero suggestions without a source row; zero verdict drift |
+| A10 | **33 criteria across six trees and five practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
+| A11 | **16 of 16** candidates the knowledge table finds graded across 12 rows; precision **1.000** on the colours that *assert* — green and yellow — over **n = 1**, against an all-red baseline with **no denominator at all**; zero suggestions without a source row; zero verdict drift |
 | A12 | every lifecycle transition tested and every illegal one raising with nothing recorded; a session round-trips byte-stable **written twice**; the plane check extended to the fourth plane in both directions |
 | A13 | zero packets carrying an **accepted** red with no justification, over a non-empty set of reds, the refusal naming every unjustified code; every packet citation slicing back through the port that serves its document, **with the count reported** and re-checked over two committed fixtures; the review log append-only and the determination's bytes unchanged after any number of reviews; an outbox artifact existing exactly when the session is `AWAITING_DECISION`, a forbidden submission exiting 1 and writing nothing, `decide` closing with the outcome and the date; **zero model calls in any gate** |
 
@@ -342,8 +347,8 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   standing answer; on the two-note corpus it fired once, on the very
   paraphrase P2 was written from, and recovered it. What remains is a claim
   the model never quoted at all.
-- **P3 — Small everything.** 20 patients (four of them declared clones), 26
-  chart notes, 11 policy documents, 40 cases: every rate moves in large steps,
+- **P3 — Small everything.** 27 patients (four of them declared clones), 40
+  chart notes, 13 policy documents, 49 cases: every rate moves in large steps,
   and one case outweighs a percentage point. The figures are `eval/report.md`'s,
   which computes them from the three manifests that own them — this bullet
   read *eleven, fourteen, seven, twenty* for two tasks after the corpus grew
@@ -389,17 +394,18 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
 **And one more, which is not a P-number.** P1 through P8 are spec §10's list,
 each closed by a task of its own; this one is what v1.2 measured rather than
 what it left undone, so it is written here instead of added to a list that is
-finished. **Four practices is not four hundred.** `eval/report.md`'s
+finished. **Five practices is not five hundred.** `eval/report.md`'s
 cross-practice compatibility account says exactly what the engine has been
-shown to take: 28 criteria across five trees and four practices, every one
+shown to take: 33 criteria across six trees and five practices, every one
 evaluated by a declared predicate kind or declared unclaimed, zero omitted.
 The second and third practices each reused a kind the engine already had and
 earned exactly one it lacked; the fourth earned two and reused none, because
-its facts live in the notes under a fact kind nothing before it read — which is
-a small sample, and the honest reading is that the next practice needs *a few*
-new predicates, not a fixed number.
+its facts live in the notes under a fact kind nothing before it read; the fifth
+earned three and reused none, for the same reason, over a third fact kind —
+which is a small sample, and the honest reading is that a practice whose facts
+live in the notes needs *a few* new predicates, not a fixed number.
 
-The sharper limit is what *unclaimed* is doing. Ten of those 28 criteria
+The sharper limit is what *unclaimed* is doing. Twelve of those 33 criteria
 abstain, and the account quotes each tree's own reason rather than sorting
 it. Read together, the reasons sort three ways *(D120)*:
 
@@ -407,10 +413,10 @@ it. Read together, the reasons sort three ways *(D120)*:
 |---|---|---|
 | **this pipeline** | `ncd-100.1-jjm-v1` `c4` — a weight the extraction schema has no field for; `d` — four documented components, then set membership and a six-month window *(D107)* | v1.6's declared extraction schema |
 | **a fact the coded record does not carry** | `infliximab-ra-jjm-v1` `c` — NYHA class; `d` — a tuberculosis screening result, with its treatment on the medication list; `e` — a DAS28, CDAI or SDAI score | v1.6, where a note states the fact; where no committed note does, the abstention stands |
-| **a judgment** | `us-abdominal-visceral-j5-j8-v1` `c` — necessary for management; `d` — not redundant of what is planned; `e` — a high index of suspicion | nothing on the roadmap *(D107)*; the reviewer |
+| **a judgment** | `us-abdominal-visceral-j5-j8-v1` `c` — necessary for management; `d` — not redundant of what is planned; `e` — a high index of suspicion; `hyaluronan-knee-oa-j5-j8-v1` `c` — other diagnoses excluded *"if appropriate"*; `e` — failed aspiration and corticosteroid injection *when* inflammation is significant | nothing on the roadmap *(D107, D154)*; the reviewer |
 | **a record outside the chart** | `pap-osa-dme-jd-v1` `c` — the supplier's instruction in the device's use; `d` — the sleep test's provenance: its FDA status, who ordered it, the testing entity's enrolment | nothing this system reads; the supplier's and the testing entity's documentation *(D150)* |
 
-So v1.6 can lift five of the ten at most, and three of those only on a
+So v1.6 can lift five of the twelve at most, and three of those only on a
 chart whose note states the fact. The last three are the shape D107 says
 would claim model adjudication, and a system that reported verdicts on them
 would be reporting judgments it cannot support. Today a third of this
@@ -777,10 +783,10 @@ Guardrails that keep the differential honest:
 
 ## The policy corpus, and what it took to get right
 
-Nine documents, three jurisdictions, three practices. **There is a second
+Thirteen documents, five contractors' jurisdictions, five practices. **There is a second
 hashed corpus and it is deliberately not this one**: `data/knowledge/` holds
 five FDA drug labels, which say what a *drug* does, while everything below
-says what a *payer covers*. They are separate manifests — "eleven policy
+says what a *payer covers*. They are separate manifests — "thirteen policy
 documents" is a claim about what this system adjudicates against, and drug
 labels must not be able to raise it — verified by the same
 `verify_sources.py --offline`. Nothing in either corpus may be cited for the
@@ -797,6 +803,10 @@ other's kind of claim.
 | `a56432` | Palmetto GBA billing & coding article, infliximab | The ICD-10 group the rheumatoid arthritis value set anchors into — its HCPCS table is behind the licence modal |
 | `l35755` | WPS LCD, non-invasive abdominal/visceral vascular studies, Jurisdictions J-5 and J-8 | **Every constant** in the ultrasound tree, including the once-a-year frequency limit and the places of service it excludes |
 | `a57591` | WPS billing & coding article | The Group 1 paragraph naming CPT 93975/93976 in prose, and the 316 ICD-10 codes the indication value set anchors into |
+| `ncd_240_4` | CMS NCD 240.4, CPAP for obstructive sleep apnea | National coverage, and the two thresholds the PAP tree's constants are floored against at load |
+| `l33718` | DME MACs' joint LCD, positive airway pressure devices | **Every constant** in the PAP tree, and the sentence naming HCPCS E0601 |
+| `l39529` | WPS LCD, intra-articular knee injections of hyaluronan, Jurisdictions J-5 and J-8 | **Every constant** in the hyaluronan tree, including the three months of conservative therapy *(D154)* |
+| `a56157` | WPS billing & coding article, hyaluronan | The dosing tables naming each hyaluronan J code beside its preparation — HCPCS Level II, outside the licence modal *(D154)* |
 
 A request resolves by procedure code **and the patient's state**: Washington
 reaches Noridian's tree, Alabama reaches Palmetto's, and Texas — in neither —
@@ -827,11 +837,11 @@ stated plainly:
   recorded with a name and date in the decision log. The count is pinned at
   zero provisional constants, so a new one is a visible diff.
 
-Patient data is entirely synthetic: twenty Synthea v4.0.0 FHIR bundles
+Patient data is entirely synthetic: twenty-seven Synthea v4.0.0 FHIR bundles
 (pinned by manifest hashes; one carries a declared synthetic observation, one
 is a declared clone re-addressed into Palmetto's territory, one is a declared
 clone carrying a declared synthetic prescription, and two are declared clones
-carrying one re-coded procedure apiece) and twenty-six
+carrying one re-coded procedure apiece) and forty
 synthesized chart notes — two per note-bearing chart since T-81, a split of
 the facts each manifest declares — the clone's byte-identical to its source's
 by declaration. No real or de-identified patient data of any kind is in scope.
@@ -1065,7 +1075,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1921 tests across 60 files, 103 of them skipped — the skips are per-tree
+2037 tests across 62 files, 151 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -1147,7 +1157,7 @@ the installed framework still discovers the agent.
 ./venv/bin/python eval/run_eval.py --update-baseline   # adopt drift, as a reviewed diff
 ```
 
-Forty labeled cases across four practices, every cited span re-validated
+Forty-nine labeled cases across five practices, every cited span re-validated
 by the scorer — the count is `eval/report.md`'s, which is generated. The gate
 fails on drift in **either** direction, so a case that *starts* passing is
 adopted explicitly with `--update-baseline` and a commit. Four result statuses
@@ -1259,18 +1269,19 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
   stores/            six ports — policy.py, patient.py, knowledge.py,
                      session.py, payer.py and outbox.py; __init__.py imports
                      none of them, on purpose
-data/policies/       eleven source documents, seven value sets (SNOMED and
-                     RxNorm), and five criteria trees — two bariatric
+data/policies/       thirteen source documents, seven value sets (SNOMED and
+                     RxNorm), and six criteria trees — two bariatric
                      (ncd-100.1-jf-v1, ncd-100.1-jjm-v1), one rheumatology
                      (infliximab-ra-jjm-v1), one ultrasound
-                     (us-abdominal-visceral-j5-j8-v1) and one sleep medicine
-                     (pap-osa-dme-jd-v1)
+                     (us-abdominal-visceral-j5-j8-v1), one sleep medicine
+                     (pap-osa-dme-jd-v1) and one orthopedics
+                     (hyaluronan-knee-oa-j5-j8-v1)
 data/knowledge/      the second hashed corpus — five FDA drug labels, the
                      reviewed medication-effects table and the pinned RxNorm
                      expansion that lets a row's ingredient reach a
                      prescription. **Not** the policy corpus, and a separate
                      manifest for that reason
-data/patients/       twenty Synthea bundles + twenty-six synthesized notes, hash-pinned
+data/patients/       twenty-seven Synthea bundles + forty synthesized notes, hash-pinned
 data/payers/         the simulated payer directory (T-105) — committed and
                      **synthesized**, so it is in no hashed manifest: there is
                      no upstream to re-fetch, and every address is under RFC

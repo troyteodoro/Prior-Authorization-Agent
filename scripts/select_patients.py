@@ -115,8 +115,9 @@ BASE_BUNDLE_COUNT = 6  # the D35 selection
 #: plus the E12 patient (D73), the T-88 clone (D102), T-93's three
 #: rheumatology charts — two generated, one derived (D113) — T-94's three
 #: ultrasound charts: one generated and two derived from it (D114) — and
-#: T-108's six sleep apnea charts, all generated (D150).
-BUNDLE_COUNT = 20
+#: T-108's six sleep apnea charts, all generated (D150) -- and T-109's seven
+#: knee osteoarthritis charts, all generated (D154).
+BUNDLE_COUNT = 27
 
 LOINC_BMI = "39156-5"
 SNOMED_T2DM = "44054006"
@@ -227,6 +228,19 @@ SNOMED_OSA_COMORBIDITIES = (
 #: How many charts the rule selects from the recorded run. Pinned so that a
 #: rerun yielding a different count is a visible change, not a quiet one.
 SLEEP_APNEA_CHART_COUNT = 6
+
+# The knee osteoarthritis cohort (T-109, D154). **No fifth Synthea run** either:
+# Iowa is in WPS's J-5, which the fifth practice's tree is compiled for, and the
+# recorded Iowa run holds the charts. The codes are read out of
+# `modules/osteoarthritis.json` in the pinned jar: the knee condition, and the
+# naproxen order the module writes at the diagnosis encounter. Synthea writes no
+# knee radiograph, no symptom description and no exercise programme, which is
+# why those are note facts (D154).
+KNEE_OA_COHORT = "knee_osteoarthritis"
+SNOMED_KNEE_OA = "239873007"  # Osteoarthritis of knee (disorder)
+RXNORM_NAPROXEN = "849574"  # Naproxen sodium 220 MG Oral Tablet
+#: Pinned, for `SLEEP_APNEA_CHART_COUNT`'s reason.
+KNEE_OA_CHART_COUNT = 7
 #: How far from the reference date each clone's copy source must sit. The
 #: window itself is the policy plane's (twelve months, L35755); these bounds
 #: are wider on both sides so the selection does not turn on the constant --
@@ -824,6 +838,8 @@ def read_bundle(path: Path) -> dict:
     active_osa_comorbidities: set[str] = set()
     sleep_study_dates: list[str] = []
     sleep_assessment_dates: list[str] = []
+    knee_oa_onset_dates: list[str] = []
+    naproxen_order_dates: list[str] = []
     for entry in bundle.get("entry", []):
         resource = entry.get("resource", {})
         rtype = resource.get("resourceType")
@@ -856,6 +872,10 @@ def read_bundle(path: Path) -> dict:
                 has_active_osa = True
             if active:
                 active_osa_comorbidities |= codes & set(SNOMED_OSA_COMORBIDITIES)
+            # T-109 (D154): the knee condition, by onset. A note's diagnosis
+            # visit is dated on it, so `--verify` recomputes it.
+            if active and SNOMED_KNEE_OA in codes and resource.get("onsetDateTime"):
+                knee_oa_onset_dates.append(resource["onsetDateTime"])
         elif rtype == "MedicationRequest":
             # `status` is carried by the record and read here the way the
             # predicate reads it: a completed order is not an active one.
@@ -880,6 +900,10 @@ def read_bundle(path: Path) -> dict:
                 has_active_lisinopril = True
             if active and RXNORM_HYDROCHLOROTHIAZIDE in codes:
                 has_active_hydrochlorothiazide = True
+            # T-109 (D154): the module's own naproxen order. A note's
+            # pharmacologic start is dated on it.
+            if active and RXNORM_NAPROXEN in codes and resource.get("authoredOn"):
+                naproxen_order_dates.append(resource["authoredOn"])
         elif rtype == "Procedure":
             # T-94 (D114): every abdominal/visceral vascular study on the
             # chart, by date. The interval criterion reads the dates, so the
@@ -915,6 +939,8 @@ def read_bundle(path: Path) -> dict:
         "active_osa_comorbidity_codes": sorted(active_osa_comorbidities),
         "sleep_study_dates": sorted(sleep_study_dates),
         "sleep_assessment_dates": sorted(sleep_assessment_dates),
+        "knee_oa_onset_dates": sorted(knee_oa_onset_dates),
+        "naproxen_order_dates": sorted(naproxen_order_dates),
     }
 
 
@@ -1263,6 +1289,8 @@ def _record(path: Path, cohort: str) -> dict:
         "active_osa_comorbidity_codes": info["active_osa_comorbidity_codes"],
         "sleep_study_dates": info["sleep_study_dates"],
         "sleep_assessment_dates": info["sleep_assessment_dates"],
+        "knee_oa_onset_dates": info["knee_oa_onset_dates"],
+        "naproxen_order_dates": info["naproxen_order_dates"],
     }
 
 
@@ -1601,6 +1629,91 @@ def select_sleep_apnea() -> int:
 
 
 # --------------------------------------------------------------------------
+# The knee osteoarthritis cohort (--select-knee-osteoarthritis): disk only
+# (T-109, D154)
+# --------------------------------------------------------------------------
+
+
+def _select_knee_osteoarthritis(candidates: list[dict]) -> list[dict]:
+    """Every chart in the recorded Iowa run carrying an active knee
+    osteoarthritis condition and an active order for the naproxen the module
+    prescribes for it. A filter, not a ranking, for `_select_sleep_apnea`'s
+    reason; charts carrying a knowledge-table drug stay in, because a rule
+    shaped to avoid the instrument is the one D152 rejected."""
+    chosen = [
+        c for c in candidates
+        if c["knee_oa_onset_dates"] and c["naproxen_order_dates"]
+    ]
+    if len(chosen) != KNEE_OA_CHART_COUNT:
+        sys.exit(
+            f"the recorded Iowa run yields {len(chosen)} charts carrying an "
+            f"active SNOMED {SNOMED_KNEE_OA} and an active RxNorm "
+            f"{RXNORM_NAPROXEN} order; {KNEE_OA_CHART_COUNT} are pinned. A run "
+            "that answers differently is a new cohort and a new decision, not "
+            "a re-run (D73, D154)."
+        )
+    return sorted(chosen, key=lambda c: c["patient_id"])
+
+
+def select_knee_osteoarthritis() -> int:
+    """Adopt the knee osteoarthritis cohort from the ultrasound run's output.
+
+    `select_sleep_apnea`'s shape exactly: reads `output_us`, runs no Java,
+    replaces its own records and touches no other cohort (D154).
+    """
+    if not (US_OUTPUT_DIR / "fhir").is_dir():
+        sys.exit(
+            f"no ultrasound run at {US_OUTPUT_DIR.relative_to(REPO_ROOT)}; run "
+            "--generate-ultrasound first. This mode reads that run and generates "
+            "nothing (D154)."
+        )
+    candidates = _read_population(US_OUTPUT_DIR)
+    chosen = _select_knee_osteoarthritis(candidates)
+
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    adopted = {c["patient_id"] for c in chosen}
+    manifest["bundles"] = [
+        r for r in manifest["bundles"] if r["patient_id"] not in adopted
+    ]
+    for candidate in chosen:
+        dest = BUNDLES_DIR / candidate["source_path"].name
+        shutil.copyfile(candidate["source_path"], dest)
+        record = _record(dest, KNEE_OA_COHORT)
+        manifest["bundles"].append(record)
+        print(
+            f"  {record['patient_id'][:12]} onset {record['knee_oa_onset_dates']} "
+            f"naproxen {record['naproxen_order_dates']}  {dest.name}"
+        )
+
+    manifest["synthea_knee_osteoarthritis"] = {
+        "task": "T-109",
+        "decision": "D154",
+        "run": "synthea_ultrasound",
+        "selection": {
+            "cohort": KNEE_OA_COHORT,
+            "chart_count": KNEE_OA_CHART_COUNT,
+            "state_code": US_STATE_CODE,
+            "condition_code": SNOMED_KNEE_OA,
+            "medication_code": RXNORM_NAPROXEN,
+            "rule": (
+                "every chart in the recorded ultrasound run (seed "
+                f"{US_SEED}, {US_STATE}) carrying an active Condition coded "
+                f"SNOMED {SNOMED_KNEE_OA} and an active MedicationRequest coded "
+                f"RxNorm {RXNORM_NAPROXEN}. No fifth Synthea run: {US_STATE} is "
+                "in WPS's A/B MAC Jurisdiction 5, which "
+                "hyaluronan-knee-oa-j5-j8-v1 governs. Codes read from "
+                "modules/osteoarthritis.json in the pinned jar (D154)."
+            ),
+        },
+    }
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"manifest written: {MANIFEST_PATH.relative_to(REPO_ROOT)}")
+    return 0
+
+
+# --------------------------------------------------------------------------
 # Re-recording (--rerecord): disk only (T-94, D114)
 # --------------------------------------------------------------------------
 
@@ -1801,6 +1914,8 @@ _DERIVED_FACTS = (
     "active_osa_comorbidity_codes",
     "sleep_study_dates",
     "sleep_assessment_dates",
+    "knee_oa_onset_dates",
+    "naproxen_order_dates",
 )
 
 
@@ -1888,6 +2003,7 @@ def verify() -> int:
             RHEUMATOLOGY_COHORT,
             ULTRASOUND_COHORT,
             SLEEP_APNEA_COHORT,
+            KNEE_OA_COHORT,
         ),
             f"{r['filename']}: declares a known cohort ({r.get('cohort')!r})",
             failures,
@@ -2317,6 +2433,44 @@ def verify() -> int:
         failures,
     )
 
+    # The knee osteoarthritis cohort (T-109, D154). The selection rule
+    # re-applied to the committed charts, and the two dates each chart's notes
+    # are dated on: the diagnosis visit on the condition's onset, and the
+    # pharmacologic start on the module's naproxen order, written at that
+    # encounter.
+    knee = [r for r in records if r.get("cohort") == KNEE_OA_COHORT]
+    _check(
+        len(knee) == KNEE_OA_CHART_COUNT,
+        f"{KNEE_OA_CHART_COUNT} knee osteoarthritis charts ({len(knee)} found)",
+        failures,
+    )
+    for record in knee:
+        _check(
+            bool(record["knee_oa_onset_dates"]) and bool(record["naproxen_order_dates"]),
+            f"{record['filename']}: an active SNOMED {SNOMED_KNEE_OA} "
+            f"({record['knee_oa_onset_dates']}) and an active RxNorm "
+            f"{RXNORM_NAPROXEN} order ({record['naproxen_order_dates']})",
+            failures,
+        )
+        _check(
+            [d[:10] for d in record["knee_oa_onset_dates"]]
+            == [d[:10] for d in record["naproxen_order_dates"]],
+            f"{record['filename']}: the naproxen order is dated on the "
+            "diagnosis, which is what each note's pharmacologic start is dated on",
+            failures,
+        )
+        bundle = json.loads((BUNDLES_DIR / record["filename"]).read_text(encoding="utf-8"))
+        patient = next(
+            (e["resource"] for e in bundle["entry"]
+             if e.get("resource", {}).get("resourceType") == "Patient"),
+            {},
+        )
+        _check(
+            (patient.get("address") or [{}])[0].get("state") == US_STATE_CODE,
+            f"{record['filename']}: Patient.address[0].state is {US_STATE_CODE}",
+            failures,
+        )
+
     if bmis:
         _check(
             all(BMI_FLOOR <= b <= BMI_CEILING for b in bmis),
@@ -2362,6 +2516,12 @@ def main() -> int:
         help="adopt the sleep apnea cohort from the recorded ultrasound run (T-108); no Java",
     )
     mode.add_argument(
+        "--select-knee-osteoarthritis",
+        action="store_true",
+        help="adopt the knee osteoarthritis cohort from the recorded ultrasound "
+             "run (T-109); no Java",
+    )
+    mode.add_argument(
         "--rerecord",
         action="store_true",
         help="re-derive every committed bundle's manifest facts from its bytes",
@@ -2382,6 +2542,8 @@ def main() -> int:
         return generate_ultrasound()
     if args.select_sleep_apnea:
         return select_sleep_apnea()
+    if args.select_knee_osteoarthritis:
+        return select_knee_osteoarthritis()
     if args.rerecord:
         return rerecord()
     if args.clone:

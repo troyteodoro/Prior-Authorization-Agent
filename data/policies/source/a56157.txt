@@ -1,0 +1,874 @@
+Contractor Information
+
+Contractor Name
+Contract Type
+Contract Number
+Jurisdiction
+States
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05101 - MAC A
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05102 - MAC B
+
+J - 05
+
+Iowa
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05201 - MAC A
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05202 - MAC B
+
+J - 05
+
+Kansas
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05301 - MAC A
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05302 - MAC B
+
+J - 05
+
+Missouri - Entire State
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05401 - MAC A
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+05402 - MAC B
+
+J - 05
+
+Nebraska
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+05901 - MAC A
+
+J - 05
+
+Alabama
+Alaska
+Arizona
+Arkansas
+California - Entire State
+Colorado
+Connecticut
+Delaware
+Florida
+Georgia
+Hawaii
+Idaho
+Illinois
+Indiana
+Iowa
+Kansas
+Kentucky
+Louisiana
+Maine
+Maryland
+Massachusetts
+Michigan
+Mississippi
+Missouri - Entire State
+Montana
+Nebraska
+Nevada
+New Hampshire
+New Jersey
+New Mexico
+North Carolina
+North Dakota
+Ohio
+Oklahoma
+Oregon
+Pennsylvania
+Rhode Island
+South Carolina
+South Dakota
+Tennessee
+Texas
+Utah
+Vermont
+Virginia
+Washington
+West Virginia
+Wisconsin
+Wyoming
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08101 - MAC A
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08102 - MAC B
+
+J - 08
+
+Indiana
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part A
+
+08201 - MAC A
+
+J - 08
+
+Michigan
+
+Wisconsin Physicians Service Insurance Corporation
+
+MAC - Part B
+
+08202 - MAC B
+
+J - 08
+
+Michigan
+
+Article Information
+
+General Information
+
+Source Article ID
+
+N/A
+
+Article ID
+
+A56157
+
+Original ICD-9 Article ID
+
+Not Applicable
+
+Article Title
+
+Billing and Coding: Intraarticular Knee Injections of Hyaluronan
+
+Article Type
+
+Billing and Coding
+
+Original Effective Date
+
+12/01/2018
+
+Revision Effective Date
+
+06/25/2026
+
+Revision Ending Date
+
+N/A
+
+Retirement Date
+
+N/A
+
+CPT codes, descriptions, and other data only are copyright 2025 American Medical Association. All Rights Reserved. Fee schedules, relative value units, conversion factors and/or related components are not assigned by the AMA, are not part of CPT, and the AMA is not recommending their use. The AMA does not directly or indirectly practice medicine or dispense medical services. The AMA assumes no liability for data contained or not contained herein. CPT is a registered trademark of the American Medical Association.
+
+Current Dental Terminology © 2025 American Dental Association. All rights reserved.
+
+Copyright © 2026, the American Hospital Association, Chicago, Illinois. Reproduced with permission.
+No portion of the AHA copyrighted materials contained within this publication may be
+copied without the express written consent of the AHA. AHA copyrighted materials including the UB‐04 codes and
+descriptions may not be removed, copied, or utilized within any software, product, service, solution, or derivative work
+without the written consent of the AHA. If an entity wishes to utilize any AHA materials, please contact the AHA at ub04@aha.org or 312‐422‐3366.
+
+Making copies or utilizing the content of the UB‐04 Manual, including the codes and/or descriptions, for internal purposes,
+resale and/or to be used in any product or publication; creating any modified or derivative work of the UB‐04 Manual and/or codes and descriptions;
+and/or making any commercial use of UB‐04 Manual or any portion thereof, including the codes and/or descriptions, is only
+authorized with an express license from the American Hospital Association.
+The American Hospital Association (the "AHA") has not reviewed, and is not responsible for, the completeness or
+accuracy of any information contained in this material, nor was the AHA or any of its affiliates, involved in the
+preparation of this material, or the analysis of information provided in the material. The views and/or positions
+presented in the material do not necessarily represent the views of the AHA. CMS and its products and services are
+not endorsed by the AHA or any of its affiliates.
+
+CMS National Coverage Policy
+
+Title XVIII of the Social Security Act, §1833(e) prohibits Medicare payment for any claim which lacks the necessary information to process the claim
+
+CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 12, §30.6.7(D) Payment for Office or Other Outpatient Evaluation and Management (E/M) Visits (Codes 99201-99215) - Drug Administration Services and E/M Visits Billed on Same Day of Service
+
+CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 17, §40 Discarded Drugs and Biologicals and §90.2 Drugs, Biologicals, and Radiopharmaceuticals
+
+CMS Internet-Only Manual, Pub. 100-02, Medicare Benefit Policy Manual, Chapter 15, §50.3 Incident-to Requirements and §50.4.1 Approved Use of Drug
+
+Article Guidance
+
+Article Text
+
+Purified natural hyaluronates have been approved by the FDA for the treatment of symptomatic osteoarthritis of the knee in patients who have failed to respond to simple analgesics or conservative nonpharmacologic therapy. Osteoarthritis leads to changes in hyaluronan, a natural substance that helps provide the fluid within the joint with elasticity and viscosity. The therapeutic goal of administration of intraarticular hyaluronate is to provide and maintain intraarticular lubrication, which increases the viscoelastic properties of synovial fluid; this form of therapy is therefore termed “viscosupplementation.” Osteoarthritis (OA) is a common condition affecting the knee(s). Comprehensive management of OA should always include a combination of treatment options directed toward the common goal of alleviating pain and improving function. These include symptomatic pharmacological treatment with analgesics, non-steroidal anti-inflammatory drugs (NSAID) and intraarticular corticosteroid injections. Muscle strengthening exercises, weight loss, and assistive devices such as canes have been helpful in managing osteoarthritis.
+
+Various polymers of hyaluronic acid have been approved and marketed as implanted prosthetic devices.
+
+The FDA has approved Viscosupplementation as a device. Medicare is allowing this nonpharmacologic therapy. The contractor expects the use of those drugs and biologicals not listed here to be medically necessary and used according to their FDA indications.
+
+This treatment will only be covered for the treatment of pain in osteoarthritis of the knee. All other uses will be denied as investigational.
+
+All procedures are furnished by and administered by a physician and/or appropriately trained providers in the appropriate setting.
+
+Documentation in the patient's medical record must support the patient failure to respond adequately over a 3-month period to a past history of treatment with analgesics and conservative nonpharmacological therapy (exercise or physical therapy, weight loss if appropriate, use of assistive devices).
+
+A radiological exam to support the clinical diagnosis of osteoarthritis of the knee will be available in the patient’s medical record.
+
+If subsequent courses of treatment are given, the medical records must support the effectiveness of the prior treatment and must clearly establish reduction of patient symptomatology and medication usage. This documentation must be submitted upon request. Claims submitted without requested supporting evidence in the medical record will be denied as being not medically necessary.
+
+Repeat treatments are considered medically necessary for patients being treated for OA of the knee, who meet both of the following criteria:
+
+Significant improvement in knee pain and known improvement in functional capacity resulted from the previous series of injections which have been documented in the record; and
+
+At least 6 months have elapsed since the last injection in the series.
+
+The Medicare program covers drugs that are furnished “incident to” a physician’s service provided, that the drugs are not usually self-administered by the patients. Please refer to the WPS GHA Guides and Resources: Incident to Services.
+
+The following guidelines identify 3 categories in which medications would not be reasonable and necessary according to accepted standards of medical practice:
+
+Medications given for a purpose other than the treatment of a particular condition, illness, or injury are not covered.
+
+Medications administered for treatment of a disease, and which exceed the frequency or duration of injections indicated by accepted standards of medical practice are not covered.
+
+If a medication is determined not to be medically reasonable and necessary for diagnosis or treatment of an illness or injury according to these guidelines, the entire charge (i.e., for both the drug and its administration) is not considered medically necessary.
+
+Billing of Viscosupplements
+When reporting C, J or Q HCPCS codes for hyaluronan acid therapy, it should be noted that some codes are “per dose” and some are “per mg” as specified in the code descriptor. When reporting a “per mg” drug code, report the appropriate number of units that reflect the dosage given. Units of service are to be billed in multiples of the dosage specified in the full HCPCS descriptor. This descriptor does not always match the dose given. The units billed must correspond with the smallest dose (vial) available for purchase from the manufacturer(s) that could provide the appropriate dose for the patient. Dosing frequency of injections per series and/or dosing frequency per series as listed/supported with the FDA approved dosing/package insert must be documented in the medical record. Providers are responsible for determining the code that most accurately describes the intraarticular agent furnished.
+
+When billing J7322 for Hymovis or Hymovis One, you must indicate the NDC number on the claim form.
+
+For Paper Claims - CMS 1500 Claim Form:
+• Submit the NDC code in Block 19, Additional Claim Information
+• Submit the units in Field G Days or Units field
+
+For Electronic Claims:
+• Submit the NDC code in Loop 2410 — The NDC is to be preceded with the qualifier N4 and followed immediately by the 11-digit NDC code
+• Submit the units in the Nation Drug Unit Count field
+
+HYALURONAN Drug Dosing Tables
+
+1.The following HCPCS codes are per dose codes:
+
+HCPCS
+Code
+Billing
+Unit
+Drug
+Name(s)
+Dosing frequency per series
+(per knee)*
+Dose (per
+knee)*
+Units per dose
+(per knee)
+
+J7321
+per dose
+Hyalgan
+3 to 5 weekly injections
+20 mg once weekly
+1 unit
+
+J7321
+per dose
+Supartz
+3 to 5 weekly injections
+25 mg once weekly
+1 unit
+
+J7321
+per dose
+Visco-3
+3 weekly injections
+25 mg once weekly
+1 unit
+
+J7323
+per dose
+Euflexxa
+3 weekly injections
+20 mg once weekly
+1 unit
+
+J7324
+per dose
+Orthovisc
+3 to 4 weekly injections
+30 mg once weekly
+1 unit
+
+J7326
+per dose
+Gel-One
+Single injection**
+30 mg x 1 dose
+1 unit
+
+J7327
+per dose
+Monovisc
+Single injection**
+88 mg x 1 dose
+1 unit
+
+*Note: Dose frequency and dose listed is from package insert or is FDA approved dosing.
+**Note: Gel-One and Monovisc are administered through a single intra-articular injection.
+
+2.The following HCPCS codes are per mg codes (not per dose):
+
+HCPCS
+Code
+Billing
+Unit
+Drug
+Name(s)
+Dosing frequency per series
+(per knee)*
+Dose (per
+knee)*
+Units per dose
+(per knee)
+
+J7328
+per 0.1 mg
+Gelsyn-3
+3 weekly injections
+16.8 mg once weekly
+168 units
+
+J7329
+per 1 mg
+TriVisc
+3 weekly injections
+25 mg once weekly
+25 units
+
+J7318
+per 1 mg
+Durolane
+Single Injection**
+60 mg x 1 dose
+60 units
+
+J7320
+per 1 mg
+Genvisc 850
+3 to 5 weekly injections
+25 mg once weekly
+25 units
+
+J7325
+per 1 mg
+Synvisc
+3 weekly injections
+16 mg once weekly
+16 units
+
+J7325
+per 1 mg
+Synvisc-One
+Single injection**
+48 mg x 1 dose
+48 units
+
+J7322
+per 1 mg
+Hymovis
+2 weekly injections
+24 mg once weekly
+24 units
+
+J7322
+per 1 mg
+Hymovis One
+Single injection**
+32 mg x 1 dose
+32 units
+
+J7331
+per 1 mg
+Synojoynt
+3 weekly injections
+20 mg once weekly
+20 units
+
+J7332
+per 1 mg
+Triluron
+3 weekly injections
+20 mg once weekly
+20 units
+
+*Note: Dose frequency and dose listed is from package insert or is FDA approved dosing.
+**Note: Hymovis One, Synvisc-One and Durolane are administered through a single intra-articular injection.
+
+Billing subsequent injections in a series (EJ modifier)
+
+A series is defined as a set of injections for each joint and each treatment. The EJ modifier must be used with the HCPCS code for the drug administered to indicate subsequent injections of a series. The modifier is not to be used with the first injection of each series.
+
+JW Modifier Requirement
+Effective 01/01/2017, per CR 9603, when billing for Part B drugs and biologicals (except those provided under CAP), the use of the JW modifier to identify unused drugs or biologicals from single use vials or single use packages that are appropriately discarded is required. The discarded amount shall be billed on a separate claim line using the JW modifier. Providers are required to document the discarded drug or biological in the patient’s medical record. Please refer to the WPS GHA Guides and Resources: Modifier JW Fact Sheet.
+
+Billing the injection procedure
+
+The charge, if any, for the drug or biological must be included in the physician’s bill and the cost of the drug or biological must represent an expense to the physician incident to the physician’s professional services in association with the intraarticular injection billed on the claim (i.e., CPT codes 20610 or 20611).
+
+If an aspiration and an injection procedure are performed at the same session, bill only 1 unit for CPT code 20610 or 20611.
+
+When additional substances are concomitantly administered (e.g. cortisone, anesthetics) with viscosupplementation, only one injection service is allowed per knee.
+
+The appropriate site modifier (RT or LT) must be appended to CPT code 20610 or CPT code 20611 to indicate if the service was performed unilaterally, and modifier (-50) must be appended to indicate if the service was performed bilaterally.
+
+If the drug is denied as not reasonable and necessary, the associated injection code will also be denied.
+
+Please refer to the WPS GHA Guides and Resources – Modifier 50, LT, RT Fact Sheets.
+
+Evaluation and management service
+
+An E&M service may be appropriate if the decision to start the series of injections is made after an evaluation during the same visit. Indicate this by using an E&M code with modifier -25.
+
+An E&M service should not be reported for subsequent injections unless there was a separately identifiable problem for which the E&M service was required and rendered.
+
+Please refer to the WPS GHA Guides and Resources – Modifier 25 Fact Sheet.
+
+Sources of Information:
+FDA package inserts for hyaluronic acids including Safety and Effectiveness Data;
+The Medical Letter (August 27, 2018). Two New Intra-articular Injections for Knee Osteoarthritis. Vol. 60 (1554);
+Hunter, D. (2015) Viscosupplementation for Osteoarthritis of the Knee. NEJM, 372:1040-7.
+Other MACs LCD/Articles.
+WPS GHA Guides and Resources – Modifier JW, LT, RT, 50, and 25 Fact Sheets.
+
+Response To Comments
+
+Number
+Comment
+Response
+
+1
+
+N/A
+
+Coding Information
+
+Bill Type Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Codes
+
+Expand All |
+Collapse All
+
+Please accept the License to see the codes.
+
+N/A
+
+CPT/HCPCS Modifiers
+
+Expand All |
+Collapse All
+
+Group 1
+(6 Codes)
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+Code
+Description
+
+25
+
+SIGNIFICANT, SEPARATELY IDENTIFIABLE EVALUATION AND MANAGEMENT SERVICE BY THE SAME PHYSICIAN ON THE SAME DAY OF THE PROCEDURE OR OTHER SERVICE: THE PHYSICIAN MAY NEED TO INDICATE THAT ON THE DAY A PROCEDURE OR SERVICE IDENTIFIED BY A CPTCODE WAS PERFORMED, THE PATIENT'S CONDITION REQUIRED A SIGNIFICANT, SEPARATELY IDENTIFIABLE E/M SERVICE ABOVE AND BEYOND THE OTHER SERVICE PROVIDED OR BEYOND THE USUAL PREOPERATIVE AND POSTOPERATIVE CARE ASSOCIATED WITH THE PROCEDURE THAT WAS PERFORMED. THE E/M SERVICE MAY BE PROMPTED BY THE SYMPTOM OR CONDITION FOR WHICH THE PROCEDURE AND/OR SERVICE WAS PROVIDED. AS SUCH, DIFFERENT DIAGNOSES ARE NOT REQUIRED FOR REPORTING OF THE E/M SERVICES ON THE SAME DATE. THIS CIRCUMSTANCE MAY BE REPORTED BY ADDING THE MODIFIER -25 TO THE APPROPRIATE LEVEL OF E/M SERVICE, OR THE SEPARATE FIVE DIGIT MODIFIER 09925 MAY BE USED. NOTE: THIS MODIFIER IS NOT USED TO REPORT AN E/M SERVICE THAT RESULTED IN A DECISION TO PERFORM SURGERY. SEE MODIFIER -57.
+
+50
+
+BILATERAL PROCEDURE: UNLESS OTHERWISE IDENTIFIED IN THE LISTINGS, BILATERAL PROCEDURES THAT ARE PERFORMED AT THE SAME OPERATIVE SESSION SHOULD BE IDENTIFIED BY ADDING THE MODIFIER -50 TO THE APPROPRIATE FIVE DIGIT CODE OR BY USE OF THE SEPARATE FIVE DIGIT MODIFIER CODE 09950
+
+EJ
+
+SUBSEQUENT CLAIMS FOR A DEFINED COURSE OF THERAPY, E.G., EPO, SODIUM HYALURONATE, INFLIXIMAB
+
+JW
+
+DRUG AMOUNT DISCARDED/NOT ADMINISTERED TO ANY PATIENT
+
+LT
+
+LEFT SIDE (USED TO IDENTIFY PROCEDURES PERFORMED ON THE LEFT SIDE OF THE BODY)
+
+RT
+
+RIGHT SIDE (USED TO IDENTIFY PROCEDURES PERFORMED ON THE RIGHT SIDE OF THE BODY)
+
+N/A
+
+ICD-10-CM Codes that Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+(8 Codes)
+
+Group 1 Paragraph
+
+Note: Diagnosis codes must be coded to the highest level of specificity.
+
+Group 1 Codes
+
+Code
+Description
+
+M17.0
+
+Bilateral primary osteoarthritis of knee
+
+M17.11
+
+Unilateral primary osteoarthritis, right knee
+
+M17.12
+
+Unilateral primary osteoarthritis, left knee
+
+M17.2
+
+Bilateral post-traumatic osteoarthritis of knee
+
+M17.31
+
+Unilateral post-traumatic osteoarthritis, right knee
+
+M17.32
+
+Unilateral post-traumatic osteoarthritis, left knee
+
+M17.4
+
+Other bilateral secondary osteoarthritis of knee
+
+M17.5
+
+Other unilateral secondary osteoarthritis of knee
+
+N/A
+
+ICD-10-CM Codes that DO NOT Support Medical Necessity
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+ICD-10-PCS Codes
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Additional ICD-10 Information
+N/A
+
+Bill Type Codes
+
+Contractors may specify Bill Types to help providers identify those Bill Types typically
+used to report this service. Absence of a Bill Type does not guarantee that the
+article does not apply to that Bill Type. Complete absence of all Bill Types indicates
+that coverage is not influenced by Bill Type and the article should be assumed to
+apply equally to all claims.
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Revenue Codes
+
+Contractors may specify Revenue Codes to help providers identify those Revenue Codes typically used to report this service.
+In most instances Revenue Codes are purely advisory. Unless specified in the article, services reported under other
+Revenue Codes are equally subject to this coverage determination. Complete absence of all Revenue Codes indicates
+that coverage is not influenced by Revenue Code and the article should be assumed to apply equally to all Revenue Codes.
+
+Code
+Description
+
+Please accept the License to see the codes.
+
+N/A
+
+Other Coding Information
+
+Expand All |
+Collapse All
+
+Group 1
+
+Group 1 Paragraph
+
+N/A
+
+Group 1 Codes
+
+N/A
+
+N/A
+
+Coding Table Information
+
+Excluded CPT/HCPCS Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+N/A
+
+N/A
+
+Non-Excluded CPT/HCPCS Ended Codes - Table Format
+
+Code
+Descriptor Generic Name
+Descriptor Brand Name
+Exclusion Effective Date
+Exclusion End Date
+Reason for Exclusion
+
+N/A
+
+Revision History Information
+
+Revision History Date
+Revision History Number
+Revision History Explanation
+
+06/25/2026
+
+R9
+
+Posted 06/25/2026 Under Billing the injection procedure deleted “The procedure code (CPT code) 20610 or 20611 may be billed for the intraarticular injection” from the first bullet point. Added clarifying statement to the first bullet point that the drug or biological must represent an expense to the physician incident to the physician’s professional services in association with the intraarticular injection billed on the claim (i.e., CPT codes 20610 or 20611). Grammatical changes were made throughout. Review completed 06/08/2026.
+
+01/01/2026
+
+R8
+
+Posted 01/29/2026 Under Article Guidance added guidance for billing Hymovis or Hymovis One under Billing of Viscosupplements. Under HYALURONAN Drug Dosing Tables #2 added Hymovis One information. Under Coding Information CPT/HCPCS Codes revised description for Group 1 Code J7322. This revision is due to the 2026 Annual CPT/HCPCS Code Update and is effective 01/01/2026.
+
+08/01/2024
+
+R7
+
+Posted 08/01/2024 Minor typographical and grammatical changes made throughout with no change in coverage. Review completed 07/09/2024.
+
+09/01/2022
+
+R6
+
+09/01/2022 - Review completed 07/13/2022. Under CMS National Coverage Policy added “Title XVIII of the Social Security Act, §1833(e) prohibits Medicare payment for any claim which lacks the necessary information to process the claim", "CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 12, §30.6.7(D) Payment for Office or Other Outpatient Evaluation and Management (E/M) Visits (Codes 99201-99215) - Drug Administration Services and E/M Visits Billed on Same Day of Service", "CMS Internet-Only Manual, Pub. 100-04, Medicare Claims Processing Manual, Chapter 17, §40 Discarded Drugs and Biologicals and §90.2 Drugs, Biologicals, and Radiopharmaceuticals”, and “CMS Internet-Only Manual, Pub. 100-02, Medicare Benefit Policy Manual, Chapter 15, §50.3 Incident-to Requirements and §50.4.1 Approved Use of Drug". Under Billing of Viscosupplements added Hyaluronan Drug Dosing Tables and instruction for billing subsequent injections in a series with an EJ modifier. Under Billing the injection procedure added CPT code 20611 to the first two bullet points and added "If the drug is denied as not reasonable and necessary, the associated injection code will also be denied" as the fifth bullet point. Changed Group 1 Codes 20610 and 20611 to Group 2 Codes. Added Group 1 Codes J7318, J7320-J7329, J7331 and J7332. Under CPT/HCPCS Modifiers Group 1 Codes added modifier EJ information. Under Rules and Regulations URLs deleted links to wpsgha.com and deleted Statutory Requirements URLs and CMS Manual Explanations URLs and listed citations under CMS National Coverage Policy.
+
+07/30/2020
+
+R5
+
+07/30/2020 Review completed 07/07/2020. Reformatted sentence structure and punctuation. Sources of Information added WPS GHA Guides and Resources –Modifier JW, LT, RT, 50, and 25 Fact Sheets.
+CPT/HCPCS Modifiers Group 1 Paragraph and Group 1 Codes added Modifiers JW, LT, RT, 50, and 25 as stated in article text. No change in coverage.
+
+11/01/2019
+
+R4
+
+Content has been moved to the new template.
+
+11/01/2019
+
+R3
+
+Content has been moved to the new template.
+
+03/01/2019
+
+R2
+
+03/01/2019 Billing the injection procedure: Added CPT code 20611 to following statement: The appropriate site modifier (RT or LT) must be appended to CPT code 20610 or CPT code 20611 to indicate if the service was performed unilaterally and modifier (-50) must be appended to indicate if the service was performed bilaterally.
+
+12/01/2018
+
+R1
+
+12/01/2018 Formatting changes made, removal of duplicative information and added Sources of Information. No change in coverage.
+
+N/A
+
+Associated Documents
+
+Medicare BPM Ch 15.50.2 SAD Determinations
+
+Medicare BPM Ch 15.50.2
+
+Related Local Coverage Documents
+
+LCDs
+L39529 - Intraarticular Knee Injections of Hyaluronan
+
+Related National Coverage Documents
+
+NCDs
+N/A
+
+SAD Process URL 1
+
+N/A
+
+SAD Process URL 2
+
+N/A
+
+Statutory Requirements URLs
+
+N/A
+
+Rules and Regulations URLs
+
+N/A
+
+CMS Manual Explanations URLs
+
+N/A
+
+Other URLs
+
+N/A
+
+Public Versions
+
+Updated On
+Effective Dates
+Status
+
+06/18/2026
+06/25/2026 - N/A
+Currently in Effect
+
+You are here
+
+01/20/2026
+01/01/2026 - 06/24/2026
+Superseded
+
+View
+
+07/24/2024
+08/01/2024 - 12/31/2025
+Superseded
+
+View
+
+Some older versions have been archived. Please visit the
+MCD Archive Site
+to retrieve them.
+
+Keywords
+
+N/A

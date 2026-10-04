@@ -33,6 +33,8 @@ kind into `sleep_apnea_workup.json` (`_vertex` beside it), with its own scorer:
 the two kinds are different questions, and one aggregate over both would be a
 number about neither. A chart is measured under the kind its manifest's facts
 describe, so the weight-management corpus skips the sleep charts.
+`--kind knee_osteoarthritis_workup` is the third, T-109's, into
+`knee_osteoarthritis_workup.json` (D154), with its own corpus and scorer.
 """
 
 from __future__ import annotations
@@ -51,8 +53,11 @@ sys.path.insert(0, str(REPO_ROOT))
 from pa_agent.contracts import (  # noqa: E402
     CallMetrics,
     ClinicalEvaluation,
+    ConservativeTherapy,
     DocumentedFinding,
     FactKind,
+    KneeRadiograph,
+    KneeSymptom,
     RunTrace,
     SleepTest,
 )
@@ -86,6 +91,11 @@ PROVENANCE: dict[str, dict[str, str | None]] = {
 SLEEP_PROVENANCE: dict[str, dict[str, str | None]] = {
     MEASURED_TIER: {"task": "T-108", "decision": "D150", "supersedes": None},
     SECOND_TIER: {"task": "T-108", "decision": "D150", "supersedes": None},
+}
+#: The third kind's recordings, both tiers measured by T-109 (D154).
+KNEE_PROVENANCE: dict[str, dict[str, str | None]] = {
+    MEASURED_TIER: {"task": "T-109", "decision": "D154", "supersedes": None},
+    SECOND_TIER: {"task": "T-109", "decision": "D154", "supersedes": None},
 }
 
 
@@ -189,6 +199,9 @@ def synthesized_cases() -> list[dict]:
             # T-108 (D150): a sleep chart is measured under the sleep kind,
             # into its own recording. Asking it for weight-management
             # encounters would be a measurement of nothing.
+            continue
+        if manifest.get("knee_visits"):
+            # T-109 (D154): a knee chart likewise, under the third kind.
             continue
         if manifest.get("cloned_from"):
             # A declared clone's note is its source's bytes (T-88, D102): the
@@ -571,6 +584,214 @@ def sleep_facts(result) -> dict:
     }
 
 
+# --------------------------------------------------------------------------
+# The knee osteoarthritis workup (T-109, D154): its corpus, scorer and record
+# shape, in the sleep kind's shape
+# --------------------------------------------------------------------------
+
+
+def knee_cases() -> list[dict]:
+    """The knee charts' documents, labeled with each document's own facts."""
+    store = LocalPatientStore()
+    cases = []
+    for path in sorted(MANIFEST_DIR.glob("*.json")):
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if not manifest.get("knee_visits"):
+            continue
+        served = {d.document_id: d for d in store.get_notes(manifest["patient_id"])}
+        for ordinal, basename in enumerate(manifest["documents"], 1):
+            document = served[f"{manifest['patient_id']}/{basename}"]
+
+            def mine(key: str) -> list[dict]:
+                return [f for f in manifest.get(key, []) if f["document"] == basename]
+
+            cases.append({
+                "note_id": f"{'+'.join(manifest['cases'])}/{ordinal}",
+                "corpus": "synthesized",
+                "document_id": document.document_id,
+                "document": basename,
+                "text": document.text,
+                "sha256": document.sha256,
+                "cases": manifest["cases"],
+                "labels": {
+                    "symptoms": sorted(s["category"] for s in mine("knee_symptoms")),
+                    "denied_symptoms": sorted(s["category"] for s in mine("denied_symptoms")),
+                    "radiographs": [
+                        {"date": r["date"], "findings": sorted(r["findings"])}
+                        for r in mine("knee_radiographs")
+                    ],
+                    "therapies": sorted(
+                        ({"date": t["date"], "category": t["category"]}
+                         for t in mine("conservative_therapies")),
+                        key=lambda t: (t["date"], t["category"]),
+                    ),
+                    "traps": [{"date": t["date"], "reason": t["type"]} for t in mine("traps")],
+                },
+            })
+    return cases
+
+
+def score_knee(case: dict, result) -> dict:
+    """D17's rule on the third kind: a radiograph matches its label on the ISO
+    date, and its findings are scored only on a matched radiograph; a therapy
+    matches on its (start date, category). A right category on a wrong date is
+    a wrong fact (D17)."""
+    labels = case["labels"]
+    symptoms = sorted(f.category.value for f in result.facts if isinstance(f, KneeSymptom))
+    radiographs = {
+        f.radiograph_date.isoformat(): f for f in result.facts if isinstance(f, KneeRadiograph)
+    }
+    therapies = {
+        (f.start_date.isoformat(), f.category.value)
+        for f in result.facts if isinstance(f, ConservativeTherapy)
+    }
+    labeled_rad = {r["date"]: r for r in labels["radiographs"]}
+    finding_checks = []
+    for when, label in labeled_rad.items():
+        got = radiographs.get(when)
+        if got is None:
+            continue
+        finding_checks.append(
+            (when, label["findings"], sorted(f.category.value for f in got.findings))
+        )
+    labeled_ther = {(t["date"], t["category"]) for t in labels["therapies"]}
+    trap_dates = {t["date"] for t in labels["traps"]}
+    anchored = [s for s in result.anchored_spans if s.anchored]
+    return {
+        "labeled_symptoms": labels["symptoms"],
+        "extracted_symptoms": symptoms,
+        "symptoms_matched": sum(
+            min(labels["symptoms"].count(c), symptoms.count(c)) for c in set(labels["symptoms"])
+        ),
+        "denied_symptoms_extracted": sorted(set(labels["denied_symptoms"]) & set(symptoms)),
+        "labeled_radiographs": len(labeled_rad),
+        "extracted_radiographs": len(radiographs),
+        "matched_radiographs": len(set(labeled_rad) & set(radiographs)),
+        "finding_agreements": sum(1 for _, want, got in finding_checks if want == got),
+        "finding_total": len(finding_checks),
+        "finding_disagreements": [
+            {"date": when, "expected": want, "got": got}
+            for when, want, got in finding_checks if want != got
+        ],
+        "labeled_therapies": len(labeled_ther),
+        "extracted_therapies": len(therapies),
+        "matched_therapies": len(labeled_ther & therapies),
+        "unlabeled_therapies": sorted(list(t) for t in therapies - labeled_ther),
+        "traps_extracted": sorted(trap_dates & set(radiographs)),
+        "spans_emitted": len(result.anchored_spans),
+        "spans_anchored": len(anchored),
+        "spans_normalized": sum(1 for s in anchored if s.anchor_mode == "normalized"),
+        "model_offsets_usable": sum(
+            1 for s in result.anchored_spans if s.model_offsets_yield_quote
+        ),
+        "dropped": result.dropped,
+    }
+
+
+def aggregate_knee(records: list[dict]) -> dict:
+    """The knee recording's headline figures. Every turn counted (D71)."""
+    def total(key: str) -> int:
+        return sum(r["score"][key] for r in records)
+
+    turns = turn_metrics(records)
+    return {
+        "notes": len(records),
+        "labeled_symptoms": sum(len(r["score"]["labeled_symptoms"]) for r in records),
+        "extracted_symptoms": sum(len(r["score"]["extracted_symptoms"]) for r in records),
+        "symptoms_matched": total("symptoms_matched"),
+        "denied_symptoms_extracted": sum(
+            len(r["score"]["denied_symptoms_extracted"]) for r in records
+        ),
+        "labeled_radiographs": total("labeled_radiographs"),
+        "extracted_radiographs": total("extracted_radiographs"),
+        "matched_radiographs": total("matched_radiographs"),
+        "finding_agreements": total("finding_agreements"),
+        "finding_total": total("finding_total"),
+        "labeled_therapies": total("labeled_therapies"),
+        "extracted_therapies": total("extracted_therapies"),
+        "matched_therapies": total("matched_therapies"),
+        "traps": sum(len(r["labels"]["traps"]) for r in records),
+        "traps_extracted": sum(len(r["score"]["traps_extracted"]) for r in records),
+        "spans_emitted": total("spans_emitted"),
+        "spans_anchored": total("spans_anchored"),
+        "spans_normalized": total("spans_normalized"),
+        "model_offsets_usable": total("model_offsets_usable"),
+        **reask_figures(records),
+        "model_calls": len(turns),
+        "total_input_tokens": sum(m["input_tokens"] for m in turns),
+        "total_output_tokens": sum(m["output_tokens"] for m in turns),
+        "total_wall_time_ms": round(sum(m["wall_time_ms"] for m in turns), 1),
+    }
+
+
+def knee_facts(result) -> dict:
+    """The result's facts in the recording's shape, for a reader of the file."""
+    return {
+        "symptoms": [
+            {"category": f.category.value, "span": _span(f.span)}
+            for f in result.facts if isinstance(f, KneeSymptom)
+        ],
+        "radiographs": [
+            {"date": f.radiograph_date.isoformat(), "span": _span(f.span),
+             "findings": [
+                 {"category": g.category.value, "span": _span(g.span)} for g in f.findings
+             ]}
+            for f in result.facts if isinstance(f, KneeRadiograph)
+        ],
+        "therapies": [
+            {"category": f.category.value, "start_date": f.start_date.isoformat(),
+             "span": _span(f.span)}
+            for f in result.facts if isinstance(f, ConservativeTherapy)
+        ],
+    }
+
+
+def _print_knee(note_id: str, scored: dict) -> None:
+    print(
+        f"  {note_id:<10} symptoms {scored['extracted_symptoms']} "
+        f"(want {scored['labeled_symptoms']}) radiographs "
+        f"{scored['matched_radiographs']}/{scored['labeled_radiographs']} "
+        f"(got {scored['extracted_radiographs']}) findings "
+        f"{scored['finding_agreements']}/{scored['finding_total']} therapies "
+        f"{scored['matched_therapies']}/{scored['labeled_therapies']} "
+        f"(got {scored['extracted_therapies']}) spans "
+        f"{scored['spans_anchored']}/{scored['spans_emitted']}"
+    )
+
+
+def _print_sleep(note_id: str, scored: dict) -> None:
+    print(
+        f"  {note_id:<10} evaluations {scored['matched_evaluations']}/"
+        f"{scored['labeled_evaluations']} (got {scored['extracted_evaluations']}) "
+        f"tests {scored['matched_tests']}/{scored['labeled_tests']} "
+        f"values {scored['value_agreements']}/{scored['value_total']} "
+        f"findings {scored['extracted_findings']} "
+        f"spans {scored['spans_anchored']}/{scored['spans_emitted']}"
+    )
+
+
+#: kind -> (corpus, scorer, facts, aggregate, printer, provenance, schema note).
+#: One entry per kind measured on its own corpus (T-108, T-109).
+KIND_MEASUREMENTS = {
+    FactKind.SLEEP_APNEA_WORKUP: (
+        lambda: sleep_cases(), lambda c, r: score_sleep(c, r), lambda r: sleep_facts(r),
+        lambda rs: aggregate_sleep(rs), _print_sleep, SLEEP_PROVENANCE,
+        "The second fact kind's recording: in-person evaluations, "
+        "diagnostic sleep tests with their index and recording time, and "
+        "documented findings. Its own file and its own scorer, because "
+        "an aggregate over two kinds is a number about neither (D150).",
+    ),
+    FactKind.KNEE_OSTEOARTHRITIS_WORKUP: (
+        lambda: knee_cases(), lambda c, r: score_knee(c, r), lambda r: knee_facts(r),
+        lambda rs: aggregate_knee(rs), _print_knee, KNEE_PROVENANCE,
+        "The third fact kind's recording: documented knee symptoms, knee "
+        "radiographs with their findings, and conservative therapies with "
+        "their start dates. Its own file and its own scorer, for the second "
+        "kind's reason (D150, D154).",
+    ),
+}
+
+
 def main() -> int:
     if _named_kind(sys.argv) is not FactKind.WEIGHT_MANAGEMENT:
         return main_kind(_named_kind(sys.argv))
@@ -756,13 +977,16 @@ def main_kind(kind: FactKind) -> int:
     """A kind other than `weight_management`: its corpus, its scorer, its own
     recording per tier. The two-turn walk and the anchoring are the same core
     every kind passes through (REQ-79); only the questions differ (D150)."""
-    if kind is not FactKind.SLEEP_APNEA_WORKUP:
+    if kind not in KIND_MEASUREMENTS:
         sys.exit(f"no measurement corpus is declared for {kind.value!r}")
+    corpus, scorer, facts_of, aggregate_of, printer, kind_provenance, schema_note = (
+        KIND_MEASUREMENTS[kind]
+    )
     schema = FACT_SCHEMAS[kind]
     rescore = "--rescore" in sys.argv
     tier = _named_tier(sys.argv)
     out_path = out_path_for(tier, kind)
-    cases = sleep_cases()
+    cases = corpus()
 
     if rescore:
         if not out_path.exists():
@@ -826,7 +1050,7 @@ def main_kind(kind: FactKind) -> int:
                     continue
                 break
 
-        scored = score_sleep(case, result)
+        scored = scorer(case, result)
         records.append({
             "note_id": case["note_id"],
             "corpus": case["corpus"],
@@ -836,7 +1060,7 @@ def main_kind(kind: FactKind) -> int:
             "cases": case["cases"],
             "kind": kind.value,
             "labels": case["labels"],
-            "facts": sleep_facts(result),
+            "facts": facts_of(result),
             "metrics": result.metrics.model_dump(mode="json") if result.metrics else None,
             "trace": result.trace.model_dump(mode="json") if result.trace else None,
             "raw": result.raw,
@@ -844,23 +1068,16 @@ def main_kind(kind: FactKind) -> int:
             "reask": result.reask,
             "score": scored,
         })
-        print(
-            f"  {case['note_id']:<10} evaluations {scored['matched_evaluations']}/"
-            f"{scored['labeled_evaluations']} (got {scored['extracted_evaluations']}) "
-            f"tests {scored['matched_tests']}/{scored['labeled_tests']} "
-            f"values {scored['value_agreements']}/{scored['value_total']} "
-            f"findings {scored['extracted_findings']} "
-            f"spans {scored['spans_anchored']}/{scored['spans_emitted']}"
-        )
+        printer(case["note_id"], scored)
 
-    figures = aggregate_sleep(records)
+    figures = aggregate_of(records)
     if rescore:
         provenance = {k: previous.get(k) for k in ("task", "decision", "supersedes")}
         recorded_tier = previous["tier"]
     else:
         from pa_agent.tiers import tier_of
 
-        provenance = SLEEP_PROVENANCE[tier]
+        provenance = kind_provenance[tier]
         recorded_tier = tier_of(client)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -878,12 +1095,7 @@ def main_kind(kind: FactKind) -> int:
             "prompt_version": schema.prompt_version,
             "reask_rounds": REASK_ROUNDS,
             "temperature": EXTRACTION_TEMPERATURE,
-            "schema_note": (
-                "The second fact kind's recording: in-person evaluations, "
-                "diagnostic sleep tests with their index and recording time, and "
-                "documented findings. Its own file and its own scorer, because "
-                "an aggregate over two kinds is a number about neither (D150)."
-            ),
+            "schema_note": schema_note,
             "aggregate": figures,
             "notes": records,
         }, indent=2, ensure_ascii=False) + "\n",

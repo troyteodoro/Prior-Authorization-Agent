@@ -1,0 +1,68 @@
+{
+  "patient_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31",
+  "bundle": "Forrest301_Flatley871_5f82b330-10fb-6e04-ef12-00bb7587ea31.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "KNEE7"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "knee_visits": [
+    {
+      "date": "2023-06-22",
+      "document": "chart_note_1.txt",
+      "setting": "in_person"
+    },
+    {
+      "date": "2026-07-09",
+      "document": "chart_note_2.txt",
+      "setting": "in_person"
+    }
+  ],
+  "knee_symptoms": [
+    {
+      "category": "pain_limiting_daily_activities",
+      "document": "chart_note_2.txt"
+    },
+    {
+      "category": "knee_stiffness",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "denied_symptoms": [],
+  "knee_radiographs": [
+    {
+      "date": "2023-06-22",
+      "document": "chart_note_1.txt",
+      "findings": []
+    },
+    {
+      "date": "2026-07-09",
+      "document": "chart_note_2.txt",
+      "findings": [
+        "joint_space_narrowing",
+        "osteophytes"
+      ]
+    }
+  ],
+  "conservative_therapies": [
+    {
+      "date": "2023-01-30",
+      "document": "chart_note_1.txt",
+      "therapy": "naproxen",
+      "category": "simple_analgesic_or_nsaid"
+    },
+    {
+      "date": "2023-01-30",
+      "document": "chart_note_1.txt",
+      "therapy": "home_exercise",
+      "category": "nonpharmacologic"
+    }
+  ],
+  "rationale": "KNEE7: two knee radiographs. The first, 06/22/2023, reports none of the four findings; the second, 07/09/2026, reports joint space narrowing and osteophytes, so b is MET citing the later radiograph and its two findings. The chart's diagnosis encounter of 01/30/2023 was virtual, so document 1 is the in-person visit after it, which reports the naproxen and the home exercise program begun at that telehealth visit. a and d are MET. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json and the chart's own facts, never from a run (T-109, D154). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Document 1 is a clinic visit and document 2 a follow-up visit, each dated on an encounter of the chart's own; the naproxen start is the chart's own order date, written at the diagnosis encounter. The symptoms, the radiographs and their findings and the nonpharmacologic therapy are declared here, because no generator writes them (D43, D154). One fact per document (D104). c and e are declared unclaimed by the tree -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58)."
+}

@@ -1,0 +1,26 @@
+CEDAR VALLEY BONE AND JOINT CLINIC
+Patient: Flatley871, Forrest301                  MRN: 345009
+DOB: 1966-12-14                       Sex: M
+Document 1 of 2
+
+ORTHOPEDIC CLINIC VISIT
+
+06/22/2023 - Seen in person in clinic by S. Nakamura, DO for evaluation of the
+right knee.
+
+HISTORY OF PRESENT ILLNESS
+Referred for evaluation of the right knee.
+
+IMAGING
+06/22/2023 - Weight-bearing radiographs of the right knee, standing AP and
+lateral views: Joint spaces preserved. No osteophytes, subchondral sclerosis
+or subchondral cysts. Soft tissues unremarkable.
+
+TREATMENT
+Naproxen sodium 220 mg by mouth twice daily, started 01/30/2023 at a
+telehealth visit.
+Home exercise program for quadriceps strengthening, begun 01/30/2023.
+
+ASSESSMENT AND PLAN
+Osteoarthritis of the right knee. Continue the treatment above and return for
+reassessment.

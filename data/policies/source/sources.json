@@ -140,6 +140,31 @@
       "extractor_version": 1,
       "sha256": "aa04e844776ca7ce8d020a31afda08b74bba7209546908be2c5760a23d6af82f",
       "char_count": 37687
+    },
+    {
+      "document_id": "l39529",
+      "title": "LCD L39529 - Intraarticular Knee Injections of Hyaluronan",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=39529",
+      "authority": "mac_jurisdiction_j5_j8",
+      "publisher": "Wisconsin Physicians Service Insurance Corporation (A/B MAC, Jurisdictions 5 and 8)",
+      "filename": "l39529.txt",
+      "retrieved_at": "2026-10-04T08:41:23.326949+00:00",
+      "extractor_version": 1,
+      "sha256": "dae17fde779793378adc28474ad8b7ded4118036cbf303ac2c5c8988be159c7a",
+      "char_count": 40007
+    },
+    {
+      "document_id": "a56157",
+      "title": "Article A56157 - Billing and Coding: Intraarticular Knee Injections of Hyaluronan",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleId=56157",
+      "authority": "mac_jurisdiction_j5_j8",
+      "publisher": "Wisconsin Physicians Service Insurance Corporation (A/B MAC, Jurisdictions 5 and 8)",
+      "filename": "a56157.txt",
+      "note": "names every hyaluronan HCPCS code beside its preparation in its two dosing tables (D154)",
+      "retrieved_at": "2026-10-04T08:41:23.743250+00:00",
+      "extractor_version": 1,
+      "sha256": "28a87cc30c37873b51b60a730e58ea52cb57f0b828a1b8685c2af7a3accb9ff9",
+      "char_count": 24392
     }
   ]
 }

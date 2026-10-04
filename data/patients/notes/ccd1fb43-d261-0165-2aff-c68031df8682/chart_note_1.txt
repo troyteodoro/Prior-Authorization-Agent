@@ -1,0 +1,24 @@
+DES MOINES RIVER ORTHOPEDIC ASSOCIATES
+Patient: Metz686, Anthony633                     MRN: 814907
+DOB: 1966-12-13                       Sex: F
+Document 1 of 2
+
+ORTHOPEDIC CLINIC VISIT
+
+08/04/2004 - Seen in person in clinic by S. Nakamura, DO for evaluation of the
+right knee.
+
+HISTORY OF PRESENT ILLNESS
+Referred for evaluation of the right knee.
+
+IMAGING
+08/04/2004 - Weight-bearing radiographs of the right knee, standing AP and
+lateral views: Medial joint space narrowing. Marginal osteophytes at the
+tibiofemoral joint.
+
+TREATMENT
+Naproxen sodium 220 mg by mouth twice daily, started 08/04/2004.
+
+ASSESSMENT AND PLAN
+Osteoarthritis of the right knee. Continue the treatment above and return for
+reassessment.

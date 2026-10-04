@@ -44,6 +44,10 @@ TREE_PATHS = {
     ),
     # T-108 (D150): the fourth practice, a DME MAC's LCD under a quantified NCD.
     "pap-osa-dme-jd-v1": REPO_ROOT / "data" / "policies" / "pap_osa_dme_jd.json",
+    # T-109 (D154): the fifth practice, an LCD no NCD stands over.
+    "hyaluronan-knee-oa-j5-j8-v1": (
+        REPO_ROOT / "data" / "policies" / "hyaluronan_knee_oa_j5_j8.json"
+    ),
 }
 SOURCE_DIR = REPO_ROOT / "data" / "policies" / "source"
 MANIFEST_PATH = SOURCE_DIR / "sources.json"
@@ -66,6 +70,9 @@ EXPECTED_CRITERIA_BY_TREE = {
     # L33718's own letters A to C, plus `d` for its Sleep Tests section: `a` is
     # a date comparison over note facts and `b` an index threshold (D150).
     "pap-osa-dme-jd-v1": ["a", "b", "c", "d"],
+    # L39529's five bullets, lettered in order: three read the third fact kind
+    # and two are judgments (D154).
+    "hyaluronan-knee-oa-j5-j8-v1": ["a", "b", "c", "d", "e"],
 }
 EXPECTED_CRITERIA = EXPECTED_CRITERIA_BY_TREE["ncd-100.1-jf-v1"]
 
@@ -80,6 +87,7 @@ EXPECTED_CRITERIA = EXPECTED_CRITERIA_BY_TREE["ncd-100.1-jf-v1"]
 EXPECTED_PRACTICES = {
     "bariatric_surgery": 2,
     "diagnostic_ultrasound": 1,
+    "orthopedics": 1,
     "rheumatology": 1,
     "sleep_medicine": 1,
 }
@@ -136,6 +144,14 @@ REQUIRED_CONSTANTS_BY_TREE = {
         ("b", "value_set_id"),
         ("c", "requirement"),
         ("d", "requirement"),
+    ],
+    "hyaluronan-knee-oa-j5-j8-v1": [
+        ("a", "qualifying_symptoms"),
+        ("b", "qualifying_findings"),
+        ("c", "requirement"),
+        ("d", "min_months"),
+        ("d", "required_therapies"),
+        ("e", "requirement"),
     ],
 }
 REQUIRED_CONSTANTS = sorted({pair for pairs in REQUIRED_CONSTANTS_BY_TREE.values() for pair in pairs})
@@ -631,8 +647,8 @@ def test_the_national_floor_is_cited_where_it_is_claimed(
 #: rather than discovered, like `TREE_PATHS` and `EXPECTED_CRITERIA_BY_TREE`
 #: above: a floor deleted from a tree would make every check below vacuous and
 #: nothing else in the suite would notice, and a floor *added* is a relation a
-#: reviewer should see in the diff. L35677 and L35755 operate under no NCD, so
-#: their trees declare none (D111, D114).
+#: reviewer should see in the diff. L35677, L35755 and L39529 operate under no
+#: NCD, so their trees declare none (D111, D114, D154).
 EXPECTED_FLOORS = {
     ("ncd-100.1-jf-v1", "a"),
     ("ncd-100.1-jjm-v1", "a"),

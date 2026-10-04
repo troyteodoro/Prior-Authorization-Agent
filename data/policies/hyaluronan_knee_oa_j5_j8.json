@@ -1,0 +1,328 @@
+{
+  "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+  "title": "Intra-articular hyaluronan injection for osteoarthritis of the knee, as operationalized by WPS (A/B MAC Jurisdictions 5 and 8)",
+  "practice": "orthopedics",
+  "fact_kinds": [
+    "knee_osteoarthritis_workup"
+  ],
+  "compiled_by": "T-109, hand-compiled from L39529 and A56157 (D154)",
+  "jurisdiction": {
+    "authority": "mac_jurisdiction_j5_j8",
+    "contractor": "Wisconsin Physicians Service Insurance Corporation",
+    "states": [
+      "IA",
+      "KS",
+      "MO",
+      "NE",
+      "IN",
+      "MI"
+    ],
+    "note": "The states L39529's own contractor table lists under WPS's J-5 and J-8 A/B contracts: Iowa, Kansas, Missouri and Nebraska under J-5, Indiana and Michigan under J-8. Contract 05901, a Part A contract, lists forty-eight states in the same table; a beneficiary's state does not select it, and declaring its states would make this tree serve requests in forty-two further states, so it is left out (D154). The ultrasound tree's reading of that row is T-144's. Iowa, Kansas, Missouri, Nebraska, Indiana and Michigan are then served by two or three practices, and nothing collides: no other tree binds a hyaluronan code (D111)."
+  },
+  "sources": [
+    {
+      "document_id": "l39529",
+      "sha256": "dae17fde779793378adc28474ad8b7ded4118036cbf303ac2c5c8988be159c7a"
+    },
+    {
+      "document_id": "a56157",
+      "sha256": "28a87cc30c37873b51b60a730e58ea52cb57f0b828a1b8685c2af7a3accb9ff9"
+    }
+  ],
+  "decision_expression": "a AND b AND c AND d AND e",
+  "criteria": [
+    {
+      "id": "a",
+      "label": "The patient is symptomatic: knee pain limiting daily activities or interrupting sleep, crepitus, or knee stiffness",
+      "evaluation": "deterministic",
+      "kind": "note_knee_symptoms",
+      "constants": {
+        "qualifying_symptoms": {
+          "value": [
+            "pain_limiting_daily_activities",
+            "pain_interrupting_sleep",
+            "crepitus",
+            "knee_stiffness"
+          ],
+          "type": "string_list",
+          "source": {
+            "document_id": "l39529",
+            "char_start": 9463,
+            "char_end": 9678,
+            "quote": "The patient is symptomatic. Such symptoms may include pain which interferes with the activities of daily living such as ambulation and prolonged standing, or pain interrupting sleep, crepitus, and/or knee stiffness."
+          },
+          "note": "The sentence's four symptoms in the extractor's category vocabulary. The extractor labels what a passage documents as present; whether a label qualifies is this list, read by Python (Art. II). A chart documenting none abstains, never NOT_MET (D40, D154)."
+        }
+      }
+    },
+    {
+      "id": "b",
+      "label": "Radiologic evidence of osteoarthritis of the knee",
+      "evaluation": "deterministic",
+      "kind": "note_knee_radiographic_findings",
+      "constants": {
+        "qualifying_findings": {
+          "value": [
+            "joint_space_narrowing",
+            "subchondral_sclerosis",
+            "osteophytes",
+            "subchondral_cysts"
+          ],
+          "type": "string_list",
+          "source": {
+            "document_id": "l39529",
+            "char_start": 9680,
+            "char_end": 9858,
+            "quote": "The clinical diagnosis is supported by radiologic evidence of osteoarthritis of the knee such as joint space narrowing, subchondral sclerosis, osteophytes and sub-chondral cysts."
+          },
+          "note": "The four findings the sentence names, in the extractor's vocabulary. The sentence introduces them with 'such as', so the list is illustrative: a knee radiograph reporting none of them abstains rather than failing the criterion (D154)."
+        }
+      }
+    },
+    {
+      "id": "c",
+      "label": "If appropriate, other diagnoses have been excluded",
+      "evaluation": "unclaimed",
+      "constants": {
+        "requirement": {
+          "value": "If appropriate, other diagnoses have been excluded by appropriate evaluation and management services, laboratory and imaging studies (i.e., the pain and functional disability is not considered likely to be due to a diagnosis other than osteoarthritis of the knee).",
+          "type": "string",
+          "source": {
+            "document_id": "l39529",
+            "char_start": 9860,
+            "char_end": 10124,
+            "quote": "If appropriate, other diagnoses have been excluded by appropriate evaluation and management services, laboratory and imaging studies (i.e., the pain and functional disability is not considered likely to be due to a diagnosis other than osteoarthritis of the knee)."
+          }
+        }
+      },
+      "note": "Unclaimed because 'if appropriate' is the treating clinician's judgment, and the exclusion is a differential diagnosis no chart resource records as complete. A reviewer evaluates it against the evaluation and management record (REQ-58, D154)."
+    },
+    {
+      "id": "d",
+      "label": "At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated",
+      "evaluation": "deterministic",
+      "kind": "note_conservative_therapy_duration",
+      "constants": {
+        "min_months": {
+          "value": 3,
+          "type": "integer",
+          "comparison": ">=",
+          "source": {
+            "document_id": "l39529",
+            "char_start": 10126,
+            "char_end": 10191,
+            "quote": "The patient has failed at least 3 months of conservative therapy."
+          },
+          "note": "Whole calendar months from each required therapy's earliest documented start to the request date, the shortest of them, computed in Python. No NCD covers viscosupplementation, so there is no national floor to bound this constant (REQ-73, D154)."
+        },
+        "required_therapies": {
+          "value": [
+            "nonpharmacologic",
+            "simple_analgesic_or_nsaid"
+          ],
+          "type": "string_list",
+          "source": {
+            "document_id": "l39529",
+            "char_start": 10229,
+            "char_end": 10364,
+            "quote": "Nonpharmacologic therapy (such as but not limited to home exercise program, education, weight loss, physical therapy if indicated); and"
+          },
+          "note": "The two legs the document defines conservative therapy as, joined by 'and': this line, and the next, 'If not contraindicated, simple analgesics and (e.g., acetaminophen) or NSAIDS per hyaluronan product prescribing information.' A leg the notes do not document abstains, because the pharmacologic one is conditional on no contraindication and a silent chart has not shown it was required and skipped (D154)."
+        }
+      }
+    },
+    {
+      "id": "e",
+      "label": "Failed aspiration and intra-articular corticosteroid injection, when effusion is present or inflammation is significant",
+      "evaluation": "unclaimed",
+      "constants": {
+        "requirement": {
+          "value": "The patient has failed to respond to aspiration of the knee when effusion is present and intra-articular corticosteroid injection therapy when inflammation is a significant component of the patient’s symptoms and intra-articular corticosteroids are not contraindicated.",
+          "type": "string",
+          "source": {
+            "document_id": "l39529",
+            "char_start": 10493,
+            "char_end": 10762,
+            "quote": "The patient has failed to respond to aspiration of the knee when effusion is present and intra-articular corticosteroid injection therapy when inflammation is a significant component of the patient’s symptoms and intra-articular corticosteroids are not contraindicated."
+          }
+        }
+      },
+      "note": "Unclaimed because the requirement is conditional on a clinical judgment -- whether inflammation 'is a significant component of the patient's symptoms', and whether corticosteroids are contraindicated -- which no code grades. A reviewer evaluates it (REQ-58, D154)."
+    }
+  ],
+  "procedure_sets": {
+    "note": "One contractor-determined entry: no NCD covers viscosupplementation, so coverage is WPS's under L39529. Every J code A56157's two dosing tables name is bound to the one procedure, each beside the first row naming it: the criteria are the same for every preparation, and binding one would make the rest NO_POLICY_FOUND when the corpus is not silent about them (D26, D154). The injection's own CPT codes, 20610 and 20611, are not bound: the request is for the drug, and the article states the injection follows the drug's determination. A repeat series has its own conditions and is outside this tree, which evaluates an initial series.",
+    "nationally_covered": [],
+    "nationally_non_covered": [],
+    "contractor_determined": [
+      {
+        "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+        "coverage_claim": {
+          "document_id": "l39529",
+          "char_start": 9262,
+          "char_end": 9461,
+          "quote": "Viscosupplementation therapy for the knee via intra-articular injections of hyaluronic preparations will be considered medically reasonable and necessary when ALL of the following conditions are met:",
+          "note": "L39529's Covered Indications. Its five bullets are this tree's criteria, lettered in order."
+        },
+        "codes": [
+          {
+            "code": "J7318",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11742,
+            "char_end": 11765,
+            "quote": "J7318\nper 1 mg\nDurolane",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7320",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11810,
+            "char_end": 11836,
+            "quote": "J7320\nper 1 mg\nGenvisc 850",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7321",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 10738,
+            "char_end": 10760,
+            "quote": "J7321\nper dose\nHyalgan",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7322",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 12032,
+            "char_end": 12074,
+            "quote": "J7322\nper 1 mg\nHymovis\n2 weekly injections",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7323",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 10955,
+            "char_end": 10978,
+            "quote": "J7323\nper dose\nEuflexxa",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7324",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11025,
+            "char_end": 11049,
+            "quote": "J7324\nper dose\nOrthovisc",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7325",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11890,
+            "char_end": 11932,
+            "quote": "J7325\nper 1 mg\nSynvisc\n3 weekly injections",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7326",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11101,
+            "char_end": 11123,
+            "quote": "J7326\nper dose\nGel-One",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7327",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11166,
+            "char_end": 11189,
+            "quote": "J7327\nper dose\nMonovisc",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7328",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11594,
+            "char_end": 11619,
+            "quote": "J7328\nper 0.1 mg\nGelsyn-3",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7329",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 11671,
+            "char_end": 11693,
+            "quote": "J7329\nper 1 mg\nTriVisc",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7331",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 12174,
+            "char_end": 12198,
+            "quote": "J7331\nper 1 mg\nSynojoynt",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          },
+          {
+            "code": "J7332",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "a56157",
+            "char_start": 12247,
+            "char_end": 12270,
+            "quote": "J7332\nper 1 mg\nTriluron",
+            "note": "A56157's dosing table names the code beside the preparation it denotes. HCPCS Level II codes are CMS's, outside the AMA licence modal that hides A56852's and A56432's CPT tables (D101, D111, D154)."
+          }
+        ]
+      }
+    ]
+  }
+}

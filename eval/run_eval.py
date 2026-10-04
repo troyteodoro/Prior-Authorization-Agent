@@ -544,6 +544,7 @@ EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
 EXTRACTION_RECORDINGS = (
     EXTRACTION_RESULTS,
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+    REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
 )
 VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
 HISTORY_RESULTS = REPO_ROOT / "eval" / "history" / "results.json"

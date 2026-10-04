@@ -152,6 +152,63 @@ TELEPHONE_PHRASE = (
     "Telephone contact with the patient to arrange the home sleep test. No "
     "examination was performed and the patient was not seen."
 )
+# T-109 (D154): the fifth practice's notes. A knee chart is a clinic visit and
+# a follow-up visit, rendered from the manifest's `knee_*` facts and
+# `conservative_therapies` by `render_knee_document` and by nothing either
+# other path reads, so no committed note's bytes can move.
+KNEE_PRACTICES = [
+    "LINN COUNTY ORTHOPEDICS AND SPORTS MEDICINE",
+    "CEDAR VALLEY BONE AND JOINT CLINIC",
+    "DES MOINES RIVER ORTHOPEDIC ASSOCIATES",
+]
+KNEE_CLINICIANS = [
+    "R. Abernathy, MD", "S. Nakamura, DO", "T. Oyelaran, PA-C", "J. Brandt, MD",
+]
+#: A symptom documented as present, in the plain words a chart uses and never
+#: the manifest's label (the knee kind's instruction names the four, D154).
+KNEE_SYMPTOM_PHRASES = {
+    "pain_limiting_daily_activities": (
+        "Reports right knee pain that limits walking to about two blocks and "
+        "makes prolonged standing difficult."
+    ),
+    "pain_interrupting_sleep": "Reports right knee pain that wakes the patient at night.",
+    "crepitus": "Crepitus is palpable over the right knee through flexion and extension.",
+    "knee_stiffness": "Reports morning stiffness of the right knee lasting about twenty minutes.",
+}
+#: A symptom the patient denies. It must read as a denial (D154).
+KNEE_DENIED_PHRASES = {
+    "knee_pain": "Denies knee pain at rest, with walking or at night.",
+    "knee_stiffness": "Denies morning stiffness.",
+}
+#: One sentence per radiographic finding, so each can be quoted on its own.
+RADIOGRAPH_FINDING_PHRASES = {
+    "joint_space_narrowing": "Medial joint space narrowing.",
+    "osteophytes": "Marginal osteophytes at the tibiofemoral joint.",
+    "subchondral_sclerosis": "Subchondral sclerosis of the medial tibial plateau.",
+    "subchondral_cysts": "Subchondral cysts in the medial femoral condyle.",
+}
+#: A knee radiograph reporting none of the four, stated as absences.
+RADIOGRAPH_NORMAL = (
+    "Joint spaces preserved. No osteophytes, subchondral sclerosis or "
+    "subchondral cysts. Soft tissues unremarkable."
+)
+KNEE_THERAPY_PHRASES = {
+    "naproxen": "Naproxen sodium 220 mg by mouth twice daily, started {date}.",
+    "home_exercise": "Home exercise program for quadriceps strengthening, begun {date}.",
+    "physical_therapy": "Outpatient physical therapy for the knee, begun {date}.",
+}
+HIP_RADIOGRAPH_PHRASE = (
+    "{date} - Radiographs of the right hip: osteophytes at the acetabular "
+    "margin. Hip joint space preserved."
+)
+RADIOGRAPH_NOT_PERFORMED_PHRASE = (
+    "Radiographs of the right knee were scheduled for {date}. The patient did "
+    "not attend and no images were obtained."
+)
+THERAPY_DECLINED_PHRASE = (
+    "Outpatient physical therapy for the knee was offered at this visit; the "
+    "patient declined."
+)
 CONTACT_PHRASES = [
     "Outreach call placed regarding the lapse in attendance. No answer; "
     "voicemail left. No clinical contact was established.",
@@ -252,15 +309,131 @@ def _trap_line(rng, trap: dict) -> str:
     return wrap(f"{us(trap['date'])} - {description.capitalize()}.")
 
 
-def _identity(rng: random.Random, sleep: bool = False) -> dict:
+def _identity(rng: random.Random, sleep: bool = False, knee: bool = False) -> dict:
     """The per-patient randomness: one practice, one MRN, one supervisor,
-    shared by every document of the chart (D104). A sleep chart draws from its
-    own lists in the same order, so the call sequence is the same shape."""
+    shared by every document of the chart (D104). A sleep or knee chart draws
+    from its own lists in the same order, so the call sequence is the same
+    shape (D150, D154)."""
+    practices = KNEE_PRACTICES if knee else SLEEP_PRACTICES if sleep else PRACTICES
+    clinicians = KNEE_CLINICIANS if knee else SLEEP_CLINICIANS if sleep else SUPERVISORS
     return {
-        "practice": rng.choice(SLEEP_PRACTICES if sleep else PRACTICES),
+        "practice": rng.choice(practices),
         "mrn": rng.randrange(200000, 899999),
-        "supervisor": rng.choice(SLEEP_CLINICIANS if sleep else SUPERVISORS),
+        "supervisor": rng.choice(clinicians),
     }
+
+
+def is_knee_chart(manifest: dict) -> bool:
+    """A chart the fifth practice's facts describe (T-109, D154)."""
+    return bool(manifest.get("knee_visits"))
+
+
+def render_knee_document(
+    manifest: dict,
+    basename: str,
+    demo: dict,
+    identity: dict,
+    rng: random.Random,
+) -> str:
+    """One document of a knee chart: the clinic visit or the follow-up visit,
+    whichever facts the manifest assigns to `basename` (D104, D154).
+
+    Every date comes from the manifest, and the manifest's dates are the
+    chart's own encounters and order, or declared. The note states start dates
+    and findings and never a duration or a verdict, because the arithmetic is
+    the engine's (Art. II).
+    """
+    documents = manifest["documents"]
+    ordinal = documents.index(basename) + 1
+    lines: list[str] = [
+        identity["practice"],
+        f"Patient: {demo['family']}, {demo['given']}"
+        f"{' ' * max(1, 38 - len(demo['family']) - len(demo['given']))}"
+        f"MRN: {identity['mrn']}",
+        f"DOB: {demo['birth_date']}                       Sex: {demo['sex']}",
+        f"Document {ordinal} of {len(documents)}",
+        "",
+    ]
+    visits = _in(manifest["knee_visits"], basename)
+    symptoms = _in(manifest.get("knee_symptoms", []), basename)
+    denied = _in(manifest.get("denied_symptoms", []), basename)
+    radiographs = _in(manifest.get("knee_radiographs", []), basename)
+    therapies = _in(manifest.get("conservative_therapies", []), basename)
+    traps = _in(manifest["traps"], basename)
+    follow_up = ordinal > 1
+
+    for visit in visits:
+        lines.append("FOLLOW-UP VISIT" if follow_up else "ORTHOPEDIC CLINIC VISIT")
+        lines.append("")
+        purpose = (
+            "follow-up of osteoarthritis of the right knee" if follow_up
+            else "evaluation of the right knee"
+        )
+        lines.append(wrap(
+            f"{us(visit['date'])} - Seen in person in clinic by "
+            f"{identity['supervisor']} for {purpose}."
+        ))
+        lines.append("")
+    lines.append("HISTORY OF PRESENT ILLNESS")
+    history = (
+        "Here for reassessment of the right knee." if follow_up
+        else "Referred for evaluation of the right knee."
+    )
+    for symptom in symptoms:
+        history += " " + KNEE_SYMPTOM_PHRASES[symptom["category"]]
+    for symptom in denied:
+        history += " " + KNEE_DENIED_PHRASES[symptom["category"]]
+    lines.append(wrap(history))
+    lines.append("")
+
+    imaging = [t for t in traps if t["type"] in ("hip_radiograph", "radiograph_not_performed")]
+    if radiographs or imaging:
+        lines.append("IMAGING")
+        for radiograph in radiographs:
+            report = (
+                " ".join(RADIOGRAPH_FINDING_PHRASES[f] for f in radiograph["findings"])
+                if radiograph["findings"] else RADIOGRAPH_NORMAL
+            )
+            lines.append(wrap(
+                f"{us(radiograph['date'])} - Weight-bearing radiographs of the "
+                f"right knee, standing AP and lateral views: {report}"
+            ))
+        for trap in imaging:
+            phrase = (
+                HIP_RADIOGRAPH_PHRASE if trap["type"] == "hip_radiograph"
+                else RADIOGRAPH_NOT_PERFORMED_PHRASE
+            )
+            lines.append(wrap(phrase.format(date=us(trap["date"]))))
+        lines.append("")
+
+    declined = [t for t in traps if t["type"] == "therapy_declined"]
+    if therapies or declined:
+        lines.append("TREATMENT")
+        for therapy in therapies:
+            phrase = KNEE_THERAPY_PHRASES[therapy["therapy"]].format(date=us(therapy["date"]))
+            if therapy["therapy"] == "naproxen" and not visits_include(visits, therapy["date"]):
+                phrase = phrase[:-1] + " at a telehealth visit."
+            lines.append(wrap(phrase))
+        for _ in declined:
+            lines.append(wrap(THERAPY_DECLINED_PHRASE))
+        lines.append("")
+
+    lines.append("ASSESSMENT AND PLAN")
+    if follow_up:
+        lines.append(wrap(
+            "Osteoarthritis of the right knee. Intra-articular hyaluronan "
+            "injection of the right knee is requested."
+        ))
+    else:
+        lines.append(wrap(
+            "Osteoarthritis of the right knee. Continue the treatment above and "
+            "return for reassessment."
+        ))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def visits_include(visits: list[dict], iso: str) -> bool:
+    return any(v["date"] == iso for v in visits)
 
 
 def is_sleep_chart(manifest: dict) -> bool:
@@ -504,15 +677,19 @@ def generate() -> int:
         patient_id = manifest["patient_id"]
         demo = _demographics(patient_id, manifest["bundle"])
         sleep = is_sleep_chart(manifest)
-        # A sleep chart reads no height: it renders no weight (D150).
-        height_m = None if sleep else _height_m(store, patient_id)
+        knee = is_knee_chart(manifest)
+        # A sleep or knee chart reads no height: it renders no weight (D150,
+        # D154).
+        height_m = None if sleep or knee else _height_m(store, patient_id)
         # One generator per patient, seeded from the shared seed and the
         # patient id, so adding a patient cannot reshuffle everyone's prose.
         # A declared clone seeds from its source (D102): the practice line
         # and MRN are the only per-patient randomness, and the clone's note
         # must be its source's bytes.
         seed_patient_id = manifest.get("cloned_from") or patient_id
-        identity = _identity(random.Random(f"{SEED}:{seed_patient_id}"), sleep=sleep)
+        identity = _identity(
+            random.Random(f"{SEED}:{seed_patient_id}"), sleep=sleep, knee=knee
+        )
 
         out_dir = NOTES_DIR / patient_id
         out_dir.mkdir()
@@ -521,7 +698,9 @@ def generate() -> int:
             # differently, and a fact moved between them cannot reshuffle
             # the other's prose (D104).
             rng = random.Random(f"{SEED}:{seed_patient_id}:{basename}")
-            if sleep:
+            if knee:
+                text = render_knee_document(manifest, basename, demo, identity, rng)
+            elif sleep:
                 text = render_sleep_document(manifest, basename, demo, identity, rng)
             else:
                 text = render_document(manifest, basename, demo, height_m, identity, rng)

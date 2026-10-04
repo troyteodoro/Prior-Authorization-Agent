@@ -1127,6 +1127,375 @@
         ],
         "withheld": []
       }
+    },
+    {
+      "case_id": "KNEE1",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-78, REQ-79; outside §6 (D154)",
+      "description": "Every claimed criterion MET",
+      "patient_id": "301841f6-8434-da01-2702-df18b88875fe",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2026-04-01",
+      "note": "Criterion a: the follow-up visit documents knee pain limiting walking and standing, and morning stiffness, so a is MET citing both. Criterion b: the diagnosis visit's knee radiograph reports joint space narrowing and osteophytes, so b is MET citing the radiograph and both findings. Criterion d: naproxen and a home exercise program both began 09/07/2018, over seven years before the request, so d is MET citing both starts. The overall outcome is INSUFFICIENT_EVIDENCE because c and e abstain (REQ-20). A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 5,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "KNEE2",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-78, REQ-79; outside §6 (D154)",
+      "description": "A knee radiograph reporting none of the four findings",
+      "patient_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2025-12-01",
+      "note": "Criterion b: the diagnosis visit's knee radiograph states the joint spaces are preserved and names osteophytes, sclerosis and cysts only as absent, so it is documented with no finding and b abstains with NO_EVIDENCE_RETRIEVED. L39529 introduces its findings with 'such as', so a radiograph without them has not shown that radiologic evidence is absent, and the criterion never answers NOT_MET (D154). a is MET on the follow-up's pain and crepitus; d is MET on naproxen and a home exercise program begun 04/16/2024. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "b": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "KNEE3",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-78, REQ-79; outside §6 (D154)",
+      "description": "Conservative therapy shorter than three months",
+      "patient_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2026-05-01",
+      "note": "Criterion d: naproxen began 01/22/2026, but physical therapy -- the only nonpharmacologic therapy documented -- began at the follow-up visit on 04/26/2026, zero whole months before the request date of 05/01/2026. L39529 joins the two legs with 'and', so d is NOT_MET citing both starts, one in each document, with a structured shortfall of 0 months against 3 that step_sufficiency re-derives from the cited starts alone (D99). The overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). a and b are MET. Under the harness date d would be MET -- four months of physical therapy by 09/01/2026 -- which is why this row pins its as_of. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 5,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "NOT_MET",
+            "distinct_documents": 2
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "KNEE4",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-78, REQ-79; outside §6 (D154)",
+      "description": "Every symptom documented only as denied",
+      "patient_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2026-05-01",
+      "note": "Criterion a: the follow-up visit records that the patient denies knee pain and morning stiffness, and the extractor's instruction names a denied symptom as a non-fact, so a abstains with NO_EVIDENCE_RETRIEVED -- never NOT_MET, because a chart that records no symptom has not recorded that there is none (D40). b is MET on joint space narrowing and subchondral cysts; d is MET on naproxen and a home exercise program begun 10/10/2023. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "KNEE5",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-78, REQ-79; outside §6 (D154)",
+      "description": "A hip radiograph and a knee radiograph never performed",
+      "patient_id": "f231c369-5e58-5b03-69e2-848843288674",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2025-11-01",
+      "note": "Criterion b: the diagnosis visit documents a radiograph of the hip, which reports osteophytes, and knee radiographs scheduled for 08/19/2020 that the patient did not attend. The extractor's instruction names both as non-facts, so no knee radiograph is documented and b abstains with NO_EVIDENCE_RETRIEVED. a is MET on pain and crepitus; d is MET on naproxen and a home exercise program begun 08/12/2020. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "b": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "KNEE6",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-78, REQ-79; outside §6 (D154)",
+      "description": "No nonpharmacologic therapy documented",
+      "patient_id": "ccd1fb43-d261-0165-2aff-c68031df8682",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2026-03-01",
+      "note": "Criterion d: naproxen began 08/04/2004, and the follow-up visit records that outpatient physical therapy was offered and the patient declined, which the extractor's instruction names as a non-fact. No nonpharmacologic therapy is documented, so d abstains with NO_EVIDENCE_RETRIEVED: a leg the notes do not document is not a leg shown to be skipped (D154). The chart carries physical therapy procedures from 2018 for a neck injury, which the tree does not read. a and b are MET. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "KNEE7",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-78, REQ-79; outside §6 (D154)",
+      "description": "Two knee radiographs, the later one reporting findings",
+      "patient_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2026-08-01",
+      "note": "Criterion b: the first knee radiograph, 06/22/2023, reports none of the four findings; the second, 07/09/2026, reports joint space narrowing and osteophytes, so b is MET citing the later radiograph and its two findings, both in document 2. The chart's diagnosis encounter of 01/30/2023 was virtual, so document 1 is the in-person visit after it, which reports naproxen and a home exercise program begun 01/30/2023; d is MET citing both. a is MET. A Synthea chart from the recorded Iowa run, selected by rule (T-109, D154); Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. c and e are declared unclaimed -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58). The letters are L39529's bullets in order: `a` here is a symptom set, where it is a BMI comparison under NCD 100.1 and an evaluation date under L33718 (D110). The row pins its own as_of, because d is months to the request date. The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 5,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "e": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5"
+        ]
+      }
+    },
+    {
+      "case_id": "H11",
+      "story": "US-11",
+      "spec_ref": "REQ-64, REQ-67, REQ-68; outside §6 (D154)",
+      "description": "The fifth practice's first table drug: red with the quotes consulted",
+      "patient_id": "f231c369-5e58-5b03-69e2-848843288674",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2025-11-01",
+      "note": "KNEE5's chart and KNEE5's determination, shared from the cache (D75); this row labels only the review. It exists because the knowledge table finds a candidate on this chart -- an active lisinopril order -- and A11 grades every candidate the code produces (D123, D152, D154). Derived from the bundle and the table, never from a run: the chart codes no chronic kidney disease, so nothing withholds the row as already coded, and it carries no serum creatinine under the table's LOINC 2160-0 -- its creatinine observations are coded 38483-4, which the table's signal does not name -- so nothing structured answers it. The two notes, an orthopedic visit and a follow-up, document no renal finding. The quote source is RecordedQuoteRunner over eval/history/results.json, extended with this round's notes under T-98's unchanged configuration (D152, D154): the model was asked, on both notes, for passages documenting each of the table's five conditions by display, and returned none, so the candidate is red. It cites nothing and adds no verifier claim, so max_model_calls is KNEE5's 4 and max_review_model_calls is one turn per note. would_affect is empty: hyaluronan-knee-oa-j5-j8-v1 names no value set.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 4,
+        "max_review_model_calls": 2,
+        "suggestions": [
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "code": "N28.9",
+            "colour": "red",
+            "would_affect": []
+          }
+        ],
+        "withheld": []
+      }
+    },
+    {
+      "case_id": "H12",
+      "story": "US-11",
+      "spec_ref": "REQ-64, REQ-67, REQ-68; outside §6 (D154)",
+      "description": "The fifth practice's second table chart: both candidates withheld as already coded",
+      "patient_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31",
+      "procedure_code": "J7325",
+      "procedure": "Intra-articular injection of a hyaluronan preparation into the knee (viscosupplementation), initial series",
+      "as_of": "2026-08-01",
+      "note": "KNEE7's chart and KNEE7's determination, shared from the cache (D75); this row labels only the review. The knowledge table finds two candidates on this chart -- active lisinopril and hydrochlorothiazide orders -- and A11 grades every candidate the code produces (D123, D152, D154). Derived from the bundle and the table, never from a run: the chart already codes chronic kidney disease stage 1 (SNOMED 431855005) and hyperglycemia (80394007), each in its row's already_coded list, so both candidates are withheld with ALREADY_CODED and neither is suggested (REQ-64). Withheld is not red: the chart answers the question. No note is consulted for a withheld row, so the review spends at most one turn per note, and the row adds no verifier claim; max_model_calls is KNEE7's 5.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "hyaluronan-knee-oa-j5-j8-v1",
+        "max_model_calls": 5,
+        "max_review_model_calls": 2,
+        "suggestions": [],
+        "withheld": [
+          {
+            "row_id": "hydrochlorothiazide-hyperglycemia",
+            "reason": "ALREADY_CODED"
+          },
+          {
+            "row_id": "lisinopril-renal-impairment",
+            "reason": "ALREADY_CODED"
+          }
+        ]
+      }
     }
   ]
 }

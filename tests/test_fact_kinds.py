@@ -55,13 +55,18 @@ from pa_agent.determination import determine
 from pa_agent.extraction import (
     FACT_SCHEMAS,
     INSTRUCTION,
+    KNEE_INSTRUCTION,
+    KNEE_PROMPT_VERSION,
     PROMPT_VERSION,
     SLEEP_INSTRUCTION,
     SLEEP_PROMPT_VERSION,
     Extraction,
+    KneeOsteoarthritisWorkupExtraction,
     SleepApneaWorkupExtraction,
     _locate,
+    _locate_knee,
     _locate_sleep,
+    build_knee_result,
     build_result,
     build_sleep_result,
 )
@@ -84,6 +89,7 @@ CASES = REPO_ROOT / "eval" / "cases.json"
 
 WM = FactKind.WEIGHT_MANAGEMENT
 SLEEP = FactKind.SLEEP_APNEA_WORKUP
+KNEE = FactKind.KNEE_OSTEOARTHRITIS_WORKUP
 
 #: What each committed tree declares. A literal, so a tree that drops or gains a
 #: kind is a visible diff here as well as a load-time check (D51's move).
@@ -93,6 +99,7 @@ EXPECTED_FACT_KINDS = {
     "infliximab_ra_jjm.json": (),
     "us_abdominal_visceral_j5_j8.json": (),
     "pap_osa_dme_jd.json": (SLEEP,),
+    "hyaluronan_knee_oa_j5_j8.json": (KNEE,),
 }
 
 #: `FACT_SCHEMAS[weight_management].digest` — the schema, the instruction, the
@@ -114,10 +121,23 @@ SLEEP_APNEA_WORKUP_DIGEST = (
 )
 SLEEP_APNEA_WORKUP_VERSION = "t108-sleep-workup-v1/t89-reask-v1"
 
+#: The knee workup's digest and version (T-109, D154), pinned for the same
+#: reason: a failure here is a new version and a new measurement of both knee
+#: recordings, never a new literal.
+KNEE_OSTEOARTHRITIS_WORKUP_DIGEST = (
+    "265d703dd962af4587abe2f0013944bf3205b26ba7b85ebab1b9a16235dfbba6"
+)
+KNEE_OSTEOARTHRITIS_WORKUP_VERSION = "t109-knee-oa-workup-v1/t89-reask-v1"
+
 #: One recording per tier per runner for `weight_management` (T-81, T-90), and
 #: one per tier for `sleep_apnea_workup` on the direct runner (T-108, D150).
 SLEEP_RECORDINGS = sorted(EXTRACTION.glob("sleep_apnea_workup*.json"))
-RECORDINGS = sorted(p for p in EXTRACTION.glob("*.json") if p not in SLEEP_RECORDINGS)
+#: And one per tier for `knee_osteoarthritis_workup` (T-109, D154).
+KNEE_RECORDINGS = sorted(EXTRACTION.glob("knee_osteoarthritis_workup*.json"))
+RECORDINGS = sorted(
+    p for p in EXTRACTION.glob("*.json")
+    if p not in SLEEP_RECORDINGS and p not in KNEE_RECORDINGS
+)
 
 
 def _raw(filename: str) -> dict:
@@ -410,6 +430,46 @@ def test_the_sleep_schema_is_its_registered_configuration_and_its_digest_is_pinn
     assert FACT_SCHEMAS[SLEEP].digest != FACT_SCHEMAS[WM].digest
 
 
+def test_the_knee_schema_is_its_registered_configuration_and_its_digest_is_pinned():
+    schema = FACT_SCHEMAS[KNEE]
+    assert schema.response_model is KneeOsteoarthritisWorkupExtraction
+    assert schema.instruction is KNEE_INSTRUCTION
+    assert schema.build is build_knee_result
+    assert schema.locate is _locate_knee
+    assert schema.prompt_version == KNEE_PROMPT_VERSION == KNEE_OSTEOARTHRITIS_WORKUP_VERSION
+    assert schema.digest == KNEE_OSTEOARTHRITIS_WORKUP_DIGEST
+    assert len({FACT_SCHEMAS[k].digest for k in FactKind}) == len(FactKind)
+
+
+def test_there_are_two_knee_recordings_one_per_tier():
+    assert [p.name for p in KNEE_RECORDINGS] == [
+        "knee_osteoarthritis_workup.json",
+        "knee_osteoarthritis_workup_vertex.json",
+    ]
+    tiers = {json.loads(p.read_text(encoding="utf-8"))["tier"] for p in KNEE_RECORDINGS}
+    assert tiers == {"ai_studio", "vertex"}
+
+
+@pytest.mark.parametrize("path", KNEE_RECORDINGS, ids=lambda p: p.name)
+def test_every_knee_recording_replays_under_its_kind_and_no_other(path):
+    """The sleep test's shape on the third kind: every knee note rebuilds
+    under the knee kind and refuses both others as `SCHEMA_MISMATCH` (D154)."""
+    recording = json.loads(path.read_text(encoding="utf-8"))
+    assert recording["prompt_version"] == KNEE_OSTEOARTHRITIS_WORKUP_VERSION
+    runner = RecordedExtractionRunner.from_records(recording["notes"])
+    store = LocalPatientStore()
+    for record in recording["notes"]:
+        text = store.get_document(record["document_id"]).text
+        result = runner.run(record["document_id"], text, KNEE)
+        assert result.kind is KNEE
+        assert not result.events and not result.assertions
+        for other in (WM, SLEEP):
+            with pytest.raises(ExtractionOutputError) as caught:
+                runner.run(record["document_id"], text, other)
+            assert caught.value.reason is ExtractionFailure.SCHEMA_MISMATCH
+    assert len(recording["notes"]) == 14
+
+
 def test_every_kind_folds_through_the_registry():
     """`FACT_FOLDS` partitions `FactKind`: a kind with no fold would extract
     every note and keep nothing, and the step names no kind of its own."""
@@ -450,7 +510,7 @@ def test_no_kind_but_weight_management_reaches_a_wmevent_shaped_route():
     builders = {
         schema.build.__name__ for kind, schema in FACT_SCHEMAS.items() if kind is not WM
     }
-    assert builders == {"build_sleep_result"}
+    assert builders == {"build_sleep_result", "build_knee_result"}
     for name in builders:
         node = _builder(name)
         constructed = {

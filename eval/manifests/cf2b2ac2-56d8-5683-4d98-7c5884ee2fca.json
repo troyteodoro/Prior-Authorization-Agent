@@ -1,0 +1,60 @@
+{
+  "patient_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca",
+  "bundle": "Jacquelyn628_Jacobi462_cf2b2ac2-56d8-5683-4d98-7c5884ee2fca.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "KNEE2"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "knee_visits": [
+    {
+      "date": "2024-04-16",
+      "document": "chart_note_1.txt",
+      "setting": "in_person"
+    },
+    {
+      "date": "2025-11-12",
+      "document": "chart_note_2.txt",
+      "setting": "in_person"
+    }
+  ],
+  "knee_symptoms": [
+    {
+      "category": "pain_limiting_daily_activities",
+      "document": "chart_note_2.txt"
+    },
+    {
+      "category": "crepitus",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "denied_symptoms": [],
+  "knee_radiographs": [
+    {
+      "date": "2024-04-16",
+      "document": "chart_note_1.txt",
+      "findings": []
+    }
+  ],
+  "conservative_therapies": [
+    {
+      "date": "2024-04-16",
+      "document": "chart_note_1.txt",
+      "therapy": "naproxen",
+      "category": "simple_analgesic_or_nsaid"
+    },
+    {
+      "date": "2024-04-16",
+      "document": "chart_note_1.txt",
+      "therapy": "home_exercise",
+      "category": "nonpharmacologic"
+    }
+  ],
+  "rationale": "KNEE2: a knee radiograph documenting none of the four findings. The report states the joint spaces are preserved and names osteophytes, sclerosis and cysts only as absent, so the extractor returns the radiograph with no findings and b abstains: L39529 introduces its findings with 'such as', so a radiograph without them has not shown that radiologic evidence is absent (D154). a and d are MET. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json and the chart's own facts, never from a run (T-109, D154). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Document 1 is a clinic visit and document 2 a follow-up visit, each dated on an encounter of the chart's own; the naproxen start is the chart's own order date, written at the diagnosis encounter. The symptoms, the radiographs and their findings and the nonpharmacologic therapy are declared here, because no generator writes them (D43, D154). One fact per document (D104). c and e are declared unclaimed by the tree -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58)."
+}

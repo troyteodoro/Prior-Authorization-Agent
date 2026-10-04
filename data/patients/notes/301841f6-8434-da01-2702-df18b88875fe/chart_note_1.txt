@@ -1,0 +1,25 @@
+CEDAR VALLEY BONE AND JOINT CLINIC
+Patient: Grant908, Gwenda518                     MRN: 623495
+DOB: 1970-02-11                       Sex: F
+Document 1 of 2
+
+ORTHOPEDIC CLINIC VISIT
+
+09/07/2018 - Seen in person in clinic by J. Brandt, MD for evaluation of the
+right knee.
+
+HISTORY OF PRESENT ILLNESS
+Referred for evaluation of the right knee.
+
+IMAGING
+09/07/2018 - Weight-bearing radiographs of the right knee, standing AP and
+lateral views: Medial joint space narrowing. Marginal osteophytes at the
+tibiofemoral joint.
+
+TREATMENT
+Naproxen sodium 220 mg by mouth twice daily, started 09/07/2018.
+Home exercise program for quadriceps strengthening, begun 09/07/2018.
+
+ASSESSMENT AND PLAN
+Osteoarthritis of the right knee. Continue the treatment above and return for
+reassessment.

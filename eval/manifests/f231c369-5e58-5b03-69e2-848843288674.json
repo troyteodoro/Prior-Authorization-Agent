@@ -1,0 +1,65 @@
+{
+  "patient_id": "f231c369-5e58-5b03-69e2-848843288674",
+  "bundle": "Eldridge510_Berge125_f231c369-5e58-5b03-69e2-848843288674.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "KNEE5"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [
+    {
+      "date": "2020-08-12",
+      "type": "hip_radiograph",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "date": "2020-08-19",
+      "type": "radiograph_not_performed",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "knee_visits": [
+    {
+      "date": "2020-08-12",
+      "document": "chart_note_1.txt",
+      "setting": "in_person"
+    },
+    {
+      "date": "2025-10-09",
+      "document": "chart_note_2.txt",
+      "setting": "in_person"
+    }
+  ],
+  "knee_symptoms": [
+    {
+      "category": "pain_limiting_daily_activities",
+      "document": "chart_note_2.txt"
+    },
+    {
+      "category": "crepitus",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "denied_symptoms": [],
+  "knee_radiographs": [],
+  "conservative_therapies": [
+    {
+      "date": "2020-08-12",
+      "document": "chart_note_1.txt",
+      "therapy": "naproxen",
+      "category": "simple_analgesic_or_nsaid"
+    },
+    {
+      "date": "2020-08-12",
+      "document": "chart_note_1.txt",
+      "therapy": "home_exercise",
+      "category": "nonpharmacologic"
+    }
+  ],
+  "rationale": "KNEE5: no knee radiograph performed. The diagnosis visit documents a radiograph of the hip, which reports osteophytes, and knee radiographs scheduled for 08/19/2020 that the patient did not attend; the extractor's instruction names both as non-facts, so b abstains with NO_EVIDENCE_RETRIEVED. a and d are MET. Transcribed from L39529 and A56157 through hyaluronan_knee_oa_j5_j8.json and the chart's own facts, never from a run (T-109, D154). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in WPS's J-5, so the state is read from the bundle and the row passes none. Document 1 is a clinic visit and document 2 a follow-up visit, each dated on an encounter of the chart's own; the naproxen start is the chart's own order date, written at the diagnosis encounter. The symptoms, the radiographs and their findings and the nonpharmacologic therapy are declared here, because no generator writes them (D43, D154). One fact per document (D104). c and e are declared unclaimed by the tree -- a differential no resource records as complete, and a requirement conditional on whether inflammation is significant -- so they abstain and are never omitted (REQ-58)."
+}

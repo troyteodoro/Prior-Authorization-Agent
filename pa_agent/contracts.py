@@ -370,6 +370,23 @@ class PredicateKind(str, Enum):
     #: evaluations are documented and none precedes the test; an abstention
     #: when there is no test or no evaluation.
     NOTE_EVALUATION_BEFORE_SLEEP_TEST = "note_evaluation_before_sleep_test"
+    #: A documented knee symptom in the criterion's declared categories
+    #: (T-109, D154). `MET` citing every qualifying one, an abstention
+    #: otherwise and never `NOT_MET`: a chart that records no stiffness has not
+    #: recorded that there is none (D40).
+    NOTE_KNEE_SYMPTOMS = "note_knee_symptoms"
+    #: A knee radiograph dated on or before the clock documenting a finding in
+    #: the criterion's declared categories (T-109, D154). `MET` citing the
+    #: latest such radiograph and its qualifying findings; an abstention
+    #: otherwise, including on a radiograph documenting none of them, because
+    #: L39529's list is open ("such as") and a radiograph without the four has
+    #: not shown radiologic evidence absent.
+    NOTE_KNEE_RADIOGRAPHIC_FINDINGS = "note_knee_radiographic_findings"
+    #: Months from the earliest documented start of each required category of
+    #: conservative therapy to the clock, the shortest against a minimum
+    #: (T-109, D154). `NOT_MET` when every category is documented and the
+    #: shortest falls short; an abstention when a category is undocumented.
+    NOTE_CONSERVATIVE_THERAPY_DURATION = "note_conservative_therapy_duration"
 
 
 class FactKind(str, Enum):
@@ -381,9 +398,11 @@ class FactKind(str, Enum):
     never defines one. A tree-authored field list would make the tree's data
     the prompt, and every tree edit a new measurement (D45).
 
-    **Two members.** The second was earned by L33718, whose sleep-test index
+    **Three members.** The second was earned by L33718, whose sleep-test index
     no generator writes and no chart resource carries, so it is a note fact or
-    nothing (T-108, D150; D116's rule). A member added without a
+    nothing (T-108, D150; D116's rule). The third by L39529, whose symptoms,
+    knee radiograph and exercise programme Synthea writes none of (T-109,
+    D154). A member added without a
     `FACT_SCHEMAS` entry, or without a `workflow.FACT_FOLDS` entry, is a red
     suite (`tests/test_fact_kinds.py`, REQ-79).
     """
@@ -395,6 +414,10 @@ class FactKind(str, Enum):
     #: recording time, and the findings a note documents as present, each
     #: labelled with one of `SleepFindingCategory` (T-108, D150).
     SLEEP_APNEA_WORKUP = "sleep_apnea_workup"
+    #: Documented knee symptoms, knee radiographs with their findings, and
+    #: conservative therapies with their start dates, each labelled from a
+    #: closed category list transcribed from L39529 (T-109, D154).
+    KNEE_OSTEOARTHRITIS_WORKUP = "knee_osteoarthritis_workup"
 
 
 #: The fact kind each note-consuming predicate reads (T-107, D149). A predicate
@@ -410,6 +433,9 @@ PREDICATE_FACT_KIND: dict[PredicateKind, FactKind] = {
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: FactKind.WEIGHT_MANAGEMENT,
     PredicateKind.NOTE_SLEEP_TEST_INDEX: FactKind.SLEEP_APNEA_WORKUP,
     PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: FactKind.SLEEP_APNEA_WORKUP,
+    PredicateKind.NOTE_KNEE_SYMPTOMS: FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
+    PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS: FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
+    PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION: FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
 }
 
 #: The fact kind each `ReconciledFact.note_source` is read from (T-107, D149).
@@ -1329,6 +1355,87 @@ class DocumentedFinding(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     category: SleepFindingCategory
+    span: EvidenceSpan
+
+
+# --------------------------------------------------------------------------
+# The knee osteoarthritis workup (T-109, D154): the third fact kind's contract
+# objects. Each category list is L39529's own, transcribed; whether a label
+# qualifies under a tree is a Python membership test against the criterion's
+# declared list (Art. II), as `SleepFindingCategory` is.
+# --------------------------------------------------------------------------
+
+
+class KneeSymptomCategory(str, Enum):
+    """L39529's symptoms: *"pain which interferes with the activities of daily
+    living such as ambulation and prolonged standing, or pain interrupting
+    sleep, crepitus, and/or knee stiffness"* (D154)."""
+
+    PAIN_LIMITING_DAILY_ACTIVITIES = "pain_limiting_daily_activities"
+    PAIN_INTERRUPTING_SLEEP = "pain_interrupting_sleep"
+    CREPITUS = "crepitus"
+    KNEE_STIFFNESS = "knee_stiffness"
+
+
+class RadiographicFindingCategory(str, Enum):
+    """L39529's radiologic evidence: *"joint space narrowing, subchondral
+    sclerosis, osteophytes and sub-chondral cysts"* (D154). The document's list
+    is open (*"such as"*); this vocabulary is closed, which is why the
+    criterion reading it never answers `NOT_MET`."""
+
+    JOINT_SPACE_NARROWING = "joint_space_narrowing"
+    SUBCHONDRAL_SCLEROSIS = "subchondral_sclerosis"
+    OSTEOPHYTES = "osteophytes"
+    SUBCHONDRAL_CYSTS = "subchondral_cysts"
+
+
+class ConservativeTherapyCategory(str, Enum):
+    """L39529's two legs of conservative therapy, joined by *"and"* (D154):
+    nonpharmacologic therapy, and simple analgesics or NSAIDs."""
+
+    NONPHARMACOLOGIC = "nonpharmacologic"
+    SIMPLE_ANALGESIC_OR_NSAID = "simple_analgesic_or_nsaid"
+
+
+class KneeSymptom(BaseModel):
+    """A knee symptom a note documents as **present** (D154). A denied symptom
+    is never one of these."""
+
+    model_config = ConfigDict(frozen=True)
+
+    category: KneeSymptomCategory
+    span: EvidenceSpan
+
+
+class RadiographicFinding(BaseModel):
+    """One finding a knee radiograph documents as present (D154)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    category: RadiographicFindingCategory
+    span: EvidenceSpan
+
+
+class KneeRadiograph(BaseModel):
+    """A knee radiograph a note documents as performed, with the findings it
+    reports (D154). An empty `findings` is a radiograph that reports none of the
+    listed four, which is a different fact from no radiograph at all."""
+
+    model_config = ConfigDict(frozen=True)
+
+    radiograph_date: date
+    span: EvidenceSpan
+    findings: tuple[RadiographicFinding, ...] = ()
+
+
+class ConservativeTherapy(BaseModel):
+    """A conservative therapy a note documents, and the date it began (D154).
+    How long it has run is Python's question."""
+
+    model_config = ConfigDict(frozen=True)
+
+    category: ConservativeTherapyCategory
+    start_date: date
     span: EvidenceSpan
 
 

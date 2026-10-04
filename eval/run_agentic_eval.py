@@ -110,10 +110,11 @@ def committed_recordings() -> list[Path]:
 
 
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
-#: Every fact kind's AI Studio recording; the second is T-108's (D150).
+#: Every fact kind's AI Studio recording; the second is T-108's (D150), the third T-109's (D154).
 EXTRACTION_RECORDINGS = (
     EXTRACTION_RESULTS,
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+    REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
 )
 
 

@@ -8,11 +8,11 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Outcomes against the labels
 
-40 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
+49 labeled cases. A case is `PASS` when the system's outcome, every named criterion verdict, every named `gap_reason`, the discrepancy count and the model-call budget all match its label, and every cited span slices back to its source.
 
 | Status | Cases | Meaning |
 |---|---|---|
-| `PASS` | 40 | matched the label on every checked dimension |
+| `PASS` | 49 | matched the label on every checked dimension |
 | `FAIL` | 0 | answered, and answered wrongly |
 | `BLOCKED` | 0 | the component under test does not exist yet |
 | `ERROR` | 0 | a classified fault; the system did not answer (REQ-28) |
@@ -21,21 +21,21 @@ Produced from the committed eval set and recordings for **zero model calls and n
 
 ## Per-criterion precision on `MET` (A2, A3)
 
-The system emitted **110** criterion verdicts across 23 determinations. The eval set labels **74** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
+The system emitted **145** criterion verdicts across 30 determinations. The eval set labels **109** of them. Precision is computed over the labeled pairs only: scoring the rest would need a ground truth that does not exist, and deriving one from the system's own output measures agreement with itself (D42, D85).
 
 | Criterion | Labeled pairs | System said `MET` | Correct | Precision |
 |---|---|---|---|---|
-| `a` | 17 | 15 | 15 | 1.000 |
-| `b` | 13 | 6 | 6 | 1.000 |
-| `c` | 11 | 0 | 0 | n/a |
+| `a` | 24 | 21 | 21 | 1.000 |
+| `b` | 20 | 11 | 11 | 1.000 |
+| `c` | 18 | 0 | 0 | n/a |
 | `c1` | 2 | 1 | 1 | 1.000 |
 | `c2` | 3 | 2 | 2 | 1.000 |
 | `c3` | 6 | 3 | 3 | 1.000 |
 | `c4` | 3 | 1 | 1 | 1.000 |
 | `c5` | 2 | 2 | 2 | 1.000 |
-| `d` | 12 | 0 | 0 | n/a |
-| `e` | 5 | 0 | 0 | n/a |
-| **all** | **74** | **30** | **30** | **1.000** |
+| `d` | 19 | 5 | 5 | 1.000 |
+| `e` | 12 | 0 | 0 | n/a |
+| **all** | **109** | **46** | **46** | **1.000** |
 
 **A2's threshold is 0.90 on `MET`.** Measured: **1.000**.
 
@@ -45,8 +45,8 @@ A precision figure without its denominators is not a result. On a set where most
 
 | Figure | Value |
 |---|---|
-| `MET` base rate (labeled pairs that are `MET`) | 30/74 = **0.405** |
-| Precision of a trivial always-`MET` baseline | **0.405** |
+| `MET` base rate (labeled pairs that are `MET`) | 46/109 = **0.422** |
+| Precision of a trivial always-`MET` baseline | **0.422** |
 | Precision measured | **1.000** |
 
 The baseline's precision *is* the base rate, by construction: a system that answers `MET` everywhere is correct exactly as often as `MET` is the right answer. The measured figure is only a result to the extent it exceeds that number.
@@ -59,13 +59,13 @@ Every span carried by a criterion verdict, re-sliced from its source document an
 
 | Figure | Value |
 |---|---|
-| Spans checked | 140 |
-| Spans that slice back | 140 |
+| Spans checked | 179 |
+| Spans that slice back | 179 |
 | Span validity rate | **1.000** |
-| `NOT_MET` verdicts | 7 |
-| …of those, re-derived from their own citations (T-86, D99) | 7 |
-| Spans on `MET` verdicts | 127 |
-| …of those, valid | 127 |
+| `NOT_MET` verdicts | 8 |
+| …of those, re-derived from their own citations (T-86, D99) | 8 |
+| Spans on `MET` verdicts | 164 |
+| …of those, valid | 164 |
 | **A3: `MET` verdicts with an invalid span** | **0** |
 
 **A3 requires zero.** Measured: 0 (rate 1.000).
@@ -159,13 +159,13 @@ This path declares no tools, so `output_schema_and_tools` never applies to it.
 
 ### The verifier (Article V)
 
-The same **49** claims, put to the blind verifier on both tiers. The claim sets are identical by construction, not by luck: the Vertex claims were enumerated from the AI Studio extraction recording, because a digest is the criterion, the verdict and the sliced quote (D78) and a Vertex extraction would have moved every one of them (D106).
+The same **65** claims, put to the blind verifier on both tiers. The claim sets are identical by construction, not by luck: the Vertex claims were enumerated from the AI Studio extraction recording, because a digest is the criterion, the verdict and the sliced quote (D78) and a Vertex extraction would have moved every one of them (D106).
 
 | Figure | AI Studio | Vertex |
 |---|---|---|
-| Claims | 49 | 49 |
-| Accepted | 49 | 49 |
-| Verdicts that moved between tiers | — | **0** of 49 |
+| Claims | 65 | 65 |
+| Accepted | 65 | 65 |
+| Verdicts that moved between tiers | — | **0** of 65 |
 
 **No verdict moved.** Article V's answer is the same on both tiers for every claim the system produced — which is the result a blind checker should give, and the first evidence this repo has that it is not a property of one endpoint.
 
@@ -187,22 +187,22 @@ A free-tier tool loop is not reproducible at temperature 0 (D91), and neither is
 
 ## Abstention (A5, REQ-28, REQ-31)
 
-**Abstention rate: 19/40 answered = 0.475**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
+**Abstention rate: 27/49 answered = 0.551**  ·  0 `ERROR` case(s) counted in neither the numerator nor the denominator.
 
 An `ERROR` entering the numerator alone would let a crash *lower* the abstention rate — caution misreported as confidence (D77).
 
 ### The account, per `gap_reason` (D82)
 
-60 criterion verdicts abstained. Abstentions here have named causes rather than a dial, and the enum is closed precisely so that each member names a different next action (REQ-31, D44). This account is what A5 asks for in this system's terms.
+78 criterion verdicts abstained. Abstentions here have named causes rather than a dial, and the enum is closed precisely so that each member names a different next action (REQ-31, D44). This account is what A5 asks for in this system's terms.
 
 | `gap_reason` | Criterion verdicts | What it tells the specialist to collect |
 |---|---|---|
-| `NOT_EVALUATED_BY_THIS_SYSTEM` | 32 | — |
-| `NO_EVIDENCE_RETRIEVED` | 25 | Find documentation of a program |
+| `NOT_EVALUATED_BY_THIS_SYSTEM` | 46 | — |
+| `NO_EVIDENCE_RETRIEVED` | 29 | Find documentation of a program |
 | `UNSUBSTANTIATED_ASSERTION` | 2 | Find the visit notes behind the claim |
 | `SOURCE_CONFLICT` | 1 | Reconcile the two values |
 
-`NOT_EVALUATED_BY_THIS_SYSTEM` is a **tree's declared limit, not a chart's gap** (REQ-58): `infliximab-ra-jjm-v1` declares c, d, e; `ncd-100.1-jjm-v1` declares c4, d; `pap-osa-dme-jd-v1` declares c, d; `us-abdominal-visceral-j5-j8-v1` declares c, d, e. Those criteria abstain on every chart that tree answers, so the corpus-wide rate moves with which practices the eval set exercises rather than with how well any criterion is evaluated. Read it beside this split (D101, D111, D113).
+`NOT_EVALUATED_BY_THIS_SYSTEM` is a **tree's declared limit, not a chart's gap** (REQ-58): `hyaluronan-knee-oa-j5-j8-v1` declares c, e; `infliximab-ra-jjm-v1` declares c, d, e; `ncd-100.1-jjm-v1` declares c4, d; `pap-osa-dme-jd-v1` declares c, d; `us-abdominal-visceral-j5-j8-v1` declares c, d, e. Those criteria abstain on every chart that tree answers, so the corpus-wide rate moves with which practices the eval set exercises rather than with how well any criterion is evaluated. Read it beside this split (D101, D111, D113).
 
 ### The `discrepancy_tolerance` sweep (A5, D82)
 
@@ -212,13 +212,13 @@ A5 asked for a curve across "a range of fail-closed thresholds", naming the poin
 
 | `discrepancy_tolerance` | Discrepancies disclosed | Abstention rate |
 |---|---|---|
-| 0 | 5 | 0.475 |
-| 0.25 | 3 | 0.475 |
-| 0.5 | 1 | 0.475 |
-| 1 ← pinned (D51) | 1 | 0.475 |
-| 2 | 1 | 0.475 |
-| 5 | 1 | 0.475 |
-| 50 | 0 | 0.475 |
+| 0 | 5 | 0.551 |
+| 0.25 | 3 | 0.551 |
+| 0.5 | 1 | 0.551 |
+| 1 ← pinned (D51) | 1 | 0.551 |
+| 2 | 1 | 0.551 |
+| 5 | 1 | 0.551 |
+| 50 | 0 | 0.551 |
 
 **Why abstention does not move.** Tolerance gates whether a disagreement is *recorded*. The abstention branch is a different test — the two values falling on opposite sides of the coverage threshold (REQ-34, `SOURCE_CONFLICT`) — and the threshold is not what is being swept.
 
@@ -267,12 +267,12 @@ The medical-history review's one model turn. Each note-bearing chart's notes are
 
 | Runner | Tier | Notes | Model turns | Input tokens | Output tokens | Quotes returned | Anchored | Refused | Re-asked | Recovered | Pairs | Fabricated pairs |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| direct (`results.json`) | ai_studio | 24 | 24 | 12937 | 2649 | 0 | 0 | 0 | 0 | 0 | 120 | **0** |
-| direct (`results_vertex.json`) | vertex | 24 | 24 | 21049 | 2703 | 0 | 0 | 0 | 0 | 0 | 120 | **0** |
-| ADK inline (`adk_results_inline.json`) | ai_studio | 24 | 24 | 14889 | 2340 | 0 | 0 | 0 | 0 | 0 | 120 | **0** |
-| ADK inline (`adk_results_inline_vertex.json`) | vertex | 24 | 24 | 22977 | 2448 | 0 | 0 | 0 | 0 | 0 | 120 | **0** |
-| ADK tool-fetch (`adk_results_tool_fetch.json`) | ai_studio | 23 (1 failed) | 46 | 47736 | 2984 | 0 | 0 | 0 | 0 | 0 | 115 | **0** |
-| ADK tool-fetch (`adk_results_tool_fetch_vertex.json`) | vertex | 24 | 48 | 48221 | 2841 | 0 | 0 | 0 | 0 | 0 | 120 | **0** |
+| direct (`results.json`) | ai_studio | 38 | 38 | 20765 | 4329 | 0 | 0 | 0 | 0 | 0 | 190 | **0** |
+| direct (`results_vertex.json`) | vertex | 38 | 38 | 33609 | 4275 | 0 | 0 | 0 | 0 | 0 | 190 | **0** |
+| ADK inline (`adk_results_inline.json`) | ai_studio | 38 | 38 | 23875 | 3588 | 0 | 0 | 0 | 0 | 0 | 190 | **0** |
+| ADK inline (`adk_results_inline_vertex.json`) | vertex | 38 | 38 | 36681 | 3750 | 0 | 0 | 0 | 0 | 0 | 190 | **0** |
+| ADK tool-fetch (`adk_results_tool_fetch.json`) | ai_studio | 36 (2 failed) | 72 | 75066 | 4688 | 0 | 0 | 0 | 0 | 0 | 180 | **0** |
+| ADK tool-fetch (`adk_results_tool_fetch_vertex.json`) | vertex | 38 | 76 | 76709 | 4588 | 0 | 0 | 0 | 0 | 0 | 190 | **0** |
 
 **No passage was returned for any pair in any recording.** The model answered every condition with an empty list on every note, on both tiers and through all three runners; nothing was anchored, nothing was refused, and the re-ask was asked about nothing.
 
@@ -284,11 +284,11 @@ Measured from each determination's own `metrics`, never estimated. **Reported, n
 
 | Figure | Total | Per determination |
 |---|---|---|
-| Determinations | 23 | — |
-| Model calls | 76 | 3.3 |
-| Input tokens | 78698 | 3422 |
-| Output tokens | 10232 | 445 |
-| Wall time (ms) | 71442.3 | 3106.2 |
+| Determinations | 30 | — |
+| Model calls | 107 | 3.6 |
+| Input tokens | 103917 | 3464 |
+| Output tokens | 14573 | 486 |
+| Wall time (ms) | 100001.7 | 3333.4 |
 
 **What the latency figure means.** These are the wall times measured *when the recordings were made*, against the pinned model on AI Studio (T-15's extraction recording and T-17's verifier recording). They are not the cost of the replay, which is microseconds and would be a meaningless number to publish. A6 asks for cost and latency from instrumentation rather than estimated; replayed instrumentation is still instrumentation, and a replay's own clock would not be.
 
@@ -300,14 +300,15 @@ Every gate in this repo, this report included, spends **zero** model calls and t
 
 ## Suggestion precision (A11, REQ-63–REQ-68, D123, D126)
 
-The knowledge table finds **13** candidates across the 20 committed bundles. The eval set grades **13** of them, across 10 rows that label a review — **every candidate the code produces** (T-99, D123).
+The knowledge table finds **16** candidates across the 27 committed bundles. The eval set grades **16** of them, across 12 rows that label a review — **every candidate the code produces** (T-99, D123).
 
-Of the 13, **6** became suggestions and **7** were withheld — 4 `ALREADY_CODED`, 3 `SIGNAL_NOT_CROSSED`. A withheld candidate is the chart answering, and is not a suggestion at any colour (REQ-65, D119).
+Of the 16, **7** became suggestions and **9** were withheld — 6 `ALREADY_CODED`, 3 `SIGNAL_NOT_CROSSED`. A withheld candidate is the chart answering, and is not a suggestion at any colour (REQ-65, D119).
 
 | Case | Row | Code | System | Labeled |
 |---|---|---|---|---|
 | `H1` | `lisinopril-renal-impairment` | N28.9 | **green** | green |
 | `H10` | `hydrochlorothiazide-hyperglycemia` | R73.9 | **red** | red |
+| `H11` | `lisinopril-renal-impairment` | N28.9 | **red** | red |
 | `H3` | `methotrexate-neutropenia` | D70.2 | **red** | red |
 | `H4` | `lisinopril-renal-impairment` | N28.9 | **red** | red |
 | `H6` | `hydrochlorothiazide-hyperglycemia` | R73.9 | **red** | red |
@@ -319,9 +320,9 @@ Of the 13, **6** became suggestions and **7** were withheld — 4 `ALREADY_CODED
 
 | Figure | Value |
 |---|---|
-| Suggestions emitted | 6 (1 green, 0 yellow, 5 red) |
+| Suggestions emitted | 7 (1 green, 0 yellow, 6 red) |
 | **Precision on green and yellow** | **1/1 = 1.000** |
-| Asserting base rate (labeled green-or-yellow / suggestions) | 1/6 = 0.167 |
+| Asserting base rate (labeled green-or-yellow / suggestions) | 1/7 = 0.143 |
 | Precision of a trivial all-red review | **no denominator** — it emits 0 asserting suggestions |
 | Recall of green-and-yellow, all-red review | 0/1 = 0.000 |
 
@@ -346,10 +347,11 @@ There is no fourth class, and that is the point. A tree naming a kind the engine
 |---|---|---|---|---|---|---|
 | bariatric surgery | 2 | 14 | 0 | 12 | 2 | 7 |
 | diagnostic ultrasound | 1 | 5 | 1 | 1 | 3 | 1 |
+| orthopedics | 1 | 5 | 0 | 3 | 2 | 3 |
 | rheumatology | 1 | 5 | 1 | 1 | 3 | 1 |
 | sleep medicine | 1 | 4 | 0 | 2 | 2 | 2 |
 
-**28 criteria across 5 trees and 4 practices, zero omitted.** The rows below are the policy directory's own: the file set is globbed and each tree is read back through the policy port, so a criterion missing from this table is a criterion missing from the engine.
+**33 criteria across 6 trees and 5 practices, zero omitted.** The rows below are the policy directory's own: the file set is globbed and each tree is read back through the policy port, so a criterion missing from this table is a criterion missing from the engine.
 
 The practices that arrived after the first reused what the engine already had and earned what it lacked; the last column is what each one cost the vocabulary. Nothing here is unclaimed for want of a predicate — every abstention below is a limit of the **document or the chart**, which is the finding rather than a shortfall.
 
@@ -376,6 +378,11 @@ The practices that arrived after the first reused what the engine already had an
 | diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `c` | The information is necessary for appropriate medical and/or surgical management | *declared unclaimed* |
 | diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `d` | The test is not redundant of other diagnostic procedures that must be performed | *declared unclaimed* |
 | diagnostic ultrasound | `us-abdominal-visceral-j5-j8-v1` | `e` | Not the initial diagnostic modality for abdominal pain, absent a high index of suspicion that the pain is vascular | *declared unclaimed* |
+| orthopedics | `hyaluronan-knee-oa-j5-j8-v1` | `a` | The patient is symptomatic: knee pain limiting daily activities or interrupting sleep, crepitus, or knee stiffness | `note_knee_symptoms` (earned here, T-109) |
+| orthopedics | `hyaluronan-knee-oa-j5-j8-v1` | `b` | Radiologic evidence of osteoarthritis of the knee | `note_knee_radiographic_findings` (earned here, T-109) |
+| orthopedics | `hyaluronan-knee-oa-j5-j8-v1` | `c` | If appropriate, other diagnoses have been excluded | *declared unclaimed* |
+| orthopedics | `hyaluronan-knee-oa-j5-j8-v1` | `d` | At least 3 months of conservative therapy failed: nonpharmacologic, and simple analgesics or NSAIDs unless contraindicated | `note_conservative_therapy_duration` (earned here, T-109) |
+| orthopedics | `hyaluronan-knee-oa-j5-j8-v1` | `e` | Failed aspiration and intra-articular corticosteroid injection, when effusion is present or inflammation is significant | *declared unclaimed* |
 | rheumatology | `infliximab-ra-jjm-v1` | `a` | A rheumatoid arthritis diagnosis this LCD supports | `condition_value_set_membership` (reused, T-91) |
 | rheumatology | `infliximab-ra-jjm-v1` | `b` | Used in combination with methotrexate | `medication_value_set_active` (earned here, T-92) |
 | rheumatology | `infliximab-ra-jjm-v1` | `c` | No Class III or IV congestive heart failure | *declared unclaimed* |
@@ -395,6 +402,8 @@ The tree's own words, quoted rather than sorted into categories of this report's
 - **`us-abdominal-visceral-j5-j8-v1` `c`** — The information is necessary for appropriate medical and/or surgical management. Unclaimed because it is a claim about why the study was ordered, and no coded resource records an intention. The document restates it as Limitation 4 -- 'The outcome must impact the clinical management of the patient.' -- and that is the same requirement said twice, not a sixth criterion: declaring both would abstain twice on one question and read as two things a reviewer owes. A reviewer evaluates it against the record (REQ-58, D114).
 - **`us-abdominal-visceral-j5-j8-v1` `d`** — The test is not redundant of other diagnostic procedures that must be performed. Unclaimed because redundancy is a claim about what else is planned for this patient, and a plan is not in the coded record: the chart carries procedures that happened, never the ones a clinician has decided to order instead. This is a limit of the record, not of the engine -- criterion (b) reads the same resource type and is evaluated (REQ-57, REQ-58, D114).
 - **`us-abdominal-visceral-j5-j8-v1` `e`** — Not the initial diagnostic modality for abdominal pain, absent a high index of suspicion that the pain is vascular. Unclaimed because 'a high index of suspicion' is a clinical judgment, and because the antecedent is too: whether this study is the initial modality for a patient's abdominal pain depends on what the workup has been, which the chart records as procedures without recording what they were for. Declared and abstained on rather than omitted, because omitting it approves where this MAC might not (REQ-58, D101's rule).
+- **`hyaluronan-knee-oa-j5-j8-v1` `c`** — If appropriate, other diagnoses have been excluded. Unclaimed because 'if appropriate' is the treating clinician's judgment, and the exclusion is a differential diagnosis no chart resource records as complete. A reviewer evaluates it against the evaluation and management record (REQ-58, D154).
+- **`hyaluronan-knee-oa-j5-j8-v1` `e`** — Failed aspiration and intra-articular corticosteroid injection, when effusion is present or inflammation is significant. Unclaimed because the requirement is conditional on a clinical judgment -- whether inflammation 'is a significant component of the patient's symptoms', and whether corticosteroids are contraindicated -- which no code grades. A reviewer evaluates it (REQ-58, D154).
 - **`infliximab-ra-jjm-v1` `c`** — No Class III or IV congestive heart failure. Unclaimed because the New York Heart Association class is not in the coded record: ICD-10 I50.x records heart failure and says nothing about which class, and no other structured resource carries it. A tree reading I50.x as Class III/IV would deny patients this document covers; one reading it as not-Class-III/IV would approve patients it excludes. Both are wrong verdicts, which is D101's test. This is a limit of the record, not of the engine (REQ-57, REQ-58, D111).
 - **`infliximab-ra-jjm-v1` `d`** — No untreated active or latent tuberculosis. Unclaimed on two counts. *Untreated* is a judgment about the record rather than a coded fact, and latent tuberculosis is established by a screening result -- a tuberculin test or an interferon-gamma release assay -- that the structured plane does not carry. A reviewer evaluates it against the chart (REQ-58, D111).
 - **`infliximab-ra-jjm-v1` `e`** — Moderately to severely active rheumatoid arthritis. Unclaimed: disease activity is a clinical assessment. The chart carries no DAS28, CDAI or SDAI score, and a diagnosis code grades nothing -- the same code serves a patient in remission. Declared and abstained on, never omitted, because omitting it approves where this MAC would not (REQ-58, D101's rule, D111).
@@ -416,5 +425,5 @@ Counted apart, because A10 counts criteria and an exclusion is not one: written 
 The measurement context for every figure above.
 
 - **The ground truth is a working first draft, drafted alongside the system it grades** (D19, D42, D96). The manifests are written from the bundles before the notes are synthesized, the system under test never reads them, and every cited span is validated against the source rather than against a label. Re-labeling and review ride with the corpus expansion of a later version.
-- **This system determines coverage as one contractor would, for each of four contractors' documents and four practices.** NCD 100.1 quantifies nothing — no months, no visit counts, no recency. Every constant in a criteria tree comes from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J and M, L35677 for the same MAC's infliximab policy (T-92, D111), L35755 for WPS's abdominal and visceral vascular studies (T-94, D114), and L33718, the DME MACs' joint PAP LCD, compiled for Noridian's Jurisdiction D (T-108, D150) — and a request resolves by procedure code and state, to one tree per practice (D21, D29, D100, D111). NCD 240.4 is the one national document that quantifies, and the PAP tree's two thresholds are checked against it at load (REQ-73). These are not CMS's thresholds; they are the contractors'.
-- **The corpus is 20 patients, 26 chart notes and 11 policy documents.** Six bundles from the base seed, E12's with its declared observation (D73), and one declared clone of E4's chart re-addressed into Palmetto's territory (T-88, D102) — the row `J1`, which shares both its notes' bytes with E4. Every note-bearing chart is two documents since T-81, a split of the facts its manifest already declared (D104). The next six are the second and third practices, all note-free because v1.2 declares every note-only criterion unclaimed: two Synthea charts carrying rheumatoid arthritis in Palmetto's territory and a declared clone of one of them holding the drug L35677 excludes (T-93, D113), then one Synthea chart in WPS's territory and two declared clones of it that differ only in the date of one re-coded procedure, which is what L35755's frequency limit turns on (T-94, D114). One of the rheumatology charts also carries two resources declared by T-97 (D119) — an active lisinopril order and a creatinine above the knowledge table's threshold, each copied from one the chart already held with one or two fields swapped — because no chart in the corpus could otherwise produce a green suggestion. The last six are the fourth practice, and the first note-bearing charts outside bariatric surgery: Synthea charts from the recorded Iowa run carrying obstructive sleep apnea, each a consultation and a sleep study report whose index, recording time and findings the fact manifests declare, because no generator writes them (T-108, D150). Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above.
+- **This system determines coverage as one contractor would, for each of four contractors' documents and five practices.** NCD 100.1 quantifies nothing — no months, no visit counts, no recency. Every constant in a criteria tree comes from its MAC's document — A53028 for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J and M, L35677 for the same MAC's infliximab policy (T-92, D111), L35755 for WPS's abdominal and visceral vascular studies (T-94, D114), L33718, the DME MACs' joint PAP LCD, compiled for Noridian's Jurisdiction D (T-108, D150), and L39529 for WPS's knee hyaluronan injections, under no NCD (T-109, D154) — and a request resolves by procedure code and state, to one tree per practice (D21, D29, D100, D111). NCD 240.4 is the one national document that quantifies, and the PAP tree's two thresholds are checked against it at load (REQ-73). These are not CMS's thresholds; they are the contractors'.
+- **The corpus is 27 patients, 40 chart notes and 13 policy documents.** Six bundles from the base seed, E12's with its declared observation (D73), and one declared clone of E4's chart re-addressed into Palmetto's territory (T-88, D102) — the row `J1`, which shares both its notes' bytes with E4. Every note-bearing chart is two documents since T-81, a split of the facts its manifest already declared (D104). The next six are the second and third practices, all note-free because v1.2 declares every note-only criterion unclaimed: two Synthea charts carrying rheumatoid arthritis in Palmetto's territory and a declared clone of one of them holding the drug L35677 excludes (T-93, D113), then one Synthea chart in WPS's territory and two declared clones of it that differ only in the date of one re-coded procedure, which is what L35755's frequency limit turns on (T-94, D114). One of the rheumatology charts also carries two resources declared by T-97 (D119) — an active lisinopril order and a creatinine above the knowledge table's threshold, each copied from one the chart already held with one or two fields swapped — because no chart in the corpus could otherwise produce a green suggestion. The next six are the fourth practice, and the first note-bearing charts outside bariatric surgery: Synthea charts from the recorded Iowa run carrying obstructive sleep apnea, each a consultation and a sleep study report whose index, recording time and findings the fact manifests declare, because no generator writes them (T-108, D150). The last seven are the fifth: Synthea charts from the same run carrying knee osteoarthritis and the naproxen order written at its diagnosis, each a clinic visit and a follow-up whose symptoms, knee radiographs and exercise programme the fact manifests declare, for the same reason (T-109, D154). Rates over a set this size move by large steps; one case is worth more than a percentage point in every table above.

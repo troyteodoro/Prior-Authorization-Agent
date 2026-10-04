@@ -118,6 +118,15 @@ DECLARED: dict[str, dict[str, str | None]] = {
         "c": None,  # unclaimed: the supplier's instruction is the supplier's record (D150)
         "d": None,  # unclaimed: the test's provenance is in no chart resource (D150)
     },
+    # T-109 (D154): the fifth practice. Three of five criteria read the third
+    # fact kind; `d` is the first month count over a note's therapy dates.
+    "hyaluronan_knee_oa_j5_j8.json": {
+        "a": "note_knee_symptoms",
+        "b": "note_knee_radiographic_findings",
+        "c": None,  # unclaimed: "if appropriate" is the clinician's judgment (D154)
+        "d": "note_conservative_therapy_duration",
+        "e": None,  # unclaimed: conditional on whether inflammation is significant (D154)
+    },
 }
 
 
@@ -226,7 +235,8 @@ def test_the_vocabulary_is_the_kinds_that_have_predicates():
     say is unclaimed by the document rather than unbuilt by the engine.
     Eleven since T-108: the fourth practice needed two, both reading the
     second fact kind — an evaluation's date against a study's, and the
-    study's index against L33718's two branches (D150).
+    study's index against L33718's two branches (D150). Fourteen since T-109:
+    the fifth needed three, all reading the third kind (D154).
     """
     assert {k.value for k in PredicateKind} == {
         "bmi_observation_threshold",
@@ -240,6 +250,10 @@ def test_the_vocabulary_is_the_kinds_that_have_predicates():
         "note_event_run_behavior_rate",
         "note_evaluation_before_sleep_test",
         "note_sleep_test_index",
+        # T-109 (D154): the fifth practice's three, reading the third kind.
+        "note_knee_symptoms",
+        "note_knee_radiographic_findings",
+        "note_conservative_therapy_duration",
     }
 
 
@@ -272,6 +286,9 @@ def test_every_kind_is_evaluated_by_exactly_one_step():
     assert set(NOTE_WORKUP_KINDS) == {
         PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST,
         PredicateKind.NOTE_SLEEP_TEST_INDEX,
+        PredicateKind.NOTE_KNEE_SYMPTOMS,
+        PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS,
+        PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION,
     }
     # T-94 (D114): `criterion_b` gained a kind rather than the graph gaining a
     # step, and the union is asserted so the procedure-history kind cannot be
@@ -445,6 +462,9 @@ def test_only_the_kinds_that_can_answer_not_met_declare_a_narrower():
         PredicateKind.NOTE_EVENT_COUNT,
         PredicateKind.CONDITION_VALUE_SET_MEMBERSHIP,
         PredicateKind.MEDICATION_VALUE_SET_ACTIVE,
+        # T-109 (D154): both abstain where another kind would deny.
+        PredicateKind.NOTE_KNEE_SYMPTOMS,
+        PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS,
     }
 
 

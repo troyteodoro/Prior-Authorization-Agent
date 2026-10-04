@@ -37,6 +37,7 @@ EXPECTED_CASES = {
     "US1", "US2", "US3", "US4",
     "H1", "H2", "H3",
     "OSA1", "OSA2", "OSA3", "OSA4", "OSA5", "OSA6",
+    "KNEE1", "KNEE2", "KNEE3", "KNEE4", "KNEE5", "KNEE6", "KNEE7",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
@@ -59,6 +60,10 @@ EXPECTED_CASES = {
 # OSA1-OSA6 are the fourth practice (T-108, D150): six Synthea charts from the
 # recorded Iowa run, each note-bearing, whose consultation and study report are
 # rendered from the `sleep_*` facts below rather than from `wm_programs`.
+# KNEE1-KNEE7 are the fifth practice (T-109, D154): seven Synthea charts from
+# the same run, each a clinic visit and a follow-up rendered from the `knee_*`
+# facts and `conservative_therapies`. Each row pins its own as_of in
+# eval/cases.json; the manifest's is D35's reference date like every other's.
 DELIBERATELY_ABSENT = {"E3"}
 
 
@@ -410,8 +415,16 @@ def test_e10b_crosses_the_threshold(manifests, store):
 
 
 def _sleep_facts(manifest: dict) -> list[dict]:
-    """The fourth practice's dated facts (T-108, D150): evaluations and tests."""
-    return manifest.get("sleep_evaluations", []) + manifest.get("sleep_tests", [])
+    """The fourth practice's dated facts (T-108, D150): evaluations and tests,
+    and since T-109 the fifth's (D154): visits, knee radiographs and
+    conservative therapies, each dated and each in one document."""
+    return (
+        manifest.get("sleep_evaluations", [])
+        + manifest.get("sleep_tests", [])
+        + manifest.get("knee_visits", [])
+        + manifest.get("knee_radiographs", [])
+        + manifest.get("conservative_therapies", [])
+    )
 
 
 def _facts(manifest: dict) -> list[dict]:

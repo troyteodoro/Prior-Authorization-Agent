@@ -1,0 +1,25 @@
+CEDAR VALLEY BONE AND JOINT CLINIC
+Patient: Boyer713, Shin962                       MRN: 813736
+DOB: 1975-11-07                       Sex: F
+Document 1 of 2
+
+ORTHOPEDIC CLINIC VISIT
+
+10/10/2023 - Seen in person in clinic by S. Nakamura, DO for evaluation of the
+right knee.
+
+HISTORY OF PRESENT ILLNESS
+Referred for evaluation of the right knee.
+
+IMAGING
+10/10/2023 - Weight-bearing radiographs of the right knee, standing AP and
+lateral views: Medial joint space narrowing. Subchondral cysts in the medial
+femoral condyle.
+
+TREATMENT
+Naproxen sodium 220 mg by mouth twice daily, started 10/10/2023.
+Home exercise program for quadriceps strengthening, begun 10/10/2023.
+
+ASSESSMENT AND PLAN
+Osteoarthritis of the right knee. Continue the treatment above and return for
+reassessment.
