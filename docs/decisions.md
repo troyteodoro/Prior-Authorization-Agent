@@ -13859,3 +13859,73 @@ relaxed by a decision entry, not quietly.
 
 Nothing. A2, A3 and A5 are the statements. This makes each one held by a
 command.
+
+## D146 — The suite is guarded against the network in process and in every subprocess it starts
+
+**Context.** `T-141`, off the path, the last of the ten numbered rows cleared
+before v1.6 opens. Written before the code (Article IX, working rule 5).
+
+A13's fifth clause, *zero model calls in any gate*, is held over the gate
+**list** by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`
+and, since `T-106`, over the packet path. The `pytest` gate **itself** is held
+only structurally: every test happens to use a `Recorded*` runner or an
+injected double. A measurement key is present in a working checkout
+(`pa_agent/agent/.env`). A test that built a live runner, directly or by running
+the CLI with `--extraction direct`, would spend money and pass.
+
+**Measured at open.** 18 test files run the CLI or a script as a subprocess, so
+an in-process guard alone does not reach the most likely route to a live
+client. `cli._load_env` reads `.env` with `os.environ.setdefault`, so a value
+already in the environment wins. And a `google-genai` request made with
+`HTTPS_PROXY` pointed at a port nothing listens on fails with
+`httpx.ConnectError: Connection refused` at the loopback proxy, without leaving
+the machine.
+
+### Chosen — a session-scoped autouse fixture in `tests/conftest.py`, two layers
+
+1. **In process:** `socket.socket.connect`, `connect_ex` and `socket.getaddrinfo`
+   raise `NetworkBlocked` for any non-loopback host. Loopback stays allowed,
+   because `adk web`-style checks and local servers are not the network.
+2. **Inherited by every subprocess:** the session sets a placeholder
+   `GOOGLE_API_KEY` and `GEMINI_API_KEY`, points
+   `GOOGLE_APPLICATION_CREDENTIALS` at a file that does not exist so Vertex ADC
+   cannot authenticate, and points `HTTPS_PROXY`, `HTTP_PROXY` and `ALL_PROXY`
+   at `127.0.0.1:9`, with loopback in `NO_PROXY`. A child that builds a live
+   client therefore has no valid credential, because the placeholder beats
+   `.env`'s `setdefault`, and no route out, because of the proxy. Either layer
+   alone prevents the spend.
+
+The tests that prove it are written so that **a broken guard cannot make them
+spend.** Each one asserts the guard's environment is in place *before* it
+starts a child, so a mutant that removes the environment layer fails the
+precondition and never runs the CLI with the real key. The in-process probes
+use addresses that cannot reach anything if the guard is gone: `192.0.2.1`
+(RFC 5737 TEST-NET-1) with a one-second timeout, and `example.invalid` (RFC
+2606), which no resolver answers.
+
+*Rejected — a parse asserting every `client_for` call site sits behind a
+non-default mode.* It misses a client built directly with `genai.Client`, and
+any SDK's client other than this one. The network is what costs money, so the
+network is what is guarded.
+
+*Rejected — `pytest-socket`.* It is a dependency `check_env.py` would have to
+pin, for one fixture (D49). It is also in-process only, and the subprocess
+route is the larger one.
+
+*Rejected — unsetting `GOOGLE_API_KEY` instead of overriding it.* A child would
+then read the real key out of `.env`, because `setdefault` only writes an
+absent key. The override is what defeats the loader.
+
+### Reversal condition
+
+Reverses if a test legitimately needs the network, which no gate may (D45). Such
+a test belongs in a measurement script under `EXCLUDED`, not in the suite. It
+also reverses toward a different mechanism if the SDK stops honoring proxy
+environment variables. The proxy is then the weaker layer, the placeholder key
+still holds the spend at zero, and the end-to-end test would show it as a
+non-proxy error.
+
+### What it mints
+
+Nothing. A13's fifth clause is the statement, and this makes the `pytest` half
+of it held by a command rather than by convention.

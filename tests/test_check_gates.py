@@ -299,3 +299,93 @@ def test_no_gate_spends_a_model_call_or_reaches_the_network(script):
             assert "--offline" in argv, "the online form re-downloads the corpus"
         if argv[0] in ("scripts/select_patients.py", "spike/spike_001/run.py"):
             assert "--verify" in argv, "the bare form regenerates or measures"
+
+
+# --------------------------------------------------------------------------
+# The pytest gate itself spends nothing (A13's fifth clause, T-141, D146)
+# --------------------------------------------------------------------------
+
+#: A note-bearing chart, so a live extraction runner has a note to send.
+LIVE_PROBE_PATIENT = "07a5f345-3e7c-da0f-da0b-87fa252a5bfd"
+
+
+def _guard_environment_is_in_place() -> None:
+    """Every child below inherits this, and a broken guard must fail **here**,
+    before a child that could read the real key out of `.env` is started."""
+    from conftest import NO_SPEND_ENV
+
+    import os
+
+    for key, value in NO_SPEND_ENV.items():
+        assert os.environ.get(key) == value, (
+            f"{key} is not the guard's value; refusing to start a child that "
+            "could spend (D146)"
+        )
+
+
+def test_a_non_loopback_connection_is_refused_before_a_packet_leaves():
+    """192.0.2.1 is RFC 5737's TEST-NET-1: with the guard gone this times out
+    against an address that routes nowhere, rather than reaching a host."""
+    import socket
+
+    from conftest import NetworkBlocked
+
+    with pytest.raises(NetworkBlocked):
+        socket.create_connection(("192.0.2.1", 443), timeout=1)
+
+
+def test_a_name_lookup_is_refused_before_the_resolver_is_asked():
+    """`.invalid` is reserved by RFC 2606, so with the guard gone the lookup
+    fails as a resolver error rather than as the guard's."""
+    import socket
+
+    from conftest import NetworkBlocked
+
+    with pytest.raises(NetworkBlocked):
+        socket.getaddrinfo("example.invalid", 443)
+
+
+def test_loopback_is_still_reachable():
+    """Local servers are not the network; refusing them would make a check
+    like `adk web`'s impossible to write as a test."""
+    import socket
+
+    from conftest import NetworkBlocked
+
+    try:
+        socket.create_connection(("127.0.0.1", 9), timeout=1).close()
+    except NetworkBlocked:
+        pytest.fail("the guard refused loopback")
+    except OSError:
+        pass  # nothing listens on port 9, which is the point of choosing it
+
+
+def test_every_child_inherits_the_guard_environment():
+    _guard_environment_is_in_place()
+    from conftest import NO_SPEND_ENV
+
+    proc = subprocess.run(
+        [sys.executable, "-c",
+         "import json, os, sys; json.dump({k: os.environ.get(k) for k in sys.argv[1:]}, sys.stdout)",
+         *NO_SPEND_ENV],
+        capture_output=True, text=True, check=True,
+    )
+    import json
+
+    assert json.loads(proc.stdout) == NO_SPEND_ENV
+
+
+def test_a_live_extraction_run_from_the_suite_fails_locally_and_spends_nothing():
+    """The route the row was about: a test that ran the CLI with a live
+    runner. Under the guard it fails at the loopback proxy on a placeholder
+    key, aborts on a criterion in `ERROR` (exit 3, D76), and prints no
+    determination. Measured: 48ms, three attempts, `ConnectError`."""
+    _guard_environment_is_in_place()
+    proc = subprocess.run(
+        [sys.executable, "-m", "pa_agent.cli", "--patient", LIVE_PROBE_PATIENT,
+         "--procedure", "43775", "--extraction", "direct", "--as-of", "2026-09-01"],
+        cwd=REPO_ROOT, capture_output=True, text=True, timeout=120,
+    )
+    assert proc.returncode == 3, proc.stderr[-500:]
+    assert proc.stdout == ""
+    assert "ConnectError" in proc.stderr

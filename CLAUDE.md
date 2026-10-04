@@ -30,8 +30,8 @@ an instruction typed into a prompt.
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-77 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
 | `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and not yet open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139 and T-140, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open, and T-141, which T-106 did *(D136)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D145, kill criteria, open questions. Append-only. |
+| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140 and T-141, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open. Every row the board has numbered off the path has a record *(D137–D146)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D146, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -743,6 +743,15 @@ passing**, because the tests are written in terms of the thing that broke.
   the whole population fails on a chart that is fine; deleting the rule is
   worse, and the shape that avoids both is to say which rule each chart
   answers to.
+- **The suite is guarded against the network, and the guard must stay
+  inherited** *(T-141, D146)*. `tests/conftest.py` refuses non-loopback
+  connections and lookups in process, and sets a placeholder `GOOGLE_API_KEY`,
+  a nonexistent `GOOGLE_APPLICATION_CREDENTIALS` and refused proxies for every
+  child. **Override, never unset:** `cli._load_env` only `setdefault`s from
+  `pa_agent/agent/.env`, so an *absent* key is filled with the real one. A test
+  that passes a child an `env=` built from scratch drops the guard. Every test
+  that starts a live-capable child asserts the guard first, so a broken guard
+  fails before it can spend.
 - **Never make a gate call a model** *(D45)*. Measurement scripts spend the
   calls; `pytest` re-reads the recording, re-hashes every note, re-validates
   every span and checks the recorded model is the pin.
@@ -889,16 +898,19 @@ notes *(D67)*. Both are pinned by parsing.
 
 ## Current state
 
-**101 of 101 tasks closed, none open. All 10 gates green**
-(`check_gates.py`; the suite collects 1761 tests across 57 files, 58 of
+**102 of 102 tasks closed, none open. All 10 gates green**
+(`check_gates.py`; the suite collects 1766 tests across 57 files, 58 of
 which skip — the skips are `test_criteria_tree.py`'s per-tree constant
 matrix and its exclusion checks, which skip what a given tree does not
 declare, D101's pattern and D114's).
 IDs run to T-141 (every id above T-125 is off the path, above the roadmap's
 reservations, D137), but numbering is not contiguous and D92 and D94
 deleted six records between them, so the highest id is well above the count.
-**Nothing is open**; `T-141` is
-numbered with no record yet.
+**Nothing is open**, and every row the board numbered has a record.
+**`T-141` closed off the path** *(D146)*, the last of the ten rows cleared
+before v1.6: `tests/conftest.py` refuses non-loopback connections and lookups
+in process, and every child inherits a placeholder key, a missing credentials
+file and a refused proxy, so a test that built a live runner fails locally.
 **`T-131` closed off the path** *(D145)*: A2 (per criterion, as §7 states it),
 A3 and A5's sweep anchor are recomputed and asserted by `tests/test_build_report.py`,
 not only printed in the report.

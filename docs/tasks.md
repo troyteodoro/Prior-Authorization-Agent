@@ -21,6 +21,11 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-141` closed off the path** *(D146)*, the last of the ten: the suite is
+guarded against the network in process and in every subprocess it starts, so a
+test that built a live runner fails locally on a placeholder key and a refused
+proxy instead of spending. **All ten numbered rows are closed, every row the
+board numbered has a record, and v1.6 is next.**
 **`T-131` closed off the path** *(D145)*: A2's per-criterion 0.90, A3's zero
 and A5's sweep anchor are recomputed from the harness by `tests/test_build_report.py`,
 so a report regenerated with a bad number is a red suite rather than a coherent
@@ -290,12 +295,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-101 tasks are on this board — IDs run to T-141, and every id above T-125 is
+102 tasks are on this board — IDs run to T-141, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 101 are closed and none is open**;
-`T-141` below
-is numbered and has no record yet, in this board's usual shape. Both figures
+is well above the count. **All 102 are closed and none is open**; every row the board numbered has a
+record. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
@@ -337,7 +341,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-138` | **two of the three verbs that write a session never re-validate what they wrote.** `model_copy(update=…)` runs no validator (D132's measurement), so `cli._verb_submit` and `_verb_decide` pass their result through `cli._revalidated` before `store.save` — their new fields are *iff* relations with `state` that no construction path would otherwise check. `_verb_run` and `_verb_review` do not: `advance()` and `review()` both return a `model_copy`, and `Session._runs_match_the_state` and `_every_review_binds_to_a_snapshot` are therefore unreachable from the two paths that actually write. D132 answered that for the review path by **duplicating** the bound inside `review()`; the general relation — one validated writer and two unvalidated ones — is held by no command, and no behavioural test separates the shapes, because every object those two verbs build is coherent by construction. The fix is a decision between two shapes: `LocalSessionStore.save` validating what it is handed, or a parse asserting every `Session` `model_copy` reaches the adapter through `_revalidated` | **closed** (D140), before v1.6 opened — discovered in `T-105`. The adapter re-validates in `_serialize`, before any file is opened, so all four write paths are checked. `cli._revalidated` is removed, because once the adapter checks it is a guard no input can fail (D131) |
 | `T-139` | **no check ties a verb's documented flags to its parser.** `README.md`'s packet section documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted `cli.PLACEHOLDER_PAYER` (D134), so the README told a reader to type a flag `argparse` rejects. The stale sentence is corrected in `T-137`'s close under working rule 12 — it is prose about the command whose output that row changes — but README documents all **eight** session verbs' flags and `test_docs_consistency.py` reads none of them: a flag renamed, removed or added leaves prose nothing re-derives. The check is a parse over README's command blocks against the declared options | **closed** (D143), before v1.6 opened — discovered in `T-137`. Both directions: every documented flag is declared for its verb, and every declared flag is documented. `--reject` and `--outbox-root` were undocumented at open |
 | `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **closed** (D144), before v1.6 opened — discovered in `T-106`. The held set is derived from spec §7 and §11; README's table has exactly those rows, and every current *A1–AN* claim names the last. CLAUDE.md's *A1–A10 all hold* was live at open |
-| `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **discovered in `T-106`** *(D136)*, while auditing A13 clause by clause — `T-128`'s shape, a check a close named and no commit added |
+| `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **closed** (D146), before v1.6 opened — discovered in `T-106`. An autouse guard refuses non-loopback connections and lookups in process, and every child inherits a placeholder key, a missing credentials file and a refused proxy; a live CLI run from the suite fails locally with exit 3 |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -4340,6 +4344,48 @@ the file and run on every suite. The first A3 perturbation chosen, an unquoted
 span, did **not** fail validation, because only quoted spans are compared to
 their slice. The check was moved to a quoted span, and that limit is now stated
 where the perturbation is built.
+
+### `[x] T-141` The suite spends no model call, held by a guard rather than by convention
+
+**REQ:** mints nothing. A13's fifth clause is the statement · **Depends:**
+T-106 · **Blocks:** nothing · **Discovered in:** T-106 *(D136)* · **Decided
+by:** D146 · **Gates:** A13 · **Timebox:** half a day
+**Status:** **closed** (D146). Off the path, the last of the ten numbered rows
+closed before v1.6 opened. The exit ran green and every gate with it. No module
+under `pa_agent/` was changed.
+
+**Measured at open.** 18 test files run the CLI or a script as a subprocess,
+so an in-process guard alone does not reach the likeliest route.
+`cli._load_env` only `setdefault`s from `.env`, so a value already in the
+environment wins. A `google-genai` request routed through a refused loopback
+proxy fails with `ConnectError` and never leaves the machine. The whole suite
+was run under the guard before any test was added: nothing needed the network.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_check_gates.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- a session-scoped autouse fixture in `tests/conftest.py` refuses, in process,
+  any non-loopback `connect` or name lookup, while loopback stays reachable;
+- every child the suite starts inherits a placeholder key, a credentials path
+  naming no file, and proxies pointed at a port nothing listens on;
+- the CLI run from the suite with `--extraction direct` exits 3 on a criterion
+  in `ERROR`, prints no determination, and names `ConnectError`. Measured:
+  48 ms, three attempts.
+
+The tests are built so that a broken guard cannot make them spend. Every test
+that starts a child first asserts the guard's environment is in place. The
+in-process probes aim at RFC 5737's TEST-NET-1 and RFC 2606's `.invalid`.
+
+**Mutation pass.** The socket layer was removed: the two in-process probes went
+red. The environment layer was removed: the inheritance test and the live-run
+test went red **at their precondition**, in 0.07 s, before any child that could
+read the real key was started. With `tests/conftest.py` restored, all 16 tests
+in the file pass.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 
