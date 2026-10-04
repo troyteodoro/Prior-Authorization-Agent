@@ -28,6 +28,10 @@ incomplete and the patient's surgery slips.
 **Dr. Vance — clinical documentation lead.** Owns which coverage rules the system
 enforces. Does not use the system daily; reviews changes to what it checks.
 
+**The clinical reviewer** *(v2.2; D153)*. A clinician who reads the charts the
+system returns. Records a judgment on each criterion a policy leaves to a
+reviewer, and decides the suggested codes. Sending the packet stays Sam's.
+
 ---
 
 ## Feature F1 — Automated coverage determination for bariatric surgery
@@ -481,25 +485,35 @@ a comparison rather than a claim *(D136)*.
 **Version:** v2.2 *(D125)* · **Value:** every persona-facing behaviour before this
 version is reachable only by someone who reads JSON.
 
-- **Given** the dashboard **When** it renders **Then** it lists what `session
-  list` lists, with the same statuses, and offers a create form for a
-  procedure with or without ICD codes, typed or pasted from an upstream
-  system · *(A15)*
+- **Given** the dashboard **When** it renders **Then** each card is one
+  `session list` row — the state, the latest outcome, the governing tree and
+  the open items — and the create form takes a procedure with or without ICD
+  codes, typed or pasted from an upstream system · *(A15)*
 - **Given** a session opened **When** the determination renders **Then** each
-  criterion shows its verdict, its cited spans highlighted in the note beside
-  the structured evidence, and the gap list · *(A15)*
-- **Given** the suggestions panel **When** Sam acts **Then** green adds with
-  one action, yellow adds with its citation attached, and red opens the
-  justification field at that point in the form · *(A15)*
-- **Given** a reviewed session **When** Sam sends it **Then** the simulated
-  email is previewed, written to the outbox, and the dashboard shows the
-  session awaiting approval · *(A15)*
+  criterion shows its verdict as one of four distinct states, its cited spans
+  highlighted in the note beside the structured evidence, and the gap list;
+  and a run aborted over `ERROR` shows the criterion and records nothing ·
+  *(Article IV; A15)*
+- **Given** a criterion the tree declares unclaimed **When** the clinical
+  reviewer judges it **Then** the judgment and its basis append to the review
+  log, every verdict and the outcome are unchanged, and the packet lists the
+  judgment apart from the determination · *(A15; D153)*
+- **Given** the suggestions panel **When** a suggestion is acted on **Then**
+  green adds with one action, yellow adds with its citation attached and red
+  opens the justification field; and a packet carrying an accepted red with no
+  justification shows the refusal naming every such code · *(A15)*
+- **Given** a reviewed session **When** Sam sends it **Then** the `.eml` that
+  will leave is previewed verbatim and written to the outbox, and the
+  dashboard shows the session awaiting the payer's decision · *(A15)*
 - **Given** any UI action **When** it is traced **Then** it maps to one CLI
-  verb with identical output, and the templates carry no logic · *(A15)*
+  verb with identical output, the templates carry no logic, and no route
+  writes except through a verb · *(A15)*
 
 **Covers:** A15
-**Status:** tentative — rows open after v1.6 closes, and the framework is
-decided in the app shell's entry.
+**Status:** tentative. The version runs last *(D125)*. It is laid out from the
+owner's mockup, and whatever the mockup draws that no verb produces is either
+built headless first or refused *(D153)*. The app shell's own entry confirms
+the framework.
 
 ---
 

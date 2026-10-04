@@ -14531,3 +14531,243 @@ recorded as a finding with its classified reason and no payload, never re-run
 fabrication figure. The direct AI Studio recording, the one every gate replays,
 holds all twenty-four, and `H10` reads its candidate red with both notes
 consulted, which makes A11's graded count thirteen of thirteen.
+
+## D153 — The reviewer's UI is planned from the owner's mockup, and three of the surfaces it needs were never built headless
+
+**Context.** No task is open for this. v2.2's rows are placeholders, and their
+records are written when they open (D97's rule). This entry plans the version
+from a design the owner produced: `PA Desk.dc.html`, in the claude.ai design
+project *Prior Authorization Reviewer UI mockups*, set in that tool's
+*Modernist* design system. It rewrites three things:
+- v2.2's section in spec §11;
+- US-15's acceptance criteria;
+- the board's six one-line exits.
+
+Rewriting exits is a design decision (working rule 5), so this entry comes
+before any UI code (Article IX). No requirement, task or gate id moves, and the
+version stays last (D125).
+
+**What the mockup draws.**
+- **A header** with two tabs, *Sessions* and *New session*, and a *Working as*
+  switch between a specialist and a clinical reviewer.
+- **A board of session cards.** Each card shows the session id, state, outcome,
+  procedure, contractor, *open items* and a five-step lifecycle bar.
+- **A create form**, typed or pasted as intake JSON, with a resolution preview
+  beside it.
+- **A session in four tabs:**
+  - *Determination*: the outcome and every criterion with its verdict and a
+    reason, beside the chart. Cited passages are highlighted and the structured
+    resources are listed. There are two arrangements, *Document* and *Margin*,
+    and the reviewer can mark an unclaimed criterion *Chart supports it* or
+    *Does not*.
+  - *Suggestions*: the colour key, and accept or reject on each suggestion,
+    with a justification field on red.
+  - *Status*: the lifecycle, the payer's decision form and the append-only
+    review log.
+  - *Packet*: email headers, a code-alignment paragraph, a prose determination
+    with numbered citations, a citation manifest and a submit button.
+
+**Measured against the code at `3aba6ae`, 2026-10-04.**
+- **`session list` carries no outcome.** Its row (`cli._summarise`) holds
+  `session_id`, `state`, `created_at`, `patient_id`, `procedure_code` and
+  `runs`. The cards show an outcome, a contractor and open items. A board that,
+  as US-15 specified, *lists what `session list` lists* cannot draw its own
+  cards.
+- **No verb reads a session's suggestions without writing.** `session show`
+  renders no review, and `session run --suggest` appends a snapshot. The review
+  is computed only inside `cli._assemble_packet`. So §11's *every action is a
+  verb v1.4 and v1.5 already test* is false of the suggestions panel.
+- **No review action records a judgment on a criterion.** `ReviewAction` has
+  four values: accept, reject and justify a suggestion, and a note. Yet every
+  unclaimed criterion's `detail` already reads *"a reviewer evaluates it against
+  the chart"*. The only place that evaluation can go today is a free-text
+  `NOTE`, which no packet reads as a judgment.
+- **US2's determination is the one the mockup's main screen is drawn on**
+  (`7acd0453`, 93975, as of 2026-09-01).
+  - `c`, `d` and `e` are `INSUFFICIENT_EVIDENCE` with
+    `NOT_EVALUATED_BY_THIS_SYSTEM`, and cite nothing.
+  - `b`'s `NOT_MET` cites one `Procedure` span, with shortfall `(3.0, 12.0,
+    months_since_prior_procedure)`.
+  - `a` cites four `Condition` spans. No criterion of this tree cites the note.
+  - No field names a study the limit excluded, and none names the date the
+    limit clears.
+  - Every span into the bundle carries `quote: null`.
+  - `model_calls` is 2, which is the replayed verifier. The mockup prints 0.
+- **The packet the system sends is not the mockup's packet.** `form.render`
+  writes these, in order:
+  - the headers;
+  - *Administrative*, *Code alignment*, *Accepted ICD-10 suggestions* and
+    *Cited documents*;
+  - the determination as JSON, verbatim.
+
+  The mockup draws a different document: prose with numbered citations and a
+  manifest.
+- **The mockup's data is illustrative, not the corpus.**
+  - Its patient id is in no bundle.
+  - Its `Condition` rows carry ICD-10 codes, where the corpus codes SNOMED.
+  - It names clinicians.
+  - It draws a yellow suggestion, which no quote recording has produced.
+  - It labels an abstention *Unclaimed*, as though that were a fourth verdict.
+  - It inks *Met* and *Insufficient* identically on the board.
+  - It draws `ERROR` nowhere.
+- **Environment.** FastAPI 0.141.1, Starlette 1.6.0, uvicorn 0.52.4, httpx
+  0.28.1 and python-multipart 0.0.32 are installed through `google-adk`. None
+  is declared in `requirements.txt`, and Jinja2 is not installed.
+
+### Chosen
+
+1. **The mockup is v2.2's layout, and the system supplies its content.** These
+   are adopted whole:
+   - the two tabs, the board, the create form with its typed and JSON modes,
+     and the four-tab session;
+   - the *Document* and *Margin* arrangements, as two layouts of one view
+     model;
+   - the lifecycle rail, and the log beside the decision form;
+   - the *Synthetic data · No PHI* mark, and the Modernist stylesheet.
+
+   Every value on a screen is a field a verb emits, or a slice `index.py`
+   returns. The sample data gives way to the committed corpus, and the screens
+   are checked against real sessions.
+2. **The three missing surfaces land headless, each inside the row whose screen
+   needs it.** Each comes before its screen and is tested at the CLI with
+   nothing from the UI imported. So D125's *every screen's port exists
+   headless* still holds, row by row.
+   - **`T-112`: `session list` rows gain four fields from the latest
+     snapshot.** They are the `outcome`, the `policy_version_id`, the gap
+     list's criterion ids, and the unclaimed criteria with no judgment
+     recorded. All four are ids and an enum, never the determination itself,
+     so `_summarise` keeps its rule. *Open items* is those two lists and
+     nothing else.
+   - **`T-113`: a fifth review action, a judgment on an unclaimed criterion.**
+     A judgment is *supported* or *unsupported* and carries a required written
+     basis.
+     - **Where it is legal.** Only on a criterion whose result in that
+       snapshot is `INSUFFICIENT_EVIDENCE` with `NOT_EVALUATED_BY_THIS_SYSTEM`.
+       It is refused on a computed verdict, which is Python's (Article IV,
+       Amendment 1). It is refused on any other abstention, which names what
+       to collect and re-run.
+     - **What it leaves alone.** It changes no verdict, outcome or gap list.
+       *The determination's bytes are unchanged* is held as `T-104` holds it,
+       off disk.
+     - **How the packet reads it.** Judgments get a section of their own, read
+       the way acceptance is read: the latest entry in log order, per
+       criterion and per `run_index` (D131). The section is absent when there
+       is no judgment, so `T-106`'s two fixtures re-render byte-identical.
+     - **Why the basis is required.** For the reason red's justification is: a
+       bare *supported* in a packet is an assertion with nothing behind it.
+       Like a justification, the basis is never a span.
+   - **`T-114`: `session show --suggest`.** It renders a snapshot's review
+     beside the session and writes nothing. That is checked against
+     `st_mtime_ns` as well as the bytes (D132), because `run --suggest`
+     appends.
+3. **Verdicts render as Article IV states them.** `MET`, `NOT_MET`,
+   `INSUFFICIENT_EVIDENCE` and `ERROR` each get a distinct treatment, and no
+   two share a colour, on the board or in the view.
+   - An abstention shows its `gap_reason`. `NOT_EVALUATED_BY_THIS_SYSTEM` reads
+     as *returned to the reviewer*, never as a verdict of its own.
+   - A run that exits 3 shows the criterion and the `error_code` the verb
+     wrote to stderr, and records no snapshot.
+   - A criterion's reason is its `detail` and its shortfall, rendered as
+     fields. No template composes a sentence.
+4. **Six things the mockup draws are refused, because nothing produces
+   them:**
+   - **The *Read for judgment* highlights.** Nothing selects passages for an
+     unclaimed criterion: an abstention cites nothing (Article IV). A UI that
+     chose passages would be evidence with no producer and no validator, so
+     for those criteria the note renders whole and unhighlighted.
+   - **The *Not counted · ER* label and the *limit clears on* date.** No field
+     carries either. Computing them in the view would be Article II's
+     arithmetic in a second place, free to disagree with the predicate.
+   - **The prose packet.** The tab shows `session packet`'s `.eml` verbatim,
+     because a second renderer is a second answer (D129). An accepted red with
+     no justification shows as the verb's refusal, naming every such code
+     (D131).
+   - **The resolution preview while typing.** It needs JavaScript or a resolve
+     verb, and one action later `session run` already prints `NO_POLICY_FOUND`
+     or `NO_JURISDICTION_TREE` and records nothing (D129).
+   - **The patient's sex and age.** The patient port serves neither, so the
+     header shows the id and the state.
+   - **Disabling *Accept* on a red until a justification is typed.** The system
+     lets a red be accepted and then refuses the packet. The view shows the
+     field beside the red and surfaces the refusal; it does not enforce the
+     rule a second time.
+5. ***Working as* is a view, not access control.** v2.2 has no authentication
+   (§11). The switch chooses which actions a screen offers and fills
+   `--reviewer`, and that is all.
+   - It grants nothing, and every route answers whichever view sent it.
+   - `docs/stories.md` gains the clinical reviewer, by role only, for the
+     judgment and suggestion actions.
+6. **The shell.** `T-111`'s own entry confirms this, starting with
+   `check_env.py` parity.
+   - **The framework.** FastAPI and uvicorn, declared at the versions
+     `google-adk` already installed, so nothing new is installed.
+   - **Templates.** Pages render on the server from `string.Template` files:
+     substitution only, with no conditional, loop or expression. *Templates
+     carry no logic* then holds by construction, and the check is a scan that
+     refuses anything but `$identifier`. Every value, list and visibility flag
+     comes from Python view functions the suite calls directly.
+   - **No JavaScript.** Actions are form POSTs. The selected criterion, the
+     layout and the tab are query parameters.
+   - **Stores and writes.** `cli.py` starts the app and remains the one place a
+     store is constructed (REQ-41). The app writes **only** through verb
+     handlers, and reads documents only through `index.py` over ports `cli.py`
+     built.
+   - **Responses.** A response that acts carries the verb's stdout unchanged,
+     and each exit code maps to one HTTP status. **There is no status the CLI
+     has no code for:** a lifecycle refusal is exit 1, and a 409 would be
+     D129's fifth code arriving by another door.
+   - **Left to `T-111`.** Whether a verb runs in-process with its streams
+     captured, or as a subprocess, is that row's to decide and measure.
+     In-process capture under a thread pool interleaves two requests' stdout.
+7. **Two of §11's requirement statements are corrected, not only extended.**
+   - *The UI reads and writes through the session port only* is false of a view
+     that highlights spans, because highlighting needs the chart. It becomes
+     *writes only through verbs, reads documents only through `index.py`,
+     constructs no store*.
+   - *Every action is a verb v1.4 and v1.5 already test* is withdrawn, because
+     of the three surfaces in clause 2.
+8. **The create form gains a payer field when v2.0 lands.** The mockup predates
+   the payer axis, which is D125's first reason the UI runs last. The form
+   follows the intake contract as v2.0 leaves it, not as the mockup draws it.
+
+### Rejected
+
+- **Building the mockup as drawn.** Half its content has no producer, so the UI
+  would become the first component to compute a verdict-adjacent fact, and the
+  only one no gate replays.
+- **Separate numbered tasks for the three headless surfaces.** Working rule 6
+  is about silent additions, and these are stated here, on rows that are still
+  placeholders. A surface split from its screen is a layer, and rule 7 closes
+  stories, not layers. Each row stays vertical: the verb, its CLI test, then
+  the screen.
+- **Jinja2.** It is a new install. It is also a template language whose purpose
+  is logic, so the parse check would have to whitelist a subset of it.
+- **A JavaScript client over JSON routes.** Its logic would live in a language
+  the suite cannot run without browser automation, which §11 rules out. A
+  JavaScript build is also infrastructure working rule 9 refuses.
+- **The design tool's runtime** (`support.js` and its bundle). It is a
+  prototyping runtime that executes the screen's logic in the browser.
+- **Recording a role on `ReviewEntry`.** Without authentication, a
+  self-asserted role is the same claim as the self-asserted name already
+  recorded, written a second time.
+- **Allowing a judgment on any abstention.** `NO_EVIDENCE_RETRIEVED` and its
+  siblings tell the reviewer what to collect. A judgment there would let a
+  reviewer's word stand in for evidence the policy asks for and the chart could
+  carry.
+
+### Reversal condition
+
+- **Clause 4's refusals.** Each reverses when its producer exists:
+  - the predicate emitting the studies it excluded and the date the limit
+    clears;
+  - a measured, verified passage locator for unclaimed criteria, which is a
+    model measurement with its own recording under Article V;
+  - a `form.py` change, re-pinning `T-106`'s fixtures, for a prose packet.
+- **Clause 5** reverses with authentication.
+- **Clause 6's no-JavaScript rule** reverses only if some screen cannot be
+  built from links and POSTs, which that row's entry must show.
+
+### What it mints
+
+Nothing. §11's statements stay statements until the row that checks each one
+closes (D109).

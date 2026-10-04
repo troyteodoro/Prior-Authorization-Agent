@@ -60,7 +60,8 @@ carries less information than they do.
   overtaken: T-87 compiled Palmetto's L34576, an LCD, into the second tree.)*
   Other practices' policies are v1.2 and v1.6.
 - Vector search or embedding-based retrieval. Not scheduled *(D4, D70)*.
-- Any user interface. v2.2, after every screen's port exists headless *(D125)*.
+- Any user interface. v2.2, after every screen's port exists headless *(D125)*;
+  planned from the owner's mockup *(D153)*.
 - Terraform, CI/CD, containers. Never *(working rule 9)*.
 - Real or de-identified patient data of any kind. Never.
 
@@ -73,6 +74,7 @@ carries less information than they do.
 | System | Retrieves, extracts, adjudicates, verifies, aggregates. **Transmits only on the reviewer's explicit action after review, and never decides to** *(reworded by v1.5's opening entry, D105 clause 3, D131)*. |
 | Upstream system | Creates sessions through the intake contract; never reads a determination. *(v1.4, §11)* |
 | Payer (simulated) | Receives the packet on the reviewer's action; never uses the system. *(v1.5, §11)* |
+| Clinical reviewer | Records a judgment on each criterion a tree declares unclaimed, and decides suggestions. Never changes a verdict. *(v2.2, §11; D153)* |
 
 ---
 
@@ -1682,31 +1684,84 @@ every eval row `PASS`; zero model calls in any gate.
 
 ### v2.2 — The reviewer's UI *(tentative)*
 
-**Goal.** The first version a persona uses without a terminal. A local
-single-process web app over the session port; the framework is decided in
-its own entry (`adk web` already places FastAPI and uvicorn in the pinned
-environment, so `check_env.py` parity is the first thing checked). No
-authentication, no database beyond the file-backed stores, no deployment —
-working rule 9 holds. Screens map to ports: a dashboard with the session
-checklist and its statuses, and a create form for a procedure with or
-without ICD codes, typed or pasted from an upstream system; a determination
-view with criteria, verdicts, spans rendered as highlighted excerpts beside
-the structured evidence, and the gap list; a suggestions panel where green
-adds, yellow adds with its citation and red opens the justification field at
-that point in the form; the rest of the form; the simulated email and its
-outbox; tracking to awaiting approval. **No logic in the UI**: every action
-is a verb v1.4 and v1.5 already test, and tests are contract tests plus a
-test-client smoke test, no browser automation.
+**Goal.** The first version a persona uses without a terminal. It is a local,
+single-process web app over the session port. The layout comes from the owner's
+mockup, *PA Desk*, and the content is only what the verbs emit *(D153)*.
+
+- **Built without:** authentication, a database beyond the file-backed stores,
+  deployment and JavaScript. Working rule 9 holds.
+- **Already installed:** FastAPI and uvicorn arrive through `google-adk`. The
+  shell's own entry confirms their pins by `check_env.py` parity.
+- **Rendering:** pages are rendered on the server from substitution-only
+  templates.
+
+**Screens.**
+
+- **Sessions.** One card per `session list` row. A card shows the state, the
+  latest outcome, the governing tree and the open items. The open items are the
+  gap list's criteria and the unclaimed criteria nobody has judged.
+- **New session.** The intake contract, typed or pasted as JSON. It posts to
+  `session create`, and optionally to `session run`. A request no tree governs
+  shows the run's answer and records nothing.
+- **A session, in four tabs.**
+  - *Determination*, beside the chart. Each criterion shows:
+    - its verdict, as one of four distinct states — `MET`, `NOT_MET`,
+      `INSUFFICIENT_EVIDENCE` and `ERROR`, never a fifth *unclaimed* verdict;
+    - its `detail` and shortfall, as fields;
+    - its cited spans, highlighted in the note, and its structured spans, shown
+      as their slices;
+    - on an unclaimed criterion, the clinical reviewer's judgment.
+
+    The tab has two arrangements, a document and a margin.
+  - *Suggestions*: the review from `session show --suggest` — green, yellow,
+    red and withheld. Each is accepted, rejected or justified through `session
+    review`.
+  - *Status*: the lifecycle, the payer's decision through `session decide`, and
+    the review log in log order.
+  - *Packet*: `session packet`'s `.eml` verbatim, or its refusal naming every
+    unjustified code. Submission goes through `session submit`, to a payer
+    chosen from the directory.
+- **Working as.** A switch between the specialist's actions and the clinical
+  reviewer's. It is a view, not access control.
+
+**Three surfaces that v1.4 and v1.5 did not build come first** *(D153)*. Each
+is built headless inside the row whose screen needs it:
+
+- the list row's outcome and open items;
+- a read of a snapshot's review that writes nothing;
+- a judgment on an unclaimed criterion.
+
+**Refused, because nothing produces it:** passages *read for judgment*,
+excluded studies, the date a limit clears, a prose packet, and a resolution
+preview while typing. **No logic in the UI.** Tests are contract tests plus a
+test-client smoke test, with no browser automation.
 
 **Requirements it will mint.**
 
-- Every UI action maps to a CLI verb and produces identical output.
-- Templates carry no logic, pinned by parsing (D65's shape).
-- The UI reads and writes through the session port only; it constructs no
-  store.
+- Every UI action maps to one CLI verb, and its response carries that verb's
+  stdout unchanged. Each exit code maps to one HTTP status, and there is no
+  status for which the CLI has no code.
+- Templates are substitution only, pinned by a scan (D65's shape).
+- The UI writes only through verbs, reads documents only through `index.py`
+  over ports `cli.py` built, and constructs no store *(corrected by D153: the
+  determination view must read the chart)*.
+- A `session list` row carries the latest snapshot's outcome, tree and gap
+  criteria, and the unclaimed criteria with no judgment recorded.
+- `session show --suggest` renders a snapshot's review and writes nothing.
+- A judgment on a criterion the tree declares unclaimed is a review entry with
+  a written basis, and on any other verdict it is refused. It changes no
+  verdict, outcome or gap list, and the packet lists it apart from the
+  determination.
+- The four verdict states render distinctly. A run aborted over `ERROR` shows
+  the criterion and its error code, and records no snapshot.
 
-**Gate A15.** Every UI action maps to a CLI verb with identical output; zero
-logic in templates; every gate green with the app importable.
+**Gate A15.**
+
+- Every UI action maps to a CLI verb with identical output.
+- Templates carry zero logic.
+- No route writes except through a verb.
+- The four verdict states render distinctly.
+- Every gate is green with the app importable.
 
 ### Gates by version
 
@@ -1717,6 +1772,6 @@ logic in templates; every gate green with the app importable.
 | A12 | v1.4 | every lifecycle transition tested, every illegal one raises; sessions round-trip byte-stable; the plane check extends to the fourth plane *(D127)* |
 | A13 | v1.5 | zero packets carrying an **accepted** red suggestion with no justification, over a non-empty set of reds the corpus produces, the refusal naming every unjustified code; every packet citation slices back through the port serving its document, **reported beside the count checked**; the review log append-only with the determination's bytes unchanged after any number of reviews; a session acquires an outbox artifact exactly when it enters `AWAITING_DECISION` and none earlier has one, a forbidden submission exits 1 and writes nothing, and `decide` closes the session with the payer's outcome and date; zero model calls in any gate *(rewritten before `T-103` opened, D131)* |
 | A14 | v1.6 | A10 over four practices; every row `PASS`; the differential re-measured, zero errors; **A11's yellow measured** — every yellow suggestion on the round's new notes carries a valid span and a verifier verdict *(D123)* |
-| A15 | v2.2 | every UI action maps to a CLI verb with identical output; zero logic in templates |
+| A15 | v2.2 | every UI action maps to a CLI verb with identical output; zero logic in templates; no route writes except through a verb; the four verdict states render distinctly *(D153)* |
 | A16 | v2.0 | every tree declares a payer and a scope; two payers binding one code in one state resolve to one tree each, neither by load order *(the floor relation is REQ-73, closed by `T-129` — D124, D130)* |
 | A17 | v2.1 | every criterion of the commercial tree evaluated by a declared kind or declared unclaimed; no citation resolves to the synthetic policy without the artifact naming it synthetic |

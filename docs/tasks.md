@@ -599,25 +599,40 @@ established by fetching four of them *(D111)*. **Zero model calls.**
 | 4 | patients and eval rows | `T-124` | pending | patients or declared additions (D73's shape); rows for the `NOT_MET` and the abstention; `run_eval.py` green |
 | 5 | the commercial compatibility account | `T-125` | pending | `eval/report.md` covers the commercial tree beside the CMS practices; `build_report.py --verify` green; every gate green |
 
-### v2.2 — The reviewer's UI *(tentative; reordered by D125)*
+### v2.2 — The reviewer's UI *(tentative; reordered by D125; planned from the owner's mockup by D153)*
 
-A local single-process web app over the session port. Dashboard of sessions
-with their status; create one from a procedure with or without ICD codes,
-typed or pasted from an upstream system; open a session to the determination
-with its criteria, evidence and gap list; the suggestions panel — green adds,
-yellow adds with its citation, red opens the justification field at that
-point in the form; the rest of the form; the simulated email; tracking to
-awaiting approval. **No logic in the UI** — every action is a verb v1.4 and
-v1.5 already test. Rows are placeholders until v1.6 closes.
+A local single-process web app over the session port, laid out from the
+owner's mockup, *PA Desk*. It has:
+
+- a board of session cards;
+- a create form, typed or pasted;
+- a session in four tabs: the determination beside the chart, the
+  suggestions, the status and the log, and the packet with its send.
+
+**No logic in the UI, and no JavaScript.** Every action is a verb, and the
+response is that verb's output.
+
+**Three surfaces the mockup needs were built by neither v1.4 nor v1.5:**
+
+- the list row's outcome and open items;
+- a read of a snapshot's review that writes nothing;
+- a judgment on an unclaimed criterion.
+
+Each lands headless in the row whose screen needs it, and is tested at the CLI
+before that screen exists *(D153)*.
+
+**Refused rather than computed in the view**, because nothing produces it:
+passages *read for judgment*, excluded studies, the date a limit clears, and a
+prose packet *(D153)*. Rows are placeholders until v1.6 closes.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the app shell | `T-111` | pending | the framework decided in its entry; `check_env.py` green with no new pin, or the pin decided; a test-client smoke test |
-| 2 | the dashboard | `T-112` | pending | the session checklist and the create form map to `session list` and `session create` with identical output |
-| 3 | the determination view | `T-113` | pending | criteria, verdicts, spans rendered as highlighted excerpts beside the structured evidence, the gap list |
-| 4 | suggestions and the form | `T-114` | pending | the three colours behave as v1.3 specified; red cannot be added without its justification |
-| 5 | submit and tracking | `T-115` | pending | the email preview, the outbox, the status transitions |
-| 6 | the smoke gate | `T-116` | pending | every UI action maps to a CLI verb with identical output; templates carry no logic, pinned by parsing (D65's shape); every gate green |
+| 1 | the app shell | `T-111` | pending | FastAPI and uvicorn declared at the versions already installed, with `check_env.py` green and nothing installed, or the pin decided in the row's entry; `cli.py` starts the app and still constructs every store; templates are substitution only, with a scan refusing anything but `$identifier`; one HTTP status per exit code and none the CLI lacks; the Modernist stylesheet vendored; a test-client smoke test |
+| 2 | the dashboard and intake | `T-112` | pending | `session list` rows carry the latest outcome, tree, gap criteria and unjudged unclaimed criteria, tested at the CLI first; each card renders one row and nothing else; the create form, typed or pasted, posts to `session create` and optionally `session run`, with identical output; a malformed intake shows the verb's refusal and writes no session |
+| 3 | the determination view and judgments | `T-113` | pending | a judgment on an unclaimed criterion appends with its basis and is refused on any other verdict; the determination's bytes are unchanged off disk and `T-106`'s fixtures are byte-identical; all of it tested at the CLI first; criteria render in four distinct verdict states, with `detail` and shortfall as fields, cited spans highlighted in the note and structured spans as their slices, in both layouts; a run exiting 3 shows its criterion and error code |
+| 4 | suggestions | `T-114` | pending | `session show --suggest` renders the review and writes nothing, checked against `st_mtime_ns`, tested at the CLI first; the four colours as v1.3 specified, each acted on through `session review`; an accepted red with no justification surfaces as the packet's refusal, naming every such code |
+| 5 | packet, submit and tracking | `T-115` | pending | `session packet`'s `.eml` shown verbatim; submit offered iff the transition table admits it, read from the table; a forbidden submit shows the verb's refusal and leaves the outbox empty; `decide` takes the outcome, the decided-on date and the reference; the log shown in log order |
+| 6 | the smoke gate | `T-116` | pending | every UI action maps to one CLI verb with identical output; no route writes except through a verb, pinned by parsing (D65's shape); the four verdict states render distinctly; templates carry no logic; zero model calls; every gate green with the app importable |
 
 ---
 
