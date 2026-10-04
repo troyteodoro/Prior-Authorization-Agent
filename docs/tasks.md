@@ -17,10 +17,15 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v1.6`, row 1 — `T-107`**, the tree-declared extraction
-schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
-a version opens when the previous one closes, and the opening row writes its own
-record *(D97's rule)*.
+**What to do next: `v1.6`, row 2 — `T-108`**, practice three. **Nothing is open
+on this board**; v1.6 is in progress, and its next row writes its own record
+when it opens *(D97's rule)*.
+**`T-107` opened v1.6 and closed its row 1** *(D149)*: a tree declares the fact
+kinds its extraction produces, from a closed `FactKind` vocabulary, and the
+declaration must equal what its criteria and reconciled facts consume. A tree
+declaring none reads no note. A recording replays only under the prompt version
+each note was measured with. It minted **REQ-78**, and moved no recording,
+verdict, span, baseline status or verifier claim.
 **`T-142` closed off the path** *(D148)*, opened after the review that wrote
 D147: CLAUDE.md's *Current state* is a status line capped at 30 lines, and
 CLAUDE.md keeps no copy of a measured figure, the suite size, this board's
@@ -300,10 +305,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-103 tasks are on this board — IDs run to T-142, and every id above T-125 is
+104 tasks are on this board — IDs run to T-142, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 103 are closed and none is open**; every row the board numbered has a
+is well above the count. **All 104 are closed and none is open**; every row the board numbered has a
 record. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
@@ -425,7 +430,7 @@ this round and closed as REQ-73 *(D124, D130)*.
 | v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
 | v1.5 | the form, review, simulated submission and tracking, headless · **closed** | US-13 | T-103–T-106 | none | A13 ✓ |
-| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings | A14 |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **in progress** | US-14 | T-107–T-110 | new extraction recordings | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
 | v2.2 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
@@ -535,7 +540,7 @@ re-measured differential.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the declared extraction schema | `T-107` | pending | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load; **and a tree that declares no fact type reads no note** — extended by *(D113)*, which measured a rheumatology determination extracting both notes of a chart whose events no criterion consumes; **and a recorded payload replayed under a fact schema it was not measured with raises** — extended by *(D147)*, because replay is keyed by note bytes alone and a second schema would otherwise replay the first's payload |
+| 1 | the declared extraction schema | `T-107` | **closed** (D149) | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load; **and a tree that declares no fact type reads no note** — extended by *(D113)*, which measured a rheumatology determination extracting both notes of a chart whose events no criterion consumes; **and a recorded payload replayed under a fact schema it was not measured with raises** — extended by *(D147)*, because replay is keyed by note bytes alone and a second schema would otherwise replay the first's payload |
 | 2 | practice three | `T-108` | pending | source, tree, patients, notes, rows, recording; `run_eval.py` green |
 | 3 | practice four | `T-109` | pending | as row 2 |
 | 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | pending | Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
@@ -3355,6 +3360,82 @@ is a decision and touches `T-102`'s and `T-104`'s verbs rather than this one's
 *(working rule 6)*.
 
 ---
+
+## `US-14` Two more practices, notes included
+
+Opened by `T-107` *(D149)*, which is also v1.6's opening entry. Four rows: the
+declared extraction schema, practice three, practice four, then the criteria
+v1.2 and v1.3 deferred and the four-practice account. Rows 2 to 4 spend model
+calls, because new notes are new extraction recordings (D45). Row 1 spent none.
+
+### `[x] T-107` The declared extraction schema
+
+**REQ:** mints 78 · **Depends:** T-91, T-92, T-98, T-129 · **Blocks:** T-108,
+T-109, T-110 · **Decided by:** D147, D149 · **Gates:** A14 (first of four rows;
+opens v1.6) · **Timebox:** two days
+**Status:** **closed** (D149). The exit ran green and every gate with it.
+**v1.6 is open.** No model call. No recording, bundle, note, span, verdict,
+baseline status, verifier claim or rendered packet moved.
+
+**Measured at open.**
+- No tree declared a fact kind.
+- `step_extract` ran whatever the tree was, so `infliximab-ra-jjm-v1` over
+  `ee9d79ee` extracted two notes no criterion read (D113).
+- Every `_RaisingRunner` in the rheumatology and ultrasound tests sat on a
+  note-free chart, so none proved the step was skipped.
+- `RecordedExtractionRunner` keyed by note bytes alone. Every replayable note in
+  all six extraction recordings already stored its own `trace.prompt_version`.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_fact_kinds.py tests/test_rheumatology_corpus.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- each of the four committed trees declares `fact_kinds` — both bariatric trees
+  `weight_management`, the infliximab and ultrasound trees none — and each
+  declaration equals what the tree's criteria and reconciled facts consume;
+- refused at load: a missing declaration, an unknown kind, a duplicate, a kind
+  nothing consumes, a consumed kind nobody declared, and a reconciled fact
+  naming a note source no kind produces;
+- every `FactKind` has a `FactSchema`, the one that exists is `Extraction`,
+  `INSTRUCTION`, `build_result`, `_locate` and `PROMPT_VERSION` exactly, and its
+  digest is pinned beside its version;
+- all six extraction recordings replay under `weight_management`. A payload
+  asked for under another version raises `SCHEMA_MISMATCH`, which is terminal.
+  A payload with no recorded version is `NOT_RECORDED`. A determination over a
+  mismatched recording aborts with every note criterion in `ERROR`;
+- the infliximab tree over **note-bearing** `ee9d79ee`, with a runner that
+  raises, reaches its answer with zero model calls.
+
+**Not changed, on purpose.** `WorkflowState` and `PredicateInputs` keep their
+`WmEvent`-typed fields, and the fold stays inline in `step_extract`. A generic
+`facts` mapping and per-kind folds are vacuous with one kind, so they are
+`T-108`'s, with the requirement that the trust boundary is generic (D109,
+D149). `determine()` still asks for an extraction runner on every covered
+request. A tree that reads no note is handed one that raises, which is what
+proves the read was skipped.
+
+**Mutation pass.** Five mutants, zero survivors, with `__pycache__` cleared
+between runs and the four source files compared byte for byte after restore:
+- the extra-kind check removed from the tree validator: the D113 refusal went
+  red;
+- `step_extract` looping over `weight_management` regardless of the tree: the
+  rheumatology test on note-bearing `ee9d79ee` went red, because the raising
+  runner was reached, and so did the loop census in `test_workflow.py`;
+- the version comparison in replay removed: both mismatch tests went red;
+- `SCHEMA_MISMATCH` mapped to a retryable code: the terminal test and the
+  determination test (three attempts, not one) went red;
+- one character of `INSTRUCTION` changed: the digest pin went red, and
+  **nothing else did**. The pin is the only check that sees a prompt edit
+  which leaves its version alone, which is why it exists.
+
+The first pass printed nothing for any run, including the restored one. Under
+zsh an unquoted `$T` is one word, so pytest received a single path that does
+not exist. The pass was re-run under bash. A harness that is silent on the
+restored tree is broken, not passing.
 
 ## Attached to no story
 

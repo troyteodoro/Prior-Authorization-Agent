@@ -56,6 +56,10 @@ from pa_agent.workflow import (
     STEPS,
     run_criteria_workflow,
 )
+from pa_agent.contracts import FactKind
+from pa_agent.extraction import PROMPT_VERSION
+
+WEIGHT_MANAGEMENT = FactKind.WEIGHT_MANAGEMENT
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
@@ -255,11 +259,11 @@ class _CountingRunner:
         self._inner = inner
         self.calls: list[tuple[str, str]] = []
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         self.calls.append(
             (document_id, hashlib.sha256(text.encode("utf-8")).hexdigest()[:12])
         )
-        return self._inner.run(document_id, text)
+        return self._inner.run(document_id, text, kind)
 
 
 def test_n_notes_produce_n_extraction_calls_one_per_note(
@@ -381,14 +385,14 @@ class _FlakyRunner:
         self._remaining = failures
         self.attempts = 0
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         self.attempts += 1
         if self._remaining > 0:
             self._remaining -= 1
             raise ExtractionOutputError(
                 ExtractionFailure.CALL_FAILED, "503 UNAVAILABLE (synthetic)"
             )
-        return self._inner.run(document_id, text)
+        return self._inner.run(document_id, text, kind)
 
 
 class _AlwaysFailingRunner:
@@ -398,7 +402,7 @@ class _AlwaysFailingRunner:
         self._reason = reason
         self.attempts = 0
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         self.attempts += 1
         raise ExtractionOutputError(self._reason, "synthetic")
 
@@ -488,7 +492,7 @@ class _EmptyPayloadRunner:
     def __init__(self) -> None:
         self.calls = 0
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         from pa_agent.extraction import build_result
 
         self.calls += 1
@@ -563,8 +567,8 @@ def test_a_recorded_payload_replays_for_identical_bytes_under_another_id(
     note = patient_store.get_notes(case_patients["E4"])[0]
     twin = Document.from_text("twin-patient/chart_note.txt", note.text)
     assert twin.sha256 == note.sha256 and twin.document_id != note.document_id
-    replayed = runner.run(twin.document_id, twin.text)
-    original = runner.run(note.document_id, note.text)
+    replayed = runner.run(twin.document_id, twin.text, WEIGHT_MANAGEMENT)
+    original = runner.run(note.document_id, note.text, WEIGHT_MANAGEMENT)
     assert replayed.events and len(replayed.events) == len(original.events)
     cited = {e.span.document_id for e in replayed.events} | {
         s.document_id
@@ -581,7 +585,7 @@ def test_a_recorded_runner_never_answers_bytes_it_did_not_measure(runner) -> Non
     under an unknown id are still NOT_RECORDED, and unknown bytes under a
     recorded id are still DOCUMENT_CHANGED (D18)."""
     with pytest.raises(ExtractionOutputError) as caught:
-        runner.run("nobody/chart_note.txt", "A note nobody measured.\n")
+        runner.run("nobody/chart_note.txt", "A note nobody measured.\n", WEIGHT_MANAGEMENT)
     assert caught.value.reason is ExtractionFailure.NOT_RECORDED
 
 
@@ -798,6 +802,9 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
                                           # deterministic verdicts (D99)
         "state.tree.criteria",            # T-87: the unclaimed criteria the
                                           # tree declares — policy data (D101)
+        "state.tree.fact_kinds",          # T-107: the kinds the tree declares —
+                                          # policy data, zero on a tree that
+                                          # reads no note (REQ-78, D149)
     ], f"workflow.py loops over {iterables}"
 
 
@@ -910,10 +917,10 @@ class _TwoTurnRunner:
     def __init__(self, inner) -> None:
         self._inner = inner
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         from pa_agent.contracts import CallMetrics, RunTrace
 
-        result = self._inner.run(document_id, text)
+        result = self._inner.run(document_id, text, kind)
         turn = CallMetrics(
             model="two-turn-model",
             purpose="extraction",
@@ -966,7 +973,7 @@ class _StatedBmiRunner:
     def __init__(self, by_document: dict[str, float]) -> None:
         self._by_document = by_document
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         from pa_agent.extraction import build_result
 
         return build_result(document_id, text, {
@@ -1006,10 +1013,10 @@ class _NoTraceRunner:
     def __init__(self, inner) -> None:
         self._inner = inner
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         from pa_agent.contracts import CallMetrics
 
-        result = self._inner.run(document_id, text)
+        result = self._inner.run(document_id, text, kind)
         result.metrics = CallMetrics(
             model="no-trace-model", purpose="extraction", input_tokens=50,
             output_tokens=5, wall_time_ms=1.0,
@@ -1049,7 +1056,7 @@ def test_a_replayed_re_ask_turn_reaches_the_determination(
             **record,
             "trace": {
                 "runner_name": "direct", "model": "replayed-model",
-                "prompt_version": "test", "document_id": note.document_id,
+                "prompt_version": PROMPT_VERSION, "document_id": note.document_id,
                 "steps": ["extract", "reask"], "tool_calls": [], "attempts": 1,
                 "termination_reason": "ok; reask ok",
                 "metrics": [turn, {**turn, "purpose": "extraction_reask"}],

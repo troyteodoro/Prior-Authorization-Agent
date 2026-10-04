@@ -85,6 +85,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from pa_agent.contracts import FactKind  # noqa: E402
 from pa_agent.model_pin import MEASURED_TIER, PINNED_MODEL, SECOND_TIER  # noqa: E402
 from pa_agent.runners import ExtractionOutputError  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
@@ -334,7 +335,7 @@ def measure(tool_fetch: bool, limit: int | None = None, tier: str = MEASURED_TIE
     for index, case in enumerate(cases, start=1):
         print(f"  [{index}/{len(cases)}] {case['note_id']}", flush=True)
         try:
-            result = runner.run(case["document_id"], case["text"])
+            result = runner.run(case["document_id"], case["text"], FactKind.WEIGHT_MANAGEMENT)
         except ExtractionOutputError as exc:
             # Recorded, never swallowed, and never scored: a note that produced no
             # extraction has nothing to score, and scoring it anyway is the trap

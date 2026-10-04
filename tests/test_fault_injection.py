@@ -145,7 +145,7 @@ class _RaisingRunner:
         self.failure = failure
         self.attempts = 0
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         self.attempts += 1
         raise ExtractionOutputError(self.failure, "injected fault")
 
@@ -165,9 +165,9 @@ class _TamperingRunner:
         self._inner = inner
         self.calls = 0
 
-    def run(self, document_id: str, text: str):
+    def run(self, document_id: str, text: str, kind):
         self.calls += 1
-        result = self._inner.run(document_id, text)
+        result = self._inner.run(document_id, text, kind)
         result.events[:] = [
             event.model_copy(
                 update={

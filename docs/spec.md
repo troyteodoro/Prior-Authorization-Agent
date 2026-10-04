@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; **no version is open**; the versions after v1.5 are §11, and v1.6 opens with `T-107` *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; **v1.6 is in progress**, opened by `T-107` *(D149)*; the versions after v1.5 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -183,6 +183,17 @@ direct SDK runner, an ADK runner, and a replay runner over a recorded payload ar
 three implementations of one interface, and the deterministic chain cannot tell
 them apart. It is also what lets `pytest` evaluate the whole chain for zero model
 calls.
+
+**REQ-78** A criteria tree **declares the fact kinds** its note extraction
+produces, from a closed vocabulary, and the declaration must **equal** what the
+tree's deterministic criteria and reconciled facts consume, in both directions.
+A kind is never missing and never extra. An unknown kind, and a missing
+declaration, raise at load. **A tree that declares no kind reads no note**: the
+extraction step runs, and makes no call. A recorded extraction payload replays
+**only** under the prompt version it was measured with. A request under any
+other version raises `SCHEMA_MISMATCH` before the payload is built, and the
+determination reports the affected criteria as `ERROR`, never as an abstention.
+*(T-107, D147, D149; v1.6's first statement)*
 
 **REQ-53** A model's tool allowlist is declared per agent and is single-plane. The
 extraction agent receives patient-plane tools only; no module holds both the
@@ -1132,8 +1143,8 @@ changed is that the replayed numbers are no longer from a single tier.
 
 v1 is complete, v1.1 — the §10 round D97 opened as "v2" and D105 renamed —
 is closed, and **v1.2, v1.3, v1.4 and v1.5 are closed too** *(T-95/D116,
-T-99/D126, T-102/D129, T-106/D136)*; no version is open, and v1.6 opens with
-`T-107`. This section fixes what
+T-99/D126, T-102/D129, T-106/D136)*; v1.6 is in progress, opened by `T-107`
+*(D149)*. This section fixes what
 follows: one version at a time, each with a goal, a scope, the story it
 closes, the tasks it reserves, what it spends, and the gate it must hold
 *(D105)*. **Requirements here are
@@ -1161,7 +1172,7 @@ load-bearing; a table that sorts prettily is not.
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
 | v1.5 | the form, review, simulated submission and tracking, headless · **closed** | US-13 | T-103–T-106 | none | A13 ✓ |
-| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **in progress** | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
 | v2.2 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
@@ -1550,10 +1561,13 @@ re-measured.
 
 - A tree declares its fact types; the bariatric tree declares `WmEvent` and
   every existing recording replays unchanged; an unknown fact type raises
-  at load.
+  at load. **Minted as REQ-78 by `T-107`** *(D149)*, together with *a tree
+  declaring none reads no note* and *a recording replays only under the
+  prompt version it was measured with* (D147).
 - The anchorer, the validator and the trust boundary are generic over
   declared fact types; no fact type reaches a `WmEvent`-shaped private
-  route.
+  route. Checkable only once a second kind exists, so it is
+  `T-108`'s to mint *(D149)*.
 - The compatibility account covers four practices.
 
 **Gate A14.** A10 over four practices; every eval row `PASS`; the agentic

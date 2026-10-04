@@ -70,6 +70,9 @@ from pa_agent.agent.extraction_agent import (
 )
 from pa_agent.agent.patient_tools import build_patient_tools
 from pa_agent.agent.policy_tools import build_policy_tools
+from pa_agent.contracts import FactKind
+
+WEIGHT_MANAGEMENT = FactKind.WEIGHT_MANAGEMENT
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
@@ -606,7 +609,7 @@ def test_the_declaration_the_model_sees_hides_the_injected_store(e1_note) -> Non
 
 def _run_with_fake(payload_or_parts, note: Document, **kwargs) -> Any:
     runner = AdkExtractionRunner(llm=_fake_llm(payload_or_parts), **kwargs)
-    return runner.run(note.document_id, note.text)
+    return runner.run(note.document_id, note.text, WEIGHT_MANAGEMENT)
 
 
 def test_adk_output_produces_exactly_what_build_result_produces(
@@ -764,7 +767,7 @@ def test_the_adk_runner_and_the_recorded_runner_agree_on_the_same_payload(
     recorded = RecordedExtractionRunner.from_records(
         recording["notes"], model=recording["model"]
     )
-    from_recorded = recorded.run(e1_note.document_id, e1_note.text)
+    from_recorded = recorded.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
     from_adk = _run_with_fake([json.dumps(e1_payload)], e1_note)
 
     assert [e.model_dump(mode="json") for e in from_adk.events] == [
@@ -809,7 +812,7 @@ def test_the_tool_call_trace_is_recorded_in_order(e1_note, e1_payload) -> None:
         patient_store=store,
         tool_fetch=True,
     )
-    result = runner.run(e1_note.document_id, e1_note.text)
+    result = runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
 
     names = [call.name for call in result.trace.tool_calls]
     assert names == ["read_note"], names
@@ -840,7 +843,7 @@ def test_a_tool_call_trace_records_a_digest_and_never_the_arguments(
         patient_store=store,
         tool_fetch=True,
     )
-    result = runner.run(e1_note.document_id, e1_note.text)
+    result = runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
     call = result.trace.tool_calls[0]
 
     assert e1_note.document_id not in call.arguments_digest
@@ -859,9 +862,9 @@ def test_a_fresh_session_per_note_so_one_note_cannot_see_another(
     runner = AdkExtractionRunner(
         llm=_fake_llm([json.dumps(e1_payload), json.dumps(e1_payload)])
     )
-    runner.run(e1_note.document_id, e1_note.text)
+    runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
     first = runner._counter
-    runner.run(e1_note.document_id, e1_note.text)
+    runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
     assert runner._counter == first + 1, (
         "the session counter did not advance; two notes would share a session"
     )
@@ -875,7 +878,7 @@ def test_the_recorded_runner_carries_exactly_the_recorded_trace(recording, e1_no
         r for r in recording["notes"] if r["document_id"] == e1_note.document_id
     )
     recorded = RecordedExtractionRunner.from_records(recording["notes"])
-    trace = recorded.run(e1_note.document_id, e1_note.text).trace
+    trace = recorded.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT).trace
     if record.get("trace") is None:
         assert trace is None
     else:
@@ -935,7 +938,7 @@ def test_an_unanchorable_quote_is_re_asked_in_a_second_self_contained_invocation
     fake's cursor runs across them."""
     fake = _fake_llm([json.dumps(_paraphrased(e1_payload)), _verbatim_answer(e1_payload)])
     runner = AdkExtractionRunner(llm=fake)
-    result = runner.run(e1_note.document_id, e1_note.text)
+    result = runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
 
     assert len(fake.seen) == 2
     second = fake.seen[1]
@@ -972,7 +975,7 @@ def test_the_tool_fetch_reask_reads_the_note_through_the_scoped_reader(
         patient_store=store,
         tool_fetch=True,
     )
-    result = runner.run(e1_note.document_id, e1_note.text)
+    result = runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
 
     assert [call.name for call in result.trace.tool_calls] == ["read_note", "read_note"]
     assert len(result.trace.metrics) == 4
@@ -990,7 +993,7 @@ def test_a_still_bad_second_answer_keeps_the_drop_and_asks_no_third_time(
             json.dumps({"quotes": [{"path": "wm_events[0].quote", "verbatim": "still not there"}]}),
         ]
     )
-    result = AdkExtractionRunner(llm=fake).run(e1_note.document_id, e1_note.text)
+    result = AdkExtractionRunner(llm=fake).run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
 
     assert fake.cursor == 1, "exactly two model turns"
     assert [d["reason"] for d in result.dropped] == ["event_quote_unanchorable"]
@@ -1005,7 +1008,7 @@ def test_a_reask_answer_the_schema_rejects_is_recorded_not_raised(
     out of the run; the runner records that as the re-ask's classified error
     and the first turn's result stands (D103)."""
     fake = _fake_llm([json.dumps(_paraphrased(e1_payload)), json.dumps(_paraphrased(e1_payload))])
-    result = AdkExtractionRunner(llm=fake).run(e1_note.document_id, e1_note.text)
+    result = AdkExtractionRunner(llm=fake).run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
 
     assert result.reask["error"].startswith("SCHEMA_INVALID")
     assert result.reask["unrecovered"] == ["wm_events[0].quote"]
@@ -1027,7 +1030,7 @@ def test_the_reask_invocation_has_its_own_session(e1_note, e1_payload, monkeypat
         return original(agent, message, output_key, session_id, purpose)
 
     monkeypatch.setattr(runner, "_invoke", spy)
-    runner.run(e1_note.document_id, e1_note.text)
+    runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
     assert len(seen) == 2 and len(set(seen)) == 2
     assert seen[1].startswith(seen[0])
 

@@ -51,7 +51,6 @@ import pytest
 
 from pa_agent.contracts import CriterionVerdict, DeterminationOutcome, GapReason
 from pa_agent.determination import determine
-from pa_agent.runners import RecordedExtractionRunner
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
 
@@ -129,16 +128,6 @@ def _determine(patients, policies, patient_id):
         verifier=AcceptAllVerifier(),
     )
 
-
-def _recorded_runner():
-    """T-15's recording, for the one case here whose chart carries notes.
-    Spends nothing and replays what was measured (D45)."""
-    recording = json.loads(
-        (REPO_ROOT / "eval" / "extraction" / "results.json").read_text(encoding="utf-8")
-    )
-    return RecordedExtractionRunner.from_records(
-        recording["notes"], model=recording.get("model")
-    )
 
 
 # --------------------------------------------------------------------------
@@ -405,22 +394,23 @@ def test_a_rheumatology_request_on_a_bariatric_chart_abstains(patients, policies
     rests on anything the note pass produced.
 
     This chart carries notes, and that is how D113 found the cost the
-    rheumatology rows cannot show: `step_extract` is an unconditional entry in
-    `STEPS`, so a tree declaring no note criterion still pays to read every
-    note on the chart. It changes no verdict, which is why it is a cost and
-    not a defect, and it is `T-107`'s to remove — the row where the tree
-    declares its extraction schema.
+    rheumatology rows could not show: `step_extract` ran whatever the tree
+    was, so a tree declaring no note criterion still paid to read every note.
+    Since `T-107` the tree declares its fact kinds — none — and the step's
+    outer loop is bounded by that declaration (REQ-78, D149). So the runner
+    here **raises**: a note-bearing chart under a tree that reads no note is
+    the one input on which a raising runner proves the read was skipped. The
+    other charts in this file carry no notes, so their raising runner proves
+    nothing about the step.
     """
     bariatric_chart_in_palmetto = "ee9d79ee-ba2e-5915-b6d5-c7e700066d40"
-    determination = determine(
-        policies,
-        J_CODE,
-        patient_id=bariatric_chart_in_palmetto,
-        patient_store=patients,
-        as_of=AS_OF,
-        extraction_runner=_recorded_runner(),
-        verifier=AcceptAllVerifier(),
+    assert len(patients.get_notes(bariatric_chart_in_palmetto)) == 2, (
+        "this test needs a note-bearing chart, or the raising runner proves "
+        "nothing"
     )
+    determination = _determine(patients, policies, bariatric_chart_in_palmetto)
+    assert determination.model_calls == 0
+    assert determination.metrics == []
     assert determination.policy_version_id == TREE_ID
     assert determination.outcome is DeterminationOutcome.INSUFFICIENT_EVIDENCE
     assert {r.verdict for r in determination.criterion_results} == {

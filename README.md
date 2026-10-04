@@ -69,8 +69,8 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and no version is
-open.** 103 of 103 tasks closed, **none open** — `T-103` opened v1.5 with the
+**v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and v1.6 is in
+progress.** 104 of 104 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,8 +78,10 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A13 holding. The suite collects 1768 tests (58 skip). **v1.6 opens next**,
-with `T-107`.
+A1–A13 holding. The suite collects 1791 tests (58 skip). **`T-107` opened v1.6**
+*(D149)*: a tree now declares the fact kinds its extraction produces, a tree
+declaring none reads no note, and a recording replays only under the prompt
+version it was measured with. **`T-108` is next.**
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -266,7 +268,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.424**, accounted for per `gap_reason` — the rise is the second and third practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 53 model calls / 55,585 in / 7,870 out / 52.4s across seventeen determinations, from instrumentation |
-| A7 | 79 requirements: 77 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 80 requirements: 78 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **24 criteria across four trees and three practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -424,7 +426,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
 | v1.4 | sessions and intake, headless | US-12 | **complete** |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | **complete** |
-| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | planned |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | in progress |
 | v2.0 | the payer axis: national and regional coverage | US-16 | planned |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
 | v2.2 | the reviewer's UI over the session port | US-15 | planned |
@@ -1055,7 +1057,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1768 tests across 57 files, 58 of them skipped — the skips are per-tree
+1791 tests across 58 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

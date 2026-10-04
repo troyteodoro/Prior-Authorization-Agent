@@ -336,11 +336,12 @@ def test_every_ultrasound_determination_spends_no_model_call(patients, policies)
 
 
 def test_no_ultrasound_criterion_cites_a_note(patients, policies):
-    """These charts are note-free, and the tree declares no note criterion.
-    Pinned because `step_extract` is unconditional (D113's finding): a chart
-    with notes under this tree would still be read, and the guarantee that
-    matters is that nothing it read reaches a verdict. T-107 removes the
-    call."""
+    """These charts are note-free, and the tree declares no fact kind. Since
+    `T-107` a tree declaring none reads no note at all (REQ-78, D149); that is
+    proved on a note-bearing chart in `test_rheumatology_corpus.py`, because a
+    raising runner on a note-free chart proves nothing about the step. What
+    stays pinned here is that nothing on the chart reaches a verdict through a
+    note."""
     note_ids = {d.document_id for d in patients.get_notes(US1)}
     assert note_ids == set()
     determination = _determine(patients, policies, US1)

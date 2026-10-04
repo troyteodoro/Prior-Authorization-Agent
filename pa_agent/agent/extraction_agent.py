@@ -54,9 +54,10 @@ import json
 import time
 from typing import Any
 
-from pa_agent.contracts import CallMetrics, ToolCall
+from pa_agent.contracts import CallMetrics, FactKind, ToolCall
 from pa_agent.extraction import (
     EXTRACTION_TEMPERATURE,
+    FACT_SCHEMAS,
     INSTRUCTION,
     PROMPT_VERSION,
     REASK_INSTRUCTION,
@@ -435,7 +436,17 @@ class _AdkRuns:
             document_id=document_id,
         )
 
-    def run(self, document_id: str, text: str) -> ExtractionResult:
+    def run(self, document_id: str, text: str, kind: FactKind) -> ExtractionResult:
+        # The agent this leaf builds carries `Extraction` and `INSTRUCTION`,
+        # which is `weight_management`'s registry entry. A second kind needs its
+        # own agent, and that is `T-108`'s to build (D149): raising here keeps
+        # a kind from being answered by another kind's prompt.
+        schema = FACT_SCHEMAS[kind]
+        if schema.response_model is not Extraction or schema.instruction != INSTRUCTION:
+            raise NotImplementedError(
+                f"the ADK extraction leaf builds the weight_management agent; "
+                f"{kind.value!r} has no ADK agent yet (T-108, D149)"
+            )
         # One session id per note, advanced once per `run()` — the re-ask
         # invocation derives its own from it, so two notes never share one
         # (D17) and a re-ask never shares the extraction's.
@@ -449,6 +460,9 @@ class _AdkRuns:
             runner_name=self.name,
             model=self._model_name,
             step_names=("adk_run", "adk_reask"),
+            build=schema.build,
+            locate=schema.locate,
+            prompt_version=schema.prompt_version,
         )
 
     def _first_turn(self, document_id: str, text: str, session: str) -> Turn:

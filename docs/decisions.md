@@ -14068,3 +14068,99 @@ history paragraph.
 ### What it mints
 
 Nothing.
+
+## D149 — A tree declares the fact kinds it extracts, equal to what it consumes, and replay is keyed by the prompt version each note was measured under
+
+**Context.** `T-107`, v1.6 row 1, which opens v1.6. Written before the code
+(Article IX, working rule 5). D147 fixed the shape: a closed registry, not
+tree-authored fields, and a replay keyed by note bytes and fact schema. This
+entry fixes the details D147 left to the row's open, and it refines D147
+clause 2.
+
+**Measured at open.**
+- **No tree declares a fact kind.** `CriteriaTree` sets no `extra="forbid"`, so
+  an unknown top-level key is silently ignored today.
+- **`step_extract` runs whatever the tree is.** `infliximab-ra-jjm-v1` over
+  `ee9d79ee` extracts two notes that no criterion consumes (D113). The
+  `_RaisingRunner` fixtures in the rheumatology and ultrasound tests pass only
+  because their charts carry no notes, so none of them proves the step is
+  skipped.
+- **Every replayable note in all six extraction recordings stores its own
+  `trace.prompt_version`**, which reads `t15-instruction-v1/t89-reask-v1`.
+  `RecordedExtractionRunner.from_records` never reads it.
+- `ReconciledFact.note_source` is a free string. Both bariatric trees write
+  `"wm_event.bmi"`.
+
+### Chosen
+
+1. **`FactKind` is a closed enum with one member, `weight_management`.** Its
+   registry is `extraction.FACT_SCHEMAS`. Each entry is a `FactSchema` naming
+   the response model, the instruction, the builder, the locator, the prompt
+   version and a digest of all of them. The bariatric entry is today's
+   `Extraction`, `INSTRUCTION`, `build_result`, `_locate` and `PROMPT_VERSION`,
+   unchanged, so every recording replays. No second member exists until a
+   document earns one, which is `T-108`'s (D116's rule).
+2. **`CriteriaTree.fact_kinds` is required, with no default, and must equal
+   what the tree consumes, in both directions.** What a tree consumes is read
+   from two closed maps next to `PredicateKind`:
+   - `PREDICATE_FACT_KIND` sends the five `note_event_*` kinds to
+     `weight_management`;
+   - `NOTE_SOURCE_FACT_KIND` sends `"wm_event.bmi"` to it.
+
+   An unclaimed criterion counts for nothing, and the validator needs no
+   filter to say so: the `Criterion` contract already refuses an unclaimed
+   criterion that declares a kind (REQ-58). A `deterministic` test would be a
+   check no input can reach (D131). Each way it can go wrong raises at load:
+   - a declared kind nothing consumes reads notes for nothing (D113);
+   - a consumed kind that is not declared is a criterion with nothing to read;
+   - an unknown kind fails enum validation;
+   - an unknown `note_source` raises, which turns the free string into a key.
+3. **`step_extract` iterates the tree's declared kinds, then the notes.** A
+   tree declaring none reads no note and makes no call. The step stays in
+   `STEPS`, because the graph is fixed (Article I): a step that runs zero times
+   is still a step the graph visited. `determine()` requires an extraction
+   runner only for a tree that declares a kind.
+4. **The extraction port takes the kind: `run(document_id, text, kind)`.** This
+   follows the quote port's precedent (D122): the request belongs on the port,
+   not in the runner's construction.
+5. **Replay is keyed by note sha256 and the recorded prompt version. This
+   refines D147 clause 2.** `RecordedExtractionRunner` reads each record's
+   `trace.prompt_version`. A request for a kind whose `prompt_version` differs
+   raises the new `ExtractionFailure.SCHEMA_MISMATCH`, which is terminal and
+   maps to `SCHEMA_INVALID`. The check runs once the note's record is found
+   and **before** its payload is built, so a payload is never built under a
+   schema it was not measured with. This is the per-note form of the way
+   `RecordedQuoteRunner` refuses a row it was not asked. A **pinned digest**
+   ties each kind's schema and instruction to its version, so neither can
+   change while the version stays the same. A failed pin means a new version
+   and a new measurement (D45). A record with no recorded version is not
+   replayable, and asking for it raises `NOT_RECORDED` rather than assuming a
+   version.
+
+*Rejected — stamping a digest into each measured recording, as D147 clause 2
+first said.* Four of the six recordings have no `--rescore` path. Rewriting
+measured files to carry a value they already imply buys nothing. The version
+is recorded per note, and the pin ties it to the content, so the protection is
+the same.
+
+*Rejected — deriving `fact_kinds` from the criteria instead of declaring it.*
+Spec §11 asks for a declaration. D130's shape, a declaration checked against
+what can be derived, is the one that makes a mismatch a load error. A pure
+derivation is a mismatch nobody can see.
+
+*Deferred to `T-108`.* A generic `facts` mapping on `WorkflowState` and
+`PredicateInputs`, per-kind fold functions, and the requirement that the
+anchorer, the validator and the trust boundary are generic with no
+`WmEvent`-shaped private route. Each is vacuous with one kind and checkable
+only with two. A statement is minted by the task whose close checks it (D109).
+
+### Reversal condition
+
+D147's: a fact that no registered kind can express without tree-specific
+fields. Clause 5 reverses toward a stamped digest if a recording ever holds
+notes measured under two versions of one kind, because the version would then
+no longer name the content.
+
+### What it mints
+
+**REQ-78.**

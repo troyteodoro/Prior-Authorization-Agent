@@ -357,6 +357,47 @@ class PredicateKind(str, Enum):
     PROCEDURE_VALUE_SET_INTERVAL = "procedure_value_set_interval"
 
 
+class FactKind(str, Enum):
+    """What a note extraction produces — the closed vocabulary a tree selects
+    from (T-107, REQ-78, D147, D149).
+
+    A kind is a schema, an instruction and a re-ask shape the engine already
+    has, registered in `extraction.FACT_SCHEMAS`. A tree **selects** kinds and
+    never defines one. A tree-authored field list would make the tree's data
+    the prompt, and every tree edit a new measurement (D45).
+
+    **One member, on purpose.** The next is earned by a document that states a
+    fact no registered kind can carry, which is `T-108`'s round (D116's rule).
+    A member added without a `FACT_SCHEMAS` entry is a red suite
+    (`tests/test_fact_kinds.py`).
+    """
+
+    #: Supervised weight-management encounters, program assertions and the
+    #: note's current BMI — `extraction.Extraction`, unchanged since T-81.
+    WEIGHT_MANAGEMENT = "weight_management"
+
+
+#: The fact kind each note-consuming predicate reads (T-107, D149). A predicate
+#: absent from this map reads no extracted fact. The tree's `fact_kinds` must
+#: equal the image of its deterministic criteria under this map, together with
+#: `NOTE_SOURCE_FACT_KIND`, so a kind declared for nothing (D113) and a criterion
+#: with nothing to read both fail at load.
+PREDICATE_FACT_KIND: dict[PredicateKind, FactKind] = {
+    PredicateKind.NOTE_EVENT_COUNT: FactKind.WEIGHT_MANAGEMENT,
+    PredicateKind.NOTE_EVENT_RUN_LENGTH: FactKind.WEIGHT_MANAGEMENT,
+    PredicateKind.NOTE_EVENT_RUN_RECENCY: FactKind.WEIGHT_MANAGEMENT,
+    PredicateKind.NOTE_EVENT_RUN_BMI_RATE: FactKind.WEIGHT_MANAGEMENT,
+    PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: FactKind.WEIGHT_MANAGEMENT,
+}
+
+#: The fact kind each `ReconciledFact.note_source` is read from (T-107, D149).
+#: Closed: an unknown source raises at load, where it was a free string that
+#: nothing checked.
+NOTE_SOURCE_FACT_KIND: dict[str, FactKind] = {
+    "wm_event.bmi": FactKind.WEIGHT_MANAGEMENT,
+}
+
+
 class Criterion(BaseModel):
     """The compiled criterion — the one object that crosses the plane boundary.
 
@@ -807,6 +848,11 @@ class CriteriaTree(BaseModel):
     reconciled_facts: list[ReconciledFact] = Field(default_factory=list)
     categorical_exclusions: list[CategoricalExclusion] = Field(default_factory=list)
     procedure_sets: ProcedureSets | None = None
+    #: The fact kinds this tree's note extraction produces (T-107, REQ-78, D149).
+    #: Required and never defaulted, so a tree written before the field fails
+    #: to load rather than quietly reading no note, or every note. Checked
+    #: against what the tree consumes by `_fact_kinds_are_what_the_tree_consumes`.
+    fact_kinds: tuple[FactKind, ...]
 
     @model_validator(mode="after")
     def _criteria_ids_unique_and_expression_closed(self) -> CriteriaTree:
@@ -859,6 +905,54 @@ class CriteriaTree(BaseModel):
                     "itself scoped; the graph evaluates unscoped criteria and "
                     "then scoped ones, so a chain has no order (D110)"
                 )
+        return self
+
+    @model_validator(mode="after")
+    def _fact_kinds_are_what_the_tree_consumes(self) -> CriteriaTree:
+        """REQ-78 (T-107, D149): declared equals consumed, in both directions.
+
+        A declared kind nothing consumes reads every note for nothing, which is
+        the rheumatology tree extracting a chart no criterion of it reads
+        (D113). A consumed kind nobody declared is a criterion with no facts to
+        read, which abstains on every chart and never says why. An unclaimed
+        criterion consumes nothing, because it declares no kind.
+        """
+        if len(set(self.fact_kinds)) != len(self.fact_kinds):
+            raise ValueError(
+                f"{self.policy_version_id} declares a fact kind twice: "
+                f"{[k.value for k in self.fact_kinds]}"
+            )
+        consumed: set[FactKind] = set()
+        for criterion in self.criteria:
+            # No `evaluation` test: the `Criterion` contract refuses an
+            # unclaimed criterion that declares a kind (REQ-58), so a filter
+            # here would be a check no input can reach (D131).
+            if criterion.kind in PREDICATE_FACT_KIND:
+                consumed.add(PREDICATE_FACT_KIND[criterion.kind])
+        for reconciled in self.reconciled_facts:
+            if reconciled.note_source not in NOTE_SOURCE_FACT_KIND:
+                raise ValueError(
+                    f"{self.policy_version_id} reconciles {reconciled.fact!r} "
+                    f"against note source {reconciled.note_source!r}, which no "
+                    f"fact kind produces; known sources are "
+                    f"{sorted(NOTE_SOURCE_FACT_KIND)} (D149)"
+                )
+            consumed.add(NOTE_SOURCE_FACT_KIND[reconciled.note_source])
+        declared = set(self.fact_kinds)
+        if declared - consumed:
+            raise ValueError(
+                f"{self.policy_version_id} declares fact kinds "
+                f"{sorted(k.value for k in declared - consumed)} that no criterion "
+                "or reconciled fact consumes; extracting them reads every note "
+                "for nothing (D113, D149)"
+            )
+        if consumed - declared:
+            raise ValueError(
+                f"{self.policy_version_id} consumes fact kinds "
+                f"{sorted(k.value for k in consumed - declared)} it does not "
+                "declare; the criteria reading them would have nothing to read "
+                "(D149)"
+            )
         return self
 
     def criterion(self, criterion_id: str) -> Criterion:

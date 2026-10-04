@@ -50,6 +50,9 @@ from test_adk_agent import _fake_llm
 from pa_agent.contracts import Document
 from pa_agent.model_pin import MEASURED_TIER, PINNED_MODEL
 from pa_agent.stores.patient import LocalPatientStore
+from pa_agent.contracts import FactKind
+
+WEIGHT_MANAGEMENT = FactKind.WEIGHT_MANAGEMENT
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "run_adk_extraction.py"
@@ -459,7 +462,7 @@ def test_an_addressable_note_runs_end_to_end_through_the_scoped_reader(
         patient_store=store,
         tool_fetch=True,
     )
-    result = runner.run(case["document_id"], case["text"])
+    result = runner.run(case["document_id"], case["text"], WEIGHT_MANAGEMENT)
 
     assert [c.name for c in result.trace.tool_calls] == ["read_note"]
     assert result.trace.tool_calls[0].ok is True
@@ -545,7 +548,7 @@ def _install_stub_runner(script, monkeypatch) -> list[str]:
             self.tool_fetch = kwargs["tool_fetch"]
             self.seen: list[str] = []
 
-        def run(self, document_id: str, text: str):
+        def run(self, document_id: str, text: str, kind):
             self.seen.append(document_id)
             asked.append(document_id)
             if len(self.seen) == 1:

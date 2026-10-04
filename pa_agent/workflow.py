@@ -47,6 +47,7 @@ from pa_agent.contracts import (
     Document,
     ErrorCode,
     EvidenceSpan,
+    FactKind,
     GapReason,
     Medication,
     NoteBmi,
@@ -104,6 +105,9 @@ ERROR_CODE_FOR: dict[ExtractionFailure, ErrorCode] = {
     ExtractionFailure.SCHEMA_INVALID: ErrorCode.SCHEMA_INVALID,
     ExtractionFailure.DOCUMENT_CHANGED: ErrorCode.SCHEMA_INVALID,
     ExtractionFailure.NOT_RECORDED: ErrorCode.SCHEMA_INVALID,
+    # T-107 (REQ-78, D149): asked under a schema the recording was not
+    # measured with. Terminal for the same reason as the two above.
+    ExtractionFailure.SCHEMA_MISMATCH: ErrorCode.SCHEMA_INVALID,
 }
 
 #: Failure reasons an identical second call could plausibly answer differently.
@@ -424,33 +428,39 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
     the attempt count: a terminal fault was tried once, a retryable one exhausted
     the budget — the same classification that drove the loop.
     """
-    for note in state.notes:
-        try:
-            result, trace = _extract_one(note, ctx)
-        except ExtractionOutputError as exc:
-            attempts = (
-                ctx.max_attempts
-                if exc.reason.value in _RETRYABLE_FAILURES
-                else 1
-            )
-            raise DeterminationAborted(
-                _error_results(
-                    _extraction_criteria(state.tree), ERROR_CODE_FOR[exc.reason], str(exc)
-                ),
-                attempts=attempts,
-            ) from exc
-        state.events.extend(result.events)
-        state.assertions.extend(result.assertions)
-        # T-60: a note's current BMI belongs to no encounter. Every note that
-        # states one is carried (REQ-34a, D104) — this was "first note wins"
-        # while the corpus had one note per patient, and with two it would be
-        # store order deciding a threshold question. The only branch here is
-        # on anchoredness: a BMI nobody can cite is not a documented BMI (D15).
-        if result.current_bmi is not None and result.current_bmi_span is not None:
-            state.note_bmis.append(
-                NoteBmi(value=result.current_bmi, span=result.current_bmi_span)
-            )
-        state.traces.append(trace)
+    # T-107 (REQ-78, D149): the tree's declared kinds bound the outer loop, so
+    # a tree declaring none reads no note and makes no call — the step is
+    # still visited, because the graph is fixed (Art. I). Both bounds are
+    # Python values the model cannot change. One kind exists, so the body below
+    # is its fold; a second kind earns a per-kind fold (T-108).
+    for kind in state.tree.fact_kinds:
+        for note in state.notes:
+            try:
+                result, trace = _extract_one(note, kind, ctx)
+            except ExtractionOutputError as exc:
+                attempts = (
+                    ctx.max_attempts
+                    if exc.reason.value in _RETRYABLE_FAILURES
+                    else 1
+                )
+                raise DeterminationAborted(
+                    _error_results(
+                        _extraction_criteria(state.tree), ERROR_CODE_FOR[exc.reason], str(exc)
+                    ),
+                    attempts=attempts,
+                ) from exc
+            state.events.extend(result.events)
+            state.assertions.extend(result.assertions)
+            # T-60: a note's current BMI belongs to no encounter. Every note that
+            # states one is carried (REQ-34a, D104) — this was "first note wins"
+            # while the corpus had one note per patient, and with two it would be
+            # store order deciding a threshold question. The only branch here is
+            # on anchoredness: a BMI nobody can cite is not a documented BMI (D15).
+            if result.current_bmi is not None and result.current_bmi_span is not None:
+                state.note_bmis.append(
+                    NoteBmi(value=result.current_bmi, span=result.current_bmi_span)
+                )
+            state.traces.append(trace)
 
     state.events.sort(key=lambda e: e.event_date)
 
@@ -831,7 +841,7 @@ def _criterion_order(tree: CriteriaTree, criterion_id: str) -> int:
     return len(tree.criteria)
 
 
-def _extract_one(note: Document, ctx: _Context) -> tuple[object, RunTrace]:
+def _extract_one(note: Document, kind: FactKind, ctx: _Context) -> tuple[object, RunTrace]:
     """One note, up to `max_attempts` times, with the attempts recorded.
 
     Retry is a Python budget (REQ-46). The classifier decides whether a second
@@ -845,7 +855,7 @@ def _extract_one(note: Document, ctx: _Context) -> tuple[object, RunTrace]:
 
     for attempt in range(1, ctx.max_attempts + 1):
         try:
-            result = ctx.runner.run(note.document_id, note.text)
+            result = ctx.runner.run(note.document_id, note.text, kind)
         except ExtractionOutputError as exc:
             last = exc
             if exc.reason.value not in _RETRYABLE_FAILURES:

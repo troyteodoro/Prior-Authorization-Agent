@@ -137,6 +137,11 @@ MAPPING: dict[str, str] = {
     # artifact exists exactly when the session is AWAITING_DECISION or DECIDED.
     "REQ-76": "tests/test_session_verbs.py",
     "REQ-77": "tests/test_session_verbs.py",
+    # T-107 (D149). A tree declares the fact kinds it extracts, equal to what
+    # it consumes; a tree declaring none reads no note (proved on a
+    # note-bearing chart in test_rheumatology_corpus.py); a recording replays
+    # only under the prompt version it was measured with.
+    "REQ-78": "tests/test_fact_kinds.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

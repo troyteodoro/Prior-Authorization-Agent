@@ -1,6 +1,8 @@
 """REQ-52 — the extraction port, and the three things that satisfy it (D62).
 
-One note in, one `ExtractionResult` out. Three implementations:
+One note and one declared `FactKind` in, one `ExtractionResult` out (the kind
+is on the port since T-107, D149 — the quote port's shape). Three
+implementations:
 
     DirectExtractionRunner     raw `google-genai`, D45's measured configuration
     RecordedExtractionRunner   replays a recorded payload; zero model calls
@@ -40,8 +42,8 @@ from typing import Protocol, runtime_checkable
 
 from pydantic import ValidationError
 
-from pa_agent.contracts import CallMetrics, RunTrace
-from pa_agent.extraction import ExtractionResult, build_result, extract
+from pa_agent.contracts import CallMetrics, FactKind, RunTrace
+from pa_agent.extraction import FACT_SCHEMAS, ExtractionResult, extract
 from pa_agent.model_pin import PINNED_MODEL
 
 
@@ -65,6 +67,12 @@ class ExtractionFailure(str, Enum):
     CALL_FAILED = "CALL_FAILED"
     DOCUMENT_CHANGED = "DOCUMENT_CHANGED"
     NOT_RECORDED = "NOT_RECORDED"
+    #: A recorded payload asked for under a fact kind whose prompt version is
+    #: not the one it was measured with (T-107, REQ-78, D149). Terminal: the
+    #: recording holds no answer to this request, and asking again changes
+    #: nothing. Raised before the payload is looked up, so a payload measured
+    #: under one schema is never built under another (D147).
+    SCHEMA_MISMATCH = "SCHEMA_MISMATCH"
 
 
 class ExtractionOutputError(ValueError):
@@ -96,7 +104,7 @@ class ExtractionOutputError(ValueError):
 
 @runtime_checkable
 class ExtractionRunner(Protocol):
-    """One note in, structured facts out (REQ-52).
+    """One note in, the facts of one declared kind out (REQ-52, REQ-78).
 
     `name` is recorded on the run trace, so a determination's provenance says
     which implementation produced its note facts. A recorded run and a live run
@@ -105,8 +113,8 @@ class ExtractionRunner(Protocol):
 
     name: str
 
-    def run(self, document_id: str, text: str) -> ExtractionResult:
-        """Extract from one note.
+    def run(self, document_id: str, text: str, kind: FactKind) -> ExtractionResult:
+        """Extract the facts of `kind` from one note.
 
         Raises `ExtractionOutputError` when no extraction could be produced. It
         must never return a zero-event result to signal failure — a note that
@@ -144,9 +152,9 @@ class DirectExtractionRunner:
     def model(self) -> str:
         return self._model
 
-    def run(self, document_id: str, text: str) -> ExtractionResult:
+    def run(self, document_id: str, text: str, kind: FactKind) -> ExtractionResult:
         try:
-            return extract(document_id, text, self._client, self._model)
+            return extract(document_id, text, self._client, self._model, kind=kind)
         except ExtractionOutputError:
             raise
         except json.JSONDecodeError as exc:
@@ -198,6 +206,14 @@ class RecordedExtractionRunner:
     without a hash, and a recorded id whose bytes moved is still
     `DOCUMENT_CHANGED`: the two routes never produce a payload the other
     would refuse.
+
+    **And keyed by the prompt version each note was measured under** (T-107,
+    REQ-78, D149). Every recorded note carries its own `trace.prompt_version`.
+    A request for a kind whose `FACT_SCHEMAS` entry names another version is
+    `SCHEMA_MISMATCH`, raised before the payload is built: a payload measured
+    under one schema, built under another, either fails validation or, if the
+    new schema's fields default, becomes an empty extraction every downstream
+    check agrees with (D31, D147). A record with no version is not replayable.
     """
 
     name = "recorded"
@@ -209,8 +225,13 @@ class RecordedExtractionRunner:
         model: str | None = None,
         metrics: dict[str, CallMetrics] | None = None,
         traces: dict[str, RunTrace] | None = None,
+        prompt_versions: dict[str, str] | None = None,
     ) -> None:
         self._payloads = dict(payloads)
+        # document_id -> the prompt version that payload was measured under
+        # (D149). Absent means unversioned, and an unversioned payload is
+        # refused rather than assumed to be the current configuration.
+        self._versions = dict(prompt_versions or {})
         self._hashes = dict(note_hashes or {})
         self._model = model
         self._metrics = dict(metrics or {})
@@ -235,6 +256,7 @@ class RecordedExtractionRunner:
         hashes: dict[str, str] = {}
         metrics: dict[str, CallMetrics] = {}
         traces: dict[str, RunTrace] = {}
+        versions: dict[str, str] = {}
         for record in records:
             document_id = record.get("document_id")
             raw = record.get("raw")
@@ -247,7 +269,18 @@ class RecordedExtractionRunner:
                 metrics[document_id] = CallMetrics.model_validate(record["metrics"])
             if record.get("trace"):
                 traces[document_id] = RunTrace.model_validate(record["trace"])
-        return cls(payloads, hashes, model=model, metrics=metrics, traces=traces)
+            # The version the payload was measured under (D149): the record's
+            # own field when it states one, else its trace's. Every committed
+            # recording states it on the trace.
+            version = record.get("prompt_version") or (record.get("trace") or {}).get(
+                "prompt_version"
+            )
+            if version:
+                versions[document_id] = version
+        return cls(
+            payloads, hashes, model=model, metrics=metrics, traces=traces,
+            prompt_versions=versions,
+        )
 
     @property
     def model(self) -> str | None:
@@ -256,7 +289,8 @@ class RecordedExtractionRunner:
     def __contains__(self, document_id: str) -> bool:
         return document_id in self._payloads
 
-    def run(self, document_id: str, text: str) -> ExtractionResult:
+    def run(self, document_id: str, text: str, kind: FactKind) -> ExtractionResult:
+        schema = FACT_SCHEMAS[kind]
         actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
         if actual in self._by_hash:
             # The bytes were measured, under this id or another (D102).
@@ -280,13 +314,30 @@ class RecordedExtractionRunner:
                 "or pass a live runner",
             )
 
+        recorded_version = self._versions.get(recorded_id)
+        if recorded_version is None:
+            raise ExtractionOutputError(
+                ExtractionFailure.NOT_RECORDED,
+                f"the payload for {recorded_id!r} records no prompt version, so "
+                "nothing says which schema it answers; it is not replayed under "
+                "an assumed one (D149)",
+            )
+        if recorded_version != schema.prompt_version:
+            raise ExtractionOutputError(
+                ExtractionFailure.SCHEMA_MISMATCH,
+                f"{document_id} was asked for {kind.value!r} under "
+                f"{schema.prompt_version!r}; the payload for {recorded_id!r} was "
+                f"measured under {recorded_version!r}. A changed configuration "
+                "is a new measurement, never a replay (D45, D149).",
+            )
+
         try:
             # The recorded metrics are carried through unchanged: they measure the
             # call that produced this payload, and no call happens here. A replay
             # that reported zero tokens would understate what the answer cost.
             # The result is built under the *requesting* id, so spans point into
             # the document the caller handed in.
-            result = build_result(
+            result = schema.build(
                 document_id, text, self._payloads[recorded_id],
                 self._metrics.get(recorded_id),
             )
@@ -321,7 +372,7 @@ class NullExtractionRunner:
     def __init__(self, note: str = "") -> None:
         self._note = note
 
-    def run(self, document_id: str, text: str) -> ExtractionResult:
+    def run(self, document_id: str, text: str, kind: FactKind) -> ExtractionResult:
         raise AssertionError(
             f"the extraction runner was called for {document_id!r}; this path is "
             f"supposed to reach an answer with zero model calls. {self._note}"

@@ -40,7 +40,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from pa_agent.contracts import CallMetrics, RunTrace  # noqa: E402
+from pa_agent.contracts import CallMetrics, FactKind, RunTrace  # noqa: E402
 from pa_agent.extraction import (  # noqa: E402
     EXTRACTION_TEMPERATURE,
     PROMPT_VERSION,
@@ -415,7 +415,10 @@ def main() -> int:
         else:
             for attempt in range(RETRIES):
                 try:
-                    result = extract(case["document_id"], case["text"], client)
+                    result = extract(
+                        case["document_id"], case["text"], client,
+                        kind=FactKind.WEIGHT_MANAGEMENT,
+                    )
                 except Exception as exc:  # noqa: BLE001 — retried, then re-raised
                     if attempt == RETRIES - 1:
                         raise

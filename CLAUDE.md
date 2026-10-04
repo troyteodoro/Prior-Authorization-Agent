@@ -33,10 +33,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-77 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and not yet open**. |
-| `docs/tasks.md` | The board. Task records T-00 through T-106 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-107 through T-125 are reserved rows whose records are written when they open. Every row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D148, kill criteria, open questions. Append-only. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-78 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and open** — `T-107` closed its first row *(D149)*. |
+| `docs/tasks.md` | The board. Task records T-00 through T-107 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-108 through T-125 are reserved rows whose records are written when they open. Every row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D149, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -704,6 +704,14 @@ passing**, because the tests are written in terms of the thing that broke.
 - **Criteria trees never move into a store's write path** (Article VII, D25).
   Git is the source of truth; a store may serve a deploy-time read-only
   projection.
+- **A tree's `fact_kinds` equals what it consumes, and a recording replays only
+  under the prompt version it was measured with** *(REQ-78, T-107, D149)*. Each
+  extraction recording's notes carry `trace.prompt_version`, and
+  `RecordedExtractionRunner` refuses any other version as `SCHEMA_MISMATCH`.
+  `tests/test_fact_kinds.py` pins each kind's digest beside its version. **If
+  the pin fails, the prompt changed:** bump `PROMPT_VERSION` and re-measure. Never
+  update the literal alone, because a prompt that moved under an unchanged
+  version replays as though it had been measured.
 - **A changed call configuration is a new measurement, never a re-run** *(D45)*.
   A changed tool declaration is a changed prompt *(D64, D66)*; a changed SDK is a
   changed measurement *(D71)*; and **the tier can change the prompt too**, not just
@@ -907,9 +915,10 @@ A status line and pointers, capped at 30 lines by
 `tests/test_docs_consistency.py` *(D148)*. A closed task's account is in its
 board record and its decision entry, never here.
 
-- **Next:** `v1.6`, row 1 — `T-107`, the tree-declared extraction schema. Read
-  the board's *Path to v1* first; D147 extended T-107's exit before it opened.
-- **Open:** nothing. No version is open, and closing v1.5 did not open v1.6.
+- **Next:** `v1.6`, row 2 — `T-108`, practice three. Read the board's *Path to
+  v1* first. Its new fact kind is the one that earns the per-kind fold and the
+  generic-trust-boundary requirement `T-107` deferred *(D149)*.
+- **Open:** no task. v1.6 is in progress; `T-107` closed its row 1.
 - **Unclaimed on purpose:** REQ-44 and REQ-47. Amendment 1 reserves the whole
   decision procedure to Python, so no verdict exists that a model could
   determine without doing something reserved. They are declared in spec §5's

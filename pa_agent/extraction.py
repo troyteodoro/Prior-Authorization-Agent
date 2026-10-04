@@ -21,6 +21,7 @@ zero of eighty model-emitted offset pairs usable.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import re
 import time
@@ -34,6 +35,7 @@ from pa_agent.anchor import AnchoredSpan, anchor
 from pa_agent.contracts import (
     CallMetrics,
     EvidenceSpan,
+    FactKind,
     ProgramAssertion,
     RunTrace,
     ToolCall,
@@ -499,9 +501,10 @@ def _resolve_reask_defaults(
     """The extraction objects, bound at call time (D122).
 
     Resolved here rather than in the signature so a test can pin what the
-    core does when a caller passes nothing — `extract()` and
-    `AdkExtractionRunner.run()` pass nothing, and the proof that T-98's
-    generalisation moved no extraction recording rests on these three
+    core does when a caller passes nothing. Since T-107 `extract()` and
+    `AdkExtractionRunner.run()` pass `FACT_SCHEMAS[kind]`'s three, which for
+    `weight_management` are these same objects (D149), so the proof that
+    T-98's generalisation moved no extraction recording still rests on these
     defaults being the extraction ones.
     """
     return (
@@ -737,24 +740,90 @@ def direct_reask_turn(client, model: str, text: str, targets: list[dict], purpos
     )
 
 
-def extract(document_id: str, text: str, client, model: str = PINNED_MODEL) -> ExtractionResult:
-    """One note in, structured facts out. At most `1 + REASK_ROUNDS` model
-    calls (Art. X): the extraction, and one re-ask only when a quote could
-    not be located (T-89, D103).
+def extract(
+    document_id: str, text: str, client, model: str = PINNED_MODEL, *, kind: FactKind
+) -> ExtractionResult:
+    """One note in, the facts of one declared `kind` out. At most
+    `1 + REASK_ROUNDS` model calls (Art. X): the extraction, and one re-ask
+    only when a quote could not be located (T-89, D103).
+
+    `kind` is required and keyword-only (T-107, D149): which facts to ask for
+    is the request, and a default would be a tree's declaration made silently
+    on its behalf.
 
     `client` is injected rather than constructed here so nothing in this module
     reads a credential or names a tier — D5 keeps AI Studio and Vertex as two
     credentials behind one pinned identifier, and the caller chooses.
     """
+    schema = FACT_SCHEMAS[kind]
     return extract_with_reask(
         document_id,
         text,
         first_turn=lambda: direct_first_turn(
-            client, model, f"{INSTRUCTION}\n\nNOTE:\n{text}", Extraction, "extraction"
+            client, model, f"{schema.instruction}\n\nNOTE:\n{text}",
+            schema.response_model, "extraction",
         ),
         reask_turn=lambda targets: direct_reask_turn(
             client, model, text, targets, "extraction_reask"
         ),
         runner_name="direct",
         model=model,
+        build=schema.build,
+        locate=schema.locate,
+        prompt_version=schema.prompt_version,
     )
+
+
+# --------------------------------------------------------------------------
+# The fact-kind registry (T-107, REQ-78, D147, D149)
+# --------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class FactSchema:
+    """Everything one `FactKind` asks the model and how its answer is read.
+
+    The response model and the instruction are the prompt. The builder and the
+    locator are the trust boundary and the re-ask shape (D122's
+    parameterisation). The prompt version is what a recording is keyed by
+    (D149). `digest` hashes the first three together with the re-ask
+    instruction, and `tests/test_fact_kinds.py` pins it beside the version, so
+    the prompt cannot change while the version stays the same.
+    """
+
+    kind: FactKind
+    response_model: type[BaseModel]
+    instruction: str
+    build: Callable[..., Any]
+    locate: Locator
+    prompt_version: str
+
+    @property
+    def digest(self) -> str:
+        material = json.dumps(
+            {
+                "kind": self.kind.value,
+                "schema": self.response_model.model_json_schema(),
+                "instruction": self.instruction,
+                "reask_instruction": REASK_INSTRUCTION,
+                "prompt_version": self.prompt_version,
+            },
+            sort_keys=True,
+            ensure_ascii=False,
+        )
+        return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+
+#: The closed registry a tree's `fact_kinds` selects from. One entry, and it is
+#: the configuration every extraction recording was measured under, unchanged:
+#: `Extraction`, `INSTRUCTION`, `build_result`, `_locate`, `PROMPT_VERSION`.
+FACT_SCHEMAS: dict[FactKind, FactSchema] = {
+    FactKind.WEIGHT_MANAGEMENT: FactSchema(
+        kind=FactKind.WEIGHT_MANAGEMENT,
+        response_model=Extraction,
+        instruction=INSTRUCTION,
+        build=build_result,
+        locate=_locate,
+        prompt_version=PROMPT_VERSION,
+    ),
+}

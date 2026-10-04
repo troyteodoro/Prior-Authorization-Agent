@@ -51,6 +51,9 @@ from pa_agent.runners import (
     RecordedExtractionRunner,
 )
 from pa_agent.stores.patient import LocalPatientStore
+from pa_agent.contracts import FactKind
+
+WEIGHT_MANAGEMENT = FactKind.WEIGHT_MANAGEMENT
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
@@ -164,7 +167,7 @@ def e8_paraphrased() -> dict:
 
 def test_a_note_with_no_unanchorable_quote_makes_one_call(e1_note, e1_payload) -> None:
     client = _SequencedClient([json.dumps(e1_payload)])
-    result = extract(e1_note.document_id, e1_note.text, client)
+    result = extract(e1_note.document_id, e1_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert len(client.requests) == 1
     assert result.reask is None
@@ -183,7 +186,7 @@ def test_an_unanchorable_quote_is_re_asked_with_the_note_and_the_failed_quote(
     the anchorer refused, under their paths — and it asks for text, not for
     offsets (D17, D19) and not for a shorter phrase (D18, D98)."""
     client = _SequencedClient([json.dumps(e8_paraphrased), _answers((E8_PATH, E8_VERBATIM))])
-    extract(e8_note.document_id, e8_note.text, client)
+    extract(e8_note.document_id, e8_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert len(client.requests) == 2
     second = client.requests[1]
@@ -201,7 +204,7 @@ def test_a_verbatim_answer_recovers_the_claim(e8_note, e8_paraphrased) -> None:
     the patched payload replays to the same result, and both turns are on the
     trace while `metrics` stays turn one (Art. X, D71)."""
     client = _SequencedClient([json.dumps(e8_paraphrased), _answers((E8_PATH, E8_VERBATIM))])
-    result = extract(e8_note.document_id, e8_note.text, client)
+    result = extract(e8_note.document_id, e8_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert len(result.assertions) == 1
     assert result.dropped == []
@@ -235,7 +238,7 @@ def test_a_repeated_paraphrase_stays_dropped_and_is_not_asked_again(
     client = _SequencedClient(
         [json.dumps(e8_paraphrased), _answers((E8_PATH, "completed a six-month program"))]
     )
-    result = extract(e8_note.document_id, e8_note.text, client)
+    result = extract(e8_note.document_id, e8_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert len(client.requests) == 2
     assert result.assertions == []
@@ -276,7 +279,7 @@ def test_a_drop_that_is_not_a_quote_is_never_re_asked(e1_note, e1_payload) -> No
     payload = copy.deepcopy(e1_payload)
     payload["wm_events"][0]["date"] = "January 9th"
     client = _SequencedClient([json.dumps(payload)])
-    result = extract(e1_note.document_id, e1_note.text, client)
+    result = extract(e1_note.document_id, e1_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert len(client.requests) == 1
     assert [d["reason"] for d in result.dropped] == ["unparseable_date"]
@@ -295,7 +298,7 @@ def test_a_recovered_bmi_quote_un_demotes_the_bmi(e1_note, e1_payload) -> None:
     client = _SequencedClient(
         [json.dumps(payload), _answers(("wm_events[0].bmi_quote", real_quote))]
     )
-    result = extract(e1_note.document_id, e1_note.text, client)
+    result = extract(e1_note.document_id, e1_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert result.events[0].bmi == payload["wm_events"][0]["bmi"]
     assert result.events[0].bmi_span is not None
@@ -318,7 +321,7 @@ def test_a_recovered_event_quote_exposes_field_drops_that_were_never_asked(
     client = _SequencedClient(
         [json.dumps(payload), _answers(("wm_events[0].quote", real_event_quote))]
     )
-    result = extract(e1_note.document_id, e1_note.text, client)
+    result = extract(e1_note.document_id, e1_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert len(result.events) == len(e1_payload["wm_events"])
     assert result.events[0].bmi is None, "the field quote still does not anchor"
@@ -351,7 +354,7 @@ def test_the_re_ask_can_neither_add_nor_remove_a_claim(e8_note, e8_paraphrased) 
         }
     )
     client = _SequencedClient([json.dumps(e8_paraphrased), answers])
-    result = extract(e8_note.document_id, e8_note.text, client)
+    result = extract(e8_note.document_id, e8_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert result.events == []
     assert len(result.assertions) == 1
@@ -398,7 +401,7 @@ def test_a_blank_verbatim_is_ignored(e8_note, e8_paraphrased) -> None:
     """An empty quote would anchor at offset zero and cite nothing. The model
     said "no such passage", which the anchorer's drop already records."""
     client = _SequencedClient([json.dumps(e8_paraphrased), _answers((E8_PATH, "   "))])
-    result = extract(e8_note.document_id, e8_note.text, client)
+    result = extract(e8_note.document_id, e8_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert result.assertions == []
     assert result.raw["program_assertions"][0]["quote"] == E8_PARAPHRASE
@@ -460,7 +463,7 @@ def test_a_failed_re_ask_keeps_the_first_turn_result_and_says_so(
     system did not look" for a note it read (D90, D103)."""
     client = _SequencedClient([json.dumps(e8_paraphrased), RuntimeError("503 overloaded")])
     runner = DirectExtractionRunner(client)
-    result = runner.run(e8_note.document_id, e8_note.text)
+    result = runner.run(e8_note.document_id, e8_note.text, WEIGHT_MANAGEMENT)
 
     assert result.assertions == []
     assert [d["reason"] for d in result.dropped] == ["assertion_quote_unanchorable"]
@@ -475,7 +478,7 @@ def test_a_non_json_re_ask_answer_is_unparseable_with_zero_recoveries(
     e8_note, e8_paraphrased
 ) -> None:
     client = _SequencedClient([json.dumps(e8_paraphrased), "this is not JSON"])
-    result = extract(e8_note.document_id, e8_note.text, client)
+    result = extract(e8_note.document_id, e8_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert result.reask["error"].startswith("UNPARSEABLE")
     assert result.reask["unrecovered"] == [E8_PATH]
@@ -489,7 +492,7 @@ def test_a_re_ask_answer_of_the_wrong_shape_is_schema_invalid(
     `VerbatimAnswers` was asked for is a schema failure, recorded as one —
     not read as "no answers"."""
     client = _SequencedClient([json.dumps(e8_paraphrased), json.dumps(e8_paraphrased)])
-    result = extract(e8_note.document_id, e8_note.text, client)
+    result = extract(e8_note.document_id, e8_note.text, client, kind=WEIGHT_MANAGEMENT)
 
     assert result.reask["error"].startswith("SCHEMA_INVALID")
     assert result.reask["answers"] == []
@@ -501,12 +504,12 @@ def test_a_first_turn_failure_still_raises_classified(e8_note) -> None:
     The direct runner's classification of the first is unchanged."""
     runner = DirectExtractionRunner(_SequencedClient([RuntimeError("503")]))
     with pytest.raises(ExtractionOutputError) as caught:
-        runner.run(e8_note.document_id, e8_note.text)
+        runner.run(e8_note.document_id, e8_note.text, WEIGHT_MANAGEMENT)
     assert caught.value.reason is ExtractionFailure.CALL_FAILED
 
     runner = DirectExtractionRunner(_SequencedClient(["not json"]))
     with pytest.raises(ExtractionOutputError) as caught:
-        runner.run(e8_note.document_id, e8_note.text)
+        runner.run(e8_note.document_id, e8_note.text, WEIGHT_MANAGEMENT)
     assert caught.value.reason is ExtractionFailure.UNPARSEABLE
 
 
@@ -545,7 +548,7 @@ def test_the_recorded_runner_replays_every_recorded_turn(e1_note, e1_payload) ->
     is where A6's figures come from."""
     record = _two_turn_record(e1_note.document_id, e1_note, e1_payload)
     runner = RecordedExtractionRunner.from_records([record])
-    result = runner.run(e1_note.document_id, e1_note.text)
+    result = runner.run(e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT)
 
     assert result.trace is not None
     assert result.trace.model_calls == 2
@@ -561,7 +564,7 @@ def test_the_replayed_trace_is_re_addressed_to_the_requesting_document(
     record = _two_turn_record(e1_note.document_id, e1_note, e1_payload)
     runner = RecordedExtractionRunner.from_records([record])
     clone = Document.from_text("clone/chart_note.txt", e1_note.text)
-    result = runner.run(clone.document_id, clone.text)
+    result = runner.run(clone.document_id, clone.text, WEIGHT_MANAGEMENT)
 
     assert result.document_id == clone.document_id
     assert result.trace.document_id == clone.document_id
@@ -579,9 +582,12 @@ def test_the_recorded_runner_carries_no_trace_when_the_record_has_none(
         "note_sha256": e1_note.sha256,
         "raw": e1_payload,
         "metrics": _metric("extraction").model_dump(mode="json"),
+        # D149: a record with no trace still has to say what it was measured
+        # under, or it is not replayable at all.
+        "prompt_version": PROMPT_VERSION,
     }
     result = RecordedExtractionRunner.from_records([record]).run(
-        e1_note.document_id, e1_note.text
+        e1_note.document_id, e1_note.text, WEIGHT_MANAGEMENT
     )
     assert result.trace is None
     assert result.metrics is not None
@@ -605,7 +611,7 @@ def test_the_prompt_version_names_both_turns() -> None:
 
 
 def test_a_trace_is_built_with_the_configuration_version(e1_note, e1_payload) -> None:
-    result = extract(e1_note.document_id, e1_note.text, _SequencedClient([json.dumps(e1_payload)]))
+    result = extract(e1_note.document_id, e1_note.text, _SequencedClient([json.dumps(e1_payload)]), kind=WEIGHT_MANAGEMENT)
     assert isinstance(result.trace, RunTrace)
     assert result.trace.prompt_version == PROMPT_VERSION
     assert result.trace.runner_name == "direct"
