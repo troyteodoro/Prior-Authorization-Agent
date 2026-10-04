@@ -400,6 +400,7 @@ def _determination_session(state=SessionState.DETERMINED, runs=1, reviews=()):
             patient_id="p",
             procedure_code=COVERED_CODE,
             policy_version_id="ncd-100.1-jf-v1",
+            payer="medicare",
             outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
         ),
     )

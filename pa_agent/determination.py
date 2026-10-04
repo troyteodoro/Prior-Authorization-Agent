@@ -149,6 +149,7 @@ def determine(
             patient_id=patient_id,
             procedure_code=resolution.procedure_code,
             policy_version_id=resolution.policy_version_id,
+            payer=_payer_of(store, resolution.policy_version_id),
             outcome=DeterminationOutcome.NOT_COVERED,
             coverage_claim=resolution.coverage_claim,
             criterion_results=[],
@@ -179,6 +180,7 @@ def determine(
                 patient_id=patient_id,
                 procedure_code=procedure_code,
                 policy_version_id=resolution.policy_ref.policy_version_id,
+                payer=_payer_of(store, resolution.policy_ref.policy_version_id),
                 outcome=DeterminationOutcome.NOT_COVERED,
                 coverage_claim=match.claim,
                 exclusion_evidence=match.evidence,
@@ -195,6 +197,18 @@ def determine(
         extraction_runner,
         verifier,
     )
+
+
+def _payer_of(store, policy_version_id: str) -> str:
+    """The payer of the tree a short circuit answered under (T-117, D161).
+
+    Read from the tree by the version the resolution already carries, never
+    re-derived or defaulted: the resolver chose that tree, so its payer is the
+    payer of the answer. The criteria path copies the same field in
+    `workflow.run_criteria_workflow`, so all three construction sites read one
+    source.
+    """
+    return store.get_tree(policy_version_id).jurisdiction.payer
 
 
 def _exclusion_match(

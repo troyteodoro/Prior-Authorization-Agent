@@ -88,6 +88,7 @@ def test_the_seven_models_exist_and_construct() -> None:
         patient_id="p",
         procedure_code="43775",
         policy_version_id=TREE_VERSION,
+        payer="medicare",
         outcome=DeterminationOutcome.MET,
         criterion_results=[result],
         metrics=[metrics],
@@ -250,6 +251,7 @@ def test_met_over_an_unsupported_criterion_cannot_be_constructed() -> None:
             patient_id="p",
             procedure_code="43775",
             policy_version_id=TREE_VERSION,
+            payer="medicare",
             outcome=DeterminationOutcome.MET,
             criterion_results=[result],
         )
@@ -270,6 +272,7 @@ def test_the_gap_list_names_every_criterion_not_met() -> None:
         patient_id="p",
         procedure_code="43775",
         policy_version_id=TREE_VERSION,
+        payer="medicare",
         outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
         criterion_results=results,
     )
@@ -289,6 +292,7 @@ def test_a_short_circuit_determination_carries_no_criteria(
         # where any string would do — restates the claim D22 disproved.
         procedure_code="43842",
         policy_version_id=TREE_VERSION,
+        payer="medicare",
         outcome=DeterminationOutcome.NOT_COVERED,
     )
 
@@ -656,22 +660,22 @@ def test_a_shortfall_names_its_unit() -> None:
 
 def test_a_mac_jurisdiction_must_name_at_least_one_state() -> None:
     with pytest.raises(ValidationError, match="names no states"):
-        Jurisdiction(authority="mac_jurisdiction_x", states=[])
+        Jurisdiction(authority="mac_jurisdiction_x", payer="medicare", states=[])
 
 
 def test_a_national_jurisdiction_may_name_none() -> None:
-    assert Jurisdiction(authority="national").states == []
+    assert Jurisdiction(authority="national", payer="medicare").states == []
 
 
 @pytest.mark.parametrize("bad", ["Washington", "wa", "W", "W1"])
 def test_a_state_is_a_two_letter_usps_code(bad) -> None:
     with pytest.raises(ValidationError, match="two-letter"):
-        Jurisdiction(authority="mac_jurisdiction_x", states=[bad])
+        Jurisdiction(authority="mac_jurisdiction_x", payer="medicare", states=[bad])
 
 
 def test_a_jurisdiction_does_not_repeat_a_state() -> None:
     with pytest.raises(ValidationError, match="repeats"):
-        Jurisdiction(authority="mac_jurisdiction_x", states=["AL", "AL"])
+        Jurisdiction(authority="mac_jurisdiction_x", payer="medicare", states=["AL", "AL"])
 
 
 def test_a_criterion_is_deterministic_or_unclaimed_and_nothing_else() -> None:

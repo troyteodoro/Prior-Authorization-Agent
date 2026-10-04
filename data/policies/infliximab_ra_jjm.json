@@ -6,6 +6,7 @@
   "compiled_by": "T-92, hand-compiled from L35677 and A56432 (D111)",
   "jurisdiction": {
     "authority": "mac_jurisdiction_jj_jm",
+    "payer": "medicare",
     "contractor": "Palmetto GBA",
     "states": [
       "AL",

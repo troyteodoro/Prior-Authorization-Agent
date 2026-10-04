@@ -190,6 +190,7 @@ def test_no_discrepancy_ever_reaches_the_gap_list(tree, fact, patients, extracte
             patient_id=CASE_PATIENTS[case],
             procedure_code="43775",
             policy_version_id=tree.policy_version_id,
+            payer="medicare",
             outcome=(
                 DeterminationOutcome.MET
                 if result.verdict is CriterionVerdict.MET

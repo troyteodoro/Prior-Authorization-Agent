@@ -478,6 +478,7 @@ def _determination_citing(document_id: str) -> Determination:
         patient_id="p1",
         procedure_code="43775",
         policy_version_id="a-tree-v1",
+        payer="medicare",
         outcome=DeterminationOutcome.NOT_COVERED,
         exclusion_evidence=(_span(document_id),),
     )
@@ -806,6 +807,7 @@ def _hand_packet(**overrides) -> Packet:
     determination = Determination(
         patient_id="p1", procedure_code="43775",
         policy_version_id="ncd-100.1-jf-v1",
+        payer="medicare",
         outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
     )
     session = Session(

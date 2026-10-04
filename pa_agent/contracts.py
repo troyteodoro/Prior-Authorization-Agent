@@ -694,6 +694,17 @@ class Jurisdiction(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     authority: str
+    #: The payer whose coverage this tree compiles (T-117, REQ-81, D161) —
+    #: `medicare` on every committed tree. **Not the authority**: for a Medicare
+    #: tree the authority is the MAC that wrote the rule, and it is Medicare
+    #: that pays under it; a commercial payer writes its own, so for one the two
+    #: coincide. Required and never defaulted, so a tree written before the
+    #: field fails to load rather than answering as whoever the default named
+    #: (D31). A slug rather than a closed enum: resolution keys on it the way it
+    #: keys on a state (T-118) and chooses no arithmetic by it, which is D110's
+    #: test. Absent from `get_policy_context`'s payload, which is built field by
+    #: field (D45).
+    payer: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9_]*$")
     contractor: str | None = None
     states: list[str] = Field(default_factory=list)
     note: str | None = None
@@ -2048,6 +2059,13 @@ class Determination(BaseModel):
     patient_id: str | None
     procedure_code: str
     policy_version_id: str = Field(min_length=1)
+    #: The payer of the tree that produced this answer, copied from its
+    #: `jurisdiction.payer` at every construction site (T-117, REQ-81, D161).
+    #: `Jurisdiction` says a determination that does not carry who published the
+    #: rule cannot be read correctly; this is the half of that a reader needs to
+    #: not quote one payer's answer as another's. Required: a default would turn
+    #: *never recorded* into a value (D31).
+    payer: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9_]*$")
     outcome: DeterminationOutcome
     # The denial's citation, copied from the resolver so the reviewable
     # artifact cites itself (Art. III, US-1's "with the reason"). Only valid

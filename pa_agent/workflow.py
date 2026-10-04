@@ -1189,5 +1189,6 @@ def run_criteria_workflow(
         decision_expression=tree.decision_expression,
         results=state.results,
         metrics=state.metrics,
+        payer=tree.jurisdiction.payer,
     )
     return WorkflowRun(determination=determination, state=state)

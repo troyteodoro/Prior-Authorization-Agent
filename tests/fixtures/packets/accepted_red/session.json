@@ -21,6 +21,7 @@
         "patient_id": "a8edc52e-9800-0adb-c775-bd81183c355f",
         "procedure_code": "43775",
         "policy_version_id": "ncd-100.1-jf-v1",
+        "payer": "medicare",
         "outcome": "INSUFFICIENT_EVIDENCE",
         "coverage_claim": null,
         "exclusion_evidence": [],

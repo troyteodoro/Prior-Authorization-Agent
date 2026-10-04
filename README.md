@@ -70,7 +70,7 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 are all complete.**
-109 of 109 tasks closed, **none open** — `T-103` opened v1.5 with the
+110 of 110 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,7 +78,7 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A14 holding. The suite collects 2143 tests (161 skip). **`T-107` opened v1.6**
+A1–A14 holding. The suite collects 2159 tests (161 skip). **`T-107` opened v1.6**
 *(D149)*: a tree now declares the fact kinds its extraction produces, a tree
 declaring none reads no note, and a recording replays only under the prompt
 version it was measured with. **`T-108` added practice three** *(D150)*: CPAP
@@ -104,7 +104,10 @@ errors* on both tiers. **`T-147` closed v1.6** *(D158–D160)*. The planner now
 reads notes alone. It ends every run through ADK's injected
 `set_model_response` on both tiers, because in native mode on Vertex it
 sometimes looped, and it retries a malformed answer once. Both tiers score 25
-of 25 with zero errors, A1–A14 holding. **v2.0's `T-117` is next.**
+of 25 with zero errors, A1–A14 holding. **`T-117` opened v2.0** *(D161)*:
+every tree declares the payer whose coverage it compiles (`medicare` on all
+six), and every determination, stored session and packet records its tree's
+payer (REQ-81). **v2.0's `T-118`, resolution by payer, is next.**
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -311,7 +314,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A4 | E2 and E3 complete with zero model calls |
 | A5 | abstention **0.509**, accounted for per `gap_reason` — the rise is the later practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
 | A6 | 152 model calls / 143,832 in / 20,682 out / 139.5s across thirty-five determinations, from instrumentation |
-| A7 | 82 requirements: 80 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A7 | 83 requirements: 81 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **33 criteria across six trees and five practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
@@ -1137,7 +1140,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-2143 tests across 65 files, 161 of them skipped — the skips are per-tree
+2159 tests across 66 files, 161 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

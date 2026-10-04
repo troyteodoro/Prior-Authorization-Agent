@@ -831,6 +831,7 @@ def _synthetic_determination(
         patient_id="self-check",
         procedure_code="00000",
         policy_version_id="self-check-v0",
+        payer="medicare",
         outcome=outcome,
         criterion_results=criterion_results or [],
         metrics=metrics or [],

@@ -33,6 +33,7 @@ Determination
   "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
   "procedure_code": "43775",
   "policy_version_id": "ncd-100.1-jf-v1",
+  "payer": "medicare",
   "outcome": "NOT_MET",
   "coverage_claim": null,
   "exclusion_evidence": [],

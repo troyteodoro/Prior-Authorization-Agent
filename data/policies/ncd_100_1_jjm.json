@@ -6,6 +6,7 @@
   "compiled_by": "T-87, hand-compiled from the T-02 corpus as extended by D101",
   "jurisdiction": {
     "authority": "mac_jurisdiction_jj_jm",
+    "payer": "medicare",
     "contractor": "Palmetto GBA",
     "states": [
       "AL",

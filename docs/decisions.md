@@ -15885,3 +15885,167 @@ Both runs were made in this session, one after the other, under
 - **Model calls, live:** the planners spent 96 on AI Studio and 95 on Vertex.
   Across `T-146` and `T-147` (D156–D160), all the differential runs and
   diagnostics together spent about 640 calls.
+
+
+## D161 — v2.0 opens: every tree declares the payer whose coverage it compiles, and every determination records it
+
+**Context.** `T-117`, v2.0's row 1, which opens the version (D97's rule writes
+the record now). Written before the code (Article IX, working rule 5). The
+board's exit is *"every loaded tree declares a payer; a tree that does not
+raises at load; every determination records it"*, and its slice is named
+*the payer on the tree **and the request***. The two do not agree, and
+clause 3 settles which governs.
+
+**Measured at open.**
+- **No tree names a payer.** Each `jurisdiction` block names an `authority`
+  (a MAC jurisdiction slug such as `mac_jurisdiction_f`, or
+  `dme_mac_jurisdictions_a_b_c_d`), a contractor and its states. All six
+  committed trees compile Medicare documents: four A/B MAC LCDs or articles,
+  one DME MAC LCD, and the NCDs above them. The authority is who wrote the
+  rule, not who pays under it. A commercial payer writes its own rule, so for
+  that payer the two coincide, and nothing here can say so.
+- **`Jurisdiction`'s docstring says *"A determination that does not carry
+  this cannot be read correctly"*, and a `Determination` carries only
+  `policy_version_id`.** To learn whose coverage an answer reports, a reader
+  has to load the tree.
+- **Every `Determination` comes from a tree.** `policy_version_id` is required
+  on it, and the answers with no tree (`NO_POLICY_FOUND`,
+  `NO_JURISDICTION_TREE`) are separate result types, not determinations. So
+  a payer copied from the tree is available at all three construction sites:
+  sc1's `NotCovered`, sc2's exclusion and `aggregate.assemble`.
+- **The request carries no payer.** `pa_agent/intake.py`'s keys are the
+  patient, the code, the state, the ICD-10 codes and the two providers. D112
+  left the choice to v1.4's intake, which added none, and the CLI has no
+  flag.
+- **`data/payers/payers.json` is not a coverage registry.** It says so itself:
+  *"These are contacts, not coverage: nothing here binds a procedure code, a
+  state or a criteria tree."* Its ids (`sim-national-a`, `sim-regional-b`)
+  name packet recipients.
+- **Two committed packet fixtures embed a determination** (`T-106`, D136):
+  each `session.json` stores the snapshot, and each `packet.eml` renders it.
+  A field on `Determination` changes both files' bytes. `get_policy_context`
+  builds its jurisdiction payload field by field, so its prompt does not
+  move. That prompt also has no consumer since D156.
+
+### Chosen
+
+1. **`Jurisdiction.payer`: required, slug-shaped
+   (`^[a-z][a-z0-9_]*$`), never defaulted.** All six trees declare
+   `medicare`. A tree with no payer fails `model_validate`, naming the tree.
+   - *Why a slug and not a closed enum:* `T-118` keys resolution on it the way
+     it keys on a state, by matching it against the request. No arithmetic is
+     chosen per payer, and that is D110's test for a closed vocabulary. A typo
+     cannot pass quietly: `tests/test_payer_axis.py` pins the set of payers
+     across the loaded trees as a literal, `{"medicare"}` (D51's move), so a
+     second payer is a visible diff.
+   - *Why on `Jurisdiction`, not on the tree:* spec §11 puts it there.
+     Resolution reads the jurisdiction block, and payer, contractor and
+     states together are what `T-118`'s index keys on.
+   - *Rejected — reusing `authority`.* For every Medicare tree it names the
+     MAC, and collapsing the two loses the distinction this version exists
+     to draw.
+   - *Rejected — a payer directory id.* The directory names recipients, and
+     it says it binds no tree.
+2. **`Determination.payer`: required, copied from the governing tree's
+   jurisdiction at all three construction sites.** `assemble` gains a
+   required `payer` argument. sc1 and sc2 read the tree from the policy store
+   by the `policy_version_id` they already carry. A test re-derives every eval
+   row's determination and compares its payer with
+   `store.get_tree(policy_version_id).jurisdiction.payer`, so the copy cannot
+   drift from its source.
+   - **The rendered determination carries it**, so the CLI's JSON, the stored
+     session and the packet name the payer. That is US-16's last bullet.
+     Recording the tree's *scope* on the determination is `T-119`'s, because
+     scope is minted there.
+   - **The two packet fixtures are regenerated** by the product's own verb,
+     following the recipe in `tests/test_packet_fixtures.py` (D136). Each
+     fixture's determination is re-derived from the live engine as before.
+     The bytes move by the one field and nothing else, and the diff is
+     checked for that.
+   - **A session file written before this change does not load.** The field
+     is required, and the session plane writes only to the gitignored
+     `data/sessions/`, so no committed artifact is affected. *Rejected — a
+     default of `medicare`:* every determination so far is Medicare's, but a
+     default is the move D31 refuses. It turns *never recorded* into a value.
+3. **The request's payer is `T-118`'s, and the exit is rewritten to match.**
+   A request field that nothing dispatches on is a comment (D110). If a
+   request named `aetna` and resolved to a Medicare tree with no complaint,
+   the system would be quietly answering under the wrong payer. That is
+   worse than not taking the field at all. Resolution by payer is `T-118`'s
+   exit, so the request's payer arrives with the code that reads it. The
+   board's slice name keeps *and the request*, and its exit says where it
+   went.
+4. **REQ-81 is minted** by splitting spec §11's first statement. A
+   requirement is split, never renumbered.
+   - The payer half is checked here: *every criteria tree declares the payer
+     whose coverage it compiles; a tree declaring none fails to load; every
+     determination records its tree's payer.*
+   - The request and scope halves stay statements until `T-118` and `T-119`
+     check them (D109).
+5. **One discovered inconsistency is numbered, not fixed (working rule 6).**
+   A packet is sent to a simulated recipient chosen by `--payer-id` (D134).
+   Once a determination names its payer, a Medicare determination can go to
+   `sim-regional-b`, and nothing checks that the recipient corresponds to
+   the payer. Whether it should is a decision about what the directory
+   models, and it is numbered **`T-148`**, off the path.
+6. **The exit:**
+
+    ```
+    ./venv/bin/python -m pytest tests/test_payer_axis.py tests/test_criteria_tree.py tests/test_packet_fixtures.py tests/test_determination.py tests/test_docs_consistency.py -q --color=no \
+     && ./venv/bin/python eval/run_eval.py \
+     && ./venv/bin/python scripts/check_req_coverage.py \
+     && ./venv/bin/python scripts/check_gates.py
+    ```
+
+    Green means:
+    - all six trees declare `payer: medicare`, and the set is pinned;
+    - a tree with no payer, or a payer that is not a slug, fails to load;
+    - every eval row's determination, short circuits included, carries its
+      tree's payer, re-derived from the store;
+    - the rendered determination and both packet fixtures carry it, and the
+      fixtures move by that one field;
+    - REQ-81 maps to a check;
+    - zero model calls.
+
+### Reversal condition
+
+- **Clause 1's slug** becomes a closed enum if a payer ever selects
+  arithmetic, which would be a predicate or exclusion kind valid for one
+  payer only.
+- **Clause 3** reverses if intake must carry a payer before resolution can
+  read it. That would happen if an upstream system's documents name one and
+  refusing the key is worse than carrying it unread, which is how
+  `requesting_provider` arrived (D131).
+
+### Measured
+
+- **The six trees each gained one line**, `"payer": "medicare"`, inserted
+  after `authority`. Nothing else in any tree moved. `tests/test_payer_axis.py`
+  pins the set at `{"medicare": 6}`.
+- **Every eval row's determination carries its tree's payer**, re-derived
+  through the harness's `_determine` and compared with the store's tree. The
+  rows cover `MET`, `NOT_MET`, `INSUFFICIENT_EVIDENCE` and `NOT_COVERED`
+  (sc1 and sc2).
+- **One renamed tree tells a copy from a literal.** The corpus was copied with
+  the Noridian tree's payer set to `sim_payer_x`, and three requests were run
+  through it: `43842` in Washington (sc1), `E2` (sc2) and `E1` (the criteria
+  path). Each answer named `sim_payer_x`. Every committed tree is Medicare's,
+  so a hardcoded `"medicare"` passes every row the corpus has, and these three
+  tests are what catch it.
+- **Both packet fixtures moved by exactly one line per file.** The
+  `session.json` determination gained the field by text insertion, and the
+  `.eml` was regenerated by `session packet`. `T-106`'s re-derivation against
+  the live engine still holds.
+- **The bare CLI's determination key set** in `tests/test_session_verbs.py`
+  gained `payer`. That literal exists so a new key is a visible diff, and
+  this is the diff.
+- **Name collision (`T-148`).** `PacketProvenance.payer` already exists, and
+  it means the packet's recipient: it renders as `To:`. A packet now carries
+  *payer* twice with two meanings, the determination's `medicare` and the
+  recipient's address. This is recorded on `T-148`, not renamed here.
+- **Mutation pass.** Six mutants, all caught:
+  - a default on `Jurisdiction.payer`;
+  - a default on `Determination.payer`;
+  - the slug pattern dropped;
+  - a `"medicare"` literal at each of the three construction sites.
+- **Zero model calls.**

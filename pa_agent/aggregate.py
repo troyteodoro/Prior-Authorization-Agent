@@ -251,6 +251,8 @@ def assemble(
     decision_expression: str,
     results: list[CriterionResult],
     metrics: list | None = None,
+    *,
+    payer: str,
 ) -> Determination:
     """Build the reviewable artifact (REQ-19, REQ-21, REQ-39, REQ-4).
 
@@ -268,6 +270,8 @@ def assemble(
         patient_id=patient_id,
         procedure_code=procedure_code,
         policy_version_id=policy_version_id,
+        # The tree's, handed down by the one caller that holds it (D161).
+        payer=payer,
         outcome=aggregate_outcome(decision_expression, results),
         criterion_results=results,
         metrics=list(metrics or []),

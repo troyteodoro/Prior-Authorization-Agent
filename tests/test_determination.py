@@ -419,6 +419,7 @@ def test_a_patientless_determination_with_verdicts_is_refused():
             patient_id=None,
             procedure_code=E3_CODE,
             policy_version_id=TREE_VERSION,
+            payer="medicare",
             outcome=DeterminationOutcome.MET,
             criterion_results=[result],
         )
@@ -430,6 +431,7 @@ def test_a_coverage_claim_on_a_met_determination_is_refused():
             patient_id="p",
             procedure_code=E3_CODE,
             policy_version_id=TREE_VERSION,
+            payer="medicare",
             outcome=DeterminationOutcome.MET,
             coverage_claim=_claim(),
         )

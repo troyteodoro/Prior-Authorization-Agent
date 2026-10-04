@@ -287,6 +287,7 @@ def test_a_determination_over_an_error_cannot_be_constructed() -> None:
             patient_id="p1",
             procedure_code="43775",
             policy_version_id="ncd-100.1-jf-v1",
+            payer="medicare",
             outcome=DeterminationOutcome.NOT_MET,
             criterion_results=[
                 CriterionResult(
@@ -305,6 +306,7 @@ def test_the_refusal_names_the_criterion_and_its_code() -> None:
             patient_id="p1",
             procedure_code="43775",
             policy_version_id="ncd-100.1-jf-v1",
+            payer="medicare",
             outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
             criterion_results=[_errored(criterion_id="c4")],
         )
@@ -329,6 +331,7 @@ def test_no_outcome_makes_an_errored_determination_constructible(outcome) -> Non
             patient_id="p1",
             procedure_code="43775",
             policy_version_id="ncd-100.1-jf-v1",
+            payer="medicare",
             outcome=outcome,
             criterion_results=[_errored()],
         )
@@ -340,6 +343,7 @@ def test_a_determination_with_no_errored_criterion_is_unaffected() -> None:
         patient_id="p1",
         procedure_code="43775",
         policy_version_id="ncd-100.1-jf-v1",
+        payer="medicare",
         outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
         criterion_results=[
             CriterionResult(

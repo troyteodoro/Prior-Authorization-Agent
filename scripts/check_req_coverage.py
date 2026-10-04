@@ -150,6 +150,7 @@ MAPPING: dict[str, str] = {
     # tree declares, read through the policy port and refused when one is
     # dropped.
     "REQ-80": "tests/test_build_report.py",
+    "REQ-81": "tests/test_payer_axis.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

@@ -214,6 +214,8 @@ BARE_DETERMINATION_KEYS = frozenset({
     "patient_id",
     "procedure_code",
     "policy_version_id",
+    # T-117 (D161, REQ-81): whose coverage the answer reports.
+    "payer",
     "outcome",
     "coverage_claim",
     "exclusion_evidence",

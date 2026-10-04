@@ -17,9 +17,14 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v2.0`, row 1 — `T-117`**, the payer on the tree and the
-request. **Nothing is open on this board**; v2.0 opens when `T-117` writes its
-record *(D97's rule)*.
+**What to do next: `v2.0`, row 2 — `T-118`**, resolution by payer, and the
+request's payer with it. **Nothing is open on this board**; `T-118` writes its
+record when it opens *(D97's rule)*.
+**`T-117` opened v2.0 and closed its row 1** *(D161)*: every tree declares,
+on its jurisdiction, the payer whose coverage it compiles (`medicare` on all
+six), and every determination records its tree's payer. That is REQ-81. The
+request's payer moved to `T-118`, because resolution reads it there, and the
+recipient/payer naming collision is numbered `T-148`.
 **`T-147` closed v1.6's row 6, and v1.6 with it; A14 holds on both tiers**
 *(D158, D159, D160)*. The planner reads notes and nothing else. On every tier
 it ends its run through ADK's injected `set_model_response`, because under
@@ -351,12 +356,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-109 tasks are on this board — IDs run to T-147, and every id above T-125 is
+110 tasks are on this board — IDs run to T-148, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 109 are closed and none is open**; `T-143`, `T-144`
-and `T-145` below are numbered and have no record yet, and each writes its
-record when it opens. Both figures
+is well above the count. **All 110 are closed and none is open**; `T-143`,
+`T-144`, `T-145` and `T-148` below are numbered and have no record yet, and
+each writes its record when it opens. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
@@ -405,6 +410,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-145` | **the live CLI verifier checks a history claim under the criterion instruction.** `cli._build_verifier` returns `LiveVerifierRunner(client_for(tier))`, whose instruction defaults to `INSTRUCTION`, and `history.run_review` hands it every yellow's `(candidate, quotes)` claim — so `--suggest` with a live extraction leaf asks the criterion question of a history claim, where `run_verifier_measurement.py --history` builds the runner with `HISTORY_INSTRUCTION`. The recorded path is unaffected: both recordings replay through one runner keyed by digest, and the two claim shapes share no key. No gate reaches the live path, and until `T-110` no chart produced a yellow for it to mis-route | not sequenced — discovered in `T-110` *(D155)*; no row reaches the live verifier |
 | `T-146` | **the agentic planner is offered `get_policy_context` and never told the policy version.** On Vertex, four of the twenty-five requests `T-110`'s differential measured aborted because the planner called it with a `policy_version_id` it invented — `some_version`, `v1.0`, `knee_osteoarthritis_v1`, a UUID — and the store's `KeyError` ended the run as `SOURCE_UNAVAILABLE` on every criterion (D90). On AI Studio, and on the seven bariatric charts it measured before, it never reached for the tool. The shapes are a decision: drop the tool from the planner's allowlist, put the version in the message, or answer an unknown id as a tool error the model can read. Each changes the planner's prompt, so each is a re-measurement of the differential on both tiers (D45) | **closed** (D156, D157) — sequenced by D156 as v1.6's row 5, because the owner reads A14 on both tiers; the planner is offered no policy tool, and the Vertex error the re-measurement found is `T-147`'s |
 | `T-147` | **the Vertex differential's one error, and the harness that cannot say what it was.** `T-146`'s re-measurement scored 24 of 25 on Vertex. `RA6`'s run aborted with `SOURCE_UNAVAILABLE` on every criterion, and `run_agentic_eval.py` records only `DeterminationAborted`'s summary, dropping each criterion's `error_detail`. A diagnostic of three planner-only runs on that chart all succeeded, and one made 11 tool calls against a budget of 12, re-reading observations and conditions four times each. The budget is the likeliest cause, and it is not measured. Its scope as numbered: record the cause of every error, decide on the repeated structured reads, re-measure once per tier | **closed** (D158, D159, D160) — sequenced by D157 as v1.6's row 6, and v1.6 closed on it. The planner reads notes alone, ends every run through the injected tool on both tiers, and retries a schema-invalid answer once; both tiers score 25 of 25 with zero errors |
+| `T-148` | **a packet's recipient and its determination's payer are unrelated identities.** Since `T-117` a determination names the payer whose coverage it reports (`medicare` on every committed tree), and a packet is sent to a simulated recipient chosen by `--payer-id` (`sim-national-a`, `sim-regional-b`), which the directory says binds no tree (D134). Nothing checks that the two correspond, and `PacketProvenance.payer` already uses the word *payer* for the recipient, so one packet carries the word twice with two meanings. Whether a recipient should declare the payer it receives for, or the field should be renamed, is a decision about what the directory models | not sequenced — discovered in `T-117` *(D161)*; no row of v2.0 sends a packet |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -621,7 +627,7 @@ it operationalizes.
 
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
-| 1 | the payer on the tree and the request | `T-117` | pending | every loaded tree declares a payer; a tree that does not raises at load; every determination records it |
+| 1 | the payer on the tree and the request | `T-117` | **closed** (D161) | every loaded tree declares a payer; a tree that does not raises at load; every determination records it. **Rewritten at open** *(D161)*: the request's payer moves to `T-118`, where resolution reads it, because a request field nothing dispatches on is a comment (D110) |
 | 2 | resolution by payer | `T-118` | pending | two payers binding one code in one state resolve to one tree each, neither by load order; an unserved payer is its own answer, distinct from an unserved state (REQ-55's shape) |
 | 3 | scope, and the national pairing | `T-119` | pending | every tree declares national or regional; a regional tree names the national tree it operationalizes, and a regional tree naming none raises at load. **The floor clause moved to `T-129`** *(D124)* and closed there as REQ-73 *(D130)* — the constant-versus-floor comparison landed before v1.6, because a nationally quantified NCD is what makes it live |
 | 4 | the second payer's tree | `T-120` | pending | a second payer's tree loaded and resolved beside Medicare's; every eval row `PASS`; every gate green |
@@ -4019,6 +4025,71 @@ Eight were caught on the first pass:
 - **the gate's mechanism-stamp check removed.**
 
 All three are caught now.
+
+## `US-16` Ask one question about two payers
+
+### `[x] T-117` Every tree declares the payer whose coverage it compiles, and every determination records it
+
+**REQ:** mints 81 · **Depends:** T-147 · **Blocks:** T-118, T-119, T-120 ·
+**Decided by:** D161 · **Gates:** A16 (first of four rows; opens v2.0) ·
+**Timebox:** one day · **Zero model calls.**
+**Status:** **closed** (D161). The exit ran green and every gate with it.
+This row opened v2.0.
+
+**Measured at open.**
+- No tree names a payer. Each names an `authority` (a MAC jurisdiction), a
+  contractor and its states, and all six compile Medicare documents.
+- A `Determination` carries `policy_version_id` and nothing that says whose
+  coverage it reports. Every one comes from a tree.
+- The request carries no payer: intake has no key for one, and the CLI has
+  no flag.
+- `data/payers/payers.json` names packet recipients and says it binds no
+  tree.
+- Two committed packet fixtures embed a determination.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_payer_axis.py tests/test_criteria_tree.py tests/test_packet_fixtures.py tests/test_determination.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- all six trees declare `payer: medicare`, and the set is pinned;
+- a tree with no payer, or a payer that is not a slug, fails to load;
+- every eval row's determination, short circuits included, carries its
+  tree's payer, re-derived from the store;
+- the rendered determination and both packet fixtures carry it, and the
+  fixtures move by that one field;
+- REQ-81 maps to a check;
+- zero model calls.
+
+**What it delivers.**
+- `Jurisdiction.payer` and `Determination.payer`, both required slugs and
+  never defaulted.
+- `payer: medicare` on all six trees.
+- The payer copied from the governing tree at all three construction sites:
+  sc1 and sc2 through `determination._payer_of`, and the criteria path
+  through `assemble`'s new keyword.
+- The field on the rendered determination, the stored session and the
+  packet. Both fixtures were regenerated by the product's own verb.
+- REQ-81, and `tests/test_payer_axis.py`.
+
+**What it found.** `PacketProvenance.payer` already names the packet's
+recipient, so a packet now says *payer* twice with two meanings. Nothing
+checks that the recipient corresponds to the determination's payer. Both
+are `T-148`'s.
+
+**Mutation pass.** Six mutants, all caught:
+- a default on either field;
+- the slug pattern dropped;
+- a `"medicare"` literal at each construction site.
+
+Every committed tree is Medicare's, so the three literal mutants are caught
+only by the tests that run a request through a copied corpus whose Noridian
+tree names `sim_payer_x`.
 
 ## Attached to no story
 

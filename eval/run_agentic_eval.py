@@ -263,6 +263,7 @@ def self_check() -> list[tuple[str, bool, str]]:
         patient_id="self-check",
         procedure_code="00000",
         policy_version_id="self-check-v0",
+        payer="medicare",
         outcome=__import__(
             "pa_agent.contracts", fromlist=["DeterminationOutcome"]
         ).DeterminationOutcome.NOT_COVERED,

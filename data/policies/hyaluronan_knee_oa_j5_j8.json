@@ -8,6 +8,7 @@
   "compiled_by": "T-109, hand-compiled from L39529 and A56157 (D154)",
   "jurisdiction": {
     "authority": "mac_jurisdiction_j5_j8",
+    "payer": "medicare",
     "contractor": "Wisconsin Physicians Service Insurance Corporation",
     "states": [
       "IA",

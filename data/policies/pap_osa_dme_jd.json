@@ -8,6 +8,7 @@
   "compiled_by": "T-108, hand-compiled from NCD 240.4 and L33718 (D150)",
   "jurisdiction": {
     "authority": "dme_mac_jurisdictions_a_b_c_d",
+    "payer": "medicare",
     "contractor": "Noridian Healthcare Solutions, LLC",
     "states": [
       "AK",

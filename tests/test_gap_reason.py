@@ -145,6 +145,7 @@ def test_the_gap_list_carries_each_reason():
         patient_id="p",
         procedure_code="43644",
         policy_version_id="ncd-100.1-jf-v1",
+        payer="medicare",
         outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
         criterion_results=results,
     )
@@ -165,6 +166,7 @@ def test_the_reason_survives_serialization():
         patient_id="p",
         procedure_code="43644",
         policy_version_id="ncd-100.1-jf-v1",
+        payer="medicare",
         outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
         criterion_results=[
             CriterionResult(

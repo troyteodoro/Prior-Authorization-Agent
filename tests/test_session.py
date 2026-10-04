@@ -76,6 +76,7 @@ def _determination(policy_version_id: str = "ncd-100.1-jf-v1") -> Determination:
         patient_id="p",
         procedure_code="43775",
         policy_version_id=policy_version_id,
+        payer="medicare",
         outcome=DeterminationOutcome.INSUFFICIENT_EVIDENCE,
     )
 
