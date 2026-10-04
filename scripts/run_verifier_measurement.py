@@ -55,6 +55,11 @@ from pa_agent.verifier import (  # noqa: E402
 
 CASES_PATH = REPO_ROOT / "eval" / "cases.json"
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
+#: Every fact kind's AI Studio recording; the second is T-108's (D150).
+EXTRACTION_RECORDINGS = (
+    EXTRACTION_RESULTS,
+    REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+)
 OUT_DIR = REPO_ROOT / "eval" / "verifier"
 OUT_PATH = OUT_DIR / "results.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
@@ -136,9 +141,12 @@ def enumerate_claims() -> dict[str, dict]:
     """Every unique claim payload the gates' determinations produce. Free."""
     policy_store = LocalPolicyStore()
     patient_store = LocalPatientStore()
-    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    recordings = [
+        json.loads(path.read_text(encoding="utf-8")) for path in EXTRACTION_RECORDINGS
+    ]
     runner = RecordedExtractionRunner.from_records(
-        recording["notes"], model=recording.get("model")
+        [note for recording in recordings for note in recording["notes"]],
+        model=recordings[0].get("model"),
     )
     collector = CollectingVerifier()
 
@@ -186,7 +194,7 @@ def measure(tier: str = MEASURED_TIER) -> int:
     print(
         f"{len(claims)} unique claims · model {VERIFIER_MODEL} · "
         f"tier {tier_of(client)} · prompt {PROMPT_VERSION} · "
-        f"claims enumerated from {EXTRACTION_RESULTS.name}"
+        f"claims enumerated from {' + '.join(p.name for p in EXTRACTION_RECORDINGS)}"
     )
 
     records: list[dict] = []
@@ -229,7 +237,7 @@ def measure(tier: str = MEASURED_TIER) -> int:
         "model": VERIFIER_MODEL,
         # Read off the client, never the flag (D106).
         "tier": tier_of(client),
-        "claims_enumerated_from": EXTRACTION_RESULTS.name,
+        "claims_enumerated_from": " + ".join(p.name for p in EXTRACTION_RECORDINGS),
         "prompt_version": PROMPT_VERSION,
         "measured_at": datetime.now(timezone.utc).isoformat(),
         "claims": records,

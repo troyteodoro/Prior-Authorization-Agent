@@ -194,23 +194,23 @@ Determination
     {
       "model": "gemini-3.5-flash-lite",
       "purpose": "verification",
-      "input_tokens": 1129,
+      "input_tokens": 1208,
+      "output_tokens": 48,
+      "wall_time_ms": 602.7039170003263
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "purpose": "verification",
+      "input_tokens": 1033,
+      "output_tokens": 40,
+      "wall_time_ms": 838.7863329990068
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "purpose": "verification",
+      "input_tokens": 898,
       "output_tokens": 53,
-      "wall_time_ms": 909.0761250117794
-    },
-    {
-      "model": "gemini-3.5-flash-lite",
-      "purpose": "verification",
-      "input_tokens": 954,
-      "output_tokens": 39,
-      "wall_time_ms": 766.1353750154376
-    },
-    {
-      "model": "gemini-3.5-flash-lite",
-      "purpose": "verification",
-      "input_tokens": 819,
-      "output_tokens": 49,
-      "wall_time_ms": 840.4523748904467
+      "wall_time_ms": 714.2020839964971
     }
   ],
   "model_calls": 5,
@@ -247,9 +247,9 @@ Determination
     }
   ],
   "discrepancies": [],
-  "total_input_tokens": 4940,
+  "total_input_tokens": 5177,
   "total_output_tokens": 1353,
-  "total_wall_time_ms": 6410.9
+  "total_wall_time_ms": 6050.9
 }
 
 Citation manifest (9)

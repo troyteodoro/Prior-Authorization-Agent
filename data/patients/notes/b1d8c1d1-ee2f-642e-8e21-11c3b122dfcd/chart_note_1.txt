@@ -1,0 +1,19 @@
+PRAIRIE LAKES SLEEP CENTER
+Patient: Huel628, Rolland302                     MRN: 756421
+DOB: 1979-12-04                       Sex: M
+Document 1 of 2
+
+SLEEP MEDICINE CONSULTATION
+
+12/14/2019 - Seen in person in clinic by D. Lindqvist, DO for evaluation of
+suspected obstructive sleep apnea. History taken and examination performed.
+
+HISTORY OF PRESENT ILLNESS
+Bed partner reports loud nightly snoring and witnessed pauses in breathing.
+
+PLAN
+Diagnostic sleep study ordered to assess for obstructive sleep apnea.
+
+ASSESSMENT
+Suspected obstructive sleep apnea. Diagnostic testing has been ordered and is
+documented separately.

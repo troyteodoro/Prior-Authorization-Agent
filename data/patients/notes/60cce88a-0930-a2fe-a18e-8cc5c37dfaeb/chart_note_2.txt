@@ -1,0 +1,15 @@
+RIVER BEND SLEEP DISORDERS CLINIC
+Patient: Dare640, Valrie435                      MRN: 601835
+DOB: 1978-02-28                       Sex: F
+Document 2 of 2
+
+SLEEP STUDY REPORT
+
+Study date: 03/16/2026. Unattended home sleep test (Type III), performed
+without positive airway pressure.
+Total recording time: 6.5 hours.
+Respiratory disturbance index (RDI): 8 events per hour.
+
+ASSESSMENT
+Sleep-disordered breathing evaluated by the study reported above. Results
+reviewed with the patient.

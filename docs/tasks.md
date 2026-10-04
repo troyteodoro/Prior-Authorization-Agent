@@ -17,9 +17,21 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v1.6`, row 2 — `T-108`**, practice three. **Nothing is open
+**What to do next: `v1.6`, row 3 — `T-109`**, practice four. **Nothing is open
 on this board**; v1.6 is in progress, and its next row writes its own record
 when it opens *(D97's rule)*.
+**`T-108` closed v1.6's row 2** *(D150, D151, D152)*: practice three is CPAP
+(E0601) for obstructive sleep apnea, compiled from L33718 for Noridian's DME
+Jurisdiction D under NCD 240.4 — the first national document here that
+quantifies, two thresholds of one criterion, each now a national floor checked
+at load. Synthea writes no apnea-hypopnea index, so the index is a note fact,
+and that earned the second fact kind, `sleep_apnea_workup`, and **REQ-79**: the
+trust boundary is generic over declared kinds, every kind folds through one
+registry, and no kind but `weight_management` reaches a `WmEvent` field. Six
+charts from the recorded Iowa run, twelve notes, rows `OSA1`–`OSA6` and `H10`,
+the extraction recording on both tiers; the verifier moved to `verifier-v7`
+and was re-measured whole on both tiers, and the quote recordings were
+extended with the new notes. `T-143` is numbered off the path.
 **`T-107` opened v1.6 and closed its row 1** *(D149)*: a tree declares the fact
 kinds its extraction produces, from a closed `FactKind` vocabulary, and the
 declaration must equal what its criteria and reconciled facts consume. A tree
@@ -305,11 +317,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-104 tasks are on this board — IDs run to T-142, and every id above T-125 is
+105 tasks are on this board — IDs run to T-143, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 104 are closed and none is open**; every row the board numbered has a
-record. Both figures
+is well above the count. **All 105 are closed and none is open**; `T-143` below
+is numbered and has no record yet, and writes its record when it opens. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
@@ -353,6 +365,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **closed** (D144), before v1.6 opened — discovered in `T-106`. The held set is derived from spec §7 and §11; README's table has exactly those rows, and every current *A1–AN* claim names the last. CLAUDE.md's *A1–A10 all hold* was live at open |
 | `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **closed** (D146), before v1.6 opened — discovered in `T-106`. An autouse guard refuses non-loopback connections and lookups in process, and every child inherits a placeholder key, a missing credentials file and a refused proxy; a live CLI run from the suite fails locally with exit 3 |
 | `T-142` | **CLAUDE.md's *Current state* had grown back to about 500 of its 1,666 lines**, one paragraph per closed task, each a copy of a board record and a decision entry, while the file's own header said the narrative had been moved out *(D70)*. `tests/test_docs_consistency.py` **required** CLAUDE.md to carry copies of figures other artifacts own (the suite size, the task count, the highest id, A2, A5, A6, the current gate range, the test-file count), so the check enforced the duplication that `T-132`–`T-140` kept repairing. Documents and one test file; zero model calls | **closed** (D148), before v1.6 opened, ahead of `T-107` — discovered in the review that wrote D147. *Current state* is a status line capped at 30 lines by a test, and every check that required a CLAUDE.md copy now requires its absence |
+| `T-143` | **the ADK extraction leaf builds only the weight-management agent.** `AdkExtractionRunner.run` refuses any kind whose schema is not `Extraction` and `INSTRUCTION`, so `--extraction adk` on a request under `pap-osa-dme-jd-v1` raises `NotImplementedError`, which the CLI reports as an unbuilt path, rather than reading the notes under another kind's prompt. Its agent's description, its tool-fetch message and its output schema are weight-management text, and generalising them changes the prompt every ADK extraction recording was measured under (D45), so it is a measurement, not a refactor: an agent built from each `FactSchema`, and the sleep kind's two ADK recordings per tier. The direct and recorded runners are generic since `T-108` | not sequenced — discovered in `T-108` *(D150)*; nothing in v1.6's rows reads the ADK extraction path for the new kind |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -541,7 +554,7 @@ re-measured differential.
 | # | Slice | Task | State | Exit, in one line |
 |---|---|---|---|---|
 | 1 | the declared extraction schema | `T-107` | **closed** (D149) | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load; **and a tree that declares no fact type reads no note** — extended by *(D113)*, which measured a rheumatology determination extracting both notes of a chart whose events no criterion consumes; **and a recorded payload replayed under a fact schema it was not measured with raises** — extended by *(D147)*, because replay is keyed by note bytes alone and a second schema would otherwise replay the first's payload |
-| 2 | practice three | `T-108` | pending | source, tree, patients, notes, rows, recording; `run_eval.py` green |
+| 2 | practice three | `T-108` | **closed** (D150, D151, D152) | CPAP for obstructive sleep apnea under NCD 240.4 and L33718: source, tree, patients, notes, rows, recording on both tiers, the second fact kind and the generic trust boundary (REQ-79); `run_eval.py` green. **Rewritten at open** *(D150)*: the one-line exit named six deliverables and checked one |
 | 3 | practice four | `T-109` | pending | as row 2 |
 | 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | pending | Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
 
@@ -3436,6 +3449,120 @@ The first pass printed nothing for any run, including the restored one. Under
 zsh an unquoted `$T` is one word, so pytest received a single path that does
 not exist. The pass was re-run under bash. A harness that is silent on the
 restored tree is broken, not passing.
+
+### `[x] T-108` Practice three: CPAP for obstructive sleep apnea, and the generic trust boundary
+
+**REQ:** mints 79 · **Depends:** T-107, T-129 · **Blocks:** T-109, T-110 ·
+**Decided by:** D150, D151, D152 · **Gates:** A14 (second of four rows) ·
+**Timebox:** two days plus two measurement rounds
+**Status:** **closed** (D150, D151, D152). The exit ran green and every gate
+with it. Three measurement rounds rather than two, each in its entry: the sleep
+extraction on both tiers, the verifier whole on both tiers under a revised
+prompt, and the six quote recordings extended. No bariatric, rheumatology or
+ultrasound verdict, span or baseline status moved.
+
+**Measured at open.**
+- NCD 240.4 and L33718 fetch credential-free. NCD 240.4 quantifies two
+  thresholds of one criterion; L33718 restates them with event minimums and
+  names E0601 in prose.
+- Synthea writes no AHI. The index is a note fact or nothing, which is what
+  earns the second fact kind.
+- The recorded Iowa run on disk is byte-identical to the one that produced the
+  committed ultrasound chart, and six of its charts carry an active obstructive
+  sleep apnea condition and the study procedure Synthea writes.
+
+**Exit:** *rewritten at open (D150)* from *source, tree, patients, notes, rows,
+recording; `run_eval.py` green*, which names six deliverables and checks one.
+
+```
+./venv/bin/python scripts/verify_sources.py --offline \
+ && ./venv/bin/python scripts/select_patients.py --verify \
+ && ./venv/bin/python scripts/synthesize_notes.py --verify \
+ && ./venv/bin/python -m pytest tests/test_sleep_apnea_tree.py tests/test_sleep_apnea_corpus.py tests/test_fact_kinds.py tests/test_criteria_tree.py tests/test_predicate_kinds.py -q --color=no \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --rescore \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --tier vertex --rescore \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- NCD 240.4 and L33718 are in the hashed corpus with answers that slice back,
+  and the nine documents already committed are carried forward byte-identical;
+- `pap-osa-dme-jd-v1` loads beside the four trees already there, declares
+  `sleep_apnea_workup` and two national floors on `b`, both satisfied; E0601 in
+  Iowa resolves to it, E0470 in Iowa is `NO_POLICY_FOUND`, and E0601 in Texas
+  is `NO_JURISDICTION_TREE`;
+- each new predicate kind answers every verdict it can, on hand-written charts,
+  and each `NOT_MET` re-derives from what it cites;
+- `sleep_apnea_workup` is registered with its digest pinned beside its
+  version; every kind folds through `FACT_FOLDS`, a partition of `FactKind`;
+  the sleep builder constructs no `WmEvent`, and its result carries none
+  (REQ-79);
+- six charts are in the pinned population, selected mechanically from the
+  recorded Iowa run, and `--verify` re-derives their facts from the bytes;
+- twelve notes are rendered, one fact per document, every date the chart's own
+  or the manifest's, and the fourteen notes already committed are
+  byte-identical;
+- the sleep recording exists on both tiers, every quote anchored or recorded as
+  dropped, and it replays under its own prompt version only;
+- `OSA1`–`OSA6` are `PASS` against the baseline, and the verifier recording
+  holds every new claim on both tiers, coherent.
+
+**What it delivers.** Two documents, NCD 240.4 and L33718, and three answers
+read from them. `pap-osa-dme-jd-v1` with two predicate kinds,
+`note_evaluation_before_sleep_test` and `note_sleep_test_index`, and its
+comorbidity value set. The second fact kind with its own schema, instruction,
+builder, locator and pinned digest; `ExtractionResult.facts`,
+`WorkflowState.facts`, `PredicateInputs.facts` and `workflow.FACT_FOLDS`; and
+replay keyed by note and prompt version, so one note can hold one payload per
+kind. A criterion may declare a list of national floors. Six charts selected
+by rule from the recorded Iowa run, twelve notes, and eval rows `OSA1`–`OSA6`
+and `H10`.
+
+**What it measured.** The sleep extraction read every declared evaluation,
+test, index, recording time and finding on both tiers, 12 of 12 values, with no
+trap and no denied finding read as a fact. The verifier's first whole round
+under `verifier-v6` accepted every claim and was not adopted, because it moved
+token counts `T-106`'s fixtures embed. The extension round after it rejected a
+correct `MET` because no quote states the event count Python derived. That is
+D78's category a third time, and `verifier-v7` states the accepting case;
+re-measured whole, it accepted 49 of 49 on each tier *(D151)*. The fixtures'
+embedded determinations were re-derived from the engine and re-rendered by
+the product's verb.
+
+**What it found.** A11 grades every candidate the knowledge table finds, and
+one sleep chart carries a table drug. D150 had declined to measure quotes for
+the new notes; that left a candidate nothing graded, so D152 extended all six
+quote recordings with the twelve notes and `H10` grades it, red with both notes
+consulted. One extension note failed on AI Studio's ADK tool-fetch path — the
+model wrote ADK's injected `set_model_response` as text — and it is recorded
+as a finding, never re-run. Corpus growth also weakened one existing check:
+`test_the_a2_a3_a5_checks_follow_their_input` flipped one `MET` pair, and once
+criterion `a` carried fifteen, fourteen of fifteen cleared A2's bar. It now
+flips every `MET` of one criterion.
+
+**Not built, on purpose.** The ADK extraction leaf for the new kind is
+`T-143`: its agent is weight-management text, and generalising it is a new
+ADK measurement (D45). The agentic differential is measured at 43775 only and
+its population is the charts whose request resolves there; widening it is
+`T-110`'s re-measurement.
+
+**Mutation pass.** Eleven mutants over `pa_agent/`, run against the exit's test
+files under bash with `__pycache__` cleared between runs; all eleven caught,
+one only after a test was added. The fold bypassed, both boundaries of branch
+1 moved, a same-day evaluation counted as prior, a resolved comorbidity
+counted, a finding's category not checked against the tree's list, an
+unanchorable index kept, the replay ignoring the prompt version, only the first
+national floor checked, and the extraction-fault error set read by predicate
+kind name instead of by fact kind: each went red on its own test. **The
+narrower replaced by the identity survived the first pass.** On a correct
+predicate an identity narrower re-derives the same answer, so
+`check_citation_sufficiency` passing proves nothing about it; a direct test of
+what `_cited_workup` keeps was added, and it went red. After the pass the
+notes, bundles and manifests were checked against git and both `--verify`
+modes passed.
 
 ## Attached to no story
 

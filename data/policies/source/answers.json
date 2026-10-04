@@ -1,6 +1,6 @@
 {
   "resolves": "spec section 9 open questions 1 and 2, and T-25's coverage assumption for 43775",
-  "answered_at": "2026-09-20T22:20:27.415805+00:00",
+  "answered_at": "2026-10-04T07:30:28.225163+00:00",
   "answers": [
     {
       "question_id": "q1",
@@ -150,6 +150,45 @@
       "note": "Group 1 of three; Group 2 is 93978/93979 (aorta, inferior vena cava, iliac vasculature, bypass grafts) and Group 3 is 93980/93981 (penile). The article's CPT/HCPCS table is behind the AMA licence modal as A56852's and A56432's are, so this paragraph is the corpus sentence that names the codes -- and unlike L35677's revision-history line it also states what they denote and which diagnoses support them, which is D28's two classes of claim arriving together. This tree is compiled for Group 1 alone (D114).",
       "char_start": 11547,
       "char_end": 11646
+    },
+    {
+      "question_id": "q14",
+      "question": "Does NCD 240.4 quantify its coverage criterion, and how many numbers does it state?",
+      "feeds": "pap-osa criterion b's two national floors",
+      "answer": "yes - an AHI or RDI of at least 15 events per hour, or of 5 to 14 with documented symptoms or comorbidities: two thresholds of one criterion",
+      "document_id": "ncd_240_4",
+      "quote": "AHI or RDI greater than or equal to 15 events per hour, or",
+      "note": "The second threshold is the next sentence, which states 5 and 14 and the symptoms and comorbidities that qualify the band. NCD 100.1 quantifies one number; this one quantifies two thresholds of one criterion, which is why a criterion may now declare more than one national floor (D150).",
+      "corroborating_quote": {
+        "document_id": "ncd_240_4",
+        "quote": "AHI or RDI greater than or equal to 5 events and less than or equal to 14 events per hour with documented symptoms of excessive daytime sleepiness, impaired cognition, mood disorders or insomnia, or documented hypertension, ischemic heart disease, or history of stroke.",
+        "char_start": 3425,
+        "char_end": 3694
+      },
+      "char_start": 3365,
+      "char_end": 3423
+    },
+    {
+      "question_id": "q15",
+      "question": "What does L33718 add to NCD 240.4's thresholds, and what else must be met for an E0601?",
+      "feeds": "pap-osa criteria a, b, c and d",
+      "answer": "event minimums -- at least 30 events for the unconditional threshold, 10 for the band -- plus an in-person evaluation before the sleep test and supplier instruction",
+      "document_id": "l33718",
+      "quote": "The apnea-hypopnea index (AHI) or Respiratory Disturbance Index (RDI) is greater than or equal to 15 events per hour with a minimum of 30 events; or,",
+      "note": "Criterion B's first branch. Its second branch states 'a minimum of 10 events', and the definitions paragraph ties both minimums to recordings under two hours. Criteria A (in-person evaluation prior to the sleep test) and C (supplier instruction) complete the list; the Sleep Tests section's validity requirements are the provenance of the test, declared unclaimed (D150).",
+      "char_start": 7769,
+      "char_end": 7918
+    },
+    {
+      "question_id": "q16",
+      "question": "Does any document in the corpus name the HCPCS code for a single-level CPAP device?",
+      "feeds": "the pap-osa tree's nationally_covered binding",
+      "answer": "yes - L33718 names E0601 in its own coverage text",
+      "document_id": "l33718",
+      "quote": "a single-level continuous positive airway pressure device (E0601)",
+      "note": "A DME LCD carries its HCPCS codes in prose, where an A/B MAC article's CPT table sits behind the AMA licence modal (D101, D111). The same sentence names E0470, which this tree does not bind: its criterion D, a failed E0601 trial, is outside the tree, so E0470 resolves NO_POLICY_FOUND (D150).",
+      "char_start": 7196,
+      "char_end": 7261
     }
   ]
 }

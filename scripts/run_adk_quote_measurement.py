@@ -7,6 +7,8 @@
                                      -> eval/history/adk_results_tool_fetch.json
     python scripts/run_adk_quote_measurement.py --tier vertex   -> ..._vertex.json
     python scripts/run_adk_quote_measurement.py --rescore       re-anchor, no calls
+    python scripts/run_adk_quote_measurement.py --extend        measure only the notes
+                                                                the recording lacks (D152)
 
 **One recording per mode and tier** (T-68, D68, D106): the path is derived from
 the flags, never chosen by the caller. **Spends model calls, so it is in no
@@ -257,6 +259,10 @@ def main(argv: list[str] | None = None) -> int:
         "--rescore", action="store_true",
         help="re-anchor this mode's recording for zero calls",
     )
+    parser.add_argument(
+        "--extend", action="store_true",
+        help="measure only the notes this mode's recording lacks, keeping the rest (T-108, D152)",
+    )
     parser.add_argument("--limit", type=int, default=None, help="measure only the first N notes")
     parser.add_argument(
         "--tier", choices=tuple(PROVENANCE), default=MEASURED_TIER,
@@ -265,7 +271,33 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.rescore:
         return rescore(args.tool_fetch, args.tier)
+    if args.extend:
+        return extend(args.tool_fetch, args.tier)
     return measure(args.tool_fetch, args.limit, args.tier)
+
+
+def extend(tool_fetch: bool, tier: str = MEASURED_TIER) -> int:
+    """`run_quote_measurement.extend` over this mode's recording and runner
+    (T-108, D152). The mode and tier must be the recording's own."""
+    base = _load_direct()
+    from pa_agent.agent.extraction_agent import native_schema_enabled
+    from pa_agent.agent.quote_agent import AdkQuoteRunner
+    from pa_agent.tiers import tier_of
+
+    out_path = adk_path(tool_fetch, tier)
+    previous = json.loads(out_path.read_text(encoding="utf-8"))
+    client = _client(tier)
+    if bool(previous.get("tool_fetch")) is not tool_fetch or previous.get("tier") != tier_of(client):
+        sys.exit(f"{out_path.name} records another mode or tier (D68, D106)")
+    if previous.get("output_schema_and_tools") != native_schema_enabled(PINNED_MODEL):
+        sys.exit(f"{out_path.name} was measured under another ADK prompt shape (D62)")
+    if previous.get("adk_version") != _adk_version():
+        sys.exit(f"{out_path.name} was measured under another ADK version (D71)")
+    runner = AdkQuoteRunner(
+        client=client, patient_store=LocalPatientStore(), tool_fetch=tool_fetch,
+        model=PINNED_MODEL,
+    )
+    return base.extend(out_path, runner, f"adk tool_fetch={tool_fetch}")
 
 
 if __name__ == "__main__":

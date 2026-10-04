@@ -762,6 +762,12 @@ EXPECTED_ACCOUNT: dict[tuple[str, str], str] = {
     ("us-abdominal-visceral-j5-j8-v1", "c"): "unclaimed",
     ("us-abdominal-visceral-j5-j8-v1", "d"): "unclaimed",
     ("us-abdominal-visceral-j5-j8-v1", "e"): "unclaimed",
+    # T-108 (D150): the fourth practice earned both of its kinds, the first
+    # practice since the first to need two.
+    ("pap-osa-dme-jd-v1", "a"): "earned",
+    ("pap-osa-dme-jd-v1", "b"): "earned",
+    ("pap-osa-dme-jd-v1", "c"): "unclaimed",
+    ("pap-osa-dme-jd-v1", "d"): "unclaimed",
 }
 
 
@@ -830,14 +836,16 @@ def test_the_account_groups_by_practice_and_not_by_tree(script):
     """
     section = _compatibility(REPORT.read_text(encoding="utf-8"))
     per_practice = section[section.index("### Per practice") :]
-    per_practice = per_practice[: per_practice.index("**24 criteria")]
+    per_practice = per_practice[: per_practice.index("**28 criteria")]
     names = [
         line.strip().strip("|").split("|")[0].strip()
         for line in per_practice.splitlines()
         if line.startswith("| ") and not line.startswith("| Practice")
         and "---" not in line
     ]
-    assert names == ["bariatric surgery", "diagnostic ultrasound", "rheumatology"], (
+    assert names == [
+        "bariatric surgery", "diagnostic ultrasound", "rheumatology", "sleep medicine",
+    ], (
         "the practice rows moved; the order is sorted and pinned, because an "
         "unsorted set iteration renders a report that differs between "
         "processes and `--verify` would fail on a later day rather than here"
@@ -850,6 +858,7 @@ def test_the_account_groups_by_practice_and_not_by_tree(script):
             ("ncd-100.1-jjm-v1", "bariatric surgery"),
             ("infliximab-ra-jjm-v1", "rheumatology"),
             ("us-abdominal-visceral-j5-j8-v1", "diagnostic ultrasound"),
+            ("pap-osa-dme-jd-v1", "sleep medicine"),
         )
     }
     body = section[section.index("### Every criterion") :]
@@ -864,7 +873,7 @@ def test_exclusions_are_counted_apart_from_criteria(script):
     the zero-omitted check above rests on that arithmetic.
     """
     section = _compatibility(REPORT.read_text(encoding="utf-8"))
-    assert "**24 criteria across 4 trees and 3 practices, zero omitted.**" in section
+    assert "**28 criteria across 5 trees and 4 practices, zero omitted.**" in section
 
     exclusions = section[section.index("### Categorical exclusions") :]
     assert "`bmi_below_bound_with_active_condition`" in exclusions
@@ -891,7 +900,7 @@ def test_every_unclaimed_criterion_is_quoted_not_summarized(script):
     reasons = reasons[: reasons.index("### Categorical exclusions")]
 
     unclaimed = [key for key, cls in EXPECTED_ACCOUNT.items() if cls == "unclaimed"]
-    assert len(unclaimed) == 8
+    assert len(unclaimed) == 10, "eight through v1.2, and the PAP tree's c and d (D150)"
     for tree, criterion_id in unclaimed:
         assert f"- **`{tree}` `{criterion_id}`**" in reasons, (tree, criterion_id)
 
@@ -913,7 +922,9 @@ def test_every_predicate_kind_has_a_recorded_origin(script):
     """
     assert set(script.KIND_ORIGIN) == set(PredicateKind)
     practices = {practice for practice, _ in script.KIND_ORIGIN.values()}
-    assert practices == {"bariatric_surgery", "rheumatology", "diagnostic_ultrasound"}
+    assert practices == {
+        "bariatric_surgery", "rheumatology", "diagnostic_ultrasound", "sleep_medicine",
+    }
     earned_after_the_first = {
         kind.value
         for kind, (practice, _) in script.KIND_ORIGIN.items()
@@ -922,7 +933,12 @@ def test_every_predicate_kind_has_a_recorded_origin(script):
     assert earned_after_the_first == {
         "medication_value_set_active",
         "procedure_value_set_interval",
-    }, "each practice after the first earned exactly one kind (T-92, T-94)"
+        "note_evaluation_before_sleep_test",
+        "note_sleep_test_index",
+    }, (
+        "the second and third practices earned one kind each (T-92, T-94); the "
+        "fourth earned two, both over the second fact kind (T-108, D150)"
+    )
 
 
 def test_kind_origin_is_a_literal_and_not_derived_from_the_trees(script):
@@ -1071,23 +1087,25 @@ def test_quote_rows_recompute_from_the_records_and_not_the_aggregate(script):
 
 def test_the_quote_section_reads_every_committed_recording(script):
     """The figures the section exists to carry, pinned to the six recordings
-    as committed (D122): twelve notes each, sixty pairs, zero returned, zero
-    fabricated; twelve turns on the direct and inline runs and twenty-four on
-    the tool-fetch runs, where a tool round trip is two calls (D71)."""
+    as committed (D122, D152): twenty-four notes each, a hundred and twenty
+    pairs, zero returned, zero fabricated; a turn per note on the direct and
+    inline runs and two on the tool-fetch runs, where a tool round trip is two
+    calls (D71). One note on AI Studio's tool-fetch run is recorded as failed,
+    so that row reads twenty-three answered and a hundred and fifteen pairs."""
     text = "\n".join(script._quote_section())
     assert "## Quote consultation (T-98, REQ-67, REQ-68, D122)" in text
-    for label, tier, filename, turns in (
-        ("direct", "ai_studio", "results.json", 12),
-        ("direct", "vertex", "results_vertex.json", 12),
-        ("ADK inline", "ai_studio", "adk_results_inline.json", 12),
-        ("ADK inline", "vertex", "adk_results_inline_vertex.json", 12),
-        ("ADK tool-fetch", "ai_studio", "adk_results_tool_fetch.json", 24),
-        ("ADK tool-fetch", "vertex", "adk_results_tool_fetch_vertex.json", 24),
+    for label, tier, filename, notes, turns, pairs in (
+        ("direct", "ai_studio", "results.json", "24", 24, 120),
+        ("direct", "vertex", "results_vertex.json", "24", 24, 120),
+        ("ADK inline", "ai_studio", "adk_results_inline.json", "24", 24, 120),
+        ("ADK inline", "vertex", "adk_results_inline_vertex.json", "24", 24, 120),
+        ("ADK tool-fetch", "ai_studio", "adk_results_tool_fetch.json", "23 (1 failed)", 46, 115),
+        ("ADK tool-fetch", "vertex", "adk_results_tool_fetch_vertex.json", "24", 48, 120),
     ):
-        prefix = f"| {label} (`{filename}`) | {tier} | 12 | {turns} | "
+        prefix = f"| {label} (`{filename}`) | {tier} | {notes} | {turns} | "
         row = next((line for line in text.splitlines() if line.startswith(prefix)), None)
         assert row is not None, f"no row for {filename}"
-        assert row.endswith("| 0 | 0 | 0 | 0 | 0 | 60 | **0** |"), row
+        assert row.endswith(f"| 0 | 0 | 0 | 0 | 0 | {pairs} | **0** |"), row
     assert "**No passage was returned for any pair in any recording.**" in text
     assert "Pairs anchored across all six recordings: 0." in text
 
@@ -1399,15 +1417,16 @@ def test_the_a2_a3_a5_checks_follow_their_input(script):
     """Each check refuses a perturbed input (T-99's shape)."""
     results, cache, _reviews = script._run(LocalPolicyStore())
     pairs = script._criterion_pairs(results, cache)
-    flipped = False
-    perturbed = []
-    for case, criterion_id, expected, actual in pairs:
-        if not flipped and expected == actual == "MET":
-            perturbed.append((case, criterion_id, "NOT_MET", actual))
-            flipped = True
-        else:
-            perturbed.append((case, criterion_id, expected, actual))
-    assert flipped and _a2_failures(perturbed)[1]
+    # Every MET call of one criterion relabelled NOT_MET, which drops that
+    # criterion's precision to zero. One flipped pair stopped being enough at
+    # T-108: criterion `a` carries fifteen MET calls, and fourteen of fifteen
+    # is above A2's bar, so a single flip proved nothing about the check.
+    target = next(c for _, c, e, a in pairs if e == a == "MET")
+    perturbed = [
+        (case, criterion_id, "NOT_MET" if criterion_id == target and actual == "MET" else expected, actual)
+        for case, criterion_id, expected, actual in pairs
+    ]
+    assert perturbed != pairs and _a2_failures(perturbed)[1]
 
     determinations = script._determinations(cache)
     shifted = []

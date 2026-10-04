@@ -1,0 +1,69 @@
+{
+  "value_set_id": "osa_qualifying_comorbidities",
+  "task": "T-108",
+  "decision": "D150",
+  "status": "VERIFIED",
+  "system": "http://snomed.info/sct",
+  "system_note": "SNOMED CT because that is what LocalPatientStore reports on Condition.code. L33718 names the comorbidities in prose and no code system; the set is in the system the comparison happens in, and each entry is anchored to the sentence that names it (REQ-59, D150).",
+  "sources": [
+    {
+      "document_id": "l33718",
+      "sha256": "aa04e844776ca7ce8d020a31afda08b74bba7209546908be2c5760a23d6af82f"
+    }
+  ],
+  "compiled_from": "The second list under L33718's criterion B2 -- hypertension, ischemic heart disease, or history of stroke -- the coded half of the documentation the 5-14 band requires. The first list (daytime sleepiness, impaired cognition, mood disorders, insomnia) is symptoms, which no chart in this corpus codes, so it is read from the notes by the sleep_apnea_workup fact kind rather than compiled here (D150).",
+  "entries": [
+    {
+      "system": "http://snomed.info/sct",
+      "code": "59621000",
+      "display": "Essential hypertension (disorder)",
+      "policy_anchor": {
+        "document_id": "l33718",
+        "char_start": 8145,
+        "char_end": 8204,
+        "quote": "Hypertension, ischemic heart disease, or history of stroke.",
+        "names": "Hypertension"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "The SNOMED code Synthea's own generator emits for hypertension, read from modules/hypertension.json inside the pinned synthea-with-dependencies.jar -- so it is the code a chart in this corpus actually carries rather than one recalled. The policy names the condition in prose and no code, so the binding is a reading of the condition's name, recorded as the weaker claim it is (D150)."
+      }
+    },
+    {
+      "system": "http://snomed.info/sct",
+      "code": "414545008",
+      "display": "Ischemic heart disease (disorder)",
+      "policy_anchor": {
+        "document_id": "l33718",
+        "char_start": 8145,
+        "char_end": 8204,
+        "quote": "Hypertension, ischemic heart disease, or history of stroke.",
+        "names": "ischemic heart disease"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "The SNOMED code Synthea's own generator emits for ischemic heart disease, read from modules/stable_ischemic_heart_disease.json inside the pinned synthea-with-dependencies.jar -- so it is the code a chart in this corpus actually carries rather than one recalled. The policy names the condition in prose and no code, so the binding is a reading of the condition's name, recorded as the weaker claim it is (D150)."
+      }
+    },
+    {
+      "system": "http://snomed.info/sct",
+      "code": "230690007",
+      "display": "Cerebrovascular accident (disorder)",
+      "policy_anchor": {
+        "document_id": "l33718",
+        "char_start": 8145,
+        "char_end": 8204,
+        "quote": "Hypertension, ischemic heart disease, or history of stroke.",
+        "names": "history of stroke"
+      },
+      "mapping": {
+        "in_corpus": false,
+        "source_class": "external_code_system",
+        "basis": "The SNOMED code Synthea's own generator emits for history of stroke, read from modules/stroke.json inside the pinned synthea-with-dependencies.jar -- so it is the code a chart in this corpus actually carries rather than one recalled. The policy names the condition in prose and no code, so the binding is a reading of the condition's name, recorded as the weaker claim it is (D150)."
+      }
+    }
+  ],
+  "known_limit": "Three entries, one per condition the sentence names, each the code Synthea's own modules emit for it. A real deployment's set is every SNOMED descendant of each; widening it needs a SNOMED source this project can re-read, which is what D36 was blocked on. The predicate counts an active condition only, the test REQ-12 applies to every condition set, so a stroke the record marks resolved does not count as 'history of stroke' here. That under-counts rather than over-counts: the band abstains and names what to collect, where the opposite error would approve (D40, D150)."
+}

@@ -1,0 +1,34 @@
+{
+  "patient_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed",
+  "bundle": "Brice635_Willms744_023cec62-9ca8-8194-0813-e80b1cdc03ed.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "OSA3"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "sleep_evaluations": [
+    {
+      "date": "2021-01-05",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "sleep_tests": [
+    {
+      "date": "2021-01-06",
+      "document": "chart_note_2.txt",
+      "study_type": "type_i",
+      "index_name": "AHI",
+      "index": 12.0,
+      "recording_hours": 5.8
+    }
+  ],
+  "sleep_findings": [],
+  "denied_findings": [],
+  "rationale": "OSA3: Branch 2 met by the coded record alone: an AHI of 12 over 5.8 hours is 69.6 events, inside the band, and the notes document no listed finding, but the chart codes an active ischemic heart disease condition in osa_qualifying_comorbidities. b is MET citing the test and that condition -- the case for reading the band's comorbidities from the chart as well as from the note (D150). Transcribed from L33718 and NCD 240.4 through pap_osa_dme_jd.json and the chart's own facts, never from a run (T-108, D150). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. The sleep study is dated on the chart's own 82808001 procedure and the in-person evaluation on the latest 103750000 assessment strictly before it, so every date the notes emit is the generator's; the index, the recording time and any finding are declared here, because no generator writes them (D43, D150). Document 1 is the consultation and document 2 the study report: one fact per document (D104). c and d are declared unclaimed by the tree -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58)."
+}

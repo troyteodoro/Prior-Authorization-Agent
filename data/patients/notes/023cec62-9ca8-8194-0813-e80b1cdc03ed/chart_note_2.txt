@@ -1,0 +1,15 @@
+PRAIRIE LAKES SLEEP CENTER
+Patient: Willms744, Brice635                     MRN: 537005
+DOB: 1968-12-09                       Sex: M
+Document 2 of 2
+
+SLEEP STUDY REPORT
+
+Study date: 01/06/2021. Attended in-laboratory polysomnogram (Type I),
+performed without positive airway pressure.
+Total recording time: 5.8 hours.
+Apnea-hypopnea index (AHI): 12 events per hour.
+
+ASSESSMENT
+Sleep-disordered breathing evaluated by the study reported above. Results
+reviewed with the patient.

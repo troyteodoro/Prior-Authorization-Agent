@@ -34,10 +34,14 @@ from pydantic import BaseModel, Field, ValidationError
 from pa_agent.anchor import AnchoredSpan, anchor
 from pa_agent.contracts import (
     CallMetrics,
+    ClinicalEvaluation,
+    DocumentedFinding,
     EvidenceSpan,
     FactKind,
     ProgramAssertion,
     RunTrace,
+    SleepFindingCategory,
+    SleepTest,
     ToolCall,
     WmEvent,
 )
@@ -265,6 +269,14 @@ class ExtractionResult:
     """
 
     document_id: str
+    #: The fact kind whose builder produced this result (T-108, D150). `None`
+    #: only on a result built by hand; both registered builders set it.
+    kind: FactKind | None = None
+    #: The generic slot (REQ-79): every kind but `weight_management` returns its
+    #: facts here, as contract objects, and leaves the `WmEvent`-shaped fields
+    #: below empty. `weight_management` keeps its typed fields unchanged, so
+    #: no recording, span or verdict built from them moved (D150).
+    facts: list = field(default_factory=list)
     events: list[WmEvent] = field(default_factory=list)
     assertions: list[ProgramAssertion] = field(default_factory=list)
     # T-60: the note's current BMI and where it is stated. `None` when the note
@@ -320,7 +332,10 @@ def build_result(
     which is what lets `pytest` verify a recording rather than make one (D45).
     """
     extraction = Extraction.model_validate(payload)
-    result = ExtractionResult(document_id=document_id, metrics=metrics, raw=payload)
+    result = ExtractionResult(
+        document_id=document_id, kind=FactKind.WEIGHT_MANAGEMENT,
+        metrics=metrics, raw=payload,
+    )
 
     for index, raw_event in enumerate(extraction.wm_events):
         at = f"wm_events[{index}]"
@@ -775,6 +790,252 @@ def extract(
 
 
 # --------------------------------------------------------------------------
+# The second fact kind: the sleep apnea workup (T-108, REQ-79, D150)
+#
+# Its own response model, instruction, builder, locator and prompt version.
+# The builder anchors through `_anchor_or_drop` and the live runners walk
+# `extract_with_reask` with this locator, so the trust boundary and the re-ask
+# are the ones every extraction already passes through; nothing here
+# constructs a `WmEvent`, and `tests/test_fact_kinds.py` parses that.
+# --------------------------------------------------------------------------
+
+#: The sleep kind's configuration: its instruction, and T-89's re-ask unchanged.
+SLEEP_PROMPT_VERSION = "t108-sleep-workup-v1/t89-reask-v1"
+
+
+class ExtractedEvaluation(BaseModel):
+    date: str = Field(description="Evaluation date, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class ExtractedSleepTest(BaseModel):
+    date: str = Field(description="The date the study was performed, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+    index: float | None = Field(
+        default=None,
+        description=(
+            "The AHI or RDI the study measured without positive airway "
+            "pressure, in events per hour, or null if none is stated."
+        ),
+    )
+    index_quote: str = Field(
+        default="",
+        description="If index is present, the verbatim phrase stating it. Else empty.",
+    )
+    recording_hours: float | None = Field(
+        default=None,
+        description=(
+            "The total recording or sleep time stated for the study, in hours, "
+            "or null if none is stated in hours."
+        ),
+    )
+    recording_hours_quote: str = Field(
+        default="",
+        description="If recording_hours is present, the verbatim phrase stating it. Else empty.",
+    )
+
+
+class ExtractedFinding(BaseModel):
+    category: SleepFindingCategory = Field(
+        description="Which of the listed symptoms or conditions the passage documents as present."
+    )
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class SleepApneaWorkupExtraction(BaseModel):
+    clinical_evaluations: list[ExtractedEvaluation] = Field(default_factory=list)
+    sleep_tests: list[ExtractedSleepTest] = Field(default_factory=list)
+    findings: list[ExtractedFinding] = Field(default_factory=list)
+
+
+SLEEP_INSTRUCTION = """\
+You extract structured facts from a clinical note for a prior authorization
+review of a positive airway pressure device. Return only what the schema
+defines. Do not explain.
+
+A clinical_evaluation is one IN-PERSON clinical evaluation of the patient for
+sleep apnea that actually took place. For each one return:
+
+  date         the evaluation date, normalized to YYYY-MM-DD
+  quote        text copied verbatim and contiguously from the note, long enough
+               to show both the date and that an in-person evaluation took
+               place. It must appear in the note character for character.
+  char_start   the offset of the quote's first character, counting from 0 at
+  char_end     the start of the note, and one past its last character
+
+Never return a clinical_evaluation for a telephone call, a video or portal
+message, a scheduling contact, a referral, or an appointment that did not take
+place.
+
+A sleep_test is one DIAGNOSTIC sleep study that was performed: an attended
+polysomnogram or a home sleep test. For each one return:
+
+  date                    the date the study was performed, normalized to
+                          YYYY-MM-DD
+  quote                   text copied verbatim and contiguously from the note,
+                          showing the study and its date
+  char_start, char_end    as above
+  index                   the apnea-hypopnea index (AHI) or respiratory
+                          disturbance index (RDI) the study measured without
+                          positive airway pressure, in events per hour, as a
+                          number. Null if the note states none. Never compute
+                          one, and never report an index measured on CPAP or
+                          during a titration.
+  index_quote             when index is present, the verbatim phrase from the
+                          note that states it. Empty otherwise.
+  recording_hours         the total recording time or total sleep time the
+                          note states for that study, in hours, as a number.
+                          Null if the note states none in hours. Never compute
+                          or convert one.
+  recording_hours_quote   when recording_hours is present, the verbatim phrase
+                          from the note that states it. Empty otherwise.
+
+A finding is a symptom or condition the note documents as PRESENT in the
+patient. Return one for each passage documenting any of the following, with
+the category that names it:
+
+  excessive_daytime_sleepiness, impaired_cognition, mood_disorder, insomnia,
+  hypertension, ischemic_heart_disease, history_of_stroke
+
+with quote, char_start and char_end as above. Never return a finding the note
+denies or records as absent, and never return a category for a symptom that is
+not in that list.
+
+Return every qualifying evaluation, test and finding in the note. Do not filter
+by date, by recency, or by which looks most relevant. Choosing among them
+happens elsewhere.
+"""
+
+
+def build_sleep_result(
+    document_id: str, text: str, payload: dict, metrics: CallMetrics | None = None
+) -> ExtractionResult:
+    """The sleep kind's trust boundary: a payload in, anchored facts out.
+
+    `build_result`'s shape exactly, over another schema (REQ-79): every quote
+    goes through `_anchor_or_drop`, a quote Python cannot locate is a drop
+    with the payload path the re-ask needs, and a stated value whose own
+    phrase cannot be located is demoted to unstated rather than kept without
+    a span (D15's rule, REQ-38's shape). Facts land on `result.facts`; the
+    `WmEvent`-shaped fields stay empty.
+    """
+    extraction = SleepApneaWorkupExtraction.model_validate(payload)
+    result = ExtractionResult(
+        document_id=document_id, kind=FactKind.SLEEP_APNEA_WORKUP,
+        metrics=metrics, raw=payload,
+    )
+
+    for index, raw in enumerate(extraction.clinical_evaluations):
+        at = f"clinical_evaluations[{index}]"
+        located = _anchor_or_drop(
+            document_id, text, raw.quote, raw.char_start, raw.char_end,
+            result.dropped, "evaluation_quote_unanchorable", result.anchored_spans,
+            path=f"{at}.quote",
+        )
+        if located is None:
+            continue
+        try:
+            when = date.fromisoformat(raw.date)
+        except ValueError:
+            result.dropped.append({"reason": "unparseable_date", "quote": raw.date})
+            continue
+        result.facts.append(ClinicalEvaluation(evaluation_date=when, span=located.to_span()))
+
+    for index, raw in enumerate(extraction.sleep_tests):
+        at = f"sleep_tests[{index}]"
+        located = _anchor_or_drop(
+            document_id, text, raw.quote, raw.char_start, raw.char_end,
+            result.dropped, "sleep_test_quote_unanchorable", result.anchored_spans,
+            path=f"{at}.quote",
+        )
+        if located is None:
+            continue
+        try:
+            when = date.fromisoformat(raw.date)
+        except ValueError:
+            result.dropped.append({"reason": "unparseable_date", "quote": raw.date})
+            continue
+        near = (located.char_start, located.char_end)
+        value, value_span = raw.index, None
+        if value is not None:
+            located_value = _anchor_or_drop(
+                document_id, text, raw.index_quote, -1, -1, result.dropped,
+                "index_quote_unanchorable", result.anchored_spans, near,
+                path=f"{at}.index_quote",
+            )
+            if located_value is None:
+                value = None
+            else:
+                value_span = located_value.to_span()
+        hours, hours_span = raw.recording_hours, None
+        if hours is not None:
+            located_hours = _anchor_or_drop(
+                document_id, text, raw.recording_hours_quote, -1, -1,
+                result.dropped, "recording_hours_quote_unanchorable",
+                result.anchored_spans, near, path=f"{at}.recording_hours_quote",
+            )
+            if located_hours is None:
+                hours = None
+            else:
+                hours_span = located_hours.to_span()
+        result.facts.append(
+            SleepTest(
+                test_date=when,
+                span=located.to_span(),
+                index=value,
+                index_span=value_span,
+                recording_hours=hours,
+                hours_span=hours_span,
+            )
+        )
+
+    for index, raw in enumerate(extraction.findings):
+        located = _anchor_or_drop(
+            document_id, text, raw.quote, raw.char_start, raw.char_end,
+            result.dropped, "finding_quote_unanchorable", result.anchored_spans,
+            path=f"findings[{index}].quote",
+        )
+        if located is None:
+            continue
+        result.facts.append(DocumentedFinding(category=raw.category, span=located.to_span()))
+
+    return result
+
+
+_SLEEP_PATH = re.compile(
+    r"^(clinical_evaluations|sleep_tests|findings)\[(\d+)\]\."
+    r"(quote|index_quote|recording_hours_quote)$"
+)
+_SLEEP_QUOTE_FIELDS: dict[str, frozenset[str]] = {
+    "clinical_evaluations": frozenset({"quote"}),
+    "sleep_tests": frozenset({"quote", "index_quote", "recording_hours_quote"}),
+    "findings": frozenset({"quote"}),
+}
+
+
+def _locate_sleep(payload: dict, path: str) -> tuple[dict, str]:
+    """`_locate`'s counterpart for the sleep payload: the container and key a
+    path names, or `KeyError` for one naming nothing in this payload — a
+    model-invented path is never applied (T-89's rule, D150)."""
+    match = _SLEEP_PATH.match(path)
+    if match is None:
+        raise KeyError(path)
+    collection, index, fieldname = match.group(1), int(match.group(2)), match.group(3)
+    if fieldname not in _SLEEP_QUOTE_FIELDS[collection]:
+        raise KeyError(path)
+    items = payload.get(collection) or []
+    if index >= len(items):
+        raise KeyError(path)
+    return items[index], fieldname
+
+
+# --------------------------------------------------------------------------
 # The fact-kind registry (T-107, REQ-78, D147, D149)
 # --------------------------------------------------------------------------
 
@@ -814,9 +1075,10 @@ class FactSchema:
         return hashlib.sha256(material.encode("utf-8")).hexdigest()
 
 
-#: The closed registry a tree's `fact_kinds` selects from. One entry, and it is
-#: the configuration every extraction recording was measured under, unchanged:
-#: `Extraction`, `INSTRUCTION`, `build_result`, `_locate`, `PROMPT_VERSION`.
+#: The closed registry a tree's `fact_kinds` selects from. The first entry is
+#: the configuration every weight-management recording was measured under,
+#: unchanged: `Extraction`, `INSTRUCTION`, `build_result`, `_locate`,
+#: `PROMPT_VERSION`. The second is the sleep workup's (T-108, D150).
 FACT_SCHEMAS: dict[FactKind, FactSchema] = {
     FactKind.WEIGHT_MANAGEMENT: FactSchema(
         kind=FactKind.WEIGHT_MANAGEMENT,
@@ -825,5 +1087,13 @@ FACT_SCHEMAS: dict[FactKind, FactSchema] = {
         build=build_result,
         locate=_locate,
         prompt_version=PROMPT_VERSION,
+    ),
+    FactKind.SLEEP_APNEA_WORKUP: FactSchema(
+        kind=FactKind.SLEEP_APNEA_WORKUP,
+        response_model=SleepApneaWorkupExtraction,
+        instruction=SLEEP_INSTRUCTION,
+        build=build_sleep_result,
+        locate=_locate_sleep,
+        prompt_version=SLEEP_PROMPT_VERSION,
     ),
 }

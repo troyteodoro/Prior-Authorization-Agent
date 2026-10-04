@@ -856,6 +856,277 @@
         ]
       },
       "as_of": "2026-09-01"
+    },
+    {
+      "case_id": "OSA1",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-73, REQ-78, REQ-79; outside §6 (D150)",
+      "description": "Branch 1: an index of at least 15 per hour and 30 events",
+      "patient_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9",
+      "procedure_code": "E0601",
+      "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+      "note": "Criterion b, branch 1: the report states an AHI of 27 and a recording time of 6.4 hours, and Python computes 172.8 events -- past 15 per hour and 30 events -- so b is MET citing the test, its index and its hours, all in the report. The chart codes essential hypertension, which branch 1 does not read. The overall outcome is INSUFFICIENT_EVIDENCE because c and d abstain (REQ-20). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "pap-osa-dme-jd-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5",
+          "e"
+        ]
+      }
+    },
+    {
+      "case_id": "OSA2",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-73, REQ-78, REQ-79; outside §6 (D150)",
+      "description": "Branch 2, documented by the note: an index in the band and excessive daytime sleepiness",
+      "patient_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e",
+      "procedure_code": "E0601",
+      "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+      "note": "Criterion b, branch 2: an RDI of 9 over 6.1 hours is 54.9 events, inside the band from 5 with its minimum of 10, and the consultation documents excessive daytime sleepiness. The chart codes none of the band's comorbidities, so the note's finding is the whole of the documentation; b is MET citing the test in one document and the finding in the other. The model labelled the passage; whether the label qualifies is the tree's list, read by Python (Art. II). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "pap-osa-dme-jd-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5",
+          "e"
+        ]
+      }
+    },
+    {
+      "case_id": "OSA3",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-73, REQ-78, REQ-79; outside §6 (D150)",
+      "description": "Branch 2, documented by the coded record alone: an index in the band and an active ischemic heart disease",
+      "patient_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed",
+      "procedure_code": "E0601",
+      "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+      "note": "Criterion b, branch 2: an AHI of 12 over 5.8 hours is 69.6 events, inside the band, and neither note documents a listed finding -- but the chart codes an active ischemic heart disease condition in osa_qualifying_comorbidities, so b is MET citing the test and that Condition resource. This is the row for reading the band's comorbidities from the chart as well as from the note (D150). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "pap-osa-dme-jd-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "b": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5",
+          "e"
+        ]
+      }
+    },
+    {
+      "case_id": "OSA4",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-73, REQ-78, REQ-79; outside §6 (D150)",
+      "description": "An index below the band",
+      "patient_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8",
+      "procedure_code": "E0601",
+      "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+      "note": "Criterion b: an AHI of 3 is below the band's floor of 5, so b is NOT_MET citing the test and its index, with a structured shortfall of 3 events per hour against 5 that step_sufficiency re-derives from the cited test alone (D99). The chart's coded ischemic heart disease does not rescue it: the band starts at 5. The overall outcome is NOT_MET because a false conjunct dominates an unknown one (REQ-20). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "policy_version_id": "pap-osa-dme-jd-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "b": {
+            "verdict": "NOT_MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5",
+          "e"
+        ]
+      }
+    },
+    {
+      "case_id": "OSA5",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-73, REQ-78, REQ-79; outside §6 (D150)",
+      "description": "An index in the band with nothing documented",
+      "patient_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb",
+      "procedure_code": "E0601",
+      "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+      "note": "Criterion b: an RDI of 8 over 6.5 hours is 52 events, inside the band with its minimum met, and neither the notes nor the coded record documents a listed finding or comorbidity, so b abstains with NO_EVIDENCE_RETRIEVED -- a chart that records no daytime sleepiness has not recorded that there is none (D40). The consultation carries a telephone contact and a denied symptom, the two non-facts the sleep kind's instruction names; neither became an evaluation or a finding. An abstention cites nothing, so the budget is one verifier call fewer. A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "pap-osa-dme-jd-v1",
+        "max_model_calls": 3,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "b": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NO_EVIDENCE_RETRIEVED"
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5",
+          "e"
+        ]
+      }
+    },
+    {
+      "case_id": "OSA6",
+      "story": "US-14",
+      "spec_ref": "REQ-57, REQ-58, REQ-73, REQ-78, REQ-79; outside §6 (D150)",
+      "description": "Branch 1's index without its event minimum: a recording that ended after 1.5 hours",
+      "patient_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd",
+      "procedure_code": "E0601",
+      "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+      "note": "Criterion b: an AHI of 16 reaches branch 1's index, and over 1.5 hours it is 24 events against the minimum of 30, so b is NOT_MET citing the test, its index and its hours, with a structured shortfall of 24 events against 30. Branch 2 cannot apply, because its band ends below 15. The multiplication is Python's; the report states the index and the time and neither the product nor a verdict (Art. II, D150). A Synthea chart from the recorded Iowa run, selected by rule (T-108, D150); Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. Transcribed from NCD 240.4 and L33718 through pap_osa_dme_jd.json, the chart's coded facts and the fact manifest that declares what the two notes state, never from a run. Criterion a reads the consultation and the study report and compares their dates in Python: the evaluation precedes the study, so it is MET citing both, one span in each document. c and d are declared unclaimed -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58). The letters are L33718's: `a` here is an evaluation date, where it is a BMI comparison under NCD 100.1 and a diagnosis set under two other practices (D110). The budget is two replayed extraction calls, one per note, plus one replayed verifier call per cited verdict.",
+      "expect": {
+        "outcome": "NOT_MET",
+        "policy_version_id": "pap-osa-dme-jd-v1",
+        "max_model_calls": 4,
+        "criteria": {
+          "a": {
+            "verdict": "MET",
+            "distinct_documents": 2
+          },
+          "b": {
+            "verdict": "NOT_MET",
+            "distinct_documents": 1
+          },
+          "c": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          },
+          "d": {
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "gap_reason": "NOT_EVALUATED_BY_THIS_SYSTEM"
+          }
+        },
+        "absent_criteria": [
+          "c1",
+          "c2",
+          "c3",
+          "c4",
+          "c5",
+          "e"
+        ]
+      }
+    },
+    {
+      "case_id": "H10",
+      "story": "US-11",
+      "spec_ref": "REQ-64, REQ-67, REQ-68; outside §6 (D152)",
+      "description": "The fourth practice's one table drug: red with the quotes consulted",
+      "patient_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9",
+      "procedure_code": "E0601",
+      "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+      "note": "OSA1's chart and OSA1's determination, shared from the cache (D75); this row labels only the review. It exists because the knowledge table finds a candidate on this chart -- an active hydrochlorothiazide order -- and A11 grades every candidate the code produces (D123, D152). Derived from the bundle and the table, never from a run: the chart carries no glucose observation and no condition coding hyperglycaemia, so nothing structured answers the row and it is not withheld, and the two notes -- a sleep consultation and a sleep study report -- document no blood glucose at all. The quote source is RecordedQuoteRunner over eval/history/results.json, extended with this round's notes under T-98's unchanged configuration (D152): the model was asked, on both notes, for verbatim passages documenting each of the table's five conditions by display, and returned none, so the candidate is red. It cites nothing and adds no verifier claim, so max_model_calls is OSA1's 4 and max_review_model_calls is one turn per note. would_affect is empty: the one value set pap-osa-dme-jd-v1 names is the band's comorbidities, which admits none of the codes the row declares.",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "policy_version_id": "pap-osa-dme-jd-v1",
+        "max_model_calls": 4,
+        "max_review_model_calls": 2,
+        "suggestions": [
+          {
+            "row_id": "hydrochlorothiazide-hyperglycemia",
+            "code": "R73.9",
+            "colour": "red",
+            "would_affect": []
+          }
+        ],
+        "withheld": []
+      }
     }
   ]
 }

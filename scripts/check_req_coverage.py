@@ -142,6 +142,10 @@ MAPPING: dict[str, str] = {
     # note-bearing chart in test_rheumatology_corpus.py); a recording replays
     # only under the prompt version it was measured with.
     "REQ-78": "tests/test_fact_kinds.py",
+    # T-108 (D150): the trust boundary is generic over declared kinds — held by
+    # parsing the builders and the step, because the committed sleep corpus
+    # cannot tell a builder that writes a `WmEvent` field from one that does not.
+    "REQ-79": "tests/test_fact_kinds.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

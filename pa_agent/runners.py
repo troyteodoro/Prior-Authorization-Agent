@@ -227,67 +227,89 @@ class RecordedExtractionRunner:
         traces: dict[str, RunTrace] | None = None,
         prompt_versions: dict[str, str] | None = None,
     ) -> None:
-        self._payloads = dict(payloads)
-        # document_id -> the prompt version that payload was measured under
-        # (D149). Absent means unversioned, and an unversioned payload is
-        # refused rather than assumed to be the current configuration.
-        self._versions = dict(prompt_versions or {})
+        # document_id -> {prompt version -> (payload, metrics, trace)}. Keyed
+        # by version since T-108 (D150): one note may be read under two fact
+        # kinds, and each reading is its own measurement. A version of `None`
+        # is an unversioned payload, which is held so it can be refused by
+        # name rather than looked past (D149).
+        self._entries: dict[str, dict[str | None, tuple]] = {}
         self._hashes = dict(note_hashes or {})
         self._model = model
-        self._metrics = dict(metrics or {})
-        # The recorded run's trace, when the recording holds one: every turn
-        # the measurement spent, so a replay reports the re-ask a note cost
-        # and not only its first turn (T-89, D103; D71's rule one layer down).
-        self._traces = dict(traces or {})
         # sha256 -> the recorded document_id that carries the payload.
         self._by_hash = {digest: document_id for document_id, digest in self._hashes.items()}
+        versions = dict(prompt_versions or {})
+        for document_id, payload in payloads.items():
+            # The recorded run's trace, when the recording holds one: every
+            # turn the measurement spent, so a replay reports the re-ask a note
+            # cost and not only its first turn (T-89, D103; D71's rule one
+            # layer down).
+            self._add(
+                document_id,
+                versions.get(document_id),
+                payload,
+                (metrics or {}).get(document_id),
+                (traces or {}).get(document_id),
+            )
+
+    def _add(
+        self,
+        document_id: str,
+        version: str | None,
+        payload: dict,
+        metrics: CallMetrics | None,
+        trace: RunTrace | None,
+    ) -> None:
+        readings = self._entries.setdefault(document_id, {})
+        if version in readings:
+            raise ValueError(
+                f"two recorded payloads for {document_id!r} under prompt version "
+                f"{version!r}; one reading of one note under one configuration "
+                "is one measurement, and keeping the last would make replay "
+                "depend on load order (D150)"
+            )
+        readings[version] = (payload, metrics, trace)
 
     @classmethod
     def from_records(cls, records: list[dict], model: str | None = None):
         """Build one from a recording's `notes[]`, as written by
-        `scripts/run_extraction.py`.
+        `scripts/run_extraction.py` — or from several recordings' notes
+        concatenated, one per fact kind (T-108, D150).
 
         Skips records with no `raw` — a note the recording holds a score for but
         no payload cannot be replayed, and pretending otherwise would replay an
         empty extraction, which is the failure `ExtractionOutputError` exists to
         prevent.
         """
-        payloads: dict[str, dict] = {}
-        hashes: dict[str, str] = {}
-        metrics: dict[str, CallMetrics] = {}
-        traces: dict[str, RunTrace] = {}
-        versions: dict[str, str] = {}
+        runner = cls({}, model=model)
         for record in records:
             document_id = record.get("document_id")
             raw = record.get("raw")
             if not document_id or raw is None:
                 continue
-            payloads[document_id] = raw
             if record.get("note_sha256"):
-                hashes[document_id] = record["note_sha256"]
-            if record.get("metrics"):
-                metrics[document_id] = CallMetrics.model_validate(record["metrics"])
-            if record.get("trace"):
-                traces[document_id] = RunTrace.model_validate(record["trace"])
+                runner._hashes[document_id] = record["note_sha256"]
+                runner._by_hash[record["note_sha256"]] = document_id
             # The version the payload was measured under (D149): the record's
             # own field when it states one, else its trace's. Every committed
             # recording states it on the trace.
             version = record.get("prompt_version") or (record.get("trace") or {}).get(
                 "prompt_version"
             )
-            if version:
-                versions[document_id] = version
-        return cls(
-            payloads, hashes, model=model, metrics=metrics, traces=traces,
-            prompt_versions=versions,
-        )
+            runner._add(
+                document_id,
+                version or None,
+                raw,
+                CallMetrics.model_validate(record["metrics"]) if record.get("metrics") else None,
+                RunTrace.model_validate(record["trace"]) if record.get("trace") else None,
+            )
+        return runner
 
     @property
     def model(self) -> str | None:
         return self._model
 
     def __contains__(self, document_id: str) -> bool:
-        return document_id in self._payloads
+        return document_id in self._entries
 
     def run(self, document_id: str, text: str, kind: FactKind) -> ExtractionResult:
         schema = FACT_SCHEMAS[kind]
@@ -295,7 +317,7 @@ class RecordedExtractionRunner:
         if actual in self._by_hash:
             # The bytes were measured, under this id or another (D102).
             recorded_id = self._by_hash[actual]
-        elif document_id in self._payloads:
+        elif document_id in self._entries:
             recorded_hash = self._hashes.get(document_id)
             if recorded_hash is not None:
                 # A recorded id, and the bytes are not the recorded bytes.
@@ -314,22 +336,24 @@ class RecordedExtractionRunner:
                 "or pass a live runner",
             )
 
-        recorded_version = self._versions.get(recorded_id)
-        if recorded_version is None:
-            raise ExtractionOutputError(
-                ExtractionFailure.NOT_RECORDED,
-                f"the payload for {recorded_id!r} records no prompt version, so "
-                "nothing says which schema it answers; it is not replayed under "
-                "an assumed one (D149)",
-            )
-        if recorded_version != schema.prompt_version:
+        readings = self._entries[recorded_id]
+        if schema.prompt_version not in readings:
+            measured = sorted(v for v in readings if v is not None)
+            if not measured:
+                raise ExtractionOutputError(
+                    ExtractionFailure.NOT_RECORDED,
+                    f"the payload for {recorded_id!r} records no prompt version, so "
+                    "nothing says which schema it answers; it is not replayed under "
+                    "an assumed one (D149)",
+                )
             raise ExtractionOutputError(
                 ExtractionFailure.SCHEMA_MISMATCH,
                 f"{document_id} was asked for {kind.value!r} under "
                 f"{schema.prompt_version!r}; the payload for {recorded_id!r} was "
-                f"measured under {recorded_version!r}. A changed configuration "
+                f"measured under {measured!r}. A changed configuration "
                 "is a new measurement, never a replay (D45, D149).",
             )
+        payload, metrics, trace = readings[schema.prompt_version]
 
         try:
             # The recorded metrics are carried through unchanged: they measure the
@@ -337,10 +361,7 @@ class RecordedExtractionRunner:
             # that reported zero tokens would understate what the answer cost.
             # The result is built under the *requesting* id, so spans point into
             # the document the caller handed in.
-            result = schema.build(
-                document_id, text, self._payloads[recorded_id],
-                self._metrics.get(recorded_id),
-            )
+            result = schema.build(document_id, text, payload, metrics)
         except ExtractionOutputError:
             raise
         except Exception as exc:
@@ -349,7 +370,6 @@ class RecordedExtractionRunner:
                 f"recorded payload for {document_id} no longer validates: "
                 f"{type(exc).__name__}: {exc}",
             ) from exc
-        trace = self._traces.get(recorded_id)
         if trace is not None:
             # Every recorded turn, under the requesting id (D102's re-addressing
             # applied to the trace). `None` stays `None` for a record without

@@ -684,7 +684,9 @@ _MODEL_DERIVED = frozenset(
 #: Pinned as a count rather than allowed by pattern, the way D51 pinned the
 #: provisional-constant count at zero: the number is the check.
 _ALLOWED_MODEL_BRANCHES = 1
-_ALLOWED_IN = "step_extract"
+#: The note-level BMI merge. It lived inline in `step_extract` until T-108
+#: moved that body, unchanged, into `weight_management`'s fold (REQ-79, D150).
+_ALLOWED_IN = "_fold_weight_management"
 
 
 def _module_tree(name: str) -> ast.Module:
@@ -784,7 +786,7 @@ def test_every_loop_iterates_over_store_data_or_a_python_constant() -> None:
         "(False, True)",                  # T-91: unscoped criteria, then scoped
                                           # ones — a two-element Python literal
         "STEPS",                          # the declared graph
-        "_declared(state.tree, NOTE_EVENT_KINDS)",  # T-91: the criteria the tree
+        "_declared(state.tree, NOTE_KINDS)",  # T-91: the criteria the tree
         "_declared(state.tree, OBSERVATION_KINDS)", # declares for each step's
         "_declared(state.tree, STRUCTURED_KINDS)",  # kinds — policy data (D110,
                                           # D114: `criterion_b`'s tuple gained
@@ -875,6 +877,7 @@ def test_the_workflow_reaches_data_only_through_the_two_ports() -> None:
     assert imported == {
         "__future__",
         "time",
+        "collections.abc",    # T-108: the fold registry's `Callable` type (D150)
         "dataclasses",
         "datetime",
         "pa_agent.aggregate",

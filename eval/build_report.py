@@ -84,6 +84,8 @@ KIND_ORIGIN: dict[PredicateKind, tuple[str, str]] = {
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: ("bariatric_surgery", "T-91"),
     PredicateKind.MEDICATION_VALUE_SET_ACTIVE: ("rheumatology", "T-92"),
     PredicateKind.PROCEDURE_VALUE_SET_INTERVAL: ("diagnostic_ultrasound", "T-94"),
+    PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: ("sleep_medicine", "T-108"),
+    PredicateKind.NOTE_SLEEP_TEST_INDEX: ("sleep_medicine", "T-108"),
 }
 
 EXIT_OK = 0
@@ -739,9 +741,13 @@ def _quote_section() -> list[str]:
         "recordings yield is a **fabrication rate**: `(note, condition)` pairs "
         "for which the model returned a passage that did not anchor. A pair "
         "that *anchored* would be a yellow this corpus was not supposed to "
-        "produce, and the gate stops on it. Twelve notes are measured — the "
-        "declared clone's two are byte-identical to its source's and replay by "
-        "content — and every turn is counted (REQ-68, D71). Recomputed from the "
+        "produce, and the gate stops on it. Twenty-four notes are measured — "
+        "T-98's twelve, and the fourth practice's twelve appended by T-108 "
+        "under the same configuration rather than re-measuring the first "
+        "twelve (D152); the declared clone's two are byte-identical to its "
+        "source's and replay by content — and every turn is counted (REQ-68, "
+        "D71). A note recorded as failed is a finding, kept with its "
+        "classified reason and never re-run (D71, D152). Recomputed from the "
         "per-note records of each committed recording; the stored aggregates "
         "are not read (T-71). The AI Studio direct recording is the one every "
         "gate replays, and `H4` reads red through it.",
@@ -1895,15 +1901,18 @@ def _caveats_section() -> list[str]:
         "source rather than against a label. Re-labeling and review ride "
         "with the corpus expansion of a later version.",
         "- **This system determines coverage as one contractor would, for "
-        "each of three contractors and three practices.** NCD 100.1 "
+        "each of four contractors' documents and four practices.** NCD 100.1 "
         "quantifies nothing — no months, no visit counts, no recency. Every "
         "constant in a criteria tree comes from its MAC's document — A53028 "
         "for Noridian Jurisdiction F, L34576 for Palmetto GBA Jurisdictions J "
-        "and M, L35677 for the same MAC's infliximab policy (T-92, D111), and "
+        "and M, L35677 for the same MAC's infliximab policy (T-92, D111), "
         "L35755 for WPS's abdominal and visceral vascular studies (T-94, "
-        "D114) — and a request resolves by procedure code and state, to one "
-        "tree per practice (D21, D29, D100, D111). These are not CMS's "
-        "thresholds; they are three contractors' worth of them.",
+        "D114), and L33718, the DME MACs' joint PAP LCD, compiled for "
+        "Noridian's Jurisdiction D (T-108, D150) — and a request resolves by "
+        "procedure code and state, to one tree per practice (D21, D29, D100, "
+        "D111). NCD 240.4 is the one national document that quantifies, and "
+        "the PAP tree's two thresholds are checked against it at load "
+        "(REQ-73). These are not CMS's thresholds; they are the contractors'.",
         f"- **The corpus is {_corpus_counts()['patients']} patients, "
         f"{_corpus_counts()['notes']} chart notes and "
         f"{_corpus_counts()['documents']} policy documents.** Six bundles "
@@ -1911,7 +1920,7 @@ def _caveats_section() -> list[str]:
         "one declared clone of E4's chart re-addressed into Palmetto's "
         "territory (T-88, D102) — the row `J1`, which shares both its notes' "
         "bytes with E4. Every note-bearing chart is two documents since T-81, "
-        "a split of the facts its manifest already declared (D104). The last "
+        "a split of the facts its manifest already declared (D104). The next "
         "six are the second and third practices, all note-free because v1.2 "
         "declares every note-only criterion unclaimed: two Synthea charts "
         "carrying rheumatoid arthritis in Palmetto's territory and a declared "
@@ -1923,7 +1932,13 @@ def _caveats_section() -> list[str]:
         "(D119) — an active lisinopril order and a creatinine above the "
         "knowledge table's threshold, each copied from one the chart already "
         "held with one or two fields swapped — because no chart in the corpus "
-        "could otherwise produce a green suggestion. Rates "
+        "could otherwise produce a green suggestion. The last six are the "
+        "fourth practice, and the first note-bearing charts outside bariatric "
+        "surgery: "
+        "Synthea charts from the recorded Iowa run carrying obstructive sleep "
+        "apnea, each a consultation and a sleep study report whose index, "
+        "recording time and findings the fact manifests declare, because no "
+        "generator writes them (T-108, D150). Rates "
         "over a set this size move by large steps; one case is worth more "
         "than a percentage point in every table above.",
         "",

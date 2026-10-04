@@ -1,0 +1,15 @@
+CEDAR VALLEY PULMONARY AND SLEEP MEDICINE
+Patient: Gerlach374, Ruben688                    MRN: 683474
+DOB: 1974-10-12                       Sex: M
+Document 2 of 2
+
+SLEEP STUDY REPORT
+
+Study date: 10/21/2020. Attended in-laboratory polysomnogram (Type I),
+performed without positive airway pressure.
+Total recording time: 7.2 hours.
+Apnea-hypopnea index (AHI): 3 events per hour.
+
+ASSESSMENT
+Sleep-disordered breathing evaluated by the study reported above. Results
+reviewed with the patient.

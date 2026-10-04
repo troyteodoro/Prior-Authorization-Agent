@@ -25,6 +25,14 @@ Labels come from `spike/spike_001/labels.json` for the spike corpus and from
 `eval/manifests/` for the synthesized one — one source of truth per note, so a
 second label file cannot disagree and make a corpus defect look like a model
 error (D42, D45).
+
+**One recording per fact kind** (T-108, D150). The bare invocation measures
+`weight_management` into `results.json`, exactly as before.
+`--kind sleep_apnea_workup` measures the sleep charts' notes under the second
+kind into `sleep_apnea_workup.json` (`_vertex` beside it), with its own scorer:
+the two kinds are different questions, and one aggregate over both would be a
+number about neither. A chart is measured under the kind its manifest's facts
+describe, so the weight-management corpus skips the sleep charts.
 """
 
 from __future__ import annotations
@@ -40,9 +48,17 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from pa_agent.contracts import CallMetrics, FactKind, RunTrace  # noqa: E402
+from pa_agent.contracts import (  # noqa: E402
+    CallMetrics,
+    ClinicalEvaluation,
+    DocumentedFinding,
+    FactKind,
+    RunTrace,
+    SleepTest,
+)
 from pa_agent.extraction import (  # noqa: E402
     EXTRACTION_TEMPERATURE,
+    FACT_SCHEMAS,
     PROMPT_VERSION,
     REASK_ROUNDS,
     build_result,
@@ -66,6 +82,11 @@ PROVENANCE: dict[str, dict[str, str | None]] = {
     MEASURED_TIER: {"task": "T-81", "decision": "D104", "supersedes": "T-89 (D103)"},
     SECOND_TIER: {"task": "T-90", "decision": "D106", "supersedes": None},
 }
+#: The second kind's recordings, both tiers measured by T-108 (D150).
+SLEEP_PROVENANCE: dict[str, dict[str, str | None]] = {
+    MEASURED_TIER: {"task": "T-108", "decision": "D150", "supersedes": None},
+    SECOND_TIER: {"task": "T-108", "decision": "D150", "supersedes": None},
+}
 
 
 def _named_tier(argv: list[str]) -> str:
@@ -88,10 +109,30 @@ def _named_tier(argv: list[str]) -> str:
     return named
 
 
-def out_path_for(tier: str) -> Path:
+def out_path_for(tier: str, kind: FactKind = FactKind.WEIGHT_MANAGEMENT) -> Path:
     """One recording per tier, side by side. The AI Studio path is unchanged,
-    so every existing invocation and every gate reads the same bytes (D106)."""
-    return OUT_DIR / ("results.json" if tier == MEASURED_TIER else f"results_{tier}.json")
+    so every existing invocation and every gate reads the same bytes (D106).
+    A kind other than `weight_management` is its own file, named for the kind
+    (T-108, D150)."""
+    stem = "results" if kind is FactKind.WEIGHT_MANAGEMENT else kind.value
+    return OUT_DIR / (f"{stem}.json" if tier == MEASURED_TIER else f"{stem}_{tier}.json")
+
+
+def _named_kind(argv: list[str]) -> FactKind:
+    """`--kind X` or `--kind=X`, defaulting to `weight_management`. An unknown
+    kind exits rather than falling back, for `_named_tier`'s reason (D150)."""
+    named = None
+    for i, arg in enumerate(argv):
+        if arg == "--kind" and i + 1 < len(argv):
+            named = argv[i + 1]
+        elif arg.startswith("--kind="):
+            named = arg.split("=", 1)[1]
+    if named is None:
+        return FactKind.WEIGHT_MANAGEMENT
+    try:
+        return FactKind(named)
+    except ValueError:
+        sys.exit(f"unknown fact kind {named!r}; one of {[k.value for k in FactKind]}")
 
 RETRIES = 4  # the free tier's 429/503 behavior under load (D5, D20)
 
@@ -143,6 +184,11 @@ def synthesized_cases() -> list[dict]:
         if manifest.get("note") is False:
             # E12's chart is declared note-free (D73): nothing to extract,
             # so the measurement never spends a call on it.
+            continue
+        if manifest.get("sleep_tests") or manifest.get("sleep_evaluations"):
+            # T-108 (D150): a sleep chart is measured under the sleep kind,
+            # into its own recording. Asking it for weight-management
+            # encounters would be a measurement of nothing.
             continue
         if manifest.get("cloned_from"):
             # A declared clone's note is its source's bytes (T-88, D102): the
@@ -363,7 +409,171 @@ def aggregate(records: list[dict]) -> dict:
     }
 
 
+# --------------------------------------------------------------------------
+# The sleep apnea workup (T-108, D150): its corpus, scorer and record shape
+# --------------------------------------------------------------------------
+
+
+def sleep_cases() -> list[dict]:
+    """The sleep charts' documents, labeled with each document's own facts."""
+    store = LocalPatientStore()
+    cases = []
+    for path in sorted(MANIFEST_DIR.glob("*.json")):
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if not (manifest.get("sleep_tests") or manifest.get("sleep_evaluations")):
+            continue
+        served = {d.document_id: d for d in store.get_notes(manifest["patient_id"])}
+        for ordinal, basename in enumerate(manifest["documents"], 1):
+            document = served[f"{manifest['patient_id']}/{basename}"]
+
+            def mine(key: str) -> list[dict]:
+                return [f for f in manifest.get(key, []) if f["document"] == basename]
+
+            cases.append({
+                "note_id": f"{'+'.join(manifest['cases'])}/{ordinal}",
+                "corpus": "synthesized",
+                "document_id": document.document_id,
+                "document": basename,
+                "text": document.text,
+                "sha256": document.sha256,
+                "cases": manifest["cases"],
+                "labels": {
+                    "evaluations": [e["date"] for e in mine("sleep_evaluations")],
+                    "tests": [
+                        {"date": t["date"], "index": t["index"],
+                         "recording_hours": t["recording_hours"]}
+                        for t in mine("sleep_tests")
+                    ],
+                    "findings": sorted(f["category"] for f in mine("sleep_findings")),
+                    "denied_findings": sorted(f["category"] for f in mine("denied_findings")),
+                    "traps": [{"date": t["date"], "reason": t["type"]} for t in mine("traps")],
+                },
+            })
+    return cases
+
+
+def score_sleep(case: dict, result) -> dict:
+    """D17's rule, carried to the second kind: a fact matches its label on the
+    ISO date, and a value is scored only on a matched fact. A right span with
+    a wrong date is the worst failure this system has (D17)."""
+    labels = case["labels"]
+    evaluations = [f for f in result.facts if isinstance(f, ClinicalEvaluation)]
+    tests = [f for f in result.facts if isinstance(f, SleepTest)]
+    findings = [f for f in result.facts if isinstance(f, DocumentedFinding)]
+
+    labeled_eval = set(labels["evaluations"])
+    got_eval = {e.evaluation_date.isoformat() for e in evaluations}
+    labeled_tests = {t["date"]: t for t in labels["tests"]}
+    got_tests = {t.test_date.isoformat(): t for t in tests}
+    trap_dates = {t["date"] for t in labels["traps"]}
+    value_checks = []
+    for when, label in labeled_tests.items():
+        test = got_tests.get(when)
+        if test is None:
+            continue
+        value_checks.append(("index", label["index"], test.index))
+        value_checks.append(("recording_hours", label["recording_hours"], test.recording_hours))
+    got_findings = sorted(f.category.value for f in findings)
+    anchored = [s for s in result.anchored_spans if s.anchored]
+    return {
+        "labeled_evaluations": len(labeled_eval),
+        "extracted_evaluations": len(got_eval),
+        "matched_evaluations": len(labeled_eval & got_eval),
+        "labeled_tests": len(labeled_tests),
+        "extracted_tests": len(got_tests),
+        "matched_tests": len(set(labeled_tests) & set(got_tests)),
+        "value_agreements": sum(1 for _, want, got in value_checks if want == got),
+        "value_total": len(value_checks),
+        "value_disagreements": [
+            {"field": name, "expected": want, "got": got}
+            for name, want, got in value_checks if want != got
+        ],
+        "labeled_findings": labels["findings"],
+        "extracted_findings": got_findings,
+        "findings_matched": sum(
+            min(labels["findings"].count(c), got_findings.count(c))
+            for c in set(labels["findings"])
+        ),
+        "denied_findings_extracted": sorted(
+            set(labels["denied_findings"]) & set(got_findings)
+        ),
+        "traps_extracted": sorted(trap_dates & (got_eval | set(got_tests))),
+        "spans_emitted": len(result.anchored_spans),
+        "spans_anchored": len(anchored),
+        "spans_normalized": sum(1 for s in anchored if s.anchor_mode == "normalized"),
+        "model_offsets_usable": sum(
+            1 for s in result.anchored_spans if s.model_offsets_yield_quote
+        ),
+        "dropped": result.dropped,
+    }
+
+
+def aggregate_sleep(records: list[dict]) -> dict:
+    """The sleep recording's headline figures. Every turn counted (D71)."""
+    def total(key: str) -> int:
+        return sum(r["score"][key] for r in records)
+
+    turns = turn_metrics(records)
+    labeled_findings = sum(len(r["score"]["labeled_findings"]) for r in records)
+    extracted_findings = sum(len(r["score"]["extracted_findings"]) for r in records)
+    return {
+        "notes": len(records),
+        "labeled_evaluations": total("labeled_evaluations"),
+        "extracted_evaluations": total("extracted_evaluations"),
+        "matched_evaluations": total("matched_evaluations"),
+        "labeled_tests": total("labeled_tests"),
+        "extracted_tests": total("extracted_tests"),
+        "matched_tests": total("matched_tests"),
+        "value_agreements": total("value_agreements"),
+        "value_total": total("value_total"),
+        "labeled_findings": labeled_findings,
+        "extracted_findings": extracted_findings,
+        "findings_matched": total("findings_matched"),
+        "denied_findings_extracted": sum(
+            len(r["score"]["denied_findings_extracted"]) for r in records
+        ),
+        "traps": sum(len(r["labels"]["traps"]) for r in records),
+        "traps_extracted": sum(len(r["score"]["traps_extracted"]) for r in records),
+        "spans_emitted": total("spans_emitted"),
+        "spans_anchored": total("spans_anchored"),
+        "spans_normalized": total("spans_normalized"),
+        "model_offsets_usable": total("model_offsets_usable"),
+        **reask_figures(records),
+        "model_calls": len(turns),
+        "total_input_tokens": sum(m["input_tokens"] for m in turns),
+        "total_output_tokens": sum(m["output_tokens"] for m in turns),
+        "total_wall_time_ms": round(sum(m["wall_time_ms"] for m in turns), 1),
+    }
+
+
+def _span(span) -> dict | None:
+    return span.model_dump(mode="json") if span is not None else None
+
+
+def sleep_facts(result) -> dict:
+    """The result's facts in the recording's shape: what the replay will
+    rebuild, written down so a reader of the file sees it without running it."""
+    return {
+        "evaluations": [
+            {"date": f.evaluation_date.isoformat(), "span": _span(f.span)}
+            for f in result.facts if isinstance(f, ClinicalEvaluation)
+        ],
+        "tests": [
+            {"date": f.test_date.isoformat(), "span": _span(f.span),
+             "index": f.index, "index_span": _span(f.index_span),
+             "recording_hours": f.recording_hours, "hours_span": _span(f.hours_span)}
+            for f in result.facts if isinstance(f, SleepTest)
+        ],
+        "findings": [
+            {"category": f.category.value, "span": _span(f.span)}
+            for f in result.facts if isinstance(f, DocumentedFinding)
+        ],
+    }
+
+
 def main() -> int:
+    if _named_kind(sys.argv) is not FactKind.WEIGHT_MANAGEMENT:
+        return main_kind(_named_kind(sys.argv))
     rescore = "--rescore" in sys.argv
     tier = _named_tier(sys.argv)
     out_path = out_path_for(tier)
@@ -538,6 +748,148 @@ def main() -> int:
         encoding="utf-8",
     )
     print(json.dumps(aggregate_figures, indent=2))
+    print(f"written: {out_path.relative_to(REPO_ROOT)}")
+    return 0
+
+
+def main_kind(kind: FactKind) -> int:
+    """A kind other than `weight_management`: its corpus, its scorer, its own
+    recording per tier. The two-turn walk and the anchoring are the same core
+    every kind passes through (REQ-79); only the questions differ (D150)."""
+    if kind is not FactKind.SLEEP_APNEA_WORKUP:
+        sys.exit(f"no measurement corpus is declared for {kind.value!r}")
+    schema = FACT_SCHEMAS[kind]
+    rescore = "--rescore" in sys.argv
+    tier = _named_tier(sys.argv)
+    out_path = out_path_for(tier, kind)
+    cases = sleep_cases()
+
+    if rescore:
+        if not out_path.exists():
+            sys.exit(f"nothing to rescore at {out_path}; run without --rescore first")
+        previous = json.loads(out_path.read_text(encoding="utf-8"))
+        recorded = {r["note_id"]: r for r in previous["notes"]}
+        for case in cases:
+            prior = recorded.get(case["note_id"])
+            if prior is None or prior.get("raw") is None:
+                sys.exit(f"{case['note_id']}: no recorded payload to re-anchor")
+            if prior["note_sha256"] != case["sha256"]:
+                sys.exit(f"{case['note_id']}: the note changed since it was measured (D18)")
+        client = None
+        print(f"re-anchoring {len(cases)} recorded payloads from {out_path.name}, no model call")
+    else:
+        load_env()
+        from pa_agent.tiers import client_for, tier_of
+
+        client = client_for(tier)
+        print(
+            f"{len(cases)} notes, kind {kind.value}, model {PINNED_MODEL}, "
+            f"tier {tier_of(client)}, temperature {EXTRACTION_TEMPERATURE}"
+        )
+
+    records = []
+    for case in cases:
+        if rescore:
+            prior = recorded[case["note_id"]]
+            result = schema.build(
+                case["document_id"], case["text"], prior["raw"],
+                CallMetrics.model_validate(prior["metrics"]) if prior["metrics"] else None,
+            )
+            result.trace = RunTrace.model_validate(prior["trace"]) if prior.get("trace") else None
+            if prior.get("reask"):
+                first = schema.build(case["document_id"], case["text"], prior["raw_first_turn"])
+                targets = reask_targets(first, schema.locate)
+                still = {drop.get("path") for drop in result.dropped}
+                result.raw_first_turn = prior["raw_first_turn"]
+                result.reask = {
+                    **prior["reask"],
+                    "targets": targets,
+                    "recovered": [t["path"] for t in targets if t["path"] not in still],
+                    "unrecovered": [t["path"] for t in targets if t["path"] in still],
+                }
+        else:
+            for attempt in range(RETRIES):
+                try:
+                    result = extract(case["document_id"], case["text"], client, kind=kind)
+                except Exception as exc:  # noqa: BLE001 — retried, then re-raised
+                    if attempt == RETRIES - 1:
+                        raise
+                    wait = 2 ** attempt * 5
+                    print(f"  {case['note_id']}: {type(exc).__name__}, retry in {wait}s")
+                    time.sleep(wait)
+                    continue
+                reask_error = (result.reask or {}).get("error") or ""
+                if reask_error.startswith("CALL_FAILED") and attempt < RETRIES - 1:
+                    wait = 2 ** attempt * 5
+                    print(f"  {case['note_id']}: re-ask {reask_error[:60]}, retry in {wait}s")
+                    time.sleep(wait)
+                    continue
+                break
+
+        scored = score_sleep(case, result)
+        records.append({
+            "note_id": case["note_id"],
+            "corpus": case["corpus"],
+            "document_id": case["document_id"],
+            "document": case["document"],
+            "note_sha256": case["sha256"],
+            "cases": case["cases"],
+            "kind": kind.value,
+            "labels": case["labels"],
+            "facts": sleep_facts(result),
+            "metrics": result.metrics.model_dump(mode="json") if result.metrics else None,
+            "trace": result.trace.model_dump(mode="json") if result.trace else None,
+            "raw": result.raw,
+            "raw_first_turn": result.raw_first_turn,
+            "reask": result.reask,
+            "score": scored,
+        })
+        print(
+            f"  {case['note_id']:<10} evaluations {scored['matched_evaluations']}/"
+            f"{scored['labeled_evaluations']} (got {scored['extracted_evaluations']}) "
+            f"tests {scored['matched_tests']}/{scored['labeled_tests']} "
+            f"values {scored['value_agreements']}/{scored['value_total']} "
+            f"findings {scored['extracted_findings']} "
+            f"spans {scored['spans_anchored']}/{scored['spans_emitted']}"
+        )
+
+    figures = aggregate_sleep(records)
+    if rescore:
+        provenance = {k: previous.get(k) for k in ("task", "decision", "supersedes")}
+        recorded_tier = previous["tier"]
+    else:
+        from pa_agent.tiers import tier_of
+
+        provenance = SLEEP_PROVENANCE[tier]
+        recorded_tier = tier_of(client)
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
+        json.dumps({
+            **provenance,
+            "measured_at": (
+                previous["measured_at"] if rescore
+                else datetime.now(timezone.utc).isoformat()
+            ),
+            "rescored_at": datetime.now(timezone.utc).isoformat() if rescore else None,
+            "model": PINNED_MODEL,
+            "tier": recorded_tier,
+            "kind": kind.value,
+            "prompt_version": schema.prompt_version,
+            "reask_rounds": REASK_ROUNDS,
+            "temperature": EXTRACTION_TEMPERATURE,
+            "schema_note": (
+                "The second fact kind's recording: in-person evaluations, "
+                "diagnostic sleep tests with their index and recording time, and "
+                "documented findings. Its own file and its own scorer, because "
+                "an aggregate over two kinds is a number about neither (D150)."
+            ),
+            "aggregate": figures,
+            "notes": records,
+        }, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(figures, indent=2))
     print(f"written: {out_path.relative_to(REPO_ROOT)}")
     return 0
 

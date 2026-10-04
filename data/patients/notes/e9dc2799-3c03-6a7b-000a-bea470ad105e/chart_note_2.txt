@@ -1,0 +1,15 @@
+PRAIRIE LAKES SLEEP CENTER
+Patient: Raynor401, Tatyana394                   MRN: 820486
+DOB: 1982-02-05                       Sex: F
+Document 2 of 2
+
+SLEEP STUDY REPORT
+
+Study date: 02/24/2026. Unattended home sleep test (Type III), performed
+without positive airway pressure.
+Total recording time: 6.1 hours.
+Respiratory disturbance index (RDI): 9 events per hour.
+
+ASSESSMENT
+Sleep-disordered breathing evaluated by the study reported above. Results
+reviewed with the patient.

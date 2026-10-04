@@ -19,9 +19,10 @@ test.
 ## Project
 
 A prior authorization determination agent. Its control case is bariatric
-surgery under CMS NCD 100.1; it also runs two trees from unrelated practices
+surgery under CMS NCD 100.1; it also runs trees from three unrelated practices
 — infliximab for rheumatoid arthritis and abdominal/visceral vascular
-ultrasound — which is what v1.2 measured. Built as a proof-of-skill project; authorship is recorded at the
+ultrasound, which is what v1.2 measured, and CPAP for obstructive sleep apnea
+under NCD 240.4, v1.6's first note-reading practice outside bariatric surgery. Built as a proof-of-skill project; authorship is recorded at the
 git level. Every decision in this repo has to be defensible in a live review,
 so the reasoning matters as much as the code.
 
@@ -33,10 +34,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-78 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and open** — `T-107` closed its first row *(D149)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-107 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-108 through T-125 are reserved rows whose records are written when they open. Every row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D149, kill criteria, open questions. Append-only. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-79 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and open** — `T-107` and `T-108` closed its first two rows *(D149, D150)*. |
+| `docs/tasks.md` | The board. Task records T-00 through T-108 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-109 through T-125 are reserved rows whose records are written when they open. `T-143` is numbered with no record yet, off the path *(D150)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D153, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -130,7 +131,7 @@ deterministic path is usable as a regression oracle *(D62)*.
 
 The ten gates, all zero-cost: `pytest`, then `check_env.py`,
 `check_skeleton.py`, `verify_sources.py --offline` (**two corpora since
-T-96** — the nine policy documents and the five FDA labels), `select_patients.py
+T-96** — the eleven policy documents and the five FDA labels), `select_patients.py
 --verify`, `spike/spike_001/run.py --verify`, `eval/run_eval.py`,
 `eval/run_agentic_eval.py`, `eval/build_report.py --verify` *(D85)*,
 `check_req_coverage.py` *(D87)*. **Membership is a
@@ -342,7 +343,7 @@ bounded **on the contract and inside `review()`** — `model_copy` runs no
 validator, so the contract alone is unreachable from the only path that appends
 and the verb would write a session `get()` cannot read back.
 
-**Adjudication is nine predicate kinds and two exclusion kinds.**
+**Adjudication is eleven predicate kinds and two exclusion kinds.**
 `PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
 maps each kind to a binder naming the inputs its predicate receives, and
 `workflow.STEP_KINDS` assigns each kind to the step that evaluates it — a
@@ -352,9 +353,11 @@ trees that resolves to (a) BMI and (b) comorbidity over structured FHIR and
 c1–c5 over extracted `wm_events`; under `infliximab-ra-jjm-v1` it resolves to
 (a) a diagnosis set and (b) a medication set; under
 `us-abdominal-visceral-j5-j8-v1` to (a) a diagnosis set and (b) the interval
-to the most recent prior procedure. The letters are labels: the `kind`
-chooses the arithmetic, and three practices now letter their criteria `a` and
-mean three different things by it. The run-length criterion computes the
+to the most recent prior procedure; under `pap-osa-dme-jd-v1` to (a) an
+evaluation's date against a sleep study's and (b) the study's index against
+two thresholds, both over note facts of the second kind *(T-108, D150)*. The
+letters are labels: the `kind` chooses the arithmetic, and four practices now
+letter their criteria `a` and mean four different things by it. The run-length criterion computes the
 qualifying run **once** and every criterion whose `scoped_to` names it scopes
 to that run. **A tree also declares the `practice` it belongs to** *(T-95,
 D116)* — required, slug-shaped, and read by **nothing under `pa_agent/`**. It
@@ -369,7 +372,10 @@ the **value** and the **comparison** — and a `Criterion` validator refuses at
 load any constant looser than its floor. Every constant in these trees is a
 MAC's, not CMS's *(D21)*, so a MAC may be stricter than the NCD it
 operationalizes and may never be looser. Both bariatric trees hold it at
-equality; the floor is not in the tool payload either.
+equality; the floor is not in the tool payload either. **A criterion may
+declare a list of floors** *(T-108, D150)*: NCD 240.4 quantifies two thresholds
+of one criterion, and `pap-osa-dme-jd-v1`'s `b` floors both, each naming its
+own constant. Read floors through `Criterion.floors()`, never the field.
 `reconcile.py`
 then runs REQ-34 across the structured and note BMIs. `aggregate.py` parses the
 policy's own `decision_expression` — parsed, never `eval()`'d and never
@@ -462,7 +468,7 @@ passing**, because the tests are written in terms of the thing that broke.
 - **An ingredient never matches a prescription; the pinned expansion is the
   match** *(REQ-63, T-97, D119)*. Rows declare RxNorm **ingredients** (`8640`,
   `29046`) and Synthea writes **clinical drugs** (`310798`, `314076`,
-  `105585`): measured, zero hits in all fourteen bundles. So a comparison
+  `105585`): measured, zero hits in all fourteen bundles at T-97. So a comparison
   without `data/knowledge/rxnorm_ingredient_products.json` loads cleanly,
   compares cleanly and suggests nothing on every chart forever — D52's failure
   one layer up, and the reason an eval row pins the **withheld** list and not
@@ -499,7 +505,7 @@ passing**, because the tests are written in terms of the thing that broke.
   anchored passage is red. Checked at unit level through the real anchorer on
   a hand-written note, because no committed note can produce a yellow until
   `T-110`; the six recordings measured **0 of 60** `(note, condition)` pairs
-  with any passage returned, and a pair that *anchored* is a red gate — a
+  with any passage returned at T-98, and 0 of the sixty more `T-108` appended, and a pair that *anchored* is a red gate — a
   yellow this corpus was not supposed to produce. The review's turns are
   counted beside the determination's (`HistoryRun`), never in A6.
 - **A packet's citations point into three corpora, and the index is built from
@@ -602,7 +608,7 @@ passing**, because the tests are written in terms of the thing that broke.
   D134)*. `verify_sources.py` compares committed bytes to a **public
   re-download**, and this file is synthesized: no upstream, so its record would
   carry no URL and `--fetch` nothing to fetch — v2.1's synthetic rule arriving
-  early. It also stays out because *nine policy documents* and *five FDA labels*
+  early. It also stays out because *eleven policy documents* and *five FDA labels*
   are counts `tests/test_docs_consistency.py` re-derives from those two
   manifests, and a payer record able to raise either would make two corpora one.
   `tests/test_payers.py` holds it instead: every record declares itself
@@ -676,8 +682,9 @@ passing**, because the tests are written in terms of the thing that broke.
   criterion does not declare, and a floor whose value is absent from its own
   quote each refuse the tree at `model_validate`. What cannot raise is a tree
   that declares **no** floor — no field says a tree operationalizes an NCD, so
-  `tests/test_criteria_tree.py`'s `EXPECTED_FLOORS` asserts the two that exist
-  and a third tree omitting one passes every check in the repo. v2.0's
+  `tests/test_criteria_tree.py`'s `EXPECTED_FLOORS` asserts the three criteria
+  that declare one — four floors in all — and another tree omitting one passes
+  every check in the repo. v2.0's
   national/regional scope and its regional-to-national pairing (`T-119`) is what
   would derive it; until then, a tree under a quantified NCD needs its floor
   written, and the missing one is invisible.
@@ -712,6 +719,17 @@ passing**, because the tests are written in terms of the thing that broke.
   the pin fails, the prompt changed:** bump `PROMPT_VERSION` and re-measure. Never
   update the literal alone, because a prompt that moved under an unchanged
   version replays as though it had been measured.
+- **A fact kind reaches the request only through its fold, and no kind but
+  `weight_management` touches a `WmEvent`-shaped field** *(REQ-79, T-108,
+  D150)*. Every kind is built through `_anchor_or_drop` into one
+  `ExtractionResult`, and its facts go in `result.facts` and then
+  `WorkflowState.facts[kind]` by `workflow.FACT_FOLDS`, a partition of
+  `FactKind`. `tests/test_fact_kinds.py` parses the builders for a `WmEvent`
+  and the step for a kind it names, because the committed sleep corpus cannot
+  tell a builder that writes `result.events` from one that does not. A new kind
+  is a `FACT_SCHEMAS` entry, a `FACT_FOLDS` entry, its own recording file
+  (`eval/extraction/<kind>.json`) and a pinned digest — and every composition
+  root that replays must load that file.
 - **A changed call configuration is a new measurement, never a re-run** *(D45)*.
   A changed tool declaration is a changed prompt *(D64, D66)*; a changed SDK is a
   changed measurement *(D71)*; and **the tier can change the prompt too**, not just
@@ -915,10 +933,10 @@ A status line and pointers, capped at 30 lines by
 `tests/test_docs_consistency.py` *(D148)*. A closed task's account is in its
 board record and its decision entry, never here.
 
-- **Next:** `v1.6`, row 2 — `T-108`, practice three. Read the board's *Path to
-  v1* first. Its new fact kind is the one that earns the per-kind fold and the
-  generic-trust-boundary requirement `T-107` deferred *(D149)*.
-- **Open:** no task. v1.6 is in progress; `T-107` closed its row 1.
+- **Next:** `v1.6`, row 3 — `T-109`, practice four. Read the board's *Path to
+  v1* first. The second fact kind, its fold and REQ-79 exist *(D150)*; a
+  practice whose notes state another kind of fact registers a third.
+- **Open:** no task. v1.6 is in progress; `T-107` and `T-108` closed rows 1–2.
 - **Unclaimed on purpose:** REQ-44 and REQ-47. Amendment 1 reserves the whole
   decision procedure to Python, so no verdict exists that a model could
   determine without doing something reserved. They are declared in spec §5's
@@ -940,7 +958,7 @@ Where everything else lives — each is the owner, and this file keeps no copy:
 - **The knowledge corpus is five FDA labels, and it is not the policy
   corpus** *(T-96, D118)*. `data/knowledge/` holds what a *drug* is known to
   do; `data/policies/` holds what a *payer* covers. Separate manifests,
-  because "nine policy documents" is a claim
+  because "eleven policy documents" is a claim
   `tests/test_docs_consistency.py` checks and five drug labels must not be
   able to raise it. Both are verified by one
   `verify_sources.py --offline`. The labels are **DailyMed SPL XML fetched by
@@ -965,8 +983,19 @@ Where everything else lives — each is the owner, and this file keeps no copy:
   `metabolic_syndrome_care.json`, not a module named for it; the CKD stages
   are not in `chronic_kidney_disease.json`), which is why the provenance is
   derived from the jar rather than asserted.
-- **The policy corpus is nine documents, three jurisdictions and three
-  practices** *(D21, D29, D100, D101, D111, D114)*. The two added by T-94 are
+- **The policy corpus is eleven documents, four contractors' worth and four
+  practices** *(D21, D29, D100, D101, D111, D114, D150)*. The two added by
+  T-108 are **NCD 240.4** (*CPAP for OSA*) and **L33718**, the DME MACs' joint
+  PAP LCD: the first national document here that **quantifies** — an AHI or RDI
+  of at least 15, or 5 to 14 with documented symptoms or comorbidities — and an
+  LCD that names E0601 in its own coverage text. L33718 is one LCD under four
+  DME contractors; the tree is compiled for Noridian's Jurisdiction D, which
+  holds Iowa, so Washington, Iowa, Kansas, Missouri and Nebraska are each served
+  by two practices and nothing collides. **Synthea writes no
+  apnea-hypopnea index**, which is why the index is a note fact and earned the
+  second fact kind.
+
+  The two added by T-94 are
   WPS's **L35755** (*Non-Invasive Abdominal / Visceral Vascular Studies*) and
   **A57591** (its billing and coding article) — a third contractor, and the
   first whose article names its CPT codes **in prose**: each ICD-10 group's
@@ -1092,13 +1121,15 @@ pa_agent/            resolver, criteria, spans, index, anchor, workflow,
                      and outbox.py. __init__ imports none.
 data/policies/
   source/            ncd_100_1, a53028, r931cp, l34576, a56852, l35677, a56432,
-                     l35755, a57591 + sources.json, answers.json (q1–q13)
+                     l35755, a57591, ncd_240_4, l33718 + sources.json,
+                     answers.json (q1–q16)
   value_sets/        obesity_comorbidities, rheumatoid_arthritis,
                      abdominal_visceral_vascular_indications and
                      abdominal_visceral_vascular_studies (SNOMED — the last two
                      T-94's, D114); methotrexate and
                      biologic_dmards_and_jak_inhibitors (RxNorm, expanded
-                     through RxNav and pinned — T-92, D111).
+                     through RxNav and pinned — T-92, D111);
+                     osa_qualifying_comorbidities (SNOMED — T-108, D150).
                      Each declares the one system its membership is tested in
   ncd_100_1_jf.json  Noridian JF's tree, policy_version_id ncd-100.1-jf-v1
   ncd_100_1_jjm.json Palmetto JJ/JM's tree, ncd-100.1-jjm-v1 (T-87, D101)
@@ -1109,10 +1140,15 @@ data/policies/
                      WPS J-5/J-8's ultrasound tree,
                      us-abdominal-visceral-j5-j8-v1 (T-94, D114) — the third
                      practice, a third contractor, seven states of its own
+  pap_osa_dme_jd.json
+                     L33718's PAP tree for Noridian's DME Jurisdiction D,
+                     pap-osa-dme-jd-v1 (T-108, D150) — the fourth practice,
+                     the first to read notes of a second fact kind, two
+                     national floors on one criterion
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it
-  bundles/           fourteen Synthea v4.0.0 bundles — six from the base seed,
+  bundles/           twenty Synthea v4.0.0 bundles — six from the base seed,
                      one carrying the declared synthetic BMI-35.0 observation
                      (T-41, D73; E12's patient is note-free by declaration),
                      one declared clone of E4's chart re-addressed into
@@ -1122,9 +1158,11 @@ data/patients/
                      (T-93, D113), and the ultrasound cohort — one chart from
                      seed 1004's Iowa run plus two declared clones of it, each
                      carrying one of the patient's own procedures re-coded as
-                     a prior study (T-94, D114). Every clone is recomputed by
-                     --verify
-  notes/             fourteen chart notes, two per note-bearing chart as
+                     a prior study (T-94, D114), and the sleep apnea cohort —
+                     six charts selected by rule from the same Iowa run,
+                     no fifth Synthea run (T-108, D150). Every clone is
+                     recomputed by --verify
+  notes/             twenty-six chart notes, two per note-bearing chart as
                      <patient_id>/chart_note_1.txt and chart_note_2.txt (T-81,
                      D104), the clone's byte-identical to its source's per
                      document; plus notes/manifest.json — a second, separate
@@ -1134,7 +1172,7 @@ data/patients/
 data/knowledge/      the knowledge corpus (T-96, D118) — **not** the policy
                      corpus, and a separate manifest for that reason
   sources.json       five FDA labels, hashed; verified by the same
-                     verify_sources.py --offline that verifies the policy nine
+                     verify_sources.py --offline that verifies the policy eleven
   source/            the extracted SPL text, one file per RxNorm ingredient
   medication_effects.json
                      the reviewed table: five rows, one per (ingredient,
@@ -1162,9 +1200,9 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 33 labeled rows (§6's 15 + NP1 + J1 +
-                     RA1-RA3 + US1-US4 + H1-H9; D75, D102, D104, D113,
-                     D114, D119, D122, D126)
+  cases.json         the eval set — 40 labeled rows (§6's 15 + NP1 + J1 +
+                     RA1-RA3 + US1-US4 + H1-H10 + OSA1-OSA6; D75, D102, D104,
+                     D113, D114, D119, D122, D126, D150, D152)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it;
@@ -1172,20 +1210,24 @@ eval/
   extraction/        results.json plus adk_results_inline.json and
                      adk_results_tool_fetch.json — one per mode (D68), all
                      three re-measured by T-81 on the two-note corpus (D104);
-                     and *_vertex.json beside each, T-90's second tier (D106)
+                     and *_vertex.json beside each, T-90's second tier (D106);
+                     sleep_apnea_workup[_vertex].json — the second fact kind's
+                     recording, its own file and scorer (T-108, D150)
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91),
                      measured fresh by T-81 over all seven charts (D104)
-  verifier/          results.json — T-17's recording, 38 claims since T-94,
-                     re-measured whole by T-89, T-81, T-93 and T-94, and on
-                     both tiers; `verifier-v6` since D115
-                     (D78, D102, D103, D104, D113, D115). The history claim's
+  verifier/          results.json — T-17's recording, 49 claims since T-108,
+                     re-measured whole by T-89, T-81, T-93, T-94 and T-108,
+                     and on both tiers; `verifier-v7` since D151
+                     (D78, D102, D103, D104, D113, D115, D151). The history claim's
                      recording, history_results.json, is T-110's (D122)
   history/           T-98's six quote recordings (D122): results.json and
                      results_vertex.json (direct), adk_results_inline[_vertex]
-                     .json and adk_results_tool_fetch[_vertex].json — twelve
-                     notes × five conditions each, 0 of 60 pairs with a
-                     passage; results.json is the one every gate replays
+                     .json and adk_results_tool_fetch[_vertex].json —
+                     twenty-four notes × five conditions each since T-108's
+                     extension (D152), no pair with a passage, one note
+                     recorded as failed on AI Studio tool-fetch;
+                     results.json is the one every gate replays
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient
 scripts/             check_gates, check_env, check_skeleton,

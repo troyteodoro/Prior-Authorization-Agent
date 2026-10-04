@@ -115,6 +115,31 @@
       "extractor_version": 1,
       "sha256": "85707330e27df90a7efea09bd93018523af866fe273b6e93a9255b46b249091d",
       "char_count": 55147
+    },
+    {
+      "document_id": "ncd_240_4",
+      "title": "NCD 240.4 - Continuous Positive Airway Pressure (CPAP) Therapy For Obstructive Sleep Apnea (OSA)",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/ncd.aspx?ncdid=226",
+      "authority": "national",
+      "publisher": "Centers for Medicare & Medicaid Services",
+      "filename": "ncd_240_4.txt",
+      "retrieved_at": "2026-10-04T07:30:27.870170+00:00",
+      "extractor_version": 1,
+      "sha256": "1bdc2a6ee11af057bf14a5b06fd9ad7df2d50a94c5f860b7c4d7927e570a19ca",
+      "char_count": 25301
+    },
+    {
+      "document_id": "l33718",
+      "title": "LCD L33718 - Positive Airway Pressure (PAP) Devices for the Treatment of Obstructive Sleep Apnea",
+      "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=33718",
+      "authority": "dme_mac_jurisdictions_a_b_c_d",
+      "publisher": "CGS Administrators, LLC and Noridian Healthcare Solutions, LLC (DME MACs, Jurisdictions A, B, C and D)",
+      "filename": "l33718.txt",
+      "note": "names E0601 and E0470 in prose in its INITIAL COVERAGE section (D150)",
+      "retrieved_at": "2026-10-04T07:30:28.200175+00:00",
+      "extractor_version": 1,
+      "sha256": "aa04e844776ca7ce8d020a31afda08b74bba7209546908be2c5760a23d6af82f",
+      "char_count": 37687
     }
   ]
 }

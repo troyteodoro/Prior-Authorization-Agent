@@ -68,7 +68,14 @@ from pa_agent.model_pin import VERIFIER_MODEL
 #: being the last thing read when v5's paragraph landed after it, so v6
 #: states the accepting case outright instead of only the forbidden one
 #: (D115). Both rounds are recorded; neither is a re-run of the other.
-PROMPT_VERSION = "verifier-v6"
+#: v7: v6 rejected a `MET` on T-108's sleep-test criterion because no quote
+#: states the event count — which Python derived from the quoted index and
+#: recording time — and accepted the same digest in another round. D78's
+#: category a third time: a constant bounding a value code derived from
+#: several quotes read as a demand that a quote state it. v7 states, in the
+#: `MET` paragraph, that such a value is code's and accepting is the expected
+#: case (D151).
+PROMPT_VERSION = "verifier-v7"
 
 VERIFIER_TEMPERATURE = 0.0
 
@@ -98,7 +105,13 @@ INSTRUCTION = (
     "this criterion's subject and is consistent with satisfaction; reject "
     "it if a quote is about something else or states a value on the wrong "
     "side of a threshold named in the constants (a BMI of 32 quoted for MET "
-    "against a threshold of 35 or more). A NOT_MET claim is different: it "
+    "against a threshold of 35 or more). Some constants bound a value that "
+    "code derived from several quoted values rather than one any quote "
+    "states — a count of events from a rate and a duration, a run of months "
+    "from dated visits. That derived value is not yours to recompute: for a "
+    "MET, accept when the quotes supply the values it was derived from and no "
+    "quote itself states a value on the wrong side of a named threshold. A "
+    "NOT_MET claim is different: it "
     "cites the best evidence that was found, and the shortfall itself — "
     "months counted, recency windows measured — was computed by code "
     "over the full record, which you cannot see. Never reject a NOT_MET "

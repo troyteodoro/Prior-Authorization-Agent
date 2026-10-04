@@ -7,6 +7,8 @@ conditions, and record it (D122).
     python scripts/run_quote_measurement.py --tier vertex   -> eval/history/results_vertex.json
     python scripts/run_quote_measurement.py --rescore       re-anchors recorded payloads,
                                                             no calls
+    python scripts/run_quote_measurement.py --extend        measures only the notes the
+                                                            recording lacks (T-108, D152)
 
 **Spends model calls, so it is in no gate.** `pytest tests/test_quote_recording.py`
 verifies what this writes and spends nothing — D45's split, for D45's reasons.
@@ -32,8 +34,10 @@ to be able to produce — and the gate reports it as a non-zero `pairs_anchored`
 
 Every chart `eval/manifests/` declares notes for, except a declared clone
 (`cloned_from`), whose notes are its source's bytes and replay by content
-(T-88, D102): twelve notes over six charts, identified exactly as
-`scripts/run_extraction.py` identifies them so the two recordings join.
+(T-88, D102). Twelve notes over six charts at T-98; twenty-four over twelve
+since T-108 added the sleep charts, whose notes entered by `--extend` rather
+than by re-measuring T-98's twelve (D152). Identified as the extraction
+recordings identify them, so the recordings join.
 """
 
 from __future__ import annotations
@@ -497,10 +501,73 @@ def rescore(tier: str = MEASURED_TIER) -> int:
     return 0
 
 
+def extend(out_path: Path, runner, runner_label: str) -> int:
+    """Measure only the notes `out_path` lacks, and keep every one it has
+    (T-108, D152). Shared by both quote scripts, so the six recordings extend
+    by one rule.
+
+    The configuration must be the recording's own — the same prompt version,
+    the same `rows_asked`, the same model — or this is a new measurement of
+    everything (D45) and refuses. So does a recording holding a note the corpus
+    no longer lists, or one whose recorded bytes moved (D18).
+    """
+    if not out_path.exists():
+        sys.exit(f"nothing to extend at {out_path}; run without --extend first")
+    previous = json.loads(out_path.read_text(encoding="utf-8"))
+    cases = history_cases()
+    rows = table_rows()
+    if previous.get("prompt_version") != QUOTE_PROMPT_VERSION:
+        sys.exit(f"{out_path.name} was measured under another prompt; re-measure (D45)")
+    if previous.get("rows_asked") != rows_asked_record(rows):
+        sys.exit(f"{out_path.name} was asked other rows; a changed table is a new measurement (D45)")
+    if previous.get("model") != PINNED_MODEL:
+        sys.exit(f"{out_path.name} names another model; re-measure (D20)")
+    by_id = {case["note_id"]: case for case in cases}
+    for record in previous["notes"]:
+        case = by_id.get(record["note_id"])
+        if case is None:
+            sys.exit(f"{record['note_id']}: recorded and no longer in the corpus; re-measure")
+        if case["sha256"] != record["note_sha256"]:
+            sys.exit(f"{record['note_id']}: the note changed since it was measured (D18)")
+    held = {record["note_id"] for record in previous["notes"]}
+    new = [case for case in cases if case["note_id"] not in held]
+    print(
+        f"{len(cases)} notes, {len(held)} recorded, {len(new)} to measure · "
+        f"{runner_label} · {len(rows)} conditions · model {PINNED_MODEL}"
+    )
+    records: list[dict] = []
+    for case in new:
+        result, error = run_with_retries(runner, case, rows)
+        scored = score(case, result, rows) if result is not None else None
+        records.append(record_for(case, result, scored, error))
+        _print_note(case, scored, result, error)
+
+    payload = dict(previous)
+    payload["notes"] = previous["notes"] + records
+    payload["aggregate"] = aggregate(payload["notes"], len(rows))
+    payload["extensions"] = list(previous.get("extensions", [])) + [{
+        "task": "T-108",
+        "decision": "D152",
+        "measured_at": datetime.now(timezone.utc).isoformat(),
+        "notes": [record["note_id"] for record in records],
+    }]
+    write_recording(out_path, payload)
+    print(json.dumps(payload["aggregate"], indent=2))
+    print(f"written: {_display(out_path)}")
+    return 0
+
+
 def main() -> int:
     tier = _named_tier(sys.argv)
     if "--rescore" in sys.argv:
         return rescore(tier)
+    if "--extend" in sys.argv:
+        client = _client(tier)
+        from pa_agent.tiers import tier_of
+
+        if tier_of(client) != json.loads(out_path_for(tier).read_text(encoding="utf-8"))["tier"]:
+            sys.exit("the client's tier is not the recording's (D106)")
+        return extend(out_path_for(tier), DirectQuoteRunner(client, PINNED_MODEL), "direct")
     return measure(tier)
 
 

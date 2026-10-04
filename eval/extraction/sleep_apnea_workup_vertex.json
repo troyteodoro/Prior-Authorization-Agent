@@ -1,0 +1,1383 @@
+{
+  "task": "T-108",
+  "decision": "D150",
+  "supersedes": null,
+  "measured_at": "2026-10-04T07:40:10.410841+00:00",
+  "rescored_at": null,
+  "model": "gemini-3.5-flash-lite",
+  "tier": "vertex",
+  "kind": "sleep_apnea_workup",
+  "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+  "reask_rounds": 1,
+  "temperature": 0.0,
+  "schema_note": "The second fact kind's recording: in-person evaluations, diagnostic sleep tests with their index and recording time, and documented findings. Its own file and its own scorer, because an aggregate over two kinds is a number about neither (D150).",
+  "aggregate": {
+    "notes": 12,
+    "labeled_evaluations": 6,
+    "extracted_evaluations": 6,
+    "matched_evaluations": 6,
+    "labeled_tests": 6,
+    "extracted_tests": 6,
+    "matched_tests": 6,
+    "value_agreements": 12,
+    "value_total": 12,
+    "labeled_findings": 1,
+    "extracted_findings": 1,
+    "findings_matched": 1,
+    "denied_findings_extracted": 0,
+    "traps": 1,
+    "traps_extracted": 0,
+    "spans_emitted": 25,
+    "spans_anchored": 25,
+    "spans_normalized": 0,
+    "model_offsets_usable": 0,
+    "reask_notes": 0,
+    "reask_targets": 0,
+    "reask_recovered": 0,
+    "reask_calls": 0,
+    "model_calls": 12,
+    "total_input_tokens": 21034,
+    "total_output_tokens": 1910,
+    "total_wall_time_ms": 14096.0
+  },
+  "notes": [
+    {
+      "note_id": "OSA3/1",
+      "corpus": "synthesized",
+      "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "95623ae10a67ff50cd885b71533d893d28e33b91aab802e1046a22ea1ca992a3",
+      "cases": [
+        "OSA3"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [
+          "2021-01-05"
+        ],
+        "tests": [],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [
+          {
+            "date": "2021-01-05",
+            "span": {
+              "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_1.txt",
+              "char_start": 179,
+              "char_end": 254,
+              "quote": "01/05/2021 - Seen in person in clinic by D. Lindqvist, DO for evaluation of"
+            }
+          }
+        ],
+        "tests": [],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1749,
+        "output_tokens": 108,
+        "wall_time_ms": 1423.1400419957936
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1423ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1749,
+            "output_tokens": 108,
+            "wall_time_ms": 1423.1400419957936
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [
+          {
+            "date": "2021-01-05",
+            "quote": "01/05/2021 - Seen in person in clinic by D. Lindqvist, DO for evaluation of",
+            "char_start": 91,
+            "char_end": 164
+          }
+        ],
+        "sleep_tests": [],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 1,
+        "extracted_evaluations": 1,
+        "matched_evaluations": 1,
+        "labeled_tests": 0,
+        "extracted_tests": 0,
+        "matched_tests": 0,
+        "value_agreements": 0,
+        "value_total": 0,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA3/2",
+      "corpus": "synthesized",
+      "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "752e5f733f199b3dbb94b12436d22a12f5a85a9898dde6662b27e105b9e4bf47",
+      "cases": [
+        "OSA3"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2021-01-06",
+            "index": 12.0,
+            "recording_hours": 5.8
+          }
+        ],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2021-01-06",
+            "span": {
+              "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+              "char_start": 170,
+              "char_end": 365,
+              "quote": "Study date: 01/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 5.8 hours.\nApnea-hypopnea index (AHI): 12 events per hour."
+            },
+            "index": 12.0,
+            "index_span": {
+              "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+              "char_start": 346,
+              "char_end": 364,
+              "quote": "12 events per hour"
+            },
+            "recording_hours": 5.8,
+            "hours_span": {
+              "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+              "char_start": 307,
+              "char_end": 316,
+              "quote": "5.8 hours"
+            }
+          }
+        ],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1741,
+        "output_tokens": 196,
+        "wall_time_ms": 1224.447250002413
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1224ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1741,
+            "output_tokens": 196,
+            "wall_time_ms": 1224.447250002413
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [],
+        "sleep_tests": [
+          {
+            "date": "2021-01-06",
+            "quote": "Study date: 01/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 5.8 hours.\nApnea-hypopnea index (AHI): 12 events per hour.",
+            "char_start": 82,
+            "char_end": 260,
+            "index": 12,
+            "index_quote": "12 events per hour",
+            "recording_hours": 5.8,
+            "recording_hours_quote": "5.8 hours"
+          }
+        ],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 0,
+        "extracted_evaluations": 0,
+        "matched_evaluations": 0,
+        "labeled_tests": 1,
+        "extracted_tests": 1,
+        "matched_tests": 1,
+        "value_agreements": 2,
+        "value_total": 2,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA5/1",
+      "corpus": "synthesized",
+      "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "f75458e6a7d7e29710f23723aa3f6e5d5d738d0275bdf40d0fb9711604e29381",
+      "cases": [
+        "OSA5"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [
+          "2026-03-15"
+        ],
+        "tests": [],
+        "findings": [],
+        "denied_findings": [
+          "excessive_daytime_sleepiness"
+        ],
+        "traps": [
+          {
+            "date": "2026-03-09",
+            "reason": "telephone_contact"
+          }
+        ]
+      },
+      "facts": {
+        "evaluations": [
+          {
+            "date": "2026-03-15",
+            "span": {
+              "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_1.txt",
+              "char_start": 186,
+              "char_end": 261,
+              "quote": "03/15/2026 - Seen in person in clinic by D. Lindqvist, DO for evaluation of"
+            }
+          }
+        ],
+        "tests": [],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1800,
+        "output_tokens": 109,
+        "wall_time_ms": 1012.3122079967288
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1012ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1800,
+            "output_tokens": 109,
+            "wall_time_ms": 1012.3122079967288
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [
+          {
+            "date": "2026-03-15",
+            "quote": "03/15/2026 - Seen in person in clinic by D. Lindqvist, DO for evaluation of",
+            "char_start": 105,
+            "char_end": 178
+          }
+        ],
+        "sleep_tests": [],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 1,
+        "extracted_evaluations": 1,
+        "matched_evaluations": 1,
+        "labeled_tests": 0,
+        "extracted_tests": 0,
+        "matched_tests": 0,
+        "value_agreements": 0,
+        "value_total": 0,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA5/2",
+      "corpus": "synthesized",
+      "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "c6779c8209b006eb1e8e0df45355920aed9150a76aacf325279b0069ecf76cbe",
+      "cases": [
+        "OSA5"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2026-03-16",
+            "index": 8.0,
+            "recording_hours": 6.5
+          }
+        ],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2026-03-16",
+            "span": {
+              "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt",
+              "char_start": 177,
+              "char_end": 372,
+              "quote": "Study date: 03/16/2026. Unattended home sleep test (Type III), performed\nwithout positive airway pressure.\nTotal recording time: 6.5 hours.\nRespiratory disturbance index (RDI): 8 events per hour."
+            },
+            "index": 8.0,
+            "index_span": {
+              "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt",
+              "char_start": 317,
+              "char_end": 371,
+              "quote": "Respiratory disturbance index (RDI): 8 events per hour"
+            },
+            "recording_hours": 6.5,
+            "hours_span": {
+              "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt",
+              "char_start": 284,
+              "char_end": 315,
+              "quote": "Total recording time: 6.5 hours"
+            }
+          }
+        ],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1735,
+        "output_tokens": 200,
+        "wall_time_ms": 1299.3386669986648
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1299ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1735,
+            "output_tokens": 200,
+            "wall_time_ms": 1299.3386669986648
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [],
+        "sleep_tests": [
+          {
+            "date": "2026-03-16",
+            "quote": "Study date: 03/16/2026. Unattended home sleep test (Type III), performed\nwithout positive airway pressure.\nTotal recording time: 6.5 hours.\nRespiratory disturbance index (RDI): 8 events per hour.",
+            "char_start": 38,
+            "char_end": 218,
+            "index": 8,
+            "index_quote": "Respiratory disturbance index (RDI): 8 events per hour",
+            "recording_hours": 6.5,
+            "recording_hours_quote": "Total recording time: 6.5 hours"
+          }
+        ],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 0,
+        "extracted_evaluations": 0,
+        "matched_evaluations": 0,
+        "labeled_tests": 1,
+        "extracted_tests": 1,
+        "matched_tests": 1,
+        "value_agreements": 2,
+        "value_total": 2,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA4/1",
+      "corpus": "synthesized",
+      "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "a92038acfee8d6248456c133b28c7ead52d395fb1570b67de1ad32f1913d7558",
+      "cases": [
+        "OSA4"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [
+          "2020-10-11"
+        ],
+        "tests": [],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [
+          {
+            "date": "2020-10-11",
+            "span": {
+              "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_1.txt",
+              "char_start": 194,
+              "char_end": 266,
+              "quote": "10/11/2020 - Seen in person in clinic by M. Okafor, MD for evaluation of"
+            }
+          }
+        ],
+        "tests": [],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1752,
+        "output_tokens": 108,
+        "wall_time_ms": 1230.3362500097137
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1230ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1752,
+            "output_tokens": 108,
+            "wall_time_ms": 1230.3362500097137
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [
+          {
+            "date": "2020-10-11",
+            "quote": "10/11/2020 - Seen in person in clinic by M. Okafor, MD for evaluation of",
+            "char_start": 81,
+            "char_end": 151
+          }
+        ],
+        "sleep_tests": [],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 1,
+        "extracted_evaluations": 1,
+        "matched_evaluations": 1,
+        "labeled_tests": 0,
+        "extracted_tests": 0,
+        "matched_tests": 0,
+        "value_agreements": 0,
+        "value_total": 0,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA4/2",
+      "corpus": "synthesized",
+      "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "b32c748af8ae650b3ffdb144f4ebbcef6ec7ee889c5bf6475ba58600a6533b49",
+      "cases": [
+        "OSA4"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2020-10-21",
+            "index": 3.0,
+            "recording_hours": 7.2
+          }
+        ],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2020-10-21",
+            "span": {
+              "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt",
+              "char_start": 185,
+              "char_end": 379,
+              "quote": "Study date: 10/21/2020. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 7.2 hours.\nApnea-hypopnea index (AHI): 3 events per hour."
+            },
+            "index": 3.0,
+            "index_span": {
+              "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt",
+              "char_start": 361,
+              "char_end": 378,
+              "quote": "3 events per hour"
+            },
+            "recording_hours": 7.2,
+            "hours_span": {
+              "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt",
+              "char_start": 322,
+              "char_end": 331,
+              "quote": "7.2 hours"
+            }
+          }
+        ],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1743,
+        "output_tokens": 193,
+        "wall_time_ms": 1226.7535830033012
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1227ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1743,
+            "output_tokens": 193,
+            "wall_time_ms": 1226.7535830033012
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [],
+        "sleep_tests": [
+          {
+            "date": "2020-10-21",
+            "quote": "Study date: 10/21/2020. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 7.2 hours.\nApnea-hypopnea index (AHI): 3 events per hour.",
+            "char_start": 62,
+            "char_end": 222,
+            "index": 3,
+            "index_quote": "3 events per hour",
+            "recording_hours": 7.2,
+            "recording_hours_quote": "7.2 hours"
+          }
+        ],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 0,
+        "extracted_evaluations": 0,
+        "matched_evaluations": 0,
+        "labeled_tests": 1,
+        "extracted_tests": 1,
+        "matched_tests": 1,
+        "value_agreements": 2,
+        "value_total": 2,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA6/1",
+      "corpus": "synthesized",
+      "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "81f110edc3557539991535cd1d9cf996e865ff2b9e704bf20d14a47f798ff207",
+      "cases": [
+        "OSA6"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [
+          "2019-12-14"
+        ],
+        "tests": [],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [
+          {
+            "date": "2019-12-14",
+            "span": {
+              "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_1.txt",
+              "char_start": 179,
+              "char_end": 254,
+              "quote": "12/14/2019 - Seen in person in clinic by D. Lindqvist, DO for evaluation of"
+            }
+          }
+        ],
+        "tests": [],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1750,
+        "output_tokens": 108,
+        "wall_time_ms": 1024.341334006749
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1024ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1750,
+            "output_tokens": 108,
+            "wall_time_ms": 1024.341334006749
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [
+          {
+            "date": "2019-12-14",
+            "quote": "12/14/2019 - Seen in person in clinic by D. Lindqvist, DO for evaluation of",
+            "char_start": 82,
+            "char_end": 154
+          }
+        ],
+        "sleep_tests": [],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 1,
+        "extracted_evaluations": 1,
+        "matched_evaluations": 1,
+        "labeled_tests": 0,
+        "extracted_tests": 0,
+        "matched_tests": 0,
+        "value_agreements": 0,
+        "value_total": 0,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA6/2",
+      "corpus": "synthesized",
+      "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "ce766134654ea7c075b7519deed80434ee0f59558b7f5d2c73ffa77b7625ea84",
+      "cases": [
+        "OSA6"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2019-12-15",
+            "index": 16.0,
+            "recording_hours": 1.5
+          }
+        ],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2019-12-15",
+            "span": {
+              "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt",
+              "char_start": 170,
+              "char_end": 413,
+              "quote": "Study date: 12/15/2019. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 1.5 hours. The study ended early at the patient's\nrequest.\nApnea-hypopnea index (AHI): 16 events per hour."
+            },
+            "index": 16.0,
+            "index_span": {
+              "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt",
+              "char_start": 394,
+              "char_end": 412,
+              "quote": "16 events per hour"
+            },
+            "recording_hours": 1.5,
+            "hours_span": {
+              "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt",
+              "char_start": 307,
+              "char_end": 316,
+              "quote": "1.5 hours"
+            }
+          }
+        ],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1754,
+        "output_tokens": 211,
+        "wall_time_ms": 1269.8347080004169
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1270ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1754,
+            "output_tokens": 211,
+            "wall_time_ms": 1269.8347080004169
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [],
+        "sleep_tests": [
+          {
+            "date": "2019-12-15",
+            "quote": "Study date: 12/15/2019. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 1.5 hours. The study ended early at the patient's\nrequest.\nApnea-hypopnea index (AHI): 16 events per hour.",
+            "char_start": 44,
+            "char_end": 268,
+            "index": 16.0,
+            "index_quote": "16 events per hour",
+            "recording_hours": 1.5,
+            "recording_hours_quote": "1.5 hours"
+          }
+        ],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 0,
+        "extracted_evaluations": 0,
+        "matched_evaluations": 0,
+        "labeled_tests": 1,
+        "extracted_tests": 1,
+        "matched_tests": 1,
+        "value_agreements": 2,
+        "value_total": 2,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA1/1",
+      "corpus": "synthesized",
+      "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "96b5b33d180317b98a733aad01e5db9585a9f47b999e68df2800bf686d1297e8",
+      "cases": [
+        "OSA1"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [
+          "2021-02-24"
+        ],
+        "tests": [],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [
+          {
+            "date": "2021-02-24",
+            "span": {
+              "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_1.txt",
+              "char_start": 194,
+              "char_end": 268,
+              "quote": "02/24/2021 - Seen in person in clinic by A. Ferreira, MD for evaluation of"
+            }
+          }
+        ],
+        "tests": [],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1750,
+        "output_tokens": 107,
+        "wall_time_ms": 1038.4431249985937
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1038ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1750,
+            "output_tokens": 107,
+            "wall_time_ms": 1038.4431249985937
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [
+          {
+            "date": "2021-02-24",
+            "quote": "02/24/2021 - Seen in person in clinic by A. Ferreira, MD for evaluation of",
+            "char_start": 91,
+            "char_end": 164
+          }
+        ],
+        "sleep_tests": [],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 1,
+        "extracted_evaluations": 1,
+        "matched_evaluations": 1,
+        "labeled_tests": 0,
+        "extracted_tests": 0,
+        "matched_tests": 0,
+        "value_agreements": 0,
+        "value_total": 0,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA1/2",
+      "corpus": "synthesized",
+      "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "0237368a19dd3223438e80ad7993162ef5d3890d7214e9f3c317d0d417f7d5fa",
+      "cases": [
+        "OSA1"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2021-03-06",
+            "index": 27.0,
+            "recording_hours": 6.4
+          }
+        ],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2021-03-06",
+            "span": {
+              "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt",
+              "char_start": 185,
+              "char_end": 380,
+              "quote": "Study date: 03/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 6.4 hours.\nApnea-hypopnea index (AHI): 27 events per hour."
+            },
+            "index": 27.0,
+            "index_span": {
+              "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt",
+              "char_start": 333,
+              "char_end": 379,
+              "quote": "Apnea-hypopnea index (AHI): 27 events per hour"
+            },
+            "recording_hours": 6.4,
+            "hours_span": {
+              "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt",
+              "char_start": 300,
+              "char_end": 331,
+              "quote": "Total recording time: 6.4 hours"
+            }
+          }
+        ],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1743,
+        "output_tokens": 213,
+        "wall_time_ms": 1199.3181249999907
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1199ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1743,
+            "output_tokens": 213,
+            "wall_time_ms": 1199.3181249999907
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [],
+        "sleep_tests": [
+          {
+            "date": "2021-03-06",
+            "quote": "Study date: 03/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 6.4 hours.\nApnea-hypopnea index (AHI): 27 events per hour.",
+            "char_start": 62,
+            "char_end": 229,
+            "index": 27,
+            "index_quote": "Apnea-hypopnea index (AHI): 27 events per hour",
+            "recording_hours": 6.4,
+            "recording_hours_quote": "Total recording time: 6.4 hours"
+          }
+        ],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 0,
+        "extracted_evaluations": 0,
+        "matched_evaluations": 0,
+        "labeled_tests": 1,
+        "extracted_tests": 1,
+        "matched_tests": 1,
+        "value_agreements": 2,
+        "value_total": 2,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA2/1",
+      "corpus": "synthesized",
+      "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "d9c822d88e2d4a490a013d2974a763965e2e1f9206717aea7433fa10e83f70ee",
+      "cases": [
+        "OSA2"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [
+          "2026-02-05"
+        ],
+        "tests": [],
+        "findings": [
+          "excessive_daytime_sleepiness"
+        ],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [
+          {
+            "date": "2026-02-05",
+            "span": {
+              "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+              "char_start": 179,
+              "char_end": 251,
+              "quote": "02/05/2026 - Seen in person in clinic by M. Okafor, MD for evaluation of"
+            }
+          }
+        ],
+        "tests": [],
+        "findings": [
+          {
+            "category": "excessive_daytime_sleepiness",
+            "span": {
+              "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+              "char_start": 432,
+              "char_end": 468,
+              "quote": "Reports excessive daytime sleepiness"
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1782,
+        "output_tokens": 168,
+        "wall_time_ms": 1098.7752500077477
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1099ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1782,
+            "output_tokens": 168,
+            "wall_time_ms": 1098.7752500077477
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [
+          {
+            "date": "2026-02-05",
+            "quote": "02/05/2026 - Seen in person in clinic by M. Okafor, MD for evaluation of",
+            "char_start": 105,
+            "char_end": 178
+          }
+        ],
+        "sleep_tests": [],
+        "findings": [
+          {
+            "category": "excessive_daytime_sleepiness",
+            "quote": "Reports excessive daytime sleepiness",
+            "char_start": 308,
+            "char_end": 344
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 1,
+        "extracted_evaluations": 1,
+        "matched_evaluations": 1,
+        "labeled_tests": 0,
+        "extracted_tests": 0,
+        "matched_tests": 0,
+        "value_agreements": 0,
+        "value_total": 0,
+        "value_disagreements": [],
+        "labeled_findings": [
+          "excessive_daytime_sleepiness"
+        ],
+        "extracted_findings": [
+          "excessive_daytime_sleepiness"
+        ],
+        "findings_matched": 1,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "OSA2/2",
+      "corpus": "synthesized",
+      "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "e0e5a271cbe143bf9b31d1766b23ac721e7382439f11bfbb69e16fbfe5245bee",
+      "cases": [
+        "OSA2"
+      ],
+      "kind": "sleep_apnea_workup",
+      "labels": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2026-02-24",
+            "index": 9.0,
+            "recording_hours": 6.1
+          }
+        ],
+        "findings": [],
+        "denied_findings": [],
+        "traps": []
+      },
+      "facts": {
+        "evaluations": [],
+        "tests": [
+          {
+            "date": "2026-02-24",
+            "span": {
+              "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt",
+              "char_start": 170,
+              "char_end": 365,
+              "quote": "Study date: 02/24/2026. Unattended home sleep test (Type III), performed\nwithout positive airway pressure.\nTotal recording time: 6.1 hours.\nRespiratory disturbance index (RDI): 9 events per hour."
+            },
+            "index": 9.0,
+            "index_span": {
+              "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt",
+              "char_start": 347,
+              "char_end": 364,
+              "quote": "9 events per hour"
+            },
+            "recording_hours": 6.1,
+            "hours_span": {
+              "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt",
+              "char_start": 299,
+              "char_end": 308,
+              "quote": "6.1 hours"
+            }
+          }
+        ],
+        "findings": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1735,
+        "output_tokens": 189,
+        "wall_time_ms": 1048.9747079991503
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t108-sleep-workup-v1/t89-reask-v1",
+        "document_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1049ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1735,
+            "output_tokens": 189,
+            "wall_time_ms": 1048.9747079991503
+          }
+        ]
+      },
+      "raw": {
+        "clinical_evaluations": [],
+        "sleep_tests": [
+          {
+            "date": "2026-02-24",
+            "quote": "Study date: 02/24/2026. Unattended home sleep test (Type III), performed\nwithout positive airway pressure.\nTotal recording time: 6.1 hours.\nRespiratory disturbance index (RDI): 9 events per hour.",
+            "char_start": 81,
+            "char_end": 269,
+            "index": 9.0,
+            "index_quote": "9 events per hour",
+            "recording_hours": 6.1,
+            "recording_hours_quote": "6.1 hours"
+          }
+        ],
+        "findings": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "labeled_evaluations": 0,
+        "extracted_evaluations": 0,
+        "matched_evaluations": 0,
+        "labeled_tests": 1,
+        "extracted_tests": 1,
+        "matched_tests": 1,
+        "value_agreements": 2,
+        "value_total": 2,
+        "value_disagreements": [],
+        "labeled_findings": [],
+        "extracted_findings": [],
+        "findings_matched": 0,
+        "denied_findings_extracted": [],
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    }
+  ]
+}

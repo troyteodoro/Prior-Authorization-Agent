@@ -1,0 +1,39 @@
+{
+  "patient_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e",
+  "bundle": "Tatyana394_Christena299_Raynor401_e9dc2799-3c03-6a7b-000a-bea470ad105e.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "OSA2"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "sleep_evaluations": [
+    {
+      "date": "2026-02-05",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "sleep_tests": [
+    {
+      "date": "2026-02-24",
+      "document": "chart_note_2.txt",
+      "study_type": "type_iii",
+      "index_name": "RDI",
+      "index": 9.0,
+      "recording_hours": 6.1
+    }
+  ],
+  "sleep_findings": [
+    {
+      "category": "excessive_daytime_sleepiness",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "denied_findings": [],
+  "rationale": "OSA2: Branch 2 met by the note: an RDI of 9 over 6.1 hours is 54.9 events, inside the band from 5 with its minimum of 10, and the consultation documents excessive daytime sleepiness. The chart codes no listed comorbidity, so the note's finding is the whole of the documentation and b is MET citing the test and the finding. Transcribed from L33718 and NCD 240.4 through pap_osa_dme_jd.json and the chart's own facts, never from a run (T-108, D150). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. The sleep study is dated on the chart's own 82808001 procedure and the in-person evaluation on the latest 103750000 assessment strictly before it, so every date the notes emit is the generator's; the index, the recording time and any finding are declared here, because no generator writes them (D43, D150). Document 1 is the consultation and document 2 the study report: one fact per document (D104). c and d are declared unclaimed by the tree -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58)."
+}

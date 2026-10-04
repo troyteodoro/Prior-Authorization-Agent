@@ -126,6 +126,9 @@ def _facts(manifest: dict) -> list[dict]:
     facts = [e for p in manifest["wm_programs"] for e in p["encounters"]]
     facts += manifest["traps"]
     facts += manifest["program_assertions"]
+    # T-108 (D150): the sleep charts' dated facts, one document each.
+    facts += manifest.get("sleep_evaluations", [])
+    facts += manifest.get("sleep_tests", [])
     return facts
 
 

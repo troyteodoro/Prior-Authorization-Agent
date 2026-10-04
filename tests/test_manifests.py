@@ -36,6 +36,7 @@ EXPECTED_CASES = {
     "E11", "E12", "E13", "J1", "RA1", "RA2", "RA3",
     "US1", "US2", "US3", "US4",
     "H1", "H2", "H3",
+    "OSA1", "OSA2", "OSA3", "OSA4", "OSA5", "OSA6",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
@@ -55,6 +56,9 @@ EXPECTED_CASES = {
 # and it carries two declared resources for that reason — the measurement is in
 # D119, and the resources are declared in the population manifest rather than
 # here, because one artifact owns a fact.
+# OSA1-OSA6 are the fourth practice (T-108, D150): six Synthea charts from the
+# recorded Iowa run, each note-bearing, whose consultation and study report are
+# rendered from the `sleep_*` facts below rather than from `wm_programs`.
 DELIBERATELY_ABSENT = {"E3"}
 
 
@@ -196,6 +200,7 @@ def test_every_date_is_on_or_before_as_of(manifests):
         dates = [e["date"] for e in _encounters(body)]
         dates += [t["date"] for t in body["traps"]]
         dates += [a["date"] for a in body["program_assertions"]]
+        dates += [f["date"] for f in _sleep_facts(body)]
         assert all(d <= body["as_of"] for d in dates), body["patient_id"]
 
 
@@ -404,9 +409,17 @@ def test_e10b_crosses_the_threshold(manifests, store):
 # --------------------------------------------------------------------------
 
 
+def _sleep_facts(manifest: dict) -> list[dict]:
+    """The fourth practice's dated facts (T-108, D150): evaluations and tests."""
+    return manifest.get("sleep_evaluations", []) + manifest.get("sleep_tests", [])
+
+
 def _facts(manifest: dict) -> list[dict]:
     return (
-        _encounters(manifest) + manifest["traps"] + manifest["program_assertions"]
+        _encounters(manifest)
+        + manifest["traps"]
+        + manifest["program_assertions"]
+        + _sleep_facts(manifest)
     )
 
 

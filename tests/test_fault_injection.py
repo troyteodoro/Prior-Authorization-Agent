@@ -36,6 +36,7 @@ from pa_agent.contracts import (
     CriterionVerdict,
     DeterminationAborted,
     ErrorCode,
+    FactKind,
     PredicateKind,
 )
 from pa_agent.runners import (
@@ -579,13 +580,19 @@ def test_the_error_sets_are_the_tree_s_criteria_not_a_constant(policy_store) -> 
     derivation checked against itself passes on a tree with no criteria.
     """
     jf = policy_store.get_tree("ncd-100.1-jf-v1")
-    assert _extraction_criteria(jf) == EXTRACTION_CRITERIA
+    assert _extraction_criteria(jf, FactKind.WEIGHT_MANAGEMENT) == EXTRACTION_CRITERIA
     assert _all_criteria(jf) == RETRIEVAL_CRITERIA
+    # T-108 (REQ-79, D150): a fault errors the criteria reading the kind that
+    # faulted, so a kind the tree does not read reaches none of its criteria.
+    assert _extraction_criteria(jf, FactKind.SLEEP_APNEA_WORKUP) == ()
+    osa = policy_store.get_tree("pap-osa-dme-jd-v1")
+    assert _extraction_criteria(osa, FactKind.SLEEP_APNEA_WORKUP) == ("a", "b")
+    assert _extraction_criteria(osa, FactKind.WEIGHT_MANAGEMENT) == ()
 
     # Palmetto's tree declares no run length and two unclaimed criteria, so
     # both sets differ — which is the property a constant could not have.
     jjm = policy_store.get_tree("ncd-100.1-jjm-v1")
-    assert _extraction_criteria(jjm) == ("c1", "c2", "c5")
+    assert _extraction_criteria(jjm, FactKind.WEIGHT_MANAGEMENT) == ("c1", "c2", "c5")
     assert _all_criteria(jjm) == ("a", "b", "c1", "c2", "c4", "c5", "d"), (
         "an unclaimed criterion is errored by a retrieval fault like any "
         "other: nothing was gathered for it either (D90)"

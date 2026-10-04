@@ -2,9 +2,9 @@
   "task": "T-90",
   "model": "gemini-3.5-flash-lite",
   "tier": "vertex",
-  "claims_enumerated_from": "results.json",
-  "prompt_version": "verifier-v6",
-  "measured_at": "2026-09-20T23:01:51.630805+00:00",
+  "claims_enumerated_from": "results.json + sleep_apnea_workup.json",
+  "prompt_version": "verifier-v7",
+  "measured_at": "2026-10-04T07:50:07.397813+00:00",
   "claims": [
     {
       "digest": "5f1f38ba429de837d96e0089fff5ea37a074c79b755013bb62de268b916e408e",
@@ -30,17 +30,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is an Observation resource detailing a BMI value of 37.65 kg/m2, which is directly relevant and satisfies the threshold of 35.0 or greater.",
+      "reason": "The provided quote documents a BMI observation of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is an Observation resource detailing a BMI value of 37.65 kg/m2, which is directly relevant and satisfies the threshold of 35.0 or greater."
+        "reason": "The provided quote documents a BMI observation of 37.65 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1172,
-        "output_tokens": 56,
-        "wall_time_ms": 1216.3471670355648
+        "input_tokens": 1251,
+        "output_tokens": 42,
+        "wall_time_ms": 1225.0922919920413
       }
     },
     {
@@ -66,17 +66,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is an active and confirmed condition resource for essential hypertension, which is pertinent evidence for obesity-related comorbidities.",
+      "reason": "The provided quote correctly documents an active condition relevant to the obesity comorbidity criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is an active and confirmed condition resource for essential hypertension, which is pertinent evidence for obesity-related comorbidities."
+        "reason": "The provided quote correctly documents an active condition relevant to the obesity comorbidity criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1213,
-        "output_tokens": 40,
-        "wall_time_ms": 828.7127501098439
+        "input_tokens": 1292,
+        "output_tokens": 32,
+        "wall_time_ms": 662.9362079984276
       }
     },
     {
@@ -104,17 +104,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document multiple visits to a physician-supervised weight management program, satisfying the minimum event requirement.",
+      "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting or exceeding the minimum event threshold.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document multiple visits to a physician-supervised weight management program, satisfying the minimum event requirement."
+        "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting or exceeding the minimum event threshold."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1092,
-        "output_tokens": 37,
-        "wall_time_ms": 691.4492920041084
+        "input_tokens": 1171,
+        "output_tokens": 36,
+        "wall_time_ms": 869.9952500028303
       }
     },
     {
@@ -137,17 +137,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is relevant to the qualifying run and its date is consistent with the recency requirement.",
+      "reason": "The quote provides a dated monthly program visit within the required 12-month window and supports the MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is relevant to the qualifying run and its date is consistent with the recency requirement."
+        "reason": "The quote provides a dated monthly program visit within the required 12-month window and supports the MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 741,
-        "output_tokens": 36,
-        "wall_time_ms": 747.3618340445682
+        "input_tokens": 820,
+        "output_tokens": 39,
+        "wall_time_ms": 845.6825000030221
       }
     },
     {
@@ -173,17 +173,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes demonstrate monthly program visits spanning four consecutive months from March to June 2026, satisfying the minimum duration criterion.",
+      "reason": "The provided quotes consistently document monthly program visits across four consecutive months from March to June 2026, satisfying the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes demonstrate monthly program visits spanning four consecutive months from March to June 2026, satisfying the minimum duration criterion."
+        "reason": "The provided quotes consistently document monthly program visits across four consecutive months from March to June 2026, satisfying the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 954,
-        "output_tokens": 43,
-        "wall_time_ms": 915.8366250339895
+        "input_tokens": 1033,
+        "output_tokens": 42,
+        "wall_time_ms": 830.4570829932345
       }
     },
     {
@@ -209,17 +209,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes document the BMI consistently across the required instances supporting the MET verdict.",
+      "reason": "The provided quotes consistently document the required BMI values as claimed for the MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The quotes document the BMI consistently across the required instances supporting the MET verdict."
+        "reason": "The provided quotes consistently document the required BMI values as claimed for the MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 719,
-        "output_tokens": 31,
-        "wall_time_ms": 819.0343329915777
+        "input_tokens": 798,
+        "output_tokens": 32,
+        "wall_time_ms": 3891.752416995587
       }
     },
     {
@@ -255,17 +255,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both diet and physical activity across the required timeframe, supporting the claimed MET verdict.",
+      "reason": "The quotes consistently document both diet and activity across the qualifying period.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both diet and physical activity across the required timeframe, supporting the claimed MET verdict."
+        "reason": "The quotes consistently document both diet and activity across the qualifying period."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 877,
-        "output_tokens": 37,
-        "wall_time_ms": 923.5359580488876
+        "input_tokens": 956,
+        "output_tokens": 29,
+        "wall_time_ms": 1051.579083010438
       }
     },
     {
@@ -292,17 +292,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is a valid FHIR Observation resource for BMI with a value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The quoted observation provides a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is a valid FHIR Observation resource for BMI with a value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The quoted observation provides a BMI value of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1193,
-        "output_tokens": 56,
-        "wall_time_ms": 865.7526250462979
+        "input_tokens": 1272,
+        "output_tokens": 48,
+        "wall_time_ms": 874.3625420029275
       }
     },
     {
@@ -329,17 +329,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes document multiple physician-supervised program visits with nutrition counseling and exercise tracking, satisfying the criterion.",
+      "reason": "The quotes consistently document multiple physician-supervised weight management program visits with nutrition counseling and exercise review, satisfying the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes document multiple physician-supervised program visits with nutrition counseling and exercise tracking, satisfying the criterion."
+        "reason": "The quotes consistently document multiple physician-supervised weight management program visits with nutrition counseling and exercise review, satisfying the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1018,
-        "output_tokens": 36,
-        "wall_time_ms": 677.3008339805529
+        "input_tokens": 1097,
+        "output_tokens": 39,
+        "wall_time_ms": 726.6226249921601
       }
     },
     {
@@ -364,17 +364,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes provided are relevant program visit records supporting a NOT_MET verdict on the consecutive months duration requirement.",
+      "reason": "The quoted text explicitly relates to program visits and program duration, and as a NOT_MET claim, the shortfall computation cannot be re-adjudicated by the verifier.",
       "raw": {
         "accept": true,
-        "reason": "The quotes provided are relevant program visit records supporting a NOT_MET verdict on the consecutive months duration requirement."
+        "reason": "The quoted text explicitly relates to program visits and program duration, and as a NOT_MET claim, the shortfall computation cannot be re-adjudicated by the verifier."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 883,
-        "output_tokens": 37,
-        "wall_time_ms": 811.9822909357026
+        "input_tokens": 962,
+        "output_tokens": 51,
+        "wall_time_ms": 874.8567919974448
       }
     },
     {
@@ -401,17 +401,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is a valid FHIR Observation for BMI with a value of 42.5 kg/m2, which is consistent with the MET verdict for a threshold of 35.0 or greater.",
+      "reason": "The quoted observation provides a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is a valid FHIR Observation for BMI with a value of 42.5 kg/m2, which is consistent with the MET verdict for a threshold of 35.0 or greater."
+        "reason": "The quoted observation provides a BMI value of 42.5 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1190,
-        "output_tokens": 60,
-        "wall_time_ms": 894.4654999068007
+        "input_tokens": 1269,
+        "output_tokens": 48,
+        "wall_time_ms": 883.3117079921067
       }
     },
     {
@@ -437,17 +437,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document multiple physician-supervised weight management program visits meeting the required minimum event count.",
+      "reason": "The provided quotes explicitly document multiple physician-supervised program visits with required details, fully satisfying the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document multiple physician-supervised weight management program visits meeting the required minimum event count."
+        "reason": "The provided quotes explicitly document multiple physician-supervised program visits with required details, fully satisfying the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 954,
+        "input_tokens": 1033,
         "output_tokens": 36,
-        "wall_time_ms": 637.1836659964174
+        "wall_time_ms": 913.798208013759
       }
     },
     {
@@ -470,17 +470,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provided is valid evidence concerning the recent qualifying run criterion and its evaluation for a NOT_MET verdict.",
+      "reason": "The claim is a NOT_MET and the provided quote is directly on the subject of the criterion, showing evidence from a visit within the relevant timeframe without directly showing satisfaction of the full recency window computed by code.",
       "raw": {
         "accept": true,
-        "reason": "The quote provided is valid evidence concerning the recent qualifying run criterion and its evaluation for a NOT_MET verdict."
+        "reason": "The claim is a NOT_MET and the provided quote is directly on the subject of the criterion, showing evidence from a visit within the relevant timeframe without directly showing satisfaction of the full recency window computed by code."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 744,
-        "output_tokens": 38,
-        "wall_time_ms": 804.2690829606727
+        "input_tokens": 823,
+        "output_tokens": 59,
+        "wall_time_ms": 912.8570000029868
       }
     },
     {
@@ -506,17 +506,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document monthly program visits spanning from March to June 2025, which directly supports the criterion requiring a minimum of 4 consecutive months.",
+      "reason": "The provided quotes consistently document monthly program visits spanning from March to June 2025, supporting the claimed MET verdict for the four-month minimum duration.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document monthly program visits spanning from March to June 2025, which directly supports the criterion requiring a minimum of 4 consecutive months."
+        "reason": "The provided quotes consistently document monthly program visits spanning from March to June 2025, supporting the claimed MET verdict for the four-month minimum duration."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 958,
-        "output_tokens": 49,
-        "wall_time_ms": 836.5702499868348
+        "input_tokens": 1037,
+        "output_tokens": 48,
+        "wall_time_ms": 898.5278750042198
       }
     },
     {
@@ -542,17 +542,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes provided are valid evidence of monthly BMI documentation satisfying the criterion.",
+      "reason": "The provided quotes consistently show BMI values for the required documentation periods.",
       "raw": {
         "accept": true,
-        "reason": "The quotes provided are valid evidence of monthly BMI documentation satisfying the criterion."
+        "reason": "The provided quotes consistently show BMI values for the required documentation periods."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 719,
-        "output_tokens": 30,
-        "wall_time_ms": 819.5130410604179
+        "input_tokens": 798,
+        "output_tokens": 29,
+        "wall_time_ms": 726.4251250016969
       }
     },
     {
@@ -588,17 +588,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes consistently document both diet and activity across the evaluation period as required by the criterion.",
+      "reason": "The quotes consistently document diet and activity as required by the criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quotes consistently document both diet and activity across the evaluation period as required by the criterion."
+        "reason": "The quotes consistently document diet and activity as required by the criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 867,
-        "output_tokens": 34,
-        "wall_time_ms": 774.9700420536101
+        "input_tokens": 946,
+        "output_tokens": 29,
+        "wall_time_ms": 774.8189169942634
       }
     },
     {
@@ -625,17 +625,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is an Observation resource documenting a BMI value of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The quoted observation provides a BMI value of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is an Observation resource documenting a BMI value of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The quoted observation provides a BMI value of 39.23 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1194,
-        "output_tokens": 52,
-        "wall_time_ms": 782.9987079603598
+        "input_tokens": 1273,
+        "output_tokens": 48,
+        "wall_time_ms": 944.9026249931194
       }
     },
     {
@@ -661,17 +661,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document physician-supervised weight management program visits with appropriate dietary and exercise reviews, satisfying the minimum event requirement.",
+      "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the required minimum event count.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document physician-supervised weight management program visits with appropriate dietary and exercise reviews, satisfying the minimum event requirement."
+        "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the required minimum event count."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 963,
-        "output_tokens": 41,
-        "wall_time_ms": 826.5360420336947
+        "input_tokens": 1042,
+        "output_tokens": 35,
+        "wall_time_ms": 666.9657079910394
       }
     },
     {
@@ -694,17 +694,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provided is relevant to the recency criterion and is consistent with the MET verdict.",
+      "reason": "The quote provided is relevant to the recency criterion and contains no information contradicting satisfaction.",
       "raw": {
         "accept": true,
-        "reason": "The quote provided is relevant to the recency criterion and is consistent with the MET verdict."
+        "reason": "The quote provided is relevant to the recency criterion and contains no information contradicting satisfaction."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 749,
-        "output_tokens": 34,
-        "wall_time_ms": 715.8524590777233
+        "input_tokens": 828,
+        "output_tokens": 33,
+        "wall_time_ms": 707.6929589966312
       }
     },
     {
@@ -730,17 +730,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes provided are all relevant program visit notes spanning four consecutive months from March to June 2026, which is consistent with the claimed satisfaction of the minimum consecutive months criterion.",
+      "reason": "The provided quotes document four consecutive monthly program visits from March through June 2026, satisfying the minimum requirement of four consecutive months.",
       "raw": {
         "accept": true,
-        "reason": "The quotes provided are all relevant program visit notes spanning four consecutive months from March to June 2026, which is consistent with the claimed satisfaction of the minimum consecutive months criterion."
+        "reason": "The provided quotes document four consecutive monthly program visits from March through June 2026, satisfying the minimum requirement of four consecutive months."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 967,
-        "output_tokens": 53,
-        "wall_time_ms": 804.2573750717565
+        "input_tokens": 1046,
+        "output_tokens": 38,
+        "wall_time_ms": 691.8263749976177
       }
     },
     {
@@ -764,17 +764,17 @@
         ]
       },
       "accept": true,
-      "reason": "The claim is NOT_MET, and the provided quotes document missing BMI calculations, which is consistent with the criterion failing.",
+      "reason": "The claim is NOT_MET and the provided quotes are about program follow-ups and weight checks, which matches the subject of BMI documentation.",
       "raw": {
         "accept": true,
-        "reason": "The claim is NOT_MET, and the provided quotes document missing BMI calculations, which is consistent with the criterion failing."
+        "reason": "The claim is NOT_MET and the provided quotes are about program follow-ups and weight checks, which matches the subject of BMI documentation."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 829,
-        "output_tokens": 40,
-        "wall_time_ms": 753.2113749766722
+        "input_tokens": 908,
+        "output_tokens": 44,
+        "wall_time_ms": 751.5919169964036
       }
     },
     {
@@ -810,17 +810,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes document both diet and activity consistent with the satisfaction of the criterion.",
+      "reason": "The provided quotes sufficiently document both diet and activity consistent with the criterion's requirements.",
       "raw": {
         "accept": true,
-        "reason": "The quotes document both diet and activity consistent with the satisfaction of the criterion."
+        "reason": "The provided quotes sufficiently document both diet and activity consistent with the criterion's requirements."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 872,
-        "output_tokens": 31,
-        "wall_time_ms": 892.5554170273244
+        "input_tokens": 951,
+        "output_tokens": 33,
+        "wall_time_ms": 612.0625839976128
       }
     },
     {
@@ -847,17 +847,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote correctly references a BMI observation pertinent to the criterion and supports the NOT_MET verdict.",
+      "reason": "The quote directly provides the BMI observation relevant to the criterion subject and correctly supports the NOT_MET verdict.",
       "raw": {
         "accept": true,
-        "reason": "The quote correctly references a BMI observation pertinent to the criterion and supports the NOT_MET verdict."
+        "reason": "The quote directly provides the BMI observation relevant to the criterion subject and correctly supports the NOT_MET verdict."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1193,
-        "output_tokens": 35,
-        "wall_time_ms": 665.8918330213055
+        "input_tokens": 1272,
+        "output_tokens": 37,
+        "wall_time_ms": 870.5780000018422
       }
     },
     {
@@ -884,17 +884,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes are valid FHIR condition resources detailing diagnosed comorbidities related to obesity, supporting the MET verdict.",
+      "reason": "The provided quotes contain valid Condition resources representing diagnosed co-morbidities relevant to obesity.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes are valid FHIR condition resources detailing diagnosed comorbidities related to obesity, supporting the MET verdict."
+        "reason": "The provided quotes contain valid Condition resources representing diagnosed co-morbidities relevant to obesity."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1769,
-        "output_tokens": 37,
-        "wall_time_ms": 949.5970830321312
+        "input_tokens": 1848,
+        "output_tokens": 34,
+        "wall_time_ms": 717.6475840096828
       }
     },
     {
@@ -920,17 +920,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provided is a FHIR Condition resource documenting essential hypertension, which is a recognized obesity comorbidity, directly supporting the MET verdict.",
+      "reason": "The quote provides a confirmed condition of essential hypertension, which is presented as evidence satisfying the obesity-related co-morbidity criterion.",
       "raw": {
         "accept": true,
-        "reason": "The quote provided is a FHIR Condition resource documenting essential hypertension, which is a recognized obesity comorbidity, directly supporting the MET verdict."
+        "reason": "The quote provides a confirmed condition of essential hypertension, which is presented as evidence satisfying the obesity-related co-morbidity criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1236,
-        "output_tokens": 43,
-        "wall_time_ms": 680.6707089999691
+        "input_tokens": 1315,
+        "output_tokens": 42,
+        "wall_time_ms": 789.08941699774
       }
     },
     {
@@ -957,17 +957,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote directly provides a BMI observation with a value of 35.0 kg/m2, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The quoted BMI observation directly supports the criterion by documenting a value of 35.0 kg/m2, which meets the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The quote directly provides a BMI observation with a value of 35.0 kg/m2, which satisfies the threshold of 35.0 or greater."
+        "reason": "The quoted BMI observation directly supports the criterion by documenting a value of 35.0 kg/m2, which meets the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1096,
-        "output_tokens": 50,
-        "wall_time_ms": 878.0010829214007
+        "input_tokens": 1175,
+        "output_tokens": 52,
+        "wall_time_ms": 693.9572499977658
       }
     },
     {
@@ -993,17 +993,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quoted condition record is directly relevant to obesity-related co-morbidities as an encounter diagnosis for essential hypertension and supports the MET verdict.",
+      "reason": "The provided quote is a condition resource documenting essential hypertension, which serves as a valid medical comorbidity related to obesity.",
       "raw": {
         "accept": true,
-        "reason": "The quoted condition record is directly relevant to obesity-related co-morbidities as an encounter diagnosis for essential hypertension and supports the MET verdict."
+        "reason": "The provided quote is a condition resource documenting essential hypertension, which serves as a valid medical comorbidity related to obesity."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1119,
+        "input_tokens": 1198,
         "output_tokens": 39,
-        "wall_time_ms": 713.479834026657
+        "wall_time_ms": 738.2456659979653
       }
     },
     {
@@ -1030,17 +1030,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quoted observation provides a BMI value of 35.89, which satisfies the threshold of 35.0 or greater.",
+      "reason": "The quoted observation records a BMI of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater.",
       "raw": {
         "accept": true,
-        "reason": "The quoted observation provides a BMI value of 35.89, which satisfies the threshold of 35.0 or greater."
+        "reason": "The quoted observation records a BMI of 35.89 kg/m2, which satisfies the threshold of 35.0 or greater."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1098,
-        "output_tokens": 44,
-        "wall_time_ms": 822.3725829739124
+        "input_tokens": 1177,
+        "output_tokens": 48,
+        "wall_time_ms": 778.0219169944758
       }
     },
     {
@@ -1063,17 +1063,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote provided is directly relevant to the criterion and shows a recent date within the allowed window.",
+      "reason": "The provided quote is relevant to the recency criterion and contains a BMI that satisfies the condition without any conflicting evidence.",
       "raw": {
         "accept": true,
-        "reason": "The quote provided is directly relevant to the criterion and shows a recent date within the allowed window."
+        "reason": "The provided quote is relevant to the recency criterion and contains a BMI that satisfies the condition without any conflicting evidence."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 740,
-        "output_tokens": 35,
-        "wall_time_ms": 819.5317910285667
+        "input_tokens": 819,
+        "output_tokens": 39,
+        "wall_time_ms": 943.0834579980001
       }
     },
     {
@@ -1107,17 +1107,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes consistently document both diet and activity across multiple instances, supporting the claimed MET verdict.",
+      "reason": "The provided quotes consistently document both diet and activity across the required timeframe, aligning with the criteria for MET.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes consistently document both diet and activity across multiple instances, supporting the claimed MET verdict."
+        "reason": "The provided quotes consistently document both diet and activity across the required timeframe, aligning with the criteria for MET."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 838,
-        "output_tokens": 35,
-        "wall_time_ms": 817.8753749234602
+        "input_tokens": 917,
+        "output_tokens": 37,
+        "wall_time_ms": 970.6374579982366
       }
     },
     {
@@ -1143,17 +1143,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is a confirmed Condition resource documenting Rheumatoid arthritis, which directly supports the criterion.",
+      "reason": "The provided quote is a Condition resource documenting rheumatoid arthritis, which directly matches the criterion's subject.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is a confirmed Condition resource documenting Rheumatoid arthritis, which directly supports the criterion."
+        "reason": "The provided quote is a Condition resource documenting rheumatoid arthritis, which directly matches the criterion's subject."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1230,
-        "output_tokens": 35,
-        "wall_time_ms": 717.620832961984
+        "input_tokens": 1309,
+        "output_tokens": 36,
+        "wall_time_ms": 781.1007499985863
       }
     },
     {
@@ -1179,17 +1179,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quoted medication request for Methotrexate is relevant evidence for the methotrexate combination criterion and supports the MET verdict.",
+      "reason": "The quote provides a MedicationRequest for Methotrexate, directly supporting the criterion of use in combination with methotrexate.",
       "raw": {
         "accept": true,
-        "reason": "The quoted medication request for Methotrexate is relevant evidence for the methotrexate combination criterion and supports the MET verdict."
+        "reason": "The quote provides a MedicationRequest for Methotrexate, directly supporting the criterion of use in combination with methotrexate."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1255,
+        "input_tokens": 1334,
         "output_tokens": 37,
-        "wall_time_ms": 780.5920839309692
+        "wall_time_ms": 730.3558330022497
       }
     },
     {
@@ -1215,17 +1215,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is a valid FHIR Condition resource directly documenting a confirmed diagnosis of rheumatoid arthritis, which matches the subject of the criterion.",
+      "reason": "The provided quote is a condition resource directly concerning rheumatoid arthritis, which appropriately supports the MET verdict for the diagnosis criterion.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is a valid FHIR Condition resource directly documenting a confirmed diagnosis of rheumatoid arthritis, which matches the subject of the criterion."
+        "reason": "The provided quote is a condition resource directly concerning rheumatoid arthritis, which appropriately supports the MET verdict for the diagnosis criterion."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1235,
-        "output_tokens": 43,
-        "wall_time_ms": 855.5817080195993
+        "input_tokens": 1314,
+        "output_tokens": 39,
+        "wall_time_ms": 740.3802080079913
       }
     },
     {
@@ -1254,17 +1254,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes contain FHIR condition resources representing diagnoses, which are appropriate evidence for a diagnosis criterion and must be accepted without second-guessing value set membership.",
+      "reason": "The provided quotes contain valid Condition resources representing diagnoses, and as per instructions, membership in the value set must not be re-adjudicated.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes contain FHIR condition resources representing diagnoses, which are appropriate evidence for a diagnosis criterion and must be accepted without second-guessing value set membership."
+        "reason": "The provided quotes contain valid Condition resources representing diagnoses, and as per instructions, membership in the value set must not be re-adjudicated."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 2422,
-        "output_tokens": 48,
-        "wall_time_ms": 922.353042056784
+        "input_tokens": 2501,
+        "output_tokens": 45,
+        "wall_time_ms": 820.1549580116989
       }
     },
     {
@@ -1297,17 +1297,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quote is direct evidence regarding a prior procedure subject to the frequency criterion and supports the MET verdict.",
+      "reason": "The provided quote is relevant evidence for the procedure criterion and does not violate any named threshold or condition.",
       "raw": {
         "accept": true,
-        "reason": "The provided quote is direct evidence regarding a prior procedure subject to the frequency criterion and supports the MET verdict."
+        "reason": "The provided quote is relevant evidence for the procedure criterion and does not violate any named threshold or condition."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1137,
-        "output_tokens": 37,
-        "wall_time_ms": 657.043916056864
+        "input_tokens": 1216,
+        "output_tokens": 36,
+        "wall_time_ms": 727.2577499970794
       }
     },
     {
@@ -1336,17 +1336,17 @@
         ]
       },
       "accept": true,
-      "reason": "The provided quotes are valid FHIR Condition resources representing diagnoses which serve as evidence for the criterion's subject.",
+      "reason": "The provided quotes contain valid Condition resources representing diagnoses relevant to the criterion, and value set membership is determined by code.",
       "raw": {
         "accept": true,
-        "reason": "The provided quotes are valid FHIR Condition resources representing diagnoses which serve as evidence for the criterion's subject."
+        "reason": "The provided quotes contain valid Condition resources representing diagnoses relevant to the criterion, and value set membership is determined by code."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 2434,
-        "output_tokens": 38,
-        "wall_time_ms": 875.9276670170948
+        "input_tokens": 2513,
+        "output_tokens": 39,
+        "wall_time_ms": 783.0060830019647
       }
     },
     {
@@ -1379,17 +1379,17 @@
         ]
       },
       "accept": true,
-      "reason": "The quote correctly documents a prior procedure within the evaluation scope for a NOT_MET verdict and does not directly show the threshold as satisfied.",
+      "reason": "The quote directly relates to the procedure criterion and supports the NOT_MET verdict without showing the criterion as satisfied.",
       "raw": {
         "accept": true,
-        "reason": "The quote correctly documents a prior procedure within the evaluation scope for a NOT_MET verdict and does not directly show the threshold as satisfied."
+        "reason": "The quote directly relates to the procedure criterion and supports the NOT_MET verdict without showing the criterion as satisfied."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 1214,
-        "output_tokens": 43,
-        "wall_time_ms": 922.9107080027461
+        "input_tokens": 1293,
+        "output_tokens": 38,
+        "wall_time_ms": 667.4521249951795
       }
     },
     {
@@ -1418,27 +1418,542 @@
         ]
       },
       "accept": true,
-      "reason": "The quotes correctly provide FHIR Condition resources relevant to diagnosis criteria for medical necessity.",
+      "reason": "The provided quotes are valid FHIR Condition resources that serve as evidence for diagnosis criteria.",
       "raw": {
         "accept": true,
-        "reason": "The quotes correctly provide FHIR Condition resources relevant to diagnosis criteria for medical necessity."
+        "reason": "The provided quotes are valid FHIR Condition resources that serve as evidence for diagnosis criteria."
       },
       "metrics": {
         "model": "gemini-3.5-flash-lite",
         "purpose": "verification",
-        "input_tokens": 2882,
-        "output_tokens": 32,
-        "wall_time_ms": 818.3723749825731
+        "input_tokens": 2961,
+        "output_tokens": 33,
+        "wall_time_ms": 809.1286249982659
+      }
+    },
+    {
+      "digest": "aeb608c1595f3e7dd4b2f0025405cf40f228f71d04c06701dd2e708b4ef8a05c",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "An in-person clinical evaluation by the treating practitioner prior to the sleep test",
+          "constants": {
+            "requirement": {
+              "value": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea."
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "02/24/2021 - Seen in person in clinic by A. Ferreira, MD for evaluation of",
+          "Study date: 03/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 6.4 hours.\nApnea-hypopnea index (AHI): 27 events per hour."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly evidence an in-person clinical evaluation by the treating practitioner prior to the sleep test.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly evidence an in-person clinical evaluation by the treating practitioner prior to the sleep test."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 876,
+        "output_tokens": 37,
+        "wall_time_ms": 782.9964999982622
+      }
+    },
+    {
+      "digest": "bc60ea3e41b1ee8858230d6e6a48996f6683fd51ed217cbad76c1025990545cb",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "A sleep test with an AHI or RDI of at least 15 events per hour and 30 events, or of 5 to 14 with 10 events and a documented qualifying finding or comorbidity",
+          "constants": {
+            "min_events": {
+              "value": 30,
+              "comparison": ">="
+            },
+            "min_events_with_findings": {
+              "value": 10,
+              "comparison": ">="
+            },
+            "min_index": {
+              "value": 15,
+              "comparison": ">="
+            },
+            "min_index_with_findings": {
+              "value": 5,
+              "comparison": ">="
+            },
+            "qualifying_findings": {
+              "value": [
+                "excessive_daytime_sleepiness",
+                "impaired_cognition",
+                "mood_disorder",
+                "insomnia",
+                "hypertension",
+                "ischemic_heart_disease",
+                "history_of_stroke"
+              ]
+            },
+            "value_set_id": {
+              "value": "osa_qualifying_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Study date: 03/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 6.4 hours.\nApnea-hypopnea index (AHI): 27 events per hour.",
+          "27 events per hour",
+          "6.4 hours"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes document a sleep study with an AHI of 27 events per hour, which satisfies the threshold of at least 15 events per hour and 30 total events, and the evidence directly addresses the criterion's subject.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes document a sleep study with an AHI of 27 events per hour, which satisfies the threshold of at least 15 events per hour and 30 total events, and the evidence directly addresses the criterion's subject."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1077,
+        "output_tokens": 65,
+        "wall_time_ms": 691.4826249994803
+      }
+    },
+    {
+      "digest": "a434a2c38acb24937dc487cc397a75868f897c90a3a4b1a1d93b3262066f3f14",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "An in-person clinical evaluation by the treating practitioner prior to the sleep test",
+          "constants": {
+            "requirement": {
+              "value": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea."
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "02/05/2026 - Seen in person in clinic by M. Okafor, MD for evaluation of",
+          "Study date: 02/24/2026. Unattended home sleep test (Type III), performed\nwithout positive airway pressure.\nTotal recording time: 6.1 hours.\nRespiratory disturbance index (RDI): 9 events per hour."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly evidence an in-person clinical evaluation prior to the sleep test, satisfying the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly evidence an in-person clinical evaluation prior to the sleep test, satisfying the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 870,
+        "output_tokens": 37,
+        "wall_time_ms": 937.2493750124704
+      }
+    },
+    {
+      "digest": "bd773cdc83f36adb07ab6a4406fc8029be1127600421708d74b041f185a2481a",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "A sleep test with an AHI or RDI of at least 15 events per hour and 30 events, or of 5 to 14 with 10 events and a documented qualifying finding or comorbidity",
+          "constants": {
+            "min_events": {
+              "value": 30,
+              "comparison": ">="
+            },
+            "min_events_with_findings": {
+              "value": 10,
+              "comparison": ">="
+            },
+            "min_index": {
+              "value": 15,
+              "comparison": ">="
+            },
+            "min_index_with_findings": {
+              "value": 5,
+              "comparison": ">="
+            },
+            "qualifying_findings": {
+              "value": [
+                "excessive_daytime_sleepiness",
+                "impaired_cognition",
+                "mood_disorder",
+                "insomnia",
+                "hypertension",
+                "ischemic_heart_disease",
+                "history_of_stroke"
+              ]
+            },
+            "value_set_id": {
+              "value": "osa_qualifying_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Study date: 02/24/2026. Unattended home sleep test (Type III), performed\nwithout positive airway pressure.\nTotal recording time: 6.1 hours.\nRespiratory disturbance index (RDI): 9 events per hour.",
+          "Respiratory disturbance index (RDI): 9 events per hour",
+          "Total recording time: 6.1 hours",
+          "Reports excessive daytime sleepiness"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes provide an RDI of 9, which satisfies the alternative threshold of 5 to 14 when combined with the reported excessive daytime sleepiness and consistent documentation.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes provide an RDI of 9, which satisfies the alternative threshold of 5 to 14 when combined with the reported excessive daytime sleepiness and consistent documentation."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1091,
+        "output_tokens": 45,
+        "wall_time_ms": 889.350541998283
+      }
+    },
+    {
+      "digest": "ad96c11c980cd30a36e160f79e084277ca467bf97736aa9f8bbdb29a34d41867",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "An in-person clinical evaluation by the treating practitioner prior to the sleep test",
+          "constants": {
+            "requirement": {
+              "value": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea."
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "01/05/2021 - Seen in person in clinic by D. Lindqvist, DO for evaluation of",
+          "Study date: 01/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 5.8 hours.\nApnea-hypopnea index (AHI): 12 events per hour."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes document an in-person clinical evaluation prior to the sleep test, directly satisfying the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes document an in-person clinical evaluation prior to the sleep test, directly satisfying the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 877,
+        "output_tokens": 36,
+        "wall_time_ms": 700.4756249953061
+      }
+    },
+    {
+      "digest": "3a48d50acfdc6fae979deae0b72baf3025929b186c182596393be672c3900313",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "A sleep test with an AHI or RDI of at least 15 events per hour and 30 events, or of 5 to 14 with 10 events and a documented qualifying finding or comorbidity",
+          "constants": {
+            "min_events": {
+              "value": 30,
+              "comparison": ">="
+            },
+            "min_events_with_findings": {
+              "value": 10,
+              "comparison": ">="
+            },
+            "min_index": {
+              "value": 15,
+              "comparison": ">="
+            },
+            "min_index_with_findings": {
+              "value": 5,
+              "comparison": ">="
+            },
+            "qualifying_findings": {
+              "value": [
+                "excessive_daytime_sleepiness",
+                "impaired_cognition",
+                "mood_disorder",
+                "insomnia",
+                "hypertension",
+                "ischemic_heart_disease",
+                "history_of_stroke"
+              ]
+            },
+            "value_set_id": {
+              "value": "osa_qualifying_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Study date: 01/06/2021. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 5.8 hours.\nApnea-hypopnea index (AHI): 12 events per hour.",
+          "12 events per hour",
+          "5.8 hours",
+          "{\n      \"resourceType\": \"Condition\",\n      \"id\": \"023cec62-9ca8-8194-43bb-e58425094e81\",\n      \"meta\": {\n        \"profile\": [ \"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\" ]\n      },\n      \"clinicalStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\",\n          \"code\": \"active\"\n        } ]\n      },\n      \"verificationStatus\": {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\n          \"code\": \"confirmed\"\n        } ]\n      },\n      \"category\": [ {\n        \"coding\": [ {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\",\n          \"code\": \"encounter-diagnosis\",\n          \"display\": \"Encounter Diagnosis\"\n        } ]\n      } ],\n      \"code\": {\n        \"coding\": [ {\n          \"system\": \"http://snomed.info/sct\",\n          \"code\": \"414545008\",\n          \"display\": \"Ischemic heart disease (disorder)\"\n        } ],\n        \"text\": \"Ischemic heart disease (disorder)\"\n      },\n      \"subject\": {\n        \"reference\": \"urn:uuid:023cec62-9ca8-8194-0813-e80b1cdc03ed\"\n      },\n      \"encounter\": {\n        \"reference\": \"urn:uuid:023cec62-9ca8-8194-9347-6a47977e034e\"\n      },\n      \"onsetDateTime\": \"2021-12-27T23:13:22-08:00\",\n      \"recordedDate\": \"2021-12-27T23:13:22-08:00\"\n    }"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes document a sleep study with an AHI of 12 events per hour, total events consistent with the alternative criteria threshold of 5 to 14, and an active diagnosis of ischemic heart disease as a qualifying finding.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes document a sleep study with an AHI of 12 events per hour, total events consistent with the alternative criteria threshold of 5 to 14, and an active diagnosis of ischemic heart disease as a qualifying finding."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1610,
+        "output_tokens": 63,
+        "wall_time_ms": 860.5025409924565
+      }
+    },
+    {
+      "digest": "31bd9235120b500891ad84f092916e19504c88eb37245058308b3653891d5916",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "An in-person clinical evaluation by the treating practitioner prior to the sleep test",
+          "constants": {
+            "requirement": {
+              "value": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea."
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "10/11/2020 - Seen in person in clinic by M. Okafor, MD for evaluation of",
+          "Study date: 10/21/2020. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 7.2 hours.\nApnea-hypopnea index (AHI): 3 events per hour."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes explicitly document an in-person clinical evaluation prior to the sleep test, directly satisfying the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes explicitly document an in-person clinical evaluation prior to the sleep test, directly satisfying the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 876,
+        "output_tokens": 38,
+        "wall_time_ms": 837.7341669984162
+      }
+    },
+    {
+      "digest": "bb7bba2cb202875fe155736b1650122cfcac9601b3043ccdd810986e6f5a9e1a",
+      "criterion_id": "b",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "A sleep test with an AHI or RDI of at least 15 events per hour and 30 events, or of 5 to 14 with 10 events and a documented qualifying finding or comorbidity",
+          "constants": {
+            "min_events": {
+              "value": 30,
+              "comparison": ">="
+            },
+            "min_events_with_findings": {
+              "value": 10,
+              "comparison": ">="
+            },
+            "min_index": {
+              "value": 15,
+              "comparison": ">="
+            },
+            "min_index_with_findings": {
+              "value": 5,
+              "comparison": ">="
+            },
+            "qualifying_findings": {
+              "value": [
+                "excessive_daytime_sleepiness",
+                "impaired_cognition",
+                "mood_disorder",
+                "insomnia",
+                "hypertension",
+                "ischemic_heart_disease",
+                "history_of_stroke"
+              ]
+            },
+            "value_set_id": {
+              "value": "osa_qualifying_comorbidities"
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "Study date: 10/21/2020. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 7.2 hours.\nApnea-hypopnea index (AHI): 3 events per hour.",
+          "3 events per hour"
+        ]
+      },
+      "accept": true,
+      "reason": "The claimed verdict is NOT_MET and the quoted evidence shows an AHI of 3 events per hour, which is on the failing side of the required thresholds.",
+      "raw": {
+        "accept": true,
+        "reason": "The claimed verdict is NOT_MET and the quoted evidence shows an AHI of 3 events per hour, which is on the failing side of the required thresholds."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1069,
+        "output_tokens": 49,
+        "wall_time_ms": 716.821042005904
+      }
+    },
+    {
+      "digest": "468c50736ee32e2ecc801dfe312efa36b4b8d1bb32684be5bd044bbf6e3dd6ed",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "An in-person clinical evaluation by the treating practitioner prior to the sleep test",
+          "constants": {
+            "requirement": {
+              "value": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea."
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/15/2026 - Seen in person in clinic by D. Lindqvist, DO for evaluation of",
+          "Study date: 03/16/2026. Unattended home sleep test (Type III), performed\nwithout positive airway pressure.\nTotal recording time: 6.5 hours.\nRespiratory disturbance index (RDI): 8 events per hour."
+        ]
+      },
+      "accept": true,
+      "reason": "The quoted text documents an in-person clinical evaluation prior to the sleep test, directly satisfying the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The quoted text documents an in-person clinical evaluation prior to the sleep test, directly satisfying the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 870,
+        "output_tokens": 37,
+        "wall_time_ms": 751.0647920134943
+      }
+    },
+    {
+      "digest": "a13197d9af45818556eb1f7952070aeb3bfe26ec20e9f4cfde167197c54905ad",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "An in-person clinical evaluation by the treating practitioner prior to the sleep test",
+          "constants": {
+            "requirement": {
+              "value": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea."
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "12/14/2019 - Seen in person in clinic by D. Lindqvist, DO for evaluation of",
+          "Study date: 12/15/2019. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 1.5 hours. The study ended early at the patient's\nrequest.\nApnea-hypopnea index (AHI): 16 events per hour."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes directly evidence an in-person clinical evaluation prior to the sleep test, satisfying the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes directly evidence an in-person clinical evaluation prior to the sleep test, satisfying the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 890,
+        "output_tokens": 37,
+        "wall_time_ms": 827.604332996998
+      }
+    },
+    {
+      "digest": "0b195e42a00103e4fb16e7ca2efa1211716ac6c1615785d6068b9e581a673915",
+      "criterion_id": "b",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "A sleep test with an AHI or RDI of at least 15 events per hour and 30 events, or of 5 to 14 with 10 events and a documented qualifying finding or comorbidity",
+          "constants": {
+            "min_events": {
+              "value": 30,
+              "comparison": ">="
+            },
+            "min_events_with_findings": {
+              "value": 10,
+              "comparison": ">="
+            },
+            "min_index": {
+              "value": 15,
+              "comparison": ">="
+            },
+            "min_index_with_findings": {
+              "value": 5,
+              "comparison": ">="
+            },
+            "qualifying_findings": {
+              "value": [
+                "excessive_daytime_sleepiness",
+                "impaired_cognition",
+                "mood_disorder",
+                "insomnia",
+                "hypertension",
+                "ischemic_heart_disease",
+                "history_of_stroke"
+              ]
+            },
+            "value_set_id": {
+              "value": "osa_qualifying_comorbidities"
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "Study date: 12/15/2019. Attended in-laboratory polysomnogram (Type I),\nperformed without positive airway pressure.\nTotal recording time: 1.5 hours. The study ended early at the patient's\nrequest.\nApnea-hypopnea index (AHI): 16 events per hour.",
+          "16 events per hour",
+          "1.5 hours"
+        ]
+      },
+      "accept": true,
+      "reason": "The claimed verdict is NOT_MET and the provided quotes are consistent with the criteria not being satisfied.",
+      "raw": {
+        "accept": true,
+        "reason": "The claimed verdict is NOT_MET and the provided quotes are consistent with the criteria not being satisfied."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1092,
+        "output_tokens": 36,
+        "wall_time_ms": 802.60358400119
       }
     }
   ],
   "aggregate": {
-    "claims": 38,
-    "accepted": 38,
+    "claims": 49,
+    "accepted": 49,
     "rejected": 0,
-    "model_calls": 38,
-    "input_tokens": 43766,
-    "output_tokens": 1538,
-    "wall_time_ms": 30937.5
+    "model_calls": 49,
+    "input_tokens": 57966,
+    "output_tokens": 1981,
+    "wall_time_ms": 42696.1
   }
 }

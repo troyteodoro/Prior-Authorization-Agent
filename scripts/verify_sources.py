@@ -221,6 +221,34 @@ DOCUMENTS: list[dict[str, str]] = [
                 "ICD-10-CM group paragraphs name 93975/93976, 93978/93979 and "
                 "93980/93981 in prose (D114)",
     },
+    # T-108 (D150): the fourth practice's two documents. NCD 240.4 is the first
+    # national document in this corpus that quantifies more than one number --
+    # two thresholds of one criterion -- and L33718 is the first DME MAC LCD.
+    # L33718 is one LCD published under four DME contractors; its own table
+    # lists their states, and the tree compiled from it is Jurisdiction D's.
+    {
+        "document_id": "ncd_240_4",
+        "title": "NCD 240.4 - Continuous Positive Airway Pressure (CPAP) Therapy "
+                 "For Obstructive Sleep Apnea (OSA)",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/ncd.aspx?ncdid=226",
+        "authority": "national",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "filename": "ncd_240_4.txt",
+    },
+    {
+        "document_id": "l33718",
+        "title": "LCD L33718 - Positive Airway Pressure (PAP) Devices for the "
+                 "Treatment of Obstructive Sleep Apnea",
+        "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?LCDId=33718",
+        "authority": "dme_mac_jurisdictions_a_b_c_d",
+        "publisher": "CGS Administrators, LLC and Noridian Healthcare Solutions, "
+                     "LLC (DME MACs, Jurisdictions A, B, C and D)",
+        "filename": "l33718.txt",
+        # Unlike every A/B MAC article in the corpus, this LCD names its HCPCS
+        # code in its own coverage text, so the binding cites the document the
+        # criteria are compiled from (D150).
+        "note": "names E0601 and E0470 in prose in its INITIAL COVERAGE section (D150)",
+    },
 ]
 
 
@@ -538,6 +566,65 @@ ANSWERS: list[dict[str, Any]] = [
                 "denote and which diagnoses support them, which is D28's two "
                 "classes of claim arriving together. This tree is compiled for "
                 "Group 1 alone (D114).",
+    },
+    # T-108 (D150): the fourth practice's constants, read from NCD 240.4 and
+    # L33718 the way every earlier answer was read from its document.
+    {
+        "question_id": "q14",
+        "question": "Does NCD 240.4 quantify its coverage criterion, and how many "
+                    "numbers does it state?",
+        "feeds": "pap-osa criterion b's two national floors",
+        "answer": "yes - an AHI or RDI of at least 15 events per hour, or of 5 "
+                  "to 14 with documented symptoms or comorbidities: two "
+                  "thresholds of one criterion",
+        "document_id": "ncd_240_4",
+        "quote": "AHI or RDI greater than or equal to 15 events per hour, or",
+        "note": "The second threshold is the next sentence, which states 5 and 14 "
+                "and the symptoms and comorbidities that qualify the band. NCD "
+                "100.1 quantifies one number; this one quantifies two thresholds "
+                "of one criterion, which is why a criterion may now declare more "
+                "than one national floor (D150).",
+        "corroborating_quote": {
+            "document_id": "ncd_240_4",
+            "quote": "AHI or RDI greater than or equal to 5 events and less than "
+                     "or equal to 14 events per hour with documented symptoms of "
+                     "excessive daytime sleepiness, impaired cognition, mood "
+                     "disorders or insomnia, or documented hypertension, ischemic "
+                     "heart disease, or history of stroke.",
+        },
+    },
+    {
+        "question_id": "q15",
+        "question": "What does L33718 add to NCD 240.4's thresholds, and what "
+                    "else must be met for an E0601?",
+        "feeds": "pap-osa criteria a, b, c and d",
+        "answer": "event minimums -- at least 30 events for the unconditional "
+                  "threshold, 10 for the band -- plus an in-person evaluation "
+                  "before the sleep test and supplier instruction",
+        "document_id": "l33718",
+        "quote": "The apnea-hypopnea index (AHI) or Respiratory Disturbance Index "
+                 "(RDI) is greater than or equal to 15 events per hour with a "
+                 "minimum of 30 events; or,",
+        "note": "Criterion B's first branch. Its second branch states 'a minimum "
+                "of 10 events', and the definitions paragraph ties both minimums "
+                "to recordings under two hours. Criteria A (in-person evaluation "
+                "prior to the sleep test) and C (supplier instruction) complete "
+                "the list; the Sleep Tests section's validity requirements are "
+                "the provenance of the test, declared unclaimed (D150).",
+    },
+    {
+        "question_id": "q16",
+        "question": "Does any document in the corpus name the HCPCS code for a "
+                    "single-level CPAP device?",
+        "feeds": "the pap-osa tree's nationally_covered binding",
+        "answer": "yes - L33718 names E0601 in its own coverage text",
+        "document_id": "l33718",
+        "quote": "a single-level continuous positive airway pressure device (E0601)",
+        "note": "A DME LCD carries its HCPCS codes in prose, where an A/B MAC "
+                "article's CPT table sits behind the AMA licence modal (D101, "
+                "D111). The same sentence names E0470, which this tree does not "
+                "bind: its criterion D, a failed E0601 trial, is outside the "
+                "tree, so E0470 resolves NO_POLICY_FOUND (D150).",
     },
 ]
 

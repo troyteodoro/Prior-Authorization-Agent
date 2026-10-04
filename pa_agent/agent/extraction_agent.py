@@ -439,13 +439,13 @@ class _AdkRuns:
     def run(self, document_id: str, text: str, kind: FactKind) -> ExtractionResult:
         # The agent this leaf builds carries `Extraction` and `INSTRUCTION`,
         # which is `weight_management`'s registry entry. A second kind needs its
-        # own agent, and that is `T-108`'s to build (D149): raising here keeps
+        # own agent, numbered `T-143` (D150): raising here keeps
         # a kind from being answered by another kind's prompt.
         schema = FACT_SCHEMAS[kind]
         if schema.response_model is not Extraction or schema.instruction != INSTRUCTION:
             raise NotImplementedError(
                 f"the ADK extraction leaf builds the weight_management agent; "
-                f"{kind.value!r} has no ADK agent yet (T-108, D149)"
+                f"{kind.value!r} has no ADK agent yet (T-143, D150)"
             )
         # One session id per note, advanced once per `run()` — the re-ask
         # invocation derives its own from it, so two notes never share one

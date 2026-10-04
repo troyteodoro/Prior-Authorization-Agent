@@ -1,0 +1,21 @@
+PRAIRIE LAKES SLEEP CENTER
+Patient: Raynor401, Tatyana394                   MRN: 820486
+DOB: 1982-02-05                       Sex: F
+Document 1 of 2
+
+SLEEP MEDICINE CONSULTATION
+
+02/05/2026 - Seen in person in clinic by M. Okafor, MD for evaluation of
+suspected obstructive sleep apnea. History taken and examination performed.
+
+HISTORY OF PRESENT ILLNESS
+Bed partner reports loud nightly snoring and witnessed pauses in breathing.
+Reports excessive daytime sleepiness, falling asleep while reading and in
+afternoon meetings; Epworth Sleepiness Scale 15 of 24.
+
+PLAN
+Diagnostic sleep study ordered to assess for obstructive sleep apnea.
+
+ASSESSMENT
+Suspected obstructive sleep apnea. Diagnostic testing has been ordered and is
+documented separately.

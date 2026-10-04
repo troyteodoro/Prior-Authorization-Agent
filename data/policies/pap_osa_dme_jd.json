@@ -1,0 +1,246 @@
+{
+  "policy_version_id": "pap-osa-dme-jd-v1",
+  "title": "Positive airway pressure (E0601) for obstructive sleep apnea, as operationalized by Noridian (DME MAC Jurisdiction D)",
+  "practice": "sleep_medicine",
+  "fact_kinds": [
+    "sleep_apnea_workup"
+  ],
+  "compiled_by": "T-108, hand-compiled from NCD 240.4 and L33718 (D150)",
+  "jurisdiction": {
+    "authority": "dme_mac_jurisdictions_a_b_c_d",
+    "contractor": "Noridian Healthcare Solutions, LLC",
+    "states": [
+      "AK",
+      "AS",
+      "AZ",
+      "CA",
+      "GU",
+      "HI",
+      "ID",
+      "IA",
+      "KS",
+      "MO",
+      "MT",
+      "NE",
+      "NV",
+      "ND",
+      "MP",
+      "OR",
+      "SD",
+      "UT",
+      "WA",
+      "WY"
+    ],
+    "note": "The states and territories L33718's own contractor table lists under Noridian's DME MAC contract 19003, Jurisdiction D. The same LCD is published jointly under four DME contractors -- CGS for J-B and J-C, Noridian for J-A and J-D -- which is why the authority names all four: it is who published the constants. The states are J-D's alone, because this tree is compiled for one contractor, as every tree here is (D21). Jurisdiction D because its states include Iowa, where the recorded Synthea run that supplies this practice's charts was generated (D150). Washington, Iowa, Kansas, Missouri and Nebraska are therefore served by two practices each, and nothing collides: the collision that matters is a code bound for one state by two trees, and E0601 is bound by nobody else (D111)."
+  },
+  "sources": [
+    {
+      "document_id": "ncd_240_4",
+      "sha256": "1bdc2a6ee11af057bf14a5b06fd9ad7df2d50a94c5f860b7c4d7927e570a19ca"
+    },
+    {
+      "document_id": "l33718",
+      "sha256": "aa04e844776ca7ce8d020a31afda08b74bba7209546908be2c5760a23d6af82f"
+    }
+  ],
+  "decision_expression": "a AND b AND c AND d",
+  "criteria": [
+    {
+      "id": "a",
+      "label": "An in-person clinical evaluation by the treating practitioner prior to the sleep test",
+      "evaluation": "deterministic",
+      "kind": "note_evaluation_before_sleep_test",
+      "constants": {
+        "requirement": {
+          "value": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea.",
+          "type": "string",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 7500,
+            "char_end": 7660,
+            "quote": "The beneficiary has an in-person clinical evaluation by the treating practitioner prior to the sleep test to assess the beneficiary for obstructive sleep apnea."
+          },
+          "note": "Criterion A. The predicate reads in-person evaluations and diagnostic sleep tests the notes document and compares their dates in Python: an evaluation strictly before the most recent test is MET. Strictly, because a date carries no time and a same-day evaluation cannot be shown to precede that night's study (D150)."
+        }
+      }
+    },
+    {
+      "id": "b",
+      "label": "A sleep test with an AHI or RDI of at least 15 events per hour and 30 events, or of 5 to 14 with 10 events and a documented qualifying finding or comorbidity",
+      "evaluation": "deterministic",
+      "kind": "note_sleep_test_index",
+      "constants": {
+        "min_index": {
+          "value": 15,
+          "type": "number",
+          "comparison": ">=",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 7769,
+            "char_end": 7918,
+            "quote": "The apnea-hypopnea index (AHI) or Respiratory Disturbance Index (RDI) is greater than or equal to 15 events per hour with a minimum of 30 events; or,"
+          },
+          "note": "Branch 1, events per hour, inclusive. Equal to NCD 240.4's floor below."
+        },
+        "min_events": {
+          "value": 30,
+          "type": "integer",
+          "comparison": ">=",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 7769,
+            "char_end": 7918,
+            "quote": "The apnea-hypopnea index (AHI) or Respiratory Disturbance Index (RDI) is greater than or equal to 15 events per hour with a minimum of 30 events; or,"
+          },
+          "note": "Branch 1's event minimum. Events are the index times the recording time the note states, computed in Python; L33718's definitions paragraph ties the minimum to recordings under two hours, and at two hours or more an index of 15 already carries 30. A test whose recording time is not documented abstains, because a minimum nobody can check is not met by default (D150)."
+        },
+        "min_index_with_findings": {
+          "value": 5,
+          "type": "number",
+          "comparison": ">=",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 7920,
+            "char_end": 8059,
+            "quote": "The AHI or RDI is greater than or equal to 5 and less than or equal to 14 events per hour with a minimum of 10 events and documentation of:"
+          },
+          "note": "Branch 2's lower edge, inclusive. Its upper edge is read as below min_index rather than 'at most 14': the document's 14 is the integer reading of the gap below 15, and a fractional index inside it is read into the branch that asks for more documentation rather than into a denial (D150)."
+        },
+        "min_events_with_findings": {
+          "value": 10,
+          "type": "integer",
+          "comparison": ">=",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 7920,
+            "char_end": 8059,
+            "quote": "The AHI or RDI is greater than or equal to 5 and less than or equal to 14 events per hour with a minimum of 10 events and documentation of:"
+          },
+          "note": "Branch 2's event minimum, computed the way branch 1's is."
+        },
+        "qualifying_findings": {
+          "value": [
+            "excessive_daytime_sleepiness",
+            "impaired_cognition",
+            "mood_disorder",
+            "insomnia",
+            "hypertension",
+            "ischemic_heart_disease",
+            "history_of_stroke"
+          ],
+          "type": "string_list",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 8061,
+            "char_end": 8143,
+            "quote": "Excessive daytime sleepiness, impaired cognition, mood disorders, or insomnia; or,"
+          },
+          "note": "The two lists under branch 2, in the extractor's category vocabulary: this line's four symptoms and the next line's three comorbidities -- 'Hypertension, ischemic heart disease, or history of stroke.' The extractor labels what a passage documents as present; whether a label qualifies is this list, read by Python (Art. II)."
+        },
+        "value_set_id": {
+          "value": "osa_qualifying_comorbidities",
+          "type": "string",
+          "note": "Branch 2's comorbidities as the coded record carries them, in SNOMED. A note need not restate a hypertension the chart already codes; either documents it (D150)."
+        }
+      },
+      "national_floor": [
+        {
+          "document_id": "ncd_240_4",
+          "char_start": 3365,
+          "char_end": 3423,
+          "quote": "AHI or RDI greater than or equal to 15 events per hour, or",
+          "constant": "min_index",
+          "value": 15.0,
+          "comparison": ">=",
+          "note": "NCD 240.4's unconditional threshold, and the bound L33718's own is checked against at load (REQ-73, D130). Both state 15, so the relation holds at equality; a DME MAC may be stricter than the NCD and never looser."
+        },
+        {
+          "document_id": "ncd_240_4",
+          "char_start": 3425,
+          "char_end": 3694,
+          "quote": "AHI or RDI greater than or equal to 5 events and less than or equal to 14 events per hour with documented symptoms of excessive daytime sleepiness, impaired cognition, mood disorders or insomnia, or documented hypertension, ischemic heart disease, or history of stroke.",
+          "constant": "min_index_with_findings",
+          "value": 5.0,
+          "comparison": ">=",
+          "note": "The band's lower edge. A second floor on the same criterion, because NCD 240.4 quantifies two thresholds of one criterion and flooring one would let a tree loosen the other (D150). The event minimums carry no floor: the NCD states them as the number a two-hour recording would require and names no number to read out of its quote."
+        }
+      ]
+    },
+    {
+      "id": "c",
+      "label": "The beneficiary or caregiver has received the supplier's instruction in the device's proper use and care",
+      "evaluation": "unclaimed",
+      "constants": {
+        "requirement": {
+          "value": "The beneficiary and/or their caregiver has received instruction from the supplier of the device in the proper use and care of the equipment.",
+          "type": "string",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 8206,
+            "char_end": 8346,
+            "quote": "The beneficiary and/or their caregiver has received instruction from the supplier of the device in the proper use and care of the equipment."
+          },
+          "note": "Criterion C."
+        }
+      },
+      "note": "Unclaimed because the instruction is the supplier's act and its record is the supplier's, which is not the chart this system reads: no Encounter, Procedure or note in a patient bundle documents what a DME supplier taught at delivery. A reviewer evaluates it against the supplier's documentation (REQ-58, D150)."
+    },
+    {
+      "id": "d",
+      "label": "The sleep test is a valid one as L33718's Sleep Tests section defines it",
+      "evaluation": "unclaimed",
+      "constants": {
+        "requirement": {
+          "value": "The sleep test must be either a polysomnogram performed in a facility-based laboratory (Type I study) or an inpatient hospital-based or home-based sleep test (HST) (Types II, III, IV, Other).",
+          "type": "string",
+          "source": {
+            "document_id": "l33718",
+            "char_start": 10291,
+            "char_end": 10482,
+            "quote": "The sleep test must be either a polysomnogram performed in a facility-based laboratory (Type I study) or an inpatient hospital-based or home-based sleep test (HST) (Types II, III, IV, Other)."
+          },
+          "note": "The first of the section's requirements. The rest follow it: the test meets NCD 240.4.1 and the A/B MAC's rules, is FDA-approved as a diagnostic device, is ordered by the treating practitioner, and is conducted by an entity qualified as a Medicare provider of sleep tests."
+        }
+      },
+      "note": "Unclaimed because each requirement is about the test's provenance -- the device's FDA status, who ordered it, and the testing entity's enrolment -- and no chart resource records any of them. Criterion B's '(as defined below)' points here, so the definition is declared and abstained on rather than assumed met by the index criterion (REQ-57, REQ-58, D150)."
+    }
+  ],
+  "procedure_sets": {
+    "note": "One nationally covered entry. NCD 240.4 covers CPAP nationally for adults with OSA under the conditions it states, and L33718 operationalizes those conditions and names the code. E0470, the bi-level device the same LCD names, is not bound: its criterion D, a failed E0601 trial, is outside this tree, so E0470 resolves NO_POLICY_FOUND rather than being evaluated against the wrong criteria (D150).",
+    "nationally_covered": [
+      {
+        "procedure": "Single-level continuous positive airway pressure (CPAP) device for obstructive sleep apnea",
+        "coverage_claim": {
+          "document_id": "ncd_240_4",
+          "char_start": 1988,
+          "char_end": 2067,
+          "quote": "The use of CPAP is covered under Medicare when used in adult patients with OSA.",
+          "note": "NCD 240.4's Nationally Covered Indications. The conditions it states -- a clinical evaluation, a positive sleep test, and the AHI or RDI thresholds -- are this tree's criteria, with L33718's event minimums and its supplier-instruction criterion added.",
+          "corroborating_quote": {
+            "document_id": "l33718",
+            "char_start": 7394,
+            "char_end": 7498,
+            "quote": "An E0601 device is covered for the treatment of obstructive sleep apnea (OSA) if criteria A – C are met:",
+            "note": "Noridian's operationalization of the national coverage, with criteria A to C."
+          }
+        },
+        "codes": [
+          {
+            "code": "E0601",
+            "system": "HCPCS",
+            "identity": true,
+            "source_class": "corpus",
+            "in_corpus": true,
+            "document_id": "l33718",
+            "char_start": 7196,
+            "char_end": 7261,
+            "quote": "a single-level continuous positive airway pressure device (E0601)",
+            "note": "L33718 names the code in its own coverage text, beside the device it denotes. A DME LCD carries its HCPCS codes in prose where an A/B MAC article's CPT table sits behind the AMA licence modal (D101, D111), so the binding cites the document the criteria are compiled from (D28, D150)."
+          }
+        ]
+      }
+    ],
+    "nationally_non_covered": [],
+    "contractor_determined": []
+  }
+}

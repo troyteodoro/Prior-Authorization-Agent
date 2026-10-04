@@ -110,6 +110,22 @@ def committed_recordings() -> list[Path]:
 
 
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
+#: Every fact kind's AI Studio recording; the second is T-108's (D150).
+EXTRACTION_RECORDINGS = (
+    EXTRACTION_RESULTS,
+    REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+)
+
+
+def _recorded_extraction():
+    """Every kind's recording as one replay runner. Spends nothing."""
+    recordings = [
+        json.loads(path.read_text(encoding="utf-8")) for path in EXTRACTION_RECORDINGS
+    ]
+    return RecordedExtractionRunner.from_records(
+        [note for recording in recordings for note in recording["notes"]],
+        model=recordings[0]["model"],
+    )
 VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
 NOTES_MANIFEST = REPO_ROOT / "data" / "patients" / "notes" / "manifest.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
@@ -261,13 +277,28 @@ def self_check() -> list[tuple[str, bool, str]]:
 def _patients() -> list[dict]:
     """One row per patient. The notes manifest lists one record per document
     and a chart is two of them since T-81 (D104); a patient measured once per
-    record would be measured twice."""
+    record would be measured twice.
+
+    **Only charts whose request at `PROCEDURE` resolves to a tree** (T-108,
+    D150). The differential is measured at one procedure code, so a
+    note-bearing chart in a state where no tree binds it — the sleep apnea
+    charts, which carry notes for E0601 in Iowa — is not a request this
+    measurement can make. Widening the differential past one procedure is a
+    re-measurement, never a filter edit (D45).
+    """
+    from pa_agent.stores.patient import LocalPatientStore
+    from pa_agent.stores.policy import LocalPolicyStore
+
+    policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
     manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
     patients: dict[str, dict] = {}
     for r in manifest["notes"]:
-        patients.setdefault(
-            r["patient_id"], {"patient_id": r["patient_id"], "cases": r["cases"]}
-        )
+        if r["patient_id"] in patients:
+            continue
+        state = patient_store.get_jurisdiction_state(r["patient_id"])
+        if policy_store.resolve(PROCEDURE, state) is None:
+            continue
+        patients[r["patient_id"]] = {"patient_id": r["patient_id"], "cases": r["cases"]}
     return list(patients.values())
 
 
@@ -382,12 +413,9 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
     client = client_for(tier)
 
     policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
-    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
     # Held constant on both sides: the one variable is which evidence reached the
     # criteria, so the model's *reading* of that evidence must not also move.
-    runner = RecordedExtractionRunner.from_records(
-        recording["notes"], model=recording["model"]
-    )
+    runner = _recorded_extraction()
     verifier = _recorded_verifier()
 
     patients = _patients()[: limit if limit is not None else None]
@@ -780,10 +808,7 @@ def rescore(tier: str = "ai_studio") -> int:
 
     payload = json.loads(out_path.read_text(encoding="utf-8"))
     policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
-    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
-    runner = RecordedExtractionRunner.from_records(
-        recording["notes"], model=recording["model"]
-    )
+    runner = _recorded_extraction()
     verifier = _recorded_verifier()
 
     for row in payload["patients"]:

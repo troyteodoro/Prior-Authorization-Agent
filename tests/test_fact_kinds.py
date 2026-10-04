@@ -20,10 +20,20 @@ Four claims, in the order they can break:
 - **Reads no note** is proved in `test_rheumatology_corpus.py`, on the one
   committed input that can prove it: a note-bearing chart under a tree that
   declares no kind, with a runner that raises.
+
+Since T-108 (REQ-79, D150) there are two kinds, and the claims extend to the
+second: its digest is pinned beside its version, its two recordings replay
+under it and under nothing else, a note can hold one payload per kind, and
+the trust boundary is the same one — every kind anchors through
+`_anchor_or_drop`, folds through `workflow.FACT_FOLDS` (a partition of
+`FactKind`), and no kind but `weight_management` writes a `WmEvent`-shaped
+field, which is held by parsing because no behavioural test on this corpus
+can tell a builder that does from one that does not.
 """
 
 from __future__ import annotations
 
+import ast
 import copy
 import json
 from datetime import date
@@ -46,9 +56,14 @@ from pa_agent.extraction import (
     FACT_SCHEMAS,
     INSTRUCTION,
     PROMPT_VERSION,
+    SLEEP_INSTRUCTION,
+    SLEEP_PROMPT_VERSION,
     Extraction,
+    SleepApneaWorkupExtraction,
     _locate,
+    _locate_sleep,
     build_result,
+    build_sleep_result,
 )
 from pa_agent.runners import (
     ExtractionFailure,
@@ -57,7 +72,7 @@ from pa_agent.runners import (
 )
 from pa_agent.stores.patient import LocalPatientStore
 from pa_agent.stores.policy import LocalPolicyStore
-from pa_agent.workflow import ERROR_CODE_FOR
+from pa_agent.workflow import ERROR_CODE_FOR, FACT_FOLDS
 
 from conftest import AcceptAllVerifier
 
@@ -68,6 +83,7 @@ SPIKE_NOTES = REPO_ROOT / "spike" / "spike_001" / "notes"
 CASES = REPO_ROOT / "eval" / "cases.json"
 
 WM = FactKind.WEIGHT_MANAGEMENT
+SLEEP = FactKind.SLEEP_APNEA_WORKUP
 
 #: What each committed tree declares. A literal, so a tree that drops or gains a
 #: kind is a visible diff here as well as a load-time check (D51's move).
@@ -76,6 +92,7 @@ EXPECTED_FACT_KINDS = {
     "ncd_100_1_jjm.json": (WM,),
     "infliximab_ra_jjm.json": (),
     "us_abdominal_visceral_j5_j8.json": (),
+    "pap_osa_dme_jd.json": (SLEEP,),
 }
 
 #: `FACT_SCHEMAS[weight_management].digest` — the schema, the instruction, the
@@ -89,7 +106,18 @@ WEIGHT_MANAGEMENT_DIGEST = (
 )
 WEIGHT_MANAGEMENT_VERSION = "t15-instruction-v1/t89-reask-v1"
 
-RECORDINGS = sorted(EXTRACTION.glob("*.json"))
+#: The sleep workup's digest and version (T-108, D150), pinned for the same
+#: reason as the weight-management pair above: a failure here is a new version
+#: and a new measurement of both sleep recordings, never a new literal.
+SLEEP_APNEA_WORKUP_DIGEST = (
+    "e32b1431855c479fcdb83a4d5ec9a74c2712d358045022fae781c96dace65cdc"
+)
+SLEEP_APNEA_WORKUP_VERSION = "t108-sleep-workup-v1/t89-reask-v1"
+
+#: One recording per tier per runner for `weight_management` (T-81, T-90), and
+#: one per tier for `sleep_apnea_workup` on the direct runner (T-108, D150).
+SLEEP_RECORDINGS = sorted(EXTRACTION.glob("sleep_apnea_workup*.json"))
+RECORDINGS = sorted(p for p in EXTRACTION.glob("*.json") if p not in SLEEP_RECORDINGS)
 
 
 def _raw(filename: str) -> dict:
@@ -237,6 +265,56 @@ def test_there_are_six_extraction_recordings():
     assert len(RECORDINGS) == 6, [p.name for p in RECORDINGS]
 
 
+def test_there_are_two_sleep_recordings_one_per_tier():
+    assert [p.name for p in SLEEP_RECORDINGS] == [
+        "sleep_apnea_workup.json",
+        "sleep_apnea_workup_vertex.json",
+    ]
+    tiers = {json.loads(p.read_text(encoding="utf-8"))["tier"] for p in SLEEP_RECORDINGS}
+    assert tiers == {"ai_studio", "vertex"}
+
+
+@pytest.mark.parametrize("path", SLEEP_RECORDINGS, ids=lambda p: p.name)
+def test_every_sleep_recording_replays_under_its_kind_and_no_other(path):
+    """The replay key in both directions: every sleep note rebuilds under the
+    sleep kind, and asking it for weight-management facts is
+    `SCHEMA_MISMATCH` — the request D147 was written to refuse."""
+    recording = json.loads(path.read_text(encoding="utf-8"))
+    assert recording["prompt_version"] == SLEEP_APNEA_WORKUP_VERSION
+    runner = RecordedExtractionRunner.from_records(recording["notes"])
+    store = LocalPatientStore()
+    for record in recording["notes"]:
+        text = store.get_document(record["document_id"]).text
+        result = runner.run(record["document_id"], text, SLEEP)
+        assert result.kind is SLEEP and result.facts
+        assert not result.events and not result.assertions
+        with pytest.raises(ExtractionOutputError) as caught:
+            runner.run(record["document_id"], text, WM)
+        assert caught.value.reason is ExtractionFailure.SCHEMA_MISMATCH
+    assert len(recording["notes"]) == 12
+
+
+def test_one_note_holds_one_payload_per_kind():
+    """A note read under two kinds is two measurements, and the replay holds
+    both: each request gets its own kind's payload (D150 clause 8)."""
+    wm = next(r for r in _results_records() if r["corpus"] == "synthesized")
+    sleep = copy.deepcopy(
+        json.loads((EXTRACTION / "sleep_apnea_workup.json").read_text(encoding="utf-8"))[
+            "notes"
+        ][0]
+    )
+    # The sleep payload, re-addressed onto the weight-management note's bytes.
+    sleep["document_id"] = wm["document_id"]
+    sleep["note_sha256"] = wm["note_sha256"]
+    sleep["raw"] = {"clinical_evaluations": [], "sleep_tests": [], "findings": []}
+    runner = RecordedExtractionRunner.from_records([wm, sleep])
+    text = _text(wm, LocalPatientStore())
+    assert runner.run(wm["document_id"], text, WM).kind is WM
+    assert runner.run(wm["document_id"], text, SLEEP).kind is SLEEP
+    with pytest.raises(ValueError):
+        RecordedExtractionRunner.from_records([wm, copy.deepcopy(wm)])
+
+
 @pytest.mark.parametrize("path", RECORDINGS, ids=lambda p: p.name)
 def test_every_recording_replays_under_weight_management(path):
     recording = json.loads(path.read_text(encoding="utf-8"))
@@ -314,3 +392,127 @@ def test_a_determination_over_a_mismatched_recording_is_an_error_never_an_absten
     assert {r.verdict for r in results} == {CriterionVerdict.ERROR}
     assert {r.error_code for r in results} == {ErrorCode.SCHEMA_INVALID}
     assert caught.value.attempts == 1
+
+
+# --------------------------------------------------------------------------
+# REQ-79: the trust boundary is generic over declared kinds (T-108, D150)
+# --------------------------------------------------------------------------
+
+
+def test_the_sleep_schema_is_its_registered_configuration_and_its_digest_is_pinned():
+    schema = FACT_SCHEMAS[SLEEP]
+    assert schema.response_model is SleepApneaWorkupExtraction
+    assert schema.instruction is SLEEP_INSTRUCTION
+    assert schema.build is build_sleep_result
+    assert schema.locate is _locate_sleep
+    assert schema.prompt_version == SLEEP_PROMPT_VERSION == SLEEP_APNEA_WORKUP_VERSION
+    assert schema.digest == SLEEP_APNEA_WORKUP_DIGEST
+    assert FACT_SCHEMAS[SLEEP].digest != FACT_SCHEMAS[WM].digest
+
+
+def test_every_kind_folds_through_the_registry():
+    """`FACT_FOLDS` partitions `FactKind`: a kind with no fold would extract
+    every note and keep nothing, and the step names no kind of its own."""
+    assert set(FACT_FOLDS) == set(FactKind)
+    tree = ast.parse((REPO_ROOT / "pa_agent" / "workflow.py").read_text(encoding="utf-8"))
+    step = next(
+        n for n in ast.walk(tree)
+        if isinstance(n, ast.FunctionDef) and n.name == "step_extract"
+    )
+    named = {
+        n.attr for n in ast.walk(step)
+        if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
+        and n.value.id == "FactKind"
+    }
+    assert named == set(), f"step_extract names fact kinds {named}; it folds through FACT_FOLDS"
+    calls = [
+        ast.unparse(n.func) for n in ast.walk(step) if isinstance(n, ast.Call)
+    ]
+    assert "FACT_FOLDS[kind]" in calls
+
+
+_WM_FIELDS = {"events", "assertions", "current_bmi", "current_bmi_span"}
+
+
+def _builder(name: str) -> ast.FunctionDef:
+    tree = ast.parse((REPO_ROOT / "pa_agent" / "extraction.py").read_text(encoding="utf-8"))
+    return next(
+        n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == name
+    )
+
+
+def test_no_kind_but_weight_management_reaches_a_wmevent_shaped_route():
+    """Parsed, because the committed sleep corpus cannot tell a builder that
+    writes `result.events` from one that does not: a sleep payload never
+    carries a `WmEvent`'s fields to write. Every registered builder other than
+    `build_result` constructs no `WmEvent` or `ProgramAssertion` and touches no
+    weight-management field of the result (REQ-79)."""
+    builders = {
+        schema.build.__name__ for kind, schema in FACT_SCHEMAS.items() if kind is not WM
+    }
+    assert builders == {"build_sleep_result"}
+    for name in builders:
+        node = _builder(name)
+        constructed = {
+            n.func.id for n in ast.walk(node)
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+        }
+        assert not constructed & {"WmEvent", "ProgramAssertion", "NoteBmi"}, name
+        touched = {
+            n.attr for n in ast.walk(node)
+            if isinstance(n, ast.Attribute) and n.attr in _WM_FIELDS
+        }
+        assert not touched, f"{name} touches {touched}"
+
+
+def test_every_builder_anchors_through_the_one_anchorer():
+    """The trust boundary is one function, called by every kind's builder:
+    a builder that sliced the model's offsets or searched the note itself
+    would be a second, unvalidated route (Art. III, D18)."""
+    for schema in FACT_SCHEMAS.values():
+        node = _builder(schema.build.__name__)
+        called = {
+            n.func.id for n in ast.walk(node)
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+        }
+        assert "_anchor_or_drop" in called, schema.build.__name__
+        assert "anchor" not in called, schema.build.__name__
+
+
+def test_a_sleep_quote_the_note_does_not_contain_is_dropped_with_its_path():
+    """Through the real anchorer, on a note written here: an unanchorable
+    index phrase demotes the index to unstated rather than keeping a number
+    without a span, and the drop names the payload path the re-ask needs."""
+    note = (
+        "SLEEP STUDY REPORT\nStudy date: 03/16/2026. Home sleep test.\n"
+        "Total recording time: 6.5 hours.\nRDI: 8 events per hour.\n"
+    )
+    payload = {
+        "clinical_evaluations": [],
+        "sleep_tests": [{
+            "date": "2026-03-16",
+            "quote": "Study date: 03/16/2026. Home sleep test.",
+            "char_start": 0, "char_end": 0,
+            "index": 8.0, "index_quote": "RDI of eight per hour",
+            "recording_hours": 6.5, "recording_hours_quote": "6.5 hours",
+        }],
+        "findings": [{
+            "category": "insomnia", "quote": "Reports insomnia.",
+            "char_start": 0, "char_end": 0,
+        }],
+    }
+    result = build_sleep_result("doc", note, payload)
+    (test,) = result.facts
+    assert test.index is None and test.index_span is None
+    assert test.recording_hours == 6.5 and test.hours_span is not None
+    assert {d["path"] for d in result.dropped} == {
+        "sleep_tests[0].index_quote",
+        "findings[0].quote",
+    }
+    assert _locate_sleep(payload, "sleep_tests[0].index_quote") == (
+        payload["sleep_tests"][0], "index_quote"
+    )
+    with pytest.raises(KeyError):
+        _locate_sleep(payload, "sleep_tests[0].date")
+    with pytest.raises(KeyError):
+        _locate_sleep(payload, "findings[0].index_quote")

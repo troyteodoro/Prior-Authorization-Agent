@@ -1,0 +1,45 @@
+{
+  "patient_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb",
+  "bundle": "Valrie435_Stepanie29_Dare640_60cce88a-0930-a2fe-a18e-8cc5c37dfaeb.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "OSA5"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [
+    {
+      "date": "2026-03-09",
+      "type": "telephone_contact",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "sleep_evaluations": [
+    {
+      "date": "2026-03-15",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "sleep_tests": [
+    {
+      "date": "2026-03-16",
+      "document": "chart_note_2.txt",
+      "study_type": "type_iii",
+      "index_name": "RDI",
+      "index": 8.0,
+      "recording_hours": 6.5
+    }
+  ],
+  "sleep_findings": [],
+  "denied_findings": [
+    {
+      "category": "excessive_daytime_sleepiness",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "rationale": "OSA5: The band with nothing documented: an RDI of 8 over 6.5 hours is 52 events, inside the band with its minimum met, and neither the notes nor the coded record documents a listed finding or comorbidity. b abstains with NO_EVIDENCE_RETRIEVED -- a chart that records no daytime sleepiness has not recorded that there is none (D40). The consultation carries the two things this fact kind's instruction names as non-facts: a telephone contact, which is not an in-person evaluation, and a denied symptom, which is not a finding. Transcribed from L33718 and NCD 240.4 through pap_osa_dme_jd.json and the chart's own facts, never from a run (T-108, D150). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. The sleep study is dated on the chart's own 82808001 procedure and the in-person evaluation on the latest 103750000 assessment strictly before it, so every date the notes emit is the generator's; the index, the recording time and any finding are declared here, because no generator writes them (D43, D150). Document 1 is the consultation and document 2 the study report: one fact per document (D104). c and d are declared unclaimed by the tree -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58)."
+}

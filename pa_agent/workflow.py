@@ -30,6 +30,7 @@ edge. See D62 for the rejected alternative in full.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import date
 
@@ -52,6 +53,7 @@ from pa_agent.contracts import (
     Medication,
     NoteBmi,
     Observation,
+    PREDICATE_FACT_KIND,
     PredicateKind,
     Procedure,
     ProgramAssertion,
@@ -75,6 +77,7 @@ from pa_agent.retrieval import (
 from pa_agent.runners import (
     ExtractionFailure,
     ExtractionOutputError,
+    ExtractionResult,
     ExtractionRunner,
 )
 from pa_agent.spans import SpanValidationError
@@ -172,12 +175,23 @@ NOTE_EVENT_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE,
 )
 
+#: The kinds that read the sleep apnea workup a note documents (T-108, D150).
+#: Note-consuming like `NOTE_EVENT_KINDS`, so `step_criteria_c` evaluates them
+#: and an extraction fault resolves them to `ERROR`; their own tuple because
+#: they read `facts`, never `events`, and no qualifying run scopes them.
+NOTE_WORKUP_KINDS: tuple[PredicateKind, ...] = (
+    PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST,
+    PredicateKind.NOTE_SLEEP_TEST_INDEX,
+)
+#: Everything `step_criteria_c` evaluates: every kind decided from a note.
+NOTE_KINDS: tuple[PredicateKind, ...] = NOTE_EVENT_KINDS + NOTE_WORKUP_KINDS
+
 #: step name -> the kinds it evaluates. The steps read the tuples above
 #: directly; this is the same fact in the shape the partition is checked in.
 STEP_KINDS: dict[str, tuple[PredicateKind, ...]] = {
     "criterion_a": OBSERVATION_KINDS,
     "criterion_b": STRUCTURED_KINDS,
-    "criteria_c": NOTE_EVENT_KINDS,
+    "criteria_c": NOTE_KINDS,
 }
 
 #: The kinds whose verdict depends on the qualifying run, so the run is
@@ -224,9 +238,20 @@ def _sole(tree: CriteriaTree, kind: PredicateKind) -> Criterion | None:
     return tree.only_criterion_of_kind(kind)
 
 
-def _extraction_criteria(tree: CriteriaTree) -> tuple[str, ...]:
-    """The ids of the note-consuming criteria this tree declares."""
-    return tuple(criterion.id for criterion in _declared(tree, NOTE_EVENT_KINDS))
+def _extraction_criteria(tree: CriteriaTree, kind: FactKind) -> tuple[str, ...]:
+    """The ids of the criteria this tree declares that read fact kind `kind`.
+
+    Read through `PREDICATE_FACT_KIND` rather than a list of predicate kinds
+    named here (T-108, REQ-79, D150): a fault in one kind's extraction errors
+    the criteria waiting on that kind, and a criterion reading another kind,
+    or reading the chart, never saw it (D76's ruling, one kind at a time).
+    """
+    return tuple(
+        criterion.id
+        for criterion in tree.criteria
+        if criterion.evaluation == "deterministic"
+        and PREDICATE_FACT_KIND.get(criterion.kind) is kind
+    )
 
 
 def _all_criteria(tree: CriteriaTree) -> tuple[str, ...]:
@@ -314,6 +339,11 @@ class WorkflowState:
     events: list[WmEvent] = field(default_factory=list)
     assertions: list[ProgramAssertion] = field(default_factory=list)
     note_bmis: list[NoteBmi] = field(default_factory=list)
+    #: Every fact kind but `weight_management`, by kind (T-108, REQ-79, D150).
+    #: The weight-management kind keeps the three typed fields above, which is
+    #: why no bariatric recording, span or verdict moved; a kind added later
+    #: lands here through its fold and never through those.
+    facts: dict[FactKind, list] = field(default_factory=dict)
 
     # Deterministic products
     run: QualifyingRun | None = None
@@ -431,8 +461,9 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
     # T-107 (REQ-78, D149): the tree's declared kinds bound the outer loop, so
     # a tree declaring none reads no note and makes no call — the step is
     # still visited, because the graph is fixed (Art. I). Both bounds are
-    # Python values the model cannot change. One kind exists, so the body below
-    # is its fold; a second kind earns a per-kind fold (T-108).
+    # Python values the model cannot change. What a result adds to the state
+    # is its kind's fold, read from `FACT_FOLDS` (T-108, REQ-79, D150): this
+    # step names no kind.
     for kind in state.tree.fact_kinds:
         for note in state.notes:
             try:
@@ -445,24 +476,65 @@ def step_extract(state: WorkflowState, ctx: _Context) -> None:
                 )
                 raise DeterminationAborted(
                     _error_results(
-                        _extraction_criteria(state.tree), ERROR_CODE_FOR[exc.reason], str(exc)
+                        _extraction_criteria(state.tree, kind),
+                        ERROR_CODE_FOR[exc.reason],
+                        str(exc),
                     ),
                     attempts=attempts,
                 ) from exc
-            state.events.extend(result.events)
-            state.assertions.extend(result.assertions)
-            # T-60: a note's current BMI belongs to no encounter. Every note that
-            # states one is carried (REQ-34a, D104) — this was "first note wins"
-            # while the corpus had one note per patient, and with two it would be
-            # store order deciding a threshold question. The only branch here is
-            # on anchoredness: a BMI nobody can cite is not a documented BMI (D15).
-            if result.current_bmi is not None and result.current_bmi_span is not None:
-                state.note_bmis.append(
-                    NoteBmi(value=result.current_bmi, span=result.current_bmi_span)
-                )
+            FACT_FOLDS[kind](state, kind, result)
             state.traces.append(trace)
 
     state.events.sort(key=lambda e: e.event_date)
+
+
+def _fold_weight_management(
+    state: WorkflowState, kind: FactKind, result: ExtractionResult
+) -> None:
+    """`weight_management`'s fold: T-81's inline body, moved unchanged.
+
+    Events from every note land in one list because c1 through c5 adjudicate
+    the patient's history, not a document's; each event keeps the span that
+    cites its note, so merging loses nothing an auditor needs (Art. III).
+    """
+    state.events.extend(result.events)
+    state.assertions.extend(result.assertions)
+    # T-60: a note's current BMI belongs to no encounter. Every note that
+    # states one is carried (REQ-34a, D104) — this was "first note wins"
+    # while the corpus had one note per patient, and with two it would be
+    # store order deciding a threshold question. The only branch here is
+    # on anchoredness: a BMI nobody can cite is not a documented BMI (D15).
+    if result.current_bmi is not None and result.current_bmi_span is not None:
+        state.note_bmis.append(
+            NoteBmi(value=result.current_bmi, span=result.current_bmi_span)
+        )
+
+
+def _fold_generic(
+    state: WorkflowState, kind: FactKind, result: ExtractionResult
+) -> None:
+    """Every other kind's fold: the result's facts, appended under the kind the
+    step asked for — never under one the result names, so a runner answering
+    with another kind's result cannot file it somewhere else (REQ-79, D150).
+
+    No branch on the result. `tests/test_fact_kinds.py` parses each registered
+    builder but `weight_management`'s and finds none that writes a
+    `WmEvent`-shaped field, which is where that rule is held: a guard here
+    would be a check no input can reach (D131).
+    """
+    state.facts.setdefault(kind, []).extend(result.facts)
+
+
+#: kind -> how one note's result is folded into the state (T-108, REQ-79,
+#: D150). A partition of `FactKind`, checked by `tests/test_fact_kinds.py`: a
+#: kind with no fold would extract every note and keep nothing, which is a
+#: criterion abstaining on a chart that documents its fact.
+FACT_FOLDS: dict[
+    FactKind, Callable[[WorkflowState, FactKind, ExtractionResult], None]
+] = {
+    FactKind.WEIGHT_MANAGEMENT: _fold_weight_management,
+    FactKind.SLEEP_APNEA_WORKUP: _fold_generic,
+}
 
 
 def step_criterion_a(state: WorkflowState, ctx: _Context) -> None:
@@ -616,10 +688,18 @@ def step_criteria_c(state: WorkflowState, ctx: _Context) -> None:
         events=tuple(state.events),
         assertions=tuple(state.assertions),
         run=state.run,
+        # T-108 (D150): the workup kinds read the facts their kind folded, and
+        # the sleep-test band reads the chart's conditions and its named value
+        # set. Each binder in `criteria.PREDICATES` still slices what its
+        # predicate receives, so a weight-management predicate cannot reach
+        # these (D62's rule about narrow signatures).
+        facts={kind: tuple(facts) for kind, facts in state.facts.items()},
+        conditions=tuple(state.conditions),
+        value_sets=state.value_sets,
     )
     produced: list[CriterionResult] = []
     for scoped in (False, True):
-        for criterion in _declared(state.tree, NOTE_EVENT_KINDS):
+        for criterion in _declared(state.tree, NOTE_KINDS):
             if (criterion.scoped_to is not None) != scoped:
                 continue
             inputs = replace(
@@ -691,6 +771,8 @@ def step_sufficiency(state: WorkflowState, ctx: _Context) -> None:
             observations=state.observations,
             procedures=state.procedures,
             value_sets=state.value_sets,
+            conditions=state.conditions,
+            facts={kind: tuple(facts) for kind, facts in state.facts.items()},
             run=state.run,
             as_of=state.as_of,
             c3_met=_run_established(criterion, state.results, state.run),

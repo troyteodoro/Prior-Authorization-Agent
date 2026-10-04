@@ -47,7 +47,7 @@ def test_the_parser_finds_every_requirement(script, spec_text):
     """The universe, pinned. An emptied parser makes every check below vacuous
     and the gate green — which is the failure mode of asserting absence."""
     requirements = script.spec_requirements(spec_text)
-    assert len(requirements) == 80, f"parsed {len(requirements)}; §5 declares 80"
+    assert len(requirements) == 81, f"parsed {len(requirements)}; §5 declares 81"
     assert "REQ-1" in requirements and "REQ-58" in requirements
     assert "REQ-61" in requirements, "T-94's mint parses (D114)"
     assert "REQ-18a" in requirements, "the lettered id is load-bearing and parses"
@@ -58,6 +58,7 @@ def test_the_parser_finds_every_requirement(script, spec_text):
     assert "REQ-74" in requirements, "T-103's mint parses (D131)"
     assert "REQ-77" in requirements, "T-105's second mint parses (D134)"
     assert "REQ-78" in requirements, "T-107's mint, v1.6's first, parses (D149)"
+    assert "REQ-79" in requirements, "T-108's mint, v1.6's second, parses (D150)"
 
 
 def test_an_empty_spec_fails_rather_than_passing(script):

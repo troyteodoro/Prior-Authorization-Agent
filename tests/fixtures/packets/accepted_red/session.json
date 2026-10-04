@@ -121,16 +121,16 @@
           {
             "model": "gemini-3.5-flash-lite",
             "purpose": "verification",
-            "input_tokens": 1032,
-            "output_tokens": 43,
-            "wall_time_ms": 689.0003749867901
+            "input_tokens": 1111,
+            "output_tokens": 48,
+            "wall_time_ms": 920.9863750002114
           },
           {
             "model": "gemini-3.5-flash-lite",
             "purpose": "verification",
-            "input_tokens": 1055,
-            "output_tokens": 38,
-            "wall_time_ms": 670.6710839644074
+            "input_tokens": 1134,
+            "output_tokens": 45,
+            "wall_time_ms": 634.0989580057794
           }
         ]
       }

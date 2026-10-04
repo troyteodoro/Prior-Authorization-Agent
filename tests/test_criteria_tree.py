@@ -42,6 +42,8 @@ TREE_PATHS = {
     "us-abdominal-visceral-j5-j8-v1": (
         REPO_ROOT / "data" / "policies" / "us_abdominal_visceral_j5_j8.json"
     ),
+    # T-108 (D150): the fourth practice, a DME MAC's LCD under a quantified NCD.
+    "pap-osa-dme-jd-v1": REPO_ROOT / "data" / "policies" / "pap_osa_dme_jd.json",
 }
 SOURCE_DIR = REPO_ROOT / "data" / "policies" / "source"
 MANIFEST_PATH = SOURCE_DIR / "sources.json"
@@ -61,6 +63,9 @@ EXPECTED_CRITERIA_BY_TREE = {
     # something else again: `a` is a diagnosis set and `b` is an interval to a
     # prior procedure (T-94, D114).
     "us-abdominal-visceral-j5-j8-v1": ["a", "b", "c", "d", "e"],
+    # L33718's own letters A to C, plus `d` for its Sleep Tests section: `a` is
+    # a date comparison over note facts and `b` an index threshold (D150).
+    "pap-osa-dme-jd-v1": ["a", "b", "c", "d"],
 }
 EXPECTED_CRITERIA = EXPECTED_CRITERIA_BY_TREE["ncd-100.1-jf-v1"]
 
@@ -76,6 +81,7 @@ EXPECTED_PRACTICES = {
     "bariatric_surgery": 2,
     "diagnostic_ultrasound": 1,
     "rheumatology": 1,
+    "sleep_medicine": 1,
 }
 
 # Constants the exit condition names explicitly, as (criterion_id, constant_name).
@@ -119,6 +125,17 @@ REQUIRED_CONSTANTS_BY_TREE = {
         ("c", "requirement"),
         ("d", "requirement"),
         ("e", "limitation"),
+    ],
+    "pap-osa-dme-jd-v1": [
+        ("a", "requirement"),
+        ("b", "min_index"),
+        ("b", "min_events"),
+        ("b", "min_index_with_findings"),
+        ("b", "min_events_with_findings"),
+        ("b", "qualifying_findings"),
+        ("b", "value_set_id"),
+        ("c", "requirement"),
+        ("d", "requirement"),
     ],
 }
 REQUIRED_CONSTANTS = sorted({pair for pairs in REQUIRED_CONSTANTS_BY_TREE.values() for pair in pairs})
@@ -619,7 +636,13 @@ def test_the_national_floor_is_cited_where_it_is_claimed(
 EXPECTED_FLOORS = {
     ("ncd-100.1-jf-v1", "a"),
     ("ncd-100.1-jjm-v1", "a"),
+    # T-108 (D150): one criterion, two floors — NCD 240.4 quantifies both of
+    # its thresholds, so `b` declares a list and each entry bounds its own
+    # constant. Counted per floor in the relation check below.
+    ("pap-osa-dme-jd-v1", "b"),
 }
+#: How many floors the corpus declares in all, across `EXPECTED_FLOORS`.
+EXPECTED_FLOOR_COUNT = 4
 
 
 def _floor_criterion(raw: dict) -> dict:
@@ -660,18 +683,16 @@ def test_every_declared_floor_is_satisfied_by_the_constant_it_bounds():
     for tree_id, path in TREE_PATHS.items():
         tree = CriteriaTree.model_validate_json(path.read_text(encoding="utf-8"))
         for criterion in tree.criteria:
-            floor = criterion.national_floor
-            if floor is None:
-                continue
-            bounded = criterion.constant(floor.constant)
-            direction = FLOOR_DIRECTIONS[floor.comparison]
-            assert direction * (float(bounded.value) - floor.value) >= 0, (
-                f"{tree_id}.{criterion.id}: {floor.constant} is {bounded.value} "
-                f"against a national floor of {floor.value} ({floor.comparison})"
-            )
-            assert bounded.comparison == floor.comparison
-            checked += 1
-    assert checked == len(EXPECTED_FLOORS)
+            for floor in criterion.floors():
+                bounded = criterion.constant(floor.constant)
+                direction = FLOOR_DIRECTIONS[floor.comparison]
+                assert direction * (float(bounded.value) - floor.value) >= 0, (
+                    f"{tree_id}.{criterion.id}: {floor.constant} is {bounded.value} "
+                    f"against a national floor of {floor.value} ({floor.comparison})"
+                )
+                assert bounded.comparison == floor.comparison
+                checked += 1
+    assert checked == EXPECTED_FLOOR_COUNT
 
 
 def test_a_constant_looser_than_its_national_floor_fails_to_load():

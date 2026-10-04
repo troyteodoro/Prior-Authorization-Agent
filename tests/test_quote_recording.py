@@ -16,6 +16,14 @@ answer to the staleness it invites, applied to a third recording family:
 The fabrication figure is pinned to what D122 records, in
 `test_extraction.py`'s shape for headline numbers: a recording that says
 something else is a new measurement that has not been written down.
+
+**Twenty-four notes since T-108** (D152): T-98 measured twelve, and the sleep
+charts' twelve were appended by `--extend` under the same configuration, each
+recording stamping the extension beside its original `measured_at`. One of the
+appended notes **failed** on the AI Studio tool-fetch path, and the failure is
+recorded as a finding with its classified reason and no payload, never
+re-run (D71, D103) — so the figure is pinned like the fabrication figure, and
+every check below that reads a payload reads the notes that have one.
 """
 
 from __future__ import annotations
@@ -67,6 +75,27 @@ DECIDED_FABRICATED: dict[str, int] = {
     "adk_results_tool_fetch_vertex.json": 0,
 }
 
+#: Notes each recording holds: T-98's twelve and T-108's twelve (D122, D152).
+MEASURED_NOTES = 24
+
+#: Notes recorded as failed, per recording — findings, kept with their
+#: classified reason and never re-run (D71). D152 records the one: on AI
+#: Studio's tool-fetch path the model wrote ADK's injected `set_model_response`
+#: call as text, and the answer did not parse.
+DECIDED_FAILED: dict[str, int] = {
+    "results.json": 0,
+    "results_vertex.json": 0,
+    "adk_results_inline.json": 0,
+    "adk_results_inline_vertex.json": 0,
+    "adk_results_tool_fetch.json": 1,
+    "adk_results_tool_fetch_vertex.json": 0,
+}
+
+
+def _answered(payload: dict) -> list[dict]:
+    """The records that carry a payload: every record but a recorded failure."""
+    return [r for r in payload["notes"] if r.get("raw") is not None]
+
 
 def _load(filename: str) -> dict:
     path = HISTORY_DIR / filename
@@ -110,9 +139,11 @@ def test_the_recording_names_the_pin_the_version_the_tier_and_the_task(
         if tool_fetch:
             # The boolean that separates the two tiers' prompts (D62, D106).
             assert payload["output_schema_and_tools"] is (tier == SECOND_TIER)
-    for record in payload["notes"]:
+    for record in _answered(payload):
         assert record["trace"]["prompt_version"] == QUOTE_PROMPT_VERSION
         assert record["trace"]["runner_name"] == runner
+    for extension in payload.get("extensions", []):
+        assert extension["task"] == "T-108" and extension["decision"] == "D152"
 
 
 @pytest.mark.parametrize("filename", FILES)
@@ -130,19 +161,30 @@ def test_every_note_still_hashes_to_what_was_measured(recordings, filename, stor
             f"{record['note_id']} moved since it was measured (D18)"
         )
         checked += 1
-    assert checked == 12, f"{checked} notes checked; twelve were measured (D122)"
+    assert checked == MEASURED_NOTES, (
+        f"{checked} notes checked; twelve were measured by T-98 and twelve "
+        "appended by T-108 (D122, D152)"
+    )
 
 
 @pytest.mark.parametrize("filename", FILES)
-def test_no_note_failed_and_every_turn_is_counted(recordings, filename) -> None:
+def test_every_note_is_recorded_and_every_turn_is_counted(recordings, filename) -> None:
     """REQ-68: the singular `metrics` is turn one, the trace holds every turn,
-    and the aggregate sums the trace (D71)."""
+    and the aggregate sums the trace (D71). A failed note is recorded with its
+    classified reason and nothing else, and the count is the decided one."""
     payload = recordings[filename]
-    assert payload["aggregate"]["failed"] == 0
-    assert payload["aggregate"]["notes"] == 12
+    failed = [r for r in payload["notes"] if r.get("raw") is None]
+    assert payload["aggregate"]["failed"] == len(failed) == DECIDED_FAILED[filename]
+    assert payload["aggregate"]["notes"] == MEASURED_NOTES - len(failed)
+    assert len(payload["notes"]) == MEASURED_NOTES
+    for record in failed:
+        assert record["error"] and record["error"].split(":", 1)[0] in {
+            "UNPARSEABLE", "SCHEMA_INVALID", "NO_PAYLOAD", "CALL_FAILED",
+        }
+        assert record["quotes"] is None and record["score"] is None
     turns = 0
-    for record in payload["notes"]:
-        assert record["raw"] is not None and record["error"] is None
+    for record in _answered(payload):
+        assert record["error"] is None
         assert record["trace"] and record["trace"]["metrics"]
         assert record["metrics"] == record["trace"]["metrics"][0]
         turns += len(record["trace"]["metrics"])
@@ -150,14 +192,14 @@ def test_no_note_failed_and_every_turn_is_counted(recordings, filename) -> None:
             1 if payload["runner"] == "direct" else 6
         )
     assert payload["aggregate"]["model_calls"] == turns
-    assert payload["aggregate"]["model_calls"] >= 12
+    assert payload["aggregate"]["model_calls"] >= MEASURED_NOTES - len(failed)
 
 
 @pytest.mark.parametrize("filename", FILES)
 def test_re_anchoring_the_raw_payload_reproduces_the_recorded_quotes(
     recordings, filename, rows, store
 ) -> None:
-    for record in recordings[filename]["notes"]:
+    for record in _answered(recordings[filename]):
         text = store.get_document(record["document_id"]).text
         result = build_quote_result(record["document_id"], text, record["raw"], rows=rows)
         assert {
@@ -172,7 +214,7 @@ def test_re_anchoring_the_raw_payload_reproduces_the_recorded_quotes(
 def test_every_recorded_span_passes_the_validator(recordings, filename, store) -> None:
     index = DocumentIndex()
     checked = 0
-    for record in recordings[filename]["notes"]:
+    for record in _answered(recordings[filename]):
         for spans in record["quotes"].values():
             for raw in spans:
                 span = EvidenceSpan.model_validate(raw)
@@ -183,7 +225,7 @@ def test_every_recorded_span_passes_the_validator(recordings, filename, store) -
     # Zero is the expected count on this corpus; the assertion is that none
     # that exists fails, and the fabrication test below pins how many exist.
     assert checked == sum(
-        r["score"]["quotes_anchored"] for r in recordings[filename]["notes"]
+        r["score"]["quotes_anchored"] for r in _answered(recordings[filename])
     )
 
 
@@ -192,9 +234,11 @@ def test_the_fabrication_figure_recomputes_and_is_what_the_entry_records(
     recordings, filename
 ) -> None:
     payload = recordings[filename]
-    recomputed = sum(r["score"]["pairs_fabricated"] for r in payload["notes"])
+    recomputed = sum(r["score"]["pairs_fabricated"] for r in _answered(payload))
     assert payload["aggregate"]["pairs_fabricated"] == recomputed
-    assert payload["aggregate"]["pairs"] == 12 * 5
+    assert payload["aggregate"]["pairs"] == (
+        MEASURED_NOTES - DECIDED_FAILED[filename]
+    ) * 5
     assert filename in DECIDED_FABRICATED, f"D122 does not yet record {filename}'s figure"
     assert recomputed == DECIDED_FABRICATED[filename], (
         f"{filename}: {recomputed} fabricated pairs; D122 records "
@@ -212,20 +256,21 @@ def test_the_model_offsets_are_still_unusable(recordings, filename) -> None:
     trusted, and the count of usable ones is reported so the reversal clause
     can fire if it ever should."""
     payload = recordings[filename]
-    emitted = sum(r["score"]["spans_emitted"] for r in payload["notes"])
-    usable = sum(r["score"]["model_offsets_usable"] for r in payload["notes"])
+    emitted = sum(r["score"]["spans_emitted"] for r in _answered(payload))
+    usable = sum(r["score"]["model_offsets_usable"] for r in _answered(payload))
     assert payload["aggregate"]["model_offsets_usable"] == usable
     assert payload["aggregate"]["spans_emitted"] == emitted
 
 
 def test_the_direct_recording_answers_every_manifest_note_by_content(recordings, rows, store) -> None:
-    """Fourteen notes on file, twelve measured: the declared clone's two are
-    byte-identical to its source's and replay under their own ids (T-88,
-    D102). This is the runner every gate hands `run_review`."""
+    """Twenty-six notes on file, twenty-four measured: the declared clone's two
+    are byte-identical to its source's and replay under their own ids (T-88,
+    D102). This is the runner every gate hands `run_review`. The sleep charts'
+    twelve are in it since T-108 (D152)."""
     payload = recordings["results.json"]
     runner = RecordedQuoteRunner.from_records(payload["notes"], payload["rows_asked"], model=payload["model"])
     manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
-    assert len(manifest["notes"]) == 14
+    assert len(manifest["notes"]) == 26
     for entry in manifest["notes"]:
         document = store.get_document(entry["document_id"])
         result = runner.run(document.document_id, document.text, rows)

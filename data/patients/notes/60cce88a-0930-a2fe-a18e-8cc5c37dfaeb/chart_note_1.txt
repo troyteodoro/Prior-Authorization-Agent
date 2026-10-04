@@ -1,0 +1,24 @@
+RIVER BEND SLEEP DISORDERS CLINIC
+Patient: Dare640, Valrie435                      MRN: 601835
+DOB: 1978-02-28                       Sex: F
+Document 1 of 2
+
+SLEEP MEDICINE CONSULTATION
+
+03/15/2026 - Seen in person in clinic by D. Lindqvist, DO for evaluation of
+suspected obstructive sleep apnea. History taken and examination performed.
+
+HISTORY OF PRESENT ILLNESS
+Bed partner reports loud nightly snoring and witnessed pauses in breathing.
+Denies excessive daytime sleepiness.
+
+PLAN
+Diagnostic sleep study ordered to assess for obstructive sleep apnea.
+
+TELEPHONE ENCOUNTER
+03/09/2026 - Telephone contact with the patient to arrange the home sleep
+test. No examination was performed and the patient was not seen.
+
+ASSESSMENT
+Suspected obstructive sleep apnea. Diagnostic testing has been ordered and is
+documented separately.

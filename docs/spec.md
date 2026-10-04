@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; **v1.6 is in progress**, opened by `T-107` *(D149)*; the versions after v1.5 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; **v1.6 is in progress**, opened by `T-107` *(D149)*, its second row closed by `T-108` *(D150)*; the versions after v1.5 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -194,6 +194,17 @@ extraction step runs, and makes no call. A recorded extraction payload replays
 other version raises `SCHEMA_MISMATCH` before the payload is built, and the
 determination reports the affected criteria as `ERROR`, never as an abstention.
 *(T-107, D147, D149; v1.6's first statement)*
+
+**REQ-79** The extraction trust boundary is **generic over declared fact
+kinds**. Every registered kind is built from its payload through the one
+anchorer (`_anchor_or_drop`) and walks the one re-ask core, returning the one
+result type; each kind's result is folded into the request by an entry in a
+registry that **partitions** `FactKind`, and the extraction step names no kind
+of its own. **No kind but `weight_management` reaches a `WmEvent`-shaped
+field**: another kind's builder constructs no `WmEvent`, `ProgramAssertion` or
+note BMI and writes none of those fields, and its facts are filed under the
+kind the step asked for. An extraction fault errors the criteria that read the
+faulting kind, and no others. *(T-108, D150; v1.6's second statement)*
 
 **REQ-53** A model's tool allowlist is declared per agent and is single-plane. The
 extraction agent receives patient-plane tools only; no module holds both the
@@ -984,11 +995,11 @@ instance above was one run's behaviour and the mechanism is the standing
 answer to its recurrence. What it cannot recover is a claim the model never
 quoted at all, and a re-ask that paraphrases twice is dropped twice.
 
-### P3 — Fourteen patients, nine documents, 33 cases *(was six, five, fifteen)*
+### P3 — Twenty patients, eleven documents, 40 cases *(was six, five, fifteen)*
 
 Every rate in `eval/report.md` moves by large steps. One case is worth more
-than a percentage point in every table. A precision of 1.000 over twenty-one
-`MET` calls against a base rate of 0.420 is a real result and a small one; it
+than a percentage point in every table. A precision of 1.000 over thirty
+`MET` calls against a base rate of 0.405 is a real result and a small one; it
 says the approach does not obviously fail, and nothing more. Since T-88 the
 set is sixteen rows over eight bundles, one of them a declared clone that
 shares its note's bytes with its source *(D102)*; the count moved by one row
@@ -1014,9 +1025,12 @@ determination for, so every one of the twelve candidates the knowledge table
 finds across the fourteen bundles is graded rather than five of them. They
 add no determination and no verifier claim — each shares its neighbour's
 cache key — so A2 and A6 do not move and A5 does, from 0.429 to 0.424, on a
-denominator five rows larger. More
-patients is the decision D120 took: growth rides with a version that
-re-measures anyway — v1.6's round — never as a task of its own.
+denominator five rows larger. Since T-108 it is **40** rows over twenty bundles,
+twenty-six notes and eleven documents *(D150, D152)*: the fourth practice's six
+Synthea charts, the first note-bearing charts outside bariatric surgery, with
+`OSA1`–`OSA6` and `H10`, and two documents including the first national one
+that quantifies. That is the growth D120 assigned to v1.6's round, where it
+rode with a re-measurement rather than being a task of its own.
 
 ### P4 — The ground truth is a first draft
 
@@ -1549,7 +1563,9 @@ fields the extractor produces — so `WmEvent` stops being the only fact type
 and the runners, the anchorer and `build_result` become generic over declared
 types; `STEPS` stays a fixed tuple (Article I). Candidates, confirmed at
 open: CPAP for obstructive sleep apnea under NCD 240.4, a **nationally
-quantified** NCD, unlike 100.1; and one imaging or therapy domain. The
+quantified** NCD, unlike 100.1 — **confirmed by `T-108`** as
+`pap-osa-dme-jd-v1`, compiled from the DME MACs' L33718 for Noridian's
+Jurisdiction D *(D150)*; and one imaging or therapy domain. The
 criteria v1.2 and v1.3 deferred land here *(D120)*: Palmetto's `c4` and
 `d`; the rheumatoid tree's `c`, `d` and `e` where a note states the fact,
 abstaining where none does; and the measured yellow. The ultrasound tree's
@@ -1566,8 +1582,9 @@ re-measured.
   prompt version it was measured with* (D147).
 - The anchorer, the validator and the trust boundary are generic over
   declared fact types; no fact type reaches a `WmEvent`-shaped private
-  route. Checkable only once a second kind exists, so it is
-  `T-108`'s to mint *(D149)*.
+  route. **Minted as REQ-79 by `T-108`** *(D150)*, when the second kind —
+  `sleep_apnea_workup`, earned by L33718's index, which no generator writes —
+  made it checkable.
 - The compatibility account covers four practices.
 
 **Gate A14.** A10 over four practices; every eval row `PASS`; the agentic

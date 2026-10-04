@@ -355,6 +355,21 @@ class PredicateKind(str, Enum):
     #: over a year ago" are the same arithmetic, and only the second has
     #: something to cite when it passes. REQ-5 refuses a `MET` with no span.
     PROCEDURE_VALUE_SET_INTERVAL = "procedure_value_set_interval"
+    #: The most recent documented diagnostic sleep test's AHI or RDI, against
+    #: an unconditional threshold with an event minimum, or against a lower
+    #: band that also needs a documented finding in declared categories or an
+    #: active condition in a named value set (T-108, D150). Events are the
+    #: index times the recording time, computed here and never by the model.
+    #: `NOT_MET` on an index below the band or a branch's event minimum
+    #: missed; an abstention when the band is reached and nothing qualifying
+    #: is documented, or when the test, its index or its recording time is
+    #: not documented.
+    NOTE_SLEEP_TEST_INDEX = "note_sleep_test_index"
+    #: An in-person clinical evaluation documented strictly before the most
+    #: recent documented diagnostic sleep test (T-108, D150). `NOT_MET` when
+    #: evaluations are documented and none precedes the test; an abstention
+    #: when there is no test or no evaluation.
+    NOTE_EVALUATION_BEFORE_SLEEP_TEST = "note_evaluation_before_sleep_test"
 
 
 class FactKind(str, Enum):
@@ -366,15 +381,20 @@ class FactKind(str, Enum):
     never defines one. A tree-authored field list would make the tree's data
     the prompt, and every tree edit a new measurement (D45).
 
-    **One member, on purpose.** The next is earned by a document that states a
-    fact no registered kind can carry, which is `T-108`'s round (D116's rule).
-    A member added without a `FACT_SCHEMAS` entry is a red suite
-    (`tests/test_fact_kinds.py`).
+    **Two members.** The second was earned by L33718, whose sleep-test index
+    no generator writes and no chart resource carries, so it is a note fact or
+    nothing (T-108, D150; D116's rule). A member added without a
+    `FACT_SCHEMAS` entry, or without a `workflow.FACT_FOLDS` entry, is a red
+    suite (`tests/test_fact_kinds.py`, REQ-79).
     """
 
     #: Supervised weight-management encounters, program assertions and the
     #: note's current BMI — `extraction.Extraction`, unchanged since T-81.
     WEIGHT_MANAGEMENT = "weight_management"
+    #: In-person evaluations, diagnostic sleep tests with their index and
+    #: recording time, and the findings a note documents as present, each
+    #: labelled with one of `SleepFindingCategory` (T-108, D150).
+    SLEEP_APNEA_WORKUP = "sleep_apnea_workup"
 
 
 #: The fact kind each note-consuming predicate reads (T-107, D149). A predicate
@@ -388,6 +408,8 @@ PREDICATE_FACT_KIND: dict[PredicateKind, FactKind] = {
     PredicateKind.NOTE_EVENT_RUN_RECENCY: FactKind.WEIGHT_MANAGEMENT,
     PredicateKind.NOTE_EVENT_RUN_BMI_RATE: FactKind.WEIGHT_MANAGEMENT,
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: FactKind.WEIGHT_MANAGEMENT,
+    PredicateKind.NOTE_SLEEP_TEST_INDEX: FactKind.SLEEP_APNEA_WORKUP,
+    PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: FactKind.SLEEP_APNEA_WORKUP,
 }
 
 #: The fact kind each `ReconciledFact.note_source` is read from (T-107, D149).
@@ -425,9 +447,12 @@ class Criterion(BaseModel):
     scoped_to: str | None = None
     #: The national bound this criterion's regional constant may equal or
     #: tighten and never loosen, checked below at load (REQ-73, T-129, D130).
-    #: Singular **per criterion**: criterion (b) quantifies a different number
-    #: from the same NCD sentence and would declare its own.
-    national_floor: NationalFloor | None = None
+    #: One floor, or a list of them since T-108 (D150): NCD 240.4 quantifies
+    #: two thresholds of **one** criterion, and flooring only one would let a
+    #: tree loosen the other with every check green. Each floor names its own
+    #: constant, and two naming the same one is refused. Read through
+    #: `floors()`, never by testing the field's shape.
+    national_floor: NationalFloor | list[NationalFloor] | None = None
     # Why a criterion is what it is — in practice, why it is unclaimed. Read by
     # a reviewer of the tree, never carried into a tool payload (D101).
     note: str | None = None
@@ -483,9 +508,33 @@ class Criterion(BaseModel):
         A tree violating a floor it declares does not load, rather than loading
         and being noticed later by something generated from it (D124).
         """
-        floor = self.national_floor
-        if floor is None:
-            return self
+        floors = self.floors()
+        named = [floor.constant for floor in floors]
+        if len(set(named)) != len(named):
+            raise ValueError(
+                f"criterion {self.id}: two national floors bound the same "
+                f"constant ({named}). One constant has one national bound, and "
+                "a second would make the relation depend on which is read "
+                "first (REQ-73, D150)"
+            )
+        for floor in floors:
+            self._check_floor(floor)
+        return self
+
+    def floors(self) -> tuple[NationalFloor, ...]:
+        """Every national floor this criterion declares, in declared order.
+
+        The one reader of `national_floor`, so a caller never branches on
+        whether the tree wrote one floor or a list (T-108, D150).
+        """
+        if self.national_floor is None:
+            return ()
+        if isinstance(self.national_floor, NationalFloor):
+            return (self.national_floor,)
+        return tuple(self.national_floor)
+
+    def _check_floor(self, floor: NationalFloor) -> None:
+        """One floor's relation to the constant it bounds (REQ-73, D130)."""
         try:
             bounded = self.constants[floor.constant]
         except KeyError:
@@ -530,7 +579,6 @@ class Criterion(BaseModel):
                 f"A regional constant is {stricter} its national bound — a MAC "
                 "may be stricter than CMS and never more permissive (REQ-73, D130)"
             )
-        return self
 
     def constant(self, name: str) -> PolicyConstant:
         try:
@@ -1207,6 +1255,81 @@ class ProgramAssertion(BaseModel):
 
     span: EvidenceSpan
     text: str | None = None
+
+
+# --------------------------------------------------------------------------
+# The sleep apnea workup (T-108, D150): the second fact kind's contract objects
+# --------------------------------------------------------------------------
+
+
+class SleepFindingCategory(str, Enum):
+    """What a documented finding is, as the extractor labels it (D150).
+
+    The seven are L33718's own list, transcribed, because they are what the
+    fact kind exists to find. The model labels a passage with one; whether a
+    label **qualifies** under a tree is a Python membership test against the
+    criterion's declared categories (Art. II), so a tree may admit fewer.
+    """
+
+    EXCESSIVE_DAYTIME_SLEEPINESS = "excessive_daytime_sleepiness"
+    IMPAIRED_COGNITION = "impaired_cognition"
+    MOOD_DISORDER = "mood_disorder"
+    INSOMNIA = "insomnia"
+    HYPERTENSION = "hypertension"
+    ISCHEMIC_HEART_DISEASE = "ischemic_heart_disease"
+    HISTORY_OF_STROKE = "history_of_stroke"
+
+
+class SleepTest(BaseModel):
+    """One diagnostic sleep test a note documents, and what it measured.
+
+    `index` is the AHI or RDI measured **without** positive airway pressure,
+    which is what L33718 defines both as. `recording_hours` is the recording or
+    sleep time the note states. Each value carries its own span when present
+    and none when absent, the way `WmEvent`'s flags do (REQ-38's shape): a
+    number the record cannot cite is not a documented number.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    test_date: date
+    span: EvidenceSpan
+    index: float | None = None
+    index_span: EvidenceSpan | None = None
+    recording_hours: float | None = None
+    hours_span: EvidenceSpan | None = None
+
+    @model_validator(mode="after")
+    def _values_carry_their_own_spans(self) -> SleepTest:
+        for value, span, name in (
+            (self.index, self.index_span, "index"),
+            (self.recording_hours, self.hours_span, "recording_hours"),
+        ):
+            if value is not None and span is None:
+                raise ValueError(f"{name} is stated without a span of its own (D150)")
+            if value is None and span is not None:
+                raise ValueError(f"{name} is not stated but carries a span")
+        return self
+
+
+class ClinicalEvaluation(BaseModel):
+    """An in-person clinical evaluation a note documents (D150). The date is
+    the evaluation's; whether it precedes a sleep test is Python's question."""
+
+    model_config = ConfigDict(frozen=True)
+
+    evaluation_date: date
+    span: EvidenceSpan
+
+
+class DocumentedFinding(BaseModel):
+    """A finding a note documents as **present**, labelled with one category
+    (D150). A denied or absent finding is never one of these."""
+
+    model_config = ConfigDict(frozen=True)
+
+    category: SleepFindingCategory
+    span: EvidenceSpan
 
 
 # --------------------------------------------------------------------------

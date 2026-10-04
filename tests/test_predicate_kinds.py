@@ -54,6 +54,8 @@ from pa_agent.stores.policy import LocalPolicyStore
 from pa_agent.workflow import (
     MEMBERSHIP_KINDS,
     NOTE_EVENT_KINDS,
+    NOTE_KINDS,
+    NOTE_WORKUP_KINDS,
     OBSERVATION_KINDS,
     PROCEDURE_HISTORY_KINDS,
     STEP_KINDS,
@@ -106,6 +108,15 @@ DECLARED: dict[str, dict[str, str | None]] = {
         "c": None,  # unclaimed: no resource records why a study was ordered (D114)
         "d": None,  # unclaimed: a plan is not in the coded record (D114)
         "e": None,  # unclaimed: "a high index of suspicion" (D114)
+    },
+    # T-108 (D150): the fourth practice. `a` is a date comparison here and
+    # `b` a threshold over a note fact, and neither letter means what it means
+    # in any file above.
+    "pap_osa_dme_jd.json": {
+        "a": "note_evaluation_before_sleep_test",
+        "b": "note_sleep_test_index",
+        "c": None,  # unclaimed: the supplier's instruction is the supplier's record (D150)
+        "d": None,  # unclaimed: the test's provenance is in no chart resource (D150)
     },
 }
 
@@ -213,6 +224,9 @@ def test_the_vocabulary_is_the_kinds_that_have_predicates():
     against a named value set (D111), then the interval to a prior procedure
     (D114) — and no more than one, because the rest of what those documents
     say is unclaimed by the document rather than unbuilt by the engine.
+    Eleven since T-108: the fourth practice needed two, both reading the
+    second fact kind — an evaluation's date against a study's, and the
+    study's index against L33718's two branches (D150).
     """
     assert {k.value for k in PredicateKind} == {
         "bmi_observation_threshold",
@@ -224,6 +238,8 @@ def test_the_vocabulary_is_the_kinds_that_have_predicates():
         "note_event_run_recency",
         "note_event_run_bmi_rate",
         "note_event_run_behavior_rate",
+        "note_evaluation_before_sleep_test",
+        "note_sleep_test_index",
     }
 
 
@@ -248,7 +264,14 @@ def test_every_kind_is_evaluated_by_exactly_one_step():
     assert STEP_KINDS == {
         "criterion_a": OBSERVATION_KINDS,
         "criterion_b": STRUCTURED_KINDS,
-        "criteria_c": NOTE_EVENT_KINDS,
+        "criteria_c": NOTE_KINDS,
+    }
+    # T-108 (D150): `criteria_c` gained the workup kinds rather than the graph
+    # gaining a step, and the union is asserted for T-94's reason.
+    assert NOTE_KINDS == NOTE_EVENT_KINDS + NOTE_WORKUP_KINDS
+    assert set(NOTE_WORKUP_KINDS) == {
+        PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST,
+        PredicateKind.NOTE_SLEEP_TEST_INDEX,
     }
     # T-94 (D114): `criterion_b` gained a kind rather than the graph gaining a
     # step, and the union is asserted so the procedure-history kind cannot be

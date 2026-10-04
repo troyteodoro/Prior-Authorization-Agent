@@ -961,7 +961,12 @@ def test_every_cited_document_is_in_the_gathered_set(
         recording["notes"], model=recording["model"]
     )
 
-    for patient_id in sorted(set(case_patients.values())):
+    # The differential's own population (T-108, D150): every note-bearing
+    # chart whose request at its procedure resolves, which is not every chart
+    # the notes manifest lists once a practice's notes are for another code.
+    patients = [p["patient_id"] for p in module._patients()]
+    assert len(patients) == len(set(case_patients.values())) - 6
+    for patient_id in sorted(patients):
         run = module._run_one(
             policy_store, patient_store, runner, FixedRetrievalPlanner(),
             patient_id, AcceptAllVerifier(),
@@ -1142,7 +1147,9 @@ def test_the_measurement_runs_each_patient_once_whatever_the_note_count():
     assert len(manifest["notes"]) > len(distinct), "the corpus is two notes per chart"
     patients = module._patients()
     ids = [p["patient_id"] for p in patients]
-    assert len(ids) == len(set(ids)) == len(distinct)
+    # The sleep charts' requests are for E0601, not this measurement's code,
+    # so they are outside its population rather than deduplicated (D150).
+    assert len(ids) == len(set(ids)) == len(distinct) - 6
     for entry in patients:
         assert entry["cases"] == next(
             r["cases"] for r in manifest["notes"] if r["patient_id"] == entry["patient_id"]

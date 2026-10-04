@@ -66,12 +66,17 @@ def rows():
 
 
 def test_the_corpus_is_the_declared_notes_of_every_non_clone_chart(cases, extraction) -> None:
-    """Twelve notes over six charts: every note-bearing chart except the
-    declared clone, whose bytes replay by content (T-88, D102, D122). The ids
-    are the extraction recording's, so the two recordings join."""
-    assert len(cases) == 12
+    """Twenty-four notes over twelve charts: every note-bearing chart except
+    the declared clone, whose bytes replay by content (T-88, D102, D122) — T-98's
+    twelve and, since T-108, the sleep charts' twelve (D152). The ids are the
+    extraction recordings', so the recordings join: the weight-management
+    charts' with `synthesized_cases`, the sleep charts' with `sleep_cases`."""
+    assert len(cases) == 24
     assert not any(c["document_id"].startswith(CLONE) for c in cases)
-    synthesized = {c["note_id"]: c["sha256"] for c in extraction.synthesized_cases()}
+    synthesized = {
+        c["note_id"]: c["sha256"]
+        for c in extraction.synthesized_cases() + extraction.sleep_cases()
+    }
     for case in cases:
         assert synthesized[case["note_id"]] == case["sha256"]
     assert {c["corpus"] for c in cases} == {"synthesized"}
@@ -233,10 +238,10 @@ def test_the_direct_measure_path_runs_without_a_model_and_rescores_to_the_same_f
     assert written["runner"] == "direct" and written["tier"] == "ai_studio"
     assert written["prompt_version"] == QUOTE_PROMPT_VERSION
     assert written["rows_asked"] == direct.rows_asked_record(direct.table_rows())
-    assert written["aggregate"]["notes"] == 12 and written["aggregate"]["failed"] == 0
-    assert written["aggregate"]["model_calls"] == 24, "two turns per note, all counted"
-    assert written["aggregate"]["reask_recovered"] == 12
-    assert written["aggregate"]["pairs_anchored"] == 12
+    assert written["aggregate"]["notes"] == 24 and written["aggregate"]["failed"] == 0
+    assert written["aggregate"]["model_calls"] == 48, "two turns per note, all counted"
+    assert written["aggregate"]["reask_recovered"] == 24
+    assert written["aggregate"]["pairs_anchored"] == 24
     for record in written["notes"]:
         assert record["raw"] and record["raw_first_turn"] and record["trace"]
         assert record["metrics"] == record["trace"]["metrics"][0]
@@ -344,7 +349,7 @@ def test_the_adk_measure_path_writes_its_own_recording_and_stamps_the_capability
     assert written["runner"] == "adk" and written["tool_fetch"] is tool_fetch
     assert written["output_schema_and_tools"] == "stubbed", "asked of ADK, not inferred"
     assert written["adk_version"] == "0.0.0-test"
-    assert written["aggregate"]["notes"] == 12 and written["aggregate"]["model_calls"] == 24
+    assert written["aggregate"]["notes"] == 24 and written["aggregate"]["model_calls"] == 48
     other = adk.adk_path(not tool_fetch, "ai_studio")
     assert not other.exists(), "the other mode's path is untouched"
 
@@ -365,3 +370,66 @@ def test_the_adk_paths_are_two_per_tier(adk) -> None:
     assert adk.adk_path(True, "ai_studio").name == "adk_results_tool_fetch.json"
     assert adk.adk_path(False, "vertex").name == "adk_results_inline_vertex.json"
     assert adk.adk_path(True, "vertex").name == "adk_results_tool_fetch_vertex.json"
+
+
+# --------------------------------------------------------------------------
+# --extend: the round's notes are appended, never re-measured (T-108, D152)
+# --------------------------------------------------------------------------
+
+
+def test_extend_measures_only_the_notes_a_recording_lacks_and_keeps_the_rest(
+    direct, tmp_path, monkeypatch
+) -> None:
+    """The mode's whole claim: the held records come back byte for byte, the
+    missing ones are measured and appended, and the extension is stamped
+    beside the original `measured_at` rather than replacing it."""
+    monkeypatch.setattr(direct, "OUT_DIR", tmp_path)
+    monkeypatch.setattr(direct, "DirectQuoteRunner", lambda client, model: _StubQuoteRunner(client=client))
+    monkeypatch.setattr(direct, "_client", lambda tier: None)
+    _no_sleep(monkeypatch, direct)
+
+    class _Tiers:
+        @staticmethod
+        def tier_of(client):
+            return "ai_studio"
+
+    monkeypatch.setitem(sys.modules, "pa_agent.tiers", _Tiers)
+    assert direct.measure("ai_studio") == 0
+    path = tmp_path / "results.json"
+    full = json.loads(path.read_text(encoding="utf-8"))
+    held = full["notes"][:10]
+    path.write_text(json.dumps({**full, "notes": held}), encoding="utf-8")
+
+    runner = _StubQuoteRunner()
+    runner.seen.append("already past the stub's transport fault")
+    assert direct.extend(path, runner, "stub") == 0
+    extended = json.loads(path.read_text(encoding="utf-8"))
+    assert extended["notes"][:10] == held
+    assert [r["note_id"] for r in extended["notes"]] == [r["note_id"] for r in full["notes"]]
+    assert extended["measured_at"] == full["measured_at"]
+    (extension,) = extended["extensions"]
+    assert extension["task"] == "T-108" and extension["decision"] == "D152"
+    assert extension["notes"] == [r["note_id"] for r in full["notes"][10:]]
+    assert len(runner.seen) == 1 + len(full["notes"]) - 10, "only the missing notes were asked"
+    assert extended["aggregate"] == direct.aggregate(extended["notes"], len(direct.table_rows()))
+
+
+def test_extend_refuses_another_configuration_or_a_moved_note(direct, tmp_path, monkeypatch) -> None:
+    """A changed prompt or table is a new measurement of everything (D45), and a
+    recorded note whose bytes moved cannot be kept beside a new one (D18)."""
+    path = tmp_path / "results.json"
+    base = {
+        "prompt_version": QUOTE_PROMPT_VERSION,
+        "rows_asked": direct.rows_asked_record(direct.table_rows()),
+        "model": direct.PINNED_MODEL,
+        "notes": [],
+    }
+    for broken in (
+        {**base, "prompt_version": "quotes-v0"},
+        {**base, "rows_asked": []},
+        {**base, "model": "another-model"},
+        {**base, "notes": [{"note_id": "nobody/1", "note_sha256": "0" * 64}]},
+    ):
+        path.write_text(json.dumps(broken), encoding="utf-8")
+        with pytest.raises(SystemExit):
+            direct.extend(path, _StubQuoteRunner(), "stub")

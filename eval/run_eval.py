@@ -538,6 +538,13 @@ def score(
 EVAL_AS_OF = date(2026, 9, 1)
 
 EXTRACTION_RESULTS = REPO_ROOT / "eval" / "extraction" / "results.json"
+#: One recording per fact kind; the second is T-108's (D150). Every one is
+#: replayed, keyed by note and prompt version, so a chart reads its notes under
+#: the kind its tree declares and under no other.
+EXTRACTION_RECORDINGS = (
+    EXTRACTION_RESULTS,
+    REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+)
 VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
 HISTORY_RESULTS = REPO_ROOT / "eval" / "history" / "results.json"
 
@@ -579,11 +586,14 @@ def _recorded_runner() -> Any:
     The harness reads the file, not the runner: REQ-41 keeps storage locations out
     of `pa_agent/`, and this module is the grader.
     """
-    if not EXTRACTION_RESULTS.exists():
+    if not all(path.exists() for path in EXTRACTION_RECORDINGS):
         return None
-    recording = json.loads(EXTRACTION_RESULTS.read_text(encoding="utf-8"))
+    recordings = [
+        json.loads(path.read_text(encoding="utf-8")) for path in EXTRACTION_RECORDINGS
+    ]
     return RecordedExtractionRunner.from_records(
-        recording["notes"], model=recording.get("model")
+        [note for recording in recordings for note in recording["notes"]],
+        model=recordings[0].get("model"),
     )
 
 

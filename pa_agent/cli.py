@@ -117,6 +117,13 @@ from pa_agent.tiers import TIERS
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_RECORDING = REPO_ROOT / "eval" / "extraction" / "results.json"
+#: The recordings of every fact kind but `weight_management`, one file per
+#: kind (T-108, D150). Loaded beside `--recording` in recorded mode, because a
+#: request under the fourth practice's tree reads its notes under that kind and
+#: `--recording` names the weight-management file.
+KIND_RECORDINGS: tuple[Path, ...] = (
+    REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
+)
 DEFAULT_VERIFIER_RECORDING = REPO_ROOT / "eval" / "verifier" / "results.json"
 DEFAULT_QUOTE_RECORDING = REPO_ROOT / "eval" / "history" / "results.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
@@ -232,9 +239,10 @@ def _build_runner(
                 "pass --extraction direct"
             )
         payload = json.loads(recording.read_text(encoding="utf-8"))
-        return RecordedExtractionRunner.from_records(
-            payload["notes"], model=payload.get("model")
-        )
+        notes = list(payload["notes"])
+        for kind_recording in KIND_RECORDINGS:
+            notes += json.loads(kind_recording.read_text(encoding="utf-8"))["notes"]
+        return RecordedExtractionRunner.from_records(notes, model=payload.get("model"))
 
     _load_env()
     from pa_agent.tiers import client_for

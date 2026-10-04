@@ -31,14 +31,17 @@ from datetime import date
 
 from pa_agent.contracts import (
     CategoricalExclusion,
+    ClinicalEvaluation,
     CodedValueSet,
     Condition,
     Criterion,
     CriterionResult,
     CriterionVerdict,
+    DocumentedFinding,
     EvidenceSpan,
     ExclusionKind,
     ExclusionMatch,
+    FactKind,
     GapReason,
     Medication,
     Observation,
@@ -46,6 +49,7 @@ from pa_agent.contracts import (
     Procedure,
     ProgramAssertion,
     Shortfall,
+    SleepTest,
     WmEvent,
 )
 
@@ -352,6 +356,243 @@ def evaluate_prior_procedure_interval(
             f"{most_recent.performed_date.isoformat()}, "
             f"{_months_between(most_recent.performed_date, as_of)} month(s) "
             f"before {as_of.isoformat()}; {minimum} required"
+        ),
+    )
+
+
+# --------------------------------------------------------------------------
+# T-108 (D150): the sleep apnea workup. Both predicates read the facts the
+# `sleep_apnea_workup` kind extracted, and both select the test they judge
+# through `index_sleep_test`, so they cannot disagree about which test the
+# LCD's "the sleep test" is.
+# --------------------------------------------------------------------------
+
+
+def index_sleep_test(tests: list[SleepTest], as_of: date) -> SleepTest | None:
+    """The most recent documented diagnostic sleep test on or before `as_of`.
+
+    The request rests on the most recent study, and a study dated after the
+    clock is not one the request could have rested on. Ties on a date are
+    broken by position in the note, so the choice is a property of the record
+    rather than of the order the store served the notes in.
+    """
+    eligible = [t for t in tests if t.test_date <= as_of]
+    if not eligible:
+        return None
+    return max(
+        eligible,
+        key=lambda t: (t.test_date, t.span.document_id, t.span.char_start),
+    )
+
+
+def _test_spans(test: SleepTest, *, hours: bool) -> list[EvidenceSpan]:
+    spans = [test.span]
+    if test.index_span is not None:
+        spans.append(test.index_span)
+    if hours and test.hours_span is not None:
+        spans.append(test.hours_span)
+    return spans
+
+
+def evaluate_sleep_test_index(
+    criterion: Criterion,
+    tests: list[SleepTest],
+    findings: list[DocumentedFinding],
+    conditions: list[Condition],
+    value_set: CodedValueSet,
+    as_of: date,
+) -> CriterionResult:
+    """L33718's criterion B as arithmetic over one test (T-108, D150).
+
+    The test is `index_sleep_test`'s. Events are the index times the
+    recording time, computed here; the model supplied two numbers and two
+    quotes and multiplies nothing (Art. II). The branches, in the order the
+    document states them:
+
+    - index at or above `min_index` and events at or above `min_events`:
+      `MET`, citing the test, its index and its hours;
+    - index at or above `min_index_with_findings` and below `min_index`,
+      events at or above `min_events_with_findings`, and at least one
+      documented finding in `qualifying_findings` or active condition in the
+      named value set: `MET`, citing the test and every qualifying one;
+    - index below `min_index_with_findings`: `NOT_MET`, shortfall in events
+      per hour;
+    - a branch's index reached and its event minimum not: `NOT_MET`, shortfall
+      in events;
+    - the band reached, its minimum met, and nothing qualifying documented: an
+      abstention. A chart that records no daytime sleepiness has not recorded
+      that there is none (D40's asymmetry);
+    - no test, no index, or no recording time to compute events from: an
+      abstention, because calling an unknown minimum satisfied is D31's
+      default.
+
+    The band's upper edge is *below `min_index`*: the document's "less than or
+    equal to 14" is the integer reading of the gap below 15, and a fractional
+    index inside it is read into the branch that asks for more evidence rather
+    than into a denial (D150).
+    """
+    min_index = float(criterion.require("min_index"))
+    min_events = float(criterion.require("min_events"))
+    band_floor = float(criterion.require("min_index_with_findings"))
+    band_events = float(criterion.require("min_events_with_findings"))
+    qualifying = frozenset(criterion.require("qualifying_findings"))
+    value_set_id = criterion.require("value_set_id")
+
+    def abstain(detail: str) -> CriterionResult:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+            gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
+            detail=detail,
+        )
+
+    test = index_sleep_test(tests, as_of)
+    if test is None:
+        return abstain(
+            f"no diagnostic sleep test dated on or before {as_of.isoformat()} "
+            "is documented in the notes"
+        )
+    when = test.test_date.isoformat()
+    if test.index is None:
+        return abstain(f"the sleep test of {when} is documented without an AHI or RDI")
+
+    if test.index < band_floor:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.NOT_MET,
+            spans=_test_spans(test, hours=False),
+            shortfall=Shortfall(
+                observed=test.index, required=band_floor, unit="events_per_hour"
+            ),
+            detail=(
+                f"the sleep test of {when} measured {test.index:g} events per "
+                f"hour; {band_floor:g} is the lowest index this criterion covers"
+            ),
+        )
+
+    unconditional = test.index >= min_index
+    required_events = min_events if unconditional else band_events
+    if test.recording_hours is None:
+        return abstain(
+            f"the sleep test of {when} states no recording time, so its event "
+            f"count cannot be checked against the minimum of {required_events:g}"
+        )
+    events = test.index * test.recording_hours
+    if events < required_events:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.NOT_MET,
+            spans=_test_spans(test, hours=True),
+            shortfall=Shortfall(
+                observed=round(events, 1), required=required_events, unit="events"
+            ),
+            detail=(
+                f"the sleep test of {when} measured {test.index:g} events per "
+                f"hour over {test.recording_hours:g} hours, {events:.1f} events; "
+                f"the minimum for this branch is {required_events:g}"
+            ),
+        )
+
+    if unconditional:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.MET,
+            spans=_test_spans(test, hours=True),
+            detail=(
+                f"the sleep test of {when} measured {test.index:g} events per "
+                f"hour over {test.recording_hours:g} hours ({events:.1f} events); "
+                f"{min_index:g} per hour and {min_events:g} events required"
+            ),
+        )
+
+    documented = [f for f in findings if f.category.value in qualifying]
+    coded = [
+        c for c in conditions
+        if c.clinical_status == ACTIVE_STATUS and value_set.admits(c.code, c.system)
+    ]
+    if not documented and not coded:
+        return abstain(
+            f"the sleep test of {when} measured {test.index:g} events per hour, "
+            f"inside the band from {band_floor:g}, and the chart documents no "
+            f"finding in {sorted(qualifying)} and no active condition in "
+            f"{value_set_id}. A chart that records none has not recorded that "
+            "there is none (D40)."
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=(
+            _test_spans(test, hours=True)
+            + [f.span for f in documented]
+            + [c.span for c in coded if c.span is not None]
+        ),
+        detail=(
+            f"the sleep test of {when} measured {test.index:g} events per hour "
+            f"over {test.recording_hours:g} hours ({events:.1f} events), inside "
+            f"the band from {band_floor:g}; documented: "
+            f"{len(documented)} finding(s), {len(coded)} coded condition(s)"
+        ),
+    )
+
+
+def evaluate_evaluation_before_sleep_test(
+    criterion: Criterion,
+    tests: list[SleepTest],
+    evaluations: list[ClinicalEvaluation],
+    as_of: date,
+) -> CriterionResult:
+    """L33718's criterion A: an in-person evaluation prior to the sleep test.
+
+    *Strictly* before the test's date: a date carries no time, and a same-day
+    evaluation cannot be shown to precede that night's study. `MET` cites the
+    latest evaluation that precedes the test, and the test; `NOT_MET` cites
+    the test and every documented evaluation, none of which precedes it; no
+    test or no evaluation is an abstention (T-108, D150).
+    """
+    def abstain(detail: str) -> CriterionResult:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+            gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
+            detail=detail,
+        )
+
+    test = index_sleep_test(tests, as_of)
+    if test is None:
+        return abstain(
+            "no diagnostic sleep test is documented, so no evaluation can be "
+            "shown to precede one"
+        )
+    if not evaluations:
+        return abstain(
+            f"no in-person clinical evaluation is documented; the sleep test is "
+            f"dated {test.test_date.isoformat()}"
+        )
+    before = [e for e in evaluations if e.evaluation_date < test.test_date]
+    if not before:
+        ordered = sorted(evaluations, key=lambda e: (e.evaluation_date, e.span.char_start))
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.NOT_MET,
+            spans=[test.span] + [e.span for e in ordered],
+            shortfall=Shortfall(
+                observed=0, required=1, unit="evaluations_before_sleep_test"
+            ),
+            detail=(
+                f"{len(evaluations)} in-person evaluation(s) documented, none "
+                f"before the sleep test of {test.test_date.isoformat()}"
+            ),
+        )
+    latest = max(
+        before, key=lambda e: (e.evaluation_date, e.span.document_id, e.span.char_start)
+    )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=[latest.span, test.span],
+        detail=(
+            f"in-person evaluation on {latest.evaluation_date.isoformat()}, "
+            f"before the sleep test of {test.test_date.isoformat()}"
         ),
     )
 
@@ -852,6 +1093,10 @@ class PredicateInputs:
     #: Whether the criterion under evaluation has a run to be scoped to
     #: (REQ-15). Computed per criterion from its `scoped_to`, by the graph.
     run_established: bool = False
+    #: `{fact kind -> the facts its fold kept}` for every kind but
+    #: `weight_management`, whose facts are the three typed fields above
+    #: (T-108, REQ-79, D150).
+    facts: Mapping[FactKind, tuple] = field(default_factory=dict)
 
 
 Predicate = Callable[[Criterion, PredicateInputs], CriterionResult]
@@ -873,6 +1118,15 @@ def _value_set(criterion: Criterion, inputs: PredicateInputs) -> CodedValueSet:
             f"the planner did not gather (it gathered {sorted(inputs.value_sets)}). "
             "An empty set here would abstain about codes nothing looked for (D39)."
         ) from None
+
+
+def _workup(inputs: PredicateInputs, fact_type: type) -> list:
+    """The sleep workup's facts of one contract type, in fold order (D150)."""
+    return [
+        fact
+        for fact in inputs.facts.get(FactKind.SLEEP_APNEA_WORKUP, ())
+        if isinstance(fact, fact_type)
+    ]
 
 
 def _require_run(inputs: PredicateInputs) -> QualifyingRun:
@@ -920,6 +1174,19 @@ PREDICATES: dict[PredicateKind, Predicate] = {
     ),
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: lambda c, i: evaluate_c5(
         c, _require_run(i), i.run_established
+    ),
+    PredicateKind.NOTE_SLEEP_TEST_INDEX: lambda c, i: evaluate_sleep_test_index(
+        c,
+        _workup(i, SleepTest),
+        _workup(i, DocumentedFinding),
+        list(i.conditions),
+        _value_set(c, i),
+        i.as_of,
+    ),
+    PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: (
+        lambda c, i: evaluate_evaluation_before_sleep_test(
+            c, _workup(i, SleepTest), _workup(i, ClinicalEvaluation), i.as_of
+        )
     ),
 }
 
@@ -1078,6 +1345,25 @@ def _cited_procedures(
     )
 
 
+def _cited_workup(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateInputs:
+    """The workup and the chart's conditions reduced to what a verdict cited.
+
+    A fact is kept when its own span is cited — a sleep test by the passage
+    documenting it, not by its index's phrase — so a `NOT_MET` that cited the
+    wrong test re-derives over the test it did cite (T-108, D150).
+    """
+    kept = tuple(
+        fact
+        for fact in inputs.facts.get(FactKind.SLEEP_APNEA_WORKUP, ())
+        if fact.span in cited
+    )
+    return replace(
+        inputs,
+        facts={**inputs.facts, FactKind.SLEEP_APNEA_WORKUP: kept},
+        conditions=tuple(c for c in inputs.conditions if c.span in cited),
+    )
+
+
 def _cited_run(inputs: PredicateInputs, cited: list[EvidenceSpan]) -> PredicateInputs:
     narrowed = restricted_run(_require_run(inputs), cited)
     return replace(inputs, run=narrowed, events=tuple(narrowed.events))
@@ -1096,6 +1382,8 @@ NARROWERS: dict[
     PredicateKind.NOTE_EVENT_RUN_RECENCY: _cited_run,
     PredicateKind.NOTE_EVENT_RUN_BMI_RATE: _cited_run,
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE: _cited_run,
+    PredicateKind.NOTE_SLEEP_TEST_INDEX: _cited_workup,
+    PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: _cited_workup,
 }
 
 
@@ -1113,6 +1401,8 @@ def check_citation_sufficiency(
     run: QualifyingRun,
     as_of: date,
     c3_met: bool,
+    conditions: list[Condition] | tuple[Condition, ...] = (),
+    facts: Mapping[FactKind, tuple] | None = None,
 ) -> None:
     """Re-run the predicate over only the cited evidence; require the same answer.
 
@@ -1144,10 +1434,12 @@ def check_citation_sufficiency(
         as_of=as_of,
         observations=tuple(observations),
         procedures=tuple(procedures),
+        conditions=tuple(conditions),
         value_sets=value_sets,
         events=tuple(run.events),
         run=run,
         run_established=c3_met,
+        facts=dict(facts or {}),
     )
     # T-91 (D110): narrowing is declared per kind, like the predicate itself.
     # A kind that can answer `NOT_MET` and has no narrower would otherwise

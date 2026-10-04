@@ -107,6 +107,51 @@ MISSED_PHRASES = [
     "Appointment cancelled by the patient the morning of the visit. Patient "
     "not seen and no assessment was performed.",
 ]
+# T-108 (D150): the fourth practice's notes. A sleep chart is a consultation
+# and a study report, rendered from the manifest's `sleep_*` facts by
+# `render_sleep_document` and by nothing the weight-management path reads, so
+# no bariatric note's bytes can move. Its own practice and clinician lists,
+# drawn from the same per-patient stream in the same order.
+SLEEP_PRACTICES = [
+    "PRAIRIE LAKES SLEEP CENTER",
+    "CEDAR VALLEY PULMONARY AND SLEEP MEDICINE",
+    "RIVER BEND SLEEP DISORDERS CLINIC",
+]
+SLEEP_CLINICIANS = [
+    "M. Okafor, MD", "D. Lindqvist, DO", "A. Ferreira, MD", "K. Haugen, MD",
+]
+#: How a study report names its type, by the manifest's `study_type`.
+STUDY_TYPES = {
+    "type_i": "Attended in-laboratory polysomnogram (Type I)",
+    "type_iii": "Unattended home sleep test (Type III)",
+}
+INDEX_NAMES = {
+    "AHI": "Apnea-hypopnea index (AHI)",
+    "RDI": "Respiratory disturbance index (RDI)",
+}
+#: A documented finding, as a consultation states it. Each names its category
+#: in the plain words a chart uses and never the manifest's label.
+FINDING_PHRASES = {
+    "excessive_daytime_sleepiness": (
+        "Reports excessive daytime sleepiness, falling asleep while reading and "
+        "in afternoon meetings; Epworth Sleepiness Scale 15 of 24."
+    ),
+    "impaired_cognition": "Reports difficulty concentrating and frequent forgetfulness at work.",
+    "mood_disorder": "Reports persistent low mood and irritability over several months.",
+    "insomnia": "Reports difficulty maintaining sleep, waking three to four times nightly.",
+    "hypertension": "History of hypertension, treated.",
+    "ischemic_heart_disease": "History of ischemic heart disease.",
+    "history_of_stroke": "History of stroke.",
+}
+#: A finding the patient denies. It must read as a denial, or the extractor is
+#: being asked to guess (the sleep kind's instruction names it, D150).
+DENIED_PHRASES = {
+    "excessive_daytime_sleepiness": "Denies excessive daytime sleepiness.",
+}
+TELEPHONE_PHRASE = (
+    "Telephone contact with the patient to arrange the home sleep test. No "
+    "examination was performed and the patient was not seen."
+)
 CONTACT_PHRASES = [
     "Outreach call placed regarding the lapse in attendance. No answer; "
     "voicemail left. No clinical contact was established.",
@@ -207,14 +252,114 @@ def _trap_line(rng, trap: dict) -> str:
     return wrap(f"{us(trap['date'])} - {description.capitalize()}.")
 
 
-def _identity(rng: random.Random) -> dict:
+def _identity(rng: random.Random, sleep: bool = False) -> dict:
     """The per-patient randomness: one practice, one MRN, one supervisor,
-    shared by every document of the chart (D104)."""
+    shared by every document of the chart (D104). A sleep chart draws from its
+    own lists in the same order, so the call sequence is the same shape."""
     return {
-        "practice": rng.choice(PRACTICES),
+        "practice": rng.choice(SLEEP_PRACTICES if sleep else PRACTICES),
         "mrn": rng.randrange(200000, 899999),
-        "supervisor": rng.choice(SUPERVISORS),
+        "supervisor": rng.choice(SLEEP_CLINICIANS if sleep else SUPERVISORS),
     }
+
+
+def is_sleep_chart(manifest: dict) -> bool:
+    """A chart the fourth practice's facts describe (T-108, D150)."""
+    return bool(manifest.get("sleep_tests") or manifest.get("sleep_evaluations"))
+
+
+def _hours(value: float) -> str:
+    return f"{value:.1f}"
+
+
+def _index(value: float) -> str:
+    return f"{value:g}"
+
+
+def render_sleep_document(
+    manifest: dict,
+    basename: str,
+    demo: dict,
+    identity: dict,
+    rng: random.Random,
+) -> str:
+    """One document of a sleep chart: the consultation or the study report,
+    whichever facts the manifest assigns to `basename` (D104, D150).
+
+    Every value comes from the manifest: the dates are the chart's own, and
+    the index, the recording time and the findings are declared there. The
+    report states the index and the recording time and never their product
+    or a verdict, because the arithmetic is the engine's (Art. II).
+    """
+    documents = manifest["documents"]
+    ordinal = documents.index(basename) + 1
+    lines: list[str] = [
+        identity["practice"],
+        f"Patient: {demo['family']}, {demo['given']}"
+        f"{' ' * max(1, 38 - len(demo['family']) - len(demo['given']))}"
+        f"MRN: {identity['mrn']}",
+        f"DOB: {demo['birth_date']}                       Sex: {demo['sex']}",
+        f"Document {ordinal} of {len(documents)}",
+        "",
+    ]
+    evaluations = _in(manifest.get("sleep_evaluations", []), basename)
+    tests = _in(manifest.get("sleep_tests", []), basename)
+    findings = _in(manifest.get("sleep_findings", []), basename)
+    denied = _in(manifest.get("denied_findings", []), basename)
+    contacts = [t for t in _in(manifest["traps"], basename) if t["type"] == "telephone_contact"]
+
+    for evaluation in evaluations:
+        lines.append("SLEEP MEDICINE CONSULTATION")
+        lines.append("")
+        lines.append(wrap(
+            f"{us(evaluation['date'])} - Seen in person in clinic by "
+            f"{identity['supervisor']} for evaluation of suspected obstructive "
+            "sleep apnea. History taken and examination performed."
+        ))
+        lines.append("")
+        lines.append("HISTORY OF PRESENT ILLNESS")
+        history = "Bed partner reports loud nightly snoring and witnessed pauses in breathing."
+        for finding in findings:
+            history += " " + FINDING_PHRASES[finding["category"]]
+        for finding in denied:
+            history += " " + DENIED_PHRASES[finding["category"]]
+        lines.append(wrap(history))
+        lines.append("")
+        lines.append("PLAN")
+        lines.append(wrap("Diagnostic sleep study ordered to assess for obstructive sleep apnea."))
+        lines.append("")
+    for contact in contacts:
+        lines.append("TELEPHONE ENCOUNTER")
+        lines.append(wrap(f"{us(contact['date'])} - {TELEPHONE_PHRASE}"))
+        lines.append("")
+    for test in tests:
+        lines.append("SLEEP STUDY REPORT")
+        lines.append("")
+        lines.append(wrap(
+            f"Study date: {us(test['date'])}. {STUDY_TYPES[test['study_type']]}, "
+            "performed without positive airway pressure."
+        ))
+        recording = f"Total recording time: {_hours(test['recording_hours'])} hours."
+        if test["recording_hours"] < 2.0:
+            recording += " The study ended early at the patient's request."
+        lines.append(wrap(recording))
+        lines.append(wrap(
+            f"{INDEX_NAMES[test['index_name']]}: {_index(test['index'])} events per hour."
+        ))
+        lines.append("")
+
+    lines.append("ASSESSMENT")
+    if tests:
+        lines.append(wrap(
+            "Sleep-disordered breathing evaluated by the study reported above. "
+            "Results reviewed with the patient."
+        ))
+    else:
+        lines.append(wrap(
+            "Suspected obstructive sleep apnea. Diagnostic testing has been "
+            "ordered and is documented separately."
+        ))
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def _in(facts: list[dict], basename: str) -> list[dict]:
@@ -358,14 +503,16 @@ def generate() -> int:
             continue
         patient_id = manifest["patient_id"]
         demo = _demographics(patient_id, manifest["bundle"])
-        height_m = _height_m(store, patient_id)
+        sleep = is_sleep_chart(manifest)
+        # A sleep chart reads no height: it renders no weight (D150).
+        height_m = None if sleep else _height_m(store, patient_id)
         # One generator per patient, seeded from the shared seed and the
         # patient id, so adding a patient cannot reshuffle everyone's prose.
         # A declared clone seeds from its source (D102): the practice line
         # and MRN are the only per-patient randomness, and the clone's note
         # must be its source's bytes.
         seed_patient_id = manifest.get("cloned_from") or patient_id
-        identity = _identity(random.Random(f"{SEED}:{seed_patient_id}"))
+        identity = _identity(random.Random(f"{SEED}:{seed_patient_id}"), sleep=sleep)
 
         out_dir = NOTES_DIR / patient_id
         out_dir.mkdir()
@@ -374,7 +521,10 @@ def generate() -> int:
             # differently, and a fact moved between them cannot reshuffle
             # the other's prose (D104).
             rng = random.Random(f"{SEED}:{seed_patient_id}:{basename}")
-            text = render_document(manifest, basename, demo, height_m, identity, rng)
+            if sleep:
+                text = render_sleep_document(manifest, basename, demo, identity, rng)
+            else:
+                text = render_document(manifest, basename, demo, height_m, identity, rng)
             note_path = out_dir / basename
             note_path.write_text(text, encoding="utf-8")
             record = {

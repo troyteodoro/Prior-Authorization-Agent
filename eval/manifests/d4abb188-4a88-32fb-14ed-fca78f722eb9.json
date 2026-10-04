@@ -1,0 +1,34 @@
+{
+  "patient_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9",
+  "bundle": "Reginald96_Rosenbaum794_d4abb188-4a88-32fb-14ed-fca78f722eb9.json",
+  "as_of": "2026-09-01",
+  "cases": [
+    "OSA1"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "sleep_evaluations": [
+    {
+      "date": "2021-02-24",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "sleep_tests": [
+    {
+      "date": "2021-03-06",
+      "document": "chart_note_2.txt",
+      "study_type": "type_i",
+      "index_name": "AHI",
+      "index": 27.0,
+      "recording_hours": 6.4
+    }
+  ],
+  "sleep_findings": [],
+  "denied_findings": [],
+  "rationale": "OSA1: Branch 1: an AHI of 27 over 6.4 hours is 172.8 events, past 15 per hour and 30 events, so b is MET citing the test, its index and its hours. The chart codes essential hypertension, which branch 1 does not need. a is MET: the consultation precedes the study. The chart also carries an active hydrochlorothiazide order, a knowledge-table drug, and its notes are in no quote recording, so a --suggest on it refuses rather than answering (D150). Transcribed from L33718 and NCD 240.4 through pap_osa_dme_jd.json and the chart's own facts, never from a run (T-108, D150). The chart is Synthea's own, from the recorded Iowa run, selected by rule rather than chosen; Iowa is in Noridian's DME Jurisdiction D, so the state is read from the bundle and the row passes none. The sleep study is dated on the chart's own 82808001 procedure and the in-person evaluation on the latest 103750000 assessment strictly before it, so every date the notes emit is the generator's; the index, the recording time and any finding are declared here, because no generator writes them (D43, D150). Document 1 is the consultation and document 2 the study report: one fact per document (D104). c and d are declared unclaimed by the tree -- the supplier's instruction and the test's provenance are records this chart does not hold -- so they abstain and are never omitted (REQ-58)."
+}

@@ -14164,3 +14164,370 @@ no longer name the content.
 ### What it mints
 
 **REQ-78.**
+
+## D150 — Practice three is CPAP for obstructive sleep apnea under NCD 240.4 and L33718, and it earns the second fact kind and the generic trust boundary
+
+**Context.** `T-108`, v1.6 row 2. Written before the code (Article IX, working
+rule 5). Spec §11 names the candidate — *CPAP for obstructive sleep apnea under
+NCD 240.4, a nationally quantified NCD* — "confirmed at open". D149 deferred to
+this row the generic `facts` mapping, the per-kind folds, and the requirement
+that the anchorer, the validator and the trust boundary are generic over
+declared fact kinds, because each is vacuous with one kind. D97's rule writes
+the row's record now. The board's one-line exit — *source, tree, patients,
+notes, rows, recording; `run_eval.py` green* — names six deliverables and checks
+one of them, so it is rewritten below; a weak exit is a design decision.
+
+**Measured at open.**
+- NCD 240.4 (`ncdid=226`) and DME MAC LCD **L33718** (*Positive Airway Pressure
+  (PAP) Devices for the Treatment of Obstructive Sleep Apnea*) both fetch
+  credential-free through T-02's extractor: 25,301 and 37,687 characters.
+- **NCD 240.4 quantifies.** *"AHI or RDI greater than or equal to 15 events per
+  hour, or"* and *"AHI or RDI greater than or equal to 5 events and less than or
+  equal to 14 events per hour with documented symptoms of …"*. NCD 100.1
+  quantifies one BMI; this one quantifies two thresholds of one criterion.
+- **L33718 restates them as criterion B, with event minimums**: *"greater than
+  or equal to 15 events per hour with a minimum of 30 events"*, and the 5–14
+  band *"with a minimum of 10 events and documentation of"* daytime sleepiness,
+  impaired cognition, mood disorders or insomnia, or hypertension, ischemic heart
+  disease or history of stroke. Its definitions paragraph ties the minimums to
+  recordings under two hours. Criterion A is *"an in-person clinical evaluation
+  by the treating practitioner prior to the sleep test"*; criterion C is supplier
+  instruction. **And it names the code in prose**: *"a single-level continuous
+  positive airway pressure device (E0601)"* — A57591's strength, no licence modal
+  in the way.
+- L33718 is one LCD under **four** DME contractors, and its own table lists their
+  states. Jurisdiction D (Noridian, 19003) lists Iowa.
+- **Synthea writes no AHI.** `modules/sleep_apnea.json` in the pinned jar emits
+  the condition (SNOMED 78275009), the assessments (103750000) and the study
+  procedure (82808001), and no observation carrying an index. So the index lives
+  in the note or nowhere, which is exactly what makes this the round where a
+  second fact kind is earned rather than promised (D116's rule).
+- **The recorded Iowa run already holds the cohort.** `data/patients/work/output_us`
+  is byte-identical to the run that produced the committed ultrasound base chart
+  (`012a2780…` both sides). Six of its charts carry an active 78275009 *and* the
+  82808001 study procedure: `d4abb188`, `e9dc2799`, `023cec62`, `9f0013bb`,
+  `60cce88a`, `b1d8c1d1`. Three carry an active hypertension or ischemic heart
+  disease condition; three carry none.
+- `d4abb188` carries an active hydrochlorothiazide order, a knowledge-table drug,
+  so a `--suggest` on it consults the quote recordings, which hold no note of this
+  round.
+
+### Chosen
+
+1. **Practice three is CPAP (E0601) for OSA, compiled from L33718 as Noridian
+   operationalizes it in DME Jurisdiction D**, with NCD 240.4 as the national
+   layer: `pap-osa-dme-jd-v1`, practice `sleep_medicine`. E0601 is
+   `nationally_covered` (NCD 240.4's *Nationally Covered Indications*
+   sentence), bound to its procedure by L33718's own sentence. Jurisdiction D
+   because its states include Iowa and the cohort is Iowa's; the other three
+   contractors publish the same text, and a tree is compiled for one contractor
+   as every tree here is (D21). Washington, Iowa, Kansas, Missouri and Nebraska
+   are then served by two practices, and nothing collides, because E0601 is
+   bound by nobody else (D111's rule).
+2. **Criteria, in the LCD's letters.**
+
+   | id | Criterion | Evaluation |
+   |---|---|---|
+   | `a` | An in-person clinical evaluation prior to the sleep test | deterministic, new `note_evaluation_before_sleep_test` |
+   | `b` | A sleep test with AHI/RDI ≥ 15 and ≥ 30 events, or 5–14 with ≥ 10 events and documentation of a listed finding or comorbidity | deterministic, new `note_sleep_test_index` |
+   | `c` | Supplier instruction in the device's use and care | **unclaimed**: a supplier's record, never a chart's |
+   | `d` | The sleep test is a valid one as the LCD's *Sleep Tests* section defines it | **unclaimed**: FDA approval, the ordering practitioner and the testing entity's qualification are provenance no chart resource records |
+
+   `b` is **one** criterion with two branches, because the LCD writes it as one
+   (*"meets either of the following criteria (1 or 2)"*). *Rejected —
+   `b1 OR b2` in the decision expression:* REQ-21's gap list names every
+   criterion not `MET`, so an approvable chart would list the unsatisfied leg
+   of a satisfied disjunction as a gap.
+3. **`note_sleep_test_index` is arithmetic over one test.** The test is the most
+   recent documented sleep test dated on or before `as_of`, and both new kinds
+   select it through one Python helper so `a` and `b` cannot disagree about
+   which test they mean. Events are `index × recording hours`, computed in
+   Python; the model never multiplies (Art. II). Verdicts:
+   - index ≥ 15 and events ≥ 30: `MET`, citing the test, its index and its
+     hours;
+   - index ≥ 5 and below 15, events ≥ 10, and at least one documented finding
+     in the criterion's declared categories **or** an active condition in its
+     declared value set: `MET`, citing the test and every qualifying finding or
+     condition;
+   - index below 5: `NOT_MET`, shortfall `(index, 5, events_per_hour)`;
+   - a branch's index reached and its event minimum not: `NOT_MET`, shortfall
+     `(events, minimum, events)`;
+   - index in the band and nothing documented: an abstention,
+     `NO_EVIDENCE_RETRIEVED`. A chart that records no daytime sleepiness has not
+     recorded that the patient has none (D40's asymmetry);
+   - no test, a test with no index, or an index with no recording time: an
+     abstention. Without the hours the event minimum is not computable, and
+     calling it satisfied is the default D31 refuses.
+
+   The band's upper edge is read as *below 15*, not *at most 14*. The LCD's
+   "less than or equal to 14" is the integer reading; an index of 14.5 falls
+   between its two sentences, and reading it into the band asks for more
+   documentation rather than denying.
+4. **`note_evaluation_before_sleep_test`**: `MET` citing the latest documented
+   in-person evaluation dated strictly before the test, and the test; `NOT_MET`
+   when evaluations are documented and none precedes it, shortfall
+   `(0, 1, evaluations_before_sleep_test)`; an abstention when there is no test
+   or no evaluation. Strictly before, because a date carries no time and a
+   same-day evaluation cannot be shown to precede the night's study; the
+   `NOT_MET` is one a reviewer lifts with a timed record (D114's asymmetry).
+5. **Two national floors on one criterion.** `b` bounds `min_index` (15) and
+   `min_index_with_findings` (5), both from NCD 240.4, both at equality.
+   `Criterion.national_floor` accepts one floor or a list; each is validated
+   exactly as T-129's single floor is, and two floors naming one constant is a
+   load error. *Rejected — flooring only 15:* a tree declaring 4 for the band
+   would load, which is the defect REQ-73 exists for. The event minimums carry
+   no floor, because NCD 240.4 states them as *"the number of events that would
+   have been required in a 2-hour period"* and names no number to read out of
+   the quote (D130's fourth raise).
+6. **The second fact kind: `sleep_apnea_workup`.** It extracts in-person
+   evaluations (date and quote), diagnostic sleep tests (date, quote, the AHI or
+   RDI measured without positive airway pressure and its quote, the recording
+   time in hours and its quote), and findings the note documents as present,
+   each labelled with one of seven categories that are the LCD's own list.
+   The model labels what a passage says; whether a label qualifies is a Python
+   membership test against the criterion's declared categories (Art. II). It is
+   registered in `FACT_SCHEMAS` with its own response model, instruction,
+   builder, locator and prompt version, and its digest is pinned beside the
+   weight-management one.
+7. **The generic trust boundary, minted as REQ-79.** `ExtractionResult` gains a
+   `kind` and a `facts` list; `WorkflowState` and `PredicateInputs` gain
+   `facts: {FactKind -> tuple}`; `workflow.FACT_FOLDS` maps every kind to its
+   fold, a partition checked like `STEP_KINDS`; and `step_extract` calls
+   `FACT_FOLDS[kind]` and names no kind. The weight-management fold is today's
+   inline body, unchanged, so every bariatric recording, verdict and span is
+   untouched. The sleep builder anchors every quote through the same
+   `_anchor_or_drop`, re-asks through the same `extract_with_reask`, and returns
+   the same result type, whose `events`, `assertions` and `current_bmi` stay
+   empty: no sleep fact can reach a `WmEvent`-shaped route, and a parse holds
+   that the builder constructs none. On an extraction fault, the criteria that
+   become `ERROR` are those whose kind reads the faulting fact kind, through
+   `PREDICATE_FACT_KIND`, rather than the five note-event kinds by name.
+8. **Replay is keyed by `(document, prompt version)`.** One note may now be read
+   under two kinds, so `RecordedExtractionRunner` holds a payload per version
+   and raises `SCHEMA_MISMATCH` when the note was measured under a version
+   other than the one asked, as D149 has it. Each kind's recording is its own
+   file — `eval/extraction/sleep_apnea_workup.json` beside `results.json` —
+   because `results.json`'s aggregate is the weight-management scorer's and
+   T-81's provenance is T-81's. Every composition root that replays loads both.
+9. **The cohort is selected from the recorded Iowa run, not a new one.**
+   `select_patients.py --select-sleep-apnea` reads `output_us` (disk only, no
+   Java) and adopts every chart carrying an active 78275009 and an 82808001
+   procedure: six. The note's sleep test is dated on the chart's own 82808001
+   procedure and the evaluation on the chart's own 103750000 assessment before
+   it, so every date a note emits is the generator's. The index, the recording
+   time and the findings are declared in the fact manifests, because no
+   generator writes them; that is the same declaration every bariatric note's
+   encounters already are (D43).
+10. **Six rows, `OSA1`–`OSA6`**, one per chart and one branch each: ≥ 15 met;
+    the band met by a note finding; the band met by a coded comorbidity alone;
+    an index below 5; the band with nothing documented; and an index of 16 over
+    1.5 hours, which is 24 events against 30. Criterion `a` is `MET` on all six,
+    because every chart's own record has an assessment before its study, and a
+    note claiming otherwise would contradict the bundle; its `NOT_MET` is held
+    by hand-written charts in the unit tests (D114's division). `OSA5`'s first
+    note carries a telephone contact and a denied symptom, the two traps this
+    kind's instruction names.
+11. **Measured on the direct runner, both tiers.** Twelve notes, at most two
+    calls each per tier. The verifier recording is re-measured whole on both
+    tiers, D113's tax: every `MET` and `NOT_MET` above is a new claim.
+
+### Rejected
+
+- **Another candidate for practice three.** None was needed: §11 names CPAP, the
+  documents fetch, and the NCD quantifies — the property §11 asked for, and the
+  one T-129's floor was built ahead of.
+- **A new Synthea run in another DME jurisdiction.** It would be a fifth
+  recorded seed and another non-byte-stable generation (D73), to obtain charts
+  the fourth run already holds.
+- **Structured-only evaluation of criterion `a`** from the 103750000 assessment
+  procedure. It reads a different resource from the one `b` reads, so the two
+  criteria could disagree about the test, and the LCD's requirement is about
+  what the evaluation documented, which a procedure code does not carry.
+- **The ADK runner for the new kind.** Its agent, its tool-fetch message and its
+  description are weight-management text, and generalising them changes the ADK
+  prompt every ADK recording was measured under (D45). It keeps refusing a kind
+  it has no agent for, and the work is `T-143`, numbered off the path.
+- **Re-measuring the six quote recordings for the twelve new notes.** No new
+  note states a table effect, so the measurement could only produce reds, and
+  `T-110`'s row already re-measures the history recordings for the measured
+  yellow. Until then a `--suggest` on `OSA1`'s chart, the one carrying a table
+  drug, refuses with `NOT_RECORDED` rather than answering.
+
+### Reversal condition
+
+Clause 3 reverses toward *at most 14* if a reviewer of the tree reads the band
+literally, which turns a fractional index between 14 and 15 into `NOT_MET`.
+Clause 4 reverses toward *on or before* if a corpus carries timed evaluations.
+Clause 9 reverses if a Synthea release writes an AHI observation, in which case
+`b` reads the observation and the note's index becomes a reconciled fact. Clause
+5 reverses if a national document floors a number no list of floors can carry.
+
+### What it mints
+
+**REQ-79** — the extraction trust boundary is generic over declared fact kinds:
+every registered kind is built through the shared anchorer and re-ask core into
+one result type, folded by a registry that is a partition of `FactKind`, and no
+kind but `weight_management` reaches a `WmEvent`-shaped field.
+
+## D151 — The verifier is told that a `MET` may rest on a value code derived from several quotes (`verifier-v7`)
+
+**Context.** `T-108`, during its verifier round. Written before the prompt is
+edited (Article IX). D150 clause 11 planned to re-measure the verifier
+recording whole on both tiers; this entry records what that round and the one
+after it measured, and the change they forced.
+
+**Measured.**
+- **The whole round under `verifier-v6`** re-measured all 49 claims on both
+  tiers and accepted 49 of 49 on each. It was not adopted: re-measuring the 38
+  claims the recording already held moved their recorded token counts, and
+  `T-106`'s committed packet fixtures embed those counts, so both fixtures went
+  red against the live engine for no change in any verdict. Its two files
+  were not committed; this paragraph is their record.
+- **The extension round under `verifier-v6`** kept the 38 recorded claims and
+  measured only the 11 new ones on AI Studio. It rejected one: `OSA1`'s
+  criterion `b`, `MET`, quoting an AHI of 27 and a recording time of 6.4 hours,
+  with the reason *"there is no quote showing at least 30 total events"*. The
+  same digest was accepted in the whole round.
+- So one claim, one prompt, one tier, two answers. The rejected claim is
+  right: 27 events an hour for 6.4 hours is 172.8 events, which Python
+  computed. The verifier was asked for a number no quote states, because the
+  number is a product of two that do.
+
+**This is D78's category a third time.** D78 barred date and count arithmetic
+after false rejections on shortfall-type `NOT_MET` claims; D115 barred set
+membership after false rejections on a value set the claim names and never
+shows. Here a constant (`min_events`) bounds a value code **derived** from
+quoted values, and the `MET` paragraph's rule — reject a quote *"on the wrong
+side of a threshold named in the constants"* — reads as a demand that some quote
+state every constrained value. The `NOT_MET` paragraph already says the
+arithmetic is code's; the `MET` paragraph never said so, and D115's lesson was
+that a rule stated only as a prohibition, somewhere else, is weaker than the
+same rule stated as the expected case where the model is reading.
+
+### Chosen
+
+**`verifier-v7`**: one paragraph added to the `MET` rule, stated as the
+accepting case. A constant may bound a value code derived from several quoted
+values — a count from a rate and a duration, a run of months from dated visits
+— and no single quote states it. For a `MET`, accept when the quotes supply the
+values it was derived from and no quote itself states a value on the wrong side
+of a named threshold. The verifier keeps its teeth: a quoted index of 3 against
+a threshold of 15 is still a rejection, because that quote states it.
+
+A changed prompt is a new measurement (D45), so **all 49 claims are re-measured
+on both tiers**, and every figure downstream follows: the recordings' token
+counts, `eval/report.md`, and `T-106`'s two fixtures, whose embedded
+determinations are re-derived from the engine over the new recording and
+re-rendered by the product's own verb (D136's procedure). That moves committed
+fixture bytes, and it is the cost of the measurement rather than an edit to the
+fixtures: the third comparison in `tests/test_packet_fixtures.py` is what says
+they must follow.
+
+### Rejected
+
+- **Rewording `b`'s label** to drop *"and 30 events"*. D115 rejected tuning a
+  compiled label to a model's reaction, and the constant is in the payload
+  whatever the label says.
+- **Having the notes state the total event count.** Real reports often do, but
+  writing it into this corpus to spare the checker the product is fitting the
+  corpus to the checker, and it would move the arithmetic out of Python.
+- **Adopting the whole `v6` round.** Every verdict in it is the same, so it
+  would make the suite green — by sampling again until the sample suits, with
+  the extension round's rejection left unanswered.
+- **Recording the rejection as a finding and moving on.** `OSA1` would read
+  `VERIFIER_REJECTED` on AI Studio and, on a sample, `MET` on Vertex: the two
+  committed recordings disagreeing about a row, which D113 and D115 refused.
+
+### Reversal condition
+
+D115's: a claim payload that carries the derived value, at which point the
+paragraph is the wrong instruction. And if a `v7` round rejects a `MET` whose
+quote really does state a value on the wrong side of a threshold and the new
+paragraph is found to have suppressed it, that is the failure to watch for.
+
+### What it mints
+
+Nothing. REQ-17's verifier is unchanged in shape; its instruction is
+re-measured.
+
+### Measured after the change
+
+`verifier-v7` accepted **49 of 49 on AI Studio and 49 of 49 on Vertex**, and
+those two recordings are the committed ones. The extension round had run
+through a `--extend` mode written for it; with the plan it served abandoned, the
+mode was removed rather than kept as an unexercised path.
+
+## D152 — The round's notes enter the six quote recordings by extension, because A11 grades every candidate the table finds
+
+**Context.** `T-108`, after its eval rows were adopted. Written before the code
+(Article IX). It reverses one rejected alternative in D150: *re-measuring the
+six quote recordings for the twelve new notes*.
+
+**Measured.** `OSA1`'s chart carries an active hydrochlorothiazide order, a row
+of the knowledge table, so the table now finds **13** candidates across the
+twenty bundles, and the eval set grades **12**. A11 as D123 rewrote it, and as
+`tests/test_build_report.py::test_a11s_graded_count_is_derived_from_the_corpus`
+holds it, is that the eval set grades **every** candidate the code produces.
+D150 left that candidate ungraded on the ground that a `--suggest` on the chart
+would refuse `NOT_RECORDED`. The refusal is real, and it is also a closed gate
+reopened: a candidate nothing grades is the gap D123 opened `T-99` to close.
+The review itself, run here with no notes, colours it **red** — the chart
+carries no glucose observation and no hyperglycaemia condition — and with the
+notes consulted it can only be red or yellow, so the grade is a measurement,
+not a formality.
+
+### Chosen
+
+1. **The quote corpus is every non-clone note-bearing chart again**, the sleep
+   charts included: twenty-four notes, where T-98 measured twelve. The skip
+   `T-108` added to `history_cases` is removed.
+2. **Each of the six quote recordings is extended, not re-measured.** The
+   configuration is unchanged — the same `QUOTE_PROMPT_VERSION`, the same
+   `rows_asked`, the same runners and tiers — and the twelve notes T-98 measured
+   are unchanged bytes, so measuring them again would be a second sample of a
+   measurement already held. `--extend` measures only the notes a recording
+   lacks, appends them, recomputes the aggregate, and stamps an `extensions`
+   entry beside T-98's `measured_at`. It refuses a recording whose prompt,
+   table, model or tier differs, or one holding a note the corpus no longer
+   lists: each of those is a new measurement of everything (D45).
+3. **A row labels `OSA1`'s review**, `H10`, sharing `OSA1`'s determination,
+   in `H1`–`H9`'s shape. Its label is transcribed from the chart and the table,
+   never from a run: the candidate is red unless a note documents
+   hyperglycaemia, and no note of this chart does.
+
+### Rejected
+
+- **A cohort rule excluding charts that carry a table drug.** It would keep
+  every gate green by choosing a corpus the instrument does not need to read,
+  which is a measurement shaped to avoid a measurement.
+- **Counting only the candidates on charts the quote recordings cover.** It
+  makes A11's denominator follow the instrument's coverage, which is the
+  weakening D123 refused.
+- **Re-measuring the six recordings whole.** Every figure T-98 recorded would
+  move for no change in configuration, and the ADK tool-fetch path is not
+  reproducible at temperature 0 (D91), so the re-run would be a fresh sample of
+  twelve notes nobody asked about.
+
+### Reversal condition
+
+A changed quote prompt, table or runner re-measures all six whole, and the
+`extensions` entries go with the old recordings. If a recording ever holds
+notes measured under two prompt versions, the extension was the wrong move.
+
+### What it mints
+
+Nothing. A11's statement is unchanged; its denominator is now thirteen.
+
+### Measured
+
+Six extensions, twelve notes each, on the configuration T-98 measured. Five
+are clean: no passage returned for any of the sixty new `(note, condition)`
+pairs, so nothing anchored and nothing was fabricated. On **AI Studio's ADK
+tool-fetch path one note failed**: the model wrote ADK's injected
+`set_model_response` call as text, and the answer did not parse
+(`UNPARSEABLE`). That is D62's injected-tool shape failing once, and it is
+recorded as a finding with its classified reason and no payload, never re-run
+(D71, D103) — `tests/test_quote_recording.py` pins the count beside the
+fabrication figure. The direct AI Studio recording, the one every gate replays,
+holds all twenty-four, and `H10` reads its candidate red with both notes
+consulted, which makes A11's graded count thirteen of thirteen.

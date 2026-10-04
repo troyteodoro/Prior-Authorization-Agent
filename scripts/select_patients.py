@@ -113,9 +113,10 @@ BMI_THRESHOLD = 35.0  # criterion (a)'s boundary; at least one patient below it
 BMI_HIGH_MARK = 40.0  # and at least one at or above this
 BASE_BUNDLE_COUNT = 6  # the D35 selection
 #: plus the E12 patient (D73), the T-88 clone (D102), T-93's three
-#: rheumatology charts — two generated, one derived (D113) — and T-94's three
-#: ultrasound charts: one generated and two derived from it (D114).
-BUNDLE_COUNT = 14
+#: rheumatology charts — two generated, one derived (D113) — T-94's three
+#: ultrasound charts: one generated and two derived from it (D114) — and
+#: T-108's six sleep apnea charts, all generated (D150).
+BUNDLE_COUNT = 20
 
 LOINC_BMI = "39156-5"
 SNOMED_T2DM = "44054006"
@@ -204,6 +205,28 @@ SNOMED_US_INDICATIONS = (
 #: FHIR codes them. A copy source is required to be outside them, so the
 #: declared prior study is one the criterion counts (D114).
 EXCLUDED_ENCOUNTER_CLASSES = ("EMER", "IMP")
+
+# The sleep apnea cohort (T-108, D150). **No fifth Synthea run**: Iowa is in
+# Noridian's DME Jurisdiction D, which the fourth practice's tree is compiled
+# for, and the ultrasound run's output already holds the charts. The codes are
+# read out of `modules/sleep_apnea.json` in the pinned jar: the condition, the
+# study procedure Synthea writes for the overnight test, and the assessment it
+# writes at each in-person sleep visit. The comorbidity codes are the ones
+# `modules/hypertension.json`, `modules/stable_ischemic_heart_disease.json` and
+# `modules/stroke.json` emit for the three conditions L33718 lists. Synthea
+# writes no AHI, which is why the index is a note fact (D150).
+SLEEP_APNEA_COHORT = "sleep_apnea"
+SNOMED_OSA = "78275009"  # Obstructive sleep apnea syndrome (disorder)
+SNOMED_SLEEP_STUDY = "82808001"  # Sleep apnea monitoring with alarm (regime/therapy)
+SNOMED_SLEEP_ASSESSMENT = "103750000"  # Sleep apnea assessment (procedure)
+SNOMED_OSA_COMORBIDITIES = (
+    "59621000",   # Essential hypertension (disorder)
+    "414545008",  # Ischemic heart disease (disorder)
+    "230690007",  # Cerebrovascular accident (disorder)
+)
+#: How many charts the rule selects from the recorded run. Pinned so that a
+#: rerun yielding a different count is a visible change, not a quiet one.
+SLEEP_APNEA_CHART_COUNT = 6
 #: How far from the reference date each clone's copy source must sit. The
 #: window itself is the policy plane's (twelve months, L35755); these bounds
 #: are wider on both sides so the selection does not turn on the constant --
@@ -797,6 +820,10 @@ def read_bundle(path: Path) -> dict:
     methotrexate_orders = 0
     active_indications: set[str] = set()
     prior_study_dates: list[str] = []
+    has_active_osa = False
+    active_osa_comorbidities: set[str] = set()
+    sleep_study_dates: list[str] = []
+    sleep_assessment_dates: list[str] = []
     for entry in bundle.get("entry", []):
         resource = entry.get("resource", {})
         rtype = resource.get("resourceType")
@@ -823,6 +850,12 @@ def read_bundle(path: Path) -> dict:
             # reason a resolved comorbidity is not criterion (b)'s.
             if active:
                 active_indications |= codes & set(SNOMED_US_INDICATIONS)
+            # T-108 (D150): the sleep apnea cohort's condition and the
+            # comorbidities L33718's band lists, as the corpus codes them.
+            if active and SNOMED_OSA in codes:
+                has_active_osa = True
+            if active:
+                active_osa_comorbidities |= codes & set(SNOMED_OSA_COMORBIDITIES)
         elif rtype == "MedicationRequest":
             # `status` is carried by the record and read here the way the
             # predicate reads it: a completed order is not an active one.
@@ -852,12 +885,18 @@ def read_bundle(path: Path) -> dict:
             # chart, by date. The interval criterion reads the dates, so the
             # manifest records them and `--verify` recomputes them.
             codes = {c.get("code") for c in _codings(resource)}
-            if SNOMED_ABDOMINAL_VASCULAR_STUDY in codes:
-                when = (resource.get("performedPeriod") or {}).get(
-                    "start"
-                ) or resource.get("performedDateTime")
-                if when:
-                    prior_study_dates.append(when)
+            when = (resource.get("performedPeriod") or {}).get(
+                "start"
+            ) or resource.get("performedDateTime")
+            if SNOMED_ABDOMINAL_VASCULAR_STUDY in codes and when:
+                prior_study_dates.append(when)
+            # T-108 (D150): the overnight study and the in-person sleep
+            # assessments, by date. A note's sleep test and evaluation are
+            # dated on these, so `--verify` recomputes them.
+            if SNOMED_SLEEP_STUDY in codes and when:
+                sleep_study_dates.append(when)
+            if SNOMED_SLEEP_ASSESSMENT in codes and when:
+                sleep_assessment_dates.append(when)
     latest = max(bmi_obs) if bmi_obs else None  # ISO dates sort lexically
     return {
         "patient_id": patient_id,
@@ -872,6 +911,10 @@ def read_bundle(path: Path) -> dict:
         "methotrexate_orders": methotrexate_orders,
         "active_indication_codes": sorted(active_indications),
         "prior_study_dates": sorted(prior_study_dates),
+        "has_active_osa": has_active_osa,
+        "active_osa_comorbidity_codes": sorted(active_osa_comorbidities),
+        "sleep_study_dates": sorted(sleep_study_dates),
+        "sleep_assessment_dates": sorted(sleep_assessment_dates),
     }
 
 
@@ -1216,6 +1259,10 @@ def _record(path: Path, cohort: str) -> dict:
         "methotrexate_orders": info["methotrexate_orders"],
         "active_indication_codes": info["active_indication_codes"],
         "prior_study_dates": info["prior_study_dates"],
+        "has_active_osa": info["has_active_osa"],
+        "active_osa_comorbidity_codes": info["active_osa_comorbidity_codes"],
+        "sleep_study_dates": info["sleep_study_dates"],
+        "sleep_assessment_dates": info["sleep_assessment_dates"],
     }
 
 
@@ -1459,6 +1506,101 @@ def generate_ultrasound() -> int:
 
 
 # --------------------------------------------------------------------------
+# The sleep apnea cohort (--select-sleep-apnea): disk only (T-108, D150)
+# --------------------------------------------------------------------------
+
+
+def _select_sleep_apnea(candidates: list[dict]) -> list[dict]:
+    """Every chart in the recorded Iowa run carrying an active obstructive
+    sleep apnea condition and the overnight study Synthea writes for it.
+
+    No ranking and no sampling: the rule is a filter, so the cohort is a
+    property of the run rather than of a choice made over it. Sorted by
+    patient id so the manifest's order does not depend on the export's.
+    """
+    chosen = [
+        c for c in candidates
+        if c["has_active_osa"] and c["sleep_study_dates"]
+    ]
+    if len(chosen) != SLEEP_APNEA_CHART_COUNT:
+        sys.exit(
+            f"the recorded Iowa run yields {len(chosen)} charts carrying an "
+            f"active SNOMED {SNOMED_OSA} and a {SNOMED_SLEEP_STUDY} procedure; "
+            f"{SLEEP_APNEA_CHART_COUNT} are pinned. A run that answers "
+            "differently is a new cohort and a new decision, not a re-run (D73, "
+            "D150)."
+        )
+    return sorted(chosen, key=lambda c: c["patient_id"])
+
+
+def select_sleep_apnea() -> int:
+    """Adopt the sleep apnea cohort from the ultrasound run's output.
+
+    Reads `output_us`, which `--generate-ultrasound` writes, and runs no Java:
+    Iowa is in the DME jurisdiction the fourth practice's tree governs, and
+    the recorded run already holds its charts (D150). Additive and
+    re-runnable: it replaces its own records and touches no other cohort. On a
+    fresh checkout run `--generate-ultrasound` first — and remember that a
+    regeneration is not byte-stable, so a drifted bundle is restored from git,
+    never adopted (D73).
+    """
+    if not (US_OUTPUT_DIR / "fhir").is_dir():
+        sys.exit(
+            f"no ultrasound run at {US_OUTPUT_DIR.relative_to(REPO_ROOT)}; run "
+            "--generate-ultrasound first. This mode reads that run and generates "
+            "nothing (D150)."
+        )
+    candidates = _read_population(US_OUTPUT_DIR)
+    chosen = _select_sleep_apnea(candidates)
+
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    adopted = {c["patient_id"] for c in chosen}
+    manifest["bundles"] = [
+        r for r in manifest["bundles"] if r["patient_id"] not in adopted
+    ]
+    for candidate in chosen:
+        dest = BUNDLES_DIR / candidate["source_path"].name
+        shutil.copyfile(candidate["source_path"], dest)
+        record = _record(dest, SLEEP_APNEA_COHORT)
+        manifest["bundles"].append(record)
+        print(
+            f"  {record['patient_id'][:12]} study {record['sleep_study_dates']} "
+            f"comorbidities {record['active_osa_comorbidity_codes']}  {dest.name}"
+        )
+
+    manifest["synthea_sleep_apnea"] = {
+        "task": "T-108",
+        "decision": "D150",
+        "run": "synthea_ultrasound",
+        "selection": {
+            "cohort": SLEEP_APNEA_COHORT,
+            "chart_count": SLEEP_APNEA_CHART_COUNT,
+            "state_code": US_STATE_CODE,
+            "condition_code": SNOMED_OSA,
+            "study_code": SNOMED_SLEEP_STUDY,
+            "assessment_code": SNOMED_SLEEP_ASSESSMENT,
+            "comorbidity_codes": list(SNOMED_OSA_COMORBIDITIES),
+            "rule": (
+                "every chart in the recorded ultrasound run (seed "
+                f"{US_SEED}, {US_STATE}) carrying an active Condition coded "
+                f"SNOMED {SNOMED_OSA} and at least one Procedure coded SNOMED "
+                f"{SNOMED_SLEEP_STUDY}. No fifth Synthea run: {US_STATE} is in "
+                "Noridian's DME MAC Jurisdiction D, which "
+                "pap-osa-dme-jd-v1 governs. Codes read from "
+                "modules/sleep_apnea.json, modules/hypertension.json, "
+                "modules/stable_ischemic_heart_disease.json and "
+                "modules/stroke.json in the pinned jar (D150)."
+            ),
+        },
+    }
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"manifest written: {MANIFEST_PATH.relative_to(REPO_ROOT)}")
+    return 0
+
+
+# --------------------------------------------------------------------------
 # Re-recording (--rerecord): disk only (T-94, D114)
 # --------------------------------------------------------------------------
 
@@ -1653,6 +1795,12 @@ _DERIVED_FACTS = (
     "has_active_lisinopril",
     "has_active_hydrochlorothiazide",
     "methotrexate_orders",
+    "active_indication_codes",
+    "prior_study_dates",
+    "has_active_osa",
+    "active_osa_comorbidity_codes",
+    "sleep_study_dates",
+    "sleep_assessment_dates",
 )
 
 
@@ -1735,7 +1883,12 @@ def verify() -> int:
         )
         _check(
             r.get("cohort")
-        in (BARIATRIC_COHORT, RHEUMATOLOGY_COHORT, ULTRASOUND_COHORT),
+        in (
+            BARIATRIC_COHORT,
+            RHEUMATOLOGY_COHORT,
+            ULTRASOUND_COHORT,
+            SLEEP_APNEA_COHORT,
+        ),
             f"{r['filename']}: declares a known cohort ({r.get('cohort')!r})",
             failures,
         )
@@ -2120,6 +2273,50 @@ def verify() -> int:
             failures,
         )
 
+    # The sleep apnea cohort (T-108, D150). The selection rule re-applied to
+    # the committed charts, and the split the eval rows rest on: three charts
+    # coding a comorbidity L33718's band lists and three coding none. A chart
+    # that crossed from one side to the other would move a label with every
+    # hash still matching.
+    sleep = [r for r in records if r.get("cohort") == SLEEP_APNEA_COHORT]
+    _check(
+        len(sleep) == SLEEP_APNEA_CHART_COUNT,
+        f"{SLEEP_APNEA_CHART_COUNT} sleep apnea charts ({len(sleep)} found)",
+        failures,
+    )
+    for record in sleep:
+        _check(
+            record["has_active_osa"] and bool(record["sleep_study_dates"]),
+            f"{record['filename']}: an active SNOMED {SNOMED_OSA} and a "
+            f"{SNOMED_SLEEP_STUDY} study ({record['sleep_study_dates']})",
+            failures,
+        )
+        _check(
+            any(a < record["sleep_study_dates"][-1] for a in record["sleep_assessment_dates"])
+            if record["sleep_study_dates"] else False,
+            f"{record['filename']}: an in-person sleep assessment precedes the "
+            "most recent study, which is what each note's evaluation is dated on",
+            failures,
+        )
+        bundle = json.loads((BUNDLES_DIR / record["filename"]).read_text(encoding="utf-8"))
+        patient = next(
+            (e["resource"] for e in bundle["entry"]
+             if e.get("resource", {}).get("resourceType") == "Patient"),
+            {},
+        )
+        _check(
+            (patient.get("address") or [{}])[0].get("state") == US_STATE_CODE,
+            f"{record['filename']}: Patient.address[0].state is {US_STATE_CODE}",
+            failures,
+        )
+    _check(
+        sorted(bool(r["active_osa_comorbidity_codes"]) for r in sleep)
+        == [False, False, False, True, True, True],
+        "three sleep apnea charts code a comorbidity L33718's band lists and "
+        "three code none",
+        failures,
+    )
+
     if bmis:
         _check(
             all(BMI_FLOOR <= b <= BMI_CEILING for b in bmis),
@@ -2160,6 +2357,11 @@ def main() -> int:
         help="generate and adopt the ultrasound cohort only (T-94), then clone",
     )
     mode.add_argument(
+        "--select-sleep-apnea",
+        action="store_true",
+        help="adopt the sleep apnea cohort from the recorded ultrasound run (T-108); no Java",
+    )
+    mode.add_argument(
         "--rerecord",
         action="store_true",
         help="re-derive every committed bundle's manifest facts from its bytes",
@@ -2178,6 +2380,8 @@ def main() -> int:
         return generate_rheumatology()
     if args.generate_ultrasound:
         return generate_ultrasound()
+    if args.select_sleep_apnea:
+        return select_sleep_apnea()
     if args.rerecord:
         return rerecord()
     if args.clone:
