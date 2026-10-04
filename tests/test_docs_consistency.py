@@ -295,16 +295,15 @@ def _off_path_ids(board: str) -> set[int]:
 
 
 def _numbered_without_record(text: str, sentence: str) -> set[int] | None:
-    """The ids `text` lists before `sentence`, or None when it lists none.
+    """The ids `text` lists before `sentence` (a pattern), or None when it
+    lists none.
 
     The list is the run of backticked ids immediately ahead of the sentence,
     so a rewording that splits the run is a red test rather than a silent
     shorter list.
     """
     flat = " ".join(text.split())
-    match = re.search(
-        r"((?:`T-\d+`(?:,| and|, and)?\s*)+)" + re.escape(sentence), flat
-    )
+    match = re.search(r"((?:`T-\d+`(?:,| and|, and)?\s*)+)" + sentence, flat)
     if not match:
         return None
     return {int(n) for n in re.findall(r"T-(\d+)", match.group(1))}
@@ -344,7 +343,9 @@ def _board_prose_errors(board: str) -> list[str]:
     if ran_to != [highest]:
         errors.append(f"says IDs run to {ran_to}; the highest numbered id is T-{highest}")
 
-    listed = _numbered_without_record(paragraph, " below are numbered and have no record yet")
+    listed = _numbered_without_record(
+        paragraph, r" below (?:is|are) numbered and ha(?:s|ve) no record yet"
+    )
     if (listed or set()) != numbered:
         errors.append(
             f"lists {sorted(listed or ())} as numbered with no record; "
@@ -362,7 +363,7 @@ def _claude_md_errors(claude: str, board: str) -> list[str]:
     ran_to = {int(n) for n in re.findall(r"IDs run to T-(\d+)", " ".join(claude.split()))}
     if ran_to != {highest}:
         errors.append(f"CLAUDE.md says IDs run to {sorted(ran_to)}; the board's highest is T-{highest}")
-    listed = _numbered_without_record(claude, " are numbered with no record yet")
+    listed = _numbered_without_record(claude, r" (?:is|are) numbered with no record yet")
     if (listed or set()) != numbered:
         errors.append(
             f"CLAUDE.md lists {sorted(listed or ())} as numbered with no record; "

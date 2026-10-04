@@ -1258,8 +1258,7 @@ def test_a11s_threshold_is_held_by_this_command_not_only_printed(script):
     coherent and every gate stays green. This recomputes the figure from the
     reviews the harness produced and asserts the bar.
 
-    A2's, A3's and A5's thresholds are still printed and held by nothing —
-    that is `T-131`, recorded on the board rather than folded in here.
+    A2's, A3's and A5's are held the same way since `T-131`, below (D145).
     """
     _results, _cache, reviews = script._run(LocalPolicyStore())
     labels = script._labels()
@@ -1288,6 +1287,149 @@ def test_a11s_threshold_is_held_by_this_command_not_only_printed(script):
         f"A11: precision on green and yellow is {precision:.3f} over "
         f"n = {asserting}; the threshold is A2's 0.90"
     )
+
+
+# --------------------------------------------------------------------------
+# A2, A3 and A5 held by a command, not only printed (T-131, D145)
+# --------------------------------------------------------------------------
+
+A2_THRESHOLD = 0.90
+
+
+def _a2_failures(pairs) -> tuple[int, list[str]]:
+    """(criteria with a `MET` call, the ones below A2's bar), plus `all`."""
+    by_criterion: dict[str, list[tuple[str, str]]] = {}
+    for _case, criterion_id, expected, actual in pairs:
+        by_criterion.setdefault(criterion_id, []).append((expected, actual))
+    failures = []
+    called = 0
+    total_calls = total_correct = 0
+    for criterion_id, observed in sorted(by_criterion.items()):
+        calls = [p for p in observed if p[1] == "MET"]
+        if not calls:
+            continue
+        called += 1
+        correct = sum(1 for p in calls if p[0] == "MET")
+        total_calls += len(calls)
+        total_correct += correct
+        if correct / len(calls) < A2_THRESHOLD:
+            failures.append(f"{criterion_id}: {correct}/{len(calls)}")
+    if total_calls and total_correct / total_calls < A2_THRESHOLD:
+        failures.append(f"all: {total_correct}/{total_calls}")
+    return called, failures
+
+
+def _a3_invalid(determinations) -> tuple[int, list[str]]:
+    """(spans on `MET` verdicts, the ones that do not slice back)."""
+    from pa_agent.contracts import CriterionVerdict
+    from pa_agent.index import DocumentIndex
+    from pa_agent.spans import SpanValidationError, validate
+    from pa_agent.stores.patient import LocalPatientStore
+
+    patients, policies = LocalPatientStore(), LocalPolicyStore()
+    index = DocumentIndex()
+    checked, invalid = 0, []
+    for determination in determinations:
+        for result in determination.criterion_results:
+            if result.verdict is not CriterionVerdict.MET:
+                continue
+            for span in result.spans:
+                checked += 1
+                if span.document_id not in index:
+                    try:
+                        index.add(patients.get_document(span.document_id))
+                    except KeyError:
+                        index.add(policies.get_document(span.document_id))
+                try:
+                    validate(span, index)
+                except (SpanValidationError, KeyError):
+                    invalid.append(f"{determination.patient_id} {result.criterion_id} {span.document_id}")
+    return checked, invalid
+
+
+def _a5_errors(declared: dict[str, float], grid, rows) -> list[str]:
+    values = set(declared.values())
+    errors = []
+    if not declared:
+        errors.append("no loaded tree declares discrepancy_tolerance; the sweep is over nothing")
+    if len(values) > 1:
+        errors.append(f"trees declare different tolerances {declared}; one grid cannot pin both")
+    pinned = [row for row in rows if "pinned" in row]
+    for value in values:
+        if value not in grid:
+            errors.append(f"the declared tolerance {value} is not a grid point")
+        if [row.split("|")[1].split()[0] for row in pinned] != [f"{value:g}"]:
+            errors.append(f"the sweep marks {pinned} as pinned; the trees declare {value}")
+    return errors
+
+
+def _declared_tolerances(policies) -> dict[str, float]:
+    declared = {}
+    for path in sorted((REPO_ROOT / "data" / "policies").glob("*.json")):
+        tree = policies.get_tree(json.loads(path.read_text(encoding="utf-8"))["policy_version_id"])
+        for fact in tree.reconciled_facts:
+            declared[tree.policy_version_id] = fact.discrepancy_tolerance.value
+    return declared
+
+
+def test_a2s_threshold_is_held_per_criterion_by_this_command(script):
+    """§7 says *per-criterion* precision ≥ 0.90. `--verify` would pass a report
+    regenerated at 0.5, so the figure is recomputed and the bar asserted (D145)."""
+    results, cache, _reviews = script._run(LocalPolicyStore())
+    called, failures = _a2_failures(script._criterion_pairs(results, cache))
+    assert called > 0, "no criterion was called MET, so A2 has no denominator"
+    assert failures == [], f"A2: below {A2_THRESHOLD}: {failures}"
+
+
+def test_a3s_zero_is_held_by_this_command(script):
+    results, cache, _reviews = script._run(LocalPolicyStore())
+    checked, invalid = _a3_invalid(script._determinations(cache))
+    assert checked > 0, "no MET verdict cites a span, so A3 holds vacuously"
+    assert invalid == [], f"A3: MET verdicts with an invalid span: {invalid}"
+
+
+def test_a5s_sweep_is_anchored_to_the_constant_the_trees_declare(script):
+    """The pinned marker is a literal in `_sweep_rows`; a tree whose tolerance
+    moved would leave the report pinning a point nothing declares (D145)."""
+    declared = _declared_tolerances(LocalPolicyStore())
+    assert _a5_errors(declared, script.TOLERANCE_GRID, script._sweep_rows()) == []
+
+
+def test_the_a2_a3_a5_checks_follow_their_input(script):
+    """Each check refuses a perturbed input (T-99's shape)."""
+    results, cache, _reviews = script._run(LocalPolicyStore())
+    pairs = script._criterion_pairs(results, cache)
+    flipped = False
+    perturbed = []
+    for case, criterion_id, expected, actual in pairs:
+        if not flipped and expected == actual == "MET":
+            perturbed.append((case, criterion_id, "NOT_MET", actual))
+            flipped = True
+        else:
+            perturbed.append((case, criterion_id, expected, actual))
+    assert flipped and _a2_failures(perturbed)[1]
+
+    determinations = script._determinations(cache)
+    shifted = []
+    moved = False
+    for determination in determinations:
+        results_out = []
+        for result in determination.criterion_results:
+            quoted = [i for i, sp in enumerate(result.spans) if sp.quote and sp.quote.strip()]
+            if not moved and result.verdict.value == "MET" and quoted:
+                # A quoted span, so the shifted slice disagrees with what it
+                # claims; an unquoted one is only range-checked.
+                i = quoted[0]
+                span = result.spans[i]
+                bad = span.model_copy(update={"char_start": span.char_start + 1, "char_end": span.char_end + 1})
+                result = result.model_copy(update={"spans": (*result.spans[:i], bad, *result.spans[i + 1:])})
+                moved = True
+            results_out.append(result)
+        shifted.append(determination.model_copy(update={"criterion_results": tuple(results_out)}))
+    assert moved and _a3_invalid(shifted)[1]
+
+    declared = _declared_tolerances(LocalPolicyStore())
+    assert _a5_errors({k: 2.0 for k in declared}, script.TOLERANCE_GRID, script._sweep_rows())
 
 
 def test_a11s_every_suggestion_traces_to_a_knowledge_table_row(script):

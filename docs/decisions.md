@@ -13793,3 +13793,69 @@ set includes A1–A9, so a reformat is a red test.
 ### What it mints
 
 Nothing. This is a check on documents, under working rule 12.
+
+## D145 — A2, A3 and A5 are held by commands that recompute their figures, not by the report's prose
+
+**Context.** `T-131`, off the path, the ninth of the numbered rows cleared before
+v1.6 opens. Written before the code (Article IX, working rule 5).
+
+`eval/report.md` prints A2's 0.90 and A3's zero, and `build_report.py --verify`
+byte-compares a re-render. That catches **drift**, not a bad number: regenerate
+the report with precision at 0.5 and it is internally coherent, and every gate
+stays green. `T-99` gated A11's threshold with a test that recomputes the figure
+from the harness's output. A2, A3 and A5 are still prose. That is T-95's finding
+about A10, in a third place.
+
+### Chosen — one recomputing test per gate, in `tests/test_build_report.py`, in A11's shape
+
+Each test reruns the harness through the report module (`script._run`), so the
+figures are recomputed from what the engine produces today rather than read
+from the committed report.
+
+- **A2, as spec §7 states it: per-criterion precision ≥ 0.90 on `MET`.** The
+  report's headline is the overall figure, but §7's clause is per criterion, so
+  the gate is per criterion: every criterion the system called `MET` at least
+  once must clear 0.90 on its labeled pairs. The overall figure is also held
+  at ≥ 0.90. There must be at least one such criterion, or the gate holds
+  vacuously. Measured at open: eight criteria have `MET` calls, all at 1.000.
+- **A3: zero `MET` verdicts with an invalid span.** Every span on a `MET`
+  verdict is re-sliced through `pa_agent.spans.validate` against an index built
+  from the patient and policy ports, the way `_span_section` does, and none may
+  fail. There must be at least one, or the gate holds vacuously.
+- **A5: the sweep is over a constant the trees actually carry.** A5 has no
+  threshold. Its clauses are *reported*, *accounted per `gap_reason`* and *swept
+  against a real constant the tree carries* (D82). The account cannot fail: one
+  loop computes both the per-reason counts and the total, so a check that they
+  agree would never fail on any input (D131). What can drift is the sweep's
+  anchor. `_sweep_rows` marks `tolerance == 1.0` as *pinned (D51)* by a literal,
+  so a tree whose `discrepancy_tolerance` moved would leave the report marking a
+  point no tree declares. The gate: every loaded tree that declares the
+  tolerance declares the same value, that value is in `TOLERANCE_GRID`, and
+  it is the point the rendered rows mark as pinned.
+
+Each check is a helper over plain data, with an adversarial case that perturbs
+the input and requires the check to follow (T-99's shape): one correct `MET`
+relabeled as wrong, one `MET` span shifted off its quote, and a tree declaring
+a tolerance the grid does not pin.
+
+*Rejected — assert against the figures parsed out of `eval/report.md`.* Those
+figures are the render being checked. A regeneration from a wrong engine
+rewrites the report and the parse together.
+
+*Rejected — a threshold check inside `build_report.py --verify`.* `--verify`'s
+contract is *the committed file is what the sources render to*, and a gate
+that also judged the numbers would fail for two unrelated reasons with one exit
+code. A11's precedent put the threshold in the suite, and these follow it.
+
+### Reversal condition
+
+Reverses for A5 if a second constant becomes sweepable for free, which D82 says
+`a.lookback_months` is not. The gate would then hold each swept constant to its
+tree. It reverses for A2 if §7 is rewritten to state the overall figure, in
+which case the per-criterion gate is stricter than the statement and would be
+relaxed by a decision entry, not quietly.
+
+### What it mints
+
+Nothing. A2, A3 and A5 are the statements. This makes each one held by a
+command.

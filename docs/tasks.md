@@ -21,6 +21,10 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-131` closed off the path** *(D145)*: A2's per-criterion 0.90, A3's zero
+and A5's sweep anchor are recomputed from the harness by `tests/test_build_report.py`,
+so a report regenerated with a bad number is a red suite rather than a coherent
+file.
 **`T-140` closed off the path** *(D144)*: README's gate table has a row for
 exactly the gates spec §7 and §11 say hold, and every current *A1–AN* claim in
 README and CLAUDE.md names the last of them.
@@ -286,12 +290,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-100 tasks are on this board — IDs run to T-141, and every id above T-125 is
+101 tasks are on this board — IDs run to T-141, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 100 are closed and none is open**;
-`T-131` and `T-141` below
-are numbered and have no record yet, in this board's usual shape. Both figures
+is well above the count. **All 101 are closed and none is open**;
+`T-141` below
+is numbered and has no record yet, in this board's usual shape. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
@@ -322,7 +326,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-127` | *Where this system degrades* re-read: the unclaimed criteria sorted three ways, corpus growth assigned to v1.6's round, Palmetto's `d` note corrected to D107, the measured yellow's deferral recorded — documents only, zero model calls | after `T-97` *(D120)* |
 | `T-128` | the README-structure test `T-126`'s exit named and no commit added: the diagram compared to `workflow.STEPS`, the resolver's result types, the three ports and the store adapters, every check refusing a mutant; zero model calls | after `T-127` *(D121)* |
 | `T-130` | `pa_agent/history.py`'s `review()` reads `medication.system or expansion.system` and **never binds `expansion`** — it is a local of `candidate_rows`. Verified by AST: bound in `candidate_rows`, used and unbound in `review`. `Medication.system` is `str \| None`, so an active prescription carrying no system raises `NameError` where the code means to fall back. Every committed bundle codes RxNorm, so nothing fires today and no behavioural test on this corpus can reach it | **closed** (D138), before v1.6 opened — discovered in `T-99`. Measured at open, the `NameError` cannot fire: `admits` refuses a resource with no system, so the fallback was dead code naming an unbound variable. `review` now cites the expansion's system, and every function under `pa_agent/` is parsed for a name nothing binds |
-| `T-131` | **A2's 0.90 threshold is printed and held by no command.** `eval/report.md` states it and `build_report.py --verify` only byte-compares a re-render, so a regeneration in which precision fell to 0.5 passes every gate. `T-99` gated A11's threshold with a test; A2's, A3's and A5's are still prose. T-95's finding about A10, in a third place | **discovered in `T-99`** — gating one threshold made the absence of the others legible; not folded in, because three gates acquiring commands is its own row |
+| `T-131` | **A2's 0.90 threshold is printed and held by no command.** `eval/report.md` states it and `build_report.py --verify` only byte-compares a re-render, so a regeneration in which precision fell to 0.5 passes every gate. `T-99` gated A11's threshold with a test; A2's, A3's and A5's are still prose. T-95's finding about A10, in a third place | **closed** (D145), before v1.6 opened — discovered in `T-99`. A2 per criterion as §7 states it, A3's zero, and A5's sweep anchored to the tolerance the trees declare, each recomputed from the harness and each refusing a perturbed input |
 | `T-129` | the national floor checked at load: D112 deferred the relation to the payer axis because both committed trees declare 35.0, the floor exactly, and v1.6's candidate NCD is **nationally quantified** — so the premise expires four versions early. Documents and a load-time check; zero model calls | **closed** (D130), before v1.6 opened |
 | `T-132` | **this board's own task count is a copy nothing re-derives.** `tests/test_docs_consistency.py` counts the closed-record headings and holds `README.md` and `CLAUDE.md` to them; the board's own prose — *"Eighty-two tasks are on this board … 81 are closed and 1 is open"* — was correct when D124 wrote it at `773c209` and was four closes stale by `T-129`, with every gate green. D108's own failure, on the document that **owns** the figure. Same class, found in the same pass: spec §11's opening line read *"v1.3 is in progress"* while its own table three lines below marked v1.3 and v1.4 closed | **closed** (D137), before v1.6 opened — discovered in `T-129`, and found stale again at open: *Ninety-one … IDs run to T-137* against 92 records and T-141, and spec §11 calling a closed v1.5 *in progress*. Both are now re-derived from the board's records, its *Off the path* table and §11's own table |
 | `T-133` | **three more copies with no owner.** `README.md`'s *eval harness* section read *Twenty-eight labeled cases* while `eval/report.md` — which owns the figure — said 33; `test_the_readmes_corpus_figures_come_from_the_report` checks the copy in P3's bullet and scans no other, which is the every-occurrence weakness `test_every_stated_suite_size_is_the_suites_size` was rebuilt to fix, one figure over. Its repository layout listed the `pa_agent/` modules by hand and had been missing `quotes`, `intake` and `session` since `T-98`, `T-100` and `T-101` — a list the package itself owns. And `CLAUDE.md`'s layout read *tests/ 47 files* against 52: `test_every_stated_suite_size_is_the_suites_size` matches *N tests across M files* and a bare file count is invisible to it. All three are reconciled in `T-103`'s close under working rule 12; the three checks are this row's | **closed** (D142), before v1.6 opened — discovered in `T-103`. Every labeled-case count, every enumerated eval range, both layouts' module lists and the bare test-file count are re-derived from their owners. Two more stale copies were live at open: `H1-H4` in CLAUDE.md and README's `agent/` line |
@@ -4294,6 +4298,48 @@ Green means:
 **Mutation pass.** The adversarial cases run on every suite: README with its
 last gate row removed is refused, and so is a heading naming one gate short.
 CLAUDE.md's stale sentence failed the new check before it was reconciled.
+
+### `[x] T-131` A2, A3 and A5 held by a command, not only printed
+
+**REQ:** mints nothing. A2, A3 and A5 are the statements · **Depends:** T-22,
+T-28, T-72 · **Blocks:** nothing · **Discovered in:** T-99 *(D126)* · **Decided
+by:** D145 · **Gates:** A2, A3, A5 · **Timebox:** half a day
+**Status:** **closed** (D145). Off the path, closed before v1.6 opened. The exit
+ran green and every gate with it. No figure in `eval/report.md` moved, and no
+module under `pa_agent/` or `eval/` was changed.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_build_report.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- **A2:** recomputed from the harness, every criterion the system called `MET`
+  is at ≥ 0.90 precision on its labeled pairs, as spec §7 states it, and so is
+  the overall figure. At least one criterion was called `MET`.
+- **A3:** every span on a `MET` verdict re-slices through `spans.validate`, and
+  at least one was checked.
+- **A5:** every loaded tree declaring `discrepancy_tolerance` declares the same
+  value, that value is a grid point, and it is the point the sweep marks as
+  pinned.
+- each check refuses a perturbed input: one correct `MET` relabeled wrong, one
+  quoted `MET` span shifted by a character, and trees declaring a tolerance the
+  sweep does not pin.
+
+**Why A5's gate is the sweep's anchor and not the account.** The per-reason
+account and the total are computed in one loop, so a check that they agree
+cannot fail (D131). The sweep's *pinned* marker is a literal in
+`_sweep_rows`, which can silently disagree with the trees.
+
+**Mutation pass.** The pinned literal in `eval/build_report.py`'s `_sweep_rows`
+was changed from `1.0` to `2.0`: the A5 gate went red. With the script restored
+and `__pycache__` cleared, it passes. The A2 and A3 perturbations are tests in
+the file and run on every suite. The first A3 perturbation chosen, an unquoted
+span, did **not** fail validation, because only quoted spans are compared to
+their slice. The check was moved to a quoted span, and that limit is now stated
+where the perturbation is built.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one
 
