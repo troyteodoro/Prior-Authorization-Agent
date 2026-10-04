@@ -171,9 +171,16 @@ def test_every_stated_suite_size_is_the_suites_size(readme, claude, collected):
     someone writes it, rather than the moment someone remembers to extend a
     regex. Elsewhere copies are deleted rather than pinned, because a copy
     that earns nothing is drift surface (D108).
+
+    README states it; CLAUDE.md must not, since `T-142` (D148). A check that
+    required a copy there was a check enforcing duplication.
     """
+    assert not _suite_size_claims(claude), (
+        "CLAUDE.md states the suite size. It keeps no copy of a figure the "
+        "suite owns (D148)."
+    )
     files = len(list((REPO_ROOT / "tests").glob("test_*.py")))
-    for name, text in (("README.md", readme), ("CLAUDE.md", claude)):
+    for name, text in (("README.md", readme),):
         claims = _suite_size_claims(text)
         assert claims, f"{name} no longer states the suite size"
         for size, file_count, offset in claims:
@@ -263,15 +270,18 @@ def test_both_documents_report_the_board_s_own_task_count(readme, claude, closed
     """It read 69 in the README after the board said 70.
 
     Counted from the board's closed-record headings rather than from its prose,
-    so the prose is checked too.
+    so the prose is checked too. README carries the copy; CLAUDE.md carries
+    none since `T-142` (D148).
     """
-    for name, text in (("README.md", readme), ("CLAUDE.md", claude)):
-        found = {int(n) for n in re.findall(r"(\d+) of \1 tasks closed", text)}
-        assert found, f"{name} no longer states a task count"
-        assert found == {closed_tasks}, (
-            f"{name} says {found} tasks closed; the board carries "
-            f"{closed_tasks} closed records (working rule 12)."
-        )
+    found = {int(n) for n in re.findall(r"(\d+) of \1 tasks closed", readme)}
+    assert found, "README.md no longer states a task count"
+    assert found == {closed_tasks}, (
+        f"README.md says {found} tasks closed; the board carries "
+        f"{closed_tasks} closed records (working rule 12)."
+    )
+    assert not re.findall(r"(\d+) of \1 tasks closed", claude), (
+        "CLAUDE.md states a task count; the board owns it (D148)"
+    )
 
 
 # --------------------------------------------------------------------------
@@ -355,14 +365,18 @@ def _board_prose_errors(board: str) -> list[str]:
 
 
 def _claude_md_errors(claude: str, board: str) -> list[str]:
-    """CLAUDE.md's copies of the same two figures (D137)."""
+    """CLAUDE.md's copies of the same two figures (D137).
+
+    Since `T-142` it keeps no copy of the highest id at all (D148): the
+    precedence table's record list is the one range it states, and that is
+    checked by `test_the_precedence_table_states_the_real_id_ranges`.
+    """
     records = _records(board)
     numbered = _off_path_ids(board) - set(records)
-    highest = max(set(records) | _off_path_ids(board))
     errors = []
     ran_to = {int(n) for n in re.findall(r"IDs run to T-(\d+)", " ".join(claude.split()))}
-    if ran_to != {highest}:
-        errors.append(f"CLAUDE.md says IDs run to {sorted(ran_to)}; the board's highest is T-{highest}")
+    if ran_to:
+        errors.append(f"CLAUDE.md says IDs run to {sorted(ran_to)}; the board owns that figure (D148)")
     listed = _numbered_without_record(claude, r" (?:is|are) numbered with no record yet")
     if (listed or set()) != numbered:
         errors.append(
@@ -480,12 +494,9 @@ def test_the_acceptance_figures_in_both_documents_come_from_the_report(readme, c
     assert base_rate and abstention, "the report's shape moved; re-read it here"
     rate, abstained = base_rate.group(1), abstention.group(1)
 
-    assert f"{rate} base rate" in claude, (
-        f"CLAUDE.md does not carry the report's A2 base rate ({rate})"
-    )
-    assert f"A5 abstention {abstained}" in claude, (
-        f"CLAUDE.md does not carry the report's A5 abstention rate ({abstained})"
-    )
+    # CLAUDE.md carried these until `T-142`, and keeps none of them now (D148).
+    for stated in (f"{rate} base rate", f"A5 abstention {abstained}"):
+        assert stated not in claude, f"CLAUDE.md copies {stated!r} from the report (D148)"
     assert f"**{rate}** base rate" in _gate_row(readme, "A2"), (
         f"README's A2 row does not carry the report's base rate ({rate})"
     )
@@ -511,10 +522,10 @@ def test_the_acceptance_figures_in_both_documents_come_from_the_report(readme, c
     )
     assert cost, "the report's cost table moved"
     calls, tin, tout = cost.groups()
-    assert f"A6 {calls} model calls" in claude, f"CLAUDE.md's A6 call count is not {calls}"
+    assert f"A6 {calls} model calls" not in claude, "CLAUDE.md copies A6's call count (D148)"
     for label, value in (("input", tin), ("output", tout)):
-        assert f"{int(value):,}" in claude, (
-            f"CLAUDE.md does not carry the report's A6 {label} tokens ({int(value):,})"
+        assert f"{int(value):,}" not in claude, (
+            f"CLAUDE.md copies the report's A6 {label} tokens ({int(value):,}) (D148)"
         )
     a6 = f"{calls} model calls / {int(tin):,} in / {int(tout):,} out"
     assert a6 in _gate_row(readme, "A6"), f"README's A6 row does not read {a6!r}"
@@ -522,7 +533,10 @@ def test_the_acceptance_figures_in_both_documents_come_from_the_report(readme, c
     # The denominator is written as a number word in both documents; every
     # occurrence is checked, and a stale one is the one that drifted.
     determinations = _determinations(report)
-    for name, text in (("README.md", readme), ("CLAUDE.md", claude)):
+    assert not _counted_phrases(" ".join(claude.split()), r"across (\S+) determinations"), (
+        "CLAUDE.md copies A6's determination count (D148)"
+    )
+    for name, text in (("README.md", readme),):
         counted = _counted_phrases(" ".join(text.split()), r"across (\S+) determinations")
         assert counted, f"{name} no longer states A6's determination count"
         for stated, phrase in counted:
@@ -886,20 +900,23 @@ def test_claude_md_names_every_eval_row_family(claude):
     were added to the count and not to the list. So every id-prefix family
     in `eval/cases.json` has to be named in that sentence, and the count has
     to be the file's. §6's rows are the `E` family and are named as §6's.
+
+    The sentence was in *Current state* until `T-142` cut it (D148); the
+    repository layout's `cases.json` entry is the one that remains.
     """
     cases = json.loads((REPO_ROOT / "eval" / "cases.json").read_text(encoding="utf-8"))["cases"]
     families = sorted({re.match(r"[A-Z]+", case["case_id"]).group(0) for case in cases})
 
     flat = " ".join(claude.split())
-    sentence = re.search(r"holds (\S+) labeled rows — (.*?) — all `PASS`", flat)
-    assert sentence, "CLAUDE.md's eval-set sentence moved; re-read it here"
+    sentence = re.search(r"cases\.json the eval set — (\S+) labeled rows \((.*?);", flat)
+    assert sentence, "CLAUDE.md's eval-set entry moved; re-read it here"
     assert _as_count(sentence.group(1)) == len(cases), (
         f"CLAUDE.md says the eval set holds {sentence.group(1)} rows; "
         f"eval/cases.json holds {len(cases)}"
     )
     enumeration = sentence.group(2)
     for family in families:
-        marker = r"§6" if family == "E" else rf"`{family}\d"
+        marker = r"§6" if family == "E" else rf"\b{family}\d"
         assert re.search(marker, enumeration), (
             f"CLAUDE.md's enumeration of the eval set names no {family!r} row: "
             f"{enumeration!r}"
@@ -1042,11 +1059,36 @@ def test_the_layout_check_refuses_a_missing_and_an_invented_module(claude):
 
 def test_claude_md_s_bare_test_file_count_is_the_file_count(claude):
     """*tests/ 47 files* against 52: the suite-size check reads *N tests across
-    M files* and a bare count is invisible to it (D142)."""
-    files = len(list((REPO_ROOT / "tests").glob("test_*.py")))
+    M files* and a bare count is invisible to it (D142). Since `T-142` the
+    layout states no count at all, because the suite owns it (D148)."""
     stated = re.findall(r"^tests/\s+(\S+) files", claude, re.M)
-    assert stated, "CLAUDE.md's layout no longer states a test-file count"
-    assert [_as_count(n) for n in stated] == [files] * len(stated)
+    assert not stated, f"CLAUDE.md's layout states a test-file count {stated} (D148)"
+
+
+#: The cap on CLAUDE.md's *Current state* (T-142, D148). It had grown to about
+#: 500 lines, one paragraph per closed task, each a copy of a board record and
+#: a decision entry. A literal, so raising it is a visible diff (D51's move).
+CURRENT_STATE_MAX_LINES = 30
+
+
+def _current_state_lines(claude: str) -> int:
+    match = re.search(r"^## Current state\n(.*?)(?=^## )", claude, re.M | re.S)
+    assert match, "CLAUDE.md's *Current state* section moved; re-read it here"
+    return len(match.group(1).strip("\n").splitlines())
+
+
+def test_claude_md_s_current_state_is_a_status_line_not_a_history(claude):
+    lines = _current_state_lines(claude)
+    assert lines <= CURRENT_STATE_MAX_LINES, (
+        f"CLAUDE.md's *Current state* is {lines} lines; the cap is "
+        f"{CURRENT_STATE_MAX_LINES}. A closed task's account belongs in its board "
+        "record and its decision entry (D148)."
+    )
+
+
+def test_the_current_state_cap_refuses_a_grown_section(claude):
+    grown = claude.replace("## Current state\n", "## Current state\n" + "history\n" * 31, 1)
+    assert _current_state_lines(grown) > CURRENT_STATE_MAX_LINES
 
 
 # --------------------------------------------------------------------------
@@ -1253,9 +1295,12 @@ def test_the_readme_gate_table_has_a_row_for_exactly_the_gates_that_hold(readme)
 
 def test_every_current_gate_range_claim_names_the_last_gate_that_holds(readme, claude):
     """CLAUDE.md read *acceptance gates A1–A10 all hold* three versions after
-    A13 did (D144)."""
+    A13 did (D144). Since `T-142` it states no such claim at all (D148)."""
     held = _held_gates(SPEC.read_text(encoding="utf-8"))
-    assert _range_claim_errors({"README.md": readme, "CLAUDE.md": claude}, held) == []
+    assert _range_claim_errors({"README.md": readme}, held) == []
+    assert _range_claim_errors({"CLAUDE.md": claude}, [0]) == [], (
+        "CLAUDE.md states a current A1–AN claim; spec §7 and §11 own it (D148)"
+    )
 
 
 def test_the_gate_checks_refuse_a_missing_row_and_a_stale_range(readme):

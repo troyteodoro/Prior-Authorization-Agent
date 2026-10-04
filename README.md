@@ -70,7 +70,7 @@ replays a committed recording.
 ## Where the project stands
 
 **v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and no version is
-open.** 102 of 102 tasks closed, **none open** — `T-103` opened v1.5 with the
+open.** 103 of 103 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,7 +78,7 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A13 holding. The suite collects 1766 tests (58 skip). **v1.6 opens next**,
+A1–A13 holding. The suite collects 1768 tests (58 skip). **v1.6 opens next**,
 with `T-107`.
 
 - **v1** delivered the determination end to end: two short circuits, seven
@@ -1055,7 +1055,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-1766 tests across 57 files, 58 of them skipped — the skips are per-tree
+1768 tests across 57 files, 58 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 

@@ -21,6 +21,11 @@ that follow *(D105)*.
 schema. **Nothing is open on this board**, and closing v1.5 does not open v1.6:
 a version opens when the previous one closes, and the opening row writes its own
 record *(D97's rule)*.
+**`T-142` closed off the path** *(D148)*, opened after the review that wrote
+D147: CLAUDE.md's *Current state* is a status line capped at 30 lines, and
+CLAUDE.md keeps no copy of a measured figure, the suite size, this board's
+counts or the current gate range. Each check that required such a copy now
+requires its absence.
 **`T-141` closed off the path** *(D146)*, the last of the ten: the suite is
 guarded against the network in process and in every subprocess it starts, so a
 test that built a live runner fails locally on a placeholder key and a refused
@@ -295,10 +300,10 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-102 tasks are on this board — IDs run to T-141, and every id above T-125 is
+103 tasks are on this board — IDs run to T-142, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 102 are closed and none is open**; every row the board numbered has a
+is well above the count. **All 103 are closed and none is open**; every row the board numbered has a
 record. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
@@ -342,6 +347,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-139` | **no check ties a verb's documented flags to its parser.** `README.md`'s packet section documented `--payer`, which `T-105` replaced with `--payer-id` when it deleted `cli.PLACEHOLDER_PAYER` (D134), so the README told a reader to type a flag `argparse` rejects. The stale sentence is corrected in `T-137`'s close under working rule 12 — it is prose about the command whose output that row changes — but README documents all **eight** session verbs' flags and `test_docs_consistency.py` reads none of them: a flag renamed, removed or added leaves prose nothing re-derives. The check is a parse over README's command blocks against the declared options | **closed** (D143), before v1.6 opened — discovered in `T-137`. Both directions: every documented flag is declared for its verb, and every declared flag is documented. `--reject` and `--outbox-root` were undocumented at open |
 | `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **closed** (D144), before v1.6 opened — discovered in `T-106`. The held set is derived from spec §7 and §11; README's table has exactly those rows, and every current *A1–AN* claim names the last. CLAUDE.md's *A1–A10 all hold* was live at open |
 | `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **closed** (D146), before v1.6 opened — discovered in `T-106`. An autouse guard refuses non-loopback connections and lookups in process, and every child inherits a placeholder key, a missing credentials file and a refused proxy; a live CLI run from the suite fails locally with exit 3 |
+| `T-142` | **CLAUDE.md's *Current state* had grown back to about 500 of its 1,666 lines**, one paragraph per closed task, each a copy of a board record and a decision entry, while the file's own header said the narrative had been moved out *(D70)*. `tests/test_docs_consistency.py` **required** CLAUDE.md to carry copies of figures other artifacts own (the suite size, the task count, the highest id, A2, A5, A6, the current gate range, the test-file count), so the check enforced the duplication that `T-132`–`T-140` kept repairing. Documents and one test file; zero model calls | **closed** (D148), before v1.6 opened, ahead of `T-107` — discovered in the review that wrote D147. *Current state* is a status line capped at 30 lines by a test, and every check that required a CLAUDE.md copy now requires its absence |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -4385,6 +4391,45 @@ in-process probes aim at RFC 5737's TEST-NET-1 and RFC 2606's `.invalid`.
 red. The environment layer was removed: the inheritance test and the live-run
 test went red **at their precondition**, in 0.07 s, before any child that could
 read the real key was started. With `tests/conftest.py` restored, all 16 tests
+in the file pass.
+
+### `[x] T-142` CLAUDE.md's *Current state* is a status line, and CLAUDE.md copies no figure that moves at a close
+
+**REQ:** mints nothing · **Depends:** T-132, T-133, T-140 · **Blocks:**
+nothing, though it was sequenced ahead of `T-107` so that v1.6's sessions do
+not load the narrative · **Discovered in:** the review that wrote D147 ·
+**Decided by:** D148 · **Timebox:** one session
+**Status:** **closed** (D148). Off the path, closed before v1.6 opened. The exit
+ran green and every gate with it. No module under `pa_agent/`, `eval/` or
+`scripts/` was changed.
+
+**Measured at open.** *Current state* ran from line 899 to line 1398 of 1,666.
+Every paragraph in it cited a decision entry or a task record, the owners of
+what it said. The one standing constraint in it, REQ-44/47 left unclaimed on
+purpose, was kept as a line.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- CLAUDE.md's *Current state* is at most 30 lines, and a section grown past the
+  cap is refused;
+- CLAUDE.md states no suite size, no test-file count, no task count, no
+  *IDs run to*, no A2 base rate, no A5 rate, no A6 call or token figure, no A6
+  denominator and no current *A1–AN* claim;
+- README still carries each of its copies, re-derived from its owner;
+- the precedence table's ranges, the layout's module lists, the eval-set entry
+  and its family ranges, and the corpus counts are still held every occurrence.
+
+**Mutation pass.** Five mutants, zero survivors, with `__pycache__` cleared
+between runs. Each of these appended to CLAUDE.md went red on exactly one test:
+*IDs run to T-142*, *A6 53 model calls*, *1768 tests across 57 files*, and 31
+lines added to *Current state*. Changing README's A2 base rate also went red,
+so README's required half is untouched. With both files restored, all 42 tests
 in the file pass.
 
 ### `[x] T-90` A Vertex measurement beside the AI Studio one

@@ -14004,3 +14004,67 @@ cannot happen.
 
 Nothing. `T-107`'s exit gains a clause: *a recorded payload replayed under a
 fact schema it was not measured with raises.*
+
+## D148 — CLAUDE.md holds constraints, not history or measured figures, and its *Current state* is a status line
+
+**Context.** `T-142`, off the path, opened before `T-107` after the review
+D147 came from. Written before any edit (Article IX, working rule 5).
+
+CLAUDE.md's header says that the narrative was moved out and the constraints
+kept. Its *Current state* section had grown back to about 500 of the file's
+1,666 lines. Nearly all of it is a paragraph per closed task, each citing the
+decision that already records it. Every session loads the whole file. And
+`tests/test_docs_consistency.py` **requires** CLAUDE.md to carry copies of
+figures other artifacts own: the suite size, the task count, the highest task
+id, A2's base rate, A5's abstention rate, A6's cost and denominator, the
+current *A1–AN* range and the test-file count. A check that requires a copy
+enforces duplication. Most of `T-132`–`T-140` was spent fixing copies like
+these, with every gate green until the copy was pinned.
+
+**Measured at open.** Every paragraph of *Current state* cites a decision
+entry or a task record. Those are the owners, so removing the paragraph loses
+nothing either one does not hold. The one exception, scanned by hand, is
+*REQ-44/REQ-47 are unclaimed on purpose*. That is a standing constraint, not
+history, so it stays as a line in the status section.
+
+### Chosen
+
+1. *Current state* becomes a status line and pointers: what is next, which
+   version is open, the REQ-44/47 constraint, and where history, reasons,
+   figures and gates live. Its length is capped at 30 lines by a test, so the
+   narrative cannot grow back one close at a time.
+2. *Domain facts that took work to establish* is promoted to its own section,
+   unchanged. It holds domain constraints, not task history.
+3. CLAUDE.md carries **no** copy of a figure that moves at a close: a
+   measured figure, the suite size or test-file count, the board's task count
+   or highest id, or the current *A1–AN* range. Each check that required one
+   now asserts the copy is **absent**. README keeps its required, re-derived
+   copies, because README is the document a reader outside the repository
+   starts from. Corpus and case counts in the repository layout (*nine policy
+   documents*, *five FDA labels*, the knowledge table's rows, the labeled
+   rows) stay. They describe the layout, they move only when a corpus grows,
+   and a test already re-derives every occurrence. Removing them would cost
+   the layout its meaning to save no drift.
+4. The header's *What belongs in this file* states the rule.
+
+*Rejected — keep the narrative and keep pinning its copies.* That is the cost
+being removed: every close writes a paragraph and re-derives the figures in
+it.
+
+*Rejected — move the narrative to a new document.* That adds a sixth document
+to a precedence table D93 cut to five, and it would hold only copies of the
+board and the log.
+
+*Out of scope:* *Architecture* and *Invariants* carry task history too. They
+are constraints first, and trimming them is a later row if this one proves
+out.
+
+### Reversal condition
+
+If a fresh session repeatedly makes a mistake that only the deleted narrative
+prevented, the fact goes into *Invariants* as a rule, never back into a
+history paragraph.
+
+### What it mints
+
+Nothing.
