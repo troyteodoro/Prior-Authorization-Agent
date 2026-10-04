@@ -356,8 +356,10 @@ and the judgments stay abstentions *(D107, D120)*.
   reported · *(Amendment 1; A14)*
 
 **Covers:** A14
-**Status:** **closed** — all four of v1.6's rows are done and **A14 holds**
-*(T-107 through T-110; D149, D150, D151, D152, D154, D155)*.
+**Status:** **open** — five of v1.6's six rows are done, and A14 holds on AI
+Studio but not on Vertex. The owner reads A14 on both tiers, so v1.6 is open
+on `T-147` *(T-107 through T-110 and T-146; D149, D150, D151, D152, D154,
+D155, D156, D157)*.
 - Two practices were added, CPAP under a nationally quantified NCD and
   hyaluronan injection under an LCD alone. Each is read through a fact kind
   its tree declares.
@@ -366,8 +368,10 @@ and the judgments stay abstentions *(D107, D120)*.
   through a further declared kind. They abstain where no note states it. The
   ultrasound tree's three judgments stay unclaimed.
 - The differential covers every note-bearing chart's own request and agrees
-  on every outcome on AI Studio. On Vertex four runs errored, and those are
-  reported as errors (`T-146`).
+  on every outcome it scored, on both tiers. On AI Studio no run errors. On
+  Vertex one run of 25 errored, `RA6`'s, with its cause unrecorded
+  (`T-147`). The four runs that errored on an invented policy version before
+  `T-146` now agree.
 - The four practices of the story's sentence are the ones the two
   cross-practice rounds added. The compatibility account carries them beside
   the bariatric control (REQ-80, D155).

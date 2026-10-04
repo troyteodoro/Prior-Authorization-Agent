@@ -10,12 +10,14 @@ and `tests/test_adk_agent.py` asserts it. REQ-41's closing line is that a module
 able to read both planes would have to hold both handles; keeping the handles in
 two modules is what makes holding both a visible act.
 
-**Honest status: these have no model consumer today.** The extraction agent is not
+**Honest status: these have no model consumer.** The extraction agent is not
 given them — a note extractor that can read the policy's thresholds is a threshold
-leaking into the model's judgment, which is REQ-53's whole argument. They are
-declared and tested here as the policy-plane surface **T-61** will hand to its
-adjudicator, which is the agent that legitimately needs to read the rule it is
-applying. Saying so rather than implying they are wired in.
+leaking into the model's judgment, which is REQ-53's whole argument. T-61's
+planner was offered them and, since T-146, is not (D156): it never called them on
+a completed run, and on Vertex it called `get_policy_context` with versions it
+invented. They stay declared and tested as the policy-plane surface for whichever
+version claims REQ-44 (D107) — an adjudicator is the agent that legitimately needs
+to read the rule it applies. Saying so rather than implying they are wired in.
 
 They are read-only by construction, which is Article VII's requirement of any
 model-facing policy surface: there is no setter, no write, and no way to reach the

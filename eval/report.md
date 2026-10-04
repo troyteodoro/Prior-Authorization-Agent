@@ -175,13 +175,13 @@ The differential re-measured on the second tier. Extraction and verification are
 
 | Figure | AI Studio | Vertex |
 |---|---|---|
-| Patients scored | 25 | 21 |
+| Patients scored | 25 | 24 |
 | Outcome agreement | 1.0 | 1.0 |
 | Criterion agreement | 1.0 | 1.0 |
 | Citation validity | 1.0 | 1.0 |
-| Errors | 0 | 4 |
-| Planner model calls | 235 | 180 |
-| Planner input tokens | 471899 | 325879 |
+| Errors | 0 | 1 |
+| Planner model calls | 224 | 210 |
+| Planner input tokens | 429245 | 369777 |
 
 A free-tier tool loop is not reproducible at temperature 0 (D91), and neither is a paid one: these are two samples, not a before and an after. What they agree on is the part that matters — the planner reaches the same outcome as the deterministic oracle on every patient, on both tiers, with every cited span slicing back.
 

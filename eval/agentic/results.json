@@ -1,14 +1,14 @@
 {
   "task": "T-61",
   "decision": "D63",
-  "measured_at": "2026-10-04T09:56:25.894077+00:00",
+  "measured_at": "2026-10-04T13:47:01.568985+00:00",
   "model": "gemini-3.5-flash-lite",
   "tier": {
     "retrieval": "ai_studio",
     "extraction": "replayed from results.json + sleep_apnea_workup.json + knee_osteoarthritis_workup.json + bariatric_surgical_workup.json + rheumatoid_arthritis_workup.json",
     "verifier": "replayed from results.json"
   },
-  "prompt_version": "t61-retrieval-v2",
+  "prompt_version": "t61-retrieval-v3",
   "requests": "every eval request on a note-bearing chart that reaches the graph, one per chart, each at its own procedure code and as_of",
   "bounds": {
     "max_steps": 12,
@@ -30,15 +30,15 @@
     "spans_valid": 221,
     "spans_total": 221,
     "citation_validity": 1.0,
-    "total_model_calls": 235,
-    "total_input_tokens": 471899,
+    "total_model_calls": 224,
+    "total_input_tokens": 429245,
     "total_output_tokens": 31900,
-    "total_wall_time_ms": 204330.3,
+    "total_wall_time_ms": 204352.8,
     "oracle_model_calls": 142,
     "oracle_input_tokens": 127658,
     "oracle_output_tokens": 20274,
-    "input_token_ratio": 3.7,
-    "model_call_ratio": 1.7
+    "input_token_ratio": 3.4,
+    "model_call_ratio": 1.6
   },
   "patients": [
     {
@@ -124,9 +124,9 @@
         "spans_valid": 25,
         "spans_total": 25,
         "model_calls": 12,
-        "input_tokens": 18182,
+        "input_tokens": 17453,
         "output_tokens": 2209,
-        "wall_time_ms": 12108.3
+        "wall_time_ms": 12218.4
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -213,18 +213,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 9,
         "spans_total": 9,
-        "model_calls": 11,
-        "input_tokens": 23144,
+        "model_calls": 8,
+        "input_tokens": 16601,
         "output_tokens": 1813,
-        "wall_time_ms": 9884.1
+        "wall_time_ms": 8886.3
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -313,9 +313,9 @@
         "spans_valid": 22,
         "spans_total": 22,
         "model_calls": 11,
-        "input_tokens": 16918,
+        "input_tokens": 16189,
         "output_tokens": 1763,
-        "wall_time_ms": 10529.6
+        "wall_time_ms": 10716.1
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -405,9 +405,9 @@
         "spans_valid": 20,
         "spans_total": 20,
         "model_calls": 11,
-        "input_tokens": 21575,
+        "input_tokens": 20846,
         "output_tokens": 1737,
-        "wall_time_ms": 11303.8
+        "wall_time_ms": 11325.0
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -500,10 +500,10 @@
         ],
         "spans_valid": 3,
         "spans_total": 3,
-        "model_calls": 10,
-        "input_tokens": 32134,
+        "model_calls": 8,
+        "input_tokens": 20640,
         "output_tokens": 627,
-        "wall_time_ms": 7007.9
+        "wall_time_ms": 6482.4
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -590,18 +590,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 1,
         "spans_total": 1,
         "model_calls": 6,
-        "input_tokens": 12876,
+        "input_tokens": 16916,
         "output_tokens": 681,
-        "wall_time_ms": 5001.5
+        "wall_time_ms": 5151.6
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -692,9 +692,9 @@
         "spans_valid": 16,
         "spans_total": 16,
         "model_calls": 12,
-        "input_tokens": 20317,
+        "input_tokens": 19588,
         "output_tokens": 2312,
-        "wall_time_ms": 12138.5
+        "wall_time_ms": 12540.6
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -768,18 +768,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 5,
         "spans_total": 5,
         "model_calls": 7,
-        "input_tokens": 12539,
+        "input_tokens": 15856,
         "output_tokens": 836,
-        "wall_time_ms": 5749.3
+        "wall_time_ms": 5984.7
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -853,18 +853,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
-          "get_patient_document",
-          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 6,
         "spans_total": 6,
         "model_calls": 7,
-        "input_tokens": 16139,
+        "input_tokens": 11630,
         "output_tokens": 922,
-        "wall_time_ms": 6256.8
+        "wall_time_ms": 6432.2
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -940,18 +940,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 6,
         "spans_total": 6,
-        "model_calls": 10,
-        "input_tokens": 21508,
+        "model_calls": 7,
+        "input_tokens": 16367,
         "output_tokens": 856,
-        "wall_time_ms": 7626.1
+        "wall_time_ms": 6614.9
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1025,18 +1025,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
-          "get_patient_document",
-          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 4,
         "spans_total": 4,
         "model_calls": 7,
-        "input_tokens": 17169,
+        "input_tokens": 12124,
         "output_tokens": 855,
-        "wall_time_ms": 5551.3
+        "wall_time_ms": 5851.6
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1112,18 +1112,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 2,
         "spans_total": 2,
         "model_calls": 6,
-        "input_tokens": 11254,
+        "input_tokens": 14203,
         "output_tokens": 762,
-        "wall_time_ms": 4957.1
+        "wall_time_ms": 5289.0
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1197,18 +1197,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 5,
         "spans_total": 5,
-        "model_calls": 10,
-        "input_tokens": 20829,
+        "model_calls": 7,
+        "input_tokens": 15262,
         "output_tokens": 878,
-        "wall_time_ms": 7001.0
+        "wall_time_ms": 6260.7
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1293,9 +1293,9 @@
         "spans_valid": 7,
         "spans_total": 7,
         "model_calls": 8,
-        "input_tokens": 13621,
+        "input_tokens": 12892,
         "output_tokens": 1178,
-        "wall_time_ms": 7193.2
+        "wall_time_ms": 7467.6
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1382,9 +1382,9 @@
         "spans_valid": 4,
         "spans_total": 4,
         "model_calls": 7,
-        "input_tokens": 16620,
+        "input_tokens": 15891,
         "output_tokens": 1028,
-        "wall_time_ms": 6134.4
+        "wall_time_ms": 6224.9
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1469,9 +1469,9 @@
         "spans_valid": 7,
         "spans_total": 7,
         "model_calls": 8,
-        "input_tokens": 17461,
+        "input_tokens": 16732,
         "output_tokens": 1183,
-        "wall_time_ms": 7286.4
+        "wall_time_ms": 7370.7
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1556,9 +1556,9 @@
         "spans_valid": 5,
         "spans_total": 5,
         "model_calls": 7,
-        "input_tokens": 17711,
+        "input_tokens": 16982,
         "output_tokens": 1052,
-        "wall_time_ms": 6207.4
+        "wall_time_ms": 6471.6
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1645,9 +1645,9 @@
         "spans_valid": 4,
         "spans_total": 4,
         "model_calls": 7,
-        "input_tokens": 16774,
+        "input_tokens": 16045,
         "output_tokens": 963,
-        "wall_time_ms": 6131.8
+        "wall_time_ms": 6185.2
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1725,18 +1725,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
-          "get_patient_document",
-          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 5,
         "spans_total": 5,
-        "model_calls": 7,
-        "input_tokens": 16441,
+        "model_calls": 10,
+        "input_tokens": 19677,
         "output_tokens": 1024,
-        "wall_time_ms": 6224.2
+        "wall_time_ms": 8133.8
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1812,18 +1812,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
-          "get_patient_document",
-          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 7,
         "spans_total": 7,
         "model_calls": 8,
-        "input_tokens": 18645,
+        "input_tokens": 13296,
         "output_tokens": 1205,
-        "wall_time_ms": 7047.1
+        "wall_time_ms": 6987.3
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1899,18 +1899,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 23,
         "spans_total": 23,
-        "model_calls": 17,
-        "input_tokens": 28828,
+        "model_calls": 14,
+        "input_tokens": 22645,
         "output_tokens": 2450,
-        "wall_time_ms": 14645.0
+        "wall_time_ms": 13319.5
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -1986,18 +1986,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 20,
         "spans_total": 20,
         "model_calls": 14,
-        "input_tokens": 19552,
+        "input_tokens": 22677,
         "output_tokens": 2438,
-        "wall_time_ms": 13173.8
+        "wall_time_ms": 13722.0
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -2070,18 +2070,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 5,
         "spans_total": 5,
-        "model_calls": 13,
-        "input_tokens": 24965,
+        "model_calls": 10,
+        "input_tokens": 20438,
         "output_tokens": 1032,
-        "wall_time_ms": 9008.7
+        "wall_time_ms": 8012.2
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -2154,18 +2154,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
-          "get_patient_document",
-          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 5,
         "spans_total": 5,
-        "model_calls": 10,
-        "input_tokens": 21168,
+        "model_calls": 13,
+        "input_tokens": 23495,
         "output_tokens": 1067,
-        "wall_time_ms": 8748.7
+        "wall_time_ms": 9323.9
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -2251,9 +2251,9 @@
         "spans_valid": 5,
         "spans_total": 5,
         "model_calls": 9,
-        "input_tokens": 15529,
+        "input_tokens": 14800,
         "output_tokens": 1029,
-        "wall_time_ms": 7414.3
+        "wall_time_ms": 7380.6
       },
       "disagreement": {},
       "outcome_agrees": true

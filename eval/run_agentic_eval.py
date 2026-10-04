@@ -742,6 +742,17 @@ def _verify_one(out_path: Path, report_only: bool = False) -> int:
         problems.append("the recording does not name the model it measured")
     if payload.get("tier") is None:
         problems.append("the recording does not name the tier it measured on")
+    # A recording describes the planner it was measured with, and only that one
+    # (REQ-78's rule, on the half that cannot be replayed). Without this, a
+    # changed allowlist under a bumped version leaves every recording green
+    # while it describes a planner that no longer exists (T-146, D156, D91).
+    from pa_agent.agent.retrieval_agent import PROMPT_VERSION
+
+    if payload.get("prompt_version") != PROMPT_VERSION:
+        problems.append(
+            f"measured under prompt {payload.get('prompt_version')!r}, but the "
+            f"planner is {PROMPT_VERSION!r}; re-measure with --measure (D45)"
+        )
     notes_on_file = _notes_on_file()
     seen_patients = [row["patient_id"] for row in payload.get("patients", [])]
     if len(seen_patients) != len(set(seen_patients)):

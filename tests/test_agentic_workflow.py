@@ -57,7 +57,6 @@ from pa_agent.agent.retrieval_agent import (
     DEFAULT_MAX_STEPS,
     DEFAULT_TIMEOUT_S,
     PATIENT_ALLOWLIST,
-    POLICY_ALLOWLIST,
     PROMPT_VERSION,
     AgenticRetrievalPlanner,
     RetrievalPlan,
@@ -164,10 +163,26 @@ def _full_run(patient_id: str, document_id: str):
 # --------------------------------------------------------------------------
 
 
-def test_the_agent_sees_exactly_the_declared_allowlist(patient_store, policy_store):
-    agent, _, _ = build_retrieval_agent(patient_store, policy_store)
+def test_the_agent_sees_exactly_the_declared_allowlist(patient_store):
+    agent, _ = build_retrieval_agent(patient_store)
     names = {tool.__name__ for tool in agent.tools}
-    assert names == set(PATIENT_ALLOWLIST) | set(POLICY_ALLOWLIST)
+    assert names == set(PATIENT_ALLOWLIST)
+
+
+def test_the_planner_is_offered_no_policy_tool(patient_store):
+    """T-146 (D156). Offered `get_policy_context` from T-61 on, the planner
+    never called it on a completed run, and on Vertex called it four times with
+    a `policy_version_id` it invented — each an abort on every criterion. The
+    instruction never asks for the policy and the value sets reach the bundle
+    from Python, so the tool had nothing to do but fail. A tool keyed by an id
+    is a tool the model can call with an id it made up."""
+    agent, _ = build_retrieval_agent(patient_store)
+    names = {tool.__name__ for tool in agent.tools}
+    assert not any("policy" in name for name in names), names
+    assert set(PATIENT_ALLOWLIST) == {
+        "get_patient_notes", "get_patient_document",
+        "get_patient_observations", "get_patient_conditions",
+    }
 
 
 def test_the_gatherer_gets_the_structured_facts_the_extractor_is_denied(
@@ -197,7 +212,7 @@ def test_a_tool_outside_the_allowlist_cannot_be_requested(patient_store, policy_
     """REQ-45: the model may not invent tools. It has no name to invent with —
     the declaration list is what it sees, and a call to anything else is not a
     refused request but an unresolvable one."""
-    agent, _, _ = build_retrieval_agent(patient_store, policy_store)
+    agent, _ = build_retrieval_agent(patient_store)
     declared = {tool.__name__ for tool in agent.tools}
     for invented in ("delete_patient", "write_policy", "get_policy_tree_file"):
         assert invented not in declared
@@ -209,7 +224,7 @@ def test_the_policy_tools_are_read_only(policy_store):
     from pa_agent.agent.policy_tools import build_policy_tools
 
     toolset = build_policy_tools(policy_store)
-    assert set(toolset.names) == set(POLICY_ALLOWLIST)
+    assert set(toolset.names) == {"get_policy_context", "get_policy_value_set"}
     for name in toolset.names:
         assert name.startswith("get_"), f"{name} is not obviously a read"
 
@@ -1210,6 +1225,33 @@ def test_the_gate_refuses_to_pass_without_a_measurement():
         assert "no measurement" in result.stdout
 
 
+def test_every_committed_recording_is_at_the_planners_prompt_version():
+    """T-146 (D156). A recording describes the planner it measured, and the
+    agentic half cannot be replayed — so a recording under another version is
+    a description of a planner that no longer exists."""
+    module = _eval_module()
+    recordings = module.committed_recordings()
+    assert len(recordings) == 2, recordings
+    for path in recordings:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        assert payload["prompt_version"] == PROMPT_VERSION, path
+
+
+def test_the_gate_refuses_a_recording_measured_under_another_prompt(tmp_path, capsys):
+    """T-146 (D156). Measured before this check existed: bumping the planner's
+    version left both recordings green. The same committed bytes, with only the
+    version changed, must go red."""
+    module = _eval_module()
+    committed = REPO_ROOT / "eval" / "agentic" / "results.json"
+    payload = json.loads(committed.read_text(encoding="utf-8"))
+    assert module._verify_one(committed) == 0
+    payload["prompt_version"] = "t61-retrieval-v2"
+    stale = tmp_path / "results.json"
+    stale.write_text(json.dumps(payload), encoding="utf-8")
+    assert module._verify_one(stale) != 0
+    assert "measured under prompt 't61-retrieval-v2'" in capsys.readouterr().out
+
+
 # --------------------------------------------------------------------------
 # Article I and the plane boundary
 # --------------------------------------------------------------------------
@@ -1218,7 +1260,7 @@ def test_the_gate_refuses_to_pass_without_a_measurement():
 def test_the_agent_cannot_transfer_control(patient_store, policy_store):
     from google.adk.flows.llm_flows.single_flow import SingleFlow
 
-    agent, _, _ = build_retrieval_agent(patient_store, policy_store)
+    agent, _ = build_retrieval_agent(patient_store)
     assert isinstance(agent._llm_flow, SingleFlow)
     assert agent.sub_agents == []
     assert AGENT_NAME.isidentifier()

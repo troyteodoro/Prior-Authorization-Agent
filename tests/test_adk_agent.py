@@ -330,17 +330,20 @@ def test_a_tool_module_opens_no_file_and_names_no_path(module) -> None:
         assert forbidden not in source, f"{module} contains {forbidden}"
 
 
-#: The one module allowed to hold both toolsets, named so a second is a visible
-#: diff rather than a silent addition (T-61, D63).
-_BOTH_PLANES = {"pa_agent/agent/retrieval_agent.py"}
+#: The modules allowed to hold both toolsets, named so one is a visible diff
+#: rather than a silent addition. T-61's gatherer was the one (D63) until T-146
+#: took the policy tools off its allowlist (D156); none is now, and a module
+#: taking both back needs an entry reversing D156.
+_BOTH_PLANES: set[str] = set()
 
 
 def test_only_the_declared_module_holds_both_planes_toolsets() -> None:
     """Article VI, and REQ-41's closing line: a module able to read both planes
     would have to hold both handles. Two modules is what makes holding both a
-    **visible act** rather than an accident — and the count is pinned at one.
+    **visible act** rather than an accident — and the count is pinned at none
+    since T-146 (D156).
 
-    T-61's gatherer is that one, and it is legal for the reason Article VI states
+    T-61's gatherer was the one, and it was legal for the reason Article VI states
     itself: *"The criterion text does cross. The policy corpus and its index do
     not."* Its policy tools return compiled criteria — ids, labels, constants, the
     decision expression — and no document, no span and no corpus text. The test

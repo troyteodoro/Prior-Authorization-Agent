@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 complete, A1–A14 hold *(D104, D106, D116, D126, D129, D136, D155)*; v1.6 was opened by `T-107` *(D149)* and closed by `T-110` *(D155)*; the versions after v1.6 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; v1.6 was opened by `T-107` *(D149)*, read closed by `T-110` *(D155)* and is **open** on `T-147` since the owner read A14 on both tiers *(D156, D157)*; the versions after v1.6 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -1204,7 +1204,7 @@ load-bearing; a table that sorts prettily is not.
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
 | v1.5 | the form, review, simulated submission and tracking, headless · **closed** | US-13 | T-103–T-106 | none | A13 ✓ |
-| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **closed** | US-14 | T-107–T-110 | new extraction recordings; the differential re-measured | A14 ✓ |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **open** | US-14 | T-107–T-110, T-146, T-147 | new extraction recordings; the differential re-measured | A14 open on Vertex |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
 | v2.2 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
@@ -1612,21 +1612,24 @@ re-measured.
 
 **Gate A14.** A10 over the four practices v1.2 and v1.6 added, beside the
 bariatric control — five in the account (REQ-80); every eval row `PASS`; the
-agentic differential re-measured with zero errors on the tier every gate
-replays (D106); and **A11's yellow measured** *(D123)* — every yellow
+agentic differential re-measured with zero errors **on both measured tiers**
+(D156); and **A11's yellow measured** *(D123)* — every yellow
 suggestion on this round's new notes carries a valid span and a verifier
 verdict. A11 holds that clause at unit level because no committed note could
 produce a yellow; this is the round that added one, so it is the round that
 measured it. *(Rewritten by `T-110`, D155: "four practices" read as the board
-counts them, and the tier named.)*
+counts them, and the tier named. Its tier widened to both by D156, the
+owner's reading.)*
 
-**v1.6 is closed and A14 holds** *(T-110, D155)*. Five practices are in the
+**v1.6 is open, and A14 holds on AI Studio but not on Vertex** *(D156, D157)*. Five practices are in the
 account, with zero omitted. 57 of 57 rows are `PASS`. `H13`'s yellow cites a
 span that slices back, and the history verifier accepts it on both tiers. The
 differential is measured at every note-bearing chart's own request:
 - on AI Studio, 25 of 25 outcomes agree, with zero errors;
-- on Vertex, 21 of 25 scored and agreed, and 4 errored on a policy version the
-  planner invented. Those runs are recorded as errors and numbered `T-146`.
+- on Vertex, 24 of 25 scored and agreed. One run, `RA6`'s, errored with its
+  cause unrecorded, and that error is `T-147`'s. Under `T-110`'s planner,
+  four runs had errored on a policy version the planner invented. `T-146`
+  took the policy tools off its allowlist, and those four rows now agree.
 
 ### v2.0 — The payer axis: national and regional coverage
 
@@ -1803,7 +1806,7 @@ test-client smoke test, with no browser automation.
 | A11 | v1.3 | precision on the colours that **assert** — green and yellow — at or above A2's 0.90, reported beside the count, the colour base rate and the all-red baseline, with red reported and never gated; zero suggestions without a source row; zero yellow without a valid span, held at unit level with the measured figure named as A14's; zero verdict drift *(D123)* |
 | A12 | v1.4 | every lifecycle transition tested, every illegal one raises; sessions round-trip byte-stable; the plane check extends to the fourth plane *(D127)* |
 | A13 | v1.5 | zero packets carrying an **accepted** red suggestion with no justification, over a non-empty set of reds the corpus produces, the refusal naming every unjustified code; every packet citation slices back through the port serving its document, **reported beside the count checked**; the review log append-only with the determination's bytes unchanged after any number of reviews; a session acquires an outbox artifact exactly when it enters `AWAITING_DECISION` and none earlier has one, a forbidden submission exits 1 and writes nothing, and `decide` closes the session with the payer's outcome and date; zero model calls in any gate *(rewritten before `T-103` opened, D131)* |
-| A14 | v1.6 | A10 over the four practices v1.2 and v1.6 added, beside the bariatric control (REQ-80); every row `PASS`; the differential re-measured, zero errors on the tier every gate replays; **A11's yellow measured** — every yellow suggestion on the round's new notes carries a valid span and a verifier verdict *(D123, rewritten by D155)* |
+| A14 | v1.6 | A10 over the four practices v1.2 and v1.6 added, beside the bariatric control (REQ-80); every row `PASS`; the differential re-measured, zero errors on both measured tiers; **A11's yellow measured** — every yellow suggestion on the round's new notes carries a valid span and a verifier verdict *(D123, rewritten by D155; tier widened by D156)* |
 | A15 | v2.2 | every UI action maps to a CLI verb with identical output; zero logic in templates; no route writes except through a verb; the four verdict states render distinctly *(D153)* |
 | A16 | v2.0 | every tree declares a payer and a scope; two payers binding one code in one state resolve to one tree each, neither by load order *(the floor relation is REQ-73, closed by `T-129` — D124, D130)* |
 | A17 | v2.1 | every criterion of the commercial tree evaluated by a declared kind or declared unclaimed; no citation resolves to the synthetic policy without the artifact naming it synthetic |

@@ -206,9 +206,9 @@ def test_the_differential_covers_every_note_bearing_charts_request(name):
 
 
 def test_the_ai_studio_differential_agrees_everywhere_with_zero_errors():
-    """A14's clause, read on the AI Studio recording as every A-figure is
-    (D106): every outcome and criterion agrees, every span slices back, and no
-    run errored."""
+    """A14's clause on AI Studio, re-measured under `t61-retrieval-v3` by
+    T-146 (D156): every outcome and criterion agrees, every span slices back,
+    and no run errored."""
     aggregate = _agentic("results.json")["aggregate"]
     assert (aggregate["scored"], aggregate["errors"]) == (25, 0)
     assert aggregate["outcome_disagreements"] == aggregate["criterion_disagreements"] == 0
@@ -216,16 +216,19 @@ def test_the_ai_studio_differential_agrees_everywhere_with_zero_errors():
 
 
 def test_the_vertex_differential_errors_are_recorded_as_errors_never_findings():
-    """D155's finding on the second tier: four of twenty-five runs aborted
-    because the planner named a policy version the store does not hold. Each
-    is an `ERROR` on every criterion (D90), recorded with its reason and kept
-    apart from the comparison; the twenty-one it scored agree everywhere.
-    Numbered `T-146`."""
+    """T-146's re-measurement on the second tier (D156, D157). The four rows
+    that errored under v2 on an invented policy version now agree, since the
+    planner is offered no policy tool. One run errored, on `RA6`, with its
+    cause unrecorded. It is an `ERROR` on every criterion (D90), kept apart
+    from the comparison, and v1.6 stays open on it (`T-147`). The 24 scored
+    runs agree everywhere."""
     recording = _agentic("results_vertex.json")
     errored = [r for r in recording["patients"] if r.get("error")]
-    assert sorted("+".join(r["cases"]) for r in errored) == ["J3", "KNEE1", "KNEE4", "KNEE7"]
+    assert sorted("+".join(r["cases"]) for r in errored) == ["RA6+H15"]
     for row in errored:
         assert "SOURCE_UNAVAILABLE" in row["error"] and row["agentic"] is None
+    scored = {"+".join(r["cases"]) for r in recording["patients"] if r.get("agentic")}
+    assert {"J3", "KNEE1", "KNEE4", "KNEE7"} <= scored
     aggregate = recording["aggregate"]
-    assert (aggregate["scored"], aggregate["errors"]) == (21, 4)
+    assert (aggregate["scored"], aggregate["errors"]) == (24, 1)
     assert aggregate["outcome_disagreements"] == aggregate["criterion_disagreements"] == 0

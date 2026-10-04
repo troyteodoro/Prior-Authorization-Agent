@@ -15397,3 +15397,202 @@ All runs were made in this session, one after another, on both tiers.
   - the differential's planners: 156 (93 on AI Studio and 63 on Vertex).
 
   About 330 in all, on two tiers.
+
+
+## D156 — The agentic planner is offered no policy tool, the gate refuses a recording measured under another prompt, and A14's *zero errors* is read on both tiers
+
+**Context.** `T-146`, numbered off the path by D155. Written before the code
+(Article IX, working rule 5). D155 read A14's *zero errors* on the AI Studio
+recording and said so in order to be refused: *"If the owner reads A14 as both
+tiers, v1.6 stays open on `T-146`."* The owner has sequenced `T-146` ahead of
+v1.6's close, which is that refusal. So v1.6 is open on this row, and it closes
+here or not at all. D155 and `T-110`'s record are not edited; they record what
+was read at that close.
+
+**Measured at open.**
+- **Both recordings are at `t61-retrieval-v2`.** Across them the planner
+  completed 46 runs: 25 on AI Studio and 21 on Vertex. **None called
+  `get_policy_context` or `get_policy_value_set`.** The four Vertex errors
+  (`J3`, `KNEE1`, `KNEE4`, `KNEE7`) are the only policy-tool calls either
+  recording holds. Each named a `policy_version_id` it had invented, and the
+  store's `KeyError` aborted every criterion as `SOURCE_UNAVAILABLE` (D90).
+- **The planner's instruction never asks for the policy.** It names three
+  things to collect: the notes, the observations and the conditions. It also
+  forbids choosing among notes by relevance. The bundle's value sets come
+  from Python, which reads them through the policy port from the resolved
+  tree's own constants (`declared_value_set_ids`, D52, D111). No policy-tool
+  payload has ever reached the evidence (D66).
+- **The gate does not compare a recording's `prompt_version` with the
+  planner's.** `_verify_one` checks that a recording is present, names a model
+  and a tier, and is internally coherent. A changed allowlist under a bumped
+  version would leave both recordings green while they describe a planner
+  that no longer exists. That is D91's drift, on the half that is not free to
+  re-derive.
+
+### Chosen
+
+1. **Neither policy tool is on the planner's allowlist.**
+   `POLICY_ALLOWLIST` is deleted, `build_retrieval_agent` takes the patient
+   store alone and returns the agent and its one toolset, and the planner
+   holds one plane's tools. `AgenticRetrievalPlanner.gather` keeps its
+   `policy_store` argument, because the port's signature is the fixed
+   planner's too and Python still reads the value sets through it.
+   - *Rejected — the version in the message.* It makes usable a tool the
+     instruction never asks for. It invites the selection by relevance that
+     the instruction forbids. It leaves `get_policy_value_set` open to an
+     invented id. And every run would pay for a payload that nothing
+     downstream reads.
+   - *Rejected — an unknown id answered as a tool error the model can read.*
+     That turns a fault into a turn of the model's own control flow: a
+     planner that reads *unknown version* and guesses again spends calls on a
+     loop with no bound but `max_llm_calls`. It also makes the wire carry
+     *the system did not look* as a message, where D90 keeps it as an
+     `ERROR`.
+   - **`pa_agent/agent/policy_tools.py` stays**, with no model consumer, as
+     D62 first declared it. Its tests carry Article VI's content, that no
+     model-facing policy tool reaches the corpus. Whichever version claims
+     REQ-44 (D107) is the consumer they were written for. Deleting the module
+     is not this task (working rule 6).
+   - **Article VI's handle count falls from one module to none.**
+     `tests/test_adk_agent.py`'s `_BOTH_PLANES` becomes empty. A module that
+     takes both toolsets back needs an entry that reverses this one.
+     `tests/test_planes.py`'s `BOTH_PLANES` still lists `retrieval_agent`,
+     because `gather` reads the policy *port*. That set counts stores, not
+     toolsets.
+
+2. **`PROMPT_VERSION` becomes `t61-retrieval-v3`.** The instruction text does
+   not change. A tool declaration is part of the prompt, though, so the
+   allowlist changes what the model is sent (D64, D66).
+
+3. **The gate refuses a recording measured under another prompt version.**
+   `_verify_one` compares each recording's `prompt_version` with
+   `retrieval_agent.PROMPT_VERSION`. It imports that lazily, so the gate's
+   import path stays as it was. This is REQ-78's rule — a recording replays
+   only under the version it was measured with — applied to the half of a
+   recording that cannot be replayed.
+
+4. **The differential is re-measured once per tier, under v3.** This is not a
+   retry, because the configuration changed (D45). If either tier errors
+   again, the error is reported and not re-run (D91), and v1.6 stays open on
+   whatever it names.
+
+5. **A14's *zero errors* holds on both measured tiers.** The spec's A14 row
+   moves from *"zero errors on the tier every gate replays"* to *"zero errors
+   on both measured tiers"*. Every other A-figure is still read on the tier
+   every gate replays (D106). This is A14's own clause, which the owner read
+   differently, and it does not become a general rule. v1.6 gains a fifth
+   row, `T-146`, and closes on it.
+   `tests/test_t110_corpus.py`'s pin on four Vertex errors becomes a pin on
+   zero errors, on both recordings.
+
+6. **The exit:**
+
+    ```
+    ./venv/bin/python -m pytest tests/test_agentic_workflow.py tests/test_adk_agent.py tests/test_planes.py tests/test_t110_corpus.py tests/test_build_report.py tests/test_docs_consistency.py -q --color=no \
+     && ./venv/bin/python eval/run_agentic_eval.py \
+     && ./venv/bin/python eval/build_report.py --verify \
+     && ./venv/bin/python scripts/check_gates.py
+    ```
+
+    Green means:
+    - the planner declares exactly the four patient tools;
+    - no module holds both toolsets;
+    - both recordings are at `t61-retrieval-v3` and the gate refuses any
+      other version;
+    - both tiers score 25 of 25 with zero errors, every outcome and criterion
+      agreeing and every span slicing back;
+    - the report renders from the new recordings.
+
+### Reversal condition
+
+- **Clause 1** reverses when the planner must choose among documents because
+  a chart is too large to read whole. That is the condition under which the
+  rule would help it. Even then the policy goes in the message, rendered by
+  Python from the resolved tree, and **never** as a tool that takes an id.
+  The id is exactly what this row measured the model inventing.
+- **Clause 5** reverses if a later version's acceptance gate states its own
+  tier reading. That gate's reading governs that version, not this one.
+
+### Measured
+
+Both runs were made in this session, one after the other, under
+`t61-retrieval-v3`.
+
+- **AI Studio:** 25 of 25 scored with zero errors. All 25 outcomes and all
+  137 criteria agree, and 221 of 221 spans slice back. The planner cost **82
+  model calls and 301,587 input tokens the fixed planner did not spend**, 3.4x
+  its input tokens. Under v2, `T-110` measured 93 calls and 344,241 tokens
+  (3.7x): the tool declarations the model no longer receives are part of that
+  difference. The two runs are samples, so the drop is not a measured saving
+  (D91).
+- **Vertex:** 24 of 25 scored. Every scored outcome and all 132 criteria
+  agree, 216 of 216 spans slice back, and the planner cost 74 calls and 247,374
+  input tokens beyond the oracle's (3.0x). **`J3`, `KNEE1`, `KNEE4` and
+  `KNEE7`, the four rows that errored under v2, all agree.**
+- **No run on either tier called a policy tool.** None could, since none is
+  declared, so the defect this row exists for is closed.
+- **One Vertex run errored**, on `RA6` (`2d5c55a6`, J1745), with
+  `SOURCE_UNAVAILABLE` on every criterion. The cause is D157's.
+- **The gate check is real.** Once `PROMPT_VERSION` was bumped, both v2
+  recordings went red before anything was re-measured.
+- **Model calls, live:** 82 + 74 for the planners, plus about 25 for D157's
+  diagnostic.
+
+
+## D157 — `T-146` closes on the defect it was numbered for, and v1.6 stays open on the Vertex error it did not cause
+
+**Context.** `T-146`'s measurement, in D156's *Measured*. D156's exit has five
+bullets. Four hold. The fifth, *both tiers score 25 of 25 with zero errors*,
+failed on Vertex by one run. D156 clause 4 decided in advance what happens
+then: the error is reported and not re-run, and v1.6 stays open on whatever it
+names. This entry applies that clause. It does not revise it.
+
+**Measured.**
+- **The recording does not say why `RA6` errored.** `run_agentic_eval.py`
+  stores `DeterminationAborted`'s summary line (`a=SOURCE_UNAVAILABLE; …`),
+  and every `RetrievalError` maps to that code (D90). The cause lives in each
+  criterion's `error_detail`, which the harness drops. The four v2 errors
+  could be read off the store's `KeyError`, and nothing recorded this one.
+- **A diagnostic, not a measurement.** The planner was run alone on `RA6`'s
+  chart, on Vertex, three times. Nothing was written to the recording. All
+  three gathered both notes. One made **11 tool calls against a budget of
+  12**: it read observations and conditions four times each, although the
+  instruction tells it a truncated response is expected. A thirteenth call
+  raises `step_budget_exceeded`, and that maps to exactly what was recorded.
+  **It is the likeliest cause, and it is not measured.**
+
+### Chosen
+
+1. **No re-run.** The Vertex recording stays as measured, 24 of 25 (D91,
+   D156 clause 4).
+2. **`T-146` closes on its first four bullets.** The fifth bullet is moved,
+   not dropped. It was always v1.6's close condition rather than this
+   defect's, and D156 put the two in one exit. That was the mistake this
+   entry corrects. It now belongs to the row that closes v1.6.
+   - *Rejected — `T-146` stays open until v1.6 closes.* That would hold a
+     fixed defect open on a fault the defect did not cause and the recording
+     cannot name.
+   - *Rejected — close v1.6 by reading A14 on AI Studio again.* By
+     sequencing this row, the owner refused D155's reading. Reversing that
+     refusal is the owner's decision, not a closing session's.
+3. **v1.6 stays open, on `T-147`**, which becomes its sixth row. It is
+   numbered here, and its record is written when it opens (D97's rule). Its
+   scope as numbered:
+   - the harness records the cause of every error it counts, from each
+     criterion's `error_detail`;
+   - the planner's repeated structured reads, the likeliest cause, are
+     decided on;
+   - the differential is re-measured once per tier.
+
+   A fix to the repeated reads changes the planner's configuration, so the
+   re-measurement is a new measurement, not a retry (D45). If the fix is
+   only to the instrument, re-running is the move D91 refuses, and `T-147`
+   has to say why it is not.
+4. **The pins.** `tests/test_t110_corpus.py` pins AI Studio at `(25, 0)` and
+   Vertex at `(24, 1)`, with `RA6` as the one error.
+
+### Reversal condition
+
+- If the owner reads A14 on the tier every gate replays, as D155 did, v1.6
+  closes on `T-146` and `T-147` moves off the path. That reading would need
+  an entry of its own.

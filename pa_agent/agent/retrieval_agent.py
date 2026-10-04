@@ -48,8 +48,12 @@ the failure this module exists to make visible rather than commit.
 ### What the model cannot do
 
 It sees a tool allowlist and has no way to name anything outside it (REQ-43,
-REQ-45). The policy tools are read-only — no setter, no write, no path to the
-tree's file (Art. VII). The transfer flags are set with no `sub_agents`, so the
+REQ-45). **The allowlist is patient-plane only since T-146** (D156): the
+policy tools were offered from T-61 on, never called on a completed run, and
+on Vertex called four times with a `policy_version_id` the model invented —
+each an abort on every criterion. The instruction never asks for the policy,
+and the value sets reach the bundle from Python, so the tools had nothing to
+do but fail. The transfer flags are set with no `sub_agents`, so the
 flow is `SingleFlow` and `transfer_to_agent` is never injected (Art. I).
 
 `include_contents` is left at `"default"` here, unlike the extraction agent.
@@ -80,11 +84,12 @@ from pa_agent.stores.policy import PolicyStore
 
 from .extraction_agent import build_trace_recorder
 from .patient_tools import build_patient_tools
-from .policy_tools import build_policy_tools
 
 AGENT_NAME = "evidence_gatherer"
 OUTPUT_KEY = "retrieval"
-PROMPT_VERSION = "t61-retrieval-v2"
+#: v3 is T-146's: the instruction is unchanged and the policy tools left the
+#: allowlist. A tool declaration is prompt, so it is a new version (D64, D156).
+PROMPT_VERSION = "t61-retrieval-v3"
 
 #: The patient-plane tools this agent may call (REQ-43). All four — where the
 #: extraction agent gets none of them, only a reader scoped in Python to the one
@@ -101,10 +106,11 @@ PATIENT_ALLOWLIST = (
     "get_patient_conditions",
 )
 
-#: The policy-plane tools. Read-only: the model may interpret the selected policy
-#: and cannot rewrite it (Art. VII). **This is the first model consumer they have
-#: had** — D62 declared and tested them with none, for T-61 to pick up.
-POLICY_ALLOWLIST = ("get_policy_context", "get_policy_value_set")
+#: No policy-plane tool (T-146, D156). The planner gathers a chart; it is not
+#: told the rule, and a tool that takes a `policy_version_id` is a tool the
+#: model can call with one it made up — measured, four times on Vertex. If a
+#: planner ever needs the policy, Python renders it into the message from the
+#: resolved tree; it is never a tool keyed by an id.
 
 DEFAULT_MAX_STEPS = 12
 DEFAULT_MAX_LLM_CALLS = 16
@@ -172,20 +178,15 @@ class RetrievalPlan(BaseModel):
 
 def build_retrieval_agent(
     patient_store: PatientStore,
-    policy_store: PolicyStore,
     model: Any = PINNED_MODEL,
 ):
-    """One `LlmAgent` for evidence gathering, with both planes' toolsets.
+    """One `LlmAgent` for evidence gathering, over the patient plane's tools.
 
-    This is the one agent in the system that legitimately holds both plane
-    handles, and it is worth saying why that does not breach Article VI. The
-    article forbids the *policy plane* reading patient data and the patient plane
-    holding a policy corpus. This agent holds two toolsets that each reach one
-    plane; neither tool can see the other's store, because each closes over its
-    own. `patient_tools` and `policy_tools` remain separate modules and neither
-    imports the other (REQ-53).
+    Until T-146 this was the one agent holding both planes' toolsets (D63);
+    it now holds one, so no module holds both (D156). `gather()` still reads
+    the policy *port* for the value sets — Python's read, not the model's.
 
-    Returns the agent and the two toolsets, because the toolsets carry the
+    Returns the agent and its toolset, because the toolset carries the
     port-side call log — what the *store* saw, next to what the model's plugin
     saw. Two independent records of the same calls is how a discrepancy between
     them becomes visible.
@@ -194,8 +195,7 @@ def build_retrieval_agent(
     from google.genai import types
 
     patient = build_patient_tools(patient_store)
-    policy = build_policy_tools(policy_store)
-    tools = patient.allowlist(*PATIENT_ALLOWLIST) + policy.allowlist(*POLICY_ALLOWLIST)
+    tools = patient.allowlist(*PATIENT_ALLOWLIST)
 
     agent = LlmAgent(
         name=AGENT_NAME,
@@ -215,7 +215,7 @@ def build_retrieval_agent(
         disallow_transfer_to_peers=True,
         generate_content_config=types.GenerateContentConfig(temperature=0.0),
     )
-    return agent, patient, policy
+    return agent, patient
 
 
 class AgenticRetrievalPlanner:
@@ -274,9 +274,7 @@ class AgenticRetrievalPlanner:
         patient_store: PatientStore,
         policy_store: PolicyStore,
     ) -> RetrievalResult:
-        plan, patient_tools, policy_tools, trace = self._run(
-            patient_id, patient_store, policy_store
-        )
+        plan, patient_tools, trace = self._run(patient_id, patient_store)
 
         # ------------------------------------------------------------------
         # Python assembles the bundle. The model named ids; the store supplies
@@ -332,7 +330,7 @@ class AgenticRetrievalPlanner:
 
     # ----------------------------------------------------------------------
 
-    def _run(self, patient_id, patient_store, policy_store):
+    def _run(self, patient_id, patient_store):
         from google.adk.agents.run_config import RunConfig
         from google.adk.apps import App
         from google.adk.runners import Runner
@@ -340,8 +338,8 @@ class AgenticRetrievalPlanner:
         from google.genai import types
 
         recorder = build_trace_recorder()
-        agent, patient_tools, policy_tools = build_retrieval_agent(
-            patient_store, policy_store, model=self._model_argument()
+        agent, patient_tools = build_retrieval_agent(
+            patient_store, model=self._model_argument()
         )
 
         self._counter += 1
@@ -415,7 +413,7 @@ class AgenticRetrievalPlanner:
                 f"{patient_id}: the run produced no structured plan at session "
                 f"state {OUTPUT_KEY!r} after {len(tool_calls)} tool call(s)."
             )
-        return plan, patient_tools, policy_tools, trace
+        return plan, patient_tools, trace
 
     async def _drive(
         self, runner, session_service, session_id, patient_id, RunConfig, types

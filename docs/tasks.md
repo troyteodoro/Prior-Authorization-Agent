@@ -17,18 +17,24 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v2.0`, row 1 — `T-117`**, the payer on the tree and the
-request. **Nothing is open on this board**; v2.0 opens when `T-117` writes its
-record *(D97's rule)*.
-**`T-110` closed v1.6's row 4, and v1.6 with it; A14 holds** *(D155)*.
+**What to do next: v1.6's row 6 — `T-147`**, the Vertex differential's one
+error. **v1.6 is open and no task is open**; `T-147` writes its record when it
+opens *(D97's rule)*, and v2.0's `T-117` follows v1.6's close.
+**`T-146` closed v1.6's row 5 and left v1.6 open** *(D156, D157)*. The owner
+reads A14's *zero errors* on both tiers, which refused D155's reading. The
+planner is now offered no policy tool, and the gate refuses a recording made
+under another prompt version. The re-measured differential has zero errors on
+AI Studio. On Vertex the four rows that errored before all agree, and one run,
+`RA6`'s, errored with its cause unrecorded. That error is `T-147`'s.
+**`T-110` closed v1.6's row 4** *(D155)*.
 Palmetto's `c4` and `d` and the rheumatoid tree's `c`, `d` and `e` are read
 from a note through two declared fact kinds, `bariatric_surgical_workup` and
 `rheumatoid_arthritis_workup`, on five declared clones added in the round. The
 measured yellow is `H13`'s, accepted by the history verifier on both tiers.
 The differential covers every note-bearing chart's own request and agrees on
 25 of 25 on AI Studio with zero errors. REQ-80 holds the account to every
-practice a loaded tree declares. `T-145` and `T-146` are numbered off the
-path.
+practice a loaded tree declares. `T-145` and `T-146` were numbered off the
+path, and D156 sequenced `T-146` into v1.6.
 **`T-109` closed v1.6's row 3** *(D154)*: practice four is hyaluronan injection
 for knee osteoarthritis, compiled from WPS's L39529 and its billing article
 A56157 for Jurisdictions 5 and 8 — an LCD no NCD stands over, so no national
@@ -338,11 +344,11 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-107 tasks are on this board — IDs run to T-146, and every id above T-125 is
+108 tasks are on this board — IDs run to T-147, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 107 are closed and none is open**; `T-143`, `T-144`,
-`T-145` and `T-146` below are numbered and have no record yet, and each writes
+is well above the count. **All 108 are closed and none is open**; `T-143`, `T-144`,
+`T-145` and `T-147` below are numbered and have no record yet, and each writes
 its record when it opens. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
@@ -390,7 +396,8 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-143` | **the ADK extraction leaf builds only the weight-management agent.** `AdkExtractionRunner.run` refuses any kind whose schema is not `Extraction` and `INSTRUCTION`, so `--extraction adk` on a request under `pap-osa-dme-jd-v1` raises `NotImplementedError`, which the CLI reports as an unbuilt path, rather than reading the notes under another kind's prompt. Its agent's description, its tool-fetch message and its output schema are weight-management text, and generalising them changes the prompt every ADK extraction recording was measured under (D45), so it is a measurement, not a refactor: an agent built from each `FactSchema`, and the sleep kind's two ADK recordings per tier. The direct and recorded runners are generic since `T-108`. **Since `T-110` it refuses four kinds**, the bariatric surgical and rheumatoid arthritis workups among them, and their ADK recordings would join the sleep kind's *(D155)* | not sequenced — discovered in `T-108` *(D150)*; nothing in v1.6's rows reads the ADK extraction path for the new kinds |
 | `T-144` | **`us-abdominal-visceral-j5-j8-v1` declares Alabama from a contractor-table row that lists forty-eight states.** L35755's table lists every state but Minnesota and New York under WPS's Part A contract 05901, and the ultrasound tree's jurisdiction note reads that row as *"Alabama under contract 05901"* — the first state of the list. L39529's table carries the same row. A beneficiary's state does not select a Part A contract with a national footprint, so either the tree should drop Alabama or it serves forty-seven more states, and the second would turn REQ-55's `NO_JURISDICTION_TREE` into `NO_POLICY_FOUND` for every out-of-state request in the corpus. No eval row reaches the ultrasound tree from Alabama, so nothing behavioural separates the readings; it is a decision about one committed tree and every row resolving through it, not part of the practice that found it (working rule 6) | not sequenced — discovered in `T-109` *(D154)*; nothing in v1.6's rows resolves a request in Alabama under the ultrasound tree |
 | `T-145` | **the live CLI verifier checks a history claim under the criterion instruction.** `cli._build_verifier` returns `LiveVerifierRunner(client_for(tier))`, whose instruction defaults to `INSTRUCTION`, and `history.run_review` hands it every yellow's `(candidate, quotes)` claim — so `--suggest` with a live extraction leaf asks the criterion question of a history claim, where `run_verifier_measurement.py --history` builds the runner with `HISTORY_INSTRUCTION`. The recorded path is unaffected: both recordings replay through one runner keyed by digest, and the two claim shapes share no key. No gate reaches the live path, and until `T-110` no chart produced a yellow for it to mis-route | not sequenced — discovered in `T-110` *(D155)*; no row reaches the live verifier |
-| `T-146` | **the agentic planner is offered `get_policy_context` and never told the policy version.** On Vertex, four of the twenty-five requests `T-110`'s differential measured aborted because the planner called it with a `policy_version_id` it invented — `some_version`, `v1.0`, `knee_osteoarthritis_v1`, a UUID — and the store's `KeyError` ended the run as `SOURCE_UNAVAILABLE` on every criterion (D90). On AI Studio, and on the seven bariatric charts it measured before, it never reached for the tool. The shapes are a decision: drop the tool from the planner's allowlist, put the version in the message, or answer an unknown id as a tool error the model can read. Each changes the planner's prompt, so each is a re-measurement of the differential on both tiers (D45) | not sequenced — discovered in `T-110` *(D155)*; A14's *zero errors* is read on the AI Studio recording, as every A-figure is (D106) |
+| `T-146` | **the agentic planner is offered `get_policy_context` and never told the policy version.** On Vertex, four of the twenty-five requests `T-110`'s differential measured aborted because the planner called it with a `policy_version_id` it invented — `some_version`, `v1.0`, `knee_osteoarthritis_v1`, a UUID — and the store's `KeyError` ended the run as `SOURCE_UNAVAILABLE` on every criterion (D90). On AI Studio, and on the seven bariatric charts it measured before, it never reached for the tool. The shapes are a decision: drop the tool from the planner's allowlist, put the version in the message, or answer an unknown id as a tool error the model can read. Each changes the planner's prompt, so each is a re-measurement of the differential on both tiers (D45) | **closed** (D156, D157) — sequenced by D156 as v1.6's row 5, because the owner reads A14 on both tiers; the planner is offered no policy tool, and the Vertex error the re-measurement found is `T-147`'s |
+| `T-147` | **the Vertex differential's one error, and the harness that cannot say what it was.** `T-146`'s re-measurement scored 24 of 25 on Vertex. `RA6`'s run aborted with `SOURCE_UNAVAILABLE` on every criterion, and `run_agentic_eval.py` records only `DeterminationAborted`'s summary, dropping each criterion's `error_detail`. A diagnostic of three planner-only runs on that chart all succeeded, and one made 11 tool calls against a budget of 12, re-reading observations and conditions four times each. The budget is the likeliest cause, and it is not measured. Its scope as numbered: record the cause of every error, decide on the repeated structured reads, re-measure once per tier | **sequenced** — v1.6's row 6 *(D157)*; the owner reads A14's *zero errors* on both tiers, so v1.6 closes on this row |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -568,7 +575,10 @@ chose *(D131)*.
 
 ### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
 
-**All four rows are closed; v1.6 is closed and A14 holds** *(T-110, D155)*.
+**Five rows are closed and v1.6 is open, on row 6** *(D156, D157)*. `T-110`
+closed row 4 and read A14 on AI Studio *(D155)*. The owner reads it on both
+tiers, so `T-146` became row 5. The Vertex error its re-measurement found is
+row 6.
 
 The second test on different practices, and the engine change v1.2
 deferred: the tree declares its extraction schema, so `WmEvent` stops being
@@ -584,6 +594,8 @@ re-measured differential.
 | 2 | practice three | `T-108` | **closed** (D150, D151, D152) | CPAP for obstructive sleep apnea under NCD 240.4 and L33718: source, tree, patients, notes, rows, recording on both tiers, the second fact kind and the generic trust boundary (REQ-79); `run_eval.py` green. **Rewritten at open** *(D150)*: the one-line exit named six deliverables and checked one |
 | 3 | practice four | `T-109` | **closed** (D154) | hyaluronan injection for knee osteoarthritis under WPS's L39529 and A56157: source, tree, patients, notes, rows, recording on both tiers, the third fact kind; `run_eval.py` green. **Rewritten at open** *(D154)*: T-108's exit over this row's files |
 | 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | **closed** (D155) | **Rewritten at open** *(D155)*: the five criteria claimed through two declared fact kinds on five declared clones, the yellow on a new row `H13` rather than an edit to `H4`'s chart, the differential widened to every note-bearing chart's request and measured once per tier, and *four practices* read as the four the rounds added with the control beside them (REQ-80). Was: Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
+| 5 | the planner's policy tools, and A14 on both tiers | `T-146` | **closed** (D156, D157) | the planner declares exactly the four patient tools, no module holds both toolsets, both recordings are at `t61-retrieval-v3` and the gate refuses another version, and the report renders from them. **Split at close** *(D157)*: the exit's *zero errors on both tiers* failed on Vertex by one run, and it moves to row 6 |
+| 6 | the Vertex differential's error | `T-147` | **open — no record yet** (D157) | the harness records the cause of every error it counts; the planner's repeated structured reads are decided on; the differential is re-measured once per tier with zero errors on both — written at open |
 
 ### v2.0 — The payer axis: national and regional coverage *(D112, reordered by D125)*
 
@@ -3834,6 +3846,78 @@ caught only after its fix:
 
 `select_patients.py --verify` and `synthesize_notes.py --verify` passed after
 the pass.
+
+### `[x] T-146` The agentic planner is offered no policy tool
+
+**REQ:** mints nothing; exercises 43, 45, 46, 78 · **Depends:** T-110 ·
+**Blocks:** v2.0 · **Discovered in:** T-110 *(D155)* · **Decided by:** D156 ·
+**Gates:** A14 (fifth row) · **Timebox:** one day plus one measurement round
+per tier
+**Status:** **closed** (D156, D157), and **v1.6 stays open**. The owner reads
+A14's *zero errors* on both tiers, which D155 said would keep v1.6 open on
+this row. The exit's first four bullets hold. The fifth, *zero errors on both
+tiers*, failed on Vertex by one run. D157 moves it to v1.6's row 6, `T-147`,
+and does not drop it. Nothing was re-run.
+
+**Measured at open.**
+- Both differential recordings are at `t61-retrieval-v2`. The planner
+  completed 46 runs across them and none called a policy tool. The four
+  Vertex errors are the only policy-tool calls either recording holds, each
+  with an invented `policy_version_id`.
+- The planner's instruction never asks for the policy. The bundle's value
+  sets come from Python, through the policy port, from the resolved tree.
+- `eval/run_agentic_eval.py` never compares a recording's `prompt_version`
+  with the planner's.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_agentic_workflow.py tests/test_adk_agent.py tests/test_planes.py tests/test_t110_corpus.py tests/test_build_report.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python eval/run_agentic_eval.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- the planner declares exactly the four patient tools;
+- no module holds both toolsets;
+- both recordings are at `t61-retrieval-v3`, and the gate refuses a
+  recording at any other version;
+- ~~both tiers score 25 of 25 with zero errors, every outcome and criterion
+  agreeing and every span slicing back~~ — moved to `T-147` *(D157)*;
+- `eval/report.md` renders from the new recordings.
+
+**What it delivers.** `POLICY_ALLOWLIST` is deleted. `build_retrieval_agent`
+takes the patient store alone, so no module holds both toolsets and
+`tests/test_adk_agent.py`'s `_BOTH_PLANES` is empty. `PROMPT_VERSION` is
+`t61-retrieval-v3`. The gate refuses a recording at any version but the
+planner's, and both recordings are re-measured. `policy_tools.py` stays, with
+no model consumer.
+
+**What it measured.**
+- AI Studio: 25 of 25 scored with zero errors, every outcome, criterion and
+  span agreeing. 82 model calls and 301,587 input tokens beyond the oracle's
+  (3.4x).
+- Vertex: 24 of 25 scored, all agreeing. `J3`, `KNEE1`, `KNEE4` and `KNEE7`,
+  which errored under v2, agree. One run, `RA6`'s, errored with
+  `SOURCE_UNAVAILABLE` on every criterion.
+- No run on either tier called a policy tool, and none could.
+
+**What it found.** The harness drops each criterion's `error_detail`, so
+`RA6`'s cause is not recorded. A diagnostic of three planner-only runs on that
+chart, kept out of the recording, gathered both notes every time. One of them
+made 11 tool calls against a budget of 12, re-reading observations and
+conditions four times each. Exceeding the budget is the likeliest cause, and
+it is not measured. Both findings are `T-147`'s, which keeps v1.6 open
+*(D157)*.
+
+**Mutation pass.** Four mutants, run against `test_agentic_workflow.py`,
+`test_adk_agent.py` and `test_t110_corpus.py`, with `__pycache__` cleared
+between runs and the package checksummed after restore. All four were caught:
+- a policy tool put back on the allowlist;
+- the gate's version check deleted;
+- the gate's version check inverted;
+- `PROMPT_VERSION` reverted to v2.
 
 ## Attached to no story
 
