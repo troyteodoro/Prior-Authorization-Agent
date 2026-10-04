@@ -38,6 +38,7 @@ EXPECTED_CASES = {
     "H1", "H2", "H3",
     "OSA1", "OSA2", "OSA3", "OSA4", "OSA5", "OSA6",
     "KNEE1", "KNEE2", "KNEE3", "KNEE4", "KNEE5", "KNEE6", "KNEE7",
+    "J2", "J3", "RA4", "RA5", "RA6", "H13", "H14", "H15",
 }
 # E3 has no patient — sc1 is a fact about the procedure (D32). E12 has one
 # since T-41: the note-free patient whose synthetic observation D73 declares.
@@ -64,6 +65,11 @@ EXPECTED_CASES = {
 # the same run, each a clinic visit and a follow-up rendered from the `knee_*`
 # facts and `conservative_therapies`. Each row pins its own as_of in
 # eval/cases.json; the manifest's is D35's reference date like every other's.
+# J2, J3 and RA4-RA6 are T-110's five declared clones (D155): E1's chart twice
+# and RA1's three times, each carrying notes of its own, so each manifest
+# declares `declared_clone_of` and never `cloned_from` -- that field means the
+# clone's notes are its source's bytes (D102), and these are new documents.
+# H13-H15 grade the three rheumatology clones' methotrexate candidates.
 DELIBERATELY_ABSENT = {"E3"}
 
 
@@ -166,11 +172,26 @@ def test_a_declared_clone_carries_its_source_facts_unchanged(manifests):
     differs between a clone and its source is declared in the population
     manifest and verified there, by re-deriving the bytes."""
     clones = {pid: body for pid, body in manifests.items() if body.get("cloned_from")}
+    # T-110 (D155): a clone whose notes are its own declares `declared_clone_of`
+    # instead, and is held below to everything but the copied facts.
+    own_notes = {
+        pid: body for pid, body in manifests.items() if body.get("declared_clone_of")
+    }
     population = json.loads(POPULATION.read_text(encoding="utf-8"))
     declared = population["synthetic_patients"]
-    assert sorted(clones) == sorted(d["patient_id"] for d in declared), (
+    assert not set(clones) & set(own_notes), "a manifest declares one kind of clone"
+    assert sorted([*clones, *own_notes]) == sorted(d["patient_id"] for d in declared), (
         "the manifests and the population must declare the same clones"
     )
+    for patient_id, body in own_notes.items():
+        source = manifests[body["declared_clone_of"]]
+        assert source.get("cloned_from") is None and source.get("declared_clone_of") is None
+        assert body["as_of"] == source["as_of"]
+        assert body["bundle"] != source["bundle"]
+        assert not set(body["cases"]) & set(source["cases"])
+        assert {d["patient_id"]: d for d in declared}[patient_id]["cloned_from"] == (
+            body["declared_clone_of"]
+        )
     by_patient = {d["patient_id"]: d for d in declared}
     claimed_cases = set()
     for patient_id, body in clones.items():
@@ -424,6 +445,15 @@ def _sleep_facts(manifest: dict) -> list[dict]:
         + manifest.get("knee_visits", [])
         + manifest.get("knee_radiographs", [])
         + manifest.get("conservative_therapies", [])
+        # T-110 (D155): Palmetto's evaluation components and the rheumatology
+        # charts' dated facts.
+        + manifest.get("multidisciplinary_evaluations", [])
+        + manifest.get("rheumatology_visits", [])
+        + manifest.get("heart_failure_assessments", [])
+        + manifest.get("disease_activity_assessments", [])
+        + manifest.get("tuberculosis_screens", [])
+        + manifest.get("tuberculosis_treatments", [])
+        + manifest.get("table_effects", [])
     )
 
 

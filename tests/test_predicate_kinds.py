@@ -85,9 +85,11 @@ DECLARED: dict[str, dict[str, str | None]] = {
         "b": "condition_value_set_membership",
         "c1": "note_event_count",
         "c2": "note_event_run_recency",
-        "c4": None,  # unclaimed: L34576 documents weight, not BMI (D101)
+        # T-110 (D155): unclaimed from T-87 (D101) until the fourth fact kind
+        # gave the extraction a weight and an evaluation component.
+        "c4": "note_weight_run_rate",
         "c5": "note_event_run_behavior_rate",
-        "d": None,  # unclaimed: a multidisciplinary evaluation (D101)
+        "d": "note_multidisciplinary_evaluation",
     },
     # T-95 (D116) extended this table from the two bariatric trees to all four.
     # It was written at T-91, when those two were the only trees, and the two
@@ -98,9 +100,11 @@ DECLARED: dict[str, dict[str, str | None]] = {
     "infliximab_ra_jjm.json": {
         "a": "condition_value_set_membership",
         "b": "medication_value_set_active",
-        "c": None,  # unclaimed: NYHA class is not in the coded record (D111)
-        "d": None,  # unclaimed: "untreated", and a screening result (D111)
-        "e": None,  # unclaimed: disease activity is an assessment (D111)
+        # T-110 (D155): unclaimed from T-92 (D111) because no coded resource
+        # carries them; read from a note through the fifth fact kind.
+        "c": "note_heart_failure_class",
+        "d": "note_tuberculosis_screening",
+        "e": "note_disease_activity",
     },
     "us_abdominal_visceral_j5_j8.json": {
         "a": "condition_value_set_membership",
@@ -236,7 +240,9 @@ def test_the_vocabulary_is_the_kinds_that_have_predicates():
     Eleven since T-108: the fourth practice needed two, both reading the
     second fact kind — an evaluation's date against a study's, and the
     study's index against L33718's two branches (D150). Fourteen since T-109:
-    the fifth needed three, all reading the third kind (D154).
+    the fifth needed three, all reading the third kind (D154). Nineteen since
+    T-110: no new practice, but the five criteria v1.2 left unclaimed for want
+    of a field — two reading the fourth kind, three the fifth (D155).
     """
     assert {k.value for k in PredicateKind} == {
         "bmi_observation_threshold",
@@ -254,6 +260,12 @@ def test_the_vocabulary_is_the_kinds_that_have_predicates():
         "note_knee_symptoms",
         "note_knee_radiographic_findings",
         "note_conservative_therapy_duration",
+        # T-110 (D155): Palmetto's c4 and d, and the rheumatoid tree's c, d, e.
+        "note_weight_run_rate",
+        "note_multidisciplinary_evaluation",
+        "note_heart_failure_class",
+        "note_tuberculosis_screening",
+        "note_disease_activity",
     }
 
 
@@ -289,6 +301,10 @@ def test_every_kind_is_evaluated_by_exactly_one_step():
         PredicateKind.NOTE_KNEE_SYMPTOMS,
         PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS,
         PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION,
+        PredicateKind.NOTE_MULTIDISCIPLINARY_EVALUATION,
+        PredicateKind.NOTE_HEART_FAILURE_CLASS,
+        PredicateKind.NOTE_TUBERCULOSIS_SCREENING,
+        PredicateKind.NOTE_DISEASE_ACTIVITY,
     }
     # T-94 (D114): `criterion_b` gained a kind rather than the graph gaining a
     # step, and the union is asserted so the procedure-history kind cannot be
@@ -416,8 +432,10 @@ def test_run_kinds_is_the_note_event_kinds_that_need_a_run():
 def test_scoped_to_may_not_name_a_criterion_the_tree_does_not_evaluate():
     """Gating a criterion on an unclaimed one can only ever abstain, so the
     tree says so at load instead of the determination saying it per patient."""
-    raw = _tree_dict("ncd_100_1_jjm.json")
-    _criterion(raw, "c5")["scoped_to"] = "d"  # `d` is declared unclaimed
+    # T-110 (D155) claimed Palmetto's `d`; the ultrasound tree's `c` is a
+    # judgment and stays unclaimed (D107), so the refusal is taken there.
+    raw = _tree_dict("us_abdominal_visceral_j5_j8.json")
+    _criterion(raw, "b")["scoped_to"] = "c"  # `c` is declared unclaimed
     with pytest.raises(ValidationError, match="does not evaluate"):
         CriteriaTree.model_validate(raw)
 

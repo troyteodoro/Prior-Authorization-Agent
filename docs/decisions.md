@@ -15024,3 +15024,376 @@ covers four practices* is `T-110`'s.
   bariatric control, so it is the fifth practice in each. Both counts are kept
   as they stood. The spec's *four practices* for A14 is `T-110`'s to settle.
 
+
+## D155 — v1.6's last row: the deferred criteria are read through two declared fact kinds, five declared clones carry the notes, the yellow is measured on a new chart, and the differential widens to every note-bearing request
+
+**Context.** `T-110`, v1.6 row 4. Written before the code (Article IX, working
+rule 5). D97's rule writes the row's record now. The board's exit is a
+paragraph naming seven deliverables and checking none of them, and two of its
+phrases have no single reading: *the four-practice account* and *the
+differential re-measured*. Both are settled here, and the exit is rewritten
+below into a command, in `T-108`'s and `T-109`'s shape.
+
+**Measured at open.**
+- **Palmetto's `c4` and `d` are unclaimed because the extraction schema has no
+  field for them** (D101, D107). `c4` asks for a weight in every month of the
+  run, and the weight-management kind reads a BMI. `d` asks for four named
+  components within six months, and no kind reads an evaluation. L34576 names
+  the four in one passage (`l34576`, 8772–9338): a bariatric surgeon's
+  evaluation recommending surgery, a primary care referral, a mental health
+  evaluation, a nutritional evaluation.
+- **The only chart under `ncd-100.1-jjm-v1` is `J1`'s**, a clone of `E4`'s
+  whose notes are `E4`'s bytes. Every one of its five program visits states a
+  weight, and none states an evaluation. Run under Palmetto's tree with the
+  state overridden, `afdcee59` (`E1`'s chart) answers `a`, `b`, `c1`, `c2` and
+  `c5` `MET`. It is the only bariatric chart whose structured record can
+  approve (D42).
+- **The rheumatology charts carry no note.** `42a430ab`, `915602a8` and
+  `455d3f7d` are note-free by declaration (D113), so no committed note can
+  state a NYHA class, a tuberculosis screen or a disease-activity level.
+  L35677 states the contraindications as *"a. Class III or IV congestive heart
+  failure; or b. Untreated active or latent tuberculosis"* and the indication
+  as *"moderately to severely active rheumatoid arthritis"*. It states no
+  score threshold, no screening test and no recency for any of them.
+- **No committed note states a knowledge-table effect** (D120). `42a430ab`
+  carries an active methotrexate order, no neutrophil count under the table's
+  LOINC 751-8 and no neutropenia coding, so its candidate is red. A note on a
+  clone of it stating neutropenia is a yellow nothing else on the chart
+  answers.
+- **The differential runs at 43775 only**, over the note-bearing charts whose
+  request resolves there: seven. `AgenticRetrievalPlanner` raises
+  `RetrievalError` on a chart with no note, by design (D31, D39), so a
+  note-free chart is an error on the agentic side and no retrieval question.
+- **`AdkExtractionRunner` refuses every kind but weight management** (`T-143`).
+  The differential replays extraction from the direct recordings on both sides
+  (D63), so it does not need the ADK leaf.
+
+### Chosen
+
+1. **The practice count.** The board counts practices from v1.2's round —
+   rheumatology, ultrasound, CPAP, knee injection — so A14's *four practices*
+   are the four the two cross-practice rounds added. The code, the report and
+   the trees count the bariatric control too, which makes five. Both readings
+   are true of the same corpus. A14 and §11's statement are rewritten to name
+   both: *A10 over the four practices v1.2 and v1.6 added, beside the bariatric
+   control — five in the account.* §11's statement *the compatibility account
+   covers four practices* is minted as **REQ-80**: the account renders a row
+   for every practice a loaded tree declares, the control included. It is
+   checked by deriving the practice set from `LocalPolicyStore` and comparing
+   it to the report section's, so a sixth practice added without its row is a
+   red suite. No closed record and no earlier entry is edited; D154's naming
+   paragraph stands as written.
+
+2. **Palmetto's `c4` and `d` are read through a fourth fact kind,
+   `bariatric_surgical_workup`**, which `ncd-100.1-jjm-v1` declares beside
+   `weight_management`. It extracts documented weights, each with its date,
+   and the multidisciplinary evaluation's components, each with its date and
+   one of four categories transcribed from L34576. *Rejected — a weight field
+   on `weight_management`:* it changes `INSTRUCTION`, so the six
+   weight-management recordings are re-measured over every bariatric note (D45),
+   `T-106`'s fixtures move, and Noridian's tree extracts a field it never
+   consumes. REQ-78's equality holds at the kind level, so a field only one
+   tree reads belongs in a kind only that tree declares. *Rejected — the
+   evaluation as a `program_assertion`:* an assertion is a claim with no
+   encounter behind it (REQ-9). An evaluation is a dated encounter with a
+   component, and `d` needs both.
+   - **`note_weight_run_rate` (`c4`).** Every month of the qualifying run must
+     carry a documented weight dated in it. `MET` cites every weight dated in
+     a run month. `NOT_MET` cites the run's encounters in each month with no
+     weight, with shortfall `months_without_weight`, which is `evaluate_c4`'s
+     shape on the other field. It abstains when no run is established
+     (REQ-15). It is a run kind, so `step_qualifying_run` computes the run
+     whenever a tree declares it.
+   - **`note_multidisciplinary_evaluation` (`d`).** `required_components`
+     is the four categories, sourced to L34576's passage. For each component,
+     the latest documentation on or before `as_of` is taken. If all four are
+     documented and each is within `evaluation_window_months` (fewer than six
+     whole months before `as_of`, `c2`'s comparison), the verdict is `MET`,
+     citing all four. If all four are documented and one falls outside, the
+     verdict is `NOT_MET`, citing all four, with shortfall
+     `months_since_component_evaluation` (the stalest component's age against
+     the window). If a component is undocumented, it abstains. *Rejected —
+     `NOT_MET` on an undocumented component:* a chart silent about a nutrition
+     evaluation has not recorded that none took place (D40).
+
+3. **The rheumatoid tree's `c`, `d` and `e` are read through a fifth fact
+   kind, `rheumatoid_arthritis_workup`**, which `infliximab-ra-jjm-v1`
+   declares. It extracts four kinds of item:
+   - heart-failure assessments, each labelled `no_heart_failure` or a NYHA
+     class `class_i` to `class_iv`;
+   - tuberculosis screens, each `negative` or `positive`;
+   - tuberculosis treatments, each with a start date;
+   - disease-activity assessments, each with a level the note **states in
+     words**: `remission`, `low`, `moderate` or `high`.
+
+   The model labels; whether a label qualifies is a Python membership test
+   against the criterion's declared list (Art. II), as in the sleep and knee
+   kinds.
+   - **`note_heart_failure_class` (`c`).** The latest assessment on or before
+     `as_of` decides. A class in `excluded_classes` (`class_iii`,
+     `class_iv`, sourced to L35677's *"a. Class III or IV congestive heart
+     failure"*) is `NOT_MET`. Any other label is `MET`. With no assessment the
+     criterion abstains: a chart that records no heart failure has not
+     recorded that there is none (D40).
+   - **`note_tuberculosis_screening` (`d`).** The latest screen on or before
+     `as_of` decides. A negative screen is `MET`. A positive screen with a
+     treatment begun on or before `as_of` is `MET`, citing both. A positive
+     screen with no treatment documented is `NOT_MET`. With no screen the
+     criterion abstains. *Rejected — abstaining on a positive untreated
+     screen:* the chart records the contraindicating finding positively, and
+     L35677's exception (treated) is documentation the requester holds. A
+     `NOT_MET` that a reviewer lifts with that documentation is D114's
+     direction. An abstention would report a chart that shows the
+     contraindication as one that shows nothing.
+   - **`note_disease_activity` (`e`).** The latest assessment on or before
+     `as_of` decides. A level in `qualifying_activity` (`moderate`, `high`,
+     sourced to *"moderately to severely active"*) is `MET`. `remission` or
+     `low` is `NOT_MET`. With none the criterion abstains. *Rejected — DAS28,
+     CDAI or SDAI cut-offs as tree constants:* no document in the corpus
+     states them, so each would be a constant with no span (D21). The tree
+     carries no provisional constant, and that count is pinned at zero. A
+     score with no level stated in words is therefore not extracted. Grading
+     it is Article II's arithmetic, and the model is never asked to do it.
+
+   Every `NOT_MET` of the five new kinds carries a structured shortfall and
+   re-derives from what it cites (D99), through narrowers built by
+   `_cited_facts`. `c4`'s narrower narrows the run and keeps every weight:
+   its `NOT_MET` cites the encounters of the unweighed months, so its
+   weights are never cited, and narrowing them away would let a verdict
+   citing a weighed month re-derive as short (found by this row's mutation
+   pass; see *Measured*).
+   RA `a`'s `min_comorbidity_count` is **not** renamed, although the tree's
+   note promised it for this round. The constant is the predicate's, shared
+   with both bariatric trees, and renaming it changes their payloads too. The
+   note is reworded to say so.
+
+4. **Five patients, each a declared clone (D73's declaration, T-88's and
+   T-93's shape), added in this round and never apart from it (D120).**
+
+   | Clone | Of | Declared difference | Rows |
+   |---|---|---|---|
+   | `J2` | `afdcee59` (`E1`'s chart) | Georgia address; notes documenting the program with a weight every month and all four evaluation components inside six months | `J2` |
+   | `J3` | `afdcee59` | Tennessee address; notes with one program month whose visit records no weight, and a mental health evaluation ten months old | `J3` |
+   | `RA4` | `42a430ab` | notes: no heart failure, a negative interferon-gamma release assay, high disease activity, and an absolute neutrophil count stated as neutropenia | `RA4`, `H13` |
+   | `RA5` | `42a430ab` | notes: NYHA class III, a positive assay with treatment deferred, low disease activity | `RA5`, `H14` |
+   | `RA6` | `42a430ab` | notes: NYHA class II, a positive assay with latent-tuberculosis treatment begun, disease activity not scored | `RA6`, `H15` |
+
+   Each clone's notes are new documents rendered from its own fact manifest,
+   so no clone's manifest declares `cloned_from`. That field means *my notes
+   are my source's bytes* (D102). The clone's bundle provenance stays in
+   `data/patients/manifest.json`. Every date a note emits is the chart's own
+   or declared, one fact per document (D104).
+   - *Rejected — editing `bc6748d3`'s notes so `H4` turns yellow:* this is
+     the six-recording re-measurement D120 priced. It would move `E8`'s and
+     `E10b`'s readings for no question either row asks. `H4` stays red with
+     the quotes consulted, and the measured yellow is `H13`'s.
+   - *Rejected — a Synthea run in a Palmetto state:* it would not be
+     byte-stable (D73), and a rheumatology cohort needs about a thousand
+     patients for two charts, as `T-93` found.
+   - *Rejected — selecting existing charts by rule:* no committed chart's
+     notes state any of the facts, so selection would find nothing to select.
+
+   `H14` and `H15` exist because A11 grades every candidate the code produces
+   (D123, D152): both clones carry the methotrexate order.
+
+5. **Rows and labels.**
+   - `J2`: `c4` and `d` `MET`, and the determination `APPROVED`. This is the
+     corpus's first approval under Palmetto's tree.
+   - `J3`: `c4` `NOT_MET` (`months_without_weight` 1) and `d` `NOT_MET`
+     (`months_since_component_evaluation` 9 against 6).
+   - `RA4`: `c`, `d` and `e` `MET`, so the infliximab tree's first approval.
+   - `RA5`: all three `NOT_MET`.
+   - `RA6`: `c` and `d` `MET` and `e` abstaining. It is the note-bearing
+     abstention the row's exit asks for.
+   - `J1` and `RA1`–`RA3` change label, because the trees they resolve through
+     changed. `J1`'s `c4` becomes `MET`, since `E4`'s notes state a weight in
+     every month of its January–March run. `J1`'s `d` abstains with
+     `NO_EVIDENCE_RETRIEVED`. `RA1`–`RA3`'s `c`, `d` and `e` abstain with
+     `NO_EVIDENCE_RETRIEVED` on a note-free chart. Those are US-14's *v1.2
+     abstentions gone from the baseline*.
+   - The labels are written from the manifests and the trees before anything
+     is measured. A measurement that disagrees with a label is a `FAIL`, which
+     is reported and never relabelled (D27, D42).
+
+6. **The measured yellow is `H13`.** It is `RA4`'s methotrexate candidate,
+   coloured yellow by the quote passage the six quote recordings return for
+   RA4's second note. That passage is anchored by `build_quote_result` and
+   sent to the verifier as a `(candidate, quotes)` claim (D122). The claim is
+   recorded at `eval/verifier/history_results.json` and `_vertex` beside it,
+   under the unchanged `history-verifier-v1`, by a new
+   `run_verifier_measurement.py --history` mode that enumerates every history
+   claim the eval rows produce. That mode refuses `--extend` and is measured
+   whole: this is the recording's first measurement. The gates replay the
+   criterion recording and the history recording through one
+   `RecordedVerifierRunner`, because the two claim shapes have disjoint key
+   sets and can never share a digest (D122).
+
+7. **Model calls.** All are made in this session and run sequentially. Every
+   one is an extension under an unchanged configuration or a first
+   measurement:
+   - the weight-management extraction, direct runner, both tiers, **extended**
+     with `J2`'s and `J3`'s four notes by a new `--extend` mode. The mode
+     refuses a changed prompt, model or tier and keeps every recorded note's
+     bytes. The four ADK weight-management recordings are `T-81`'s measurement
+     of the corpus as it stood and are not extended. Nothing reads them for
+     these charts, and their report rows say which notes they scored;
+   - the two new kinds, direct runner, both tiers: `J1`'s, `J2`'s and `J3`'s
+     six notes, and `RA4`–`RA6`'s six notes;
+   - the verifier, extended with the round's new claims, both tiers, under
+     `verifier-v7` (D154's reasoning, so `T-106`'s fixtures do not move);
+   - the history verifier, both tiers;
+   - the six quote recordings, extended with the ten new notes (D152);
+   - the differential, both tiers, as clause 8 states.
+
+8. **The differential is widened to every eval request on a note-bearing
+   chart that reaches the graph**, each at its own procedure code and `as_of`,
+   deduplicated by `(patient, procedure, as_of)`. *Reaches the graph* is
+   decided by the system: the oracle's `determine()` returns a determination
+   with criterion results. A short circuit therefore drops out by the engine's
+   own answer and never by a filter written here. That covers five practices'
+   trees, the control included, and both new kinds' recordings replay on both
+   sides. It is re-measured on both tiers.
+   - *Rejected — 43775 only:* US-14's fourth bullet asks for the agentic path
+     against the oracle on four practices.
+   - *Rejected — including note-free charts:* the planner's contract makes
+     each one an error by construction, which would measure the contract and
+     not retrieval.
+   - **No stability sample** (D120's option). A second run on one tier would
+     be the repo's first run-to-run figure, and nothing in A14 reads it. A
+     figure no gate holds is one D91 says will drift. *Reverses when* the
+     version claiming REQ-44 needs D107's second precondition, which states
+     its own threshold.
+
+9. **`T-143`'s scope grows by two kinds, without a rewrite.** Its record is
+   written when it opens, and the *Off the path* row gains one clause naming
+   the two new kinds. The ADK leaf refusing them is the same unbuilt path, and
+   nothing in this row reads it.
+
+10. **The exit**, rewritten from the board's paragraph:
+
+    ```
+    ./venv/bin/python scripts/select_patients.py --verify \
+     && ./venv/bin/python scripts/synthesize_notes.py --verify \
+     && ./venv/bin/python -m pytest tests/test_palmetto_workup.py tests/test_rheumatoid_workup.py tests/test_t110_corpus.py tests/test_fact_kinds.py tests/test_criteria_tree.py tests/test_predicate_kinds.py tests/test_agentic_workflow.py tests/test_build_report.py -q --color=no \
+     && ./venv/bin/python eval/run_eval.py \
+     && ./venv/bin/python scripts/run_verifier_measurement.py --rescore \
+     && ./venv/bin/python scripts/run_verifier_measurement.py --tier vertex --rescore \
+     && ./venv/bin/python scripts/run_verifier_measurement.py --history --rescore \
+     && ./venv/bin/python scripts/run_verifier_measurement.py --history --tier vertex --rescore \
+     && ./venv/bin/python eval/run_agentic_eval.py \
+     && ./venv/bin/python scripts/check_req_coverage.py \
+     && ./venv/bin/python eval/build_report.py --verify \
+     && ./venv/bin/python scripts/check_gates.py
+    ```
+
+### Reversal condition
+
+- **Clause 2** reverses toward a weight field on `weight_management` if a
+  second tree needs monthly weights. A field two trees read is a field of the
+  kind they share.
+- **Clause 3's `e`** reverses toward a score threshold when a corpus document
+  states one. A commercial policy (v2.1) may.
+- **Clause 3's `d`** reverses toward an abstention if a reviewer reads
+  *"untreated"* as unknown wherever the chart is silent.
+- **Clause 8** reverses toward note-free charts if the planner's empty-bundle
+  rule is revisited (D31).
+
+### What it mints
+
+**REQ-80**, above. No other statement; the five new predicate kinds exercise
+REQ-57 and REQ-58, and the two kinds REQ-78 and REQ-79.
+
+### Measured
+
+All runs were made in this session, one after another, on both tiers.
+
+- **The weight-management extension.** `J2`'s and `J3`'s four notes, one
+  call each per tier, no re-ask. All 8 encounters were read on both tiers,
+  including May's unweighed visit as an encounter with no BMI. Every span
+  anchored: 33 on AI Studio and 34 on Vertex. The recordings name the
+  extension beside `T-81`'s and `T-90`'s provenance, and no earlier note's
+  record moved.
+- **The two new kinds**, six notes each, one call per note per tier, no
+  re-ask. Both tiers read every labelled fact and nothing else:
+  - bariatric surgical workup: 12 of 12 weights and 8 of 8 evaluation
+    components;
+  - rheumatoid arthritis workup: 3 of 3 heart-failure statements, 3 of 3
+    screens, 1 of 1 treatment and 2 of 2 stated levels.
+
+  No trap was read as a fact. The deferred tuberculosis treatment did not
+  become a treatment, the unscored examination did not become a level, and
+  `J1`'s missed visit and failed contact did not become weights. Every span
+  anchored.
+- **The verifier, extended** with 29 new claims per tier under the unchanged
+  `verifier-v7`, 29 of 29 accepted on each tier. Both recordings now hold 94
+  claims each, and the 65 already held are unchanged in bytes, so `T-106`'s
+  fixtures did not move. The extension entry first wrote `T-109`'s
+  provenance from a literal in `run_verifier_measurement.py`. The literal is
+  now a constant, and both entries were corrected before commit.
+- **The history verifier, measured whole** under `history-verifier-v1`: one
+  claim per tier, `H13`'s `("neutropenia", ["consistent with neutropenia"])`,
+  accepted on both.
+- **The six quote recordings, extended** with the ten new notes. Each anchors
+  exactly one pair, `RA4`'s second note against neutropenia, and nothing else
+  in any recording. No new note failed. AI Studio's tool-fetch path still
+  carries `T-108`'s and `T-109`'s two failures.
+- **The yellow is measured.** `H13` is yellow, citing *"consistent with
+  neutropenia"*, which slices back through the patient port and is accepted on
+  both tiers. A11's asserting precision is 2/2 (`H1`'s green and `H13`'s
+  yellow), 19 of 19 candidates are graded, and `H14` and `H15` are red with
+  both notes consulted.
+- **The differential, widened**: 25 requests, one per note-bearing chart,
+  across the bariatric, CPAP, knee-injection and infliximab trees. The
+  ultrasound charts carry no note.
+  - **AI Studio:** 25 of 25 outcomes and 137 of 137 criteria agree, 221 of
+    221 spans slice back, and there are zero errors. The agentic path cost
+    **93 model calls and 344,241 input tokens the fixed planner did not
+    spend**, 3.7x its input tokens.
+  - **Vertex:** 21 of 25 scored, every scored outcome and criterion agreeing
+    and 182 of 182 spans valid. 63 calls and 219,814 input tokens beyond the
+    oracle's, 3.1x.
+  - **Four Vertex runs errored** (`J3`, `KNEE1`, `KNEE4`, `KNEE7`). Each time
+    the planner called `get_policy_context` with a `policy_version_id` it had
+    invented (`some_version`, `v1.0`, `knee_osteoarthritis_v1` and a UUID).
+    The store raised `KeyError`, and the run aborted with
+    `SOURCE_UNAVAILABLE` on every criterion: an `ERROR`, recorded apart from
+    the comparison and never folded into it (D90, REQ-28).
+  - The planner is offered that tool and never told the version. On seven
+    bariatric charts it had never reached for it. **Not re-run**: a second
+    run is a new measurement, and a retry until the number is clean is the
+    move D91 refuses. It is numbered **`T-146`**.
+  - **A14's *zero errors* is read on the AI Studio recording**, as every
+    A-figure has been since D106 — the tier every gate replays — and the
+    Vertex errors are reported beside it, in `eval/report.md`'s tier section
+    and in README's degradation section. **This is a reading of A14, stated
+    here so it can be refused.** If the owner reads A14 as both tiers, v1.6
+    stays open on `T-146`.
+- **Two defects this row's own work exposed, both fixed in it**, because
+  without the fixes the row's gates cannot run:
+  - **`RecordedExtractionRunner`'s hash index held one document id per
+    note digest.** `E4`'s notes recorded under weight management and the same
+    bytes recorded under the bariatric workup by `J1`'s ids made the second
+    recording hide the first, so a request for a reading that exists raised
+    `SCHEMA_MISMATCH`. The index now lists every carrier of the bytes and
+    picks the one holding the asked version. A test replays both.
+  - **The weight rate's narrower.** Clause 3 first narrowed the run and the
+    weights together. The mutation pass found that this is weaker than
+    narrowing the run alone: a `NOT_MET` citing a weighed month re-derived as
+    short once that month's weight was narrowed away. The narrower is
+    `_cited_run`, and a test now holds it.
+- **Discovered and numbered, not built.**
+  - **`T-145`**: `pa_agent/cli.py`'s live verifier is built with the
+    criterion instruction. Under `--suggest` with a live leaf, a yellow's
+    history claim would be checked under `INSTRUCTION` rather than
+    `HISTORY_INSTRUCTION`. The recorded path routes correctly; no gate reaches
+    the live one.
+  - **`T-146`**, above.
+  - **`T-143`'s row** gains the two new kinds: the ADK leaf refuses them too.
+- **Model calls, live, this row:**
+  - extraction: 8 (weight-management extension) + 24 (new kinds);
+  - verifier: 58, plus one call-failure retry on Vertex;
+  - history verifier: 2;
+  - quote recordings: 80;
+  - the differential's planners: 156 (93 on AI Studio and 63 on Vertex).
+
+  About 330 in all, on two tiers.

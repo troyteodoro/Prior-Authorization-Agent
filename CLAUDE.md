@@ -34,10 +34,10 @@ an instruction typed into a prompt.
 | File | What it is |
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
-| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-79 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A13 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's and A13 v1.5's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2, v1.3, v1.4 and v1.5; **US-14 is v1.6's and open** — `T-107`, `T-108` and `T-109` closed its first three rows *(D149, D150, D154)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-109 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-110 through T-125 are reserved rows whose records are written when they open. `T-143` and `T-144` are numbered with no record yet, off the path *(D150, D154)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D154, kill criteria, open questions. Append-only. |
+| `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-80 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A14 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's, A13 v1.5's and A14 v1.6's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131, and A14 at v1.6's last row, D155). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-14 closed with v1.2 through v1.6 *(D155 closed US-14)*; **US-16 is v2.0's, next** — the roadmap runs v2.0, v2.1, then v2.2 *(D125)*. |
+| `docs/tasks.md` | The board. Task records T-00 through T-110 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141 and T-142, each with a runnable exit condition; T-111 through T-125 are reserved rows whose records are written when they open. `T-143`, `T-144`, `T-145` and `T-146` are numbered with no record yet, off the path *(D150, D154, D155)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D155, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -343,7 +343,7 @@ bounded **on the contract and inside `review()`** — `model_copy` runs no
 validator, so the contract alone is unreachable from the only path that appends
 and the verb would write a session `get()` cannot read back.
 
-**Adjudication is eleven predicate kinds and two exclusion kinds.**
+**Adjudication is a closed set of predicate kinds and two exclusion kinds.**
 `PredicateKind` (contracts) is the closed vocabulary, `criteria.PREDICATES`
 maps each kind to a binder naming the inputs its predicate receives, and
 `workflow.STEP_KINDS` assigns each kind to the step that evaluates it — a
@@ -744,9 +744,9 @@ passing**, because the tests are written in terms of the thing that broke.
   visible symptom was a cost *ratio*: D64's 13.9x became 4.3x with no change to
   retrieval, because Article V's verifier entered the shared denominator, and
   3.6x when T-81's second extraction call per chart entered it too.
-  **Quote the delta beside the ratio** — 24 model calls and 90,743 input tokens
-  the fixed planner never spent — because the delta is the figure that does not
-  move when the denominator does.
+  **Quote the delta beside the ratio** — the model calls and input tokens the
+  fixed planner never spent, which `eval/report.md` owns — because the delta is
+  the figure that does not move when the denominator does.
 - **A tier is set in one place, and the recording states what ran, not what was
   asked for** *(T-90, D106)*. `pa_agent/tiers.py` sets the environment and
   builds the client together, because they are coupled: with the enterprise
@@ -933,10 +933,11 @@ A status line and pointers, capped at 30 lines by
 `tests/test_docs_consistency.py` *(D148)*. A closed task's account is in its
 board record and its decision entry, never here.
 
-- **Next:** `v1.6`, row 4 — `T-110`, the deferred criteria and the
-  four-practice account. Read the board's *Path to v1* first. Three fact kinds
-  exist and every one folds through `FACT_FOLDS` *(D150, D154)*.
-- **Open:** no task. v1.6 is in progress; `T-107`–`T-109` closed rows 1–3.
+- **Next:** `v2.0`, row 1 — `T-117`, the payer on the tree and the request.
+  Read the board's *Path to v1* first. v1.6 is closed and A14 holds, read on
+  the tier every gate replays *(D155)*; `T-146` is the Vertex differential's
+  four errors.
+- **Open:** no task.
 - **Unclaimed on purpose:** REQ-44 and REQ-47. Amendment 1 reserves the whole
   decision procedure to Python, so no verdict exists that a model could
   determine without doing something reserved. They are declared in spec §5's
@@ -1046,20 +1047,26 @@ Where everything else lives — each is the owner, and this file keeps no copy:
 - **The rheumatology tree's letters are not the bariatric ones** *(D111)*.
   `infliximab-ra-jjm-v1` letters its criteria `a` through `e` because L35677
   does, and `a` is a diagnosis set where the bariatric `a` is a BMI
-  comparison. Four of its five criteria — the two named contraindications and
-  the disease-activity statement — are declared unclaimed **because of the
-  document and the chart**: NYHA class is not in ICD-10, *"untreated"* is a
-  judgment, and disease activity is a clinical assessment no code grades.
-  None is unclaimed because the engine lacks a predicate, which is the
-  distinction REQ-57 keeps and the one this tree was most able to blur. Its
+  comparison. Its two named contraindications and the disease-activity
+  statement were declared unclaimed at v1.2 **because of the chart** — NYHA
+  class is not in ICD-10, a screening result is not in the structured plane,
+  and disease activity is an assessment no code grades — and since T-110 each
+  is read where a **note** states it, through the `rheumatoid_arthritis_workup`
+  kind, and abstains where none does *(D155)*. A disease-activity level counts
+  only when the note states it in words: no corpus document states a score
+  cut-off, so grading one would be an unsourced constant and the model is
+  never asked to do it. Its
   J1745 binding cites a **revision-history line** — the only sentence in the
   corpus that names the code, because A56432's CPT table sits behind the AMA
   licence modal exactly as A56852's does.
 - **The two bariatric trees differ in shape, not only in constants** *(D101)*. Palmetto's
   L34576 states no run length (no `c3`), requires *weight* rather than BMI
-  monthly, and adds a multidisciplinary evaluation; `c4` and `d` are declared
-  `evaluation: "unclaimed"` and the graph abstains on them with
-  `NOT_EVALUATED_BY_THIS_SYSTEM` — never omits them. `qualifying_run` admits an
+  monthly, and adds a multidisciplinary evaluation; `c4` and `d` were declared
+  unclaimed until T-110 and are read since through the
+  `bariatric_surgical_workup` kind the tree declares beside
+  `weight_management` *(D155)*. `c4`'s narrower narrows the run and keeps every
+  weight: its `NOT_MET` cites unweighed months' encounters, never weights.
+  `qualifying_run` admits an
   explicit `None` run length only because the tree declares none; the argument
   stays required. The 43775 binding cites A53028 because A56852's CPT table
   sits behind the AMA licence modal and the extracted text names no code.
@@ -1097,22 +1104,23 @@ Where everything else lives — each is the owner, and this file keeps no copy:
   system it grades** *(D19, D42; reworded in D96)*. Mechanical safeguards are
   in place, and on a corpus this small a perfect score still means only that
   the approach does not obviously fail.
-- **The measured result so far** *(D64, D66, re-measured in D91 and D104)*:
-  model-directed retrieval agrees with the deterministic oracle on 7/7 outcomes
-  and 49/49 criteria, 93/93 spans valid, zero errors — for **24 model calls and
-  90,743 input tokens** the fixed planner did not spend, 3.6x its end-to-end
-  input tokens. **Quote the delta beside the ratio**: the fixed planner makes no
+- **The differential's result** *(D64, D66, re-measured in D91, D104 and
+  D155)*: model-directed retrieval agrees with the deterministic oracle on
+  every outcome and criterion of every note-bearing chart's request, on the
+  tier every gate replays; the figures, and the four Vertex runs that errored
+  on an invented policy version (`T-146`), are `eval/report.md`'s.
+  **Quote the delta beside the ratio**: the fixed planner makes no
   model call, so the ratio's denominator is the replayed extraction-plus-verifier
   cost shared by both sides, and it moved from D64's 13.9x to 4.3x when Article
   V's verifier entered that denominator and to 3.6x when T-81's second
   extraction call per chart did — the delta is the figure that does not move
   *(D91)*. Read the aggregate and the spread, never one patient's ratio.
-- **Planner recall is 1.000 over 29 citing cases, on both the cited and the
-  gathered figure, and since T-81 the gathered figure is a measurement**
-  *(T-27/T-80/T-81, D86/D91/D104)*. The gathered figure is REQ-25's; it was
+- **Planner recall is measured on both the cited and the gathered figure, and
+  since T-81 the gathered figure is a measurement** *(T-27/T-80/T-81,
+  D86/D91/D104, widened by D155)*. The gathered figure is REQ-25's; it was
   1.000 by construction on a one-note corpus and is now the one to quote —
-  every chart is two notes, the planner may name one, and on the measured day
-  it named both for all seven patients. `eval/report.md` carries the
+  every chart is two notes, the planner may name one, and the report's
+  per-patient table says how many it named. `eval/report.md` carries the
   per-patient table of notes on file against notes gathered. The two charts
   that cite no note (E7's, E8's) are still **gathered and uncitable, never
   skipped**. A free-tier tool loop is not reproducible at temperature 0, so one
@@ -1164,7 +1172,7 @@ data/policies/
 data/patients/
   manifest.json      the corpus pin — every bundle's hash (D73). It is **here,
                      not under bundles/**; select_patients.py --verify reads it
-  bundles/           twenty-seven Synthea v4.0.0 bundles — six from the base seed,
+  bundles/           thirty-two Synthea v4.0.0 bundles — six from the base seed,
                      one carrying the declared synthetic BMI-35.0 observation
                      (T-41, D73; E12's patient is note-free by declaration),
                      one declared clone of E4's chart re-addressed into
@@ -1178,12 +1186,15 @@ data/patients/
                      six charts selected by rule from the same Iowa run,
                      no fifth Synthea run (T-108, D150), and the knee
                      osteoarthritis cohort — seven more charts by rule from
-                     that run (T-109, D154). Every clone is
-                     recomputed by --verify
-  notes/             forty chart notes, two per note-bearing chart as
+                     that run (T-109, D154), and T-110's five declared
+                     clones — E1's chart twice into Palmetto's territory and
+                     RA1's three times — each carrying notes of its own
+                     (D155). Every clone is recomputed by --verify
+  notes/             fifty chart notes, two per note-bearing chart as
                      <patient_id>/chart_note_1.txt and chart_note_2.txt (T-81,
-                     D104), the clone's byte-identical to its source's per
-                     document; plus notes/manifest.json — a second, separate
+                     D104), J1's byte-identical to E4's per document and
+                     T-110's five clones' their own (`declared_clone_of`,
+                     never `cloned_from`, D155); plus notes/manifest.json — a second, separate
                      manifest, one record per document
   work/              gitignored: the Synthea jar and whichever full run a
                      --generate mode last wrote (three are declared)
@@ -1218,10 +1229,10 @@ eval/
                      gate; --measure spends model calls, --rescore re-derives
                      the free half from the recording (D64, D91)
   build_report.py    T-22/T-28/T-27's generator; --verify is the ninth gate (D85)
-  cases.json         the eval set — 49 labeled rows (§6's 15 + NP1 + J1 +
-                     RA1-RA3 + US1-US4 + H1-H12 + OSA1-OSA6 + KNEE1-KNEE7;
+  cases.json         the eval set — 57 labeled rows (§6's 15 + NP1 + J1-J3 +
+                     RA1-RA6 + US1-US4 + H1-H15 + OSA1-OSA6 + KNEE1-KNEE7;
                      D75, D102, D104, D113, D114, D119, D122, D126, D150,
-                     D152, D154)
+                     D152, D154, D155)
   baseline.json      what run_eval.py diffs against
   report.md          T-22/T-28's metrics report — generated, never hand-edited
   manifests/         T-06's ground truth — the system under test never reads it;
@@ -1233,23 +1244,28 @@ eval/
                      sleep_apnea_workup[_vertex].json — the second fact kind's
                      recording, its own file and scorer (T-108, D150);
                      knee_osteoarthritis_workup[_vertex].json — the third's
-                     (T-109, D154)
+                     (T-109, D154); bariatric_surgical_workup[_vertex].json
+                     and rheumatoid_arthritis_workup[_vertex].json — the
+                     fourth's and fifth's (T-110, D155). The direct pair is
+                     extended by --extend, which names what it appended
   agentic/           results.json — T-61's recording, carrying since T-80
                      the bundle each side *gathered* beside what it cited (D91),
-                     measured fresh by T-81 over all seven charts (D104)
-  verifier/          results.json — T-17's recording, 65 claims since T-109,
-                     re-measured whole by T-89, T-81, T-93, T-94 and T-108,
-                     extended by T-109, and on both tiers; `verifier-v7`
-                     since D151
-                     (D78, D102, D103, D104, D113, D115, D151, D154). The history claim's
-                     recording, history_results.json, is T-110's (D122)
+                     re-measured by T-110 at every note-bearing chart's own
+                     request, one row per chart, on both tiers (D155)
+  verifier/          results.json — T-17's recording, re-measured whole by
+                     T-89, T-81, T-93, T-94 and T-108, extended by T-109 and
+                     T-110, and on both tiers; `verifier-v7` since D151
+                     (D78, D102, D103, D104, D113, D115, D151, D154, D155).
+                     history_results[_vertex].json — the yellow's
+                     (candidate, quotes) claims under history-verifier-v1,
+                     T-110's first measurement, replayed through the same
+                     runner as results.json (D122, D155)
   history/           T-98's six quote recordings (D122): results.json and
                      results_vertex.json (direct), adk_results_inline[_vertex]
-                     .json and adk_results_tool_fetch[_vertex].json —
-                     thirty-eight notes × five conditions each since T-109's
-                     extension (D152, D154), no pair with a passage, two
-                     notes recorded as failed on AI Studio tool-fetch;
-                     results.json is the one every gate replays
+                     .json and adk_results_tool_fetch[_vertex].json — every
+                     note × five conditions, extended by T-108, T-109 and
+                     T-110 (D152, D154, D155); exactly one pair anchors, the
+                     yellow's; results.json is the one every gate replays
 spike/spike_001/     notes/, labels.json, results.json, run.py — five notes,
                      no patient
 scripts/             check_gates, check_env, check_skeleton,

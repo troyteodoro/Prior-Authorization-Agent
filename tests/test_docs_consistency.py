@@ -989,7 +989,7 @@ def test_every_enumerated_eval_range_ends_at_its_family_s_last_row(claude):
     """*33 labeled rows (… + H1-H4)* sums to 28: T-99's H5–H9 went into the
     count and not the range. Naming the family is not reaching its end (D142)."""
     assert _range_errors(claude) == []
-    assert _range_errors(claude.replace("H1-H12", "H1-H4"))
+    assert _range_errors(claude.replace("H1-H15", "H1-H4"))
 
 
 def _layout_entry(text: str, key: str) -> str:

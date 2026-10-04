@@ -620,11 +620,13 @@ def test_anchoring_reads_every_committed_recording(script):
     anchored every span on the first turn in the direct and inline runs; the
     tool-fetch run paraphrased E8's assertion once more — *completed* for
     *completing*, the instance P2 was written from (D71, D98) — and the
-    re-ask recovered it, so that column reads one asked, one recovered."""
+    re-ask recovered it, so that column reads one asked, one recovered. T-110
+    extended the direct recording with J2's and J3's four notes under the
+    same configuration (D155), and the row names the extension."""
     text = "\n".join(script._anchoring_section())
     assert (
-        "| T-81 direct (`results.json`) | 17 | 175 | 175 | **0** | 0 | **0** "
-        "| 2/2 = **1.000** |"
+        "| T-81 + T-110 extension direct (`results.json`) | 21 | 208 | 208 | **0** "
+        "| 0 | **0** | 2/2 = **1.000** |"
     ) in text
     assert (
         "| T-81 ADK inline (`adk_results_inline.json`) | 17 | 165 | 165 | **0** "
@@ -749,14 +751,17 @@ EXPECTED_ACCOUNT: dict[tuple[str, str], str] = {
     ("ncd-100.1-jjm-v1", "b"): "earned",
     ("ncd-100.1-jjm-v1", "c1"): "earned",
     ("ncd-100.1-jjm-v1", "c2"): "earned",
-    ("ncd-100.1-jjm-v1", "c4"): "unclaimed",
+    # T-110 (D155): unclaimed from T-87 until the fourth fact kind; each
+    # earned by the practice whose tree declared it unclaimed.
+    ("ncd-100.1-jjm-v1", "c4"): "earned",
     ("ncd-100.1-jjm-v1", "c5"): "earned",
-    ("ncd-100.1-jjm-v1", "d"): "unclaimed",
+    ("ncd-100.1-jjm-v1", "d"): "earned",
     ("infliximab-ra-jjm-v1", "a"): "reused",
     ("infliximab-ra-jjm-v1", "b"): "earned",
-    ("infliximab-ra-jjm-v1", "c"): "unclaimed",
-    ("infliximab-ra-jjm-v1", "d"): "unclaimed",
-    ("infliximab-ra-jjm-v1", "e"): "unclaimed",
+    # T-110 (D155): unclaimed from T-92 until the fifth fact kind.
+    ("infliximab-ra-jjm-v1", "c"): "earned",
+    ("infliximab-ra-jjm-v1", "d"): "earned",
+    ("infliximab-ra-jjm-v1", "e"): "earned",
     ("us-abdominal-visceral-j5-j8-v1", "a"): "reused",
     ("us-abdominal-visceral-j5-j8-v1", "b"): "earned",
     ("us-abdominal-visceral-j5-j8-v1", "c"): "unclaimed",
@@ -875,6 +880,45 @@ def test_the_account_groups_by_practice_and_not_by_tree(script):
         assert f"| {practice} | `{tree}` |" in body, (tree, practice)
 
 
+def test_the_account_covers_every_practice_a_loaded_tree_declares(script):
+    """REQ-80 (T-110, D155): the compatibility account renders a row for every
+    practice a loaded tree declares, the bariatric control included. The
+    expected set is read through the policy port, never from the generator,
+    and the count is pinned beside it: five, the control and the four the two
+    cross-practice rounds added, which are A14's *four practices*."""
+    store = LocalPolicyStore()
+    declared = {
+        store.get_tree(json.loads(path.read_text(encoding="utf-8"))["policy_version_id"]).practice
+        for path in sorted((REPO_ROOT / "data" / "policies").glob("*.json"))
+    }
+    section = _compatibility(REPORT.read_text(encoding="utf-8"))
+    per_practice = section[section.index("### Per practice") :]
+    per_practice = per_practice[: per_practice.index("### Every criterion")]
+    rendered = {
+        line.strip().strip("|").split("|")[0].strip().replace(" ", "_")
+        for line in per_practice.splitlines()
+        if line.startswith("| ") and not line.startswith("| Practice") and "---" not in line
+    }
+    assert rendered == declared
+    assert len(declared) == 5
+    assert (
+        "**Every practice a loaded tree declares has a row (REQ-80)**: 5 practices"
+        in section
+    )
+
+
+def test_the_account_check_refuses_a_missing_practice_row(script, monkeypatch):
+    """The check above, against a generator that drops a practice: a sixth
+    practice added without its row is a red suite, not a shorter table."""
+    real = script._trees
+    monkeypatch.setattr(
+        script, "_trees", lambda: [t for t in real() if t.practice != "orthopedics"]
+    )
+    rendered = "\n".join(script._compatibility_section())
+    assert "| orthopedics |" not in rendered
+    assert "4 practices" in rendered
+
+
 def test_exclusions_are_counted_apart_from_criteria(script):
     """A10 counts criteria, and an exclusion is not one (REQ-60, D111).
 
@@ -909,9 +953,10 @@ def test_every_unclaimed_criterion_is_quoted_not_summarized(script):
     reasons = reasons[: reasons.index("### Categorical exclusions")]
 
     unclaimed = [key for key, cls in EXPECTED_ACCOUNT.items() if cls == "unclaimed"]
-    assert len(unclaimed) == 12, (
-        "eight through v1.2, the PAP tree's c and d (D150), and the hyaluronan "
-        "tree's c and e (D154)"
+    assert len(unclaimed) == 7, (
+        "eight through v1.2, the PAP tree's c and d (D150) and the hyaluronan "
+        "tree's c and e (D154), less the five T-110 claimed (D155): the "
+        "ultrasound tree's three judgments and the two later practices' two each"
     )
     for tree, criterion_id in unclaimed:
         assert f"- **`{tree}` `{criterion_id}`**" in reasons, (tree, criterion_id)
@@ -951,10 +996,15 @@ def test_every_predicate_kind_has_a_recorded_origin(script):
         "note_knee_symptoms",
         "note_knee_radiographic_findings",
         "note_conservative_therapy_duration",
+        # T-110 (D155): the rheumatology tree's three, over the fifth kind.
+        "note_heart_failure_class",
+        "note_tuberculosis_screening",
+        "note_disease_activity",
     }, (
         "the second and third practices earned one kind each (T-92, T-94); the "
         "fourth earned two, both over the second fact kind (T-108, D150); the "
-        "fifth three, over the third (T-109, D154)"
+        "fifth three, over the third (T-109, D154); and T-110 earned three "
+        "more for the second practice, over the fifth (D155)"
     )
 
 
@@ -1104,28 +1154,28 @@ def test_quote_rows_recompute_from_the_records_and_not_the_aggregate(script):
 
 def test_the_quote_section_reads_every_committed_recording(script):
     """The figures the section exists to carry, pinned to the six recordings
-    as committed (D122, D152, D154): thirty-eight notes each, a hundred and
-    ninety pairs, zero returned, zero fabricated; a turn per note on the direct
-    and inline runs and two on the tool-fetch runs, where a tool round trip is
-    two calls (D71). Two notes on AI Studio's tool-fetch run are recorded as
-    failed, so that row reads thirty-six answered and a hundred and eighty
-    pairs."""
+    as committed (D122, D152, D154, D155): forty-eight notes each, two
+    hundred and forty pairs, one passage returned and anchored -- the yellow --
+    and zero fabricated; a turn per note on the direct and inline runs and two
+    on the tool-fetch runs, where a tool round trip is two calls (D71). Two
+    notes on AI Studio's tool-fetch run are recorded as failed, so that row
+    reads forty-six answered and two hundred and thirty pairs."""
     text = "\n".join(script._quote_section())
     assert "## Quote consultation (T-98, REQ-67, REQ-68, D122)" in text
     for label, tier, filename, notes, turns, pairs in (
-        ("direct", "ai_studio", "results.json", "38", 38, 190),
-        ("direct", "vertex", "results_vertex.json", "38", 38, 190),
-        ("ADK inline", "ai_studio", "adk_results_inline.json", "38", 38, 190),
-        ("ADK inline", "vertex", "adk_results_inline_vertex.json", "38", 38, 190),
-        ("ADK tool-fetch", "ai_studio", "adk_results_tool_fetch.json", "36 (2 failed)", 72, 180),
-        ("ADK tool-fetch", "vertex", "adk_results_tool_fetch_vertex.json", "38", 76, 190),
+        ("direct", "ai_studio", "results.json", "48", 48, 240),
+        ("direct", "vertex", "results_vertex.json", "48", 48, 240),
+        ("ADK inline", "ai_studio", "adk_results_inline.json", "48", 48, 240),
+        ("ADK inline", "vertex", "adk_results_inline_vertex.json", "48", 48, 240),
+        ("ADK tool-fetch", "ai_studio", "adk_results_tool_fetch.json", "46 (2 failed)", 92, 230),
+        ("ADK tool-fetch", "vertex", "adk_results_tool_fetch_vertex.json", "48", 96, 240),
     ):
         prefix = f"| {label} (`{filename}`) | {tier} | {notes} | {turns} | "
         row = next((line for line in text.splitlines() if line.startswith(prefix)), None)
         assert row is not None, f"no row for {filename}"
-        assert row.endswith(f"| 0 | 0 | 0 | 0 | 0 | {pairs} | **0** |"), row
-    assert "**No passage was returned for any pair in any recording.**" in text
-    assert "Pairs anchored across all six recordings: 0." in text
+        assert row.endswith(f"| 1 | 1 | 0 | 0 | 0 | {pairs} | **0** |"), row
+    assert "**No passage was refused in any recording.**" in text
+    assert "Pairs anchored across all six recordings: 6." in text
 
 
 def test_the_quote_section_is_in_the_committed_report():
@@ -1265,9 +1315,9 @@ def test_a11_reports_red_and_gates_only_the_asserting_colours(suggestion_text):
 
 
 def test_a11_names_the_yellow_clause_as_a14s(suggestion_text):
-    """Clause 3 says whose the measured figure is rather than passing empty."""
+    """Clause 3 is measured, and the section says it is A14's (D155)."""
     section = _suggestion_section(suggestion_text)
-    assert "**A14's**" in section and "T-110" in section
+    assert "**The yellow, measured (A14, D120, D155).**" in section and "T-110" in section
 
 
 def test_the_suggestion_section_sits_outside_every_heading_slice(suggestion_text):
@@ -1488,28 +1538,40 @@ def test_a11s_every_suggestion_traces_to_a_knowledge_table_row(script):
     assert seen, "no suggestion was graded; the clause would pass empty"
 
 
-def test_a11s_third_clause_has_no_yellow_to_measure_and_says_whose_it_is(script):
-    """Clause 3, held as the *absence* it is rather than passing silently.
+def test_a11s_third_clause_is_measured_on_the_one_yellow_the_corpus_produces(script):
+    """Clause 3, measured (A14, T-110, D155). Until T-110 the set was empty and
+    this test held the absence; now the corpus produces exactly one yellow,
+    `H13`'s, and it must carry a span that slices back and an accepting
+    verdict in the history verifier recording on **both** tiers, with the
+    report naming each."""
+    from pa_agent.stores.patient import LocalPatientStore
+    from pa_agent.verifier import build_history_claim_payload, claim_digest
 
-    No committed note produces a yellow. That makes "zero yellow without a
-    valid span" vacuously true, which is exactly what D123 rewrote A11 to
-    stop happening quietly — so this asserts the set is empty **and** that
-    the report names A14 as the owner of the measured figure. When `T-110`
-    produces one, this test goes red and is rewritten to measure it.
-    """
     _results, _cache, reviews = script._run(LocalPolicyStore())
     yellows = [
-        suggestion
-        for run in reviews.values()
+        (case_id, suggestion)
+        for case_id, run in reviews.items()
         for suggestion in run.review.suggestions
         if suggestion.colour.value == "yellow"
     ]
-    assert not yellows, (
-        "a committed chart now produces a yellow; A11 clause 3 stops being a "
-        "unit-level claim and this test measures the span instead (T-110)"
-    )
+    assert [(c, s.row_id) for c, s in yellows] == [("H13", "methotrexate-neutropenia")]
+    _case_id, suggestion = yellows[0]
+    store = LocalPatientStore()
+    passages = []
+    for span in suggestion.citations:
+        document = store.get_document(span.document_id)
+        assert document.slice(span) == span.quote
+        passages.append(document.slice(span))
+    digest = claim_digest(build_history_claim_payload(suggestion, passages))
+    for name in ("history_results.json", "history_results_vertex.json"):
+        recording = json.loads(
+            (REPO_ROOT / "eval" / "verifier" / name).read_text(encoding="utf-8")
+        )
+        verdict = {c["digest"]: c["accept"] for c in recording["claims"]}
+        assert verdict.get(digest) is True, name
     section = REPORT.read_text(encoding="utf-8")
-    assert "**A14's**" in section
+    assert "| `H13` | `methotrexate-neutropenia` |" in section
+    assert "| yes | accept | accept |" in section
 
 
 def test_a11s_gated_denominator_is_the_asserting_suggestions_and_no_others(script):

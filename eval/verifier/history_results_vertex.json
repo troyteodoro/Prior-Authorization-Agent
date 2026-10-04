@@ -1,0 +1,46 @@
+{
+  "task": "T-110",
+  "decision": "D155",
+  "model": "gemini-3.5-flash-lite",
+  "tier": "vertex",
+  "claims_enumerated_from": "results.json",
+  "prompt_version": "history-verifier-v1",
+  "measured_at": "2026-10-04T09:53:42.975763+00:00",
+  "claims": [
+    {
+      "digest": "5b06107eb01e77fc217793d28e8a2b1fbd262814aa1da2ddfc52551a841418c9",
+      "effect": "neutropenia",
+      "payload": {
+        "candidate": {
+          "effect": "neutropenia",
+          "icd10_title": "Other drug-induced agranulocytosis"
+        },
+        "quotes": [
+          "consistent with neutropenia"
+        ]
+      },
+      "accept": true,
+      "reason": "The quote directly documents the presence of neutropenia.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote directly documents the presence of neutropenia."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 369,
+        "output_tokens": 27,
+        "wall_time_ms": 1117.8895409975667
+      }
+    }
+  ],
+  "aggregate": {
+    "claims": 1,
+    "accepted": 1,
+    "rejected": 0,
+    "model_calls": 1,
+    "input_tokens": 369,
+    "output_tokens": 27,
+    "wall_time_ms": 1117.9
+  }
+}

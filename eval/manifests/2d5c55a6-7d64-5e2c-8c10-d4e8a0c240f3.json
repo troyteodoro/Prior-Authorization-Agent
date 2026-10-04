@@ -1,0 +1,57 @@
+{
+  "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
+  "bundle": "Shona685_Zieme486_2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3.json",
+  "declared_clone_of": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+  "as_of": "2026-09-01",
+  "cases": [
+    "RA6",
+    "H15"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [
+    {
+      "type": "disease_activity_not_scored",
+      "date": "2025-10-10",
+      "description": "joints examined, disease activity not scored",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "rheumatology_visits": [
+    {
+      "date": "2025-06-11",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "date": "2025-10-10",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "heart_failure_assessments": [
+    {
+      "date": "2025-10-10",
+      "status": "class_ii",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "disease_activity_assessments": [],
+  "tuberculosis_screens": [
+    {
+      "date": "2025-06-11",
+      "result": "positive",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "tuberculosis_treatments": [
+    {
+      "date": "2025-07-11",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "table_effects": [],
+  "rationale": "RA6 (T-110, D155): RA1's chart as a declared clone whose notes answer two contraindications and not the indication's severity. The 06/11/2025 visit reports a positive interferon-gamma release assay; the 10/10/2025 visit records rifampin for latent tuberculosis begun 07/11/2025 (an encounter date of the chart's own), so d is MET citing the screen and the treatment; it also states heart failure with NYHA class II, which is not an excluded class, so c is MET. It examines the joints and states that disease activity was not formally scored, so no level is stated in words and e abstains: the note-bearing abstention T-110's exit asks for. a and b are MET; the determination is INSUFFICIENT_EVIDENCE. H15 grades the methotrexate candidate, red with both notes consulted. One fact per document (D104)."
+}

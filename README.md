@@ -69,8 +69,8 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are all complete, and v1.6 is in
-progress.** 106 of 106 tasks closed, **none open** — `T-103` opened v1.5 with the
+**v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 are all complete.**
+107 of 107 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,7 +78,7 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A13 holding. The suite collects 2037 tests (151 skip). **`T-107` opened v1.6**
+A1–A14 holding. The suite collects 2128 tests (161 skip). **`T-107` opened v1.6**
 *(D149)*: a tree now declares the fact kinds its extraction produces, a tree
 declaring none reads no note, and a recording replays only under the prompt
 version it was measured with. **`T-108` added practice three** *(D150)*: CPAP
@@ -90,7 +90,15 @@ apnea-hypopnea index; the trust boundary is generic over kinds (REQ-79).
 osteoarthritis under WPS's L39529, an LCD no NCD stands over, read from the
 notes through a third fact kind — symptoms, knee radiographs and conservative
 therapy, none of which Synthea writes — and the first practice to reuse the
-generic trust boundary rather than build it. **`T-110` is next.**
+generic trust boundary rather than build it. **`T-110` closed v1.6** *(D155)*:
+the five criteria v1.2 left unclaimed for want of a field — Palmetto's monthly
+weight and multidisciplinary evaluation, and the rheumatoid tree's heart
+failure class, tuberculosis screen and disease activity — are read from a note
+through two more declared fact kinds, on five declared clones added in the
+round, and abstain where no note states them; the corpus produced its first
+**yellow** suggestion, accepted by the blind verifier on both tiers; and the
+differential was re-measured at every note-bearing chart's own request, A1–A14
+holding. **v2.0's `T-117` is next.**
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -165,6 +173,15 @@ generic trust boundary rather than build it. **`T-110` is next.**
   is a recording whose free half has drifted, which is a failure this project has
   already had once *(D91)*; the mutation pass confirmed that one comparison is
   the only thing in the repository that catches it *(D136)*.
+- **v1.6** is complete, and it is the extractor declared by the tree. `T-107`
+  made a tree declare the fact kinds its notes are read under *(D149)*; `T-108`
+  and `T-109` added CPAP for sleep apnea and hyaluronan injection for knee
+  osteoarthritis, each through a fact kind of its own *(D150, D154)*; `T-110`
+  claimed the five criteria v1.2 deferred, measured the yellow, and widened the
+  differential to every note-bearing chart *(D155)*. On the tier every gate
+  replays the agentic path agreed on every outcome with zero errors; on Vertex,
+  four of twenty-five runs aborted because the planner invented a policy
+  version to look up — recorded as errors, numbered `T-146`, not re-run.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -191,10 +208,10 @@ compatibility* section *(T-95, D116)*.
 
 | Practice | Trees | Criteria | By a kind an earlier practice earned | By a kind it earned itself | Declared unclaimed |
 |---|---|---|---|---|---|
-| bariatric surgery | 2 | 14 | 0 | 12 | 2 |
+| bariatric surgery | 2 | 14 | 0 | 14 | 0 |
 | diagnostic ultrasound | 1 | 5 | 1 | 1 | 3 |
 | orthopedics | 1 | 5 | 0 | 3 | 2 |
-| rheumatology | 1 | 5 | 1 | 1 | 3 |
+| rheumatology | 1 | 5 | 1 | 4 | 0 |
 | sleep medicine | 1 | 4 | 0 | 2 | 2 |
 
 **33 criteria across six trees and five practices, zero omitted** — which is
@@ -205,7 +222,8 @@ engine lacks **fails at load** rather than abstaining, so *unbuilt* cannot
 appear beside *unclaimed* — the distinction `REQ-57` exists to keep, and the
 one a tree from an unrelated practice is most able to blur.
 
-What the two new practices cost, in detail:
+What the two new practices cost at v1.2, in detail — the rheumatology tree's
+three unclaimed criteria were claimed by `T-110`, below:
 
 | Figure | Rheumatology | Ultrasound |
 |---|---|---|
@@ -218,14 +236,17 @@ What the two new practices cost, in detail:
 | Bariatric verdicts, spans, rows or recordings that moved | **zero** | **zero** |
 | Verifier claims, both tiers | **38** of 38 accepted under `verifier-v6`, zero verdicts moving between tiers |
 
-Three of five criteria are declared unclaimed, and that ratio is the finding
-rather than a shortfall: NYHA class is not in ICD-10, *"untreated"* is a
-judgment about the record, and disease activity is a clinical assessment no
-diagnosis code grades. A system reporting five deterministic verdicts here
-would be reporting three it cannot support. Each is unclaimed because of the
-**document or the chart**, never because a predicate is missing — the
-distinction `REQ-57` exists to keep, and the one this tree was most able to
-blur.
+Three of five criteria were declared unclaimed at v1.2, and that ratio was
+the finding rather than a shortfall: NYHA class is not in ICD-10, a
+tuberculosis screen is not in the structured plane, and disease activity is a
+clinical assessment no diagnosis code grades. Each was unclaimed because of the
+**chart**, never because a predicate was missing — and so each became a
+verdict at v1.6 where a **note** states the fact, read through the
+`rheumatoid_arthritis_workup` fact kind, and an abstention where none does.
+A stated NYHA class III or IV is `NOT_MET`; a positive screen with no
+treatment documented is `NOT_MET`; a disease-activity level counts only when
+the note states it in words, because no corpus document states a score
+cut-off and the model is never asked to grade one *(T-110, D155)*.
 
 The corpus half came out the same way. Synthea's own rheumatoid arthritis
 module supplies the diagnosis and methotrexate and **no biologic or JAK
@@ -269,23 +290,24 @@ in any gate* had been pinned against two of the three scripts that spend them
 
 ### Every acceptance gate, and what it reads
 
-**Acceptance gates A1–A13 all hold.**
+**Acceptance gates A1–A14 all hold.**
 
 | Gate | Result |
 |---|---|
-| A1 | 49 labeled cases, every spec §6 edge case present |
-| A2 | precision **1.000** on `MET`, against a **0.422** base rate and an always-`MET` baseline scoring exactly that |
-| A3 | **zero** `MET` verdicts with an invalid span, over 164 spans checked |
+| A1 | 57 labeled cases, every spec §6 edge case present |
+| A2 | precision **1.000** on `MET`, against a **0.507** base rate and an always-`MET` baseline scoring exactly that |
+| A3 | **zero** `MET` verdicts with an invalid span, over 217 spans checked |
 | A4 | E2 and E3 complete with zero model calls |
-| A5 | abstention **0.551**, accounted for per `gap_reason` — the rise is the later practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
-| A6 | 107 model calls / 103,917 in / 14,573 out / 100.0s across thirty determinations, from instrumentation |
-| A7 | 81 requirements: 79 mapped to a check, 2 declared unclaimed with a decision entry behind each |
+| A5 | abstention **0.509**, accounted for per `gap_reason` — the rise is the later practices' declared-unclaimed criteria, not a criterion answering worse — and swept against `discrepancy_tolerance` |
+| A6 | 152 model calls / 143,832 in / 20,682 out / 139.5s across thirty-five determinations, from instrumentation |
+| A7 | 82 requirements: 80 mapped to a check, 2 declared unclaimed with a decision entry behind each |
 | A8 | the failure-modes summary in *Where this system degrades* below; full analysis in `docs/spec.md` §10 |
 | A9 | zero determinations presented with a criterion in `ERROR` |
 | A10 | **33 criteria across six trees and five practices**, every one evaluated by a declared predicate kind or declared unclaimed, zero omitted; every eval row `PASS`; zero model calls in any gate |
-| A11 | **16 of 16** candidates the knowledge table finds graded across 12 rows; precision **1.000** on the colours that *assert* — green and yellow — over **n = 1**, against an all-red baseline with **no denominator at all**; zero suggestions without a source row; zero verdict drift |
+| A11 | **19 of 19** candidates the knowledge table finds graded across 15 rows; precision **1.000** on the colours that *assert* — green and yellow — over **n = 2**, against an all-red baseline with **no denominator at all**; zero suggestions without a source row; zero verdict drift |
 | A12 | every lifecycle transition tested and every illegal one raising with nothing recorded; a session round-trips byte-stable **written twice**; the plane check extended to the fourth plane in both directions |
 | A13 | zero packets carrying an **accepted** red with no justification, over a non-empty set of reds, the refusal naming every unjustified code; every packet citation slicing back through the port that serves its document, **with the count reported** and re-checked over two committed fixtures; the review log append-only and the determination's bytes unchanged after any number of reviews; an outbox artifact existing exactly when the session is `AWAITING_DECISION`, a forbidden submission exiting 1 and writing nothing, `decide` closing with the outcome and the date; **zero model calls in any gate** |
+| A14 | A10 over the four practices v1.2 and v1.6 added, beside the bariatric control — **five practices** in the account (REQ-80); every eval row `PASS`; the differential re-measured at every note-bearing chart's own request, **25 of 25** outcomes agreeing with **zero errors** on the tier every gate replays; **the yellow measured** — `H13`'s passage slices back and the blind verifier accepts it on both tiers |
 
 ### How the project got here
 
@@ -338,17 +360,20 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   `NO_JURISDICTION_TREE` for the rest — every other MAC is a tree nobody has
   compiled, and each one compiled so far showed that MACs differ in shape as
   much as in number. A state is served by one tree *per practice*, so Alabama
-  is served by three. One eval row runs on the second jurisdiction: `J1`,
+  is served by three. Three eval rows run on the second jurisdiction: `J1`,
   E4's chart cloned into Alabama, where the three-month run that is a
-  shortfall in Washington is not a criterion at all.
+  shortfall in Washington is not a criterion at all, and since v1.6 `J2` and
+  `J3`, E1's chart cloned twice with notes documenting the monthly weights and
+  the multidisciplinary evaluation Palmetto asks for — the first approval
+  under that tree, and its first two `NOT_MET`s on them *(D155)*.
 - **P2 — Extraction refuses paraphrase.** A model that paraphrases instead of
   quoting produces a claim nobody can anchor, so the system abstains where
   evidence existed. Fail-closed, and still a loss. The bounded re-ask is the
   standing answer; on the two-note corpus it fired once, on the very
   paraphrase P2 was written from, and recovered it. What remains is a claim
   the model never quoted at all.
-- **P3 — Small everything.** 27 patients (four of them declared clones), 40
-  chart notes, 13 policy documents, 49 cases: every rate moves in large steps,
+- **P3 — Small everything.** 32 patients (nine of them declared clones), 50
+  chart notes, 13 policy documents, 57 cases: every rate moves in large steps,
   and one case outweighs a percentage point. The figures are `eval/report.md`'s,
   which computes them from the three manifests that own them — this bullet
   read *eleven, fourteen, seven, twenty* for two tasks after the corpus grew
@@ -356,7 +381,8 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   rides with a version that re-measures anyway — a note-bearing chart
   re-measures six extraction recordings and the differential, and every
   citing row costs a verifier round on both tiers — so v1.6's round is where
-  patients are added, never a task of their own *(D120)*.
+  patients were added, never a task of their own *(D120)*: five declared
+  clones, in `T-110` *(D155)*.
 - **P4 — The ground truth is a first draft.** The labels were drafted
   alongside the system; the second pass was taken with T-81, every row
   re-derived from the manifests and the trees' constants and recorded in
@@ -381,7 +407,11 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   two notes and the planner can skip one, so the direct figure is measured
   rather than constructed; on the first measurement it gathered every note.
   A free-tier tool loop is not reproducible at temperature 0, so that is a
-  sample, re-measured and never re-run.
+  sample, re-measured and never re-run. The widened measurement showed what
+  a sample hides: on Vertex the same planner invented a policy version to look
+  up on four of twenty-five charts and those runs aborted — reported as
+  errors and numbered `T-146`, because re-running until the number is clean is
+  a second measurement wearing the first one's name *(D155)*.
 - **P8 — Every free number is a replay.** The reproducible figures describe
   one measured day against one pinned model. That is still true, and the
   *one tier* half no longer is: the whole corpus was measured a second time
@@ -405,24 +435,28 @@ earned three and reused none, for the same reason, over a third fact kind —
 which is a small sample, and the honest reading is that a practice whose facts
 live in the notes needs *a few* new predicates, not a fixed number.
 
-The sharper limit is what *unclaimed* is doing. Twelve of those 33 criteria
-abstain, and the account quotes each tree's own reason rather than sorting
-it. Read together, the reasons sort three ways *(D120)*:
+The sharper limit is what *unclaimed* is doing. Seven of those 33 criteria
+abstain on every chart, and the account quotes each tree's own reason rather
+than sorting it. Twelve did until v1.6; `T-110` lifted the five the
+**pipeline** or the **coded record** was holding — Palmetto's monthly weight
+and multidisciplinary evaluation, and the rheumatoid tree's heart failure
+class, tuberculosis screen and disease activity — by reading them from a note
+where one states them *(D155)*. What remains sorts two ways *(D120)*:
 
 | The limit is | Criteria | What lifts it |
 |---|---|---|
-| **this pipeline** | `ncd-100.1-jjm-v1` `c4` — a weight the extraction schema has no field for; `d` — four documented components, then set membership and a six-month window *(D107)* | v1.6's declared extraction schema |
-| **a fact the coded record does not carry** | `infliximab-ra-jjm-v1` `c` — NYHA class; `d` — a tuberculosis screening result, with its treatment on the medication list; `e` — a DAS28, CDAI or SDAI score | v1.6, where a note states the fact; where no committed note does, the abstention stands |
 | **a judgment** | `us-abdominal-visceral-j5-j8-v1` `c` — necessary for management; `d` — not redundant of what is planned; `e` — a high index of suspicion; `hyaluronan-knee-oa-j5-j8-v1` `c` — other diagnoses excluded *"if appropriate"*; `e` — failed aspiration and corticosteroid injection *when* inflammation is significant | nothing on the roadmap *(D107, D154)*; the reviewer |
 | **a record outside the chart** | `pap-osa-dme-jd-v1` `c` — the supplier's instruction in the device's use; `d` — the sleep test's provenance: its FDA status, who ordered it, the testing entity's enrolment | nothing this system reads; the supplier's and the testing entity's documentation *(D150)* |
 
-So v1.6 can lift five of the twelve at most, and three of those only on a
-chart whose note states the fact. The last three are the shape D107 says
-would claim model adjudication, and a system that reported verdicts on them
-would be reporting judgments it cannot support. Today a third of this
-system's criteria are questions it hands back to a human, and that ratio is
-the finding, not a shortfall — but it does mean that "the engine takes a new
-practice's document" is a claim about the two-thirds it can compute.
+The judgments are the shape D107 says would claim model adjudication, and a
+system that reported verdicts on them would be reporting judgments it cannot
+support. Today about a fifth of this system's criteria are questions it hands
+back to a human, and that ratio is the finding, not a shortfall — but it does
+mean that "the engine takes a new practice's document" is a claim about the
+four-fifths it can compute. And the five it lifted are verdicts **only where a
+note states the fact**: on a chart that records no NYHA class they abstain,
+because a chart silent about heart failure has not recorded that there is none
+*(D40)*.
 
 ---
 
@@ -440,7 +474,7 @@ first task opens. The scope of each is in `docs/spec.md` §11 *(D105)*.
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted by how much evidence each has | US-11 | **complete** |
 | v1.4 | sessions and intake, headless | US-12 | **complete** |
 | v1.5 | the form, review, simulated submission and tracking, headless | US-13 | **complete** |
-| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | in progress |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices | US-14 | **complete** |
 | v2.0 | the payer axis: national and regional coverage | US-16 | planned |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | planned |
 | v2.2 | the reviewer's UI over the session port | US-15 | planned |
@@ -742,12 +776,14 @@ the real ADK flow on every run, as described under *Testing the ADK path*
 below.
 
 **The measured result so far:** model-directed retrieval agrees with the
-deterministic oracle on **7/7 outcomes and 49/49 criterion verdicts, with
-93/93 spans valid and zero errors**, on the two-note corpus (D104). It cost
-**24 model calls and 90,743 input tokens** across seven patients that the fixed
-planner spent nothing on — 3.6× the deterministic path's end-to-end input
-tokens, on a comparison where extraction and verification are the same
-replayed payload on both sides. Quote the delta
+deterministic oracle on **25/25 outcomes and 137/137 criterion verdicts, with
+221/221 spans valid and zero errors**, at every note-bearing chart's own
+request across four trees (D155). It cost **93 model calls and 344,241 input
+tokens** across twenty-five patients that the fixed planner spent nothing on —
+3.7× the deterministic path's end-to-end input tokens, on a comparison where
+extraction and verification are the same replayed payload on both sides. On
+Vertex the twenty-one runs that completed agreed everywhere, and four aborted
+on a policy version the planner invented (`T-146`). Quote the delta
 beside the ratio: the fixed planner makes no model call, so the ratio's
 denominator is the shared replayed cost and it moves when that cost changes,
 while the delta does not. Read the aggregate and the spread, never one patient's
@@ -1075,7 +1111,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-2037 tests across 62 files, 151 of them skipped — the skips are per-tree
+2128 tests across 65 files, 161 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -1102,6 +1138,10 @@ nothing about the cases the corpus does not contain.
 # abdominal/visceral vascular ultrasound — WPS's L35755, the third practice
 ./venv/bin/python -m pytest tests/test_ultrasound_tree.py -q          # the tree
 ./venv/bin/python -m pytest tests/test_ultrasound_corpus.py -q        # the charts
+
+# the criteria v1.6 claimed from notes — Palmetto's c4 and d, the rheumatoid tree's c, d and e
+./venv/bin/python -m pytest tests/test_palmetto_workup.py tests/test_rheumatoid_workup.py -q
+./venv/bin/python -m pytest tests/test_t110_corpus.py -q   # the clones, the yellow, the differential
 ```
 
 `tests/test_infliximab_tree.py` (23 tests) pins resolution, dispatch by
@@ -1157,7 +1197,7 @@ the installed framework still discovers the agent.
 ./venv/bin/python eval/run_eval.py --update-baseline   # adopt drift, as a reviewed diff
 ```
 
-Forty-nine labeled cases across five practices, every cited span re-validated
+Fifty-seven labeled cases across five practices, every cited span re-validated
 by the scorer — the count is `eval/report.md`'s, which is generated. The gate
 fails on drift in **either** direction, so a case that *starts* passing is
 adopted explicitly with `--update-baseline` and a commit. Four result statuses

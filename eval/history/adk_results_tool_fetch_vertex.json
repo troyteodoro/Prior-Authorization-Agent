@@ -38,20 +38,20 @@
   ],
   "schema_note": "Same corpus, same conditions and the same scorer as eval/history/results.json — scripts/run_quote_measurement.py's, imported rather than reimplemented. The runner is the only difference.",
   "aggregate": {
-    "notes": 38,
+    "notes": 48,
     "failed": 0,
     "effects_asked": 5,
-    "pairs": 190,
-    "pairs_with_quote": 0,
-    "pairs_anchored": 0,
+    "pairs": 240,
+    "pairs_with_quote": 1,
+    "pairs_anchored": 1,
     "pairs_fabricated": 0,
-    "quotes_returned": 0,
-    "quotes_anchored": 0,
+    "quotes_returned": 1,
+    "quotes_anchored": 1,
     "quotes_refused": 0,
     "quotes_blank": 0,
     "unknown_effects": 0,
-    "spans_emitted": 0,
-    "spans_anchored": 0,
+    "spans_emitted": 1,
+    "spans_anchored": 1,
     "spans_normalized": 0,
     "spans_unescaped": 0,
     "model_offsets_usable": 0,
@@ -59,10 +59,10 @@
     "reask_targets": 0,
     "reask_recovered": 0,
     "reask_calls": 0,
-    "model_calls": 76,
-    "total_input_tokens": 76709,
-    "total_output_tokens": 4588,
-    "total_wall_time_ms": 87690.1
+    "model_calls": 96,
+    "total_input_tokens": 97470,
+    "total_output_tokens": 5885,
+    "total_wall_time_ms": 105006.2
   },
   "notes": [
     {
@@ -4866,6 +4866,1285 @@
         },
         "dropped": []
       }
+    },
+    {
+      "note_id": "J3/1",
+      "corpus": "synthesized",
+      "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "185519a3e6e8f02205b94b53bdfd28011c4b6921dcfac0e45a8c7f40d8ab35d1",
+      "cases": [
+        "J3"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 858,
+        "output_tokens": 59,
+        "wall_time_ms": 978.9457919978304
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "b0d380ce2997e455",
+            "ok": true,
+            "wall_time_ms": 0.574958001379855,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1873ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 858,
+            "output_tokens": 59,
+            "wall_time_ms": 978.9457919978304
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1334,
+            "output_tokens": 51,
+            "wall_time_ms": 782.5258330121869
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J3/2",
+      "corpus": "synthesized",
+      "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "dd576edda3b62345ea8cc2cc7941e69cffcf372139a91deb045b2ae423b7adde",
+      "cases": [
+        "J3"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 858,
+        "output_tokens": 59,
+        "wall_time_ms": 937.963291988126
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "f230ad56182caf13",
+            "ok": true,
+            "wall_time_ms": 0.5534589872695506,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1968ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 858,
+            "output_tokens": 59,
+            "wall_time_ms": 937.963291988126
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1255,
+            "output_tokens": 66,
+            "wall_time_ms": 1019.7597499936819
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA5+H14/1",
+      "corpus": "synthesized",
+      "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "c7434fbdfcd079681710d8f714e4e6ecad157011a5da774e8637a64da10a9f3e",
+      "cases": [
+        "RA5",
+        "H14"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 859,
+        "output_tokens": 60,
+        "wall_time_ms": 826.505790988449
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "9d128658388a5922",
+            "ok": true,
+            "wall_time_ms": 0.41724999027792364,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1739ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 859,
+            "output_tokens": 60,
+            "wall_time_ms": 826.505790988449
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1166,
+            "output_tokens": 66,
+            "wall_time_ms": 902.120874990942
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA5+H14/2",
+      "corpus": "synthesized",
+      "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "a4658bb8604c275a166091b92f01e7117785fead2e391e281212271f4bfede63",
+      "cases": [
+        "RA5",
+        "H14"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 859,
+        "output_tokens": 60,
+        "wall_time_ms": 1015.321375001804
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "852e1b7cd10622ec",
+            "ok": true,
+            "wall_time_ms": 0.666583000565879,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1815ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 859,
+            "output_tokens": 60,
+            "wall_time_ms": 1015.321375001804
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1165,
+            "output_tokens": 66,
+            "wall_time_ms": 789.6287079929607
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA6+H15/1",
+      "corpus": "synthesized",
+      "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "ee5ccb6e50b558317b369850888c7a4bc3d5e2e7ea5e19b05ecd4919d7698891",
+      "cases": [
+        "RA6",
+        "H15"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 860,
+        "output_tokens": 61,
+        "wall_time_ms": 792.4070409935666
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "7fba323d312a5442",
+            "ok": true,
+            "wall_time_ms": 0.5581250006798655,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1664ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 860,
+            "output_tokens": 61,
+            "wall_time_ms": 792.4070409935666
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1142,
+            "output_tokens": 66,
+            "wall_time_ms": 861.8078329891432
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA6+H15/2",
+      "corpus": "synthesized",
+      "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "9b1929ef3b2f2b4fb590c25b38cbf89e3402e00f50daf3e261f81cc2331c89b8",
+      "cases": [
+        "RA6",
+        "H15"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 860,
+        "output_tokens": 61,
+        "wall_time_ms": 904.025374999037
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "21b2b13542594f7e",
+            "ok": true,
+            "wall_time_ms": 0.5320000054780394,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1659ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 860,
+            "output_tokens": 61,
+            "wall_time_ms": 904.025374999037
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1209,
+            "output_tokens": 66,
+            "wall_time_ms": 745.1309999887599
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J2/1",
+      "corpus": "synthesized",
+      "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "29172b2f3044e21be9d6ab7a2cfb694712f8781216cb0c818ca1da573a079c0f",
+      "cases": [
+        "J2"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 853,
+        "output_tokens": 54,
+        "wall_time_ms": 995.4465000046184
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "3e90674920221af9",
+            "ok": true,
+            "wall_time_ms": 0.8129589987220243,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1807ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 853,
+            "output_tokens": 54,
+            "wall_time_ms": 995.4465000046184
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1288,
+            "output_tokens": 66,
+            "wall_time_ms": 800.3193750046194
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J2/2",
+      "corpus": "synthesized",
+      "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "260e994f2053fda88cab50465179082310300053819359d61507f1373c1aaae1",
+      "cases": [
+        "J2"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 853,
+        "output_tokens": 54,
+        "wall_time_ms": 776.1109169950942
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "965b67d2985aa107",
+            "ok": true,
+            "wall_time_ms": 0.5371659935917705,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1542ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 853,
+            "output_tokens": 54,
+            "wall_time_ms": 776.1109169950942
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1285,
+            "output_tokens": 51,
+            "wall_time_ms": 755.3370840032585
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA4+H13/1",
+      "corpus": "synthesized",
+      "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "cbd54a790acdd71301527d68a613dd6a75d96b58171176b60f6db915bca1a826",
+      "cases": [
+        "RA4",
+        "H13"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": []
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 857,
+        "output_tokens": 59,
+        "wall_time_ms": 850.780416993075
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "f8f8b643d52ab9de",
+            "ok": true,
+            "wall_time_ms": 0.6333750061457977,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1847ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 857,
+            "output_tokens": 59,
+            "wall_time_ms": 850.780416993075
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1164,
+            "output_tokens": 120,
+            "wall_time_ms": 986.0880829946836
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": []
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 0,
+        "quotes_anchored": 0,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 0,
+        "pairs_anchored": 0,
+        "pairs_fabricated": 0,
+        "spans_emitted": 0,
+        "spans_anchored": 0,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 0,
+            "anchored": 0
+          }
+        },
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA4+H13/2",
+      "corpus": "synthesized",
+      "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "81600a994d87a3ce68a08ef92322742fbfd3e567fbba64773f4e3149fa4bd3c8",
+      "cases": [
+        "RA4",
+        "H13"
+      ],
+      "error": null,
+      "quotes": {
+        "prednisone-osteoporosis": [],
+        "apixaban-hypotension": [],
+        "lisinopril-renal-impairment": [],
+        "hydrochlorothiazide-hyperglycemia": [],
+        "methotrexate-neutropenia": [
+          {
+            "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt",
+            "char_start": 416,
+            "char_end": 427,
+            "quote": "neutropenia"
+          }
+        ]
+      },
+      "refused": [],
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "quotes",
+        "input_tokens": 857,
+        "output_tokens": 59,
+        "wall_time_ms": 812.9808340017917
+      },
+      "trace": {
+        "runner_name": "adk",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t98-quotes-v1/t89-reask-v1",
+        "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt",
+        "steps": [
+          "adk_quotes"
+        ],
+        "tool_calls": [
+          {
+            "name": "read_note",
+            "arguments_digest": "2458b190636e3415",
+            "ok": true,
+            "wall_time_ms": 0.5415420018834993,
+            "detail": null
+          }
+        ],
+        "attempts": 1,
+        "termination_reason": "ok (1606ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 857,
+            "output_tokens": 59,
+            "wall_time_ms": 812.9808340017917
+          },
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "quotes",
+            "input_tokens": 1179,
+            "output_tokens": 93,
+            "wall_time_ms": 782.9290840018075
+          }
+        ]
+      },
+      "raw": {
+        "effects": [
+          {
+            "effect": "osteoporosis",
+            "quotes": []
+          },
+          {
+            "effect": "hypotension",
+            "quotes": []
+          },
+          {
+            "effect": "renal impairment",
+            "quotes": []
+          },
+          {
+            "effect": "hyperglycemia",
+            "quotes": []
+          },
+          {
+            "effect": "neutropenia",
+            "quotes": [
+              {
+                "quote": "neutropenia",
+                "char_start": 321,
+                "char_end": 332
+              }
+            ]
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "quotes_returned": 1,
+        "quotes_anchored": 1,
+        "quotes_refused": 0,
+        "quotes_blank": 0,
+        "unknown_effects": 0,
+        "pairs_with_quote": 1,
+        "pairs_anchored": 1,
+        "pairs_fabricated": 0,
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "spans_unescaped": 0,
+        "model_offsets_usable": 0,
+        "per_effect": {
+          "prednisone-osteoporosis": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "apixaban-hypotension": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "lisinopril-renal-impairment": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "hydrochlorothiazide-hyperglycemia": {
+            "returned": 0,
+            "anchored": 0
+          },
+          "methotrexate-neutropenia": {
+            "returned": 1,
+            "anchored": 1
+          }
+        },
+        "dropped": []
+      }
     }
   ],
   "extensions": [
@@ -4907,6 +6186,23 @@
         "KNEE5/2",
         "KNEE4/1",
         "KNEE4/2"
+      ]
+    },
+    {
+      "task": "T-108",
+      "decision": "D152",
+      "measured_at": "2026-10-04T09:52:31.684506+00:00",
+      "notes": [
+        "J3/1",
+        "J3/2",
+        "RA5+H14/1",
+        "RA5+H14/2",
+        "RA6+H15/1",
+        "RA6+H15/2",
+        "J2/1",
+        "J2/2",
+        "RA4+H13/1",
+        "RA4+H13/2"
       ]
     }
   ]

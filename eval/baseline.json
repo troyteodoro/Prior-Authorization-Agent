@@ -78,6 +78,18 @@
       "status": "PASS",
       "reason_class": null
     },
+    "H13": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "H14": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "H15": {
+      "status": "PASS",
+      "reason_class": null
+    },
     "H2": {
       "status": "PASS",
       "reason_class": null
@@ -111,6 +123,14 @@
       "reason_class": null
     },
     "J1": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "J2": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "J3": {
       "status": "PASS",
       "reason_class": null
     },
@@ -179,6 +199,18 @@
       "reason_class": null
     },
     "RA3": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "RA4": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "RA5": {
+      "status": "PASS",
+      "reason_class": null
+    },
+    "RA6": {
       "status": "PASS",
       "reason_class": null
     },

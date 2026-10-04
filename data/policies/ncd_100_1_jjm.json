@@ -2,7 +2,7 @@
   "policy_version_id": "ncd-100.1-jjm-v1",
   "title": "Bariatric surgery coverage, NCD 100.1 as operationalized by Palmetto GBA (Jurisdictions J and M)",
   "practice": "bariatric_surgery",
-  "fact_kinds": ["weight_management"],
+  "fact_kinds": ["weight_management", "bariatric_surgical_workup"],
   "compiled_by": "T-87, hand-compiled from the T-02 corpus as extended by D101",
   "jurisdiction": {
     "authority": "mac_jurisdiction_jj_jm",
@@ -16,7 +16,7 @@
       "VA",
       "WV"
     ],
-    "note": "Every quantified constant below comes from L34576, not from CMS. NCD 100.1 quantifies nothing. This tree differs from Noridian's in shape, not only in value: no run-length criterion, weight rather than BMI documented monthly, and a multidisciplinary evaluation the pipeline has no extractor for. Two criteria are therefore declared unclaimed and abstained on, never omitted (D101)."
+    "note": "Every quantified constant below comes from L34576, not from CMS. NCD 100.1 quantifies nothing. This tree differs from Noridian's in shape, not only in value: no run-length criterion, weight rather than BMI documented monthly, and a multidisciplinary evaluation. Both were declared unclaimed from T-87 until T-110, when the bariatric_surgical_workup fact kind gave the extraction a field for each (D101, D155)."
   },
   "sources": [
     {
@@ -141,7 +141,8 @@
     {
       "id": "c4",
       "label": "Weight documented in every month of the qualifying run",
-      "evaluation": "unclaimed",
+      "evaluation": "deterministic",
+      "kind": "note_weight_run_rate",
       "constants": {
         "documentation_rate": {
           "value": "every_month_of_run",
@@ -166,7 +167,7 @@
           "note": "Weight, where A53028 says 'weight and BMI'. This is what makes the criterion unclaimed."
         }
       },
-      "note": "Unclaimed (D101): the extractor reads a documented BMI and has no weight field (D15, T-15's schema). A BMI proxy would be sound and incomplete — a documented BMI implies a documented weight, but a month documenting weight without a BMI would read NOT_MET. Claimed when the extraction schema gains a weight field, which is a new measurement (D45)."
+      "note": "Unclaimed from T-87 (D101) because the weight-management kind reads a documented BMI and has no weight field (D15). Claimed by T-110 (D155) through the bariatric_surgical_workup kind, which extracts each measured weight with its date: a month of the run counts when a weight is documented in it, and a BMI is never read as one. Not a BMI proxy, which would be sound and incomplete -- a month documenting a weight and no BMI would read NOT_MET."
     },
     {
       "id": "c5",
@@ -212,8 +213,20 @@
     {
       "id": "d",
       "label": "A multidisciplinary evaluation within the previous six months",
-      "evaluation": "unclaimed",
+      "evaluation": "deterministic",
+      "kind": "note_multidisciplinary_evaluation",
       "constants": {
+        "required_components": {
+          "value": ["bariatric_surgeon", "primary_care_referral", "mental_health", "nutrition"],
+          "type": "string_list",
+          "source": {
+            "document_id": "l34576",
+            "char_start": 8772,
+            "char_end": 9254,
+            "quote": "A thorough multidisciplinary evaluation within the previous 6 months which includes ALL of the following:\n\nan evaluation by a bariatric surgeon recommending surgical treatment, including a description of the proposed procedure(s)\n\na primary care provider referral\n\nevaluation for bariatric surgery by a mental health provider including a statement regarding motivation and ability to follow post-surgical requirements\n\na nutritional evaluation by a physician or registered dietician"
+          },
+          "note": "The four components in L34576's order, as the bariatric_surgical_workup kind's closed labels (T-110, D155). 'ALL of the following': every one must be documented."
+        },
         "evaluation_window_months": {
           "value": 6,
           "type": "integer_months",
@@ -226,7 +239,7 @@
           "note": "Four named components follow in the source: bariatric surgeon, primary care referral, mental health, nutrition."
         }
       },
-      "note": "Unclaimed (D101): the pipeline extracts weight-management encounters and program assertions, and has no extractor for a multidisciplinary evaluation. Abstains with NOT_EVALUATED_BY_THIS_SYSTEM so the determination names what a reviewer still owes. Decomposed (D107), it is extraction of four documented components, then set membership and a six-month window -- REQ-38's shape, not REQ-44's; claimed when the tree declares the fact type (v1.6), which is a new measurement (D45)."
+      "note": "Unclaimed from T-87 (D101); decomposed by D107 into extraction of four documented components, then set membership and a six-month window -- REQ-38's shape, not REQ-44's. Claimed by T-110 (D155) through the bariatric_surgical_workup kind. Each component's latest documentation on or before the clock must fall fewer than six whole months before it (c2's comparison); a component documented only outside the window is NOT_MET, and an undocumented one abstains, because a chart silent about an evaluation has not recorded that none took place (D40)."
     }
   ],
   "reconciled_facts": [

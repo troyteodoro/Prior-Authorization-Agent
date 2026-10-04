@@ -2,6 +2,8 @@
 
     python scripts/run_extraction.py            # spends one model call per note, two on a re-ask
     python scripts/run_extraction.py --rescore  # re-anchors recorded payloads, no calls
+    python scripts/run_extraction.py --extend   # measures only the notes the recording
+                                                # lacks, keeping the rest (T-110, D155)
 
 Since T-89 (D103) a note whose first turn returned a quote Python could not
 locate costs a second call — the verbatim re-ask — and every turn is on the
@@ -54,12 +56,18 @@ from pa_agent.contracts import (  # noqa: E402
     CallMetrics,
     ClinicalEvaluation,
     ConservativeTherapy,
+    DiseaseActivityAssessment,
     DocumentedFinding,
+    DocumentedWeight,
+    EvaluationComponent,
     FactKind,
+    HeartFailureAssessment,
     KneeRadiograph,
     KneeSymptom,
     RunTrace,
     SleepTest,
+    TuberculosisScreen,
+    TuberculosisTreatment,
 )
 from pa_agent.extraction import (  # noqa: E402
     EXTRACTION_TEMPERATURE,
@@ -97,6 +105,12 @@ KNEE_PROVENANCE: dict[str, dict[str, str | None]] = {
     MEASURED_TIER: {"task": "T-109", "decision": "D154", "supersedes": None},
     SECOND_TIER: {"task": "T-109", "decision": "D154", "supersedes": None},
 }
+#: The fourth and fifth kinds' recordings, both tiers measured by T-110 (D155).
+T110_PROVENANCE: dict[str, dict[str, str | None]] = {
+    MEASURED_TIER: {"task": "T-110", "decision": "D155", "supersedes": None},
+    SECOND_TIER: {"task": "T-110", "decision": "D155", "supersedes": None},
+}
+CASES_PATH = REPO_ROOT / "eval" / "cases.json"
 
 
 def _named_tier(argv: list[str]) -> str:
@@ -202,6 +216,9 @@ def synthesized_cases() -> list[dict]:
             continue
         if manifest.get("knee_visits"):
             # T-109 (D154): a knee chart likewise, under the third kind.
+            continue
+        if manifest.get("rheumatology_visits"):
+            # T-110 (D155): a rheumatology chart likewise, under the fifth.
             continue
         if manifest.get("cloned_from"):
             # A declared clone's note is its source's bytes (T-88, D102): the
@@ -770,6 +787,229 @@ def _print_sleep(note_id: str, scored: dict) -> None:
     )
 
 
+# --------------------------------------------------------------------------
+# The bariatric surgical workup and the rheumatoid arthritis workup (T-110,
+# D155): one corpus rule, one scorer and one record shape for both, because
+# every item either kind extracts is a flat, dated, labelled fact.
+# --------------------------------------------------------------------------
+
+
+def _charts_declaring(kind: FactKind) -> list[str]:
+    """The note-bearing charts whose eval rows resolve to a tree declaring
+    `kind`, in manifest order. Read from the system rather than from a
+    manifest field, so a chart is measured under exactly the kinds a request
+    on it reads (REQ-78): `J1`'s notes are `E4`'s bytes, and they are read
+    under Palmetto's second kind because `J1` resolves there."""
+    from pa_agent.stores.policy import LocalPolicyStore
+
+    store, policies = LocalPatientStore(), LocalPolicyStore()
+    cases = json.loads(CASES_PATH.read_text(encoding="utf-8"))["cases"]
+    wanted: list[str] = []
+    for case in cases:
+        patient_id = case.get("patient_id")
+        if not patient_id or patient_id in wanted:
+            continue
+        state = case.get("state") or store.get_jurisdiction_state(patient_id)
+        ref = policies.resolve(case["procedure_code"], state)
+        if ref is None:
+            continue
+        tree = policies.get_tree(ref.policy_version_id)
+        if kind in tree.fact_kinds and store.get_notes(patient_id):
+            wanted.append(patient_id)
+    return wanted
+
+
+def _flat_labels(kind: FactKind, manifest: dict, basename: str) -> dict:
+    """One document's labelled facts under `kind`, from its fact manifest."""
+    def mine(key: str) -> list[dict]:
+        return [f for f in manifest.get(key, []) if f["document"] == basename]
+
+    if kind is FactKind.BARIATRIC_SURGICAL_WORKUP:
+        weights = [
+            {"date": e["date"]}
+            for program in manifest["wm_programs"]
+            for e in program["encounters"]
+            if e["document"] == basename and e.get("weight_documented")
+        ]
+        return {
+            "weights": sorted(weights, key=lambda w: w["date"]),
+            "evaluations": sorted(
+                ({"date": e["date"], "label": e["component"]}
+                 for e in mine("multidisciplinary_evaluations")),
+                key=lambda e: (e["date"], e["label"]),
+            ),
+            "traps": [{"date": t["date"], "reason": t["type"]} for t in mine("traps")],
+        }
+    return {
+        "heart_failure_assessments": [
+            {"date": f["date"], "label": f["status"]} for f in mine("heart_failure_assessments")
+        ],
+        "tuberculosis_screens": [
+            {"date": f["date"], "label": f["result"]} for f in mine("tuberculosis_screens")
+        ],
+        "tuberculosis_treatments": [{"date": f["date"]} for f in mine("tuberculosis_treatments")],
+        "disease_activity_assessments": [
+            {"date": f["date"], "label": f["level"]} for f in mine("disease_activity_assessments")
+        ],
+        "traps": [{"date": t["date"], "reason": t["type"]} for t in mine("traps")],
+    }
+
+
+def flat_cases(kind: FactKind) -> list[dict]:
+    """The documents of every chart `_charts_declaring(kind)` names, labelled
+    with each document's own facts under that kind."""
+    store = LocalPatientStore()
+    manifests = {
+        m["patient_id"]: m
+        for m in (
+            json.loads(path.read_text(encoding="utf-8"))
+            for path in sorted(MANIFEST_DIR.glob("*.json"))
+        )
+    }
+    cases = []
+    for patient_id in _charts_declaring(kind):
+        manifest = manifests[patient_id]
+        served = {d.document_id: d for d in store.get_notes(patient_id)}
+        for ordinal, basename in enumerate(manifest["documents"], 1):
+            document = served[f"{patient_id}/{basename}"]
+            cases.append({
+                "note_id": f"{'+'.join(manifest['cases'])}/{ordinal}",
+                "corpus": "synthesized",
+                "document_id": document.document_id,
+                "document": basename,
+                "text": document.text,
+                "sha256": document.sha256,
+                "cases": manifest["cases"],
+                "labels": _flat_labels(kind, manifest, basename),
+            })
+    return cases
+
+
+#: kind -> collection -> (contract type, date attribute, label attribute).
+FLAT_COLLECTIONS: dict[FactKind, dict[str, tuple[type, str, str | None]]] = {
+    FactKind.BARIATRIC_SURGICAL_WORKUP: {
+        "weights": (DocumentedWeight, "weight_date", None),
+        "evaluations": (EvaluationComponent, "evaluation_date", "category"),
+    },
+    FactKind.RHEUMATOID_ARTHRITIS_WORKUP: {
+        "heart_failure_assessments": (HeartFailureAssessment, "assessment_date", "status"),
+        "tuberculosis_screens": (TuberculosisScreen, "screen_date", "result"),
+        "tuberculosis_treatments": (TuberculosisTreatment, "start_date", None),
+        "disease_activity_assessments": (DiseaseActivityAssessment, "assessment_date", "level"),
+    },
+}
+
+
+#: trap type -> the one collection it imitates (T-110, D155).
+TRAP_COLLECTION: dict[str, str] = {
+    "tuberculosis_treatment_deferred": "tuberculosis_treatments",
+    "disease_activity_not_scored": "disease_activity_assessments",
+}
+
+
+def _flat_items(kind: FactKind, result) -> dict[str, list[tuple[str, str | None]]]:
+    out: dict[str, list[tuple[str, str | None]]] = {}
+    for collection, (fact_type, when, label) in FLAT_COLLECTIONS[kind].items():
+        out[collection] = sorted(
+            (
+                getattr(f, when).isoformat(),
+                getattr(f, label).value if label else None,
+            )
+            for f in result.facts if isinstance(f, fact_type)
+        )
+    return out
+
+
+def score_flat(kind: FactKind, case: dict, result) -> dict:
+    """D17's rule on flat dated facts: an item matches its label on the ISO
+    date **and** the label, so a right category on a wrong date, or a right
+    date read as the wrong class, is a wrong fact."""
+    labels = case["labels"]
+    got = _flat_items(kind, result)
+    scored: dict = {}
+    for collection in FLAT_COLLECTIONS[kind]:
+        want = sorted((item["date"], item.get("label")) for item in labels[collection])
+        have = got[collection]
+        scored[collection] = {
+            "labeled": len(want),
+            "extracted": len(have),
+            "matched": sum(min(want.count(i), have.count(i)) for i in set(want)),
+            "unlabeled": [list(i) for i in have if i not in want],
+            "missed": [list(i) for i in want if i not in have],
+        }
+    anchored = [s for s in result.anchored_spans if s.anchored]
+    taken = []
+    for trap in labels["traps"]:
+        # A trap is read as a fact when the collection it imitates holds an
+        # item on its date: a deferred treatment as a treatment, an unscored
+        # examination as a stated level. A program-series trap (a missed
+        # visit) imitates nothing in particular, so every collection is read.
+        named = TRAP_COLLECTION.get(trap["reason"])
+        collections = [named] if named else list(got)
+        if any(d == trap["date"] for c in collections for d, _ in got[c]):
+            taken.append(trap["date"])
+    scored.update({
+        "traps_extracted": sorted(set(taken)),
+        "spans_emitted": len(result.anchored_spans),
+        "spans_anchored": len(anchored),
+        "spans_normalized": sum(1 for s in anchored if s.anchor_mode == "normalized"),
+        "model_offsets_usable": sum(
+            1 for s in result.anchored_spans if s.model_offsets_yield_quote
+        ),
+        "dropped": result.dropped,
+    })
+    return scored
+
+
+def aggregate_flat(kind: FactKind, records: list[dict]) -> dict:
+    """A flat kind's headline figures. Every turn counted (D71)."""
+    turns = turn_metrics(records)
+    figures: dict = {"notes": len(records)}
+    for collection in FLAT_COLLECTIONS[kind]:
+        for key in ("labeled", "extracted", "matched"):
+            figures[f"{collection}_{key}"] = sum(
+                r["score"][collection][key] for r in records
+            )
+    figures.update({
+        "traps": sum(len(r["labels"]["traps"]) for r in records),
+        "traps_extracted": sum(len(r["score"]["traps_extracted"]) for r in records),
+        "spans_emitted": sum(r["score"]["spans_emitted"] for r in records),
+        "spans_anchored": sum(r["score"]["spans_anchored"] for r in records),
+        "spans_normalized": sum(r["score"]["spans_normalized"] for r in records),
+        "model_offsets_usable": sum(r["score"]["model_offsets_usable"] for r in records),
+        **reask_figures(records),
+        "model_calls": len(turns),
+        "total_input_tokens": sum(m["input_tokens"] for m in turns),
+        "total_output_tokens": sum(m["output_tokens"] for m in turns),
+        "total_wall_time_ms": round(sum(m["wall_time_ms"] for m in turns), 1),
+    })
+    return figures
+
+
+def flat_facts(kind: FactKind, result) -> dict:
+    """The result's facts in the recording's shape, for a reader of the file."""
+    out: dict = {}
+    for collection, (fact_type, when, label) in FLAT_COLLECTIONS[kind].items():
+        out[collection] = [
+            {"date": getattr(f, when).isoformat(),
+             **({"label": getattr(f, label).value} if label else {}),
+             "span": _span(f.span)}
+            for f in result.facts if isinstance(f, fact_type)
+        ]
+    return out
+
+
+def _print_flat(note_id: str, scored: dict) -> None:
+    parts = [
+        f"{name} {v['matched']}/{v['labeled']} (got {v['extracted']})"
+        for name, v in scored.items() if isinstance(v, dict) and "matched" in v
+    ]
+    print(
+        f"  {note_id:<12} " + " ".join(parts)
+        + f" spans {scored['spans_anchored']}/{scored['spans_emitted']}"
+    )
+
+
 #: kind -> (corpus, scorer, facts, aggregate, printer, provenance, schema note).
 #: One entry per kind measured on its own corpus (T-108, T-109).
 KIND_MEASUREMENTS = {
@@ -789,6 +1029,28 @@ KIND_MEASUREMENTS = {
         "their start dates. Its own file and its own scorer, for the second "
         "kind's reason (D150, D154).",
     ),
+    FactKind.BARIATRIC_SURGICAL_WORKUP: (
+        lambda: flat_cases(FactKind.BARIATRIC_SURGICAL_WORKUP),
+        lambda c, r: score_flat(FactKind.BARIATRIC_SURGICAL_WORKUP, c, r),
+        lambda r: flat_facts(FactKind.BARIATRIC_SURGICAL_WORKUP, r),
+        lambda rs: aggregate_flat(FactKind.BARIATRIC_SURGICAL_WORKUP, rs),
+        _print_flat, T110_PROVENANCE,
+        "The fourth fact kind's recording: documented weights with their "
+        "dates, and the multidisciplinary evaluation's components with theirs. "
+        "Read on every chart whose request resolves to a tree declaring it -- "
+        "Palmetto's bariatric tree -- including J1's notes, which are E4's "
+        "bytes (D155).",
+    ),
+    FactKind.RHEUMATOID_ARTHRITIS_WORKUP: (
+        lambda: flat_cases(FactKind.RHEUMATOID_ARTHRITIS_WORKUP),
+        lambda c, r: score_flat(FactKind.RHEUMATOID_ARTHRITIS_WORKUP, c, r),
+        lambda r: flat_facts(FactKind.RHEUMATOID_ARTHRITIS_WORKUP, r),
+        lambda rs: aggregate_flat(FactKind.RHEUMATOID_ARTHRITIS_WORKUP, rs),
+        _print_flat, T110_PROVENANCE,
+        "The fifth fact kind's recording: heart-failure assessments, "
+        "tuberculosis screens and treatments, and disease-activity levels "
+        "stated in words, each dated and labelled from a closed list (D155).",
+    ),
 }
 
 
@@ -796,9 +1058,43 @@ def main() -> int:
     if _named_kind(sys.argv) is not FactKind.WEIGHT_MANAGEMENT:
         return main_kind(_named_kind(sys.argv))
     rescore = "--rescore" in sys.argv
+    extend = "--extend" in sys.argv
+    if rescore and extend:
+        sys.exit("--rescore and --extend are two different runs; name one")
     tier = _named_tier(sys.argv)
     out_path = out_path_for(tier)
     cases = spike_cases() + synthesized_cases()
+    kept: list[dict] = []
+
+    if extend:
+        # T-110 (D155): measure only the notes the recording lacks, under the
+        # configuration it was measured with, and keep every recorded note's
+        # record byte for byte -- D152's and D154's extension, on the first
+        # kind. A changed prompt, model or tier is a new measurement (D45),
+        # so it refuses rather than mixing two configurations in one file.
+        if not out_path.exists():
+            sys.exit(f"nothing to extend at {out_path}; run a full measurement first")
+        previous = json.loads(out_path.read_text(encoding="utf-8"))
+        if previous.get("prompt_version") != PROMPT_VERSION:
+            sys.exit(
+                f"{out_path.name} was measured under {previous.get('prompt_version')!r}; "
+                f"the code is {PROMPT_VERSION!r}. That is a new measurement (D45), not an extension"
+            )
+        if previous.get("model") != PINNED_MODEL:
+            sys.exit(f"{out_path.name} was measured on {previous.get('model')!r}; not an extension")
+        recorded = {r["note_id"]: r for r in previous["notes"]}
+        by_id = {c["note_id"]: c for c in cases}
+        for note_id, record in recorded.items():
+            case = by_id.get(note_id)
+            if case is None or case["sha256"] != record["note_sha256"]:
+                sys.exit(
+                    f"{note_id}: recorded, and no longer in the corpus as measured. "
+                    "An extension adds notes; it never re-measures or drops one (D45)"
+                )
+        kept = list(previous["notes"])
+        cases = [c for c in cases if c["note_id"] not in recorded]
+        if not cases:
+            sys.exit("every note in the corpus is already recorded; nothing to extend")
 
     if rescore:
         # Routed by tier: unrouted, `--tier vertex --rescore` would re-anchor
@@ -829,9 +1125,12 @@ def main() -> int:
         client = client_for(tier)
         from pa_agent.tiers import tier_of
 
+        if extend and previous.get("tier") != tier_of(client):
+            sys.exit(f"{out_path.name} was measured on {previous.get('tier')!r}; not an extension")
         print(
             f"{len(cases)} notes, model {PINNED_MODEL}, "
             f"tier {tier_of(client)}, temperature {EXTRACTION_TEMPERATURE}"
+            + (f", extending {out_path.name}" if extend else "")
         )
 
     records = []
@@ -929,11 +1228,22 @@ def main() -> int:
             f"spans {scored['spans_anchored']}/{scored['spans_emitted']}{reask_note}"
         )
 
+    measured_now = [r["note_id"] for r in records]
+    records = kept + records
     aggregate_figures = aggregate(records)
 
-    if rescore:
+    extensions = list(previous.get("extensions", [])) if (rescore or extend) else []
+    if extend:
+        extensions.append({
+            "task": "T-110",
+            "decision": "D155",
+            "measured_at": datetime.now(timezone.utc).isoformat(),
+            "notes": measured_now,
+        })
+    if rescore or extend:
         # A rescore re-derives figures, never provenance: the recording keeps
-        # saying which task measured it.
+        # saying which task measured it. An extension says which task added
+        # which notes, beside it.
         provenance = {k: previous.get(k) for k in ("task", "decision", "supersedes")}
         recorded_tier = previous["tier"]
     else:
@@ -949,10 +1259,11 @@ def main() -> int:
         json.dumps({
             **provenance,
             "measured_at": (
-                previous["measured_at"] if rescore
+                previous["measured_at"] if (rescore or extend)
                 else datetime.now(timezone.utc).isoformat()
             ),
             "rescored_at": datetime.now(timezone.utc).isoformat() if rescore else None,
+            **({"extensions": extensions} if extensions else {}),
             "model": PINNED_MODEL,
             "tier": recorded_tier,
             "prompt_version": PROMPT_VERSION,

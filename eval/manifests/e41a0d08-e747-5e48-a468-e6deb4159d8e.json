@@ -1,0 +1,59 @@
+{
+  "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
+  "bundle": "Shona685_Zieme486_e41a0d08-e747-5e48-a468-e6deb4159d8e.json",
+  "declared_clone_of": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+  "as_of": "2026-09-01",
+  "cases": [
+    "RA4",
+    "H13"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [],
+  "rheumatology_visits": [
+    {
+      "date": "2025-12-09",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "date": "2026-01-08",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "heart_failure_assessments": [
+    {
+      "date": "2025-12-09",
+      "status": "no_heart_failure",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "disease_activity_assessments": [
+    {
+      "date": "2025-12-09",
+      "level": "high",
+      "measure": "DAS28-CRP",
+      "score": "5.6",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "tuberculosis_screens": [
+    {
+      "date": "2026-01-08",
+      "result": "negative",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "tuberculosis_treatments": [],
+  "table_effects": [
+    {
+      "date": "2026-01-08",
+      "effect": "neutropenia",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "rationale": "RA4 (T-110, D155): RA1's chart, declared as a clone so it can carry notes RA1's never had. The first note, a rheumatology visit on 12/09/2025 (an encounter of the chart's own), states no history of heart failure and a DAS28-CRP of 5.6 with high disease activity in words, so c and e are MET; the second, the pre-biologic visit on 01/08/2026 (also the chart's own), reports a negative interferon-gamma release assay, so d is MET. a and b are RA1's coded facts, MET, and the determination is APPROVED. H13: the second note also states an absolute neutrophil count of 1.2 consistent with neutropenia, while the chart carries no neutrophil count as an observation and codes no neutropenia, so the methotrexate candidate's only evidence is that passage, and the review colours it yellow once the passage anchors and the history verifier accepts it. One fact per document (D104); the notes are new documents, so no cloned_from."
+}

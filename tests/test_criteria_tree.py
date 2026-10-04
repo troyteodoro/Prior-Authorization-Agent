@@ -114,15 +114,20 @@ REQUIRED_CONSTANTS_BY_TREE = {
         ("c4", "documented_measure"),
         ("c5", "documentation_rate"),
         ("d", "evaluation_window_months"),
+        # T-110 (D155): the four components c4's sibling d now evaluates.
+        ("d", "required_components"),
     ],
     "infliximab-ra-jjm-v1": [
         ("a", "min_comorbidity_count"),
         ("a", "value_set_id"),
         ("b", "min_medication_count"),
         ("b", "value_set_id"),
+        ("c", "excluded_classes"),
         ("c", "excluded_condition"),
         ("d", "excluded_condition"),
-        ("e", "disease_activity"),
+        # T-110 (D155): the levels L35677's "moderately to severely active"
+        # names, replacing the free string v1.2 abstained beside.
+        ("e", "qualifying_activity"),
     ],
     "us-abdominal-visceral-j5-j8-v1": [
         ("a", "min_comorbidity_count"),

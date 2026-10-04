@@ -124,8 +124,14 @@ DEFAULT_RECORDING = REPO_ROOT / "eval" / "extraction" / "results.json"
 KIND_RECORDINGS: tuple[Path, ...] = (
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
     REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
+    REPO_ROOT / "eval" / "extraction" / "bariatric_surgical_workup.json",  # T-110 (D155)
+    REPO_ROOT / "eval" / "extraction" / "rheumatoid_arthritis_workup.json",  # T-110 (D155)
 )
 DEFAULT_VERIFIER_RECORDING = REPO_ROOT / "eval" / "verifier" / "results.json"
+#: The history claims' recording beside it (T-110, D155), replayed through the
+#: same runner: a `(candidate, quotes)` claim's key set is disjoint from a
+#: criterion claim's, so the two recordings can never answer for each other.
+HISTORY_VERIFIER_RECORDING = REPO_ROOT / "eval" / "verifier" / "history_results.json"
 DEFAULT_QUOTE_RECORDING = REPO_ROOT / "eval" / "history" / "results.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
 
@@ -283,9 +289,13 @@ def _build_verifier(mode: str, recording: Path, tier: str):
                 "calls) or pass --extraction direct"
             )
         payload = json.loads(recording.read_text(encoding="utf-8"))
-        return RecordedVerifierRunner.from_records(
-            payload["claims"], model=payload.get("model")
+        claims = list(payload["claims"])
+        history_recording = recording.with_name(
+            recording.name.replace("results", "history_results", 1)
         )
+        if history_recording.exists():
+            claims += json.loads(history_recording.read_text(encoding="utf-8"))["claims"]
+        return RecordedVerifierRunner.from_records(claims, model=payload.get("model"))
 
     _load_env()
     from pa_agent.tiers import client_for

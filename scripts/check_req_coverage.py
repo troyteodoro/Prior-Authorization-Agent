@@ -146,6 +146,10 @@ MAPPING: dict[str, str] = {
     # parsing the builders and the step, because the committed sleep corpus
     # cannot tell a builder that writes a `WmEvent` field from one that does not.
     "REQ-79": "tests/test_fact_kinds.py",
+    # T-110 (D155): the compatibility account covers every practice a loaded
+    # tree declares, read through the policy port and refused when one is
+    # dropped.
+    "REQ-80": "tests/test_build_report.py",
 }
 
 REQ_RE = re.compile(r"^\*\*(REQ-[0-9]+[a-z]?)\*\*", re.MULTILINE)

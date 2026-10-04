@@ -61,6 +61,64 @@
       "characters": 1353
     },
     {
+      "patient_id": "0d2a9302-c054-58ca-a292-e3703314dcd4",
+      "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+      "sha256": "185519a3e6e8f02205b94b53bdfd28011c4b6921dcfac0e45a8c7f40d8ab35d1",
+      "cases": [
+        "J3"
+      ],
+      "characters": 1259
+    },
+    {
+      "patient_id": "0d2a9302-c054-58ca-a292-e3703314dcd4",
+      "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+      "sha256": "dd576edda3b62345ea8cc2cc7941e69cffcf372139a91deb045b2ae423b7adde",
+      "cases": [
+        "J3"
+      ],
+      "characters": 1035
+    },
+    {
+      "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
+      "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+      "sha256": "c7434fbdfcd079681710d8f714e4e6ecad157011a5da774e8637a64da10a9f3e",
+      "cases": [
+        "RA5",
+        "H14"
+      ],
+      "characters": 639
+    },
+    {
+      "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
+      "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+      "sha256": "a4658bb8604c275a166091b92f01e7117785fead2e391e281212271f4bfede63",
+      "cases": [
+        "RA5",
+        "H14"
+      ],
+      "characters": 642
+    },
+    {
+      "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
+      "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+      "sha256": "ee5ccb6e50b558317b369850888c7a4bc3d5e2e7ea5e19b05ecd4919d7698891",
+      "cases": [
+        "RA6",
+        "H15"
+      ],
+      "characters": 539
+    },
+    {
+      "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
+      "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+      "sha256": "9b1929ef3b2f2b4fb590c25b38cbf89e3402e00f50daf3e261f81cc2331c89b8",
+      "cases": [
+        "RA6",
+        "H15"
+      ],
+      "characters": 799
+    },
+    {
       "patient_id": "301841f6-8434-da01-2702-df18b88875fe",
       "document_id": "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
       "sha256": "bfdec7decd591cd4ce1e638c9b0d8d37dd6e53c79be5a3fe03938a7ad43d790a",
@@ -115,6 +173,24 @@
         "E7"
       ],
       "characters": 307
+    },
+    {
+      "patient_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d",
+      "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+      "sha256": "29172b2f3044e21be9d6ab7a2cfb694712f8781216cb0c818ca1da573a079c0f",
+      "cases": [
+        "J2"
+      ],
+      "characters": 1138
+    },
+    {
+      "patient_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d",
+      "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+      "sha256": "260e994f2053fda88cab50465179082310300053819359d61507f1373c1aaae1",
+      "cases": [
+        "J2"
+      ],
+      "characters": 1169
     },
     {
       "patient_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31",
@@ -305,6 +381,26 @@
         "OSA1"
       ],
       "characters": 494
+    },
+    {
+      "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
+      "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+      "sha256": "cbd54a790acdd71301527d68a613dd6a75d96b58171176b60f6db915bca1a826",
+      "cases": [
+        "RA4",
+        "H13"
+      ],
+      "characters": 609
+    },
+    {
+      "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
+      "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt",
+      "sha256": "81600a994d87a3ce68a08ef92322742fbfd3e567fbba64773f4e3149fa4bd3c8",
+      "cases": [
+        "RA4",
+        "H13"
+      ],
+      "characters": 668
     },
     {
       "patient_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e",

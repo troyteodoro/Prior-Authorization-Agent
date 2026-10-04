@@ -173,6 +173,9 @@ NOTE_EVENT_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.NOTE_EVENT_RUN_RECENCY,
     PredicateKind.NOTE_EVENT_RUN_BMI_RATE,
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE,
+    # T-110 (D155): Palmetto's weight rate. Scoped to the qualifying run like
+    # the four above, so it sits with them; it reads its weights from `facts`.
+    PredicateKind.NOTE_WEIGHT_RUN_RATE,
 )
 
 #: The kinds that read a workup a note documents: the sleep apnea one (T-108,
@@ -187,6 +190,12 @@ NOTE_WORKUP_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.NOTE_KNEE_SYMPTOMS,
     PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS,
     PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION,
+    # T-110 (D155): the multidisciplinary evaluation and the rheumatoid
+    # arthritis workup's three, the same shape.
+    PredicateKind.NOTE_MULTIDISCIPLINARY_EVALUATION,
+    PredicateKind.NOTE_HEART_FAILURE_CLASS,
+    PredicateKind.NOTE_TUBERCULOSIS_SCREENING,
+    PredicateKind.NOTE_DISEASE_ACTIVITY,
 )
 #: Everything `step_criteria_c` evaluates: every kind decided from a note.
 NOTE_KINDS: tuple[PredicateKind, ...] = NOTE_EVENT_KINDS + NOTE_WORKUP_KINDS
@@ -208,6 +217,7 @@ RUN_KINDS: tuple[PredicateKind, ...] = (
     PredicateKind.NOTE_EVENT_RUN_RECENCY,
     PredicateKind.NOTE_EVENT_RUN_BMI_RATE,
     PredicateKind.NOTE_EVENT_RUN_BEHAVIOR_RATE,
+    PredicateKind.NOTE_WEIGHT_RUN_RATE,
 )
 
 
@@ -540,6 +550,8 @@ FACT_FOLDS: dict[
     FactKind.WEIGHT_MANAGEMENT: _fold_weight_management,
     FactKind.SLEEP_APNEA_WORKUP: _fold_generic,
     FactKind.KNEE_OSTEOARTHRITIS_WORKUP: _fold_generic,
+    FactKind.BARIATRIC_SURGICAL_WORKUP: _fold_generic,
+    FactKind.RHEUMATOID_ARTHRITIS_WORKUP: _fold_generic,
 }
 
 

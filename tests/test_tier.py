@@ -424,10 +424,35 @@ def test_the_vertex_extraction_figures_are_what_the_entry_records():
         "eval/extraction/adk_results_tool_fetch_vertex.json": (12, 76, 76),
     }
     for relative, (notes, emitted, anchored) in expected.items():
-        scored = [n for n in _load(relative)["notes"] if n.get("score")]
+        recording = _load(relative)
+        # D106's figures are over the notes D106 measured. Notes an extension
+        # appended under the same configuration are named in the recording
+        # and pinned beside it, never folded in (T-110, D155).
+        extended = {
+            note_id
+            for extension in recording.get("extensions", [])
+            for note_id in extension["notes"]
+        }
+        scored = [
+            n for n in recording["notes"]
+            if n.get("score") and n["note_id"] not in extended
+        ]
         assert len(scored) == notes, relative
         assert sum(n["score"]["spans_emitted"] for n in scored) == emitted, relative
         assert sum(n["score"]["spans_anchored"] for n in scored) == anchored, relative
+
+
+def test_the_vertex_weight_management_extension_is_what_d155_records():
+    """T-110's four notes, appended by `--extend` under D106's configuration:
+    `J2`'s and `J3`'s, every event read, every span anchored (D155)."""
+    recording = _load("eval/extraction/results_vertex.json")
+    (extension,) = recording["extensions"]
+    assert (extension["task"], extension["decision"]) == ("T-110", "D155")
+    added = [n for n in recording["notes"] if n["note_id"] in extension["notes"]]
+    assert sorted(n["note_id"] for n in added) == ["J2/1", "J2/2", "J3/1", "J3/2"]
+    for note in added:
+        assert note["score"]["matched_events"] == note["score"]["labeled_events"] == 2
+        assert note["score"]["spans_anchored"] == note["score"]["spans_emitted"]
 
 
 def test_the_model_offsets_are_still_unusable_on_the_second_tier():

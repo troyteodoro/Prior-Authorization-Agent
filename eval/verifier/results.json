@@ -2,7 +2,7 @@
   "task": "T-17",
   "model": "gemini-3.5-flash-lite",
   "tier": "ai_studio",
-  "claims_enumerated_from": "results.json + sleep_apnea_workup.json + knee_osteoarthritis_workup.json",
+  "claims_enumerated_from": "results.json + sleep_apnea_workup.json + knee_osteoarthritis_workup.json + bariatric_surgical_workup.json + rheumatoid_arthritis_workup.json",
   "prompt_version": "verifier-v7",
   "measured_at": "2026-10-04T07:49:21.499078+00:00",
   "claims": [
@@ -2586,16 +2586,1098 @@
         "output_tokens": 45,
         "wall_time_ms": 588.1124589941464
       }
+    },
+    {
+      "digest": "0bbf9c3f910f4f4c0a1dd20f808c046362e66a382ae962d87792f7b28e203976",
+      "criterion_id": "c4",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c4",
+          "label": "Weight documented in every month of the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "documented_measure": {
+              "value": "weight"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "01/13/2026 - Program visit. Interval history reviewed. Weight 84.9 kg",
+          "02/10/2026 - Program visit. Interval history reviewed. Weight 84.7 kg",
+          "03/12/2026 - Routine supervised program visit. Weight 84.4 kg"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document weight measurements across all three listed months, supporting the MET verdict for monthly documentation.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document weight measurements across all three listed months, supporting the MET verdict for monthly documentation."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 798,
+        "output_tokens": 36,
+        "wall_time_ms": 682.9527080117259
+      }
+    },
+    {
+      "digest": "f41880f80b87e19724f03b6355d696cd6b0e3a16bdd4ed9a40daddc28552cc19",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Observation\", \"id\": \"afdcee59-dfdd-4bc5-3d74-fcff09ad3449\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\"]}, \"status\": \"final\", \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\", \"display\": \"Vital signs\"}]}], \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"39156-5\", \"display\": \"Body mass index (BMI) [Ratio]\"}], \"text\": \"Body mass index (BMI) [Ratio]\"}, \"subject\": {\"reference\": \"urn:uuid:519ab9cd-e076-5113-8acc-9aa1b8bdad6d\"}, \"encounter\": {\"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-6046-99ad1fca1eda\"}, \"effectiveDateTime\": \"2025-10-21T19:35:08-07:00\", \"issued\": \"2025-10-21T19:35:08.992-07:00\", \"valueQuantity\": {\"value\": 37.65, \"unit\": \"kg/m2\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"kg/m2\"}}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is an Observation resource documenting a BMI of 37.65 kg/m2, which directly satisfies the threshold of 35.0 or greater.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is an Observation resource documenting a BMI of 37.65 kg/m2, which directly satisfies the threshold of 35.0 or greater."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1094,
+        "output_tokens": 52,
+        "wall_time_ms": 668.5567499953322
+      }
+    },
+    {
+      "digest": "2ea4e8093a352d768f2f9688553fc11a7a55557dfeb1e847deb1c4b0198fc42d",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "At least one co-morbidity related to obesity",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "obesity_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"afdcee59-dfdd-4bc5-9391-cf90f9f73ec0\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"59621000\", \"display\": \"Essential hypertension (disorder)\"}], \"text\": \"Essential hypertension (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:519ab9cd-e076-5113-8acc-9aa1b8bdad6d\"}, \"encounter\": {\"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-b4cd-8e4dbea338b7\"}, \"onsetDateTime\": \"2015-08-25T19:35:08-07:00\", \"recordedDate\": \"2015-08-25T19:35:08-07:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is an active and confirmed condition resource for essential hypertension, which is documented as a comorbidity related to obesity and satisfies the minimum count requirement.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is an active and confirmed condition resource for essential hypertension, which is documented as a comorbidity related to obesity and satisfies the minimum count requirement."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1119,
+        "output_tokens": 48,
+        "wall_time_ms": 819.5686249964638
+      }
+    },
+    {
+      "digest": "2efb9b3305b0bee4eeba0980e8a9ed09f5135400882876640e77ed1b1bcff25d",
+      "criterion_id": "c1",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c1",
+          "label": "A physician-supervised weight management program is documented",
+          "constants": {
+            "min_events": {
+              "value": 1
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/10/2026 - Program visit. Interval history reviewed. Weight 112.1 kg, BMI\n37.6. Dietary recall reviewed in detail against the 1200 kcal plan. Reports 15\nminutes of brisk walking, three days per week.",
+          "04/14/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Dietary recall reviewed in detail against the 1200 kcal plan.\nActivity goal of 40 minutes daily met on four days this month.",
+          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1800 kcal plan. Reports 40\nminutes of brisk walking, three days per week.",
+          "06/09/2026 - Program visit. Interval history reviewed. Weight 112.1 kg, BMI\n37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nExercise log shows 40 minutes of stationary cycling, five days weekly."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes document multiple physician-supervised program visits with the required participation and values that satisfy the criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes document multiple physician-supervised program visits with the required participation and values that satisfy the criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 968,
+        "output_tokens": 31,
+        "wall_time_ms": 558.3811249962309
+      }
+    },
+    {
+      "digest": "cbd8b2f3c92cffa2b7cfa59c0803a96df11084726716e47de1765af85aeb672b",
+      "criterion_id": "c2",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c2",
+          "label": "The qualifying run is recent enough",
+          "constants": {
+            "recency_window_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "06/09/2026 - Program visit. Interval history reviewed. Weight 112.1 kg, BMI\n37.6. Reviewed the 1500 kcal reduced-calorie meal plan; patient adherent.\nExercise log shows 40 minutes of stationary cycling, five days weekly."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote provides a recent program visit date of 06/09/2026 which supports the recency criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote provides a recent program visit date of 06/09/2026 which supports the recency criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 759,
+        "output_tokens": 43,
+        "wall_time_ms": 772.217791993171
+      }
+    },
+    {
+      "digest": "3270bce45f0679cb3cd72e4fcb27d1b1630d31b4f6b87be3373dfebfecb958af",
+      "criterion_id": "c4",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c4",
+          "label": "Weight documented in every month of the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "documented_measure": {
+              "value": "weight"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/10/2026 - Program visit. Interval history reviewed. Weight 112.1 kg, BMI\n37.6.",
+          "04/14/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6.",
+          "05/12/2026 - Routine supervised program visit. Weight 112.1 kg",
+          "06/09/2026 - Program visit. Interval history reviewed. Weight 112.1 kg"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document weights for the required monthly visits, supporting the MET verdict.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document weights for the required monthly visits, supporting the MET verdict."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 850,
+        "output_tokens": 32,
+        "wall_time_ms": 666.8824999942444
+      }
+    },
+    {
+      "digest": "0db700e875cbf09bb408bfd6d87d3a1568d000d235382764d893d763b34e5a49",
+      "criterion_id": "c5",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c5",
+          "label": "Diet and activity documented across the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "pharmacological_management_alone_insufficient": {
+              "value": true
+            },
+            "requires_both_diet_and_activity": {
+              "value": true
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Dietary recall reviewed in detail against the 1200 kcal plan",
+          "15\nminutes of brisk walking, three days per week",
+          "Dietary recall reviewed in detail against the 1200 kcal plan",
+          "Activity goal of 40 minutes daily met on four days this month",
+          "Discussed portion control and protein intake on the 1800 kcal plan.",
+          "Reports 40\nminutes of brisk walking, three days per week.",
+          "Reviewed the 1500 kcal reduced-calorie meal plan",
+          "Exercise log shows 40 minutes of stationary cycling, five days weekly."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes consistently document both diet and activity across the evaluation period.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes consistently document both diet and activity across the evaluation period."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 886,
+        "output_tokens": 30,
+        "wall_time_ms": 591.4284589962335
+      }
+    },
+    {
+      "digest": "9f8a2252490ee87615b7b05ec3ed1b697814a8f0cf0a331b294a9e61236a62c4",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "A multidisciplinary evaluation within the previous six months",
+          "constants": {
+            "evaluation_window_months": {
+              "value": 6
+            },
+            "required_components": {
+              "value": [
+                "bariatric_surgeon",
+                "primary_care_referral",
+                "mental_health",
+                "nutrition"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "04/28/2026 - Seen by D. Okafor, MD, bariatric surgeon, who recommends\nlaparoscopic sleeve gastrectomy",
+          "03/24/2026 - Referred for bariatric surgery by the patient's primary care\nprovider, L. Whitfield, MD.",
+          "05/26/2026 - Pre-surgical psychological evaluation by A. Marsh, PhD",
+          "06/23/2026 - Pre-surgical nutritional evaluation by K. Delgado, RD"
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes provide evidence for all required components of the multidisciplinary evaluation within the specified six-month window.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes provide evidence for all required components of the multidisciplinary evaluation within the specified six-month window."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 867,
+        "output_tokens": 37,
+        "wall_time_ms": 622.8437090030639
+      }
+    },
+    {
+      "digest": "958a0b12eaee5654f9ca08d6e37cf2a748bbf65642deacb9df5057622f975e90",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "BMI at or above the coverage threshold",
+          "constants": {
+            "bmi_threshold": {
+              "value": 35.0,
+              "comparison": "gte"
+            },
+            "lookback_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Observation\", \"id\": \"afdcee59-dfdd-4bc5-3d74-fcff09ad3449\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi\"]}, \"status\": \"final\", \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\", \"display\": \"Vital signs\"}]}], \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"39156-5\", \"display\": \"Body mass index (BMI) [Ratio]\"}], \"text\": \"Body mass index (BMI) [Ratio]\"}, \"subject\": {\"reference\": \"urn:uuid:0d2a9302-c054-58ca-a292-e3703314dcd4\"}, \"encounter\": {\"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-6046-99ad1fca1eda\"}, \"effectiveDateTime\": \"2025-10-21T19:35:08-07:00\", \"issued\": \"2025-10-21T19:35:08.992-07:00\", \"valueQuantity\": {\"value\": 37.65, \"unit\": \"kg/m2\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"kg/m2\"}}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote documents a BMI observation with a value of 37.65 kg/m2, which directly satisfies the threshold of 35.0 or greater.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote documents a BMI observation with a value of 37.65 kg/m2, which directly satisfies the threshold of 35.0 or greater."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1099,
+        "output_tokens": 52,
+        "wall_time_ms": 678.8579580024816
+      }
+    },
+    {
+      "digest": "9d172b696127685ce214a593d569367ac1396369d390535b0d5b84aba6f01c63",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "At least one co-morbidity related to obesity",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "obesity_comorbidities"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"afdcee59-dfdd-4bc5-9391-cf90f9f73ec0\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"59621000\", \"display\": \"Essential hypertension (disorder)\"}], \"text\": \"Essential hypertension (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:0d2a9302-c054-58ca-a292-e3703314dcd4\"}, \"encounter\": {\"reference\": \"urn:uuid:afdcee59-dfdd-4bc5-b4cd-8e4dbea338b7\"}, \"onsetDateTime\": \"2015-08-25T19:35:08-07:00\", \"recordedDate\": \"2015-08-25T19:35:08-07:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is a valid condition resource documenting essential hypertension, which is an accepted obesity-related comorbidity.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is a valid condition resource documenting essential hypertension, which is an accepted obesity-related comorbidity."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1124,
+        "output_tokens": 38,
+        "wall_time_ms": 704.4296670064796
+      }
+    },
+    {
+      "digest": "cf72317ba99f2f4587ba0e7bde42154d6cbc22d15afaa8485c861eae6b213284",
+      "criterion_id": "c1",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c1",
+          "label": "A physician-supervised weight management program is documented",
+          "constants": {
+            "min_events": {
+              "value": 1
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "03/10/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.\nDietary recall reviewed in detail against the 1600 kcal plan. Activity goal of\n40 minutes daily met on three days this month.",
+          "04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.\nDiscussed portion control and protein intake on the 1800 kcal plan. Activity\ngoal of 20 minutes daily met on three days this month.",
+          "05/12/2026 - Program visit. Interval history reviewed. Patient declined to be\nweighed at this visit. Dietary recall reviewed in detail against the 1200 kcal\nplan. Activity goal of 20 minutes daily met on five days this month.",
+          "06/09/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Nutrition counseling provided; meal plan held at 1600 kcal. Reports\n20 minutes of brisk walking, three days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event requirement.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes consistently document physician-supervised weight management program visits meeting the minimum event requirement."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 961,
+        "output_tokens": 34,
+        "wall_time_ms": 625.347666995367
+      }
+    },
+    {
+      "digest": "051c647890e70908f3515e474a438f5e6bb43e2ad536eab40e1d41cd2c8bba02",
+      "criterion_id": "c2",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c2",
+          "label": "The qualifying run is recent enough",
+          "constants": {
+            "recency_window_months": {
+              "value": 12
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "06/09/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6. Nutrition counseling provided; meal plan held at 1600 kcal. Reports\n20 minutes of brisk walking, three days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote provides evidence regarding the qualifying run and contains a date within the acceptable recency window and a BMI satisfying the threshold.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote provides evidence regarding the qualifying run and contains a date within the acceptable recency window and a BMI satisfying the threshold."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 759,
+        "output_tokens": 41,
+        "wall_time_ms": 582.3011669999687
+      }
+    },
+    {
+      "digest": "d4c9a6e82dbcffeba568fbfe4b7d9efbc7ffc0650f3674e562fe3df546784b58",
+      "criterion_id": "c4",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "c4",
+          "label": "Weight documented in every month of the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "documented_measure": {
+              "value": "weight"
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "05/12/2026 - Program visit. Interval history reviewed. Patient declined to be\nweighed at this visit. Dietary recall reviewed in detail against the 1200 kcal\nplan. Activity goal of 20 minutes daily met on five days this month."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote correctly documents a visit where weight was declined, supporting the NOT_MET verdict without showing the criterion satisfied.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote correctly documents a visit where weight was declined, supporting the NOT_MET verdict without showing the criterion satisfied."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 780,
+        "output_tokens": 39,
+        "wall_time_ms": 645.006958002341
+      }
+    },
+    {
+      "digest": "2956959537c0b48d86aa3bbd5bfa380b768b7fec7de03b6dd2f440ceaa81f57c",
+      "criterion_id": "c5",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c5",
+          "label": "Diet and activity documented across the qualifying run",
+          "constants": {
+            "documentation_rate": {
+              "value": "every_month_of_run"
+            },
+            "pharmacological_management_alone_insufficient": {
+              "value": true
+            },
+            "requires_both_diet_and_activity": {
+              "value": true
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "Dietary recall reviewed in detail against the 1600 kcal plan.",
+          "Activity goal of\n40 minutes daily met on three days this month.",
+          "Discussed portion control and protein intake on the 1800 kcal plan.",
+          "Activity\ngoal of 20 minutes daily met on three days this month.",
+          "Dietary recall reviewed in detail against the 1200 kcal\nplan.",
+          "Activity goal of 20 minutes daily met on five days this month.",
+          "Nutrition counseling provided; meal plan held at 1600 kcal.",
+          "Reports\n20 minutes of brisk walking, three days per week."
+        ]
+      },
+      "accept": true,
+      "reason": "The quotes consistently document both diet and activity across the record in accordance with the criterion requirements.",
+      "raw": {
+        "accept": true,
+        "reason": "The quotes consistently document both diet and activity across the record in accordance with the criterion requirements."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 892,
+        "output_tokens": 34,
+        "wall_time_ms": 539.2272919998504
+      }
+    },
+    {
+      "digest": "b12265e29110fdf170524722793a31aea99370a04a4a32e9e68a41c7473c0879",
+      "criterion_id": "d",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "A multidisciplinary evaluation within the previous six months",
+          "constants": {
+            "evaluation_window_months": {
+              "value": 6
+            },
+            "required_components": {
+              "value": [
+                "bariatric_surgeon",
+                "primary_care_referral",
+                "mental_health",
+                "nutrition"
+              ]
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "04/28/2026 - Seen by D. Okafor, MD, bariatric surgeon, who recommends\nlaparoscopic sleeve gastrectomy and described the proposed procedure, its\nrisks and the expected post-operative course.",
+          "03/24/2026 - Referred for bariatric surgery by the patient's primary care\nprovider, L. Whitfield, MD.",
+          "11/04/2025 - Pre-surgical psychological evaluation by A. Marsh, PhD: motivated\nfor surgery and able to follow post-surgical requirements.",
+          "06/23/2026 - Pre-surgical nutritional evaluation by K. Delgado, RD, registered\ndietitian."
+        ]
+      },
+      "accept": true,
+      "reason": "The NOT_MET verdict and its quotes are accepted because the evidence cites records that are either consistent with the failure of the 6-month recency window or do not directly show the threshold satisfied without independent date arithmetic.",
+      "raw": {
+        "accept": true,
+        "reason": "The NOT_MET verdict and its quotes are accepted because the evidence cites records that are either consistent with the failure of the 6-month recency window or do not directly show the threshold satisfied without independent date arithmetic."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 907,
+        "output_tokens": 60,
+        "wall_time_ms": 900.2410420071101
+      }
+    },
+    {
+      "digest": "d498d93fc563422f8177f3dd3e25d83dc8887ccf6e765ca7537c46534fa145cb",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A rheumatoid arthritis diagnosis this LCD supports",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "rheumatoid_arthritis"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"69896004\", \"display\": \"Rheumatoid arthritis (disorder)\"}], \"text\": \"Rheumatoid arthritis (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:e41a0d08-e747-5e48-a468-e6deb4159d8e\"}, \"encounter\": {\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"}, \"onsetDateTime\": \"2024-08-08T16:20:17-07:00\", \"recordedDate\": \"2024-08-08T16:20:17-07:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote correctly references an active and confirmed rheumatoid arthritis condition, satisfying the criterion for a supported rheumatoid arthritis diagnosis.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote correctly references an active and confirmed rheumatoid arthritis condition, satisfying the criterion for a supported rheumatoid arthritis diagnosis."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1135,
+        "output_tokens": 39,
+        "wall_time_ms": 773.8979999994626
+      }
+    },
+    {
+      "digest": "a082245e51632d821fda729e17cca27f5902d55f966d404c0302c55a394f1886",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Used in combination with methotrexate",
+          "constants": {
+            "min_medication_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "methotrexate"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"MedicationRequest\", \"id\": \"42a430ab-b7ca-87a5-317f-802f59311ea6\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest\"]}, \"status\": \"active\", \"intent\": \"order\", \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\", \"code\": \"community\", \"display\": \"Community\"}], \"text\": \"Community\"}], \"medicationCodeableConcept\": {\"coding\": [{\"system\": \"http://www.nlm.nih.gov/research/umls/rxnorm\", \"code\": \"105585\", \"display\": \"Methotrexate 2.5 MG Oral Tablet\"}], \"text\": \"Methotrexate 2.5 MG Oral Tablet\"}, \"subject\": {\"reference\": \"urn:uuid:e41a0d08-e747-5e48-a468-e6deb4159d8e\"}, \"encounter\": {\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"}, \"authoredOn\": \"2024-08-08T16:20:17-07:00\", \"requester\": {\"reference\": \"Practitioner?identifier=http://hl7.org/fhir/sid/us-npi|9999996595\", \"display\": \"Dr. January966 Roberts511\"}, \"reasonReference\": [{\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\", \"display\": \"Rheumatoid arthritis (disorder)\"}]}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is a MedicationRequest for methotrexate, which directly supports the criterion requiring its use in combination.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is a MedicationRequest for methotrexate, which directly supports the criterion requiring its use in combination."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1168,
+        "output_tokens": 31,
+        "wall_time_ms": 653.93345800112
+      }
+    },
+    {
+      "digest": "456412ec30005bedc9b3b59bf102b3914fbba08a007f7a226d1c5de3eee379be",
+      "criterion_id": "c",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c",
+          "label": "No Class III or IV congestive heart failure",
+          "constants": {
+            "excluded_classes": {
+              "value": [
+                "class_iii",
+                "class_iv"
+              ]
+            },
+            "excluded_condition": {
+              "value": "Class III or IV congestive heart failure"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "12/09/2025 - Cardiac review: no history of heart failure."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote directly states there is no history of heart failure, which is consistent with the criterion of having no Class III or IV congestive heart failure.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote directly states there is no history of heart failure, which is consistent with the criterion of having no Class III or IV congestive heart failure."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 751,
+        "output_tokens": 46,
+        "wall_time_ms": 717.7818329946604
+      }
+    },
+    {
+      "digest": "aecd52037772eb01474a7e184deb6da18e600e44da60ed37e7844ce611e4446b",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "No untreated active or latent tuberculosis",
+          "constants": {
+            "excluded_condition": {
+              "value": "Untreated active or latent tuberculosis"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "01/08/2026 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult negative."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote directly addresses the criterion regarding tuberculosis by providing a negative test result, which is consistent with the MET verdict.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote directly addresses the criterion regarding tuberculosis by providing a negative test result, which is consistent with the MET verdict."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 725,
+        "output_tokens": 40,
+        "wall_time_ms": 678.8036670041038
+      }
+    },
+    {
+      "digest": "fc65392c2bf80490891f3e46aee440dc459507132de78070b2c32b28b982d517",
+      "criterion_id": "e",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "e",
+          "label": "Moderately to severely active rheumatoid arthritis",
+          "constants": {
+            "qualifying_activity": {
+              "value": [
+                "moderate",
+                "high"
+              ]
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "12/09/2025 - Disease activity: DAS28-CRP 5.6, high disease activity."
+        ]
+      },
+      "accept": true,
+      "reason": "The quoted evidence directly supports the criterion by documenting high disease activity in accordance with the qualifying activity constants.",
+      "raw": {
+        "accept": true,
+        "reason": "The quoted evidence directly supports the criterion by documenting high disease activity in accordance with the qualifying activity constants."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 728,
+        "output_tokens": 36,
+        "wall_time_ms": 546.670957992319
+      }
+    },
+    {
+      "digest": "2e76f4c9c1a6b94ffa22b8a61ef4b042874000def9ce8928db05c0d3a107cd1c",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A rheumatoid arthritis diagnosis this LCD supports",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "rheumatoid_arthritis"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"69896004\", \"display\": \"Rheumatoid arthritis (disorder)\"}], \"text\": \"Rheumatoid arthritis (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:25622028-814a-56c6-8173-a818d05014ce\"}, \"encounter\": {\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"}, \"onsetDateTime\": \"2024-08-08T16:20:17-07:00\", \"recordedDate\": \"2024-08-08T16:20:17-07:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The quoted FHIR Condition resource directly pertains to a rheumatoid arthritis diagnosis and is consistent with the MET verdict.",
+      "raw": {
+        "accept": true,
+        "reason": "The quoted FHIR Condition resource directly pertains to a rheumatoid arthritis diagnosis and is consistent with the MET verdict."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1136,
+        "output_tokens": 37,
+        "wall_time_ms": 570.4298749915324
+      }
+    },
+    {
+      "digest": "4cb18d3cea47006ceab470ffb56f19269b270444e6e022658bf99dc354ef1e60",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Used in combination with methotrexate",
+          "constants": {
+            "min_medication_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "methotrexate"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"MedicationRequest\", \"id\": \"42a430ab-b7ca-87a5-317f-802f59311ea6\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest\"]}, \"status\": \"active\", \"intent\": \"order\", \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\", \"code\": \"community\", \"display\": \"Community\"}], \"text\": \"Community\"}], \"medicationCodeableConcept\": {\"coding\": [{\"system\": \"http://www.nlm.nih.gov/research/umls/rxnorm\", \"code\": \"105585\", \"display\": \"Methotrexate 2.5 MG Oral Tablet\"}], \"text\": \"Methotrexate 2.5 MG Oral Tablet\"}, \"subject\": {\"reference\": \"urn:uuid:25622028-814a-56c6-8173-a818d05014ce\"}, \"encounter\": {\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"}, \"authoredOn\": \"2024-08-08T16:20:17-07:00\", \"requester\": {\"reference\": \"Practitioner?identifier=http://hl7.org/fhir/sid/us-npi|9999996595\", \"display\": \"Dr. January966 Roberts511\"}, \"reasonReference\": [{\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\", \"display\": \"Rheumatoid arthritis (disorder)\"}]}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote correctly documents an active prescription for methotrexate, satisfying the criterion for combination use.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote correctly documents an active prescription for methotrexate, satisfying the criterion for combination use."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1169,
+        "output_tokens": 34,
+        "wall_time_ms": 762.7210420032497
+      }
+    },
+    {
+      "digest": "bbffc44b4d5ce4e3bf01cea913432ecfd845a8339529d714c0e0a3956f83c1c4",
+      "criterion_id": "c",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "c",
+          "label": "No Class III or IV congestive heart failure",
+          "constants": {
+            "excluded_classes": {
+              "value": [
+                "class_iii",
+                "class_iv"
+              ]
+            },
+            "excluded_condition": {
+              "value": "Class III or IV congestive heart failure"
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "11/09/2025 - Heart failure with reduced ejection fraction, NYHA class III:\nmarked limitation of activity, comfortable only at rest."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote directly indicates NYHA class III congestive heart failure, which correctly supports the NOT_MET verdict for a criterion requiring the absence of Class III or IV heart failure.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote directly indicates NYHA class III congestive heart failure, which correctly supports the NOT_MET verdict for a criterion requiring the absence of Class III or IV heart failure."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 767,
+        "output_tokens": 51,
+        "wall_time_ms": 715.915832988685
+      }
+    },
+    {
+      "digest": "b4fd66354498dfab4b25ba8538d8301da77cd81b5d21702058dc425175957b39",
+      "criterion_id": "d",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "No untreated active or latent tuberculosis",
+          "constants": {
+            "excluded_condition": {
+              "value": "Untreated active or latent tuberculosis"
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "12/09/2025 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult positive."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote directly pertains to the tuberculosis screening criterion and supports the NOT_MET verdict by showing a positive result.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote directly pertains to the tuberculosis screening criterion and supports the NOT_MET verdict by showing a positive result."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 727,
+        "output_tokens": 38,
+        "wall_time_ms": 575.3880410047714
+      }
+    },
+    {
+      "digest": "a889c5cdf5aed96828f838bcac4f4226a108e45a6df868dac4c43dfd3223d1de",
+      "criterion_id": "e",
+      "verdict": "NOT_MET",
+      "payload": {
+        "criterion": {
+          "id": "e",
+          "label": "Moderately to severely active rheumatoid arthritis",
+          "constants": {
+            "qualifying_activity": {
+              "value": [
+                "moderate",
+                "high"
+              ]
+            }
+          }
+        },
+        "verdict": "NOT_MET",
+        "quotes": [
+          "11/09/2025 - Disease activity: CDAI 8.0, low disease activity."
+        ]
+      },
+      "accept": true,
+      "reason": "The claim is NOT_MET and the quoted evidence directly shows a disease activity score corresponding to low rather than moderate or high activity, which is consistent with the criterion failing.",
+      "raw": {
+        "accept": true,
+        "reason": "The claim is NOT_MET and the quoted evidence directly shows a disease activity score corresponding to low rather than moderate or high activity, which is consistent with the criterion failing."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 727,
+        "output_tokens": 50,
+        "wall_time_ms": 616.0784579988103
+      }
+    },
+    {
+      "digest": "3baf2f920b1bd52b26c37bb1ebe41398cf845a803242009acd657ff1f1b9a91c",
+      "criterion_id": "a",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "a",
+          "label": "A rheumatoid arthritis diagnosis this LCD supports",
+          "constants": {
+            "min_comorbidity_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "rheumatoid_arthritis"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"Condition\", \"id\": \"42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis\"]}, \"clinicalStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-clinical\", \"code\": \"active\"}]}, \"verificationStatus\": {\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-ver-status\", \"code\": \"confirmed\"}]}, \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/condition-category\", \"code\": \"encounter-diagnosis\", \"display\": \"Encounter Diagnosis\"}]}], \"code\": {\"coding\": [{\"system\": \"http://snomed.info/sct\", \"code\": \"69896004\", \"display\": \"Rheumatoid arthritis (disorder)\"}], \"text\": \"Rheumatoid arthritis (disorder)\"}, \"subject\": {\"reference\": \"urn:uuid:2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3\"}, \"encounter\": {\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"}, \"onsetDateTime\": \"2024-08-08T16:20:17-07:00\", \"recordedDate\": \"2024-08-08T16:20:17-07:00\"}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote is a confirmed condition record for rheumatoid arthritis, directly supporting the diagnosis criterion.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote is a confirmed condition record for rheumatoid arthritis, directly supporting the diagnosis criterion."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1137,
+        "output_tokens": 34,
+        "wall_time_ms": 652.535084009287
+      }
+    },
+    {
+      "digest": "257e10b9790a1635970fe32d0a85ceb501c034a186824da8f9cac6969d4483b2",
+      "criterion_id": "b",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "b",
+          "label": "Used in combination with methotrexate",
+          "constants": {
+            "min_medication_count": {
+              "value": 1
+            },
+            "value_set_id": {
+              "value": "methotrexate"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "{\"resourceType\": \"MedicationRequest\", \"id\": \"42a430ab-b7ca-87a5-317f-802f59311ea6\", \"meta\": {\"profile\": [\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest\"]}, \"status\": \"active\", \"intent\": \"order\", \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\", \"code\": \"community\", \"display\": \"Community\"}], \"text\": \"Community\"}], \"medicationCodeableConcept\": {\"coding\": [{\"system\": \"http://www.nlm.nih.gov/research/umls/rxnorm\", \"code\": \"105585\", \"display\": \"Methotrexate 2.5 MG Oral Tablet\"}], \"text\": \"Methotrexate 2.5 MG Oral Tablet\"}, \"subject\": {\"reference\": \"urn:uuid:2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3\"}, \"encounter\": {\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-f1b6-daf0a42e5ba1\"}, \"authoredOn\": \"2024-08-08T16:20:17-07:00\", \"requester\": {\"reference\": \"Practitioner?identifier=http://hl7.org/fhir/sid/us-npi|9999996595\", \"display\": \"Dr. January966 Roberts511\"}, \"reasonReference\": [{\"reference\": \"urn:uuid:42a430ab-b7ca-87a5-b8db-e591d5f3f1a3\", \"display\": \"Rheumatoid arthritis (disorder)\"}]}"
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quote correctly documents an active prescription for methotrexate, satisfying the criterion for combination use.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quote correctly documents an active prescription for methotrexate, satisfying the criterion for combination use."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 1170,
+        "output_tokens": 34,
+        "wall_time_ms": 717.7490419999231
+      }
+    },
+    {
+      "digest": "c2daf3d589bc48f37e1eb37348aeadafcec35f461bb57f1fd2751051faa34665",
+      "criterion_id": "c",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "c",
+          "label": "No Class III or IV congestive heart failure",
+          "constants": {
+            "excluded_classes": {
+              "value": [
+                "class_iii",
+                "class_iv"
+              ]
+            },
+            "excluded_condition": {
+              "value": "Class III or IV congestive heart failure"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "10/10/2025 - Heart failure with preserved ejection fraction, NYHA class II:\nslight limitation of ordinary activity, stable on current therapy."
+        ]
+      },
+      "accept": true,
+      "reason": "The quote indicates NYHA class II heart failure, which is consistent with the absence of excluded Class III or IV congestive heart failure.",
+      "raw": {
+        "accept": true,
+        "reason": "The quote indicates NYHA class II heart failure, which is consistent with the absence of excluded Class III or IV congestive heart failure."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 767,
+        "output_tokens": 43,
+        "wall_time_ms": 612.7639170008479
+      }
+    },
+    {
+      "digest": "955c4329d19d524c2bada2b18e15c567a43d22e24826d1f228aa61a1e1a5b0e3",
+      "criterion_id": "d",
+      "verdict": "MET",
+      "payload": {
+        "criterion": {
+          "id": "d",
+          "label": "No untreated active or latent tuberculosis",
+          "constants": {
+            "excluded_condition": {
+              "value": "Untreated active or latent tuberculosis"
+            }
+          }
+        },
+        "verdict": "MET",
+        "quotes": [
+          "06/11/2025 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult positive.",
+          "Rifampin daily for latent tuberculosis infection, begun 07/11/2025; course\nongoing and tolerated."
+        ]
+      },
+      "accept": true,
+      "reason": "The provided quotes document the diagnosis of latent tuberculosis and confirm that treatment with Rifampin was initiated and is ongoing, satisfying the criterion that there is no untreated tuberculosis.",
+      "raw": {
+        "accept": true,
+        "reason": "The provided quotes document the diagnosis of latent tuberculosis and confirm that treatment with Rifampin was initiated and is ongoing, satisfying the criterion that there is no untreated tuberculosis."
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "verification",
+        "input_tokens": 758,
+        "output_tokens": 49,
+        "wall_time_ms": 746.5390829893295
+      }
     }
   ],
   "aggregate": {
-    "claims": 65,
-    "accepted": 65,
+    "claims": 94,
+    "accepted": 94,
     "rejected": 0,
-    "model_calls": 65,
-    "input_tokens": 67538,
-    "output_tokens": 2762,
-    "wall_time_ms": 46864.9
+    "model_calls": 94,
+    "input_tokens": 94266,
+    "output_tokens": 3931,
+    "wall_time_ms": 66264.4
   },
   "extensions": [
     {
@@ -2603,6 +3685,12 @@
       "decision": "D154",
       "measured_at": "2026-10-04T08:52:14.335607+00:00",
       "claims": 16
+    },
+    {
+      "task": "T-110",
+      "decision": "D155",
+      "measured_at": "2026-10-04T09:50:03.261380+00:00",
+      "claims": 29
     }
   ]
 }

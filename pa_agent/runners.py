@@ -235,8 +235,15 @@ class RecordedExtractionRunner:
         self._entries: dict[str, dict[str | None, tuple]] = {}
         self._hashes = dict(note_hashes or {})
         self._model = model
-        # sha256 -> the recorded document_id that carries the payload.
-        self._by_hash = {digest: document_id for document_id, digest in self._hashes.items()}
+        # sha256 -> every recorded document_id that carries a payload for those
+        # bytes, in load order. A list since T-110 (D155): one note's bytes can
+        # be recorded under two ids for two kinds -- `E4`'s notes under
+        # `weight_management`, the same bytes as `J1`'s under the bariatric
+        # workup -- and a single id per hash let the second recording hide the
+        # first, which surfaced as `SCHEMA_MISMATCH` on a reading that exists.
+        self._by_hash: dict[str, list[str]] = {}
+        for document_id, digest in self._hashes.items():
+            self._by_hash.setdefault(digest, []).append(document_id)
         versions = dict(prompt_versions or {})
         for document_id, payload in payloads.items():
             # The recorded run's trace, when the recording holds one: every
@@ -288,7 +295,9 @@ class RecordedExtractionRunner:
                 continue
             if record.get("note_sha256"):
                 runner._hashes[document_id] = record["note_sha256"]
-                runner._by_hash[record["note_sha256"]] = document_id
+                carriers = runner._by_hash.setdefault(record["note_sha256"], [])
+                if document_id not in carriers:
+                    carriers.append(document_id)
             # The version the payload was measured under (D149): the record's
             # own field when it states one, else its trace's. Every committed
             # recording states it on the trace.
@@ -315,8 +324,16 @@ class RecordedExtractionRunner:
         schema = FACT_SCHEMAS[kind]
         actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
         if actual in self._by_hash:
-            # The bytes were measured, under this id or another (D102).
-            recorded_id = self._by_hash[actual]
+            # The bytes were measured, under this id or another (D102). Of the
+            # ids carrying them, the one holding a reading under the asked
+            # kind's version answers; with none, the first is named in the
+            # mismatch below, which lists every version measured for the bytes
+            # (D155).
+            carriers = self._by_hash[actual]
+            recorded_id = next(
+                (i for i in carriers if schema.prompt_version in self._entries[i]),
+                carriers[0],
+            )
         elif document_id in self._entries:
             recorded_hash = self._hashes.get(document_id)
             if recorded_hash is not None:
@@ -338,7 +355,14 @@ class RecordedExtractionRunner:
 
         readings = self._entries[recorded_id]
         if schema.prompt_version not in readings:
-            measured = sorted(v for v in readings if v is not None)
+            measured = sorted(
+                {
+                    v
+                    for i in self._by_hash.get(actual, [recorded_id])
+                    for v in self._entries[i]
+                    if v is not None
+                }
+            )
             if not measured:
                 raise ExtractionOutputError(
                     ExtractionFailure.NOT_RECORDED,

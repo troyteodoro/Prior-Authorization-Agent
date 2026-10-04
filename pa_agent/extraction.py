@@ -37,9 +37,16 @@ from pa_agent.contracts import (
     ClinicalEvaluation,
     ConservativeTherapy,
     ConservativeTherapyCategory,
+    DiseaseActivityAssessment,
+    DiseaseActivityLevel,
     DocumentedFinding,
+    DocumentedWeight,
+    EvaluationComponent,
+    EvaluationComponentCategory,
     EvidenceSpan,
     FactKind,
+    HeartFailureAssessment,
+    HeartFailureClass,
     KneeRadiograph,
     KneeSymptom,
     KneeSymptomCategory,
@@ -50,6 +57,9 @@ from pa_agent.contracts import (
     SleepFindingCategory,
     SleepTest,
     ToolCall,
+    TuberculosisScreen,
+    TuberculosisScreenResult,
+    TuberculosisTreatment,
     WmEvent,
 )
 from pa_agent.model_pin import PINNED_MODEL
@@ -1268,6 +1278,317 @@ def _locate_knee(payload: dict, path: str) -> tuple[dict, str]:
 
 
 # --------------------------------------------------------------------------
+# The fourth and fifth fact kinds: the bariatric surgical workup and the
+# rheumatoid arthritis workup (T-110, REQ-79, D155)
+#
+# Built the way the sleep and knee kinds are: each its own response model,
+# instruction, builder, locator and prompt version, through the same anchorer
+# and the same re-ask core, into the same result type. Nothing here constructs
+# a `WmEvent`. Every item is one dated fact with one quote, so the two builders
+# share `_dated_facts`; the label each item carries is the model's, and
+# whether it qualifies is the criterion's declared list (Art. II).
+# --------------------------------------------------------------------------
+
+#: The fourth kind's configuration: its instruction, and T-89's re-ask unchanged.
+BARIATRIC_PROMPT_VERSION = "t110-bariatric-surgical-workup-v1/t89-reask-v1"
+#: The fifth kind's.
+RHEUMATOID_PROMPT_VERSION = "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1"
+
+
+class ExtractedWeight(BaseModel):
+    date: str = Field(description="The date the weight was measured, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class ExtractedEvaluationComponent(BaseModel):
+    category: EvaluationComponentCategory = Field(
+        description="Which component of the multidisciplinary evaluation the passage documents."
+    )
+    date: str = Field(description="The date the component took place, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class BariatricSurgicalWorkupExtraction(BaseModel):
+    weights: list[ExtractedWeight] = Field(default_factory=list)
+    evaluations: list[ExtractedEvaluationComponent] = Field(default_factory=list)
+
+
+BARIATRIC_INSTRUCTION = """\
+You extract structured facts from a clinical note for a prior authorization
+review of bariatric surgery. Return only what the schema defines. Do not
+explain.
+
+A weight is one body weight the note records as measured at a visit. For each
+one return:
+
+  date         the date the weight was measured, normalized to YYYY-MM-DD
+  quote        text copied verbatim and contiguously from the note, long enough
+               to show both the date and the weight. It must appear in the
+               note character for character.
+  char_start   the offset of the quote's first character, counting from 0 at
+  char_end     the start of the note, and one past its last character
+
+Return a weight whether or not a BMI is stated beside it. Never return a weight
+that was not measured: a visit at which the patient was not weighed, a goal or
+target weight, or a weight carried over from another visit.
+
+An evaluation is one completed component of a multidisciplinary evaluation
+before bariatric surgery. Return one for each passage documenting any of the
+following, with the category that names it:
+
+  bariatric_surgeon       an evaluation by a bariatric surgeon recommending
+                          surgical treatment
+  primary_care_referral   a referral for bariatric surgery by the patient's
+                          primary care provider
+  mental_health           an evaluation for bariatric surgery by a mental
+                          health provider
+  nutrition               a nutritional evaluation for bariatric surgery by a
+                          physician or registered dietitian
+
+For each one return:
+
+  date                    the date it took place, normalized to YYYY-MM-DD
+  quote                   text copied verbatim and contiguously from the note,
+                          showing the component and its date
+  char_start, char_end    as above
+
+Never return a component that was only ordered, scheduled or recommended, or
+that did not take place. Dietary counseling at a weight management program
+visit is not a nutritional evaluation.
+
+Return every qualifying weight and evaluation in the note. Do not filter by
+date, by recency, or by which looks most relevant. Choosing among them happens
+elsewhere.
+"""
+
+
+class ExtractedHeartFailureAssessment(BaseModel):
+    status: HeartFailureClass = Field(
+        description="No heart failure, or the New York Heart Association class the note states."
+    )
+    date: str = Field(description="The date of the assessment, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class ExtractedTuberculosisScreen(BaseModel):
+    result: TuberculosisScreenResult = Field(description="The result the note reports.")
+    date: str = Field(description="The date the test was performed, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class ExtractedTuberculosisTreatment(BaseModel):
+    start_date: str = Field(description="The date the treatment began, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class ExtractedDiseaseActivity(BaseModel):
+    level: DiseaseActivityLevel = Field(
+        description="The disease activity level the note states in words."
+    )
+    date: str = Field(description="The date of the assessment, normalized to YYYY-MM-DD.")
+    quote: str = Field(description="Text copied verbatim and contiguously from the note.")
+    char_start: int = Field(description="Estimated offset of the quote's first character.")
+    char_end: int = Field(description="Estimated offset one past the quote's last character.")
+
+
+class RheumatoidArthritisWorkupExtraction(BaseModel):
+    heart_failure_assessments: list[ExtractedHeartFailureAssessment] = Field(
+        default_factory=list
+    )
+    tuberculosis_screens: list[ExtractedTuberculosisScreen] = Field(default_factory=list)
+    tuberculosis_treatments: list[ExtractedTuberculosisTreatment] = Field(default_factory=list)
+    disease_activity_assessments: list[ExtractedDiseaseActivity] = Field(default_factory=list)
+
+
+RHEUMATOID_INSTRUCTION = """\
+You extract structured facts from a clinical note for a prior authorization
+review of infliximab for rheumatoid arthritis. Return only what the schema
+defines. Do not explain.
+
+Every item below carries:
+
+  quote        text copied verbatim and contiguously from the note, showing
+               the fact and its date. It must appear in the note character
+               for character.
+  char_start   the offset of the quote's first character, counting from 0 at
+  char_end     the start of the note, and one past its last character
+
+A heart_failure_assessment is a passage stating the patient's heart failure
+status. Return:
+
+  status       no_heart_failure when the note states the patient has no heart
+               failure; class_i, class_ii, class_iii or class_iv when it
+               states a New York Heart Association (NYHA) class
+  date         the date of the assessment, normalized to YYYY-MM-DD
+
+Never infer a class the note does not state.
+
+A tuberculosis_screen is a tuberculin skin test or an interferon-gamma release
+assay whose result the note reports. Return:
+
+  result       negative or positive, as reported
+  date         the date the test was performed or drawn, normalized to
+               YYYY-MM-DD
+
+Never return a test that was only ordered, or whose result is indeterminate.
+
+A tuberculosis_treatment is a treatment for active or latent tuberculosis that
+the note documents the patient as having started. Return:
+
+  start_date   the date the treatment began, normalized to YYYY-MM-DD
+
+Never return a treatment that was only recommended, offered, deferred or
+declined.
+
+A disease_activity_assessment is a passage stating the rheumatoid arthritis
+disease activity level IN WORDS. Return:
+
+  level        remission, low, moderate or high, as the note states it;
+               moderately active is moderate and severely active is high
+  date         the date of the assessment, normalized to YYYY-MM-DD
+
+Never derive a level from a score, a joint count or a laboratory value. If the
+note gives a score without stating the level in words, return nothing for it.
+
+Return every qualifying item in the note. Do not filter by date, by recency,
+or by which looks most relevant. Choosing among them happens elsewhere.
+"""
+
+
+#: One list of a flat payload: its items, the payload key the re-ask path
+#: names, the item's date field, the drop reason, and how a located item
+#: becomes a contract object. The label rides through untouched.
+_FlatList = tuple[list, str, str, str, Callable[[Any, date, EvidenceSpan], Any]]
+
+
+def build_bariatric_workup_result(
+    document_id: str, text: str, payload: dict, metrics: CallMetrics | None = None
+) -> ExtractionResult:
+    """The fourth kind's trust boundary: a payload in, anchored facts out
+    (T-110, REQ-79, D155). Every quote goes through `_anchor_or_drop`; a quote
+    Python cannot locate is a drop carrying the payload path the re-ask needs,
+    and an unparseable date is a drop. Neither is kept without a span (D15).
+    Facts land on `result.facts`; the `WmEvent`-shaped fields stay empty."""
+    extraction = BariatricSurgicalWorkupExtraction.model_validate(payload)
+    result = ExtractionResult(
+        document_id=document_id, kind=FactKind.BARIATRIC_SURGICAL_WORKUP,
+        metrics=metrics, raw=payload,
+    )
+    lists: list[_FlatList] = [
+        (extraction.weights, "weights", "date", "weight_quote_unanchorable",
+         lambda raw, when, span: DocumentedWeight(weight_date=when, span=span)),
+        (extraction.evaluations, "evaluations", "date", "evaluation_quote_unanchorable",
+         lambda raw, when, span: EvaluationComponent(
+             category=raw.category, evaluation_date=when, span=span)),
+    ]
+    for items, collection, date_field, reason, make in lists:
+        for index, raw in enumerate(items):
+            located = _anchor_or_drop(
+                document_id, text, raw.quote, raw.char_start, raw.char_end,
+                result.dropped, reason, result.anchored_spans,
+                path=f"{collection}[{index}].quote",
+            )
+            if located is None:
+                continue
+            stated = getattr(raw, date_field)
+            try:
+                when = date.fromisoformat(stated)
+            except ValueError:
+                result.dropped.append({"reason": "unparseable_date", "quote": stated})
+                continue
+            result.facts.append(make(raw, when, located.to_span()))
+    return result
+
+
+def build_rheumatoid_workup_result(
+    document_id: str, text: str, payload: dict, metrics: CallMetrics | None = None
+) -> ExtractionResult:
+    """The fifth kind's trust boundary (T-110, REQ-79, D155), in the fourth's
+    shape over four lists."""
+    extraction = RheumatoidArthritisWorkupExtraction.model_validate(payload)
+    result = ExtractionResult(
+        document_id=document_id, kind=FactKind.RHEUMATOID_ARTHRITIS_WORKUP,
+        metrics=metrics, raw=payload,
+    )
+    lists: list[_FlatList] = [
+        (extraction.heart_failure_assessments, "heart_failure_assessments", "date",
+         "heart_failure_quote_unanchorable",
+         lambda raw, when, span: HeartFailureAssessment(
+             status=raw.status, assessment_date=when, span=span)),
+        (extraction.tuberculosis_screens, "tuberculosis_screens", "date",
+         "screen_quote_unanchorable",
+         lambda raw, when, span: TuberculosisScreen(
+             result=raw.result, screen_date=when, span=span)),
+        (extraction.tuberculosis_treatments, "tuberculosis_treatments", "start_date",
+         "treatment_quote_unanchorable",
+         lambda raw, when, span: TuberculosisTreatment(start_date=when, span=span)),
+        (extraction.disease_activity_assessments, "disease_activity_assessments", "date",
+         "activity_quote_unanchorable",
+         lambda raw, when, span: DiseaseActivityAssessment(
+             level=raw.level, assessment_date=when, span=span)),
+    ]
+    for items, collection, date_field, reason, make in lists:
+        for index, raw in enumerate(items):
+            located = _anchor_or_drop(
+                document_id, text, raw.quote, raw.char_start, raw.char_end,
+                result.dropped, reason, result.anchored_spans,
+                path=f"{collection}[{index}].quote",
+            )
+            if located is None:
+                continue
+            stated = getattr(raw, date_field)
+            try:
+                when = date.fromisoformat(stated)
+            except ValueError:
+                result.dropped.append({"reason": "unparseable_date", "quote": stated})
+                continue
+            result.facts.append(make(raw, when, located.to_span()))
+    return result
+
+
+def _flat_locator(collections: tuple[str, ...]) -> Locator:
+    """`_locate`'s counterpart for a payload of flat quoted lists: the container
+    and key a path names, or `KeyError` for one naming nothing in this payload
+    -- a model-invented path is never applied (T-89's rule, D155)."""
+    pattern = re.compile(
+        r"^(" + "|".join(re.escape(c) for c in collections) + r")\[(\d+)\]\.quote$"
+    )
+
+    def locate(payload: dict, path: str) -> tuple[dict, str]:
+        match = pattern.match(path)
+        if match is None:
+            raise KeyError(path)
+        collection, index = match.groups()
+        items = payload.get(collection) or []
+        if int(index) >= len(items):
+            raise KeyError(path)
+        return items[int(index)], "quote"
+
+    return locate
+
+
+_locate_bariatric_workup = _flat_locator(("weights", "evaluations"))
+_locate_rheumatoid_workup = _flat_locator(
+    (
+        "heart_failure_assessments",
+        "tuberculosis_screens",
+        "tuberculosis_treatments",
+        "disease_activity_assessments",
+    )
+)
+
+
+# --------------------------------------------------------------------------
 # The fact-kind registry (T-107, REQ-78, D147, D149)
 # --------------------------------------------------------------------------
 
@@ -1311,7 +1632,8 @@ class FactSchema:
 #: the configuration every weight-management recording was measured under,
 #: unchanged: `Extraction`, `INSTRUCTION`, `build_result`, `_locate`,
 #: `PROMPT_VERSION`. The second is the sleep workup's (T-108, D150); the
-#: third the knee osteoarthritis workup's (T-109, D154).
+#: third the knee osteoarthritis workup's (T-109, D154); the fourth and fifth
+#: the bariatric surgical and rheumatoid arthritis workups' (T-110, D155).
 FACT_SCHEMAS: dict[FactKind, FactSchema] = {
     FactKind.WEIGHT_MANAGEMENT: FactSchema(
         kind=FactKind.WEIGHT_MANAGEMENT,
@@ -1336,5 +1658,21 @@ FACT_SCHEMAS: dict[FactKind, FactSchema] = {
         build=build_knee_result,
         locate=_locate_knee,
         prompt_version=KNEE_PROMPT_VERSION,
+    ),
+    FactKind.BARIATRIC_SURGICAL_WORKUP: FactSchema(
+        kind=FactKind.BARIATRIC_SURGICAL_WORKUP,
+        response_model=BariatricSurgicalWorkupExtraction,
+        instruction=BARIATRIC_INSTRUCTION,
+        build=build_bariatric_workup_result,
+        locate=_locate_bariatric_workup,
+        prompt_version=BARIATRIC_PROMPT_VERSION,
+    ),
+    FactKind.RHEUMATOID_ARTHRITIS_WORKUP: FactSchema(
+        kind=FactKind.RHEUMATOID_ARTHRITIS_WORKUP,
+        response_model=RheumatoidArthritisWorkupExtraction,
+        instruction=RHEUMATOID_INSTRUCTION,
+        build=build_rheumatoid_workup_result,
+        locate=_locate_rheumatoid_workup,
+        prompt_version=RHEUMATOID_PROMPT_VERSION,
     ),
 }

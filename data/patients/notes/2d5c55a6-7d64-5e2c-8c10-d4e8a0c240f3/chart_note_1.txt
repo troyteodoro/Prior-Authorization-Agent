@@ -1,0 +1,17 @@
+CHATTAHOOCHEE VALLEY ARTHRITIS CLINIC
+Patient: Zieme486, Shona685                      MRN: 612800
+DOB: 1971-09-28                       Sex: F
+Document 1 of 2
+
+RHEUMATOLOGY CLINIC VISIT
+
+06/11/2025 - Seen in person in clinic by P. Ramanathan, MD for seropositive
+rheumatoid arthritis on methotrexate.
+
+ASSESSMENTS AND RESULTS
+06/11/2025 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;
+result positive.
+
+ASSESSMENT AND PLAN
+Rheumatoid arthritis. Continue methotrexate and return for review before a
+biologic is started.

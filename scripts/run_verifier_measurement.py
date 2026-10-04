@@ -4,6 +4,18 @@
     python scripts/run_verifier_measurement.py --rescore  # re-checks the recording, no calls
     python scripts/run_verifier_measurement.py --extend   # measures only the claims the
                                                           # recording lacks (T-109, D154)
+    python scripts/run_verifier_measurement.py --history  # the medical-history review's
+                                                          # (candidate, quotes) claims, into
+                                                          # history_results.json (T-110, D155)
+    python scripts/run_verifier_measurement.py --history --rescore   # re-checks it, no calls
+
+**The history claims are their own recording** (D122). A yellow suggestion is
+a claim about the chart, and Article V checks it under `HISTORY_INSTRUCTION`
+and `HISTORY_PROMPT_VERSION`, never the criterion instruction. They are
+enumerated the way the criterion claims are -- every eval row that labels a
+review, replayed through the AI Studio quote recording on every tier, with a
+collecting verifier -- and measured whole: the recording's first measurement
+is `T-110`'s, so there is nothing to extend.
 
 `pytest tests/test_verifier.py` verifies what this writes and spends nothing —
 T-15's split (D17, D45): a gate that calls a model is slow, rate-limited, and
@@ -47,6 +59,8 @@ from pa_agent.runners import RecordedExtractionRunner  # noqa: E402
 from pa_agent.stores.patient import LocalPatientStore  # noqa: E402
 from pa_agent.stores.policy import LocalPolicyStore  # noqa: E402
 from pa_agent.verifier import (  # noqa: E402
+    HISTORY_INSTRUCTION,
+    HISTORY_PROMPT_VERSION,
     PROMPT_VERSION,
     LiveVerifierRunner,
     VerifierAnswer,
@@ -62,6 +76,8 @@ EXTRACTION_RECORDINGS = (
     EXTRACTION_RESULTS,
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
     REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
+    REPO_ROOT / "eval" / "extraction" / "bariatric_surgical_workup.json",  # T-110 (D155)
+    REPO_ROOT / "eval" / "extraction" / "rheumatoid_arthritis_workup.json",  # T-110 (D155)
 )
 OUT_DIR = REPO_ROOT / "eval" / "verifier"
 OUT_PATH = OUT_DIR / "results.json"
@@ -72,9 +88,18 @@ ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
 PROVENANCE: dict[str, str] = {MEASURED_TIER: "T-17", SECOND_TIER: "T-90"}
 
 
-def out_path_for(tier: str) -> Path:
-    """One recording per tier. The AI Studio path is unchanged (D106)."""
-    return OUT_DIR / ("results.json" if tier == MEASURED_TIER else f"results_{tier}.json")
+def out_path_for(tier: str, history: bool = False) -> Path:
+    """One recording per tier. The AI Studio path is unchanged (D106). The
+    history claims' recording sits beside it under its own stem (D122, D155)."""
+    stem = "history_results" if history else "results"
+    return OUT_DIR / (f"{stem}.json" if tier == MEASURED_TIER else f"{stem}_{tier}.json")
+
+
+#: The quote recording the history claims are enumerated from, on every tier
+#: (the AI Studio one, for the criterion claims' reason: one key set, D106).
+QUOTE_RESULTS = REPO_ROOT / "eval" / "history" / "results.json"
+#: Which task the extension and the history recording belong to.
+EXTENDING = {"task": "T-110", "decision": "D155"}
 
 
 def named_tier(argv: list[str]) -> str:
@@ -186,8 +211,13 @@ def _measure_claims(live, claims: dict[str, dict]) -> tuple[list[dict], list[dic
     records: list[dict] = []
     rejections: list[dict] = []
     for index, (digest, payload) in enumerate(claims.items(), start=1):
-        criterion_id = payload["criterion"]["id"]
-        label = f"{criterion_id}/{payload['verdict']}"
+        if "candidate" in payload:
+            # A history claim (D122): a condition and its passages, no verdict.
+            criterion_id = None
+            label = f"history/{payload['candidate']['effect']}"
+        else:
+            criterion_id = payload["criterion"]["id"]
+            label = f"{criterion_id}/{payload['verdict']}"
         answer = None
         for attempt in range(1, RETRIES + 1):
             try:
@@ -200,10 +230,14 @@ def _measure_claims(live, claims: dict[str, dict]) -> tuple[list[dict], list[dic
                 print(f"  [{index}] {label}: {exc.reason.value}, retry in {wait}s")
                 time.sleep(wait)
         assert answer is not None
+        identity = (
+            {"effect": payload["candidate"]["effect"]}
+            if criterion_id is None
+            else {"criterion_id": criterion_id, "verdict": payload["verdict"]}
+        )
         record = {
             "digest": digest,
-            "criterion_id": criterion_id,
-            "verdict": payload["verdict"],
+            **identity,
             "payload": payload,
             "accept": answer.accept,
             "reason": answer.reason,
@@ -277,8 +311,7 @@ def extend(tier: str = MEASURED_TIER) -> int:
         p.name for p in EXTRACTION_RECORDINGS
     )
     recording.setdefault("extensions", []).append({
-        "task": "T-109",
-        "decision": "D154",
+        **EXTENDING,
         "measured_at": datetime.now(timezone.utc).isoformat(),
         "claims": len(records),
     })
@@ -292,6 +325,112 @@ def extend(tier: str = MEASURED_TIER) -> int:
         print(f"\n{len(rejections)} REJECTION(S) — review before committing:")
         for record in rejections:
             print(f"  {record['criterion_id']}/{record['verdict']}: {record['reason']}")
+        return EXIT_REJECTIONS
+    return EXIT_OK
+
+
+def enumerate_history_claims() -> dict[str, dict]:
+    """Every unique `(candidate, quotes)` claim the eval rows' reviews produce.
+    Free: the determinations replay, the quotes replay from the AI Studio quote
+    recording, and a collecting verifier stands in for Article V (D122)."""
+    from pa_agent import history
+    from pa_agent.quotes import RecordedQuoteRunner
+    from pa_agent.stores.knowledge import LocalKnowledgeStore
+
+    policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
+    knowledge = LocalKnowledgeStore()
+    recordings = [
+        json.loads(path.read_text(encoding="utf-8")) for path in EXTRACTION_RECORDINGS
+    ]
+    runner = RecordedExtractionRunner.from_records(
+        [note for recording in recordings for note in recording["notes"]],
+        model=recordings[0].get("model"),
+    )
+    quoted = json.loads(QUOTE_RESULTS.read_text(encoding="utf-8"))
+    quotes = RecordedQuoteRunner.from_records(
+        quoted["notes"], quoted["rows_asked"], model=quoted.get("model")
+    )
+    rows = knowledge.get_medication_effect_rows()
+    products = {
+        row.ingredient.code: knowledge.get_ingredient_products(row.ingredient.code)
+        for row in rows
+    }
+    criteria_claims = CollectingVerifier()
+    collector = CollectingVerifier()
+    cases = json.loads(CASES_PATH.read_text(encoding="utf-8"))["cases"]
+    seen: set[tuple] = set()
+    for case in cases:
+        if "suggestions" not in case.get("expect", {}) or not case.get("patient_id"):
+            continue
+        as_of = date.fromisoformat(case["as_of"]) if case.get("as_of") else DEFAULT_AS_OF
+        key = (case["patient_id"], case["procedure_code"], as_of, case.get("state"))
+        if key in seen:
+            continue
+        seen.add(key)
+        result = determine(
+            policy_store, case["procedure_code"], patient_id=case["patient_id"],
+            patient_store=patient_store, as_of=as_of, extraction_runner=runner,
+            verifier=criteria_claims, state=case.get("state"),
+        )
+        if history.review_scope(result) is None:
+            continue
+        tree = policy_store.get_tree(result.policy_version_id)
+        value_sets = {
+            str(c.constants[history.VALUE_SET_CONSTANT].value): policy_store.get_value_set(
+                str(c.constants[history.VALUE_SET_CONSTANT].value)
+            )
+            for c in tree.criteria
+            if history.VALUE_SET_CONSTANT in c.constants
+        }
+        history.run_review(
+            quote_runner=quotes, verifier=collector,
+            patient_id=case["patient_id"], policy_version_id=tree.policy_version_id,
+            rows=rows, products=products,
+            medications=patient_store.get_medications(case["patient_id"]),
+            conditions=patient_store.get_conditions(case["patient_id"]),
+            observations=patient_store.get_observations(case["patient_id"]),
+            criteria=tree.criteria, value_sets=value_sets,
+            notes=patient_store.get_notes(case["patient_id"]),
+        )
+    return collector.claims
+
+
+def measure_history(tier: str = MEASURED_TIER) -> int:
+    """The history claims' first measurement, whole, on `tier` (T-110, D155).
+    One live call per claim under `HISTORY_INSTRUCTION`."""
+    claims = enumerate_history_claims()
+    if not claims:
+        sys.exit("the eval rows produce no yellow, so there is no history claim to measure")
+    load_env()
+    from pa_agent.tiers import client_for, tier_of
+
+    client = client_for(tier)
+    live = LiveVerifierRunner(client, model=VERIFIER_MODEL, instruction=HISTORY_INSTRUCTION)
+    print(
+        f"{len(claims)} history claim(s) · model {VERIFIER_MODEL} · "
+        f"tier {tier_of(client)} · prompt {HISTORY_PROMPT_VERSION}"
+    )
+    records, rejections = _measure_claims(live, claims)
+    payload_out = {
+        **EXTENDING,
+        "model": VERIFIER_MODEL,
+        "tier": tier_of(client),
+        "claims_enumerated_from": QUOTE_RESULTS.name,
+        "prompt_version": HISTORY_PROMPT_VERSION,
+        "measured_at": datetime.now(timezone.utc).isoformat(),
+        "claims": records,
+        "aggregate": aggregate(records),
+    }
+    out_path = out_path_for(tier, history=True)
+    out_path.write_text(
+        json.dumps(payload_out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"\nwrote {out_path.relative_to(REPO_ROOT)}")
+    report(payload_out)
+    if rejections:
+        print(f"\n{len(rejections)} REJECTION(S) — review before committing:")
+        for record in rejections:
+            print(f"  history/{record['effect']}: {record['reason']}")
         return EXIT_REJECTIONS
     return EXIT_OK
 
@@ -373,7 +512,7 @@ def report(payload: dict) -> None:
     )
 
 
-def rescore(tier: str = MEASURED_TIER) -> int:
+def rescore(tier: str = MEASURED_TIER, history: bool = False) -> int:
     """Re-derive every number from the recording. **Spends nothing.**
 
     Re-hashes every stored payload against its digest key (a tampered record
@@ -383,10 +522,11 @@ def rescore(tier: str = MEASURED_TIER) -> int:
     """
     # Routed by tier: unrouted, `--tier vertex --rescore` would rewrite the AI
     # Studio recording every gate reads (D106).
-    out_path = out_path_for(tier)
+    out_path = out_path_for(tier, history=history)
     if not out_path.exists():
         sys.exit(f"nothing to rescore; no recording at {out_path}")
     payload = json.loads(out_path.read_text(encoding="utf-8"))
+    expected_prompt = HISTORY_PROMPT_VERSION if history else PROMPT_VERSION
 
     problems: list[str] = []
     expected_tier = tier
@@ -401,10 +541,10 @@ def rescore(tier: str = MEASURED_TIER) -> int:
             f"recording names {payload.get('model')!r}; the pin is "
             f"{VERIFIER_MODEL!r} (D20: the two move together)"
         )
-    if payload.get("prompt_version") != PROMPT_VERSION:
+    if payload.get("prompt_version") != expected_prompt:
         problems.append(
             f"recording was measured on prompt {payload.get('prompt_version')!r}; "
-            f"the code builds {PROMPT_VERSION!r} — a changed prompt is a new "
+            f"the code builds {expected_prompt!r} — a changed prompt is a new "
             "measurement (D45)"
         )
     for record in payload.get("claims", []):
@@ -432,8 +572,13 @@ def rescore(tier: str = MEASURED_TIER) -> int:
 
 def main() -> int:
     tier = named_tier(sys.argv)
+    history = "--history" in sys.argv
     if "--rescore" in sys.argv:
-        return rescore(tier)
+        return rescore(tier, history=history)
+    if history:
+        if "--extend" in sys.argv:
+            sys.exit("--history is measured whole; it has no extension (D155)")
+        return measure_history(tier)
     if "--extend" in sys.argv:
         return extend(tier)
     return measure(tier)

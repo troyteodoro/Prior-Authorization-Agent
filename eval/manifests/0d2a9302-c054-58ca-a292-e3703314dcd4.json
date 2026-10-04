@@ -1,0 +1,82 @@
+{
+  "patient_id": "0d2a9302-c054-58ca-a292-e3703314dcd4",
+  "bundle": "Felipe97_Swaniawski813_0d2a9302-c054-58ca-a292-e3703314dcd4.json",
+  "declared_clone_of": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+  "as_of": "2026-09-01",
+  "cases": [
+    "J3"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [
+    {
+      "program_id": "felipe-tn-2026-supervised",
+      "supervised": true,
+      "encounters": [
+        {
+          "date": "2026-03-10",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6,
+          "document": "chart_note_1.txt"
+        },
+        {
+          "date": "2026-04-14",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6,
+          "document": "chart_note_1.txt"
+        },
+        {
+          "date": "2026-05-12",
+          "weight_documented": false,
+          "bmi_documented": false,
+          "diet_documented": true,
+          "activity_documented": true,
+          "weight_declined": true,
+          "document": "chart_note_2.txt"
+        },
+        {
+          "date": "2026-06-09",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6,
+          "document": "chart_note_2.txt"
+        }
+      ]
+    }
+  ],
+  "program_assertions": [],
+  "traps": [],
+  "multidisciplinary_evaluations": [
+    {
+      "component": "mental_health",
+      "date": "2025-11-04",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "component": "primary_care_referral",
+      "date": "2026-03-24",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "component": "bariatric_surgeon",
+      "date": "2026-04-28",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "component": "nutrition",
+      "date": "2026-06-23",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "rationale": "J3 (T-110, D155): E1's chart again, re-addressed into Tennessee, with the two facts Palmetto's c4 and d fail on. The 05/12/2026 program visit documents diet and activity and states that the patient declined to be weighed, so May is a month of the run with no weight and c4 is NOT_MET with one month short; the visit is still a supervised encounter, so c1, c2 and c5 are unchanged. The mental health evaluation is dated 11/04/2025, nine whole months before as_of against a six-month window, while the other three components fall inside it, so d is NOT_MET citing all four with the mental health evaluation's age as the shortfall. a and b are E1's, MET; the determination is NOT_MET. Dates declared here (D43); one fact per document (D104); the notes are new documents, so no cloned_from."
+}

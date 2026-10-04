@@ -89,6 +89,13 @@ KIND_ORIGIN: dict[PredicateKind, tuple[str, str]] = {
     PredicateKind.NOTE_KNEE_SYMPTOMS: ("orthopedics", "T-109"),
     PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS: ("orthopedics", "T-109"),
     PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION: ("orthopedics", "T-109"),
+    # T-110 (D155): the five criteria v1.2 left unclaimed for want of a field,
+    # each earned by the practice whose tree declared it unclaimed.
+    PredicateKind.NOTE_WEIGHT_RUN_RATE: ("bariatric_surgery", "T-110"),
+    PredicateKind.NOTE_MULTIDISCIPLINARY_EVALUATION: ("bariatric_surgery", "T-110"),
+    PredicateKind.NOTE_HEART_FAILURE_CLASS: ("rheumatology", "T-110"),
+    PredicateKind.NOTE_TUBERCULOSIS_SCREENING: ("rheumatology", "T-110"),
+    PredicateKind.NOTE_DISEASE_ACTIVITY: ("rheumatology", "T-110"),
 }
 
 EXIT_OK = 0
@@ -457,7 +464,12 @@ def _recording_label(payload: dict[str, Any]) -> str:
         mode = "ADK tool-fetch" if payload.get("tool_fetch") else "ADK inline"
     else:
         mode = "direct"
-    return f"{task} {mode}"
+    # An extension appended notes under the same configuration and is named
+    # beside the task that measured the rest (T-110, D155).
+    extended = "".join(
+        f" + {e['task']} extension" for e in payload.get("extensions", [])
+    )
+    return f"{task}{extended} {mode}"
 
 
 def _anchoring_rows(recordings: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
@@ -739,20 +751,23 @@ def _quote_section() -> list[str]:
         "code or colour — and every passage is anchored by searching the note "
         "for it (D18) or refused; a refused quote is re-asked once for its "
         "verbatim text (REQ-56) and then dropped, and a candidate with no "
-        "anchored passage is red, never yellow (REQ-67). No committed note "
-        "documents any of the five conditions (D120), so the figure these "
-        "recordings yield is a **fabrication rate**: `(note, condition)` pairs "
-        "for which the model returned a passage that did not anchor. A pair "
-        "that *anchored* would be a yellow this corpus was not supposed to "
-        "produce, and the gate stops on it. Twenty-four notes are measured — "
-        "T-98's twelve, and the fourth practice's twelve appended by T-108 "
-        "under the same configuration rather than re-measuring the first "
-        "twelve (D152); the declared clone's two are byte-identical to its "
-        "source's and replay by content — and every turn is counted (REQ-68, "
-        "D71). A note recorded as failed is a finding, kept with its "
-        "classified reason and never re-run (D71, D152). Recomputed from the "
-        "per-note records of each committed recording; the stored aggregates "
-        "are not read (T-71). The AI Studio direct recording is the one every "
+        "anchored passage is red, never yellow (REQ-67). Until `T-110` no "
+        "committed note documented any of the five conditions (D120), so the "
+        "figure these recordings yield is chiefly a **fabrication rate**: "
+        "`(note, condition)` pairs for which the model returned a passage that "
+        "did not anchor. Since `T-110` exactly one note states a table effect "
+        "— `RA4`'s second, neutropenia — and the gate holds every recording "
+        "to anchoring that pair and no other (D155): any other anchored pair "
+        "is a yellow this corpus was not written to produce. Notes are "
+        "appended by extension under the unchanged configuration, never by "
+        "re-measuring what is recorded — T-98's twelve, T-108's twelve "
+        "(D152), T-109's fourteen (D154) and T-110's ten (D155); the declared "
+        "clone's two are byte-identical to its source's and replay by content "
+        "— and every turn is counted (REQ-68, D71). A note recorded as failed "
+        "is a finding, kept with its classified reason and never re-run (D71, "
+        "D152). Recomputed from the per-note records of each committed "
+        "recording; the stored aggregates are not read (T-71). The AI Studio "
+        "direct recording is the one every "
         "gate replays, and `H4` reads red through it.",
         "",
         "| Runner | Tier | Notes | Model turns | Input tokens | Output tokens "
@@ -782,16 +797,18 @@ def _quote_section() -> list[str]:
             shown = quote if len(quote) <= 80 else quote[:77] + "…"
             lines.append(f"- {row['label']} ({row['tier']}), note `{r['note_id']}`: *{shown}*")
         lines.append("")
-    else:
+    anchored = sum(row["pairs_anchored"] for row in rows)
+    if not refused:
         lines.append(
-            "**No passage was returned for any pair in any recording.** The "
-            "model answered every condition with an empty list on every note, "
-            "on both tiers and through all three runners; nothing was anchored, "
-            "nothing was refused, and the re-ask was asked about nothing."
+            "**No passage was refused in any recording.** On both tiers and "
+            "through all three runners, every passage the model returned "
+            f"anchored, and it returned one for {anchored} pair(s) across the "
+            "six recordings — the one note that states a table effect, once "
+            "per recording. Every other condition on every note was answered "
+            "with an empty list."
         )
         lines.append("")
 
-    anchored = sum(row["pairs_anchored"] for row in rows)
     lines += [
         "**What red means here.** `H4`'s candidate — lisinopril and renal "
         "impairment on a chart with no creatinine and no kidney code — is red "
@@ -1355,6 +1372,15 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
         for row in recording["patients"]
         if row.get("agentic")
     }
+    # Each row's own request since T-110 (D155); a row recorded before it was
+    # made at the recording's one procedure and clock.
+    request_by_patient = {
+        row["patient_id"]: (
+            row.get("procedure_code", recording.get("procedure_code")),
+            row.get("as_of", recording.get("as_of")),
+        )
+        for row in recording["patients"]
+    }
 
     # The oracle side, re-derived in-process from the same cache the rest of the
     # report reads — zero calls, recorded extraction.
@@ -1365,9 +1391,7 @@ def _recall_section(cache: dict[Any, Any]) -> list[str]:
             continue
         if patient_id not in gathered_by_patient:
             continue
-        if procedure_code != recording["procedure_code"]:
-            continue
-        if as_of.isoformat() != recording["as_of"]:
+        if (procedure_code, as_of.isoformat()) != request_by_patient[patient_id]:
             continue
         gathered = gathered_by_patient[patient_id]
         cited = cited_by_patient[patient_id]
@@ -1628,10 +1652,12 @@ def _suggestion_section(reviews: dict[str, Any]) -> list[str]:
         "",
         "**Read the denominator before the figure.** "
         + (
-            f"n = {asserting} is one suggestion. A precision of "
-            f"{_fmt(precision)} over a single datapoint clears any bar and "
-            "establishes almost nothing; it says this system has not yet "
-            "asserted a code the chart does not support, on the one occasion "
+            f"n = {asserting} is {('one suggestion' if asserting == 1 else 'two suggestions')}. "
+            f"A precision of {_fmt(precision)} over "
+            f"{('a single datapoint' if asserting == 1 else 'two datapoints')} "
+            "clears any bar and establishes almost nothing; it says this "
+            "system has not yet asserted a code the chart does not support, "
+            f"on the {('one occasion' if asserting == 1 else 'two occasions')} "
             "it asserted anything."
             if asserting <= 2
             else f"n = {asserting}."
@@ -1647,15 +1673,67 @@ def _suggestion_section(reviews: dict[str, Any]) -> list[str]:
         "takes the missing precision for a passing grade has it exactly "
         "backwards — the baseline declined to play.",
         "",
-        "**Zero yellow, and the clause that says so.** No committed note "
-        "produces a yellow, so REQ-67's *every yellow carries a valid span* is "
-        "held at unit level through the anchorer's real refusal on a "
-        "hand-written note (D65's shape, T-98). The **measured** figure is "
-        "**A14's**, when `T-110` adds a note that states a table effect "
-        "(D120, D122, D123).",
+        *_yellow_lines(graded_suggestions),
         "",
         "",
     ]
+
+
+def _yellow_lines(graded_suggestions: list[tuple[str, Any]]) -> list[str]:
+    """A14's clause on A11's yellow, measured (T-110, D120, D122, D155): every
+    yellow carries a span that slices back and a verdict in the history
+    verifier recording on **both** tiers. Computed, so a yellow without either
+    reads as one here rather than as a sentence that says otherwise."""
+    from pa_agent.verifier import build_history_claim_payload, claim_digest
+
+    patient_store = LocalPatientStore()
+    verdicts: dict[str, dict[str, bool]] = {}
+    for tier, name in (("AI Studio", "history_results.json"),
+                       ("Vertex", "history_results_vertex.json")):
+        path = EVAL_DIR / "verifier" / name
+        if path.exists():
+            recording = json.loads(path.read_text(encoding="utf-8"))
+            verdicts[tier] = {c["digest"]: c["accept"] for c in recording["claims"]}
+    yellows = [(c, s) for c, s in graded_suggestions if s.colour.value == "yellow"]
+    if not yellows:
+        return [
+            "**Zero yellow.** No committed note produces a yellow, so REQ-67's "
+            "*every yellow carries a valid span* is held at unit level only "
+            "(D65's shape, T-98).",
+        ]
+    lines = [
+        f"**The yellow, measured (A14, D120, D155).** {len(yellows)} yellow "
+        "suggestion(s), each on a note added by `T-110` that states a table "
+        "effect. Each passage was located by the anchorer, sliced back "
+        "through the patient port, and sent to Article V's verifier as a "
+        "`(candidate, quotes)` claim with no drug, code or colour (D122):",
+        "",
+        "| Case | Row | Passage | Slices back | AI Studio verifier | Vertex verifier |",
+        "|---|---|---|---|---|---|",
+    ]
+    for case_id, suggestion in yellows:
+        index = DocumentIndex()
+        passages = []
+        valid = True
+        for span in suggestion.citations:
+            document = patient_store.get_document(span.document_id)
+            index.add(document)
+            try:
+                valid = valid and bool(validate(span, index))
+            except SpanValidationError:
+                valid = False
+            passages.append(document.slice(span))
+        digest = claim_digest(build_history_claim_payload(suggestion, passages))
+        cells = []
+        for tier in ("AI Studio", "Vertex"):
+            accept = verdicts.get(tier, {}).get(digest)
+            cells.append("not recorded" if accept is None else ("accept" if accept else "reject"))
+        lines.append(
+            f"| `{case_id}` | `{suggestion.row_id}` | "
+            + "; ".join(f"*{p}*" for p in passages)
+            + f" | {'yes' if valid else '**no**'} | {cells[0]} | {cells[1]} |"
+        )
+    return lines
 
 
 def _cost_section(results: list[Any], cache: dict[Any, Any]) -> list[str]:
@@ -1760,7 +1838,7 @@ def _compatibility_section() -> list[str]:
     practices = sorted({tree.practice for tree in trees})
 
     lines = [
-        "## Cross-practice compatibility (A10, REQ-57, REQ-58, D110, D111, D114)",
+        "## Cross-practice compatibility (A10, A14, REQ-57, REQ-58, REQ-80, D110, D111, D114, D155)",
         "",
         "v1.2 asked how much of this engine was bariatric surgery's. The "
         "answer is generated here rather than asserted in prose: every "
@@ -1817,7 +1895,18 @@ def _compatibility_section() -> list[str]:
         "already had and earned what it lacked; the last column is what each "
         "one cost the vocabulary. Nothing here is unclaimed for want of a "
         "predicate — every abstention below is a limit of the **document or "
-        "the chart**, which is the finding rather than a shortfall.",
+        "the chart**, which is the finding rather than a shortfall. Since "
+        "v1.6 (T-110, D155) nothing is unclaimed for want of an **extraction "
+        "field** either: Palmetto's `c4` and `d` and the rheumatoid tree's "
+        "`c`, `d` and `e` are read from a note through two declared fact "
+        "kinds, so every criterion still unclaimed is a judgment or a record "
+        "outside the chart.",
+        "",
+        f"**Every practice a loaded tree declares has a row (REQ-80)**: "
+        f"{len(practices)} practices — the bariatric control and the "
+        f"{len(practices) - 1} the two cross-practice rounds added. A14's "
+        "*four practices* are the ones the rounds added; the account carries "
+        "the control beside them (D155).",
         "",
         "### Every criterion of every loaded tree",
         "",
@@ -1926,8 +2015,8 @@ def _caveats_section() -> list[str]:
         "territory (T-88, D102) — the row `J1`, which shares both its notes' "
         "bytes with E4. Every note-bearing chart is two documents since T-81, "
         "a split of the facts its manifest already declared (D104). The next "
-        "six are the second and third practices, all note-free because v1.2 "
-        "declares every note-only criterion unclaimed: two Synthea charts "
+        "six are the second and third practices, all note-free, because v1.2 "
+        "declared every note-only criterion unclaimed: two Synthea charts "
         "carrying rheumatoid arthritis in Palmetto's territory and a declared "
         "clone of one of them holding the drug L35677 excludes (T-93, D113), "
         "then one Synthea chart in WPS's territory and two declared clones of "
@@ -1943,11 +2032,18 @@ def _caveats_section() -> list[str]:
         "Synthea charts from the recorded Iowa run carrying obstructive sleep "
         "apnea, each a consultation and a sleep study report whose index, "
         "recording time and findings the fact manifests declare, because no "
-        "generator writes them (T-108, D150). The last seven are the fifth: "
+        "generator writes them (T-108, D150). The next seven are the fifth: "
         "Synthea charts from the same run carrying knee osteoarthritis and the "
         "naproxen order written at its diagnosis, each a clinic visit and a "
         "follow-up whose symptoms, knee radiographs and exercise programme "
-        "the fact manifests declare, for the same reason (T-109, D154). Rates "
+        "the fact manifests declare, for the same reason (T-109, D154). The "
+        "last five are declared clones carrying notes their sources never "
+        "had: E1's chart twice, re-addressed into Palmetto's territory with "
+        "notes documenting monthly weights and the multidisciplinary "
+        "evaluation (`J2`, `J3`), and RA1's three times, with notes stating a "
+        "heart-failure status, a tuberculosis screen and a disease-activity "
+        "level — one of them also the table effect that is the corpus's one "
+        "yellow (T-110, D155). Rates "
         "over a set this size move by large steps; one case is worth more "
         "than a percentage point in every table above.",
         "",

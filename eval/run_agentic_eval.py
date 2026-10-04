@@ -115,6 +115,8 @@ EXTRACTION_RECORDINGS = (
     EXTRACTION_RESULTS,
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
     REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
+    REPO_ROOT / "eval" / "extraction" / "bariatric_surgical_workup.json",  # T-110 (D155)
+    REPO_ROOT / "eval" / "extraction" / "rheumatoid_arthritis_workup.json",  # T-110 (D155)
 )
 
 
@@ -132,9 +134,13 @@ NOTES_MANIFEST = REPO_ROOT / "data" / "patients" / "notes" / "manifest.json"
 ENV_PATH = REPO_ROOT / "pa_agent" / "agent" / ".env"
 
 TREE_VERSION = "ncd-100.1-jf-v1"
+#: The request a row recorded before T-110 was made at. Since T-110 (D155)
+#: every row records its own procedure and clock, read from the eval row that
+#: names it; these remain the defaults a pre-T-110 row is rescored under.
 PROCEDURE = "43775"
 #: T-06 pinned the ground truth here and every recency verdict moves with it.
 AS_OF = date(2026, 9, 1)
+CASES_PATH = REPO_ROOT / "eval" / "cases.json"
 
 EXIT_OK = 0
 EXIT_NO_MEASUREMENT = 1
@@ -276,30 +282,55 @@ def self_check() -> list[tuple[str, bool, str]]:
 
 
 def _patients() -> list[dict]:
-    """One row per patient. The notes manifest lists one record per document
-    and a chart is two of them since T-81 (D104); a patient measured once per
-    record would be measured twice.
+    """One request per note-bearing chart: the first eval row on it whose
+    request reaches the graph, at that row's own procedure code and clock
+    (T-110, D155).
 
-    **Only charts whose request at `PROCEDURE` resolves to a tree** (T-108,
-    D150). The differential is measured at one procedure code, so a
-    note-bearing chart in a state where no tree binds it — the sleep apnea
-    charts, which carry notes for E0601 in Iowa — is not a request this
-    measurement can make. Widening the differential past one procedure is a
-    re-measurement, never a filter edit (D45).
+    **Widened from 43775 by `T-110`.** Until then the differential was measured
+    at one procedure code, so only the bariatric charts were in it (T-108,
+    D150). US-14 asks for the agentic path against the oracle on every
+    practice, so each chart is measured at the request its own eval rows make.
+    *Reaches the graph* is decided by the system, not by a filter written here:
+    the oracle's `determine()` returns a determination with criterion results.
+    A short circuit -- E2's exclusion on its chart's other row -- drops out by
+    the engine's own answer.
+
+    **Note-bearing charts only**, as before: `AgenticRetrievalPlanner` raises on
+    a chart with no note by design (D31, D39), so a note-free chart is an error
+    by construction and no retrieval question. The notes manifest lists one
+    record per document and a chart is two of them since T-81 (D104); a chart
+    is measured once.
     """
+    from pa_agent.determination import determine
     from pa_agent.stores.patient import LocalPatientStore
     from pa_agent.stores.policy import LocalPolicyStore
 
     policy_store, patient_store = LocalPolicyStore(), LocalPatientStore()
     manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
-    patients: dict[str, dict] = {}
+    note_bearing: dict[str, list[str]] = {}
     for r in manifest["notes"]:
-        if r["patient_id"] in patients:
+        note_bearing.setdefault(r["patient_id"], r["cases"])
+    runner, verifier = _recorded_extraction(), _recorded_verifier()
+    cases = json.loads(CASES_PATH.read_text(encoding="utf-8"))["cases"]
+    patients: dict[str, dict] = {}
+    for case in cases:
+        patient_id = case.get("patient_id")
+        if patient_id not in note_bearing or patient_id in patients:
             continue
-        state = patient_store.get_jurisdiction_state(r["patient_id"])
-        if policy_store.resolve(PROCEDURE, state) is None:
+        as_of = date.fromisoformat(case["as_of"]) if case.get("as_of") else AS_OF
+        result = determine(
+            policy_store, case["procedure_code"], patient_id, patient_store,
+            as_of, runner, verifier, state=case.get("state"),
+        )
+        if not isinstance(result, Determination) or not result.criterion_results:
             continue
-        patients[r["patient_id"]] = {"patient_id": r["patient_id"], "cases": r["cases"]}
+        patients[patient_id] = {
+            "patient_id": patient_id,
+            "cases": note_bearing[patient_id],
+            "procedure_code": case["procedure_code"],
+            "as_of": as_of.isoformat(),
+            "state": case.get("state"),
+        }
     return list(patients.values())
 
 
@@ -325,12 +356,16 @@ def _recorded_verifier():
     )
 
 
-def _run_one(policy_store, patient_store, runner, planner, patient_id, verifier) -> WorkflowRun:
+def _run_one(
+    policy_store, patient_store, runner, planner, patient_id, verifier,
+    procedure_code: str = PROCEDURE, as_of: date = AS_OF, state: str | None = None,
+) -> WorkflowRun:
     """The whole run, not just its determination (T-80, D91).
 
     `WorkflowRun.state` is what carries the evidence the planner actually handed
     downstream. A determination carries what was *cited*, which is the weaker
-    thing D86 had to settle for.
+    thing D86 had to settle for. The request is the row's own since T-110
+    (D155); the defaults are the one every row was made at before it.
     """
     return run_criteria_workflow(
         policy_store=policy_store,
@@ -339,13 +374,22 @@ def _run_one(policy_store, patient_store, runner, planner, patient_id, verifier)
         # T-87 (D100): resolved under the patient's own state, read from the
         # bundle — the tool surface the planner sees is unchanged.
         policy_ref=policy_store.resolve(
-            PROCEDURE, patient_store.get_jurisdiction_state(patient_id)
+            procedure_code, state or patient_store.get_jurisdiction_state(patient_id)
         ),
         patient_id=patient_id,
-        as_of=AS_OF,
+        as_of=as_of,
         planner=planner,
         verifier=verifier,
     )
+
+
+def _request(row: dict) -> dict:
+    """A recorded row's request: its own since T-110, the defaults before."""
+    return {
+        "procedure_code": row.get("procedure_code", PROCEDURE),
+        "as_of": date.fromisoformat(row["as_of"]) if row.get("as_of") else AS_OF,
+        "state": row.get("state"),
+    }
 
 
 def _gathered(run: WorkflowRun) -> dict:
@@ -433,9 +477,10 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
         label = "+".join(entry["cases"]) or patient_id[:8]
         print(f"  [{index}/{len(patients)}] {label}", flush=True)
 
+        request = _request(entry)
         fixed = FixedRetrievalPlanner()
         oracle_run = _run_one(
-            policy_store, patient_store, runner, fixed, patient_id, verifier,
+            policy_store, patient_store, runner, fixed, patient_id, verifier, **request,
         )
         oracle = oracle_run.determination
         planner = AgenticRetrievalPlanner(client=client)
@@ -443,6 +488,9 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
         row: dict[str, Any] = {
             "patient_id": patient_id,
             "cases": entry["cases"],
+            "procedure_code": entry["procedure_code"],
+            "as_of": entry["as_of"],
+            **({"state": entry["state"]} if entry.get("state") else {}),
             "oracle": {
                 "outcome": oracle.outcome.value,
                 "verdicts": _verdicts(oracle),
@@ -466,7 +514,8 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
         }
         try:
             agentic_run = _run_one(
-                policy_store, patient_store, runner, planner, patient_id, verifier
+                policy_store, patient_store, runner, planner, patient_id, verifier,
+                **request,
             )
             agentic = agentic_run.determination
         except RetrievalError as exc:
@@ -532,19 +581,24 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
         # verification on both sides. A scalar tier here would be false (D106).
         "tier": {
             "retrieval": tier_of(client),
-            "extraction": f"replayed from {EXTRACTION_RESULTS.name}",
+            "extraction": "replayed from "
+            + " + ".join(p.name for p in EXTRACTION_RECORDINGS),
             "verifier": f"replayed from {VERIFIER_RESULTS.name}",
         },
         "prompt_version": PROMPT_VERSION,
-        "procedure_code": PROCEDURE,
-        "as_of": AS_OF.isoformat(),
+        # T-110 (D155): every row records its own request.
+        "requests": (
+            "every eval request on a note-bearing chart that reaches the graph, "
+            "one per chart, each at its own procedure code and as_of"
+        ),
         "bounds": {
             "max_steps": DEFAULT_MAX_STEPS,
             "max_llm_calls": DEFAULT_MAX_LLM_CALLS,
         },
         "note": (
-            "Extraction is eval/extraction/results.json on both sides, so the one "
-            "variable is which evidence reached the criteria (D63)."
+            "Extraction replays every fact kind's AI Studio recording on both "
+            "sides, so the one variable is which evidence reached the criteria "
+            "(D63, D155)."
         ),
         "aggregate": aggregate(records),
         "patients": records,
@@ -816,6 +870,7 @@ def rescore(tier: str = "ai_studio") -> int:
         fixed = FixedRetrievalPlanner()
         oracle_run = _run_one(
             policy_store, patient_store, runner, fixed, row["patient_id"], verifier,
+            **_request(row),
         )
         oracle = oracle_run.determination
         row["oracle"].update(

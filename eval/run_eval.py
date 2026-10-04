@@ -545,8 +545,14 @@ EXTRACTION_RECORDINGS = (
     EXTRACTION_RESULTS,
     REPO_ROOT / "eval" / "extraction" / "sleep_apnea_workup.json",
     REPO_ROOT / "eval" / "extraction" / "knee_osteoarthritis_workup.json",  # T-109 (D154)
+    REPO_ROOT / "eval" / "extraction" / "bariatric_surgical_workup.json",  # T-110 (D155)
+    REPO_ROOT / "eval" / "extraction" / "rheumatoid_arthritis_workup.json",  # T-110 (D155)
 )
 VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "results.json"
+#: The history claims' recording (T-110, D155): the yellow's verification.
+#: Replayed through the same runner, because a history claim's key set differs
+#: from a criterion claim's and no digest can be shared (D122).
+HISTORY_VERIFIER_RESULTS = REPO_ROOT / "eval" / "verifier" / "history_results.json"
 HISTORY_RESULTS = REPO_ROOT / "eval" / "history" / "results.json"
 
 
@@ -576,9 +582,10 @@ def _recorded_verifier() -> Any:
     if not VERIFIER_RESULTS.exists():
         return None
     recording = json.loads(VERIFIER_RESULTS.read_text(encoding="utf-8"))
-    return RecordedVerifierRunner.from_records(
-        recording["claims"], model=recording.get("model")
-    )
+    claims = list(recording["claims"])
+    if HISTORY_VERIFIER_RESULTS.exists():
+        claims += json.loads(HISTORY_VERIFIER_RESULTS.read_text(encoding="utf-8"))["claims"]
+    return RecordedVerifierRunner.from_records(claims, model=recording.get("model"))
 
 
 def _recorded_runner() -> Any:

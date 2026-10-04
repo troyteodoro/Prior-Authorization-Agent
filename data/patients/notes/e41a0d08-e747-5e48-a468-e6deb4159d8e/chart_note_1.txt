@@ -1,0 +1,18 @@
+CHATTAHOOCHEE VALLEY ARTHRITIS CLINIC
+Patient: Zieme486, Shona685                      MRN: 236434
+DOB: 1971-09-28                       Sex: F
+Document 1 of 2
+
+RHEUMATOLOGY CLINIC VISIT
+
+12/09/2025 - Seen in person in clinic by C. Bello, DO for seropositive
+rheumatoid arthritis on methotrexate.
+
+ASSESSMENTS AND RESULTS
+12/09/2025 - Cardiac review: no history of heart failure. No exertional
+dyspnea, orthopnea or edema.
+12/09/2025 - Disease activity: DAS28-CRP 5.6, high disease activity.
+
+ASSESSMENT AND PLAN
+Rheumatoid arthritis. Continue methotrexate and return for review before a
+biologic is started.

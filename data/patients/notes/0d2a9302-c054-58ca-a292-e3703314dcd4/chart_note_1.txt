@@ -1,0 +1,28 @@
+SOUND VIEW PRIMARY CARE
+Patient: Swaniawski813, Felipe97                 MRN: 651715
+DOB: 1987-06-16                       Sex: M
+Document 1 of 2
+
+MEDICAL WEIGHT MANAGEMENT PROGRAM - CONSOLIDATED VISIT RECORD
+Physician-supervised program directed by T. Nakashima, DO.
+
+03/10/2026 - Routine supervised program visit. Weight 112.1 kg, BMI 37.6.
+Dietary recall reviewed in detail against the 1600 kcal plan. Activity goal of
+40 minutes daily met on three days this month.
+
+04/14/2026 - Monthly program visit completed. Weight 112.1 kg, BMI 37.6.
+Discussed portion control and protein intake on the 1800 kcal plan. Activity
+goal of 20 minutes daily met on three days this month.
+
+PRE-SURGICAL MULTIDISCIPLINARY EVALUATION
+11/04/2025 - Pre-surgical psychological evaluation by A. Marsh, PhD: motivated
+for surgery and able to follow post-surgical requirements.
+03/24/2026 - Referred for bariatric surgery by the patient's primary care
+provider, L. Whitfield, MD.
+04/28/2026 - Seen by D. Okafor, MD, bariatric surgeon, who recommends
+laparoscopic sleeve gastrectomy and described the proposed procedure, its
+risks and the expected post-operative course.
+
+ASSESSMENT
+Obesity with continued participation in the supervised weight management
+program documented above.

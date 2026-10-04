@@ -1,0 +1,18 @@
+CHATTAHOOCHEE VALLEY ARTHRITIS CLINIC
+Patient: Zieme486, Shona685                      MRN: 481748
+DOB: 1971-09-28                       Sex: F
+Document 1 of 2
+
+RHEUMATOLOGY CLINIC VISIT
+
+11/09/2025 - Seen in person in clinic by P. Ramanathan, MD for seropositive
+rheumatoid arthritis on methotrexate.
+
+ASSESSMENTS AND RESULTS
+11/09/2025 - Disease activity: CDAI 8.0, low disease activity.
+11/09/2025 - Heart failure with reduced ejection fraction, NYHA class III:
+marked limitation of activity, comfortable only at rest.
+
+ASSESSMENT AND PLAN
+Rheumatoid arthritis. Continue methotrexate and return for review before a
+biologic is started.

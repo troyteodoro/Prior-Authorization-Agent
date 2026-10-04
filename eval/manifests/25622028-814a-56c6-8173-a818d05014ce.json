@@ -1,0 +1,60 @@
+{
+  "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
+  "bundle": "Shona685_Zieme486_25622028-814a-56c6-8173-a818d05014ce.json",
+  "declared_clone_of": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+  "as_of": "2026-09-01",
+  "cases": [
+    "RA5",
+    "H14"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [],
+  "program_assertions": [],
+  "traps": [
+    {
+      "type": "tuberculosis_treatment_deferred",
+      "date": "2025-12-09",
+      "description": "latent tuberculosis treatment recommended and deferred by the patient",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "rheumatology_visits": [
+    {
+      "date": "2025-11-09",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "date": "2025-12-09",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "heart_failure_assessments": [
+    {
+      "date": "2025-11-09",
+      "status": "class_iii",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "disease_activity_assessments": [
+    {
+      "date": "2025-11-09",
+      "level": "low",
+      "measure": "CDAI",
+      "score": "8.0",
+      "document": "chart_note_1.txt"
+    }
+  ],
+  "tuberculosis_screens": [
+    {
+      "date": "2025-12-09",
+      "result": "positive",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "tuberculosis_treatments": [],
+  "table_effects": [],
+  "rationale": "RA5 (T-110, D155): RA1's chart as a declared clone whose notes state every contraindication L35677 names. The 11/09/2025 visit states heart failure with NYHA class III, so c is NOT_MET, and a CDAI of 8.0 with low disease activity in words, so e is NOT_MET. The 12/09/2025 visit reports a positive interferon-gamma release assay and records that latent tuberculosis treatment was recommended and the patient deferred it, which is not a treatment begun, so d is NOT_MET. a and b are MET; the determination is NOT_MET. H14 grades the methotrexate candidate: the notes state no table effect, so it is red with both notes consulted. Both visit dates are the chart's own encounters. One fact per document (D104)."
+}

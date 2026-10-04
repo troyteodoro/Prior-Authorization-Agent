@@ -1,0 +1,82 @@
+{
+  "patient_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d",
+  "bundle": "Felipe97_Swaniawski813_519ab9cd-e076-5113-8acc-9aa1b8bdad6d.json",
+  "declared_clone_of": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+  "as_of": "2026-09-01",
+  "cases": [
+    "J2"
+  ],
+  "documents": [
+    "chart_note_1.txt",
+    "chart_note_2.txt"
+  ],
+  "wm_programs": [
+    {
+      "program_id": "felipe-ga-2026-supervised",
+      "supervised": true,
+      "encounters": [
+        {
+          "date": "2026-03-10",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6,
+          "document": "chart_note_1.txt"
+        },
+        {
+          "date": "2026-04-14",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6,
+          "document": "chart_note_1.txt"
+        },
+        {
+          "date": "2026-05-12",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6,
+          "document": "chart_note_2.txt"
+        },
+        {
+          "date": "2026-06-09",
+          "weight_documented": true,
+          "bmi_documented": true,
+          "diet_documented": true,
+          "activity_documented": true,
+          "note_bmi": 37.6,
+          "document": "chart_note_2.txt"
+        }
+      ]
+    }
+  ],
+  "program_assertions": [],
+  "traps": [],
+  "multidisciplinary_evaluations": [
+    {
+      "component": "primary_care_referral",
+      "date": "2026-03-24",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "component": "bariatric_surgeon",
+      "date": "2026-04-28",
+      "document": "chart_note_1.txt"
+    },
+    {
+      "component": "mental_health",
+      "date": "2026-05-26",
+      "document": "chart_note_2.txt"
+    },
+    {
+      "component": "nutrition",
+      "date": "2026-06-23",
+      "document": "chart_note_2.txt"
+    }
+  ],
+  "rationale": "J2 (T-110, D155): E1's chart, re-addressed into Georgia and declared as a clone, so its request resolves to Palmetto's ncd-100.1-jjm-v1. Its notes are new documents rendered from this manifest, never E1's bytes, which is why this manifest declares no cloned_from. The supervised program runs March to June 2026 and every visit states a weight, so c4 is MET; the four components L34576 names are each documented between 03/24/2026 and 06/23/2026, all fewer than six whole months before as_of, so d is MET. a, b, c1, c2 and c5 are E1's facts under Palmetto's tree, all MET, so the determination is APPROVED. The program visit dates and the evaluation dates are declared here, as E1's are, because no generator writes them (D43). One fact per document (D104)."
+}

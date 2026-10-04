@@ -1,0 +1,918 @@
+{
+  "task": "T-110",
+  "decision": "D155",
+  "supersedes": null,
+  "measured_at": "2026-10-04T09:48:25.849542+00:00",
+  "rescored_at": null,
+  "model": "gemini-3.5-flash-lite",
+  "tier": "ai_studio",
+  "kind": "bariatric_surgical_workup",
+  "prompt_version": "t110-bariatric-surgical-workup-v1/t89-reask-v1",
+  "reask_rounds": 1,
+  "temperature": 0.0,
+  "schema_note": "The fourth fact kind's recording: documented weights with their dates, and the multidisciplinary evaluation's components with theirs. Read on every chart whose request resolves to a tree declaring it -- Palmetto's bariatric tree -- including J1's notes, which are E4's bytes (D155).",
+  "aggregate": {
+    "notes": 6,
+    "weights_labeled": 12,
+    "weights_extracted": 12,
+    "weights_matched": 12,
+    "evaluations_labeled": 8,
+    "evaluations_extracted": 8,
+    "evaluations_matched": 8,
+    "traps": 2,
+    "traps_extracted": 0,
+    "spans_emitted": 20,
+    "spans_anchored": 20,
+    "spans_normalized": 0,
+    "model_offsets_usable": 0,
+    "reask_notes": 0,
+    "reask_targets": 0,
+    "reask_recovered": 0,
+    "reask_calls": 0,
+    "model_calls": 6,
+    "total_input_tokens": 4762,
+    "total_output_tokens": 1863,
+    "total_wall_time_ms": 7416.5
+  },
+  "notes": [
+    {
+      "note_id": "J1/1",
+      "corpus": "synthesized",
+      "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "f5e943fa21ad8beb52d03aea7062707605219eff20394d1a3cc25c9f1686e8a8",
+      "cases": [
+        "J1"
+      ],
+      "kind": "bariatric_surgical_workup",
+      "labels": {
+        "weights": [
+          {
+            "date": "2026-01-13"
+          },
+          {
+            "date": "2026-02-10"
+          }
+        ],
+        "evaluations": [],
+        "traps": []
+      },
+      "facts": {
+        "weights": [
+          {
+            "date": "2026-01-13",
+            "span": {
+              "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+              "char_start": 275,
+              "char_end": 344,
+              "quote": "01/13/2026 - Program visit. Interval history reviewed. Weight 84.9 kg"
+            }
+          },
+          {
+            "date": "2026-02-10",
+            "span": {
+              "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+              "char_start": 481,
+              "char_end": 550,
+              "quote": "02/10/2026 - Program visit. Interval history reviewed. Weight 84.7 kg"
+            }
+          }
+        ],
+        "evaluations": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 700,
+        "output_tokens": 176,
+        "wall_time_ms": 1028.1699159968412
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-bariatric-surgical-workup-v1/t89-reask-v1",
+        "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1028ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 700,
+            "output_tokens": 176,
+            "wall_time_ms": 1028.1699159968412
+          }
+        ]
+      },
+      "raw": {
+        "weights": [
+          {
+            "date": "2026-01-13",
+            "quote": "01/13/2026 - Program visit. Interval history reviewed. Weight 84.9 kg",
+            "char_start": 126,
+            "char_end": 192
+          },
+          {
+            "date": "2026-02-10",
+            "quote": "02/10/2026 - Program visit. Interval history reviewed. Weight 84.7 kg",
+            "char_start": 308,
+            "char_end": 374
+          }
+        ],
+        "evaluations": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "weights": {
+          "labeled": 2,
+          "extracted": 2,
+          "matched": 2,
+          "unlabeled": [],
+          "missed": []
+        },
+        "evaluations": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J1/2",
+      "corpus": "synthesized",
+      "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "6ab7561ec365778644dad6e4de1020ffd8b70a17729e95546c405244c059eb42",
+      "cases": [
+        "J1"
+      ],
+      "kind": "bariatric_surgical_workup",
+      "labels": {
+        "weights": [
+          {
+            "date": "2026-03-12"
+          },
+          {
+            "date": "2026-05-14"
+          },
+          {
+            "date": "2026-06-11"
+          }
+        ],
+        "evaluations": [],
+        "traps": [
+          {
+            "date": "2026-04-09",
+            "reason": "missed_visit"
+          },
+          {
+            "date": "2026-04-23",
+            "reason": "unsuccessful_contact"
+          }
+        ]
+      },
+      "facts": {
+        "weights": [
+          {
+            "date": "2026-03-12",
+            "span": {
+              "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt",
+              "char_start": 364,
+              "char_end": 425,
+              "quote": "03/12/2026 - Routine supervised program visit. Weight 84.4 kg"
+            }
+          },
+          {
+            "date": "2026-05-14",
+            "span": {
+              "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt",
+              "char_start": 824,
+              "char_end": 885,
+              "quote": "05/14/2026 - Routine supervised program visit. Weight 84.2 kg"
+            }
+          },
+          {
+            "date": "2026-06-11",
+            "span": {
+              "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt",
+              "char_start": 1023,
+              "char_end": 1098,
+              "quote": "06/11/2026 - Scheduled program follow-up. No new complaints. Weight 84.2 kg"
+            }
+          }
+        ],
+        "evaluations": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 858,
+        "output_tokens": 253,
+        "wall_time_ms": 1122.1441669913474
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-bariatric-surgical-workup-v1/t89-reask-v1",
+        "document_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1122ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 858,
+            "output_tokens": 253,
+            "wall_time_ms": 1122.1441669913474
+          }
+        ]
+      },
+      "raw": {
+        "weights": [
+          {
+            "date": "2026-03-12",
+            "quote": "03/12/2026 - Routine supervised program visit. Weight 84.4 kg",
+            "char_start": 218,
+            "char_end": 277
+          },
+          {
+            "date": "2026-05-14",
+            "quote": "05/14/2026 - Routine supervised program visit. Weight 84.2 kg",
+            "char_start": 505,
+            "char_end": 564
+          },
+          {
+            "date": "2026-06-11",
+            "quote": "06/11/2026 - Scheduled program follow-up. No new complaints. Weight 84.2 kg",
+            "char_start": 686,
+            "char_end": 757
+          }
+        ],
+        "evaluations": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "weights": {
+          "labeled": 3,
+          "extracted": 3,
+          "matched": 3,
+          "unlabeled": [],
+          "missed": []
+        },
+        "evaluations": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 3,
+        "spans_anchored": 3,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J2/1",
+      "corpus": "synthesized",
+      "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "29172b2f3044e21be9d6ab7a2cfb694712f8781216cb0c818ca1da573a079c0f",
+      "cases": [
+        "J2"
+      ],
+      "kind": "bariatric_surgical_workup",
+      "labels": {
+        "weights": [
+          {
+            "date": "2026-03-10"
+          },
+          {
+            "date": "2026-04-14"
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2026-03-24",
+            "label": "primary_care_referral"
+          },
+          {
+            "date": "2026-04-28",
+            "label": "bariatric_surgeon"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "weights": [
+          {
+            "date": "2026-03-10",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+              "char_start": 276,
+              "char_end": 357,
+              "quote": "03/10/2026 - Program visit. Interval history reviewed. Weight 112.1 kg, BMI\n37.6."
+            }
+          },
+          {
+            "date": "2026-04-14",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+              "char_start": 479,
+              "char_end": 566,
+              "quote": "04/14/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6."
+            }
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2026-03-24",
+            "label": "primary_care_referral",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+              "char_start": 735,
+              "char_end": 836,
+              "quote": "03/24/2026 - Referred for bariatric surgery by the patient's primary care\nprovider, L. Whitfield, MD."
+            }
+          },
+          {
+            "date": "2026-04-28",
+            "label": "bariatric_surgeon",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+              "char_start": 837,
+              "char_end": 938,
+              "quote": "04/28/2026 - Seen by D. Okafor, MD, bariatric surgeon, who recommends\nlaparoscopic sleeve gastrectomy"
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 806,
+        "output_tokens": 399,
+        "wall_time_ms": 1375.41770900134
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-bariatric-surgical-workup-v1/t89-reask-v1",
+        "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1375ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 806,
+            "output_tokens": 399,
+            "wall_time_ms": 1375.41770900134
+          }
+        ]
+      },
+      "raw": {
+        "weights": [
+          {
+            "date": "2026-03-10",
+            "quote": "03/10/2026 - Program visit. Interval history reviewed. Weight 112.1 kg, BMI\n37.6.",
+            "char_start": 128,
+            "char_end": 204
+          },
+          {
+            "date": "2026-04-14",
+            "quote": "04/14/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg,\nBMI 37.6.",
+            "char_start": 331,
+            "char_end": 420
+          }
+        ],
+        "evaluations": [
+          {
+            "category": "primary_care_referral",
+            "date": "2026-03-24",
+            "quote": "03/24/2026 - Referred for bariatric surgery by the patient's primary care\nprovider, L. Whitfield, MD.",
+            "char_start": 560,
+            "char_end": 668
+          },
+          {
+            "category": "bariatric_surgeon",
+            "date": "2026-04-28",
+            "quote": "04/28/2026 - Seen by D. Okafor, MD, bariatric surgeon, who recommends\nlaparoscopic sleeve gastrectomy",
+            "char_start": 669,
+            "char_end": 769
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "weights": {
+          "labeled": 2,
+          "extracted": 2,
+          "matched": 2,
+          "unlabeled": [],
+          "missed": []
+        },
+        "evaluations": {
+          "labeled": 2,
+          "extracted": 2,
+          "matched": 2,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 4,
+        "spans_anchored": 4,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J2/2",
+      "corpus": "synthesized",
+      "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "260e994f2053fda88cab50465179082310300053819359d61507f1373c1aaae1",
+      "cases": [
+        "J2"
+      ],
+      "kind": "bariatric_surgical_workup",
+      "labels": {
+        "weights": [
+          {
+            "date": "2026-05-12"
+          },
+          {
+            "date": "2026-06-09"
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2026-05-26",
+            "label": "mental_health"
+          },
+          {
+            "date": "2026-06-23",
+            "label": "nutrition"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "weights": [
+          {
+            "date": "2026-05-12",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+              "char_start": 365,
+              "char_end": 427,
+              "quote": "05/12/2026 - Routine supervised program visit. Weight 112.1 kg"
+            }
+          },
+          {
+            "date": "2026-06-09",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+              "char_start": 566,
+              "char_end": 636,
+              "quote": "06/09/2026 - Program visit. Interval history reviewed. Weight 112.1 kg"
+            }
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2026-05-26",
+            "label": "mental_health",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+              "char_start": 830,
+              "char_end": 897,
+              "quote": "05/26/2026 - Pre-surgical psychological evaluation by A. Marsh, PhD"
+            }
+          },
+          {
+            "date": "2026-06-23",
+            "label": "nutrition",
+            "span": {
+              "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+              "char_start": 968,
+              "char_end": 1034,
+              "quote": "06/23/2026 - Pre-surgical nutritional evaluation by K. Delgado, RD"
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 803,
+        "output_tokens": 347,
+        "wall_time_ms": 1329.7089590050746
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-bariatric-surgical-workup-v1/t89-reask-v1",
+        "document_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1330ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 803,
+            "output_tokens": 347,
+            "wall_time_ms": 1329.7089590050746
+          }
+        ]
+      },
+      "raw": {
+        "weights": [
+          {
+            "date": "2026-05-12",
+            "quote": "05/12/2026 - Routine supervised program visit. Weight 112.1 kg",
+            "char_start": 216,
+            "char_end": 277
+          },
+          {
+            "date": "2026-06-09",
+            "quote": "06/09/2026 - Program visit. Interval history reviewed. Weight 112.1 kg",
+            "char_start": 393,
+            "char_end": 462
+          }
+        ],
+        "evaluations": [
+          {
+            "category": "mental_health",
+            "date": "2026-05-26",
+            "quote": "05/26/2026 - Pre-surgical psychological evaluation by A. Marsh, PhD",
+            "char_start": 597,
+            "char_end": 662
+          },
+          {
+            "category": "nutrition",
+            "date": "2026-06-23",
+            "quote": "06/23/2026 - Pre-surgical nutritional evaluation by K. Delgado, RD",
+            "char_start": 732,
+            "char_end": 796
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "weights": {
+          "labeled": 2,
+          "extracted": 2,
+          "matched": 2,
+          "unlabeled": [],
+          "missed": []
+        },
+        "evaluations": {
+          "labeled": 2,
+          "extracted": 2,
+          "matched": 2,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 4,
+        "spans_anchored": 4,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J3/1",
+      "corpus": "synthesized",
+      "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "185519a3e6e8f02205b94b53bdfd28011c4b6921dcfac0e45a8c7f40d8ab35d1",
+      "cases": [
+        "J3"
+      ],
+      "kind": "bariatric_surgical_workup",
+      "labels": {
+        "weights": [
+          {
+            "date": "2026-03-10"
+          },
+          {
+            "date": "2026-04-14"
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2025-11-04",
+            "label": "mental_health"
+          },
+          {
+            "date": "2026-03-24",
+            "label": "primary_care_referral"
+          },
+          {
+            "date": "2026-04-28",
+            "label": "bariatric_surgeon"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "weights": [
+          {
+            "date": "2026-03-10",
+            "span": {
+              "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+              "char_start": 269,
+              "char_end": 331,
+              "quote": "03/10/2026 - Routine supervised program visit. Weight 112.1 kg"
+            }
+          },
+          {
+            "date": "2026-04-14",
+            "span": {
+              "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+              "char_start": 470,
+              "char_end": 531,
+              "quote": "04/14/2026 - Monthly program visit completed. Weight 112.1 kg"
+            }
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2025-11-04",
+            "label": "mental_health",
+            "span": {
+              "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+              "char_start": 718,
+              "char_end": 855,
+              "quote": "11/04/2025 - Pre-surgical psychological evaluation by A. Marsh, PhD: motivated\nfor surgery and able to follow post-surgical requirements."
+            }
+          },
+          {
+            "date": "2026-03-24",
+            "label": "primary_care_referral",
+            "span": {
+              "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+              "char_start": 856,
+              "char_end": 957,
+              "quote": "03/24/2026 - Referred for bariatric surgery by the patient's primary care\nprovider, L. Whitfield, MD."
+            }
+          },
+          {
+            "date": "2026-04-28",
+            "label": "bariatric_surgeon",
+            "span": {
+              "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+              "char_start": 958,
+              "char_end": 1147,
+              "quote": "04/28/2026 - Seen by D. Okafor, MD, bariatric surgeon, who recommends\nlaparoscopic sleeve gastrectomy and described the proposed procedure, its\nrisks and the expected post-operative course."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 837,
+        "output_tokens": 493,
+        "wall_time_ms": 1535.8647920074873
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-bariatric-surgical-workup-v1/t89-reask-v1",
+        "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1536ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 837,
+            "output_tokens": 493,
+            "wall_time_ms": 1535.8647920074873
+          }
+        ]
+      },
+      "raw": {
+        "weights": [
+          {
+            "date": "2026-03-10",
+            "quote": "03/10/2026 - Routine supervised program visit. Weight 112.1 kg",
+            "char_start": 218,
+            "char_end": 280
+          },
+          {
+            "date": "2026-04-14",
+            "quote": "04/14/2026 - Monthly program visit completed. Weight 112.1 kg",
+            "char_start": 393,
+            "char_end": 456
+          }
+        ],
+        "evaluations": [
+          {
+            "category": "mental_health",
+            "date": "2025-11-04",
+            "quote": "11/04/2025 - Pre-surgical psychological evaluation by A. Marsh, PhD: motivated\nfor surgery and able to follow post-surgical requirements.",
+            "char_start": 571,
+            "char_end": 711
+          },
+          {
+            "category": "primary_care_referral",
+            "date": "2026-03-24",
+            "quote": "03/24/2026 - Referred for bariatric surgery by the patient's primary care\nprovider, L. Whitfield, MD.",
+            "char_start": 712,
+            "char_end": 813
+          },
+          {
+            "category": "bariatric_surgeon",
+            "date": "2026-04-28",
+            "quote": "04/28/2026 - Seen by D. Okafor, MD, bariatric surgeon, who recommends\nlaparoscopic sleeve gastrectomy and described the proposed procedure, its\nrisks and the expected post-operative course.",
+            "char_start": 814,
+            "char_end": 978
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "weights": {
+          "labeled": 2,
+          "extracted": 2,
+          "matched": 2,
+          "unlabeled": [],
+          "missed": []
+        },
+        "evaluations": {
+          "labeled": 3,
+          "extracted": 3,
+          "matched": 3,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 5,
+        "spans_anchored": 5,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "J3/2",
+      "corpus": "synthesized",
+      "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "dd576edda3b62345ea8cc2cc7941e69cffcf372139a91deb045b2ae423b7adde",
+      "cases": [
+        "J3"
+      ],
+      "kind": "bariatric_surgical_workup",
+      "labels": {
+        "weights": [
+          {
+            "date": "2026-06-09"
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2026-06-23",
+            "label": "nutrition"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "weights": [
+          {
+            "date": "2026-06-09",
+            "span": {
+              "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+              "char_start": 585,
+              "char_end": 661,
+              "quote": "06/09/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg"
+            }
+          }
+        ],
+        "evaluations": [
+          {
+            "date": "2026-06-23",
+            "label": "nutrition",
+            "span": {
+              "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+              "char_start": 834,
+              "char_end": 923,
+              "quote": "06/23/2026 - Pre-surgical nutritional evaluation by K. Delgado, RD, registered\ndietitian."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 758,
+        "output_tokens": 195,
+        "wall_time_ms": 1025.194375004503
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-bariatric-surgical-workup-v1/t89-reask-v1",
+        "document_id": "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1025ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 758,
+            "output_tokens": 195,
+            "wall_time_ms": 1025.194375004503
+          }
+        ]
+      },
+      "raw": {
+        "weights": [
+          {
+            "date": "2026-06-09",
+            "quote": "06/09/2026 - Scheduled program follow-up. No new complaints. Weight 112.1 kg",
+            "char_start": 331,
+            "char_end": 409
+          }
+        ],
+        "evaluations": [
+          {
+            "category": "nutrition",
+            "date": "2026-06-23",
+            "quote": "06/23/2026 - Pre-surgical nutritional evaluation by K. Delgado, RD, registered\ndietitian.",
+            "char_start": 498,
+            "char_end": 589
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "weights": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "evaluations": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    }
+  ]
+}

@@ -209,6 +209,91 @@ THERAPY_DECLINED_PHRASE = (
     "Outpatient physical therapy for the knee was offered at this visit; the "
     "patient declined."
 )
+#: T-110 (D155): Palmetto's multidisciplinary evaluation, one dated line per
+#: component, each in the words a chart uses and never the manifest's label.
+#: The clinicians are fixed rather than drawn, so adding the section draws
+#: nothing from the document's RNG stream.
+EVALUATION_PHRASES = {
+    "bariatric_surgeon": (
+        "{date} - Seen by D. Okafor, MD, bariatric surgeon, who recommends "
+        "laparoscopic sleeve gastrectomy and described the proposed procedure, "
+        "its risks and the expected post-operative course."
+    ),
+    "primary_care_referral": (
+        "{date} - Referred for bariatric surgery by the patient's primary care "
+        "provider, L. Whitfield, MD."
+    ),
+    "mental_health": (
+        "{date} - Pre-surgical psychological evaluation by A. Marsh, PhD: "
+        "motivated for surgery and able to follow post-surgical requirements."
+    ),
+    "nutrition": (
+        "{date} - Pre-surgical nutritional evaluation by K. Delgado, RD, "
+        "registered dietitian."
+    ),
+}
+#: A program visit at which no weight was taken (T-110, D155). It must read
+#: as a visit, so it still carries diet and activity, and as unweighed.
+WEIGHT_DECLINED_PHRASE = "Patient declined to be weighed at this visit."
+
+#: T-110 (D155): the rheumatology charts' notes. Alabama practices, because the
+#: source chart is Synthea's Alabama run.
+RHEUMATOLOGY_PRACTICES = [
+    "LEE COUNTY RHEUMATOLOGY AND ARTHRITIS CENTER",
+    "EAST ALABAMA RHEUMATOLOGY ASSOCIATES",
+    "CHATTAHOOCHEE VALLEY ARTHRITIS CLINIC",
+]
+RHEUMATOLOGY_CLINICIANS = [
+    "P. Ramanathan, MD", "E. Sutter, MD", "C. Bello, DO", "M. Haskins, PA-C",
+]
+#: A heart-failure status, as a chart states it. Each line names its date.
+HEART_FAILURE_PHRASES = {
+    "no_heart_failure": (
+        "{date} - Cardiac review: no history of heart failure. No exertional "
+        "dyspnea, orthopnea or edema."
+    ),
+    "class_ii": (
+        "{date} - Heart failure with preserved ejection fraction, NYHA class "
+        "II: slight limitation of ordinary activity, stable on current therapy."
+    ),
+    "class_iii": (
+        "{date} - Heart failure with reduced ejection fraction, NYHA class "
+        "III: marked limitation of activity, comfortable only at rest."
+    ),
+}
+#: A disease-activity level stated in words beside the score it came from.
+DISEASE_ACTIVITY_PHRASES = {
+    "high": "{date} - Disease activity: {measure} {score}, high disease activity.",
+    "moderate": "{date} - Disease activity: {measure} {score}, moderate disease activity.",
+    "low": "{date} - Disease activity: {measure} {score}, low disease activity.",
+    "remission": "{date} - Disease activity: {measure} {score}, in remission.",
+}
+SCREEN_PHRASE = (
+    "{date} - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) "
+    "drawn; result {result}."
+)
+TB_TREATMENT_PHRASE = (
+    "Rifampin daily for latent tuberculosis infection, begun {date}; course "
+    "ongoing and tolerated."
+)
+TB_DEFERRED_PHRASE = (
+    "{date} - Treatment of latent tuberculosis infection was recommended. The "
+    "patient deferred starting it."
+)
+ACTIVITY_NOT_SCORED_PHRASE = (
+    "{date} - Swollen and tender joints examined. Disease activity was not "
+    "formally scored at this visit."
+)
+#: A knowledge-table effect stated in a note (T-110, D155): the measured
+#: yellow's passage. The chart carries no neutrophil count as an observation,
+#: so the note is the only place the effect is documented.
+TABLE_EFFECT_PHRASES = {
+    "neutropenia": (
+        "{date} - Complete blood count: absolute neutrophil count 1.2 x10^3/uL, "
+        "consistent with neutropenia. Methotrexate dose to be reviewed."
+    ),
+}
+
 CONTACT_PHRASES = [
     "Outreach call placed regarding the lapse in attendance. No answer; "
     "voicemail left. No clinical contact was established.",
@@ -266,7 +351,11 @@ def _encounter_line(rng, encounter: dict, height_m: float) -> str:
     parts = [f"{us(encounter['date'])} - "]
     body = rng.choice(PLAIN_VISIT_PHRASES) + ". "
 
-    if encounter.get("bmi_documented") and "note_bmi" in encounter:
+    if encounter.get("weight_declined"):
+        # T-110 (D155): a visit with no weight and no BMI, which only a
+        # declared manifest asks for, so no committed note's bytes move.
+        body += WEIGHT_DECLINED_PHRASE + " "
+    elif encounter.get("bmi_documented") and "note_bmi" in encounter:
         bmi = encounter["note_bmi"]
         weight = bmi * height_m * height_m
         body += f"Weight {weight:.1f} kg, BMI {bmi:.1f}. "
@@ -309,18 +398,107 @@ def _trap_line(rng, trap: dict) -> str:
     return wrap(f"{us(trap['date'])} - {description.capitalize()}.")
 
 
-def _identity(rng: random.Random, sleep: bool = False, knee: bool = False) -> dict:
+def _identity(
+    rng: random.Random, sleep: bool = False, knee: bool = False, rheum: bool = False
+) -> dict:
     """The per-patient randomness: one practice, one MRN, one supervisor,
-    shared by every document of the chart (D104). A sleep or knee chart draws
-    from its own lists in the same order, so the call sequence is the same
-    shape (D150, D154)."""
-    practices = KNEE_PRACTICES if knee else SLEEP_PRACTICES if sleep else PRACTICES
-    clinicians = KNEE_CLINICIANS if knee else SLEEP_CLINICIANS if sleep else SUPERVISORS
+    shared by every document of the chart (D104). A sleep, knee or
+    rheumatology chart draws from its own lists in the same order, so the call
+    sequence is the same shape (D150, D154, D155)."""
+    practices = (
+        RHEUMATOLOGY_PRACTICES if rheum else KNEE_PRACTICES if knee
+        else SLEEP_PRACTICES if sleep else PRACTICES
+    )
+    clinicians = (
+        RHEUMATOLOGY_CLINICIANS if rheum else KNEE_CLINICIANS if knee
+        else SLEEP_CLINICIANS if sleep else SUPERVISORS
+    )
     return {
         "practice": rng.choice(practices),
         "mrn": rng.randrange(200000, 899999),
         "supervisor": rng.choice(clinicians),
     }
+
+
+def is_rheumatology_chart(manifest: dict) -> bool:
+    """A chart the rheumatoid arthritis workup's facts describe (T-110, D155)."""
+    return bool(manifest.get("rheumatology_visits"))
+
+
+def render_rheumatology_document(
+    manifest: dict,
+    basename: str,
+    demo: dict,
+    identity: dict,
+    rng: random.Random,
+) -> str:
+    """One document of a rheumatology chart: a dated clinic visit and the
+    facts the manifest assigns to `basename`, one dated line each (D104,
+    D155). Every date is the chart's own encounter or declared; the note
+    states a level, a class or a result and never a verdict (Art. II)."""
+    documents = manifest["documents"]
+    ordinal = documents.index(basename) + 1
+    lines: list[str] = [
+        identity["practice"],
+        f"Patient: {demo['family']}, {demo['given']}"
+        f"{' ' * max(1, 38 - len(demo['family']) - len(demo['given']))}"
+        f"MRN: {identity['mrn']}",
+        f"DOB: {demo['birth_date']}                       Sex: {demo['sex']}",
+        f"Document {ordinal} of {len(documents)}",
+        "",
+    ]
+    follow_up = ordinal > 1
+    for visit in _in(manifest["rheumatology_visits"], basename):
+        lines.append("RHEUMATOLOGY FOLLOW-UP VISIT" if follow_up else "RHEUMATOLOGY CLINIC VISIT")
+        lines.append("")
+        lines.append(wrap(
+            f"{us(visit['date'])} - Seen in person in clinic by "
+            f"{identity['supervisor']} for seropositive rheumatoid arthritis on "
+            "methotrexate."
+        ))
+        lines.append("")
+
+    entries: list[tuple[str, str]] = []
+    for fact in _in(manifest.get("heart_failure_assessments", []), basename):
+        entries.append((fact["date"], HEART_FAILURE_PHRASES[fact["status"]].format(date=us(fact["date"]))))
+    for fact in _in(manifest.get("disease_activity_assessments", []), basename):
+        entries.append((fact["date"], DISEASE_ACTIVITY_PHRASES[fact["level"]].format(
+            date=us(fact["date"]), measure=fact["measure"], score=fact["score"])))
+    for fact in _in(manifest.get("tuberculosis_screens", []), basename):
+        entries.append((fact["date"], SCREEN_PHRASE.format(date=us(fact["date"]), result=fact["result"])))
+    for fact in _in(manifest.get("table_effects", []), basename):
+        entries.append((fact["date"], TABLE_EFFECT_PHRASES[fact["effect"]].format(date=us(fact["date"]))))
+    for trap in _in(manifest["traps"], basename):
+        phrase = (
+            TB_DEFERRED_PHRASE if trap["type"] == "tuberculosis_treatment_deferred"
+            else ACTIVITY_NOT_SCORED_PHRASE
+        )
+        entries.append((trap["date"], phrase.format(date=us(trap["date"]))))
+    if entries:
+        lines.append("ASSESSMENTS AND RESULTS")
+        for _, block in sorted(entries):
+            lines.append(wrap(block))
+        lines.append("")
+
+    treatments = _in(manifest.get("tuberculosis_treatments", []), basename)
+    if treatments:
+        lines.append("MEDICATIONS")
+        for treatment in treatments:
+            lines.append(wrap(TB_TREATMENT_PHRASE.format(date=us(treatment["date"]))))
+        lines.append("")
+
+    lines.append("ASSESSMENT AND PLAN")
+    if follow_up:
+        lines.append(wrap(
+            "Rheumatoid arthritis. Infliximab infusion in combination with "
+            "methotrexate is requested."
+        ))
+    else:
+        lines.append(wrap(
+            "Rheumatoid arthritis. Continue methotrexate and return for review "
+            "before a biologic is started."
+        ))
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def is_knee_chart(manifest: dict) -> bool:
@@ -625,6 +803,17 @@ def render_document(
             ))
         lines.append("")
 
+    evaluations = _in(manifest.get("multidisciplinary_evaluations", []), basename)
+    if evaluations:
+        # T-110 (D155): Palmetto's four components, one dated line each, in
+        # date order. Only a declared manifest carries them.
+        lines.append("PRE-SURGICAL MULTIDISCIPLINARY EVALUATION")
+        for evaluation in sorted(evaluations, key=lambda e: e["date"]):
+            lines.append(wrap(
+                EVALUATION_PHRASES[evaluation["component"]].format(date=us(evaluation["date"]))
+            ))
+        lines.append("")
+
     other_traps = [t for t in _in(manifest["traps"], basename) if t not in series_traps]
     unsupervised = [t for t in other_traps if t["type"] == "unsupervised_attempt"]
     unrelated = [t for t in other_traps if t["type"] == "unrelated_section_date"]
@@ -678,9 +867,10 @@ def generate() -> int:
         demo = _demographics(patient_id, manifest["bundle"])
         sleep = is_sleep_chart(manifest)
         knee = is_knee_chart(manifest)
-        # A sleep or knee chart reads no height: it renders no weight (D150,
-        # D154).
-        height_m = None if sleep or knee else _height_m(store, patient_id)
+        rheum = is_rheumatology_chart(manifest)
+        # A sleep, knee or rheumatology chart reads no height: it renders no
+        # weight (D150, D154, D155).
+        height_m = None if sleep or knee or rheum else _height_m(store, patient_id)
         # One generator per patient, seeded from the shared seed and the
         # patient id, so adding a patient cannot reshuffle everyone's prose.
         # A declared clone seeds from its source (D102): the practice line
@@ -688,7 +878,8 @@ def generate() -> int:
         # must be its source's bytes.
         seed_patient_id = manifest.get("cloned_from") or patient_id
         identity = _identity(
-            random.Random(f"{SEED}:{seed_patient_id}"), sleep=sleep, knee=knee
+            random.Random(f"{SEED}:{seed_patient_id}"), sleep=sleep, knee=knee,
+            rheum=rheum,
         )
 
         out_dir = NOTES_DIR / patient_id
@@ -698,7 +889,9 @@ def generate() -> int:
             # differently, and a fact moved between them cannot reshuffle
             # the other's prose (D104).
             rng = random.Random(f"{SEED}:{seed_patient_id}:{basename}")
-            if knee:
+            if rheum:
+                text = render_rheumatology_document(manifest, basename, demo, identity, rng)
+            elif knee:
                 text = render_knee_document(manifest, basename, demo, identity, rng)
             elif sleep:
                 text = render_sleep_document(manifest, basename, demo, identity, rng)

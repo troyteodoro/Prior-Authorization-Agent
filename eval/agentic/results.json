@@ -1,48 +1,241 @@
 {
   "task": "T-61",
   "decision": "D63",
-  "measured_at": "2026-09-20T05:59:41.206904+00:00",
+  "measured_at": "2026-10-04T09:56:25.894077+00:00",
   "model": "gemini-3.5-flash-lite",
-  "tier": "ai_studio",
+  "tier": {
+    "retrieval": "ai_studio",
+    "extraction": "replayed from results.json + sleep_apnea_workup.json + knee_osteoarthritis_workup.json + bariatric_surgical_workup.json + rheumatoid_arthritis_workup.json",
+    "verifier": "replayed from results.json"
+  },
   "prompt_version": "t61-retrieval-v2",
-  "procedure_code": "43775",
-  "as_of": "2026-09-01",
+  "requests": "every eval request on a note-bearing chart that reaches the graph, one per chart, each at its own procedure code and as_of",
   "bounds": {
     "max_steps": 12,
     "max_llm_calls": 16
   },
-  "note": "Extraction is eval/extraction/results.json on both sides, so the one variable is which evidence reached the criteria (D63).",
+  "note": "Extraction replays every fact kind's AI Studio recording on both sides, so the one variable is which evidence reached the criteria (D63, D155).",
   "aggregate": {
-    "patients": 7,
-    "scored": 7,
+    "patients": 25,
+    "scored": 25,
     "errors": 0,
     "error_rate": 0.0,
     "outcome_disagreements": 0,
     "outcome_agreement_rate": 1.0,
     "criterion_disagreements": 0,
-    "criteria_compared": 49,
+    "criteria_compared": 137,
     "criterion_agreement_rate": 1.0,
-    "unsupported_outcomes": 20,
-    "unsupported_rate": 0.4082,
-    "spans_valid": 93,
-    "spans_total": 93,
+    "unsupported_outcomes": 51,
+    "unsupported_rate": 0.3723,
+    "spans_valid": 221,
+    "spans_total": 221,
     "citation_validity": 1.0,
-    "total_model_calls": 67,
-    "total_input_tokens": 125956,
-    "total_output_tokens": 10722,
-    "total_wall_time_ms": 68652.3,
-    "oracle_model_calls": 43,
-    "oracle_input_tokens": 35213,
-    "oracle_output_tokens": 7493,
-    "input_token_ratio": 3.6,
-    "model_call_ratio": 1.6
+    "total_model_calls": 235,
+    "total_input_tokens": 471899,
+    "total_output_tokens": 31900,
+    "total_wall_time_ms": 204330.3,
+    "oracle_model_calls": 142,
+    "oracle_input_tokens": 127658,
+    "oracle_output_tokens": 20274,
+    "input_token_ratio": 3.7,
+    "model_call_ratio": 1.7
   },
   "patients": [
+    {
+      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "cases": [
+        "E1",
+        "E11",
+        "E10c",
+        "E13"
+      ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 9,
+        "input_tokens": 8954,
+        "output_tokens": 1803,
+        "wall_time_ms": 9543.6
+      },
+      "agentic": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "MET",
+          "c5": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
+            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 25,
+        "spans_total": 25,
+        "model_calls": 12,
+        "input_tokens": 18182,
+        "output_tokens": 2209,
+        "wall_time_ms": 12108.3
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "cases": [
+        "E4",
+        "E9"
+      ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "NOT_MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c2",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+            "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+          ],
+          "notes": 2,
+          "observations": 102,
+          "conditions": 20,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 5,
+        "input_tokens": 5177,
+        "output_tokens": 1353,
+        "wall_time_ms": 6050.9
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c1": "MET",
+          "c2": "INSUFFICIENT_EVIDENCE",
+          "c3": "NOT_MET",
+          "c4": "INSUFFICIENT_EVIDENCE",
+          "c5": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c2",
+          "c4",
+          "c5"
+        ],
+        "document_ids": [
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
+            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
+            "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+          ],
+          "notes": 2,
+          "observations": 102,
+          "conditions": 20,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 9,
+        "spans_total": 9,
+        "model_calls": 11,
+        "input_tokens": 23144,
+        "output_tokens": 1813,
+        "wall_time_ms": 9884.1
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
     {
       "patient_id": "05cc52df-48cb-961b-29e3-3fd4d1c8bc9f",
       "cases": [
         "E5"
       ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
       "oracle": {
         "outcome": "NOT_MET",
         "verdicts": {
@@ -75,9 +268,9 @@
         },
         "planner_tool_calls": [],
         "model_calls": 8,
-        "input_tokens": 5923,
-        "output_tokens": 1314,
-        "wall_time_ms": 8800.0
+        "input_tokens": 7429,
+        "output_tokens": 1312,
+        "wall_time_ms": 8054.3
       },
       "agentic": {
         "outcome": "NOT_MET",
@@ -119,58 +312,57 @@
         ],
         "spans_valid": 22,
         "spans_total": 22,
-        "model_calls": 14,
-        "input_tokens": 24331,
-        "output_tokens": 1765,
-        "wall_time_ms": 13667.8
+        "model_calls": 11,
+        "input_tokens": 16918,
+        "output_tokens": 1763,
+        "wall_time_ms": 10529.6
       },
       "disagreement": {},
       "outcome_agrees": true
     },
     {
-      "patient_id": "07a5f345-3e7c-da0f-da0b-87fa252a5bfd",
+      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
       "cases": [
-        "E4",
-        "E9"
+        "E6",
+        "E10"
       ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
       "oracle": {
         "outcome": "NOT_MET",
         "verdicts": {
           "a": "MET",
           "b": "INSUFFICIENT_EVIDENCE",
           "c1": "MET",
-          "c2": "INSUFFICIENT_EVIDENCE",
-          "c3": "NOT_MET",
-          "c4": "INSUFFICIENT_EVIDENCE",
-          "c5": "INSUFFICIENT_EVIDENCE"
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET"
         },
         "unsupported": [
-          "b",
-          "c2",
-          "c4",
-          "c5"
+          "b"
         ],
         "document_ids": [
-          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
-          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
-          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
         ],
         "gathered": {
           "document_ids": [
-            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
-            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
-            "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+            "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
           ],
           "notes": 2,
-          "observations": 102,
-          "conditions": 20,
+          "observations": 128,
+          "conditions": 38,
           "value_set": 2
         },
         "planner_tool_calls": [],
-        "model_calls": 5,
-        "input_tokens": 4424,
-        "output_tokens": 1342,
-        "wall_time_ms": 6241.3
+        "model_calls": 8,
+        "input_tokens": 7578,
+        "output_tokens": 1250,
+        "wall_time_ms": 8562.9
       },
       "agentic": {
         "outcome": "NOT_MET",
@@ -178,31 +370,28 @@
           "a": "MET",
           "b": "INSUFFICIENT_EVIDENCE",
           "c1": "MET",
-          "c2": "INSUFFICIENT_EVIDENCE",
-          "c3": "NOT_MET",
-          "c4": "INSUFFICIENT_EVIDENCE",
-          "c5": "INSUFFICIENT_EVIDENCE"
+          "c2": "MET",
+          "c3": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET"
         },
         "unsupported": [
-          "b",
-          "c2",
-          "c4",
-          "c5"
+          "b"
         ],
         "document_ids": [
-          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
-          "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
-          "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
         ],
         "gathered": {
           "document_ids": [
-            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_1.txt",
-            "07a5f345-3e7c-da0f-da0b-87fa252a5bfd/chart_note_2.txt",
-            "Georgette866_Saran641_Dach178_07a5f345-3e7c-da0f-da0b-87fa252a5bfd.json"
+            "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
+            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
           ],
           "notes": 2,
-          "observations": 102,
-          "conditions": 20,
+          "observations": 128,
+          "conditions": 38,
           "value_set": 2
         },
         "planner_tool_calls": [
@@ -213,12 +402,12 @@
           "get_patient_document",
           "set_model_response"
         ],
-        "spans_valid": 9,
-        "spans_total": 9,
-        "model_calls": 8,
-        "input_tokens": 16577,
-        "output_tokens": 1802,
-        "wall_time_ms": 9225.0
+        "spans_valid": 20,
+        "spans_total": 20,
+        "model_calls": 11,
+        "input_tokens": 21575,
+        "output_tokens": 1737,
+        "wall_time_ms": 11303.8
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -229,6 +418,8 @@
         "E2",
         "E7"
       ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
       "oracle": {
         "outcome": "NOT_MET",
         "verdicts": {
@@ -263,9 +454,9 @@
         },
         "planner_tool_calls": [],
         "model_calls": 4,
-        "input_tokens": 4093,
-        "output_tokens": 182,
-        "wall_time_ms": 3030.8
+        "input_tokens": 4595,
+        "output_tokens": 149,
+        "wall_time_ms": 3126.8
       },
       "agentic": {
         "outcome": "NOT_MET",
@@ -309,188 +500,10 @@
         ],
         "spans_valid": 3,
         "spans_total": 3,
-        "model_calls": 7,
-        "input_tokens": 14203,
-        "output_tokens": 660,
-        "wall_time_ms": 5888.1
-      },
-      "disagreement": {},
-      "outcome_agrees": true
-    },
-    {
-      "patient_id": "a2e49f37-80ef-906b-5c85-b7b10e1179c1",
-      "cases": [
-        "E6",
-        "E10"
-      ],
-      "oracle": {
-        "outcome": "NOT_MET",
-        "verdicts": {
-          "a": "MET",
-          "b": "INSUFFICIENT_EVIDENCE",
-          "c1": "MET",
-          "c2": "MET",
-          "c3": "MET",
-          "c4": "NOT_MET",
-          "c5": "MET"
-        },
-        "unsupported": [
-          "b"
-        ],
-        "document_ids": [
-          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
-          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
-          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
-        ],
-        "gathered": {
-          "document_ids": [
-            "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
-            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
-            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
-          ],
-          "notes": 2,
-          "observations": 128,
-          "conditions": 38,
-          "value_set": 2
-        },
-        "planner_tool_calls": [],
-        "model_calls": 8,
-        "input_tokens": 6072,
-        "output_tokens": 1258,
-        "wall_time_ms": 8222.2
-      },
-      "agentic": {
-        "outcome": "NOT_MET",
-        "verdicts": {
-          "a": "MET",
-          "b": "INSUFFICIENT_EVIDENCE",
-          "c1": "MET",
-          "c2": "MET",
-          "c3": "MET",
-          "c4": "NOT_MET",
-          "c5": "MET"
-        },
-        "unsupported": [
-          "b"
-        ],
-        "document_ids": [
-          "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
-          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
-          "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
-        ],
-        "gathered": {
-          "document_ids": [
-            "Linn541_Bode78_a2e49f37-80ef-906b-5c85-b7b10e1179c1.json",
-            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_1.txt",
-            "a2e49f37-80ef-906b-5c85-b7b10e1179c1/chart_note_2.txt"
-          ],
-          "notes": 2,
-          "observations": 128,
-          "conditions": 38,
-          "value_set": 2
-        },
-        "planner_tool_calls": [
-          "get_patient_notes",
-          "get_patient_observations",
-          "get_patient_conditions",
-          "get_patient_document",
-          "get_patient_document",
-          "set_model_response"
-        ],
-        "spans_valid": 20,
-        "spans_total": 20,
-        "model_calls": 11,
-        "input_tokens": 20069,
-        "output_tokens": 1745,
-        "wall_time_ms": 11215.9
-      },
-      "disagreement": {},
-      "outcome_agrees": true
-    },
-    {
-      "patient_id": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
-      "cases": [
-        "E1",
-        "E11",
-        "E10c",
-        "E13"
-      ],
-      "oracle": {
-        "outcome": "MET",
-        "verdicts": {
-          "a": "MET",
-          "b": "MET",
-          "c1": "MET",
-          "c2": "MET",
-          "c3": "MET",
-          "c4": "MET",
-          "c5": "MET"
-        },
-        "unsupported": [],
-        "document_ids": [
-          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
-          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
-          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
-        ],
-        "gathered": {
-          "document_ids": [
-            "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
-            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
-            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
-          ],
-          "notes": 2,
-          "observations": 116,
-          "conditions": 29,
-          "value_set": 2
-        },
-        "planner_tool_calls": [],
-        "model_calls": 9,
-        "input_tokens": 7197,
-        "output_tokens": 1823,
-        "wall_time_ms": 10140.3
-      },
-      "agentic": {
-        "outcome": "MET",
-        "verdicts": {
-          "a": "MET",
-          "b": "MET",
-          "c1": "MET",
-          "c2": "MET",
-          "c3": "MET",
-          "c4": "MET",
-          "c5": "MET"
-        },
-        "unsupported": [],
-        "document_ids": [
-          "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
-          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
-          "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
-        ],
-        "gathered": {
-          "document_ids": [
-            "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
-            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_1.txt",
-            "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d/chart_note_2.txt"
-          ],
-          "notes": 2,
-          "observations": 116,
-          "conditions": 29,
-          "value_set": 2
-        },
-        "planner_tool_calls": [
-          "get_patient_notes",
-          "get_patient_document",
-          "get_patient_document",
-          "get_patient_observations",
-          "get_patient_conditions",
-          "set_model_response"
-        ],
-        "spans_valid": 25,
-        "spans_total": 25,
-        "model_calls": 12,
-        "input_tokens": 16425,
-        "output_tokens": 2229,
-        "wall_time_ms": 13046.9
+        "model_calls": 10,
+        "input_tokens": 32134,
+        "output_tokens": 627,
+        "wall_time_ms": 7007.9
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -501,6 +514,8 @@
         "E8",
         "E10b"
       ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
       "oracle": {
         "outcome": "INSUFFICIENT_EVIDENCE",
         "verdicts": {
@@ -536,9 +551,9 @@
         },
         "planner_tool_calls": [],
         "model_calls": 3,
-        "input_tokens": 2716,
-        "output_tokens": 211,
-        "wall_time_ms": 2505.9
+        "input_tokens": 2967,
+        "output_tokens": 203,
+        "wall_time_ms": 2546.3
       },
       "agentic": {
         "outcome": "INSUFFICIENT_EVIDENCE",
@@ -575,18 +590,18 @@
         },
         "planner_tool_calls": [
           "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
           "get_patient_observations",
           "get_patient_conditions",
-          "get_patient_document",
-          "get_patient_document",
           "set_model_response"
         ],
         "spans_valid": 1,
         "spans_total": 1,
         "model_calls": 6,
-        "input_tokens": 17394,
-        "output_tokens": 689,
-        "wall_time_ms": 5366.2
+        "input_tokens": 12876,
+        "output_tokens": 681,
+        "wall_time_ms": 5001.5
       },
       "disagreement": {},
       "outcome_agrees": true
@@ -596,6 +611,8 @@
       "cases": [
         "J1"
       ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
       "oracle": {
         "outcome": "INSUFFICIENT_EVIDENCE",
         "verdicts": {
@@ -603,13 +620,12 @@
           "b": "INSUFFICIENT_EVIDENCE",
           "c1": "MET",
           "c2": "MET",
-          "c4": "INSUFFICIENT_EVIDENCE",
+          "c4": "MET",
           "c5": "MET",
           "d": "INSUFFICIENT_EVIDENCE"
         },
         "unsupported": [
           "b",
-          "c4",
           "d"
         ],
         "document_ids": [
@@ -629,10 +645,10 @@
           "value_set": 2
         },
         "planner_tool_calls": [],
-        "model_calls": 6,
-        "input_tokens": 4788,
-        "output_tokens": 1363,
-        "wall_time_ms": 7294.4
+        "model_calls": 9,
+        "input_tokens": 8148,
+        "output_tokens": 1843,
+        "wall_time_ms": 9595.0
       },
       "agentic": {
         "outcome": "INSUFFICIENT_EVIDENCE",
@@ -641,13 +657,12 @@
           "b": "INSUFFICIENT_EVIDENCE",
           "c1": "MET",
           "c2": "MET",
-          "c4": "INSUFFICIENT_EVIDENCE",
+          "c4": "MET",
           "c5": "MET",
           "d": "INSUFFICIENT_EVIDENCE"
         },
         "unsupported": [
           "b",
-          "c4",
           "d"
         ],
         "document_ids": [
@@ -674,16 +689,1574 @@
           "get_patient_document",
           "set_model_response"
         ],
-        "spans_valid": 13,
-        "spans_total": 13,
+        "spans_valid": 16,
+        "spans_total": 16,
+        "model_calls": 12,
+        "input_tokens": 20317,
+        "output_tokens": 2312,
+        "wall_time_ms": 12138.5
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "d4abb188-4a88-32fb-14ed-fca78f722eb9",
+      "cases": [
+        "OSA1"
+      ],
+      "procedure_code": "E0601",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_1.txt",
+          "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Reginald96_Rosenbaum794_d4abb188-4a88-32fb-14ed-fca78f722eb9.json",
+            "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_1.txt",
+            "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 128,
+          "conditions": 33,
+          "value_set": 3
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3402,
+        "output_tokens": 394,
+        "wall_time_ms": 3176.7
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_1.txt",
+          "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Reginald96_Rosenbaum794_d4abb188-4a88-32fb-14ed-fca78f722eb9.json",
+            "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_1.txt",
+            "d4abb188-4a88-32fb-14ed-fca78f722eb9/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 128,
+          "conditions": 33,
+          "value_set": 3
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 5,
+        "spans_total": 5,
+        "model_calls": 7,
+        "input_tokens": 12539,
+        "output_tokens": 836,
+        "wall_time_ms": 5749.3
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "e9dc2799-3c03-6a7b-000a-bea470ad105e",
+      "cases": [
+        "OSA2"
+      ],
+      "procedure_code": "E0601",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+          "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Tatyana394_Christena299_Raynor401_e9dc2799-3c03-6a7b-000a-bea470ad105e.json",
+            "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+            "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 67,
+          "conditions": 28,
+          "value_set": 3
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3434,
+        "output_tokens": 462,
+        "wall_time_ms": 3687.0
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+          "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Tatyana394_Christena299_Raynor401_e9dc2799-3c03-6a7b-000a-bea470ad105e.json",
+            "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_1.txt",
+            "e9dc2799-3c03-6a7b-000a-bea470ad105e/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 67,
+          "conditions": 28,
+          "value_set": 3
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 6,
+        "spans_total": 6,
+        "model_calls": 7,
+        "input_tokens": 16139,
+        "output_tokens": 922,
+        "wall_time_ms": 6256.8
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "023cec62-9ca8-8194-0813-e80b1cdc03ed",
+      "cases": [
+        "OSA3"
+      ],
+      "procedure_code": "E0601",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_1.txt",
+          "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+          "Brice635_Willms744_023cec62-9ca8-8194-0813-e80b1cdc03ed.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_1.txt",
+            "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+            "Brice635_Willms744_023cec62-9ca8-8194-0813-e80b1cdc03ed.json"
+          ],
+          "notes": 2,
+          "observations": 203,
+          "conditions": 32,
+          "value_set": 3
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3933,
+        "output_tokens": 414,
+        "wall_time_ms": 3617.0
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_1.txt",
+          "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+          "Brice635_Willms744_023cec62-9ca8-8194-0813-e80b1cdc03ed.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_1.txt",
+            "023cec62-9ca8-8194-0813-e80b1cdc03ed/chart_note_2.txt",
+            "Brice635_Willms744_023cec62-9ca8-8194-0813-e80b1cdc03ed.json"
+          ],
+          "notes": 2,
+          "observations": 203,
+          "conditions": 32,
+          "value_set": 3
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 6,
+        "spans_total": 6,
+        "model_calls": 10,
+        "input_tokens": 21508,
+        "output_tokens": 856,
+        "wall_time_ms": 7626.1
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "9f0013bb-20ba-532c-bd6f-05a4323e89f8",
+      "cases": [
+        "OSA4"
+      ],
+      "procedure_code": "E0601",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "NOT_MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_1.txt",
+          "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_1.txt",
+            "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt",
+            "Ruben688_Gerlach374_9f0013bb-20ba-532c-bd6f-05a4323e89f8.json"
+          ],
+          "notes": 2,
+          "observations": 361,
+          "conditions": 37,
+          "value_set": 3
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3396,
+        "output_tokens": 386,
+        "wall_time_ms": 3192.3
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "NOT_MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_1.txt",
+          "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_1.txt",
+            "9f0013bb-20ba-532c-bd6f-05a4323e89f8/chart_note_2.txt",
+            "Ruben688_Gerlach374_9f0013bb-20ba-532c-bd6f-05a4323e89f8.json"
+          ],
+          "notes": 2,
+          "observations": 361,
+          "conditions": 37,
+          "value_set": 3
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 4,
+        "spans_total": 4,
+        "model_calls": 7,
+        "input_tokens": 17169,
+        "output_tokens": 855,
+        "wall_time_ms": 5551.3
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb",
+      "cases": [
+        "OSA5"
+      ],
+      "procedure_code": "E0601",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_1.txt",
+          "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_1.txt",
+            "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt",
+            "Valrie435_Stepanie29_Dare640_60cce88a-0930-a2fe-a18e-8cc5c37dfaeb.json"
+          ],
+          "notes": 2,
+          "observations": 103,
+          "conditions": 25,
+          "value_set": 3
+        },
+        "planner_tool_calls": [],
+        "model_calls": 3,
+        "input_tokens": 2425,
+        "output_tokens": 311,
+        "wall_time_ms": 2445.3
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_1.txt",
+          "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_1.txt",
+            "60cce88a-0930-a2fe-a18e-8cc5c37dfaeb/chart_note_2.txt",
+            "Valrie435_Stepanie29_Dare640_60cce88a-0930-a2fe-a18e-8cc5c37dfaeb.json"
+          ],
+          "notes": 2,
+          "observations": 103,
+          "conditions": 25,
+          "value_set": 3
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 2,
+        "spans_total": 2,
+        "model_calls": 6,
+        "input_tokens": 11254,
+        "output_tokens": 762,
+        "wall_time_ms": 4957.1
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd",
+      "cases": [
+        "OSA6"
+      ],
+      "procedure_code": "E0601",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "NOT_MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_1.txt",
+          "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Rolland302_Huel628_b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd.json",
+            "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_1.txt",
+            "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 81,
+          "conditions": 26,
+          "value_set": 3
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3442,
+        "output_tokens": 409,
+        "wall_time_ms": 3285.4
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "NOT_MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d"
+        ],
+        "document_ids": [
+          "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_1.txt",
+          "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Rolland302_Huel628_b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd.json",
+            "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_1.txt",
+            "b1d8c1d1-ee2f-642e-8e21-11c3b122dfcd/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 81,
+          "conditions": 26,
+          "value_set": 3
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 5,
+        "spans_total": 5,
+        "model_calls": 10,
+        "input_tokens": 20829,
+        "output_tokens": 878,
+        "wall_time_ms": 7001.0
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "301841f6-8434-da01-2702-df18b88875fe",
+      "cases": [
+        "KNEE1"
+      ],
+      "procedure_code": "J7325",
+      "as_of": "2026-04-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+          "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+            "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt",
+            "Gwenda518_Grant908_301841f6-8434-da01-2702-df18b88875fe.json"
+          ],
+          "notes": 2,
+          "observations": 99,
+          "conditions": 39,
+          "value_set": 0
+        },
+        "planner_tool_calls": [],
+        "model_calls": 5,
+        "input_tokens": 4032,
+        "output_tokens": 709,
+        "wall_time_ms": 4706.5
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+          "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "301841f6-8434-da01-2702-df18b88875fe/chart_note_1.txt",
+            "301841f6-8434-da01-2702-df18b88875fe/chart_note_2.txt",
+            "Gwenda518_Grant908_301841f6-8434-da01-2702-df18b88875fe.json"
+          ],
+          "notes": 2,
+          "observations": 99,
+          "conditions": 39,
+          "value_set": 0
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 7,
+        "spans_total": 7,
+        "model_calls": 8,
+        "input_tokens": 13621,
+        "output_tokens": 1178,
+        "wall_time_ms": 7193.2
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca",
+      "cases": [
+        "KNEE2"
+      ],
+      "procedure_code": "J7325",
+      "as_of": "2025-12-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+          "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Jacquelyn628_Jacobi462_cf2b2ac2-56d8-5683-4d98-7c5884ee2fca.json",
+            "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+            "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 190,
+          "conditions": 33,
+          "value_set": 0
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3262,
+        "output_tokens": 568,
+        "wall_time_ms": 3508.7
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+          "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Jacquelyn628_Jacobi462_cf2b2ac2-56d8-5683-4d98-7c5884ee2fca.json",
+            "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_1.txt",
+            "cf2b2ac2-56d8-5683-4d98-7c5884ee2fca/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 190,
+          "conditions": 33,
+          "value_set": 0
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 4,
+        "spans_total": 4,
+        "model_calls": 7,
+        "input_tokens": 16620,
+        "output_tokens": 1028,
+        "wall_time_ms": 6134.4
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "3a4493b8-ecb6-f853-700c-aed20b0b9344",
+      "cases": [
+        "KNEE3"
+      ],
+      "procedure_code": "J7325",
+      "as_of": "2026-05-01",
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "NOT_MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+          "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+            "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt",
+            "Ollie731_An125_Daniel959_3a4493b8-ecb6-f853-700c-aed20b0b9344.json"
+          ],
+          "notes": 2,
+          "observations": 117,
+          "conditions": 33,
+          "value_set": 0
+        },
+        "planner_tool_calls": [],
+        "model_calls": 5,
+        "input_tokens": 4052,
+        "output_tokens": 705,
+        "wall_time_ms": 4703.6
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "NOT_MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+          "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_1.txt",
+            "3a4493b8-ecb6-f853-700c-aed20b0b9344/chart_note_2.txt",
+            "Ollie731_An125_Daniel959_3a4493b8-ecb6-f853-700c-aed20b0b9344.json"
+          ],
+          "notes": 2,
+          "observations": 117,
+          "conditions": 33,
+          "value_set": 0
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 7,
+        "spans_total": 7,
+        "model_calls": 8,
+        "input_tokens": 17461,
+        "output_tokens": 1183,
+        "wall_time_ms": 7286.4
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "f93eb18e-0e0b-a9b8-e167-6d96292a859e",
+      "cases": [
+        "KNEE4"
+      ],
+      "procedure_code": "J7325",
+      "as_of": "2026-05-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "INSUFFICIENT_EVIDENCE",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "a",
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Shin962_Kira861_Boyer713_f93eb18e-0e0b-a9b8-e167-6d96292a859e.json",
+            "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+            "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 254,
+          "conditions": 42,
+          "value_set": 0
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3256,
+        "output_tokens": 565,
+        "wall_time_ms": 3679.9
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "INSUFFICIENT_EVIDENCE",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "a",
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Shin962_Kira861_Boyer713_f93eb18e-0e0b-a9b8-e167-6d96292a859e.json",
+            "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_1.txt",
+            "f93eb18e-0e0b-a9b8-e167-6d96292a859e/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 254,
+          "conditions": 42,
+          "value_set": 0
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 5,
+        "spans_total": 5,
+        "model_calls": 7,
+        "input_tokens": 17711,
+        "output_tokens": 1052,
+        "wall_time_ms": 6207.4
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "f231c369-5e58-5b03-69e2-848843288674",
+      "cases": [
+        "KNEE5"
+      ],
+      "procedure_code": "J7325",
+      "as_of": "2025-11-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+          "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Eldridge510_Berge125_f231c369-5e58-5b03-69e2-848843288674.json",
+            "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+            "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 146,
+          "conditions": 33,
+          "value_set": 0
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3269,
+        "output_tokens": 467,
+        "wall_time_ms": 3489.9
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "INSUFFICIENT_EVIDENCE",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "b",
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+          "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Eldridge510_Berge125_f231c369-5e58-5b03-69e2-848843288674.json",
+            "f231c369-5e58-5b03-69e2-848843288674/chart_note_1.txt",
+            "f231c369-5e58-5b03-69e2-848843288674/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 146,
+          "conditions": 33,
+          "value_set": 0
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 4,
+        "spans_total": 4,
+        "model_calls": 7,
+        "input_tokens": 16774,
+        "output_tokens": 963,
+        "wall_time_ms": 6131.8
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "ccd1fb43-d261-0165-2aff-c68031df8682",
+      "cases": [
+        "KNEE6"
+      ],
+      "procedure_code": "J7325",
+      "as_of": "2026-03-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d",
+          "e"
+        ],
+        "document_ids": [
+          "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+          "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Anthony633_Lorna458_Metz686_ccd1fb43-d261-0165-2aff-c68031df8682.json",
+            "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+            "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 411,
+          "conditions": 32,
+          "value_set": 0
+        },
+        "planner_tool_calls": [],
+        "model_calls": 4,
+        "input_tokens": 3235,
+        "output_tokens": 582,
+        "wall_time_ms": 3812.9
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "INSUFFICIENT_EVIDENCE",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "d",
+          "e"
+        ],
+        "document_ids": [
+          "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+          "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Anthony633_Lorna458_Metz686_ccd1fb43-d261-0165-2aff-c68031df8682.json",
+            "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_1.txt",
+            "ccd1fb43-d261-0165-2aff-c68031df8682/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 411,
+          "conditions": 32,
+          "value_set": 0
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 5,
+        "spans_total": 5,
+        "model_calls": 7,
+        "input_tokens": 16441,
+        "output_tokens": 1024,
+        "wall_time_ms": 6224.2
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "5f82b330-10fb-6e04-ef12-00bb7587ea31",
+      "cases": [
+        "KNEE7"
+      ],
+      "procedure_code": "J7325",
+      "as_of": "2026-08-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+          "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+            "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+            "Forrest301_Flatley871_5f82b330-10fb-6e04-ef12-00bb7587ea31.json"
+          ],
+          "notes": 2,
+          "observations": 449,
+          "conditions": 42,
+          "value_set": 0
+        },
+        "planner_tool_calls": [],
+        "model_calls": 5,
+        "input_tokens": 4113,
+        "output_tokens": 745,
+        "wall_time_ms": 4657.8
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "INSUFFICIENT_EVIDENCE",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "c",
+          "e"
+        ],
+        "document_ids": [
+          "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+          "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_1.txt",
+            "5f82b330-10fb-6e04-ef12-00bb7587ea31/chart_note_2.txt",
+            "Forrest301_Flatley871_5f82b330-10fb-6e04-ef12-00bb7587ea31.json"
+          ],
+          "notes": 2,
+          "observations": 449,
+          "conditions": 42,
+          "value_set": 0
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 7,
+        "spans_total": 7,
+        "model_calls": 8,
+        "input_tokens": 18645,
+        "output_tokens": 1205,
+        "wall_time_ms": 7047.1
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d",
+      "cases": [
+        "J2"
+      ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c4": "MET",
+          "c5": "MET",
+          "d": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+          "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+          "Felipe97_Swaniawski813_519ab9cd-e076-5113-8acc-9aa1b8bdad6d.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+            "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+            "Felipe97_Swaniawski813_519ab9cd-e076-5113-8acc-9aa1b8bdad6d.json"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 11,
+        "input_tokens": 10241,
+        "output_tokens": 2017,
+        "wall_time_ms": 10682.5
+      },
+      "agentic": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c4": "MET",
+          "c5": "MET",
+          "d": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+          "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+          "Felipe97_Swaniawski813_519ab9cd-e076-5113-8acc-9aa1b8bdad6d.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_1.txt",
+            "519ab9cd-e076-5113-8acc-9aa1b8bdad6d/chart_note_2.txt",
+            "Felipe97_Swaniawski813_519ab9cd-e076-5113-8acc-9aa1b8bdad6d.json"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 23,
+        "spans_total": 23,
+        "model_calls": 17,
+        "input_tokens": 28828,
+        "output_tokens": 2450,
+        "wall_time_ms": 14645.0
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "0d2a9302-c054-58ca-a292-e3703314dcd4",
+      "cases": [
+        "J3"
+      ],
+      "procedure_code": "43775",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET",
+          "d": "NOT_MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+          "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+          "Felipe97_Swaniawski813_0d2a9302-c054-58ca-a292-e3703314dcd4.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+            "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+            "Felipe97_Swaniawski813_0d2a9302-c054-58ca-a292-e3703314dcd4.json"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [],
+        "model_calls": 11,
+        "input_tokens": 10192,
+        "output_tokens": 1960,
+        "wall_time_ms": 10740.2
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c1": "MET",
+          "c2": "MET",
+          "c4": "NOT_MET",
+          "c5": "MET",
+          "d": "NOT_MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+          "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+          "Felipe97_Swaniawski813_0d2a9302-c054-58ca-a292-e3703314dcd4.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_1.txt",
+            "0d2a9302-c054-58ca-a292-e3703314dcd4/chart_note_2.txt",
+            "Felipe97_Swaniawski813_0d2a9302-c054-58ca-a292-e3703314dcd4.json"
+          ],
+          "notes": 2,
+          "observations": 116,
+          "conditions": 29,
+          "value_set": 2
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 20,
+        "spans_total": 20,
+        "model_calls": 14,
+        "input_tokens": 19552,
+        "output_tokens": 2438,
+        "wall_time_ms": 13173.8
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
+      "cases": [
+        "RA4",
+        "H13"
+      ],
+      "procedure_code": "J1745",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "MET",
+          "d": "MET",
+          "e": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Shona685_Zieme486_e41a0d08-e747-5e48-a468-e6deb4159d8e.json",
+          "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+          "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Shona685_Zieme486_e41a0d08-e747-5e48-a468-e6deb4159d8e.json",
+            "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+            "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 221,
+          "conditions": 53,
+          "value_set": 71
+        },
+        "planner_tool_calls": [],
+        "model_calls": 7,
+        "input_tokens": 5936,
+        "output_tokens": 554,
+        "wall_time_ms": 5318.1
+      },
+      "agentic": {
+        "outcome": "MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "MET",
+          "d": "MET",
+          "e": "MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "Shona685_Zieme486_e41a0d08-e747-5e48-a468-e6deb4159d8e.json",
+          "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+          "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt"
+        ],
+        "gathered": {
+          "document_ids": [
+            "Shona685_Zieme486_e41a0d08-e747-5e48-a468-e6deb4159d8e.json",
+            "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+            "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt"
+          ],
+          "notes": 2,
+          "observations": 221,
+          "conditions": 53,
+          "value_set": 71
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 5,
+        "spans_total": 5,
+        "model_calls": 13,
+        "input_tokens": 24965,
+        "output_tokens": 1032,
+        "wall_time_ms": 9008.7
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
+      "cases": [
+        "RA5",
+        "H14"
+      ],
+      "procedure_code": "J1745",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "NOT_MET",
+          "d": "NOT_MET",
+          "e": "NOT_MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+          "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+          "Shona685_Zieme486_25622028-814a-56c6-8173-a818d05014ce.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+            "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+            "Shona685_Zieme486_25622028-814a-56c6-8173-a818d05014ce.json"
+          ],
+          "notes": 2,
+          "observations": 221,
+          "conditions": 53,
+          "value_set": 71
+        },
+        "planner_tool_calls": [],
+        "model_calls": 7,
+        "input_tokens": 5935,
+        "output_tokens": 580,
+        "wall_time_ms": 5225.7
+      },
+      "agentic": {
+        "outcome": "NOT_MET",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "NOT_MET",
+          "d": "NOT_MET",
+          "e": "NOT_MET"
+        },
+        "unsupported": [],
+        "document_ids": [
+          "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+          "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+          "Shona685_Zieme486_25622028-814a-56c6-8173-a818d05014ce.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+            "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+            "Shona685_Zieme486_25622028-814a-56c6-8173-a818d05014ce.json"
+          ],
+          "notes": 2,
+          "observations": 221,
+          "conditions": 53,
+          "value_set": 71
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "get_patient_document",
+          "get_patient_document",
+          "set_model_response"
+        ],
+        "spans_valid": 5,
+        "spans_total": 5,
+        "model_calls": 10,
+        "input_tokens": 21168,
+        "output_tokens": 1067,
+        "wall_time_ms": 8748.7
+      },
+      "disagreement": {},
+      "outcome_agrees": true
+    },
+    {
+      "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
+      "cases": [
+        "RA6",
+        "H15"
+      ],
+      "procedure_code": "J1745",
+      "as_of": "2026-09-01",
+      "oracle": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "MET",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "e"
+        ],
+        "document_ids": [
+          "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+          "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+          "Shona685_Zieme486_2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+            "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+            "Shona685_Zieme486_2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3.json"
+          ],
+          "notes": 2,
+          "observations": 221,
+          "conditions": 53,
+          "value_set": 71
+        },
+        "planner_tool_calls": [],
+        "model_calls": 6,
+        "input_tokens": 5255,
+        "output_tokens": 533,
+        "wall_time_ms": 4737.2
+      },
+      "agentic": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "verdicts": {
+          "a": "MET",
+          "b": "MET",
+          "c": "MET",
+          "d": "MET",
+          "e": "INSUFFICIENT_EVIDENCE"
+        },
+        "unsupported": [
+          "e"
+        ],
+        "document_ids": [
+          "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+          "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+          "Shona685_Zieme486_2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3.json"
+        ],
+        "gathered": {
+          "document_ids": [
+            "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+            "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+            "Shona685_Zieme486_2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3.json"
+          ],
+          "notes": 2,
+          "observations": 221,
+          "conditions": 53,
+          "value_set": 71
+        },
+        "planner_tool_calls": [
+          "get_patient_notes",
+          "get_patient_document",
+          "get_patient_document",
+          "get_patient_observations",
+          "get_patient_conditions",
+          "set_model_response"
+        ],
+        "spans_valid": 5,
+        "spans_total": 5,
         "model_calls": 9,
-        "input_tokens": 16957,
-        "output_tokens": 1832,
-        "wall_time_ms": 10242.4
+        "input_tokens": 15529,
+        "output_tokens": 1029,
+        "wall_time_ms": 7414.3
       },
       "disagreement": {},
       "outcome_agrees": true
     }
-  ],
-  "rescored_at": "2026-09-20T06:09:44.040301+00:00"
+  ]
 }

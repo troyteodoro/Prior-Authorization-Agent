@@ -38,12 +38,16 @@ from pa_agent.contracts import (
     Criterion,
     CriterionResult,
     CriterionVerdict,
+    DiseaseActivityAssessment,
     DocumentedFinding,
+    DocumentedWeight,
+    EvaluationComponent,
     EvidenceSpan,
     ExclusionKind,
     ExclusionMatch,
     FactKind,
     GapReason,
+    HeartFailureAssessment,
     KneeRadiograph,
     KneeSymptom,
     Medication,
@@ -53,6 +57,9 @@ from pa_agent.contracts import (
     ProgramAssertion,
     Shortfall,
     SleepTest,
+    TuberculosisScreen,
+    TuberculosisScreenResult,
+    TuberculosisTreatment,
     WmEvent,
 )
 
@@ -764,6 +771,280 @@ def evaluate_conservative_therapy_duration(
     )
 
 
+# --------------------------------------------------------------------------
+# T-110 (D155): the criteria v1.2 left unclaimed for want of a field. Five
+# predicates over the facts the `bariatric_surgical_workup` and
+# `rheumatoid_arthritis_workup` kinds extracted. Every label is the model's;
+# every comparison, date and membership test is here (Art. II).
+# --------------------------------------------------------------------------
+
+
+def evaluate_weight_run_rate(
+    criterion: Criterion,
+    run: QualifyingRun,
+    run_established: bool,
+    weights: list[DocumentedWeight],
+) -> CriterionResult:
+    """L34576's *"monthly documentation of ... weight"* (T-110, D155):
+    `evaluate_c4`'s arithmetic over the field Palmetto names.
+
+    Every month of the qualifying run must carry a documented weight dated in
+    it. `MET` cites every weight dated in a run month; `NOT_MET` cites the
+    run's encounters in each month with none, with a structured shortfall;
+    with no run established the criterion abstains (REQ-15). A weight is a
+    measured weight with its own span: a BMI on file is not one, and a height
+    and a BMI are never multiplied into one (D15).
+    """
+    if not run_established:
+        return CriterionResult(  # REQ-15
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.INSUFFICIENT_EVIDENCE,
+            gap_reason=GapReason.NO_EVIDENCE_RETRIEVED,
+            detail="no qualifying run for the weight rate to be scoped to",
+        )
+    _rate_months_required(criterion, run)
+    in_run = [w for w in weights if _month(w.weight_date) in run.months]
+    weighed = {_month(w.weight_date) for w in in_run}
+    deficient = [month for month in run.months if month not in weighed]
+    if not deficient:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.MET,
+            spans=[w.span for w in sorted(in_run, key=lambda w: (w.weight_date, w.span.document_id, w.span.char_start))],
+            detail=f"weight documented in all {run.length} month(s) of the run",
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.NOT_MET,
+        # The encounters that happened and documented no weight: the evidence
+        # that falls short, which is what a NOT_MET cites (REQ-5, D48).
+        spans=[e.span for month in deficient for e in run.events_in(month)],
+        shortfall=Shortfall(
+            observed=len(deficient), required=0, unit="months_without_weight"
+        ),
+        detail=(
+            f"{len(deficient)} of {run.length} month(s) document no weight: "
+            + ", ".join(f"{y}-{m:02d}" for y, m in deficient)
+        ),
+    )
+
+
+def evaluate_multidisciplinary_evaluation(
+    criterion: Criterion,
+    components: list[EvaluationComponent],
+    as_of: date,
+) -> CriterionResult:
+    """L34576's *"A thorough multidisciplinary evaluation within the previous 6
+    months which includes ALL of the following"* (T-110, D155).
+
+    For each component in `required_components`, the latest documentation on
+    or before `as_of` is taken. *Within the previous N months* is `c2`'s
+    comparison: fewer than N whole calendar months before the clock.
+
+    - every component documented, each inside the window: `MET`, citing each;
+    - every component documented, one outside: `NOT_MET`, citing each, with
+      the stalest component's age as the shortfall;
+    - a component undocumented: an abstention. A chart silent about a
+      nutrition evaluation has not recorded that none took place (D40).
+    """
+    required = list(criterion.require("required_components"))
+    window = int(criterion.require("evaluation_window_months"))
+
+    latest: list[EvaluationComponent] = []
+    missing: list[str] = []
+    for category in required:
+        documented = [
+            c for c in components
+            if c.category.value == category and c.evaluation_date <= as_of
+        ]
+        if not documented:
+            missing.append(category)
+            continue
+        latest.append(
+            max(documented, key=lambda c: (c.evaluation_date, c.span.document_id, c.span.char_start))
+        )
+    if missing:
+        return _abstain(
+            criterion,
+            f"no {', '.join(missing)} component dated on or before "
+            f"{as_of.isoformat()} is documented; L34576 requires all "
+            f"{len(required)}, and a chart silent about one has not recorded "
+            "that it did not take place (D40)",
+        )
+
+    ages = {c.category.value: _months_between(c.evaluation_date, as_of) for c in latest}
+    stalest = max(ages.values())
+    spans = [c.span for c in latest]
+    described = "; ".join(
+        f"{c.category.value} {c.evaluation_date.isoformat()}" for c in latest
+    )
+    if stalest >= window:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.NOT_MET,
+            spans=spans,
+            shortfall=Shortfall(
+                observed=stalest, required=window,
+                unit="months_since_component_evaluation",
+            ),
+            detail=(
+                f"{described}: the oldest is {stalest} month(s) before "
+                f"{as_of.isoformat()}; the window is {window}"
+            ),
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=spans,
+        detail=(
+            f"{described}: all {len(required)} within {window} month(s) of "
+            f"{as_of.isoformat()}"
+        ),
+    )
+
+
+def _latest(facts: list, when: str, as_of: date):
+    """The latest fact dated on or before the clock, ties broken by where the
+    note states it so the choice is a function of the chart alone."""
+    eligible = [f for f in facts if getattr(f, when) <= as_of]
+    if not eligible:
+        return None
+    return max(
+        eligible,
+        key=lambda f: (getattr(f, when), f.span.document_id, f.span.char_start),
+    )
+
+
+def evaluate_heart_failure_class(
+    criterion: Criterion, assessments: list[HeartFailureAssessment], as_of: date
+) -> CriterionResult:
+    """L35677's contraindication *"a. Class III or IV congestive heart
+    failure"* (T-110, D155).
+
+    The latest assessment on or before `as_of` decides: a status in
+    `excluded_classes` is `NOT_MET`, any other is `MET`, each citing that
+    assessment. With none documented the criterion abstains: a chart that
+    records no heart failure has not recorded that there is none (D40).
+    """
+    excluded = frozenset(criterion.require("excluded_classes"))
+    latest = _latest(assessments, "assessment_date", as_of)
+    if latest is None:
+        return _abstain(
+            criterion,
+            f"no heart-failure status dated on or before {as_of.isoformat()} is "
+            "documented; a chart that records none has not recorded that there "
+            "is none (D40)",
+        )
+    stated = f"{latest.status.value} on {latest.assessment_date.isoformat()}"
+    if latest.status.value in excluded:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.NOT_MET,
+            spans=[latest.span],
+            shortfall=Shortfall(
+                observed=1, required=0, unit="assessments_in_excluded_class"
+            ),
+            detail=f"latest heart-failure status {stated}, in {sorted(excluded)}",
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.MET,
+        spans=[latest.span],
+        detail=f"latest heart-failure status {stated}, not in {sorted(excluded)}",
+    )
+
+
+def evaluate_tuberculosis_screening(
+    criterion: Criterion,
+    screens: list[TuberculosisScreen],
+    treatments: list[TuberculosisTreatment],
+    as_of: date,
+) -> CriterionResult:
+    """L35677's contraindication *"b. Untreated active or latent tuberculosis"*
+    (T-110, D155).
+
+    The latest screen on or before `as_of` decides. Negative is `MET`. Positive
+    with a treatment begun on or before `as_of` is `MET`, citing both. Positive
+    with no treatment documented is `NOT_MET`: the chart records the
+    contraindicating finding, and the exception is documentation the requester
+    holds (D114's direction). No screen is an abstention.
+    """
+    latest = _latest(screens, "screen_date", as_of)
+    if latest is None:
+        return _abstain(
+            criterion,
+            f"no tuberculosis screen resulted on or before {as_of.isoformat()} "
+            "is documented",
+        )
+    stated = f"{latest.result.value} screen on {latest.screen_date.isoformat()}"
+    if latest.result is TuberculosisScreenResult.NEGATIVE:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.MET,
+            spans=[latest.span],
+            detail=stated,
+        )
+    begun = _latest(treatments, "start_date", as_of)
+    if begun is not None:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.MET,
+            spans=[latest.span, begun.span],
+            detail=f"{stated}; treatment begun {begun.start_date.isoformat()}",
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.NOT_MET,
+        spans=[latest.span],
+        shortfall=Shortfall(
+            observed=0, required=1, unit="tuberculosis_treatments_documented"
+        ),
+        detail=(
+            f"{stated}; no tuberculosis treatment begun on or before "
+            f"{as_of.isoformat()} is documented"
+        ),
+    )
+
+
+def evaluate_disease_activity(
+    criterion: Criterion, assessments: list[DiseaseActivityAssessment], as_of: date
+) -> CriterionResult:
+    """L35677's *"moderately to severely active rheumatoid arthritis"* (T-110,
+    D155).
+
+    The latest level a note states in words, on or before `as_of`, decides: a
+    level in `qualifying_activity` is `MET`, any other is `NOT_MET`, each
+    citing it. None stated is an abstention. A score is never graded into a
+    level here or by the model: no corpus document states a cut-off (D21).
+    """
+    qualifying = frozenset(criterion.require("qualifying_activity"))
+    latest = _latest(assessments, "assessment_date", as_of)
+    if latest is None:
+        return _abstain(
+            criterion,
+            f"no disease-activity level stated in words on or before "
+            f"{as_of.isoformat()} is documented; a score is never graded into "
+            "one (D155)",
+        )
+    stated = f"{latest.level.value} on {latest.assessment_date.isoformat()}"
+    if latest.level.value in qualifying:
+        return CriterionResult(
+            criterion_id=criterion.id,
+            verdict=CriterionVerdict.MET,
+            spans=[latest.span],
+            detail=f"latest stated disease activity {stated}",
+        )
+    return CriterionResult(
+        criterion_id=criterion.id,
+        verdict=CriterionVerdict.NOT_MET,
+        spans=[latest.span],
+        shortfall=Shortfall(
+            observed=0, required=1, unit="qualifying_disease_activity_assessments"
+        ),
+        detail=f"latest stated disease activity {stated}, not in {sorted(qualifying)}",
+    )
+
+
 def evaluate_excluded_medication(
     exclusion: CategoricalExclusion,
     medications: list[Medication],
@@ -1302,6 +1583,8 @@ def _workup(
 
 
 _KNEE = FactKind.KNEE_OSTEOARTHRITIS_WORKUP
+_BARIATRIC = FactKind.BARIATRIC_SURGICAL_WORKUP
+_RHEUMATOID = FactKind.RHEUMATOID_ARTHRITIS_WORKUP
 
 
 def _require_run(inputs: PredicateInputs) -> QualifyingRun:
@@ -1375,6 +1658,29 @@ PREDICATES: dict[PredicateKind, Predicate] = {
         lambda c, i: evaluate_conservative_therapy_duration(
             c, _workup(i, ConservativeTherapy, _KNEE), i.as_of
         )
+    ),
+    # T-110 (D155): the fourth and fifth kinds' five predicates.
+    PredicateKind.NOTE_WEIGHT_RUN_RATE: lambda c, i: evaluate_weight_run_rate(
+        c, _require_run(i), i.run_established, _workup(i, DocumentedWeight, _BARIATRIC)
+    ),
+    PredicateKind.NOTE_MULTIDISCIPLINARY_EVALUATION: (
+        lambda c, i: evaluate_multidisciplinary_evaluation(
+            c, _workup(i, EvaluationComponent, _BARIATRIC), i.as_of
+        )
+    ),
+    PredicateKind.NOTE_HEART_FAILURE_CLASS: lambda c, i: evaluate_heart_failure_class(
+        c, _workup(i, HeartFailureAssessment, _RHEUMATOID), i.as_of
+    ),
+    PredicateKind.NOTE_TUBERCULOSIS_SCREENING: (
+        lambda c, i: evaluate_tuberculosis_screening(
+            c,
+            _workup(i, TuberculosisScreen, _RHEUMATOID),
+            _workup(i, TuberculosisTreatment, _RHEUMATOID),
+            i.as_of,
+        )
+    ),
+    PredicateKind.NOTE_DISEASE_ACTIVITY: lambda c, i: evaluate_disease_activity(
+        c, _workup(i, DiseaseActivityAssessment, _RHEUMATOID), i.as_of
     ),
 }
 
@@ -1584,6 +1890,16 @@ NARROWERS: dict[
     PredicateKind.NOTE_SLEEP_TEST_INDEX: _cited_workup,
     PredicateKind.NOTE_EVALUATION_BEFORE_SLEEP_TEST: _cited_workup,
     PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION: _cited_facts(_KNEE),
+    # T-110 (D155): every one of the five can answer `NOT_MET`.
+    # The run alone, and deliberately not the weights: a `NOT_MET` cites the
+    # encounters of the months with no weight, so its weights are never
+    # cited, and narrowing them away would let a verdict citing a weighed
+    # month re-derive as short. Measured by T-110's mutation pass (D155).
+    PredicateKind.NOTE_WEIGHT_RUN_RATE: _cited_run,
+    PredicateKind.NOTE_MULTIDISCIPLINARY_EVALUATION: _cited_facts(_BARIATRIC),
+    PredicateKind.NOTE_HEART_FAILURE_CLASS: _cited_facts(_RHEUMATOID),
+    PredicateKind.NOTE_TUBERCULOSIS_SCREENING: _cited_facts(_RHEUMATOID),
+    PredicateKind.NOTE_DISEASE_ACTIVITY: _cited_facts(_RHEUMATOID),
 }
 
 

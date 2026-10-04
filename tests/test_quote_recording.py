@@ -79,9 +79,14 @@ DECIDED_FABRICATED: dict[str, int] = {
     "adk_results_tool_fetch_vertex.json": 0,
 }
 
-#: Notes each recording holds: T-98's twelve, T-108's twelve and T-109's
-#: fourteen (D122, D152, D154).
-MEASURED_NOTES = 38
+#: Notes each recording holds: T-98's twelve, T-108's twelve, T-109's
+#: fourteen and T-110's ten (D122, D152, D154, D155).
+MEASURED_NOTES = 48
+
+#: The one `(note, condition)` pair every recording anchors: the measured
+#: yellow, on the note T-110 added to state a table effect (D120, D155). Any
+#: other anchored pair is a yellow the corpus was not written to produce.
+ANCHORED_PAIRS = {("RA4+H13/2", "methotrexate-neutropenia")}
 
 #: Notes recorded as failed, per recording — findings, kept with their
 #: classified reason and never re-run (D71). D152 records the one: on AI
@@ -169,7 +174,8 @@ def test_every_note_still_hashes_to_what_was_measured(recordings, filename, stor
         checked += 1
     assert checked == MEASURED_NOTES, (
         f"{checked} notes checked; twelve were measured by T-98, twelve "
-        "appended by T-108 and fourteen by T-109 (D122, D152, D154)"
+        "appended by T-108, fourteen by T-109 and ten by T-110 "
+        "(D122, D152, D154, D155)"
     )
 
 
@@ -250,10 +256,17 @@ def test_the_fabrication_figure_recomputes_and_is_what_the_entry_records(
         f"{filename}: {recomputed} fabricated pairs; D122 records "
         f"{DECIDED_FABRICATED[filename]} — a new measurement nobody wrote down"
     )
-    assert payload["aggregate"]["pairs_anchored"] == 0, (
-        "a passage anchored for a condition no committed note documents: a "
-        "yellow this corpus was not supposed to produce (D120, D122) — stop and read it"
+    anchored = {
+        (r["note_id"], row_id)
+        for r in _answered(payload)
+        for row_id, spans in r["quotes"].items()
+        if spans
+    }
+    assert anchored == ANCHORED_PAIRS, (
+        f"{filename}: passages anchored for {sorted(anchored)}; the corpus states a "
+        "table effect in exactly one note (D120, D155) — stop and read any other"
     )
+    assert payload["aggregate"]["pairs_anchored"] == len(ANCHORED_PAIRS)
 
 
 @pytest.mark.parametrize("filename", FILES)
@@ -269,15 +282,15 @@ def test_the_model_offsets_are_still_unusable(recordings, filename) -> None:
 
 
 def test_the_direct_recording_answers_every_manifest_note_by_content(recordings, rows, store) -> None:
-    """Forty notes on file, thirty-eight measured: the declared clone's two
+    """Fifty notes on file, forty-eight measured: the declared clone's two
     are byte-identical to its source's and replay under their own ids (T-88,
     D102). This is the runner every gate hands `run_review`. The sleep charts'
     twelve are in it since T-108 (D152), the knee charts' fourteen since T-109
-    (D154)."""
+    (D154), and T-110's ten since T-110 (D155)."""
     payload = recordings["results.json"]
     runner = RecordedQuoteRunner.from_records(payload["notes"], payload["rows_asked"], model=payload["model"])
     manifest = json.loads(NOTES_MANIFEST.read_text(encoding="utf-8"))
-    assert len(manifest["notes"]) == 40
+    assert len(manifest["notes"]) == 50
     for entry in manifest["notes"]:
         document = store.get_document(entry["document_id"])
         result = runner.run(document.document_id, document.text, rows)

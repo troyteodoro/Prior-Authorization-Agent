@@ -1181,65 +1181,106 @@ def palmetto_ref(policy_store):
     return resolved
 
 
+@pytest.fixture(scope="module")
+def palmetto_runner(recording) -> RecordedExtractionRunner:
+    """Every weight-management note, plus the fourth kind's recording, which
+    holds `J1`'s, `J2`'s and `J3`'s notes -- and so `E4`'s, whose bytes `J1`'s
+    are (T-110, D155). A chart under Palmetto's tree reads both kinds."""
+    bariatric = json.loads(
+        (REPO_ROOT / "eval" / "extraction" / "bariatric_surgical_workup.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    return RecordedExtractionRunner.from_records(
+        recording["notes"] + bariatric["notes"], model=recording["model"]
+    )
+
+
+class _NoWorkupStated:
+    """The recorded weight-management reading, and for the fourth kind a note
+    that states none of its facts: what `E8`'s notes are under Palmetto's tree,
+    which no recording measured because no row asks it (D155)."""
+
+    name = "recorded"
+
+    def __init__(self, inner) -> None:
+        self._inner = inner
+
+    def run(self, document_id, text, kind):
+        if kind is FactKind.BARIATRIC_SURGICAL_WORKUP:
+            from pa_agent.extraction import build_bariatric_workup_result
+
+            return build_bariatric_workup_result(document_id, text, {})
+        return self._inner.run(document_id, text, kind)
+
+
 def test_the_graph_is_the_same_graph_under_the_second_tree(
-    policy_store, patient_store, runner, palmetto_ref, case_patients
+    policy_store, patient_store, palmetto_runner, palmetto_ref, case_patients
 ) -> None:
     """Article I: the tree changed what the steps evaluate, not which steps
     run or in what order."""
-    run = _run(policy_store, patient_store, runner, case_patients["E1"], palmetto_ref)
+    run = _run(policy_store, patient_store, palmetto_runner, case_patients["J2"], palmetto_ref)
     assert run.steps == list(STEP_NAMES)
 
 
-def test_palmetto_evaluates_what_it_declares_and_abstains_on_the_rest(
-    policy_store, patient_store, runner, palmetto_ref, case_patients
+def test_palmetto_evaluates_what_it_declares(
+    policy_store, patient_store, palmetto_runner, palmetto_ref, case_patients
 ) -> None:
-    """D101: no c3, and c4 and d declared unclaimed — abstained on with the
-    fifth gap reason, never omitted, never ERROR. E1 is MET on everything the
-    tree can evaluate and still cannot be approved under it."""
-    run = _run(policy_store, patient_store, runner, case_patients["E1"], palmetto_ref)
-    d = run.determination
+    """D101 then D155: no c3, and c4 and d evaluated since T-110 through the
+    fourth fact kind. `J2`'s notes document both, so every criterion is MET and
+    the chart is approvable under this tree; `J1`'s notes state a weight every
+    month and no evaluation, so c4 is MET and d abstains -- the chart's
+    silence, never the system's limit (D40)."""
+    d = _run(policy_store, patient_store, palmetto_runner, case_patients["J2"], palmetto_ref).determination
     assert d.policy_version_id == "ncd-100.1-jjm-v1"
     assert [r.criterion_id for r in d.criterion_results] == ["a", "b", "c1", "c2", "c4", "c5", "d"]
-    by_id = {r.criterion_id: r for r in d.criterion_results}
-    for cid in ("a", "b", "c1", "c2", "c5"):
-        assert by_id[cid].verdict is CriterionVerdict.MET, cid
-    for cid in ("c4", "d"):
-        assert by_id[cid].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE, cid
-        assert by_id[cid].gap_reason is GapReason.NOT_EVALUATED_BY_THIS_SYSTEM, cid
-        assert by_id[cid].spans == [], "an abstention cites nothing (REQ-5)"
-    assert d.outcome.value == "INSUFFICIENT_EVIDENCE"
-    assert {g.criterion_id for g in d.gap_list} == {"c4", "d"}
+    assert {r.verdict for r in d.criterion_results} == {CriterionVerdict.MET}
+    assert d.outcome.value == "MET"
+
+    j1 = _run(policy_store, patient_store, palmetto_runner, case_patients["J1"], palmetto_ref).determination
+    by_id = {r.criterion_id: r for r in j1.criterion_results}
+    assert by_id["c4"].verdict is CriterionVerdict.MET
+    assert by_id["d"].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
+    assert by_id["d"].gap_reason is GapReason.NO_EVIDENCE_RETRIEVED
+    assert by_id["d"].spans == [], "an abstention cites nothing (REQ-5)"
+    assert GapReason.NOT_EVALUATED_BY_THIS_SYSTEM not in {
+        r.gap_reason for r in j1.criterion_results
+    }
 
 
-def test_the_same_chart_is_approved_under_one_tree_and_not_the_other(
-    policy_store, patient_store, runner, ref, palmetto_ref, case_patients
+def test_the_same_chart_is_answered_differently_under_the_two_trees(
+    policy_store, patient_store, palmetto_runner, ref, palmetto_ref, case_patients
 ) -> None:
     """P1's substance, demonstrated rather than described: one chart, two
-    jurisdictions, two honest answers."""
-    noridian = _run(policy_store, patient_store, runner, case_patients["E1"], ref).determination
-    palmetto = _run(policy_store, patient_store, runner, case_patients["E1"], palmetto_ref).determination
-    assert noridian.outcome.value == "MET"
+    jurisdictions, two honest answers. `E4`'s chart is a shortfall on
+    Noridian's run length and has no criterion of that kind under Palmetto's,
+    where it abstains for want of a comorbidity and an evaluation."""
+    noridian = _run(policy_store, patient_store, palmetto_runner, case_patients["E4"], ref).determination
+    palmetto = _run(policy_store, patient_store, palmetto_runner, case_patients["E4"], palmetto_ref).determination
+    assert noridian.outcome.value == "NOT_MET"
     assert palmetto.outcome.value == "INSUFFICIENT_EVIDENCE"
     assert noridian.policy_version_id != palmetto.policy_version_id
 
 
 def test_without_a_run_length_the_run_is_established_by_having_events(
-    policy_store, patient_store, runner, palmetto_ref, case_patients
+    policy_store, patient_store, runner, palmetto_runner, palmetto_ref, case_patients
 ) -> None:
     """E4's three-month run is NOT_MET on Noridian's c3, so c2, c4 and c5
-    abstain there (REQ-15). Palmetto states no length, so c2 and c5 are
-    evaluated over the same run (D101). E8 has no events under either tree
-    and everything run-scoped abstains."""
-    e4 = _run(policy_store, patient_store, runner, case_patients["E4"], palmetto_ref).determination
+    abstain there (REQ-15). Palmetto states no length, so c2, c4 and c5 are
+    evaluated over the same run (D101, D155). E8 has no events under either
+    tree and everything run-scoped abstains."""
+    e4 = _run(policy_store, patient_store, palmetto_runner, case_patients["E4"], palmetto_ref).determination
     by_id = {r.criterion_id: r for r in e4.criterion_results}
-    assert by_id["c2"].verdict in (CriterionVerdict.MET, CriterionVerdict.NOT_MET)
-    assert by_id["c5"].verdict in (CriterionVerdict.MET, CriterionVerdict.NOT_MET)
+    for cid in ("c2", "c4", "c5"):
+        assert by_id[cid].verdict in (CriterionVerdict.MET, CriterionVerdict.NOT_MET), cid
 
-    e8 = _run(policy_store, patient_store, runner, case_patients["E8"], palmetto_ref).determination
+    e8 = _run(
+        policy_store, patient_store, _NoWorkupStated(runner), case_patients["E8"], palmetto_ref
+    ).determination
     by_id = {r.criterion_id: r for r in e8.criterion_results}
-    assert by_id["c2"].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
-    assert by_id["c2"].gap_reason is GapReason.NO_EVIDENCE_RETRIEVED
-    assert by_id["c5"].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
+    for cid in ("c2", "c4", "c5"):
+        assert by_id[cid].verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE, cid
+        assert by_id[cid].gap_reason is GapReason.NO_EVIDENCE_RETRIEVED, cid
 
 
 def test_the_unclaimed_step_produces_nothing_under_noridians_tree(

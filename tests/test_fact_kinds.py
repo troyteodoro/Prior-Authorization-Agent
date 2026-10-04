@@ -90,13 +90,17 @@ CASES = REPO_ROOT / "eval" / "cases.json"
 WM = FactKind.WEIGHT_MANAGEMENT
 SLEEP = FactKind.SLEEP_APNEA_WORKUP
 KNEE = FactKind.KNEE_OSTEOARTHRITIS_WORKUP
+BARIATRIC = FactKind.BARIATRIC_SURGICAL_WORKUP
+RHEUM = FactKind.RHEUMATOID_ARTHRITIS_WORKUP
 
 #: What each committed tree declares. A literal, so a tree that drops or gains a
 #: kind is a visible diff here as well as a load-time check (D51's move).
 EXPECTED_FACT_KINDS = {
     "ncd_100_1_jf.json": (WM,),
-    "ncd_100_1_jjm.json": (WM,),
-    "infliximab_ra_jjm.json": (),
+    # T-110 (D155): Palmetto's c4 and d read the fourth kind, the rheumatoid
+    # tree's c, d and e the fifth.
+    "ncd_100_1_jjm.json": (WM, BARIATRIC),
+    "infliximab_ra_jjm.json": (RHEUM,),
     "us_abdominal_visceral_j5_j8.json": (),
     "pap_osa_dme_jd.json": (SLEEP,),
     "hyaluronan_knee_oa_j5_j8.json": (KNEE,),
@@ -134,9 +138,16 @@ KNEE_OSTEOARTHRITIS_WORKUP_VERSION = "t109-knee-oa-workup-v1/t89-reask-v1"
 SLEEP_RECORDINGS = sorted(EXTRACTION.glob("sleep_apnea_workup*.json"))
 #: And one per tier for `knee_osteoarthritis_workup` (T-109, D154).
 KNEE_RECORDINGS = sorted(EXTRACTION.glob("knee_osteoarthritis_workup*.json"))
+#: And one per tier for each of T-110's two kinds (D155); their checks are in
+#: `tests/test_palmetto_workup.py` and `tests/test_rheumatoid_workup.py`.
+T110_RECORDINGS = sorted(
+    list(EXTRACTION.glob("bariatric_surgical_workup*.json"))
+    + list(EXTRACTION.glob("rheumatoid_arthritis_workup*.json"))
+)
 RECORDINGS = sorted(
     p for p in EXTRACTION.glob("*.json")
     if p not in SLEEP_RECORDINGS and p not in KNEE_RECORDINGS
+    and p not in T110_RECORDINGS
 )
 
 
@@ -283,6 +294,49 @@ def _text(record: dict, store: LocalPatientStore) -> str:
 
 def test_there_are_six_extraction_recordings():
     assert len(RECORDINGS) == 6, [p.name for p in RECORDINGS]
+
+
+def test_t110s_two_kinds_have_two_recordings_each_one_per_tier():
+    assert [p.name for p in T110_RECORDINGS] == [
+        "bariatric_surgical_workup.json",
+        "bariatric_surgical_workup_vertex.json",
+        "rheumatoid_arthritis_workup.json",
+        "rheumatoid_arthritis_workup_vertex.json",
+    ]
+
+
+@pytest.mark.parametrize("path", T110_RECORDINGS, ids=lambda p: p.name)
+def test_every_t110_recording_replays_under_its_kind_and_no_other(path):
+    """The replay key on T-110's kinds (D149, D155): each note rebuilds under
+    its own kind and is a `SCHEMA_MISMATCH` under the sleep kind, whose
+    version no T-110 note was measured under."""
+    recording = json.loads(path.read_text(encoding="utf-8"))
+    kind = FactKind(recording["kind"])
+    runner = RecordedExtractionRunner.from_records(recording["notes"])
+    store = LocalPatientStore()
+    for record in recording["notes"]:
+        text = store.get_document(record["document_id"]).text
+        assert runner.run(record["document_id"], text, kind).kind is kind
+        with pytest.raises(ExtractionOutputError) as raised:
+            runner.run(record["document_id"], text, SLEEP)
+        assert raised.value.reason is ExtractionFailure.SCHEMA_MISMATCH
+
+
+def test_one_notes_bytes_recorded_under_two_ids_for_two_kinds_replay_under_both():
+    """T-110 (D155): `E4`'s notes are recorded under `weight_management` by
+    `E4`'s ids and the same bytes under the bariatric workup by `J1`'s. A
+    hash index holding one id per digest let the later recording hide the
+    earlier, and a request for the reading that exists raised
+    `SCHEMA_MISMATCH`. Every carrier of the bytes is consulted."""
+    notes = []
+    for name in ("results.json", "bariatric_surgical_workup.json"):
+        notes += json.loads((EXTRACTION / name).read_text(encoding="utf-8"))["notes"]
+    runner = RecordedExtractionRunner.from_records(notes)
+    store = LocalPatientStore()
+    j1 = "ee9d79ee-ba2e-5915-b6d5-c7e700066d40/chart_note_1.txt"
+    text = store.get_document(j1).text
+    assert runner.run(j1, text, WM).kind is WM
+    assert runner.run(j1, text, BARIATRIC).kind is BARIATRIC
 
 
 def test_there_are_two_sleep_recordings_one_per_tier():
@@ -510,7 +564,10 @@ def test_no_kind_but_weight_management_reaches_a_wmevent_shaped_route():
     builders = {
         schema.build.__name__ for kind, schema in FACT_SCHEMAS.items() if kind is not WM
     }
-    assert builders == {"build_sleep_result", "build_knee_result"}
+    assert builders == {
+        "build_sleep_result", "build_knee_result",
+        "build_bariatric_workup_result", "build_rheumatoid_workup_result",
+    }
     for name in builders:
         node = _builder(name)
         constructed = {

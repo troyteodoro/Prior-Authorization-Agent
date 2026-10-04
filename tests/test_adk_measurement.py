@@ -89,14 +89,16 @@ def store() -> LocalPatientStore:
 # --------------------------------------------------------------------------
 
 
-def test_the_seventeen_notes_split_twelve_addressable_and_five_not(cases, store, script):
+def test_the_twenty_one_notes_split_sixteen_addressable_and_five_not(cases, store, script):
     """D67's finding, pinned against the real store and the real corpus: the
     five spike notes have no address on the patient plane; the synthesized
-    documents — twelve since T-81 gave each chart two (D104) — do."""
+    documents — twelve since T-81 gave each chart two (D104), sixteen since
+    T-110 added J2's and J3's (D155) — do. The committed ADK recordings are
+    T-81's measurement of the seventeen it found, and are not extended."""
     measurable, skipped = script.partition(cases, store, tool_fetch=True)
 
-    assert len(cases) == 17, "T-81 measures seventeen notes"
-    assert len(measurable) == 12
+    assert len(cases) == 21, "the weight-management corpus is twenty-one notes"
+    assert len(measurable) == 16
     assert len(skipped) == 5
     assert {c["corpus"] for c in measurable} == {"synthesized"}
     assert {c["corpus"] for c, _ in skipped} == {"spike_001"}
@@ -598,7 +600,7 @@ def test_the_recording_stamps_the_capability_adk_reports_not_the_tier_asked_for(
 
 @pytest.mark.parametrize(
     "tool_fetch, expected",
-    [(False, (16, 1, 0)), (True, (11, 1, 5))],
+    [(False, (20, 1, 0)), (True, (15, 1, 5))],
     ids=["inline", "tool_fetch"],
 )
 def test_the_whole_measure_path_runs_without_a_model(
@@ -621,7 +623,7 @@ def test_the_whole_measure_path_runs_without_a_model(
     written = json.loads(script.adk_path(tool_fetch).read_text(encoding="utf-8"))
     aggregate = written["aggregate"]
     assert (aggregate["notes"], aggregate["failed"], aggregate["skipped"]) == expected
-    assert len(written["notes"]) == 17, "every note is recorded, whatever happened"
+    assert len(written["notes"]) == 21, "every note is recorded, whatever happened"
     assert written["tool_fetch"] is tool_fetch
 
     out = capsys.readouterr().out
@@ -668,7 +670,7 @@ def test_each_mode_writes_its_own_recording_and_the_pair_survives(
         "the --tool-fetch run overwrote the recording the plain run just made"
     )
     assert tool_fetch.exists()
-    for path, mode, reached in ((inline, False, 17), (tool_fetch, True, 12)):
+    for path, mode, reached in ((inline, False, 21), (tool_fetch, True, 16)):
         payload = json.loads(path.read_text(encoding="utf-8"))
         aggregate = payload["aggregate"]
         assert payload["tool_fetch"] is mode, f"{path.name} records the other mode"

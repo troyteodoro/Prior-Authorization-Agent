@@ -83,7 +83,7 @@
     }
   ],
   "selection_criteria": {
-    "bundle_count": 14,
+    "bundle_count": 32,
     "base_bundle_count": 6,
     "bmi_range": [
       33.0,
@@ -318,118 +318,6 @@
         "59621000"
       ],
       "prior_study_dates": [],
-      "has_active_osa": false,
-      "active_osa_comorbidity_codes": [
-        "414545008",
-        "59621000"
-      ],
-      "sleep_study_dates": [],
-      "sleep_assessment_dates": [],
-      "knee_oa_onset_dates": [],
-      "naproxen_order_dates": []
-    },
-    {
-      "filename": "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
-      "sha256": "807774c0ae505a1e47d8a1ef1af5caded71c3cfc5d9360ef80b4c9b4672ff778",
-      "cohort": "bariatric",
-      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
-      "latest_bmi": 35.89,
-      "latest_bmi_date": "2025-09-19T00:51:37-07:00",
-      "has_active_t2dm": false,
-      "has_active_ra": false,
-      "has_active_methotrexate": false,
-      "has_active_excluded_biologic": false,
-      "has_active_lisinopril": false,
-      "has_active_hydrochlorothiazide": false,
-      "methotrexate_orders": 0,
-      "active_indication_codes": [],
-      "prior_study_dates": [],
-      "has_active_osa": false,
-      "active_osa_comorbidity_codes": [],
-      "sleep_study_dates": [],
-      "sleep_assessment_dates": [],
-      "knee_oa_onset_dates": [],
-      "naproxen_order_dates": []
-    },
-    {
-      "filename": "Shona685_Zieme486_915602a8-a36d-59bf-b667-47496ab57965.json",
-      "sha256": "9c3ecacbc28ebe4cfada979fc03fd17aa40d100897e34d8e30b9ea3eae62bdc5",
-      "cohort": "rheumatology",
-      "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
-      "latest_bmi": 30.4,
-      "latest_bmi_date": "2025-12-16T15:20:17-08:00",
-      "has_active_t2dm": false,
-      "has_active_ra": true,
-      "has_active_methotrexate": true,
-      "has_active_excluded_biologic": true,
-      "has_active_lisinopril": false,
-      "has_active_hydrochlorothiazide": false,
-      "methotrexate_orders": 1,
-      "active_indication_codes": [],
-      "prior_study_dates": [],
-      "has_active_osa": false,
-      "active_osa_comorbidity_codes": [],
-      "sleep_study_dates": [],
-      "sleep_assessment_dates": [],
-      "knee_oa_onset_dates": [],
-      "naproxen_order_dates": []
-    },
-    {
-      "filename": "Dale454_Botsford977_b1bbb34a-aa4b-5c18-a550-8bd26e0da528.json",
-      "sha256": "2243968baaae2a57eb8076692c52cf2fb4ef29f2ca926e2b90a06d40a77cabf5",
-      "cohort": "ultrasound",
-      "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
-      "latest_bmi": 28.44,
-      "latest_bmi_date": "2026-08-24T17:06:52-07:00",
-      "has_active_t2dm": false,
-      "has_active_ra": false,
-      "has_active_methotrexate": false,
-      "has_active_excluded_biologic": false,
-      "has_active_lisinopril": true,
-      "has_active_hydrochlorothiazide": true,
-      "methotrexate_orders": 0,
-      "active_indication_codes": [
-        "431856006",
-        "431857002",
-        "433144002",
-        "59621000"
-      ],
-      "prior_study_dates": [
-        "2024-06-17T17:06:52-07:00"
-      ],
-      "has_active_osa": false,
-      "active_osa_comorbidity_codes": [
-        "414545008",
-        "59621000"
-      ],
-      "sleep_study_dates": [],
-      "sleep_assessment_dates": [],
-      "knee_oa_onset_dates": [],
-      "naproxen_order_dates": []
-    },
-    {
-      "filename": "Dale454_Botsford977_7acd0453-b37c-5c1a-9879-0a7b443065d9.json",
-      "sha256": "4e158742bef6766de281a9b6988af9ed410cbf40ce679bd465e250df7df69e09",
-      "cohort": "ultrasound",
-      "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
-      "latest_bmi": 28.44,
-      "latest_bmi_date": "2026-08-24T17:06:52-07:00",
-      "has_active_t2dm": false,
-      "has_active_ra": false,
-      "has_active_methotrexate": false,
-      "has_active_excluded_biologic": false,
-      "has_active_lisinopril": true,
-      "has_active_hydrochlorothiazide": true,
-      "methotrexate_orders": 0,
-      "active_indication_codes": [
-        "431856006",
-        "431857002",
-        "433144002",
-        "59621000"
-      ],
-      "prior_study_dates": [
-        "2026-05-25T17:06:52-07:00"
-      ],
       "has_active_osa": false,
       "active_osa_comorbidity_codes": [
         "414545008",
@@ -871,6 +759,241 @@
       "naproxen_order_dates": [
         "2023-10-10T22:43:54-07:00"
       ]
+    },
+    {
+      "filename": "Georgette866_Saran641_Dach178_ee9d79ee-ba2e-5915-b6d5-c7e700066d40.json",
+      "sha256": "807774c0ae505a1e47d8a1ef1af5caded71c3cfc5d9360ef80b4c9b4672ff778",
+      "cohort": "bariatric",
+      "patient_id": "ee9d79ee-ba2e-5915-b6d5-c7e700066d40",
+      "latest_bmi": 35.89,
+      "latest_bmi_date": "2025-09-19T00:51:37-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [],
+      "prior_study_dates": [],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Shona685_Zieme486_915602a8-a36d-59bf-b667-47496ab57965.json",
+      "sha256": "9c3ecacbc28ebe4cfada979fc03fd17aa40d100897e34d8e30b9ea3eae62bdc5",
+      "cohort": "rheumatology",
+      "patient_id": "915602a8-a36d-59bf-b667-47496ab57965",
+      "latest_bmi": 30.4,
+      "latest_bmi_date": "2025-12-16T15:20:17-08:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": true,
+      "has_active_excluded_biologic": true,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 1,
+      "active_indication_codes": [],
+      "prior_study_dates": [],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Dale454_Botsford977_b1bbb34a-aa4b-5c18-a550-8bd26e0da528.json",
+      "sha256": "2243968baaae2a57eb8076692c52cf2fb4ef29f2ca926e2b90a06d40a77cabf5",
+      "cohort": "ultrasound",
+      "patient_id": "b1bbb34a-aa4b-5c18-a550-8bd26e0da528",
+      "latest_bmi": 28.44,
+      "latest_bmi_date": "2026-08-24T17:06:52-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": true,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "431856006",
+        "431857002",
+        "433144002",
+        "59621000"
+      ],
+      "prior_study_dates": [
+        "2024-06-17T17:06:52-07:00"
+      ],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [
+        "414545008",
+        "59621000"
+      ],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Dale454_Botsford977_7acd0453-b37c-5c1a-9879-0a7b443065d9.json",
+      "sha256": "4e158742bef6766de281a9b6988af9ed410cbf40ce679bd465e250df7df69e09",
+      "cohort": "ultrasound",
+      "patient_id": "7acd0453-b37c-5c1a-9879-0a7b443065d9",
+      "latest_bmi": 28.44,
+      "latest_bmi_date": "2026-08-24T17:06:52-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": true,
+      "has_active_hydrochlorothiazide": true,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "431856006",
+        "431857002",
+        "433144002",
+        "59621000"
+      ],
+      "prior_study_dates": [
+        "2026-05-25T17:06:52-07:00"
+      ],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [
+        "414545008",
+        "59621000"
+      ],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Felipe97_Swaniawski813_519ab9cd-e076-5113-8acc-9aa1b8bdad6d.json",
+      "sha256": "bbd024b4013e66802b7618540b4dcb0d53750f22a8aa14317158cbcd59930187",
+      "cohort": "bariatric",
+      "patient_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d",
+      "latest_bmi": 37.65,
+      "latest_bmi_date": "2025-10-21T19:35:08-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "59621000"
+      ],
+      "prior_study_dates": [],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [
+        "59621000"
+      ],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Felipe97_Swaniawski813_0d2a9302-c054-58ca-a292-e3703314dcd4.json",
+      "sha256": "e9b1b4d69ca35780e8d2051c5213ac86369db2d55754e40274464d1335a806e1",
+      "cohort": "bariatric",
+      "patient_id": "0d2a9302-c054-58ca-a292-e3703314dcd4",
+      "latest_bmi": 37.65,
+      "latest_bmi_date": "2025-10-21T19:35:08-07:00",
+      "has_active_t2dm": false,
+      "has_active_ra": false,
+      "has_active_methotrexate": false,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 0,
+      "active_indication_codes": [
+        "59621000"
+      ],
+      "prior_study_dates": [],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [
+        "59621000"
+      ],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Shona685_Zieme486_e41a0d08-e747-5e48-a468-e6deb4159d8e.json",
+      "sha256": "7641656c2eac3e8fee1582eb6ec9d556272726ead70054e4248ec4f8dd82c4b2",
+      "cohort": "rheumatology",
+      "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
+      "latest_bmi": 30.4,
+      "latest_bmi_date": "2025-12-16T15:20:17-08:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": true,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 1,
+      "active_indication_codes": [],
+      "prior_study_dates": [],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Shona685_Zieme486_25622028-814a-56c6-8173-a818d05014ce.json",
+      "sha256": "7af03a18e06f0d4d98ffbe29dad7c9974a21e4424bb26adc2abb77328c1c4c9f",
+      "cohort": "rheumatology",
+      "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
+      "latest_bmi": 30.4,
+      "latest_bmi_date": "2025-12-16T15:20:17-08:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": true,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 1,
+      "active_indication_codes": [],
+      "prior_study_dates": [],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
+    },
+    {
+      "filename": "Shona685_Zieme486_2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3.json",
+      "sha256": "6ab8991dd9d644bc841eff71b06e87de13bf4c6c1431d6c9d1c8844ab88278a6",
+      "cohort": "rheumatology",
+      "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
+      "latest_bmi": 30.4,
+      "latest_bmi_date": "2025-12-16T15:20:17-08:00",
+      "has_active_t2dm": false,
+      "has_active_ra": true,
+      "has_active_methotrexate": true,
+      "has_active_excluded_biologic": false,
+      "has_active_lisinopril": false,
+      "has_active_hydrochlorothiazide": false,
+      "methotrexate_orders": 1,
+      "active_indication_codes": [],
+      "prior_study_dates": [],
+      "has_active_osa": false,
+      "active_osa_comorbidity_codes": [],
+      "sleep_study_dates": [],
+      "sleep_assessment_dates": [],
+      "knee_oa_onset_dates": [],
+      "naproxen_order_dates": []
     }
   ],
   "synthetic_patients": [
@@ -938,6 +1061,65 @@
         "system": "http://snomed.info/sct",
         "display": "Doppler ultrasonography of renal vein (procedure)"
       }
+    },
+    {
+      "patient_id": "519ab9cd-e076-5113-8acc-9aa1b8bdad6d",
+      "cloned_from": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "source_bundle": "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+      "bundle": "Felipe97_Swaniawski813_519ab9cd-e076-5113-8acc-9aa1b8bdad6d.json",
+      "task": "T-110",
+      "decision": "D155",
+      "address": {
+        "city": "Atlanta",
+        "state": "GA",
+        "postal_code": "30303",
+        "latitude": 33.749,
+        "longitude": -84.388
+      },
+      "variant": "palmetto-workup-documented"
+    },
+    {
+      "patient_id": "0d2a9302-c054-58ca-a292-e3703314dcd4",
+      "cloned_from": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+      "source_bundle": "Felipe97_Swaniawski813_afdcee59-dfdd-4bc5-37f1-cf7f909ede3d.json",
+      "bundle": "Felipe97_Swaniawski813_0d2a9302-c054-58ca-a292-e3703314dcd4.json",
+      "task": "T-110",
+      "decision": "D155",
+      "address": {
+        "city": "Nashville",
+        "state": "TN",
+        "postal_code": "37203",
+        "latitude": 36.1627,
+        "longitude": -86.7816
+      },
+      "variant": "palmetto-workup-short"
+    },
+    {
+      "patient_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e",
+      "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+      "source_bundle": "Shona685_Zieme486_42a430ab-b7ca-87a5-279f-ee115f49fd6e.json",
+      "bundle": "Shona685_Zieme486_e41a0d08-e747-5e48-a468-e6deb4159d8e.json",
+      "task": "T-110",
+      "decision": "D155",
+      "variant": "ra-workup-documented"
+    },
+    {
+      "patient_id": "25622028-814a-56c6-8173-a818d05014ce",
+      "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+      "source_bundle": "Shona685_Zieme486_42a430ab-b7ca-87a5-279f-ee115f49fd6e.json",
+      "bundle": "Shona685_Zieme486_25622028-814a-56c6-8173-a818d05014ce.json",
+      "task": "T-110",
+      "decision": "D155",
+      "variant": "ra-workup-contraindicated"
+    },
+    {
+      "patient_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3",
+      "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+      "source_bundle": "Shona685_Zieme486_42a430ab-b7ca-87a5-279f-ee115f49fd6e.json",
+      "bundle": "Shona685_Zieme486_2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3.json",
+      "task": "T-110",
+      "decision": "D155",
+      "variant": "ra-workup-treated-tuberculosis"
     }
   ],
   "synthea_rheumatology": {

@@ -387,6 +387,32 @@ class PredicateKind(str, Enum):
     #: (T-109, D154). `NOT_MET` when every category is documented and the
     #: shortest falls short; an abstention when a category is undocumented.
     NOTE_CONSERVATIVE_THERAPY_DURATION = "note_conservative_therapy_duration"
+    #: A documented weight dated in every month of the qualifying run, at the
+    #: criterion's declared rate (T-110, D155). `evaluate_c4`'s arithmetic over
+    #: the weight L34576 asks for rather than the BMI A53028 asks for: `NOT_MET`
+    #: citing the run's encounters in each month with no weight, an abstention
+    #: when no run is established (REQ-15).
+    NOTE_WEIGHT_RUN_RATE = "note_weight_run_rate"
+    #: Every component the criterion declares documented, and each component's
+    #: latest documentation within the window before the clock (T-110, D155).
+    #: `NOT_MET` when all are documented and one falls outside, citing all of
+    #: them; an abstention when a component is undocumented, because a chart
+    #: silent about an evaluation has not recorded that none took place (D40).
+    NOTE_MULTIDISCIPLINARY_EVALUATION = "note_multidisciplinary_evaluation"
+    #: The latest documented heart-failure assessment on or before the clock,
+    #: against the criterion's excluded classes (T-110, D155). `NOT_MET` on an
+    #: excluded class, `MET` on any other label, an abstention when none is
+    #: documented.
+    NOTE_HEART_FAILURE_CLASS = "note_heart_failure_class"
+    #: The latest documented tuberculosis screen on or before the clock (T-110,
+    #: D155). `MET` on a negative screen, or a positive one with a treatment
+    #: begun by the clock; `NOT_MET` on a positive screen with no treatment
+    #: documented; an abstention when no screen is documented.
+    NOTE_TUBERCULOSIS_SCREENING = "note_tuberculosis_screening"
+    #: The latest disease-activity level a note states in words, on or before
+    #: the clock, against the criterion's qualifying levels (T-110, D155). The
+    #: model never grades a score; a score with no level stated is no fact.
+    NOTE_DISEASE_ACTIVITY = "note_disease_activity"
 
 
 class FactKind(str, Enum):
@@ -398,11 +424,14 @@ class FactKind(str, Enum):
     never defines one. A tree-authored field list would make the tree's data
     the prompt, and every tree edit a new measurement (D45).
 
-    **Three members.** The second was earned by L33718, whose sleep-test index
+    **Five members.** The second was earned by L33718, whose sleep-test index
     no generator writes and no chart resource carries, so it is a note fact or
     nothing (T-108, D150; D116's rule). The third by L39529, whose symptoms,
     knee radiograph and exercise programme Synthea writes none of (T-109,
-    D154). A member added without a
+    D154). The fourth and fifth by the criteria v1.2 left unclaimed for want
+    of a field: Palmetto's monthly weight and evaluation components, and
+    L35677's contraindications and disease activity (T-110, D155). A member
+    added without a
     `FACT_SCHEMAS` entry, or without a `workflow.FACT_FOLDS` entry, is a red
     suite (`tests/test_fact_kinds.py`, REQ-79).
     """
@@ -418,6 +447,16 @@ class FactKind(str, Enum):
     #: conservative therapies with their start dates, each labelled from a
     #: closed category list transcribed from L39529 (T-109, D154).
     KNEE_OSTEOARTHRITIS_WORKUP = "knee_osteoarthritis_workup"
+    #: Documented weights with their dates, and the multidisciplinary
+    #: pre-surgical evaluation's components, each labelled with one of the four
+    #: L34576 names (T-110, D155). Declared by Palmetto's bariatric tree beside
+    #: `weight_management`, because a field only one tree reads belongs to a
+    #: kind only that tree declares.
+    BARIATRIC_SURGICAL_WORKUP = "bariatric_surgical_workup"
+    #: Heart-failure assessments, tuberculosis screens and treatments, and
+    #: disease-activity levels stated in words, each labelled from a closed
+    #: list (T-110, D155).
+    RHEUMATOID_ARTHRITIS_WORKUP = "rheumatoid_arthritis_workup"
 
 
 #: The fact kind each note-consuming predicate reads (T-107, D149). A predicate
@@ -436,6 +475,14 @@ PREDICATE_FACT_KIND: dict[PredicateKind, FactKind] = {
     PredicateKind.NOTE_KNEE_SYMPTOMS: FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
     PredicateKind.NOTE_KNEE_RADIOGRAPHIC_FINDINGS: FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
     PredicateKind.NOTE_CONSERVATIVE_THERAPY_DURATION: FactKind.KNEE_OSTEOARTHRITIS_WORKUP,
+    # T-110 (D155). The weight rate also reads the qualifying run, which the
+    # weight-management kind produces; a tree declaring it declares both,
+    # because it declares the run-scoped criteria that need the run anyway.
+    PredicateKind.NOTE_WEIGHT_RUN_RATE: FactKind.BARIATRIC_SURGICAL_WORKUP,
+    PredicateKind.NOTE_MULTIDISCIPLINARY_EVALUATION: FactKind.BARIATRIC_SURGICAL_WORKUP,
+    PredicateKind.NOTE_HEART_FAILURE_CLASS: FactKind.RHEUMATOID_ARTHRITIS_WORKUP,
+    PredicateKind.NOTE_TUBERCULOSIS_SCREENING: FactKind.RHEUMATOID_ARTHRITIS_WORKUP,
+    PredicateKind.NOTE_DISEASE_ACTIVITY: FactKind.RHEUMATOID_ARTHRITIS_WORKUP,
 }
 
 #: The fact kind each `ReconciledFact.note_source` is read from (T-107, D149).
@@ -1436,6 +1483,122 @@ class ConservativeTherapy(BaseModel):
 
     category: ConservativeTherapyCategory
     start_date: date
+    span: EvidenceSpan
+
+
+# --------------------------------------------------------------------------
+# The bariatric surgical workup (T-110, D155): the fourth fact kind's contract
+# objects. The component list is L34576's, transcribed.
+# --------------------------------------------------------------------------
+
+
+class EvaluationComponentCategory(str, Enum):
+    """L34576's multidisciplinary evaluation, *"which includes ALL of the
+    following"*: a bariatric surgeon's evaluation recommending surgery, a
+    primary care provider referral, a mental health evaluation, and a
+    nutritional evaluation (D155)."""
+
+    BARIATRIC_SURGEON = "bariatric_surgeon"
+    PRIMARY_CARE_REFERRAL = "primary_care_referral"
+    MENTAL_HEALTH = "mental_health"
+    NUTRITION = "nutrition"
+
+
+class DocumentedWeight(BaseModel):
+    """A body weight a note records as measured, and the date it was measured
+    (D155). A visit that records no weight is never one of these."""
+
+    model_config = ConfigDict(frozen=True)
+
+    weight_date: date
+    span: EvidenceSpan
+
+
+class EvaluationComponent(BaseModel):
+    """One component of the multidisciplinary evaluation a note documents as
+    completed, and its date (D155). How old it is is Python's question."""
+
+    model_config = ConfigDict(frozen=True)
+
+    category: EvaluationComponentCategory
+    evaluation_date: date
+    span: EvidenceSpan
+
+
+# --------------------------------------------------------------------------
+# The rheumatoid arthritis workup (T-110, D155): the fifth fact kind's contract
+# objects. Each label list is closed; which labels qualify is a Python
+# membership test against the criterion's declared list (Art. II).
+# --------------------------------------------------------------------------
+
+
+class HeartFailureClass(str, Enum):
+    """What a heart-failure assessment states: no heart failure, or a New York
+    Heart Association class (D155)."""
+
+    NO_HEART_FAILURE = "no_heart_failure"
+    CLASS_I = "class_i"
+    CLASS_II = "class_ii"
+    CLASS_III = "class_iii"
+    CLASS_IV = "class_iv"
+
+
+class TuberculosisScreenResult(str, Enum):
+    """A tuberculin skin test's or an interferon-gamma release assay's
+    reported result (D155). An indeterminate result is no fact."""
+
+    NEGATIVE = "negative"
+    POSITIVE = "positive"
+
+
+class DiseaseActivityLevel(str, Enum):
+    """A rheumatoid arthritis disease-activity level, **as the note states it in
+    words** (D155). The model never grades a score into one."""
+
+    REMISSION = "remission"
+    LOW = "low"
+    MODERATE = "moderate"
+    HIGH = "high"
+
+
+class HeartFailureAssessment(BaseModel):
+    """A note's statement of the patient's heart-failure status, and its date."""
+
+    model_config = ConfigDict(frozen=True)
+
+    status: HeartFailureClass
+    assessment_date: date
+    span: EvidenceSpan
+
+
+class TuberculosisScreen(BaseModel):
+    """A tuberculosis screening test a note documents as resulted (D155)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    result: TuberculosisScreenResult
+    screen_date: date
+    span: EvidenceSpan
+
+
+class TuberculosisTreatment(BaseModel):
+    """A tuberculosis treatment a note documents as begun, and its start date
+    (D155). A treatment recommended, offered, deferred or declined is never
+    one of these."""
+
+    model_config = ConfigDict(frozen=True)
+
+    start_date: date
+    span: EvidenceSpan
+
+
+class DiseaseActivityAssessment(BaseModel):
+    """A disease-activity level a note states in words, and its date (D155)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    level: DiseaseActivityLevel
+    assessment_date: date
     span: EvidenceSpan
 
 

@@ -66,13 +66,13 @@ def rows():
 
 
 def test_the_corpus_is_the_declared_notes_of_every_non_clone_chart(cases, extraction) -> None:
-    """Thirty-eight notes over nineteen charts: every note-bearing chart except
+    """Forty-eight notes over twenty-four charts: every note-bearing chart except
     the declared clone, whose bytes replay by content (T-88, D102, D122) — T-98's
     twelve, since T-108 the sleep charts' twelve (D152), and since T-109 the
-    knee charts' fourteen (D154). The ids are the extraction recordings', so
+    knee charts' fourteen (D154), and since T-110 its five clones' ten (D155). The ids are the extraction recordings', so
     the recordings join: the weight-management charts' with
     `synthesized_cases`, the others with their kind's corpus."""
-    assert len(cases) == 38
+    assert len(cases) == 48
     assert not any(c["document_id"].startswith(CLONE) for c in cases)
     synthesized = {
         c["note_id"]: c["sha256"]
@@ -80,6 +80,9 @@ def test_the_corpus_is_the_declared_notes_of_every_non_clone_chart(cases, extrac
             extraction.synthesized_cases()
             + extraction.sleep_cases()
             + extraction.knee_cases()
+            # T-110 (D155): the rheumatology clones' notes join their kind's
+            # corpus; J2's and J3's are in `synthesized_cases`.
+            + extraction.flat_cases(extraction.FactKind.RHEUMATOID_ARTHRITIS_WORKUP)
         )
     }
     for case in cases:
@@ -243,10 +246,10 @@ def test_the_direct_measure_path_runs_without_a_model_and_rescores_to_the_same_f
     assert written["runner"] == "direct" and written["tier"] == "ai_studio"
     assert written["prompt_version"] == QUOTE_PROMPT_VERSION
     assert written["rows_asked"] == direct.rows_asked_record(direct.table_rows())
-    assert written["aggregate"]["notes"] == 38 and written["aggregate"]["failed"] == 0
-    assert written["aggregate"]["model_calls"] == 76, "two turns per note, all counted"
-    assert written["aggregate"]["reask_recovered"] == 38
-    assert written["aggregate"]["pairs_anchored"] == 38
+    assert written["aggregate"]["notes"] == 48 and written["aggregate"]["failed"] == 0
+    assert written["aggregate"]["model_calls"] == 96, "two turns per note, all counted"
+    assert written["aggregate"]["reask_recovered"] == 48
+    assert written["aggregate"]["pairs_anchored"] == 48
     for record in written["notes"]:
         assert record["raw"] and record["raw_first_turn"] and record["trace"]
         assert record["metrics"] == record["trace"]["metrics"][0]
@@ -354,7 +357,7 @@ def test_the_adk_measure_path_writes_its_own_recording_and_stamps_the_capability
     assert written["runner"] == "adk" and written["tool_fetch"] is tool_fetch
     assert written["output_schema_and_tools"] == "stubbed", "asked of ADK, not inferred"
     assert written["adk_version"] == "0.0.0-test"
-    assert written["aggregate"]["notes"] == 38 and written["aggregate"]["model_calls"] == 76
+    assert written["aggregate"]["notes"] == 48 and written["aggregate"]["model_calls"] == 96
     other = adk.adk_path(not tool_fetch, "ai_studio")
     assert not other.exists(), "the other mode's path is untouched"
 

@@ -133,6 +133,15 @@ def _facts(manifest: dict) -> list[dict]:
     facts += manifest.get("knee_visits", [])
     facts += manifest.get("knee_radiographs", [])
     facts += manifest.get("conservative_therapies", [])
+    # T-110 (D155): Palmetto's evaluation components and the rheumatology
+    # charts' dated facts, one document each.
+    facts += manifest.get("multidisciplinary_evaluations", [])
+    facts += manifest.get("rheumatology_visits", [])
+    facts += manifest.get("heart_failure_assessments", [])
+    facts += manifest.get("disease_activity_assessments", [])
+    facts += manifest.get("tuberculosis_screens", [])
+    facts += manifest.get("tuberculosis_treatments", [])
+    facts += manifest.get("table_effects", [])
     return facts
 
 

@@ -17,10 +17,18 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: `v1.6`, row 4 — `T-110`**, the criteria v1.2 and v1.3
-deferred and the four-practice account. **Nothing is open on this board**; v1.6
-is in progress, and its next row writes its own record when it opens *(D97's
-rule)*.
+**What to do next: `v2.0`, row 1 — `T-117`**, the payer on the tree and the
+request. **Nothing is open on this board**; v2.0 opens when `T-117` writes its
+record *(D97's rule)*.
+**`T-110` closed v1.6's row 4, and v1.6 with it; A14 holds** *(D155)*.
+Palmetto's `c4` and `d` and the rheumatoid tree's `c`, `d` and `e` are read
+from a note through two declared fact kinds, `bariatric_surgical_workup` and
+`rheumatoid_arthritis_workup`, on five declared clones added in the round. The
+measured yellow is `H13`'s, accepted by the history verifier on both tiers.
+The differential covers every note-bearing chart's own request and agrees on
+25 of 25 on AI Studio with zero errors. REQ-80 holds the account to every
+practice a loaded tree declares. `T-145` and `T-146` are numbered off the
+path.
 **`T-109` closed v1.6's row 3** *(D154)*: practice four is hyaluronan injection
 for knee osteoarthritis, compiled from WPS's L39529 and its billing article
 A56157 for Jurisdictions 5 and 8 — an LCD no NCD stands over, so no national
@@ -330,12 +338,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-106 tasks are on this board — IDs run to T-144, and every id above T-125 is
+107 tasks are on this board — IDs run to T-146, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 106 are closed and none is open**; `T-143` and
-`T-144` below are numbered and have no record yet, and each writes its record
-when it opens. Both figures
+is well above the count. **All 107 are closed and none is open**; `T-143`, `T-144`,
+`T-145` and `T-146` below are numbered and have no record yet, and each writes
+its record when it opens. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
@@ -379,8 +387,10 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-140` | **no check ties `README.md`'s acceptance-gate table to spec §7 and §11's gates.** `tests/test_docs_consistency.py` pins the *figures* inside that table against `eval/report.md` (A2, A3, A5, A6) and its A7 row against the coverage gate, but nothing asserts a row **exists** for every gate the spec declares — so A11 closed with `T-99` and A12 with `T-102` and neither added one, while the table's heading went on reading *A1–A10 all hold* against a status section forty lines up that said A1–A12. The rows are written in this close under working rule 12; the check is a parse of spec §7 and §11's gate ids against the table's first column, in `test_the_readme_roadmap_agrees_with_the_spec`'s shape | **closed** (D144), before v1.6 opened — discovered in `T-106`. The held set is derived from spec §7 and §11; README's table has exactly those rows, and every current *A1–AN* claim names the last. CLAUDE.md's *A1–A10 all hold* was live at open |
 | `T-141` | **no command holds *the suite spends no model call*.** A13's fifth clause is *zero model calls in any gate*. The gate **list** is held by `tests/test_check_gates.py::test_no_gate_spends_a_model_call_or_reaches_the_network`, and since `T-106` the packet path is held by rendering both fixtures with `pa_agent.tiers.client_for` patched to raise — but the `pytest` gate **itself** is held only structurally, by every test using a `Recorded*` runner or an injected double. A measurement key is present in a working checkout, so a test that built a live runner would spend money and pass. The shape is an autouse guard that fails on a real request, or a parse asserting every `client_for` call site outside `pa_agent/tiers.py` and `tests/test_tier.py` sits in an `EXCLUDED` script or behind a non-default `--extraction` mode | **closed** (D146), before v1.6 opened — discovered in `T-106`. An autouse guard refuses non-loopback connections and lookups in process, and every child inherits a placeholder key, a missing credentials file and a refused proxy; a live CLI run from the suite fails locally with exit 3 |
 | `T-142` | **CLAUDE.md's *Current state* had grown back to about 500 of its 1,666 lines**, one paragraph per closed task, each a copy of a board record and a decision entry, while the file's own header said the narrative had been moved out *(D70)*. `tests/test_docs_consistency.py` **required** CLAUDE.md to carry copies of figures other artifacts own (the suite size, the task count, the highest id, A2, A5, A6, the current gate range, the test-file count), so the check enforced the duplication that `T-132`–`T-140` kept repairing. Documents and one test file; zero model calls | **closed** (D148), before v1.6 opened, ahead of `T-107` — discovered in the review that wrote D147. *Current state* is a status line capped at 30 lines by a test, and every check that required a CLAUDE.md copy now requires its absence |
-| `T-143` | **the ADK extraction leaf builds only the weight-management agent.** `AdkExtractionRunner.run` refuses any kind whose schema is not `Extraction` and `INSTRUCTION`, so `--extraction adk` on a request under `pap-osa-dme-jd-v1` raises `NotImplementedError`, which the CLI reports as an unbuilt path, rather than reading the notes under another kind's prompt. Its agent's description, its tool-fetch message and its output schema are weight-management text, and generalising them changes the prompt every ADK extraction recording was measured under (D45), so it is a measurement, not a refactor: an agent built from each `FactSchema`, and the sleep kind's two ADK recordings per tier. The direct and recorded runners are generic since `T-108` | not sequenced — discovered in `T-108` *(D150)*; nothing in v1.6's rows reads the ADK extraction path for the new kind |
+| `T-143` | **the ADK extraction leaf builds only the weight-management agent.** `AdkExtractionRunner.run` refuses any kind whose schema is not `Extraction` and `INSTRUCTION`, so `--extraction adk` on a request under `pap-osa-dme-jd-v1` raises `NotImplementedError`, which the CLI reports as an unbuilt path, rather than reading the notes under another kind's prompt. Its agent's description, its tool-fetch message and its output schema are weight-management text, and generalising them changes the prompt every ADK extraction recording was measured under (D45), so it is a measurement, not a refactor: an agent built from each `FactSchema`, and the sleep kind's two ADK recordings per tier. The direct and recorded runners are generic since `T-108`. **Since `T-110` it refuses four kinds**, the bariatric surgical and rheumatoid arthritis workups among them, and their ADK recordings would join the sleep kind's *(D155)* | not sequenced — discovered in `T-108` *(D150)*; nothing in v1.6's rows reads the ADK extraction path for the new kinds |
 | `T-144` | **`us-abdominal-visceral-j5-j8-v1` declares Alabama from a contractor-table row that lists forty-eight states.** L35755's table lists every state but Minnesota and New York under WPS's Part A contract 05901, and the ultrasound tree's jurisdiction note reads that row as *"Alabama under contract 05901"* — the first state of the list. L39529's table carries the same row. A beneficiary's state does not select a Part A contract with a national footprint, so either the tree should drop Alabama or it serves forty-seven more states, and the second would turn REQ-55's `NO_JURISDICTION_TREE` into `NO_POLICY_FOUND` for every out-of-state request in the corpus. No eval row reaches the ultrasound tree from Alabama, so nothing behavioural separates the readings; it is a decision about one committed tree and every row resolving through it, not part of the practice that found it (working rule 6) | not sequenced — discovered in `T-109` *(D154)*; nothing in v1.6's rows resolves a request in Alabama under the ultrasound tree |
+| `T-145` | **the live CLI verifier checks a history claim under the criterion instruction.** `cli._build_verifier` returns `LiveVerifierRunner(client_for(tier))`, whose instruction defaults to `INSTRUCTION`, and `history.run_review` hands it every yellow's `(candidate, quotes)` claim — so `--suggest` with a live extraction leaf asks the criterion question of a history claim, where `run_verifier_measurement.py --history` builds the runner with `HISTORY_INSTRUCTION`. The recorded path is unaffected: both recordings replay through one runner keyed by digest, and the two claim shapes share no key. No gate reaches the live path, and until `T-110` no chart produced a yellow for it to mis-route | not sequenced — discovered in `T-110` *(D155)*; no row reaches the live verifier |
+| `T-146` | **the agentic planner is offered `get_policy_context` and never told the policy version.** On Vertex, four of the twenty-five requests `T-110`'s differential measured aborted because the planner called it with a `policy_version_id` it invented — `some_version`, `v1.0`, `knee_osteoarthritis_v1`, a UUID — and the store's `KeyError` ended the run as `SOURCE_UNAVAILABLE` on every criterion (D90). On AI Studio, and on the seven bariatric charts it measured before, it never reached for the tool. The shapes are a decision: drop the tool from the planner's allowlist, put the version in the message, or answer an unknown id as a tool error the model can read. Each changes the planner's prompt, so each is a re-measurement of the differential on both tiers (D45) | not sequenced — discovered in `T-110` *(D155)*; A14's *zero errors* is read on the AI Studio recording, as every A-figure is (D106) |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -458,7 +468,7 @@ this round and closed as REQ-73 *(D124, D130)*.
 | v1.3 | medical-history review: ICD suggestions with evidence · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
 | v1.5 | the form, review, simulated submission and tracking, headless · **closed** | US-13 | T-103–T-106 | none | A13 ✓ |
-| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **in progress** | US-14 | T-107–T-110 | new extraction recordings | A14 |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **closed** | US-14 | T-107–T-110 | new extraction recordings | A14 ✓ |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
 | v2.2 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
@@ -558,6 +568,8 @@ chose *(D131)*.
 
 ### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
 
+**All four rows are closed; v1.6 is closed and A14 holds** *(T-110, D155)*.
+
 The second test on different practices, and the engine change v1.2
 deferred: the tree declares its extraction schema, so `WmEvent` stops being
 the only fact type and the runners, the anchorer and `build_result` become
@@ -571,7 +583,7 @@ re-measured differential.
 | 1 | the declared extraction schema | `T-107` | **closed** (D149) | the bariatric tree declares `WmEvent` and every existing recording replays unchanged; a tree declaring an unknown fact type raises at load; **and a tree that declares no fact type reads no note** — extended by *(D113)*, which measured a rheumatology determination extracting both notes of a chart whose events no criterion consumes; **and a recorded payload replayed under a fact schema it was not measured with raises** — extended by *(D147)*, because replay is keyed by note bytes alone and a second schema would otherwise replay the first's payload |
 | 2 | practice three | `T-108` | **closed** (D150, D151, D152) | CPAP for obstructive sleep apnea under NCD 240.4 and L33718: source, tree, patients, notes, rows, recording on both tiers, the second fact kind and the generic trust boundary (REQ-79); `run_eval.py` green. **Rewritten at open** *(D150)*: the one-line exit named six deliverables and checked one |
 | 3 | practice four | `T-109` | **closed** (D154) | hyaluronan injection for knee osteoarthritis under WPS's L39529 and A56157: source, tree, patients, notes, rows, recording on both tiers, the third fact kind; `run_eval.py` green. **Rewritten at open** *(D154)*: T-108's exit over this row's files |
-| 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | pending | Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
+| 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | **closed** (D155) | **Rewritten at open** *(D155)*: the five criteria claimed through two declared fact kinds on five declared clones, the yellow on a new row `H13` rather than an edit to `H4`'s chart, the differential widened to every note-bearing chart's request and measured once per tier, and *four practices* read as the four the rounds added with the control beside them (REQ-80). Was: Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
 
 ### v2.0 — The payer axis: national and regional coverage *(D112, reordered by D125)*
 
@@ -3410,6 +3422,7 @@ Opened by `T-107` *(D149)*, which is also v1.6's opening entry. Four rows: the
 declared extraction schema, practice three, practice four, then the criteria
 v1.2 and v1.3 deferred and the four-practice account. Rows 2 to 4 spend model
 calls, because new notes are new extraction recordings (D45). Row 1 spent none.
+**Closed by `T-110`** *(D155)*: all four rows closed, A14 holds.
 
 ### `[x] T-107` The declared extraction schema
 
@@ -3692,6 +3705,135 @@ treated as satisfied, a therapy after the clock counted, an identity narrower,
 the knee binder reading the sleep kind, an unanchorable finding kept, the
 nested locator returning the radiograph, the knee fold dropped, and one word of
 the instruction changed (caught only by the digest pin).
+
+### `[x] T-110` The criteria v1.2 deferred, the measured yellow, and the account over every practice
+
+**REQ:** mints 80; exercises 57, 58, 67, 78, 79 · **Depends:** T-107, T-108,
+T-109 · **Blocks:** v2.0 · **Decided by:** D155 · **Gates:** A14 (fourth of
+four rows; closes v1.6) · **Timebox:** three days plus five measurement rounds
+**Status:** **closed** (D155). The exit ran green and every gate with it.
+**v1.6 is closed and A14 holds**, its *zero errors* read on the AI Studio
+recording as every A-figure is (D106) — the Vertex differential's four errors
+are reported beside it and numbered `T-146`. Six measurement rounds, each an
+extension or a first measurement under an unchanged configuration. No earlier
+recorded note, claim or packet fixture moved.
+
+**Measured at open.**
+- `ncd-100.1-jjm-v1`'s `c4` and `d` are unclaimed for want of a field: the
+  weight-management kind reads a BMI, and no kind reads an evaluation. The only
+  chart under that tree is `J1`'s, whose notes state a weight at every visit
+  and no evaluation.
+- The three rheumatology charts carry no note, so no committed note states a
+  NYHA class, a tuberculosis screen or a disease-activity level. L35677 states
+  no score threshold, no screening test and no recency.
+- No committed note states a knowledge-table effect. `42a430ab`'s methotrexate
+  candidate is red, with no neutrophil count and no neutropenia coding.
+- The differential runs at 43775 over seven charts. The agentic planner raises
+  on a chart with no note, by design.
+
+**Exit:** *rewritten at open (D155)* from the board's paragraph, which names
+seven deliverables and checks none.
+
+```
+./venv/bin/python scripts/select_patients.py --verify \
+ && ./venv/bin/python scripts/synthesize_notes.py --verify \
+ && ./venv/bin/python -m pytest tests/test_palmetto_workup.py tests/test_rheumatoid_workup.py tests/test_t110_corpus.py tests/test_fact_kinds.py tests/test_criteria_tree.py tests/test_predicate_kinds.py tests/test_agentic_workflow.py tests/test_build_report.py -q --color=no \
+ && ./venv/bin/python eval/run_eval.py \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --rescore \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --tier vertex --rescore \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --history --rescore \
+ && ./venv/bin/python scripts/run_verifier_measurement.py --history --tier vertex --rescore \
+ && ./venv/bin/python eval/run_agentic_eval.py \
+ && ./venv/bin/python scripts/check_req_coverage.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- `ncd-100.1-jjm-v1` declares `weight_management` and
+  `bariatric_surgical_workup`, and `c4` and `d` are deterministic under
+  `note_weight_run_rate` and `note_multidisciplinary_evaluation`;
+  `infliximab-ra-jjm-v1` declares `rheumatoid_arthritis_workup`, and `c`, `d`
+  and `e` are deterministic under `note_heart_failure_class`,
+  `note_tuberculosis_screening` and `note_disease_activity`; the ultrasound
+  tree's `c`, `d` and `e` are still unclaimed;
+- each new predicate kind answers every verdict it can, on hand-written
+  charts, and each `NOT_MET` re-derives from what it cites;
+- both new kinds are registered, each digest pinned beside its version, each
+  folded through `_fold_generic`, and neither constructs a `WmEvent` (REQ-79);
+- five declared clones are in the pinned population and `--verify` recomputes
+  them from their sources; ten notes are rendered, one fact per document, and
+  every note already committed is byte-identical;
+- both new kinds' recordings exist on both tiers, and the weight-management
+  recordings hold `J2`'s and `J3`'s notes with every earlier note's record
+  unchanged;
+- `J2`, `J3`, `RA4`–`RA6` and `H13`–`H15` are `PASS`, and so are `J1` and
+  `RA1`–`RA3` under their changed labels;
+- `H13` is yellow: its passage anchored, and its `(candidate, quotes)` claim
+  is held by the history verifier recording on both tiers, accepted;
+- the differential holds every eval request on a note-bearing chart that
+  reaches the graph, on both tiers, with zero errors;
+- `eval/report.md`'s compatibility account carries a row for every practice
+  a loaded tree declares (REQ-80).
+
+**What it delivers.** Two fact kinds, `bariatric_surgical_workup` and
+`rheumatoid_arthritis_workup`, each with its schema, instruction, builder,
+locator and pinned digest, folded through `_fold_generic`. Five predicate
+kinds: `note_weight_run_rate`, `note_multidisciplinary_evaluation`,
+`note_heart_failure_class`, `note_tuberculosis_screening` and
+`note_disease_activity`, so Palmetto's `c4` and `d` and the rheumatoid tree's
+`c`, `d` and `e` are deterministic. Five declared clones, ten notes, eval rows
+`J2`, `J3`, `RA4`–`RA6` and `H13`–`H15`, with `J1` and `RA1` relabelled. A
+`--extend` mode on the weight-management extraction, a `--history` mode on the
+verifier measurement, and the history verifier recording on both tiers. The
+differential measured at every note-bearing chart's own request. **REQ-80.**
+
+**What it measured.**
+- Every labelled fact of both new kinds was read on both tiers, and no trap
+  was read as a fact.
+- The weight-management extension read all 8 encounters on each tier.
+- The verifier accepted the 29 new claims on each tier.
+- `H13` is yellow, its passage anchored in all six quote recordings and
+  accepted by the history verifier on both tiers.
+- The differential on AI Studio agrees on 25 of 25 outcomes and 137 of 137
+  criteria with zero errors, for 93 model calls and 344,241 input tokens the
+  fixed planner did not spend (3.7x).
+- On Vertex, 21 of 25 scored and agreed, and 4 errored on a policy version
+  the planner invented (`T-146`).
+
+**What it found.** `RecordedExtractionRunner` indexed one document id per
+note digest, so one note's bytes recorded under two ids for two kinds hid
+each other. It is fixed in this row, because the row's gates need it. The
+live CLI verifier sends a history claim under the criterion instruction:
+that is `T-145`. The ADK extraction leaf refuses the two new kinds, which
+widens `T-143`.
+
+**Mutation pass.** Sixteen mutants over `pa_agent/`, run against the exit's
+own test files plus `test_workflow.py`, `test_rheumatology_corpus.py` and
+`test_infliximab_tree.py`, under bash, with `__pycache__` cleared between runs
+and the package checksummed after restore. All sixteen were caught; one was
+caught only after its fix:
+- weights outside the run counted;
+- the evaluation window made inclusive;
+- an undocumented component not abstaining;
+- the earliest component taken for the latest;
+- `_latest` ignoring the clock, and taking the earliest;
+- the excluded NYHA classes inverted;
+- the tuberculosis treatment ignored;
+- the qualifying activity levels ignored;
+- the replay index reverted to one carrier;
+- a builder's drop losing its path;
+- the rheumatoid fold removed;
+- the weight rate dropped from `RUN_KINDS`;
+- one word of each new instruction changed (each caught only by its digest
+  pin);
+- **the weight rate's narrower narrowing the weights too.** This survived the
+  first pass, because the narrower was written that way. It is the weaker
+  check, so the narrower is now the run alone, and a test of a `NOT_MET`
+  citing a weighed month went red on the mutant.
+
+`select_patients.py --verify` and `synthesize_notes.py --verify` passed after
+the pass.
 
 ## Attached to no story
 

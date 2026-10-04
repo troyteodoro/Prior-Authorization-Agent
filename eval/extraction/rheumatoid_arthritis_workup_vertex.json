@@ -1,0 +1,850 @@
+{
+  "task": "T-110",
+  "decision": "D155",
+  "supersedes": null,
+  "measured_at": "2026-10-04T09:48:51.859749+00:00",
+  "rescored_at": null,
+  "model": "gemini-3.5-flash-lite",
+  "tier": "vertex",
+  "kind": "rheumatoid_arthritis_workup",
+  "prompt_version": "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1",
+  "reask_rounds": 1,
+  "temperature": 0.0,
+  "schema_note": "The fifth fact kind's recording: heart-failure assessments, tuberculosis screens and treatments, and disease-activity levels stated in words, each dated and labelled from a closed list (D155).",
+  "aggregate": {
+    "notes": 6,
+    "heart_failure_assessments_labeled": 3,
+    "heart_failure_assessments_extracted": 3,
+    "heart_failure_assessments_matched": 3,
+    "tuberculosis_screens_labeled": 3,
+    "tuberculosis_screens_extracted": 3,
+    "tuberculosis_screens_matched": 3,
+    "tuberculosis_treatments_labeled": 1,
+    "tuberculosis_treatments_extracted": 1,
+    "tuberculosis_treatments_matched": 1,
+    "disease_activity_assessments_labeled": 2,
+    "disease_activity_assessments_extracted": 2,
+    "disease_activity_assessments_matched": 2,
+    "traps": 2,
+    "traps_extracted": 0,
+    "spans_emitted": 9,
+    "spans_anchored": 9,
+    "spans_normalized": 1,
+    "model_offsets_usable": 0,
+    "reask_notes": 0,
+    "reask_targets": 0,
+    "reask_recovered": 0,
+    "reask_calls": 0,
+    "model_calls": 6,
+    "total_input_tokens": 10879,
+    "total_output_tokens": 1099,
+    "total_wall_time_ms": 7642.6
+  },
+  "notes": [
+    {
+      "note_id": "RA4+H13/1",
+      "corpus": "synthesized",
+      "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "cbd54a790acdd71301527d68a613dd6a75d96b58171176b60f6db915bca1a826",
+      "cases": [
+        "RA4",
+        "H13"
+      ],
+      "kind": "rheumatoid_arthritis_workup",
+      "labels": {
+        "heart_failure_assessments": [
+          {
+            "date": "2025-12-09",
+            "label": "no_heart_failure"
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [
+          {
+            "date": "2025-12-09",
+            "label": "high"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "heart_failure_assessments": [
+          {
+            "date": "2025-12-09",
+            "label": "no_heart_failure",
+            "span": {
+              "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+              "char_start": 322,
+              "char_end": 379,
+              "quote": "12/09/2025 - Cardiac review: no history of heart failure."
+            }
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [
+          {
+            "date": "2025-12-09",
+            "label": "high",
+            "span": {
+              "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+              "char_start": 423,
+              "char_end": 491,
+              "quote": "12/09/2025 - Disease activity: DAS28-CRP 5.6, high disease activity."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1810,
+        "output_tokens": 222,
+        "wall_time_ms": 1605.196333010099
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1",
+        "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1605ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1810,
+            "output_tokens": 222,
+            "wall_time_ms": 1605.196333010099
+          }
+        ]
+      },
+      "raw": {
+        "heart_failure_assessments": [
+          {
+            "status": "no_heart_failure",
+            "date": "2025-12-09",
+            "quote": "12/09/2025 - Cardiac review: no history of heart failure.",
+            "char_start": 126,
+            "char_end": 181
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [
+          {
+            "level": "high",
+            "date": "2025-12-09",
+            "quote": "12/09/2025 - Disease activity: DAS28-CRP 5.6, high disease activity.",
+            "char_start": 234,
+            "char_end": 300
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "heart_failure_assessments": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_screens": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_treatments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "disease_activity_assessments": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA4+H13/2",
+      "corpus": "synthesized",
+      "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "81600a994d87a3ce68a08ef92322742fbfd3e567fbba64773f4e3149fa4bd3c8",
+      "cases": [
+        "RA4",
+        "H13"
+      ],
+      "kind": "rheumatoid_arthritis_workup",
+      "labels": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "date": "2026-01-08",
+            "label": "negative"
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [],
+        "traps": []
+      },
+      "facts": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "date": "2026-01-08",
+            "label": "negative",
+            "span": {
+              "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt",
+              "char_start": 463,
+              "char_end": 557,
+              "quote": "01/08/2026 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult negative."
+            }
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1825,
+        "output_tokens": 140,
+        "wall_time_ms": 1124.2230839998228
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1",
+        "document_id": "e41a0d08-e747-5e48-a468-e6deb4159d8e/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1124ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1825,
+            "output_tokens": 140,
+            "wall_time_ms": 1124.2230839998228
+          }
+        ]
+      },
+      "raw": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "result": "negative",
+            "date": "2026-01-08",
+            "quote": "01/08/2026 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult negative.",
+            "char_start": 418,
+            "char_end": 510
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "heart_failure_assessments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_screens": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_treatments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "disease_activity_assessments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA5+H14/1",
+      "corpus": "synthesized",
+      "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "c7434fbdfcd079681710d8f714e4e6ecad157011a5da774e8637a64da10a9f3e",
+      "cases": [
+        "RA5",
+        "H14"
+      ],
+      "kind": "rheumatoid_arthritis_workup",
+      "labels": {
+        "heart_failure_assessments": [
+          {
+            "date": "2025-11-09",
+            "label": "class_iii"
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [
+          {
+            "date": "2025-11-09",
+            "label": "low"
+          }
+        ],
+        "traps": []
+      },
+      "facts": {
+        "heart_failure_assessments": [
+          {
+            "date": "2025-11-09",
+            "label": "class_iii",
+            "span": {
+              "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+              "char_start": 390,
+              "char_end": 521,
+              "quote": "11/09/2025 - Heart failure with reduced ejection fraction, NYHA class III:\nmarked limitation of activity, comfortable only at rest."
+            }
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [
+          {
+            "date": "2025-11-09",
+            "label": "low",
+            "span": {
+              "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+              "char_start": 327,
+              "char_end": 389,
+              "quote": "11/09/2025 - Disease activity: CDAI 8.0, low disease activity."
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1808,
+        "output_tokens": 231,
+        "wall_time_ms": 1329.1375419939868
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1",
+        "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1329ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1808,
+            "output_tokens": 231,
+            "wall_time_ms": 1329.1375419939868
+          }
+        ]
+      },
+      "raw": {
+        "heart_failure_assessments": [
+          {
+            "status": "class_iii",
+            "date": "2025-11-09",
+            "quote": "11/09/2025 - Heart failure with reduced ejection fraction, NYHA class III:\nmarked limitation of activity, comfortable only at rest.",
+            "char_start": 218,
+            "char_end": 348
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [
+          {
+            "level": "low",
+            "date": "2025-11-09",
+            "quote": "11/09/2025 - Disease activity: CDAI 8.0, low disease activity.",
+            "char_start": 154,
+            "char_end": 216
+          }
+        ]
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "heart_failure_assessments": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_screens": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_treatments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "disease_activity_assessments": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA5+H14/2",
+      "corpus": "synthesized",
+      "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "a4658bb8604c275a166091b92f01e7117785fead2e391e281212271f4bfede63",
+      "cases": [
+        "RA5",
+        "H14"
+      ],
+      "kind": "rheumatoid_arthritis_workup",
+      "labels": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "date": "2025-12-09",
+            "label": "positive"
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [],
+        "traps": [
+          {
+            "date": "2025-12-09",
+            "reason": "tuberculosis_treatment_deferred"
+          }
+        ]
+      },
+      "facts": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "date": "2025-12-09",
+            "label": "positive",
+            "span": {
+              "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+              "char_start": 330,
+              "char_end": 424,
+              "quote": "12/09/2025 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult positive."
+            }
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1807,
+        "output_tokens": 140,
+        "wall_time_ms": 1023.7832499988144
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1",
+        "document_id": "25622028-814a-56c6-8173-a818d05014ce/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1024ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1807,
+            "output_tokens": 140,
+            "wall_time_ms": 1023.7832499988144
+          }
+        ]
+      },
+      "raw": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "result": "positive",
+            "date": "2025-12-09",
+            "quote": "12/09/2025 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult positive.",
+            "char_start": 128,
+            "char_end": 222
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "heart_failure_assessments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_screens": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_treatments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "disease_activity_assessments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA6+H15/1",
+      "corpus": "synthesized",
+      "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+      "document": "chart_note_1.txt",
+      "note_sha256": "ee5ccb6e50b558317b369850888c7a4bc3d5e2e7ea5e19b05ecd4919d7698891",
+      "cases": [
+        "RA6",
+        "H15"
+      ],
+      "kind": "rheumatoid_arthritis_workup",
+      "labels": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "date": "2025-06-11",
+            "label": "positive"
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": [],
+        "traps": []
+      },
+      "facts": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "date": "2025-06-11",
+            "label": "positive",
+            "span": {
+              "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+              "char_start": 327,
+              "char_end": 421,
+              "quote": "06/11/2025 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult positive."
+            }
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1781,
+        "output_tokens": 140,
+        "wall_time_ms": 1251.1453330080258
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1",
+        "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_1.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1251ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1781,
+            "output_tokens": 140,
+            "wall_time_ms": 1251.1453330080258
+          }
+        ]
+      },
+      "raw": {
+        "heart_failure_assessments": [],
+        "tuberculosis_screens": [
+          {
+            "result": "positive",
+            "date": "2025-06-11",
+            "quote": "06/11/2025 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;\nresult positive.",
+            "char_start": 182,
+            "char_end": 273
+          }
+        ],
+        "tuberculosis_treatments": [],
+        "disease_activity_assessments": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "heart_failure_assessments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_screens": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_treatments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "disease_activity_assessments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 1,
+        "spans_anchored": 1,
+        "spans_normalized": 0,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    },
+    {
+      "note_id": "RA6+H15/2",
+      "corpus": "synthesized",
+      "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+      "document": "chart_note_2.txt",
+      "note_sha256": "9b1929ef3b2f2b4fb590c25b38cbf89e3402e00f50daf3e261f81cc2331c89b8",
+      "cases": [
+        "RA6",
+        "H15"
+      ],
+      "kind": "rheumatoid_arthritis_workup",
+      "labels": {
+        "heart_failure_assessments": [
+          {
+            "date": "2025-10-10",
+            "label": "class_ii"
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [
+          {
+            "date": "2025-07-11"
+          }
+        ],
+        "disease_activity_assessments": [],
+        "traps": [
+          {
+            "date": "2025-10-10",
+            "reason": "disease_activity_not_scored"
+          }
+        ]
+      },
+      "facts": {
+        "heart_failure_assessments": [
+          {
+            "date": "2025-10-10",
+            "label": "class_ii",
+            "span": {
+              "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+              "char_start": 330,
+              "char_end": 472,
+              "quote": "10/10/2025 - Heart failure with preserved ejection fraction, NYHA class II: \nslight limitation of ordinary activity, stable on current therapy."
+            }
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [
+          {
+            "date": "2025-07-11",
+            "span": {
+              "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+              "char_start": 591,
+              "char_end": 657,
+              "quote": "Rifampin daily for latent tuberculosis infection, begun 07/11/2025"
+            }
+          }
+        ],
+        "disease_activity_assessments": []
+      },
+      "metrics": {
+        "model": "gemini-3.5-flash-lite",
+        "purpose": "extraction",
+        "input_tokens": 1848,
+        "output_tokens": 226,
+        "wall_time_ms": 1309.1371249902295
+      },
+      "trace": {
+        "runner_name": "direct",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_version": "t110-rheumatoid-arthritis-workup-v1/t89-reask-v1",
+        "document_id": "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3/chart_note_2.txt",
+        "steps": [
+          "extract"
+        ],
+        "tool_calls": [],
+        "attempts": 1,
+        "termination_reason": "ok (1309ms)",
+        "metrics": [
+          {
+            "model": "gemini-3.5-flash-lite",
+            "purpose": "extraction",
+            "input_tokens": 1848,
+            "output_tokens": 226,
+            "wall_time_ms": 1309.1371249902295
+          }
+        ]
+      },
+      "raw": {
+        "heart_failure_assessments": [
+          {
+            "status": "class_ii",
+            "date": "2025-10-10",
+            "quote": "10/10/2025 - Heart failure with preserved ejection fraction, NYHA class II: \nslight limitation of ordinary activity, stable on current therapy.",
+            "char_start": 213,
+            "char_end": 343
+          }
+        ],
+        "tuberculosis_screens": [],
+        "tuberculosis_treatments": [
+          {
+            "start_date": "2025-07-11",
+            "quote": "Rifampin daily for latent tuberculosis infection, begun 07/11/2025",
+            "char_start": 444,
+            "char_end": 511
+          }
+        ],
+        "disease_activity_assessments": []
+      },
+      "raw_first_turn": null,
+      "reask": null,
+      "score": {
+        "heart_failure_assessments": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_screens": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "tuberculosis_treatments": {
+          "labeled": 1,
+          "extracted": 1,
+          "matched": 1,
+          "unlabeled": [],
+          "missed": []
+        },
+        "disease_activity_assessments": {
+          "labeled": 0,
+          "extracted": 0,
+          "matched": 0,
+          "unlabeled": [],
+          "missed": []
+        },
+        "traps_extracted": [],
+        "spans_emitted": 2,
+        "spans_anchored": 2,
+        "spans_normalized": 1,
+        "model_offsets_usable": 0,
+        "dropped": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+CHATTAHOOCHEE VALLEY ARTHRITIS CLINIC
+Patient: Zieme486, Shona685                      MRN: 236434
+DOB: 1971-09-28                       Sex: F
+Document 2 of 2
+
+RHEUMATOLOGY FOLLOW-UP VISIT
+
+01/08/2026 - Seen in person in clinic by C. Bello, DO for seropositive
+rheumatoid arthritis on methotrexate.
+
+ASSESSMENTS AND RESULTS
+01/08/2026 - Complete blood count: absolute neutrophil count 1.2 x10^3/uL,
+consistent with neutropenia. Methotrexate dose to be reviewed.
+01/08/2026 - Interferon-gamma release assay (QuantiFERON-TB Gold Plus) drawn;
+result negative.
+
+ASSESSMENT AND PLAN
+Rheumatoid arthritis. Infliximab infusion in combination with methotrexate is
+requested.

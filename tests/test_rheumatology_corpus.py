@@ -81,6 +81,10 @@ KNOWLEDGE_TABLE_DRUGS = frozenset({"105585", "310798", "314076"})
 RA1 = "42a430ab-b7ca-87a5-279f-ee115f49fd6e"  # active diagnosis, active drug
 RA2 = "915602a8-a36d-59bf-b667-47496ab57965"  # RA1 plus the excluded drug
 RA3 = "455d3f7d-3b99-dad6-c0b2-d5405144e793"  # active diagnosis, no drug
+#: T-110's three declared clones of RA1, each carrying notes (D155).
+RA4 = "e41a0d08-e747-5e48-a468-e6deb4159d8e"
+RA5 = "25622028-814a-56c6-8173-a818d05014ce"
+RA6 = "2d5c55a6-7d64-5e2c-8c10-d4e8a0c240f3"
 
 
 class _RaisingRunner:
@@ -90,8 +94,8 @@ class _RaisingRunner:
 
     def run(self, *args, **kwargs):  # pragma: no cover - the point is it is unused
         raise AssertionError(
-            "the rheumatology tree declares no note-event criterion; extraction "
-            "must never be reached"
+            "this path reads no note: the chart carries none, or the tree "
+            "declares no fact kind; extraction must never be reached"
         )
 
 
@@ -139,9 +143,10 @@ def test_the_population_carries_three_rheumatology_charts(population):
     cohort = {
         pid: r for pid, r in population.items() if r.get("cohort") == "rheumatology"
     }
-    assert set(cohort) == {RA1, RA2, RA3}, (
-        "the rheumatology cohort is the two generated charts and the declared "
-        "clone of the first (D113)"
+    assert set(cohort) == {RA1, RA2, RA3, RA4, RA5, RA6}, (
+        "the rheumatology cohort is the two generated charts, the declared "
+        "clone of the first (D113), and T-110's three note-bearing clones of "
+        "it (D155)"
     )
 
 
@@ -319,11 +324,15 @@ def test_ra1_meets_both_claimed_criteria_and_abstains_on_the_rest(patients, poli
         for r in determination.criterion_results
         if r.gap_reason is not None
     }
+    # Since T-110 (D155) c, d and e read a note, and RA1's chart carries none:
+    # each abstains for want of one, which is a different next action from
+    # v1.2's NOT_EVALUATED_BY_THIS_SYSTEM. The raising runner proves no note
+    # was read, because there is none to read.
     assert reasons == {
-        "c": GapReason.NOT_EVALUATED_BY_THIS_SYSTEM,
-        "d": GapReason.NOT_EVALUATED_BY_THIS_SYSTEM,
-        "e": GapReason.NOT_EVALUATED_BY_THIS_SYSTEM,
-    }, "the overall INSUFFICIENT_EVIDENCE is the unclaimed criteria's alone"
+        "c": GapReason.NO_EVIDENCE_RETRIEVED,
+        "d": GapReason.NO_EVIDENCE_RETRIEVED,
+        "e": GapReason.NO_EVIDENCE_RETRIEVED,
+    }, "the overall INSUFFICIENT_EVIDENCE is the note criteria's alone"
 
 
 def test_ra3_abstains_on_the_drug_and_never_answers_not_met(patients, policies):
@@ -386,12 +395,20 @@ def test_every_rheumatology_determination_spends_no_model_call(patients, policie
         assert determination.metrics == []
 
 
-def test_a_rheumatology_request_on_a_bariatric_chart_abstains(patients, policies):
+def test_a_tree_that_reads_no_note_never_reaches_the_runner_on_a_note_bearing_chart(
+    patients, policies
+):
     """The cross-practice case no row labels and the corpus supplies for free:
-    a chart in Palmetto's territory with no rheumatology evidence on it at all.
-    Every criterion abstains and none is `NOT_MET` — the system says it cannot
-    tell, which is what an absent diagnosis licenses (D40) — and no verdict
-    rests on anything the note pass produced.
+    a note-bearing bariatric chart in Alabama, asked about an abdominal
+    vascular study under WPS's ultrasound tree, which serves Alabama from its
+    contractor table (`T-144`). Every criterion abstains and none is
+    `NOT_MET` — the system says it cannot tell, which is what an absent
+    indication licenses (D40) — and no verdict rests on anything the note
+    pass produced.
+
+    **Moved to the ultrasound tree by T-110 (D155)**: the infliximab tree now
+    declares the rheumatoid arthritis workup, so it reads notes, and the
+    ultrasound tree is the one loaded tree that declares no fact kind.
 
     This chart carries notes, and that is how D113 found the cost the
     rheumatology rows could not show: `step_extract` ran whatever the tree
@@ -408,16 +425,21 @@ def test_a_rheumatology_request_on_a_bariatric_chart_abstains(patients, policies
         "this test needs a note-bearing chart, or the raising runner proves "
         "nothing"
     )
-    determination = _determine(patients, policies, bariatric_chart_in_palmetto)
+    determination = determine(
+        policies, "93975", patient_id=bariatric_chart_in_palmetto,
+        patient_store=patients, as_of=AS_OF,
+        extraction_runner=_RaisingRunner(), verifier=AcceptAllVerifier(),
+    )
     assert determination.model_calls == 0
     assert determination.metrics == []
-    assert determination.policy_version_id == TREE_ID
+    assert determination.policy_version_id == "us-abdominal-visceral-j5-j8-v1"
+    assert policies.get_tree(determination.policy_version_id).fact_kinds == ()
     assert determination.outcome is DeterminationOutcome.INSUFFICIENT_EVIDENCE
     assert {r.verdict for r in determination.criterion_results} == {
         CriterionVerdict.INSUFFICIENT_EVIDENCE
     }
     assert not any(r.spans for r in determination.criterion_results), (
-        "no rheumatology criterion may cite this chart's weight-management "
+        "no ultrasound criterion may cite this chart's weight-management "
         "notes: the practice boundary is the tree's, and an extracted event "
         "this tree declares no criterion for must reach no verdict"
     )
@@ -428,9 +450,9 @@ def test_a_rheumatology_request_on_a_bariatric_chart_abstains(patients, policies
 # --------------------------------------------------------------------------
 
 
-def test_every_rheumatology_row_names_a_chart_in_the_cohort(cases, population):
+def test_every_rheumatology_row_names_a_chart_in_the_cohort(cases, population, patients):
     rows = {cid: c for cid, c in cases.items() if cid.startswith("RA")}
-    assert set(rows) == {"RA1", "RA2", "RA3"}
+    assert set(rows) == {"RA1", "RA2", "RA3", "RA4", "RA5", "RA6"}
     for case_id, case in rows.items():
         assert case["procedure_code"] == J_CODE
         assert population[case["patient_id"]]["cohort"] == "rheumatology"
@@ -443,11 +465,14 @@ def test_every_rheumatology_row_names_a_chart_in_the_cohort(cases, population):
             for expected in (case["expect"].get("criteria") or {}).values()
             if expected["verdict"] in ("MET", "NOT_MET")
         )
-        assert case["expect"]["max_model_calls"] == cited, (
-            f"{case_id}: the budget is Article V's — one replayed verifier "
-            "call per cited verdict and no extraction call, because this tree "
-            "declares no note criterion. A budget above that would hide an "
-            "extraction this practice has no use for"
+        # One replayed extraction call per note -- the tree declares one fact
+        # kind since T-110 (D155), and a note-free chart has none to read --
+        # plus one replayed verifier call per cited verdict.
+        notes = len(patients.get_notes(case["patient_id"]))
+        assert case["expect"]["max_model_calls"] == cited + notes, (
+            f"{case_id}: the budget is one extraction call per note and one "
+            "verifier call per cited verdict. A budget above that would hide "
+            "a call this practice has no use for"
         )
         assert "state" not in case, (
             f"{case_id}: the state is read from the bundle, as J1's is"

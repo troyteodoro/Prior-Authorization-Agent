@@ -115,9 +115,11 @@ BASE_BUNDLE_COUNT = 6  # the D35 selection
 #: plus the E12 patient (D73), the T-88 clone (D102), T-93's three
 #: rheumatology charts — two generated, one derived (D113) — T-94's three
 #: ultrasound charts: one generated and two derived from it (D114) — and
-#: T-108's six sleep apnea charts, all generated (D150) -- and T-109's seven
-#: knee osteoarthritis charts, all generated (D154).
-BUNDLE_COUNT = 27
+#: T-108's six sleep apnea charts, all generated (D150) -- T-109's seven
+#: knee osteoarthritis charts, all generated (D154) -- and T-110's five
+#: declared clones, two bariatric and three rheumatology, each carrying notes
+#: its source does not (D155).
+BUNDLE_COUNT = 32
 
 LOINC_BMI = "39156-5"
 SNOMED_T2DM = "44054006"
@@ -439,6 +441,56 @@ CLONES = [
         },
         "task": "T-94",
         "decision": "D114",
+    },
+    # T-110 (D155): the round's five patients, each a declared clone whose
+    # difference from its source is its notes. The bytes the bundle carries
+    # differ only by the id and, for the two bariatric charts, the address;
+    # what each chart's notes state is declared in its own fact manifest under
+    # eval/manifests/, and those notes are new documents rather than the
+    # source's bytes, so no fact manifest declares `cloned_from` (D102's
+    # meaning of that field). `E1`'s chart is the bariatric source because it
+    # is the one whose structured record satisfies a and b (D42); `RA1`'s is
+    # the rheumatology source because it carries methotrexate, which is both
+    # criterion b's fact and the knowledge table's candidate.
+    {
+        "cloned_from": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+        "state": "GA",
+        "city": "Atlanta",
+        "postal_code": "30303",
+        "latitude": 33.749,
+        "longitude": -84.388,
+        "variant": "palmetto-workup-documented",
+        "task": "T-110",
+        "decision": "D155",
+    },
+    {
+        "cloned_from": "afdcee59-dfdd-4bc5-37f1-cf7f909ede3d",
+        "state": "TN",
+        "city": "Nashville",
+        "postal_code": "37203",
+        "latitude": 36.1627,
+        "longitude": -86.7816,
+        "variant": "palmetto-workup-short",
+        "task": "T-110",
+        "decision": "D155",
+    },
+    {
+        "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+        "variant": "ra-workup-documented",
+        "task": "T-110",
+        "decision": "D155",
+    },
+    {
+        "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+        "variant": "ra-workup-contraindicated",
+        "task": "T-110",
+        "decision": "D155",
+    },
+    {
+        "cloned_from": "42a430ab-b7ca-87a5-279f-ee115f49fd6e",
+        "variant": "ra-workup-treated-tuberculosis",
+        "task": "T-110",
+        "decision": "D155",
     },
 ]
 

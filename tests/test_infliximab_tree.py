@@ -40,6 +40,7 @@ from pa_agent.contracts import (
     CriterionVerdict,
     DeterminationOutcome,
     ExclusionKind,
+    FactKind,
     GapReason,
     Medication,
     PredicateKind,
@@ -221,18 +222,18 @@ def test_the_letters_collide_with_the_bariatric_trees_and_the_kinds_do_not(store
     assert ra.criterion("b").kind is PredicateKind.MEDICATION_VALUE_SET_ACTIVE
 
 
-def test_the_unclaimed_criteria_are_the_documents_limits_not_the_engines(tree):
-    """REQ-57's distinction, asserted on the tree a reviewer reads. Each
-    unclaimed criterion names a reason about the document or the chart; none of
-    them says the engine lacks a predicate."""
-    unclaimed = [c for c in tree.criteria if c.evaluation == "unclaimed"]
-    assert [c.id for c in unclaimed] == ["c", "d", "e"]
-    for criterion in unclaimed:
-        assert criterion.kind is None, "an unclaimed criterion declares no kind"
-        assert criterion.note and criterion.note.strip()
-    assert "not in the coded record" in unclaimed[0].note
-    assert "screening result" in unclaimed[1].note
-    assert "clinical assessment" in unclaimed[2].note
+def test_the_criteria_v12_left_unclaimed_are_read_from_a_note_since_t110(tree):
+    """REQ-57's distinction, asserted on the tree a reviewer reads. v1.2
+    declared `c`, `d` and `e` unclaimed because the coded record does not carry
+    a NYHA class, a screening result or a disease-activity level (D111). Each
+    was a limit of the record and never of the engine; since T-110 (D155) each
+    is read where a note states it, and the tree declares no unclaimed
+    criterion. Each note still names the record limit it answers."""
+    assert [c.id for c in tree.criteria if c.evaluation == "unclaimed"] == []
+    assert tree.fact_kinds == (FactKind.RHEUMATOID_ARTHRITIS_WORKUP,)
+    assert "not in the coded record" in tree.criterion("c").note
+    assert "screening result" in tree.criterion("d").note
+    assert "clinical assessment" in tree.criterion("e").note
 
 
 # --------------------------------------------------------------------------
@@ -259,17 +260,18 @@ def test_every_declared_criterion_produces_a_verdict_and_none_is_omitted(tree):
     assert _verdicts(determination).keys() == {c.id for c in tree.criteria}
 
 
-def test_the_unclaimed_criteria_abstain_and_say_which_they_are():
-    """REQ-58: declared, abstained on with `NOT_EVALUATED_BY_THIS_SYSTEM`, and
-    never omitted — so the determination cannot come out `MET` overall and it
-    names what a reviewer still owes (D101's rule, on a second practice)."""
+def test_the_note_criteria_abstain_on_a_chart_with_no_note():
+    """T-110 (D155): `c`, `d` and `e` read a note, and this chart has none, so
+    each abstains with `NO_EVIDENCE_RETRIEVED` -- never omitted, so the
+    determination cannot come out `MET` overall and it names what a reviewer
+    still owes. Under v1.2 they abstained as unclaimed (D101's rule)."""
     determination = _determine(_Chart([_ra()], [_drug(METHOTREXATE_TABLET)]))
     for criterion_id in ("c", "d", "e"):
         result = next(
             r for r in determination.criterion_results if r.criterion_id == criterion_id
         )
         assert result.verdict is CriterionVerdict.INSUFFICIENT_EVIDENCE
-        assert result.gap_reason is GapReason.NOT_EVALUATED_BY_THIS_SYSTEM
+        assert result.gap_reason is GapReason.NO_EVIDENCE_RETRIEVED
         assert not result.spans
     assert determination.outcome is DeterminationOutcome.INSUFFICIENT_EVIDENCE
 
