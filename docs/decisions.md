@@ -13929,3 +13929,78 @@ non-proxy error.
 
 Nothing. A13's fifth clause is the statement, and this makes the `pytest` half
 of it held by a command rather than by convention.
+
+## D147 — A tree selects its fact kinds from a closed registry, and a recording replays only under the schema it was measured with
+
+**Context.** An architecture review before v1.6 opens, written ahead of
+`T-107` so that row's exit is right when it opens (working rule 5: a weak exit
+condition is a design decision). Nothing under `pa_agent/` changes here.
+
+`T-107` makes extraction tree-declared: `WmEvent` stops being the only fact
+type, and the runners, the anchorer and `build_result` become generic over the
+declared types. Spec §11 states that *an unknown fact type raises at load*.
+Two things the row's exit did not yet say were read off the code.
+
+**Measured at open.** `RecordedExtractionRunner.run` (`pa_agent/runners.py`)
+looks a payload up by note sha256 first, then by `document_id`.
+`eval/extraction/results.json` records `prompt_version` at its top level, and
+**no replay path compares it to the running configuration**. Today that cannot
+matter, because one schema exists. Once a tree declares its schema, the same
+note bytes read under a second tree's schema would replay the bariatric
+payload. If the new schema's fields default, that payload validates to an
+empty extraction and every note criterion abstains. That is a well-formed
+empty answer every downstream test agrees with (D31), and a changed
+configuration treated as a re-run (D45). `RecordedQuoteRunner` already refuses
+a `(row_id, effect_display)` pair it was not asked (D122). The extraction
+replay has no equivalent.
+
+### Chosen
+
+1. **A closed `FactKind` vocabulary with a registry in code**, in the shape of
+   `PredicateKind` and `criteria.PREDICATES` (D110). Each kind registers its
+   response model, its `build` and `locate` for T-89's re-ask core (already
+   parameterised by `T-98`, D122), and its instruction text. A tree only
+   **selects** kinds. An unknown kind raises at load, a kind in the enum with
+   no registration is a red suite, and a tree selecting no kind reads no note
+   (D113's clause). The bariatric kind's response model is today's
+   `extraction.Extraction`, **unchanged byte for byte**. Otherwise *every
+   existing recording replays unchanged* is false.
+2. **Replay is keyed by `(note sha256, fact-schema digest)`.** The digest
+   covers what the model was shown for that kind: the response schema and the
+   prompt version. A recorded payload asked for under a digest it was not
+   measured with raises a typed `ExtractionFailure`, never a default. A
+   recording that predates the digest is stamped with the bariatric kind's
+   digest once, by `--rescore`, and is not re-measured, because the
+   configuration it measured has not moved.
+
+*Rejected — tree-authored field schemas* (a tree's JSON naming fields and
+types). The tree's data would become the prompt, so every tree edit would be a
+new measurement (D45). ADK's `output_schema` would have to be built at run time
+with `create_model`. And schema validation would move from import to load,
+where a malformed field set is a determination-time fault rather than a red
+suite.
+
+*Rejected — keying replay by `prompt_version` alone, checked once per
+recording.* A recording holds one configuration, but with two kinds a chart can
+need two, and a file-level check cannot say which note was measured under which
+kind. The key belongs on the payload.
+
+### Left to `T-107`'s open
+
+A tree selecting two kinds can be read in one combined call, which changes the
+prompt, or one call per kind, which multiplies cost by the number of kinds.
+That choice has a measurement behind it and is the row's decision, not this
+entry's.
+
+### Reversal condition
+
+(1) reverses if a v2.1 mimicked policy needs a fact that no registrable kind
+can express without a tree-specific field list. (2) reverses toward a
+coarser key only if a fact schema can be shown to leave a payload's meaning
+unchanged across kinds. On this design no two kinds share a schema, so that
+cannot happen.
+
+### What it mints
+
+Nothing. `T-107`'s exit gains a clause: *a recorded payload replayed under a
+fact schema it was not measured with raises.*
