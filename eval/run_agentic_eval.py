@@ -443,6 +443,34 @@ def _planner_tool_calls(run: WorkflowRun, planner_name: str) -> list[str]:
     ]
 
 
+def _planner_attempts(run: WorkflowRun, planner_name: str) -> int:
+    """The planner's attempts, off its trace (D160)."""
+    return max(
+        (trace.attempts for trace in run.traces if trace.runner_name == planner_name),
+        default=1,
+    )
+
+
+def planner_bounds() -> dict[str, int]:
+    """The bounds the planner runs under, as a recording states them (D160).
+
+    The gate compares a recording's bounds with these, so a recording measured
+    without the retry, or under another budget, describes a planner that no
+    longer exists and is refused.
+    """
+    from pa_agent.agent.retrieval_agent import (
+        DEFAULT_MAX_ATTEMPTS,
+        DEFAULT_MAX_LLM_CALLS,
+        DEFAULT_MAX_STEPS,
+    )
+
+    return {
+        "max_steps": DEFAULT_MAX_STEPS,
+        "max_llm_calls": DEFAULT_MAX_LLM_CALLS,
+        "max_attempts": DEFAULT_MAX_ATTEMPTS,
+    }
+
+
 def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
     from pa_agent.agent.retrieval_agent import (
         DEFAULT_MAX_LLM_CALLS,
@@ -523,6 +551,7 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
             # finding. A run that errored has no verdicts to compare.
             row["agentic"] = None
             row["error"] = f"RetrievalError: {exc}"
+            row["error_cause"] = [str(exc)]
             row["disagreement"] = None
             print(f"      ERROR: {str(exc)[:90]}")
             records.append(row)
@@ -532,6 +561,7 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
             row["error"] = "".join(
                 traceback.format_exception_only(type(exc), exc)
             ).strip()
+            row["error_cause"] = error_cause(exc)
             row["disagreement"] = None
             print(f"      ERROR: {row['error'][:90]}")
             records.append(row)
@@ -550,6 +580,9 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
             # --rescore leaves it exactly as measured (D91).
             "gathered": _gathered(agentic_run),
             "planner_tool_calls": _planner_tool_calls(agentic_run, planner.name),
+            # How many attempts the planner made; above 1 is a retried
+            # schema-invalid answer, counted in every cost figure (D160).
+            "planner_attempts": _planner_attempts(agentic_run, planner.name),
             "spans_valid": valid,
             "spans_total": total,
             "model_calls": agentic.model_calls,
@@ -586,15 +619,14 @@ def measure(tier: str = "ai_studio", limit: int | None = None) -> int:
             "verifier": f"replayed from {VERIFIER_RESULTS.name}",
         },
         "prompt_version": PROMPT_VERSION,
+        # Read off the model the planner built, never off a flag (D106, D159).
+        "output_schema_and_tools": AgenticRetrievalPlanner(client=client).output_schema_and_tools,
         # T-110 (D155): every row records its own request.
         "requests": (
             "every eval request on a note-bearing chart that reaches the graph, "
             "one per chart, each at its own procedure code and as_of"
         ),
-        "bounds": {
-            "max_steps": DEFAULT_MAX_STEPS,
-            "max_llm_calls": DEFAULT_MAX_LLM_CALLS,
-        },
+        "bounds": planner_bounds(),
         "note": (
             "Extraction replays every fact kind's AI Studio recording on both "
             "sides, so the one variable is which evidence reached the criteria "
@@ -713,6 +745,26 @@ def verify(report_only: bool = False) -> int:
     return _verify_one(OUT_PATH, report_only=report_only)
 
 
+def error_cause(exc: BaseException) -> list[str]:
+    """Why a run errored, as the system itself recorded it (T-147, D158).
+
+    A `DeterminationAborted` names only each criterion's code in its message;
+    the cause is on every criterion's `error_detail`, which carries the
+    planner's termination reason and tool calls. REQ-49 asks each agentic run
+    to record its termination reason, and before this an errored row kept
+    `SOURCE_UNAVAILABLE` and nothing behind it — D157 could not say why `RA6`
+    failed. Distinct details in criterion order; the exception's own text for
+    anything else.
+    """
+    details = [
+        result.error_detail
+        for result in getattr(exc, "results", None) or []
+        if getattr(result, "error_detail", None)
+    ]
+    distinct = list(dict.fromkeys(details))
+    return distinct or [f"{type(exc).__name__}: {exc}"]
+
+
 def _verify_one(out_path: Path, report_only: bool = False) -> int:
     if not out_path.exists():
         print(
@@ -753,11 +805,36 @@ def _verify_one(out_path: Path, report_only: bool = False) -> int:
             f"measured under prompt {payload.get('prompt_version')!r}, but the "
             f"planner is {PROMPT_VERSION!r}; re-measure with --measure (D45)"
         )
+    if payload.get("bounds") != planner_bounds():
+        problems.append(
+            f"measured under bounds {payload.get('bounds')}, but the planner "
+            f"runs under {planner_bounds()} (D160)"
+        )
+    # D159: the planner ends every run through the injected tool on both tiers.
+    # Held from the recording's own bytes as well as its stamp, so a recording
+    # made in native mode cannot pass by carrying the right label.
+    if payload.get("output_schema_and_tools") is not False:
+        problems.append(
+            "the recording does not stamp output_schema_and_tools: false (D159)"
+        )
+    for row in payload.get("patients", []):
+        calls = (row.get("agentic") or {}).get("planner_tool_calls")
+        if row.get("agentic") and (not calls or calls[-1] != "set_model_response"):
+            problems.append(
+                f"{row['patient_id']}: the run did not end in set_model_response, "
+                "so it was not measured under the injected termination (D159)"
+            )
     notes_on_file = _notes_on_file()
     seen_patients = [row["patient_id"] for row in payload.get("patients", [])]
     if len(seen_patients) != len(set(seen_patients)):
         problems.append("a patient appears in more than one row")
     for row in payload.get("patients", []):
+        if row.get("error") and not row.get("error_cause"):
+            # T-147 (D158): an error with no recorded cause is the row D157
+            # could not read, and a count of errors nobody can explain.
+            problems.append(
+                f"{row['patient_id']}: errored with no recorded cause (REQ-49)"
+            )
         if row.get("agentic") and row["disagreement"] is None:
             problems.append(f"{row['patient_id']}: scored with no differential computed")
         if row.get("agentic") and row["agentic"]["spans_total"]:

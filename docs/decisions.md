@@ -15596,3 +15596,292 @@ names. This entry applies that clause. It does not revise it.
 - If the owner reads A14 on the tier every gate replays, as D155 did, v1.6
   closes on `T-146` and `T-147` moves off the path. That reading would need
   an entry of its own.
+
+
+## D158 — The planner reads notes and nothing else, every error it causes is recorded with its cause, and both tiers stay measured
+
+**Context.** `T-147`, v1.6's row 6, numbered by D157. Written before the code
+(Article IX, working rule 5). D97's rule writes the row's record now, and
+D157 left its exit to be written at open. The owner asked for the tier
+comparison to continue unless there is a reason against it, and there is
+none. Vertex is the tier on which both of the planner's faults appeared, so
+it is the tier that tests a fix.
+
+**Measured at open.**
+- **The planner's structured reads reach nothing.** `gather()` re-reads
+  observations, conditions, medications, procedures and value sets from the
+  ports on both planners (D66). `_gathered_problems` checks that those counts
+  are equal on both sides of every row, and they are on every row of both
+  recordings. The planner is not even offered the medication and procedure
+  reads, and the rheumatology rows, which turn on medications, agree on both
+  tiers. D62's line, *"a gatherer that cannot fetch the structured facts
+  cannot assemble the bundle"*, stopped being true when D66 made the port the
+  evidence path, and nothing removed the tools after it.
+- **They are also the likeliest cause of `RA6`'s error.** In D157's
+  diagnostic, the run that came within one call of the budget spent its extra
+  calls re-reading observations and conditions, four times each. The
+  instruction tells the model a truncated list is expected, and the model
+  re-asked anyway.
+- **The harness drops the cause of every error.** `measure()` stores
+  `DeterminationAborted`'s summary, and the cause sits in each criterion's
+  `error_detail`, which carries the planner's termination reason and tool-call
+  list. REQ-49 asks every agentic run to record its termination reason. An
+  errored run is the one place the recording loses it.
+
+### Chosen
+
+1. **The planner's allowlist is `get_patient_notes` and
+   `get_patient_document`.** The two structured reads leave it. The
+   instruction asks for every note read in full and nothing else, and the
+   plan's `gathered` flag means *every note on file was read*. The plan
+   schema's field names are unchanged, and only the descriptions move.
+   `PROMPT_VERSION` becomes `t61-retrieval-v4`.
+   - *Rejected — a larger step budget.* That moves the cliff without
+     removing the loop, and every repeated read is still a full model turn
+     spent on a payload nothing reads.
+   - *Rejected — an instruction to call each structured read once.* The
+     instruction already gives that rule for documents. Obeying it is the
+     model's choice, and the payload would still be discarded.
+   - The tools stay declared in `patient_tools.py`. They are the bounded
+     surface that T-65's tests hold, and REQ-54 governs them whoever
+     consumes them.
+2. **Every errored row records its cause.** `measure()` writes `error_cause`:
+   - for a `DeterminationAborted`, the distinct `error_detail`s of its
+     criteria;
+   - for any other exception, the exception's own text.
+
+   `_verify_one` refuses an errored row that has no cause. A
+   `SOURCE_UNAVAILABLE` with no reason behind it is the recording D157 could
+   not read.
+3. **Both tiers, measured once each, under v4.** The configuration changed,
+   so this is a new measurement, not a retry (D45). The bounds are unchanged.
+4. **If either tier errors**, the error is reported with its recorded cause
+   and not re-run, and v1.6 stays open on whatever the cause names (D91,
+   D157). If neither tier errors, v1.6 closes and A14 holds on both tiers.
+5. **The exit:**
+
+    ```
+    ./venv/bin/python -m pytest tests/test_agentic_workflow.py tests/test_adk_agent.py tests/test_t110_corpus.py tests/test_build_report.py tests/test_docs_consistency.py -q --color=no \
+     && ./venv/bin/python eval/run_agentic_eval.py \
+     && ./venv/bin/python eval/build_report.py --verify \
+     && ./venv/bin/python scripts/check_gates.py
+    ```
+
+    Green means:
+    - the planner declares exactly `get_patient_notes` and
+      `get_patient_document`;
+    - both recordings are at `t61-retrieval-v4`;
+    - the gate refuses an errored row with no recorded cause;
+    - both tiers score 25 of 25 with zero errors, every outcome and criterion
+      agreeing and every span slicing back;
+    - the report renders from the new recordings.
+
+### Reversal condition
+
+- **Clause 1** reverses when a planner's structured reads become the evidence
+  path, which means a version where the model adjudicates from what it
+  fetched (REQ-44, D107). The reads return with that consumer, bounded as
+  REQ-54 already requires.
+
+### Measured
+
+Both runs were made in this session, one after the other, under
+`t61-retrieval-v4`. **The exit fails.** `T-147` stays open, and v1.6 stays
+open with it (clause 4).
+
+- **AI Studio:** 25 of 25 scored with zero errors. All 25 outcomes and all
+  137 criteria agree, and 221 of 221 spans slice back. Every run made exactly
+  four tool calls: the listing, two notes and `set_model_response`. The cost
+  beyond the oracle was 95 model calls and **117,998 input tokens** (1.9x),
+  against v3's 301,587. Most of the difference is the structured payloads the
+  planner no longer receives. The two runs are samples (D91).
+- **Vertex:** 17 of 25 scored, all agreeing, with 149 of 149 spans valid.
+  **8 runs errored**: `E5`, `OSA4`, `KNEE4`, `KNEE5`, `KNEE6`, `KNEE7`, `J3`
+  and `RA6`. **Each recorded cause is the same loop**: list the notes, read
+  both, list them again, repeated until 16 tool calls, at which point
+  `step_budget_exceeded` ends the run. Clause 2 records that cause, and it is
+  the first Vertex error this differential can explain from its own bytes.
+- **A diagnostic, outside the recording.** Five planner-only runs on `E5`'s
+  chart on Vertex, with every event printed. Four answered with the plan's
+  JSON immediately after the second note. One looped, and in the loop the
+  model emits **no text at all between cycles**: it re-issues the calls and
+  never attempts an answer. A run either answers after its last read or
+  never does.
+- **The errors follow the tier's termination mechanism.** On AI Studio, ADK
+  injects `set_model_response`, so the model ends a run by calling a tool. On
+  Vertex, `output_schema_and_tools` is native, so the model ends a run by
+  stopping its tool calls and emitting JSON (D62, D106). Across the three
+  planner versions measured:
+  - AI Studio errored **0, 0 and 0 times in 25**;
+  - Vertex errored **4, 1 and 8 times**.
+
+  v2's four errors were invented policy versions, and v4's eight are this
+  loop. v3's one had no recorded cause. The tool list moved which failure
+  appeared; it did not remove failures on Vertex.
+- **Model calls, live:** the planners spent 95 on AI Studio and 70 on
+  Vertex, and the diagnostic about 40.
+
+
+## D159 — The planner ends its run the same way on both tiers, through ADK's injected `set_model_response`
+
+**Context.** `T-147`, still open. D158's *Measured* traced the Vertex errors to
+the tier's termination mechanism, and the owner chose to run the planner the
+same way on both tiers, so that the tiers differ by endpoint and nothing
+else. Written before the code (Article IX).
+
+### Chosen
+
+1. **The planner's model declares `output_schema_and_tools=False` on every
+   tier.** ADK's documented override is a `Gemini` subclass whose
+   `capabilities` builds on the parent's report. ADK then injects
+   `SetModelResponseTool` on Vertex exactly as it does on AI Studio, and the
+   model ends a run by calling a tool rather than by falling silent.
+   - **The override lives in `retrieval_agent.py` and touches nothing else.**
+     The environment switch in `tiers.py` stays as it is, and so do the
+     native-mode Vertex recordings of the extraction and quote agents (D106).
+     Those measure the native path on purpose, and nothing in them loops.
+   - *Rejected — setting `GOOGLE_GENAI_USE_ENTERPRISE=0` for the planner's
+     run.* The switch is process-wide, and `tiers.py` exists so that it is
+     set in one place (D106). Flipping it for one agent would be a second
+     place.
+   - *Rejected — keeping native mode and reading A14 on AI Studio.* The
+     owner refused that reading (D157), and the comparison it leaves is
+     between two termination mechanisms, not between two endpoints.
+2. **`PROMPT_VERSION` becomes `t61-retrieval-v5`**, and the recording stamps
+   `output_schema_and_tools` read off the model the planner built, as the
+   extraction recordings do (D106). On AI Studio, v5 sends exactly the
+   request v4 sent, so its re-measurement is a second sample of an unchanged
+   configuration. It was decided here, before either run, as the owner asked,
+   and it is kept whatever it says. v4's AI Studio figures stay in D158 beside
+   it.
+3. **The gate holds the mechanism from the recording's own bytes.** Every
+   scored row's planner calls end in `set_model_response`, on both tiers.
+   A recording made without the injected tool cannot pass, whatever its
+   stamp says.
+4. **The native-mode loop is a finding, and it is reported.** README's
+   degradation section states it with D158's figures. It describes what the
+   pinned model does on Vertex when asked to pair a schema with tools, and
+   a later agent choosing native mode inherits it.
+5. **T-147's exit stands as D158 wrote it**, plus one bullet: both recordings
+   are at `t61-retrieval-v5` (not v4), stamp `output_schema_and_tools: false`,
+   and end every scored run in `set_model_response`. Zero errors on both
+   tiers closes v1.6. Any error is reported with its recorded cause and is
+   not re-run.
+
+### Reversal condition
+
+- **Clause 1** reverses if native mode is measured to terminate reliably for
+  this planner, on a model pin that changes it (D20). That needs a
+  measurement, not a release note.
+
+### Measured
+
+Both runs were made in this session, one after the other, under
+`t61-retrieval-v5`, and both recordings stamp `output_schema_and_tools:
+false`. **The exit fails by one run.** `T-147` stays open, and v1.6 stays open
+with it (clause 5).
+
+- **AI Studio:** 25 of 25 scored with zero errors. Every outcome and every
+  criterion (137) agree, and 221 of 221 spans slice back. Every run made the
+  same four calls. The cost beyond the oracle was 95 calls and 118,080 input
+  tokens (1.9x). That is v4's figure to within 82 tokens, as an unchanged
+  configuration should give.
+- **Vertex:** 24 of 25 scored, all agreeing, with 199 of 199 spans valid.
+  **Every scored run made the same four calls, ending in
+  `set_model_response`. No run looped**, where v4 had eight that did. The
+  cost beyond the oracle was 92 calls and 99,784 input tokens (1.8x).
+- **One Vertex run errored, on `E5`, with a cause the harness recorded.**
+  After `get_patient_notes`, the model answered with the text `<div>`
+  instead of a call. The plan failed `RetrievalPlan` validation, which
+  REQ-48 makes an `ERROR`, and the run ended after one tool call. This is not
+  the loop: it is a malformed answer.
+- **Errors per 25 on Vertex, four configurations:** 4, 1, 8, 1. On AI Studio
+  they were 0, 0, 0, 0, plus v5's second sample of v4's configuration, also
+  0. The pinned model is the same on both tiers. The causes recorded on
+  Vertex are an invented id, an unrecorded cause, a loop and a malformed
+  answer, and no two configurations failed the same way. Each fix removed the
+  failure it targeted.
+- **Model calls, live:** the planners spent 95 on AI Studio and 92 on Vertex.
+
+
+## D160 — The planner retries a schema-invalid answer once, inside the system, and every attempt is counted
+
+**Context.** `T-147`, still open. D159's *Measured* left one Vertex error, a
+malformed answer, and the owner chose a bounded retry over closing v1.6 on an
+error bound or on one tier. Written before the code (Article IX).
+
+**Measured at open.**
+- **`max_attempts` is a declared bound with no loop behind it.**
+  `AgenticRetrievalPlanner` takes `max_attempts=2`, and the module docstring
+  says it retries *"on a transport fault only, classified in Python"*. `_run`
+  makes exactly one attempt and stamps `attempts=1`. REQ-46 lists a retry
+  budget among the bounds, so the bound is a claim, and nothing implements it.
+- **`E5`'s failure is a turn, not a behaviour.** After one tool call the
+  model answered `<div>`. The plan failed `RetrievalPlan` validation, and the
+  run ended there. The other recorded causes across D156–D159 (an invented
+  id, a loop to the step budget) are behaviours that ran a whole trajectory.
+
+### Chosen
+
+1. **One retry, on a schema-invalid answer only.** The budget is the existing
+   `max_attempts=2`. Schema-invalid means one of two things:
+   - a Pydantic `ValidationError` raised during the run;
+   - the plan in session state failing `RetrievalPlan` validation.
+
+   Each attempt is a fresh session with no carried history: a retry is not
+   a continuation, and carrying the malformed turn would steer the next one.
+   - **Nothing else is retried.** That covers the step budget, the timeout,
+     an invented document id, an empty bundle and a transport fault. A loop or
+     an invented id retried is a second sample hidden inside one run, and
+     those faults describe what the planner did, not one bad turn. Transport
+     retries stay unbuilt, and the docstring stops claiming them.
+   - *Rejected — retrying in the harness.* The eval would then measure a
+     system that does not exist, which is D91's objection one layer up.
+2. **Every attempt is counted.** The trace's `attempts`, `tool_calls` and
+   `metrics` span every attempt, and the cost figures include the retry. The
+   termination reason names each failed attempt's cause. The recording
+   stamps `max_attempts` in its bounds and each scored row's
+   `planner_attempts`, so the report can say how often the retry fired.
+3. **A second schema-invalid answer is an `ERROR`** (REQ-48), and the message
+   names both causes.
+4. **The gate compares the recording's bounds with the planner's.** A
+   recording measured without the retry, or with a different budget, is
+   refused. The prompt the model receives is unchanged, so `PROMPT_VERSION`
+   stays `t61-retrieval-v5`. What changed is the system around the prompt,
+   and the bounds are where the recording states the system.
+5. **Both tiers are re-measured, once each.** Zero errors on both closes
+   v1.6. Any error is reported with its recorded cause and is not re-run, and
+   v1.6 then waits on the owner.
+6. **The exit** is D158's, with two more bullets:
+   - both recordings carry `max_attempts: 2` in their bounds;
+   - a scripted malformed first answer is retried and recovers, while two
+     malformed answers are an `ERROR` naming both.
+
+### Reversal condition
+
+- **Clause 1** reverses toward retrying other faults only with a measurement
+  showing one is a single turn rather than a trajectory.
+
+### Measured
+
+Both runs were made in this session, one after the other, under
+`t61-retrieval-v5` with bounds `max_steps=12`, `max_llm_calls=16` and
+`max_attempts=2`. Both recordings stamp `output_schema_and_tools: false`.
+**The exit holds. `T-147` closes, v1.6 closes, and A14 holds on both tiers.**
+
+- **AI Studio:** 25 of 25 scored with zero errors. All 25 outcomes and all
+  137 criteria agree, and 221 of 221 spans slice back. The cost beyond the
+  oracle was 96 model calls and **119,298 input tokens** (1.9x).
+- **Vertex:** 25 of 25 scored with zero errors. All 25 outcomes and all 137
+  criteria agree, and 221 of 221 spans slice back. The cost beyond the oracle
+  was 95 model calls and **102,843 input tokens** (1.8x).
+- **The retry never fired.** On both tiers every run made one attempt of
+  four calls: the listing, two notes and `set_model_response`. So this zero
+  is a sample under D159's mechanism with D160's retry present, and it is
+  not evidence that the retry rescues a live run. The scripted tests are
+  that evidence, through the real ADK flow. Vertex's error count across five
+  configurations is 4, 1, 8, 1 and 0. That is a rate this corpus samples
+  coarsely, not a figure any one run settles (D91).
+- **Model calls, live:** the planners spent 96 on AI Studio and 95 on Vertex.
+  Across `T-146` and `T-147` (D156–D160), all the differential runs and
+  diagnostics together spent about 640 calls.

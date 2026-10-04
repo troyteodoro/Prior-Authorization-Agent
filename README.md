@@ -69,8 +69,8 @@ replays a committed recording.
 
 ## Where the project stands
 
-**v1, v1.1, v1.2, v1.3, v1.4 and v1.5 are complete; v1.6 is open on `T-147`.**
-108 of 108 tasks closed, **none open** — `T-103` opened v1.5 with the
+**v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 are all complete.**
+109 of 109 tasks closed, **none open** — `T-103` opened v1.5 with the
 packet and the `session packet` verb, `T-104` added the review log beside it
 *(D131, D132)*, `T-134` gave the packet's citations the third corpus they point
 into *(D133)*, `T-105` sent the packet and tracked the answer *(D134)*, `T-137`
@@ -78,7 +78,7 @@ made the packet's own list of the documents it cites the manifest's, renamed for
 what it holds *(D135)*, and `T-106` closed the version by committing the two
 rendered packets as **bytes** *(D136)*, behind `T-129`'s national floor checked
 at load *(D124, D130)* — all ten zero-cost gates green, and acceptance gates
-A1–A13 holding. The suite collects 2131 tests (161 skip). **`T-107` opened v1.6**
+A1–A14 holding. The suite collects 2143 tests (161 skip). **`T-107` opened v1.6**
 *(D149)*: a tree now declares the fact kinds its extraction produces, a tree
 declaring none reads no note, and a recording replays only under the prompt
 version it was measured with. **`T-108` added practice three** *(D150)*: CPAP
@@ -99,9 +99,12 @@ round, and abstain where no note states them; the corpus produced its first
 **yellow** suggestion, accepted by the blind verifier on both tiers; and the
 differential was re-measured at every note-bearing chart's own request.
 **`T-146` took the policy tools off the agentic planner** *(D156, D157)*,
-after it invented policy versions on Vertex. The owner reads A14's *zero
-errors* on both tiers, and one Vertex run still errored, so v1.6 stays open
-with A1–A13 holding. **v1.6's `T-147` is next**, then v2.0's `T-117`.
+after it invented policy versions on Vertex, and the owner read A14's *zero
+errors* on both tiers. **`T-147` closed v1.6** *(D158–D160)*. The planner now
+reads notes alone. It ends every run through ADK's injected
+`set_model_response` on both tiers, because in native mode on Vertex it
+sometimes looped, and it retries a malformed answer once. Both tiers score 25
+of 25 with zero errors, A1–A14 holding. **v2.0's `T-117` is next.**
 
 - **v1** delivered the determination end to end: two short circuits, seven
   criterion verdicts over structured FHIR and extracted note events, a gap
@@ -176,7 +179,7 @@ with A1–A13 holding. **v1.6's `T-147` is next**, then v2.0's `T-117`.
   is a recording whose free half has drifted, which is a failure this project has
   already had once *(D91)*; the mutation pass confirmed that one comparison is
   the only thing in the repository that catches it *(D136)*.
-- **v1.6** is open on its last row, `T-147`, and it is the extractor declared by the tree. `T-107`
+- **v1.6** is complete, and it is the extractor declared by the tree. `T-107`
   made a tree declare the fact kinds its notes are read under *(D149)*; `T-108`
   and `T-109` added CPAP for sleep apnea and hyaluronan injection for knee
   osteoarthritis, each through a fact kind of its own *(D150, D154)*; `T-110`
@@ -184,9 +187,12 @@ with A1–A13 holding. **v1.6's `T-147` is next**, then v2.0's `T-117`.
   differential to every note-bearing chart *(D155)*. On the tier every gate
   replays the agentic path agreed on every outcome with zero errors; on Vertex,
   four of twenty-five runs aborted because the planner invented a policy
-  version to look up. `T-146` took the policy tools off the planner, and on
-  re-measurement those four agreed. One other Vertex run errored with its
-  cause unrecorded, so v1.6 stays open on `T-147` *(D156, D157)*.
+  version to look up. `T-146` took the policy tools off the planner. `T-147`
+  found the rest, with every error's cause recorded: a loop in native mode,
+  then one malformed answer. The planner now reads notes alone and ends
+  every run the same way on both tiers, with one counted retry of a
+  malformed answer. Both tiers score 25 of 25 with zero errors
+  *(D156–D160)*.
 
 Every figure below is re-derived from `eval/report.md`, which is generated and
 gate-verified rather than written.
@@ -295,7 +301,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 
 ### Every acceptance gate, and what it reads
 
-**Acceptance gates A1–A13 all hold; A14 holds on AI Studio and is open on Vertex** *(D156, D157)*.
+**Acceptance gates A1–A14 all hold.**
 
 | Gate | Result |
 |---|---|
@@ -312,15 +318,7 @@ in any gate* had been pinned against two of the three scripts that spend them
 | A11 | **19 of 19** candidates the knowledge table finds graded across 15 rows; precision **1.000** on the colours that *assert* — green and yellow — over **n = 2**, against an all-red baseline with **no denominator at all**; zero suggestions without a source row; zero verdict drift |
 | A12 | every lifecycle transition tested and every illegal one raising with nothing recorded; a session round-trips byte-stable **written twice**; the plane check extended to the fourth plane in both directions |
 | A13 | zero packets carrying an **accepted** red with no justification, over a non-empty set of reds, the refusal naming every unjustified code; every packet citation slicing back through the port that serves its document, **with the count reported** and re-checked over two committed fixtures; the review log append-only and the determination's bytes unchanged after any number of reviews; an outbox artifact existing exactly when the session is `AWAITING_DECISION`, a forbidden submission exiting 1 and writing nothing, `decide` closing with the outcome and the date; **zero model calls in any gate** |
-
-**A14 is open** *(D156, D157)*. It requires A10 over the four practices v1.2
-and v1.6 added, beside the bariatric control, with **five practices** in the
-account (REQ-80), and every eval row is `PASS`. **The yellow is measured**:
-`H13`'s passage slices back, and the blind verifier accepts it on both tiers.
-The differential was re-measured at every note-bearing chart's own request.
-On AI Studio, **25 of 25** outcomes agree with **zero errors**. On Vertex,
-**24 of 25** were scored, all agreeing, with **one error**. A14 reads both
-tiers since D156, so it holds on AI Studio and stays open on `T-147`.
+| A14 | A10 over the four practices v1.2 and v1.6 added, beside the bariatric control — **five practices** in the account (REQ-80); every eval row `PASS`; the differential re-measured at every note-bearing chart's own request, **25 of 25** outcomes agreeing with **zero errors on both tiers** (D156, D160); **the yellow measured** — `H13`'s passage slices back and the blind verifier accepts it on both tiers |
 
 ### How the project got here
 
@@ -426,8 +424,18 @@ failure modes are structural. Each is analyzed in full in `docs/spec.md` §10
   took away the tool it was inventing for *(D156)*. Its re-measurement
   agreed on those four, and one other run errored, with a cause the harness
   did not record. That run was not re-run either, because re-running until
-  the number is clean is a second measurement wearing the first one's name.
-  It is `T-147`'s *(D157)*.
+  the number is clean is a second measurement wearing the first one's name
+  *(D157)*. **With causes recorded, Vertex showed a failure AI Studio never
+  has** *(D158)*. In native `output_schema` mode the planner must stop calling
+  tools to answer, and on 8 of 25 charts it never did: it re-listed and
+  re-read the notes until the budget, emitting no text between cycles. So the
+  planner now ends every run through the injected `set_model_response` on
+  both tiers *(D159)*. It also retries a schema-invalid answer once, inside the
+  system and counted in every figure *(D160)*. Both tiers then scored 25 of 25
+  with zero errors, and the retry fired on neither. Across the five
+  configurations measured, Vertex's errors per 25 ran 4, 1, 8, 1 and 0, and
+  AI Studio's never left 0. Any agent here that chooses native mode on Vertex
+  inherits the loop.
 - **P8 — Every free number is a replay.** The reproducible figures describe
   one measured day against one pinned model. That is still true, and the
   *one tier* half no longer is: the whole corpus was measured a second time
@@ -793,14 +801,15 @@ below.
 
 **The measured result so far:** model-directed retrieval agrees with the
 deterministic oracle on **25/25 outcomes and 137/137 criterion verdicts, with
-221/221 spans valid and zero errors**, at every note-bearing chart's own
-request across four trees (D155, re-measured under `t61-retrieval-v3` by
-D156). It cost **82 model calls and 301,587 input tokens** across
-twenty-five patients that the fixed planner spent nothing on, 3.4× the
-deterministic path's end-to-end input tokens. Extraction and verification
-are the same replayed payload on both sides of that comparison. On Vertex
-the twenty-four runs that completed agreed everywhere, and one aborted with
-its cause unrecorded (`T-147`). Quote the delta
+221/221 spans valid and zero errors, on both tiers**, at every note-bearing
+chart's own request across four trees (D155, re-measured under
+`t61-retrieval-v5` by D160). On AI Studio it cost **96 model calls and 119,298
+input tokens** across twenty-five patients that the fixed planner spent
+nothing on, 1.9× the deterministic path's end-to-end input tokens. Extraction
+and verification are the same replayed payload on both sides of that
+comparison. The cost fell from v3's 301,587 tokens when the planner stopped
+receiving observation and condition payloads that no criterion read (D158).
+Quote the delta
 beside the ratio: the fixed planner makes no model call, so the ratio's
 denominator is the shared replayed cost and it moves when that cost changes,
 while the delta does not. Read the aggregate and the spread, never one patient's
@@ -1128,7 +1137,7 @@ real key ever appears in a tracked file).
 ./venv/bin/python -m pytest tests/test_criteria_c.py -q -k e5   # one test
 ```
 
-2131 tests across 65 files, 161 of them skipped — the skips are per-tree
+2143 tests across 65 files, 161 of them skipped — the skips are per-tree
 matrices, which skip what a given tree does not declare: a constant pair, or
 a categorical exclusion it states none of.
 
@@ -1197,7 +1206,7 @@ own CLI conformance runner, but nothing in it is public API — the pattern was
 copied, not imported.)
 
 `tests/test_adk_agent.py` (51 tests) and `tests/test_agentic_workflow.py`
-(51 tests) run that way, and they sit in the
+(63 tests) run that way, and they sit in the
 main suite rather than behind a marker — so every `pytest` run, and therefore
 every gate close, exercises the real framework for zero model calls and no
 credential. That is what keeps the structural rules honest: the tool

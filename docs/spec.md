@@ -1,6 +1,6 @@
 # Specification — Prior Authorization Determination Agent
 
-**Status:** active — v1, v1.1, v1.2, v1.3, v1.4 and v1.5 complete, A1–A13 hold *(D104, D106, D116, D126, D129, D136)*; v1.6 was opened by `T-107` *(D149)*, read closed by `T-110` *(D155)* and is **open** on `T-147` since the owner read A14 on both tiers *(D156, D157)*; the versions after v1.6 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
+**Status:** active — v1, v1.1, v1.2, v1.3, v1.4, v1.5 and v1.6 complete, A1–A14 hold *(D104, D106, D116, D126, D129, D136, D160)*; v1.6 was opened by `T-107` *(D149)*, read closed by `T-110` on one tier *(D155)*, reopened when the owner read A14 on both *(D156, D157)*, and closed by `T-147` *(D160)*; the versions after v1.6 are §11 *(D105)*. *(Was "draft, pending spike 001"; the spike closed 2026-09-07, D19 — corrected by D72.)*
 **Governed by:** `docs/constitution.md`
 **Stories:** `docs/stories.md` · **Tasks:** `docs/tasks.md` · **Rationale:** `docs/decisions.md`
 
@@ -1204,7 +1204,7 @@ load-bearing; a table that sorts prettily is not.
 | v1.3 | medical-history review: ICD suggestions with evidence, colour-sorted · **closed** | US-11 | T-96–T-99 | one recording round | A11 ✓ |
 | v1.4 | sessions and intake, headless · **closed** | US-12 | T-100–T-102 | none | A12 ✓ |
 | v1.5 | the form, review, simulated submission and tracking, headless · **closed** | US-13 | T-103–T-106 | none | A13 ✓ |
-| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **open** | US-14 | T-107–T-110, T-146, T-147 | new extraction recordings; the differential re-measured | A14 open on Vertex |
+| v1.6 | cross-practice round two: tree-declared extraction, two more practices · **closed** | US-14 | T-107–T-110, T-146, T-147 | new extraction recordings; the differential re-measured | A14 ✓ |
 | v2.0 | the payer axis: national and regional coverage | US-16 | T-117–T-120 | none | A16 |
 | v2.1 | a mimicked commercial payer policy, and the criteria Medicare never states | US-17 | T-121–T-125 | none | A17 |
 | v2.2 | the reviewer's UI over the session port | US-15 | T-111–T-116 | none | A15 |
@@ -1621,15 +1621,23 @@ measured it. *(Rewritten by `T-110`, D155: "four practices" read as the board
 counts them, and the tier named. Its tier widened to both by D156, the
 owner's reading.)*
 
-**v1.6 is open, and A14 holds on AI Studio but not on Vertex** *(D156, D157)*. Five practices are in the
+**v1.6 is closed and A14 holds on both tiers** *(T-147, D160)*. Five practices are in the
 account, with zero omitted. 57 of 57 rows are `PASS`. `H13`'s yellow cites a
 span that slices back, and the history verifier accepts it on both tiers. The
 differential is measured at every note-bearing chart's own request:
-- on AI Studio, 25 of 25 outcomes agree, with zero errors;
-- on Vertex, 24 of 25 scored and agreed. One run, `RA6`'s, errored with its
-  cause unrecorded, and that error is `T-147`'s. Under `T-110`'s planner,
-  four runs had errored on a policy version the planner invented. `T-146`
-  took the policy tools off its allowlist, and those four rows now agree.
+- on both AI Studio and Vertex, 25 of 25 outcomes and 137 of 137 criteria
+  agree, with zero errors.
+
+Two tasks took Vertex there. Under `T-110`'s planner, four runs errored on a
+policy version the planner invented, and `T-146` took the policy tools away
+*(D156)*. `T-147` *(D158–D160)* made four changes:
+- the planner reads notes alone;
+- it ends every run through the injected `set_model_response` on both
+  tiers, because under native mode it sometimes looped;
+- it retries a schema-invalid answer once, and every attempt is counted;
+- the harness records every error's cause.
+
+The retry fired on neither tier.
 
 ### v2.0 — The payer axis: national and regional coverage
 

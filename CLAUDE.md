@@ -35,9 +35,9 @@ an instruction typed into a prompt.
 |---|---|
 | `docs/constitution.md` | Ten articles plus Amendment 1. Non-negotiable, not revisited per task. |
 | `docs/spec.md` | Numbered testable requirements REQ-1 through REQ-80 (plus REQ-18a and REQ-34a), edge cases E1–E13 plus E10b and E10c, acceptance criteria A1–A14 (§7 holds A1–A9; A10 is v1.2's, A11 v1.3's, A12 v1.4's, A13 v1.5's and A14 v1.6's, in §11's gate table rather than §7 — A13 was rewritten into five clauses before v1.5 opened, D131, and A14 at v1.6's last row, D155). §11 is the versions after v1, with the requirements each will mint — statements, not ids, until **the task that checks one** opens *(D105, D109)*. |
-| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-13 closed with v1.2 through v1.5; **US-14 is open** with v1.6, on `T-147` *(D155 read it closed; D156 and D157 reopened it on both tiers)*; US-16 is v2.0's, after it — the roadmap runs v2.0, v2.1, then v2.2 *(D125)*. |
-| `docs/tasks.md` | The board. Task records T-00 through T-110 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141, T-142 and T-146, each with a runnable exit condition; T-111 through T-125 are reserved rows whose records are written when they open. `T-143`, `T-144`, `T-145` and `T-147` are numbered with no record yet — the first three off the path, `T-147` as v1.6's row 6 *(D150, D154, D155, D157)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
-| `docs/decisions.md` | D1–D157, kill criteria, open questions. Append-only. |
+| `docs/stories.md` | User stories US-1 through US-9, with personas; US-10 through US-17 are the roadmap's, one per version *(D105, extended by D112)*. US-10 through US-14 closed with v1.2 through v1.6 *(D160 closed US-14 on both tiers)*; **US-16 is v2.0's, next** — the roadmap runs v2.0, v2.1, then v2.2 *(D125)*. |
+| `docs/tasks.md` | The board. Task records T-00 through T-110 plus T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133, T-134, T-135, T-136, T-137, T-138, T-139, T-140, T-141, T-142, T-146 and T-147, each with a runnable exit condition; T-111 through T-125 are reserved rows whose records are written when they open. `T-143`, `T-144` and `T-145` are numbered with no record yet, off the path *(D150, D154, D155)*; every other row the board has numbered off the path has a record *(D137–D146, D148)*. **`Path to v1` at the top states what to do next; `Roadmap after v1.1` states the versions that follow.** |
+| `docs/decisions.md` | D1–D160, kill criteria, open questions. Append-only. |
 
 IDs are load-bearing and numbering is not contiguous. Split a requirement rather
 than renumber it; anything already referencing an ID must keep resolving.
@@ -874,6 +874,13 @@ you.** Do not override these from prior knowledge.
   credential. Passing project *and* location drops the key to ADC and uses the
   regional endpoint. A Vertex client **constructs without any credential**; the
   failure surfaces on the first request, so construction proves nothing.
+- **Native `output_schema` + tools on Vertex can loop without answering**
+  *(T-147, D158, measured)*. The agentic planner looped on 8 of 25 charts,
+  re-listing and re-reading notes until the budget with no text between
+  cycles; AI Studio's injected `set_model_response` never did. The planner
+  therefore builds its model through `retrieval_agent.injected_response_model`,
+  ADK's documented `Gemini` capability override, on every tier *(D159)*. Do not
+  hand it a plain `Gemini` or a bare model name.
 - **The pinned model is served on Vertex only at `location=global`** *(T-90)*.
   `us-central1`, `us-east5` and `europe-west4` all answer 404 for it. The name
   is unchanged, so `PINNED_MODEL` did not move.
@@ -933,10 +940,9 @@ A status line and pointers, capped at 30 lines by
 `tests/test_docs_consistency.py` *(D148)*. A closed task's account is in its
 board record and its decision entry, never here.
 
-- **Next:** v1.6's row 6, `T-147`: the Vertex differential's one error, and a
-  harness that does not record its cause. Read the board's *Path to v1*
-  first. v1.6 is open because the owner reads A14 on both tiers *(D156,
-  D157)*. v2.0's `T-117` follows.
+- **Next:** `v2.0`, row 1 — `T-117`, the payer on the tree and the request.
+  Read the board's *Path to v1* first. v1.6 is closed and A14 holds on both
+  tiers *(D160)*.
 - **Open:** no task.
 - **Unclaimed on purpose:** REQ-44 and REQ-47. Amendment 1 reserves the whole
   decision procedure to Python, so no verdict exists that a model could
@@ -1105,11 +1111,12 @@ Where everything else lives — each is the owner, and this file keeps no copy:
   in place, and on a corpus this small a perfect score still means only that
   the approach does not obviously fail.
 - **The differential's result** *(D64, D66, re-measured in D91, D104 and
-  D155, D156)*: model-directed retrieval agrees with the deterministic oracle on
-  every outcome and criterion of every note-bearing chart's request that it
-  scored, on both tiers. The figures, and the one Vertex run that errored
-  (`T-147`), are `eval/report.md`'s. **The planner is offered no policy tool**
-  *(T-146, D156)*: offered one keyed by `policy_version_id`, it invented ids.
+  D155, D156, D160)*: model-directed retrieval agrees with the deterministic oracle on
+  every outcome and criterion of every note-bearing chart's request, with zero
+  errors on both tiers; the figures are `eval/report.md`'s. **The planner reads
+  notes and nothing else** *(T-146, T-147, D156, D158)*: offered a policy tool
+  keyed by `policy_version_id`, it invented ids, and it repeated the structured
+  reads it was offered, whose payload no criterion read.
   **Quote the delta beside the ratio**: the fixed planner makes no
   model call, so the ratio's denominator is the replayed extraction-plus-verifier
   cost shared by both sides, and it moved from D64's 13.9x to 4.3x when Article

@@ -152,8 +152,6 @@ def _full_run(patient_id: str, document_id: str):
     return [
         _call("get_patient_notes", patient_id=patient_id),
         _call("get_patient_document", patient_id=patient_id, document_id=document_id),
-        _call("get_patient_observations", patient_id=patient_id),
-        _call("get_patient_conditions", patient_id=patient_id),
         _plan([document_id]),
     ]
 
@@ -179,26 +177,36 @@ def test_the_planner_is_offered_no_policy_tool(patient_store):
     agent, _ = build_retrieval_agent(patient_store)
     names = {tool.__name__ for tool in agent.tools}
     assert not any("policy" in name for name in names), names
-    assert set(PATIENT_ALLOWLIST) == {
+
+
+
+def test_the_planner_reads_notes_and_nothing_else(patient_store):
+    """T-147 (D158). The planner held `get_patient_observations` and
+    `get_patient_conditions` on D62's ground that a gatherer without them could
+    not assemble the bundle — false since D66, when `gather()` began re-reading
+    every structured resource from the port. Their payload reached no
+    criterion, and on Vertex the planner spent its step budget repeating
+    them. What the model decides is which notes to read, so that is all it is
+    offered."""
+    agent, _ = build_retrieval_agent(patient_store)
+    assert {tool.__name__ for tool in agent.tools} == {
         "get_patient_notes", "get_patient_document",
-        "get_patient_observations", "get_patient_conditions",
     }
+    assert PATIENT_ALLOWLIST == ("get_patient_notes", "get_patient_document")
 
 
-def test_the_gatherer_gets_the_structured_facts_the_extractor_is_denied(
+def test_the_gatherer_and_the_extractor_hold_disjoint_allowlists(
     patient_store, policy_store
 ):
-    """The two allowlists differ on purpose, and the asymmetry needs saying.
-
-    REQ-53 denies the *extraction* agent `get_patient_observations` because a
-    model shown the structured BMI while asked for the note's BMI collapses
-    T-33's two independent readings into one. That argument does not reach this
-    agent: it never reports a BMI, it reports which documents to read. It cannot
-    collapse two readings because it produces neither.
+    """The two allowlists differ on purpose. REQ-53 denies the extraction agent
+    any structured read because a model shown the structured BMI while asked
+    for the note's collapses T-33's two independent readings into one. Since
+    T-147 the gatherer holds no structured read either (D158), and the two
+    allowlists stay disjoint.
     """
     from pa_agent.agent.extraction_agent import EXTRACTION_ALLOWLIST
 
-    assert "get_patient_observations" in PATIENT_ALLOWLIST
+    assert "get_patient_observations" not in PATIENT_ALLOWLIST
     assert "get_patient_observations" not in EXTRACTION_ALLOWLIST
     # T-66 made the asymmetry structural rather than a subset relation: the
     # extractor's one tool is not a patient-plane tool at all, it is a reader
@@ -264,8 +272,6 @@ def test_the_tool_calls_are_recorded_in_the_order_they_were_made(
     assert [call.name for call in result.trace.tool_calls] == [
         "get_patient_notes",
         "get_patient_document",
-        "get_patient_observations",
-        "get_patient_conditions",
     ]
     assert result.trace.steps == [c.name for c in result.trace.tool_calls]
 
@@ -311,11 +317,10 @@ def test_the_model_can_request_additional_evidence(
         _call("get_patient_notes", patient_id=patient_id),
         _call("get_patient_document", patient_id=patient_id, document_id=document_id),
         _call("get_patient_document", patient_id=patient_id, document_id=document_id),
-        _call("get_patient_observations", patient_id=patient_id),
         _plan([document_id]),
     ]
     result = _planner(turns).gather(patient_id, tree, patient_store, policy_store)
-    assert len(result.trace.tool_calls) == 4, (
+    assert len(result.trace.tool_calls) == 3, (
         "the extra request was not made; the loop is not model-directed"
     )
 
@@ -752,6 +757,133 @@ def test_malformed_model_output_is_a_fault_with_a_name(
             )
 
 
+def test_a_schema_invalid_answer_is_retried_once_and_every_attempt_counted(
+    policy_store, patient_store, tree, e1
+):
+    """D160. `E5` on Vertex answered `<div>` after one tool call (D159). One
+    retry, in a fresh session, and the trace spans both attempts — so the
+    retry's cost is in every figure and the report can say it fired."""
+    from pa_agent.agent.retrieval_agent import SchemaInvalidPlan  # noqa: F401
+
+    patient_id, document_id = e1
+    turns = [
+        _call("get_patient_notes", patient_id=patient_id),
+        "<div>",
+        *_full_run(patient_id, document_id),
+    ]
+    result = _planner(turns).gather(patient_id, tree, patient_store, policy_store)
+    assert [n.document_id for n in result.notes] == [document_id]
+    trace = result.trace
+    assert trace.attempts == 2
+    assert [c.name for c in trace.tool_calls][:2] == ["get_patient_notes", "get_patient_notes"]
+    assert trace.termination_reason.startswith("attempt 1: schema_invalid (")
+    assert trace.model_calls >= 5, "the failed attempt's calls are not counted"
+
+
+def test_two_schema_invalid_answers_are_an_error_naming_both(
+    policy_store, patient_store, tree, e1
+):
+    """D160 clause 3, REQ-48: the budget is two attempts, and the second
+    malformed answer is a fault — never a verdict, never a third try."""
+    from pa_agent.agent.retrieval_agent import SchemaInvalidPlan
+
+    patient_id, _ = e1
+    with pytest.raises(SchemaInvalidPlan) as raised:
+        _planner(["<div>"]).gather(patient_id, tree, patient_store, policy_store)
+    message = str(raised.value)
+    assert "2 schema-invalid answer(s) against a budget of 2" in message
+    assert message.count("ValidationError") >= 2
+    assert isinstance(raised.value, RetrievalError)
+    assert raised.value.trace is not None and raised.value.trace.attempts == 2
+
+
+def test_a_budget_fault_is_never_retried(policy_store, patient_store, tree, e1):
+    """D160 clause 1: a loop to the step budget is a trajectory, not a turn.
+    Retrying it would be a second sample hidden inside one run."""
+    from pa_agent.agent.retrieval_agent import SchemaInvalidPlan
+
+    patient_id, document_id = e1
+    looping = [_call("get_patient_notes", patient_id=patient_id)] * 30
+    planner = _planner(looping, max_steps=3)
+    with pytest.raises(RetrievalError) as raised:
+        planner.gather(patient_id, tree, patient_store, policy_store)
+    assert not isinstance(raised.value, SchemaInvalidPlan)
+    assert "against a budget of 3" in str(raised.value)
+    assert planner._counter == 1, "the budget fault started a second attempt"
+
+
+def test_a_malformed_answer_past_the_step_budget_is_a_budget_fault(
+    policy_store, patient_store, tree, e1
+):
+    """D160 clause 1, measured by a surviving mutant: when a run both blows the
+    step budget and ends on a malformed answer, the budget names it. A
+    trajectory that ran past its budget is not a bad turn to retry."""
+    from pa_agent.agent.retrieval_agent import SchemaInvalidPlan
+
+    patient_id, document_id = e1
+    turns = [
+        _call("get_patient_notes", patient_id=patient_id),
+        _call("get_patient_document", patient_id=patient_id, document_id=document_id),
+        "<div>",
+    ]
+    planner = _planner(turns, max_steps=1)
+    with pytest.raises(RetrievalError) as raised:
+        planner.gather(patient_id, tree, patient_store, policy_store)
+    assert not isinstance(raised.value, SchemaInvalidPlan)
+    assert "against a budget of 1" in str(raised.value)
+    assert planner._counter == 1
+
+
+def test_every_error_the_measurement_records_carries_its_cause():
+    """D158 clause 2, held by parsing because `measure()` spends model calls
+    and no test runs it: every branch that writes `row["error"]` writes
+    `row["error_cause"]` too. A mutant dropping one survived the behavioural
+    tests; the gate would refuse its recording only after the money was spent."""
+    source = (REPO_ROOT / "eval" / "run_agentic_eval.py").read_text(encoding="utf-8")
+    measure = next(
+        node for node in ast.parse(source).body
+        if isinstance(node, ast.FunctionDef) and node.name == "measure"
+    )
+    written: list[str] = []
+    for node in ast.walk(measure):
+        if isinstance(node, ast.ExceptHandler):
+            keys = {
+                target.slice.value
+                for stmt in node.body if isinstance(stmt, ast.Assign)
+                for target in stmt.targets
+                if isinstance(target, ast.Subscript)
+                and isinstance(target.slice, ast.Constant)
+            }
+            if "error" in keys:
+                written.append("error_cause" in keys)
+    assert written and all(written), written
+
+
+def test_the_gate_refuses_a_recording_stamped_native(tmp_path, capsys):
+    """D159 clause 3: the stamp is checked as well as the bytes."""
+    module = _eval_module()
+    committed = REPO_ROOT / "eval" / "agentic" / "results.json"
+    payload = json.loads(committed.read_text(encoding="utf-8"))
+    payload["output_schema_and_tools"] = True
+    stale = tmp_path / "results.json"
+    stale.write_text(json.dumps(payload), encoding="utf-8")
+    assert module._verify_one(stale) != 0
+    assert "output_schema_and_tools: false" in capsys.readouterr().out
+
+
+def test_the_gate_refuses_a_recording_measured_under_other_bounds(tmp_path, capsys):
+    """D160 clause 4: a recording made before the retry existed describes a
+    planner that no longer exists."""
+    module = _eval_module()
+    committed = REPO_ROOT / "eval" / "agentic" / "results.json"
+    payload = json.loads(committed.read_text(encoding="utf-8"))
+    payload["bounds"] = {"max_steps": 12, "max_llm_calls": 16}
+    stale = tmp_path / "results.json"
+    stale.write_text(json.dumps(payload), encoding="utf-8")
+    assert module._verify_one(stale) != 0
+    assert "measured under bounds" in capsys.readouterr().out
+
+
 def test_the_plan_carries_ids_and_never_content():
     """Article III at the retrieval boundary. If the model could hand back note
     text, it could hand back text that was never in the note, and every span
@@ -805,8 +937,6 @@ def test_the_same_gathered_evidence_yields_the_same_verdicts(
             _call("get_patient_document", patient_id=patient_id, document_id=d)
             for d in document_ids
         ],
-        _call("get_patient_observations", patient_id=patient_id),
-        _call("get_patient_conditions", patient_id=patient_id),
         _plan(document_ids),
     ]
 
@@ -1250,6 +1380,76 @@ def test_the_gate_refuses_a_recording_measured_under_another_prompt(tmp_path, ca
     stale.write_text(json.dumps(payload), encoding="utf-8")
     assert module._verify_one(stale) != 0
     assert "measured under prompt 't61-retrieval-v2'" in capsys.readouterr().out
+
+
+def test_the_planner_ends_its_run_through_the_injected_tool_on_every_tier(monkeypatch):
+    """D159. Under Vertex's native mode the planner must stop calling tools and
+    emit JSON, and measured across three versions it sometimes never stopped —
+    4, 1 and 8 of 25 runs, against 0 on AI Studio (D158). With the enterprise
+    switch on, a plain `Gemini` reports native mode; the planner's must not."""
+    from google.adk.models import Gemini
+
+    from pa_agent.agent.retrieval_agent import injected_response_model
+    from pa_agent.model_pin import PINNED_MODEL
+
+    monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "1")
+    assert Gemini(model=PINNED_MODEL).capabilities.output_schema_and_tools is True
+    assert injected_response_model(PINNED_MODEL).capabilities.output_schema_and_tools is False
+    assert AgenticRetrievalPlanner().output_schema_and_tools is False
+    monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "0")
+    assert AgenticRetrievalPlanner().output_schema_and_tools is False
+
+
+def test_every_committed_recording_ended_each_run_in_the_injected_tool():
+    """D159, from the recordings' bytes as well as their stamps."""
+    for path in _eval_module().committed_recordings():
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        assert payload["output_schema_and_tools"] is False, path
+        for row in payload["patients"]:
+            if row.get("agentic"):
+                assert row["agentic"]["planner_tool_calls"][-1] == "set_model_response", (
+                    path, row["cases"],
+                )
+
+
+def test_an_errored_run_records_the_cause_the_system_recorded():
+    """T-147 (D158). `DeterminationAborted`'s message names each criterion's
+    code; the cause is on each `error_detail`. Before this the harness kept the
+    message alone, and D157 could not say why `RA6` failed."""
+    from pa_agent.contracts import CriterionResult, CriterionVerdict, DeterminationAborted, ErrorCode
+
+    detail = "p: step_budget_exceeded. Tool calls made: [...]"
+    results = [
+        CriterionResult(
+            criterion_id=cid, verdict=CriterionVerdict.ERROR,
+            error_code=ErrorCode.SOURCE_UNAVAILABLE, error_detail=detail,
+        )
+        for cid in ("a", "b")
+    ]
+    module = _eval_module()
+    assert module.error_cause(DeterminationAborted(results, attempts=1)) == [detail]
+    assert module.error_cause(ValueError("boom")) == ["ValueError: boom"]
+
+
+def test_the_gate_refuses_an_error_with_no_recorded_cause(tmp_path, capsys):
+    """T-147 (D158). An error count nobody can explain is the row D157 could
+    not read; the committed bytes with one cause removed must go red."""
+    module = _eval_module()
+    committed = REPO_ROOT / "eval" / "agentic" / "results.json"
+    payload = json.loads(committed.read_text(encoding="utf-8"))
+    row = payload["patients"][0]
+    row["agentic"], row["disagreement"] = None, None
+    row["error"] = "pa_agent.contracts.DeterminationAborted: determination aborted"
+    row.pop("error_cause", None)
+    stale = tmp_path / "results.json"
+    stale.write_text(json.dumps(payload), encoding="utf-8")
+    assert module._verify_one(stale) != 0
+    assert "errored with no recorded cause" in capsys.readouterr().out
+    row["error_cause"] = ["step_budget_exceeded"]
+    stale.write_text(json.dumps(payload), encoding="utf-8")
+    capsys.readouterr()
+    module._verify_one(stale)
+    assert "errored with no recorded cause" not in capsys.readouterr().out
 
 
 # --------------------------------------------------------------------------

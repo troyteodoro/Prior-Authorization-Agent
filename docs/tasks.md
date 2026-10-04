@@ -17,9 +17,16 @@ that follow *(D105)*.
 
 ## Path to v1
 
-**What to do next: v1.6's row 6 — `T-147`**, the Vertex differential's one
-error. **v1.6 is open and no task is open**; `T-147` writes its record when it
-opens *(D97's rule)*, and v2.0's `T-117` follows v1.6's close.
+**What to do next: `v2.0`, row 1 — `T-117`**, the payer on the tree and the
+request. **Nothing is open on this board**; v2.0 opens when `T-117` writes its
+record *(D97's rule)*.
+**`T-147` closed v1.6's row 6, and v1.6 with it; A14 holds on both tiers**
+*(D158, D159, D160)*. The planner reads notes and nothing else. On every tier
+it ends its run through ADK's injected `set_model_response`, because under
+Vertex's native mode it sometimes looped until the budget, emitting no text.
+It retries a schema-invalid answer once, counted in every figure. Every error
+the harness records now carries its cause. Both tiers score 25 of 25 with zero
+errors, and the retry did not fire on either.
 **`T-146` closed v1.6's row 5 and left v1.6 open** *(D156, D157)*. The owner
 reads A14's *zero errors* on both tiers, which refused D155's reading. The
 planner is now offered no policy tool, and the gate refuses a recording made
@@ -344,12 +351,12 @@ checks it, not by the version's opening commit *(D109, refining D105 rule
 2)*. The versions after it are in `Roadmap after v1.1` *(D105)*, further
 down.
 
-108 tasks are on this board — IDs run to T-147, and every id above T-125 is
+109 tasks are on this board — IDs run to T-147, and every id above T-125 is
 off the path and above the roadmap's reservations *(D137)*; numbering is not
 contiguous and D92 and D94 deleted six records between them, so the highest id
-is well above the count. **All 108 are closed and none is open**; `T-143`, `T-144`,
-`T-145` and `T-147` below are numbered and have no record yet, and each writes
-its record when it opens. Both figures
+is well above the count. **All 109 are closed and none is open**; `T-143`, `T-144`
+and `T-145` below are numbered and have no record yet, and each writes its
+record when it opens. Both figures
 are re-derived from the records and the table by
 `tests/test_docs_consistency.py` *(T-132)*. The table below is the path **as it ran**, which is not the path anyone
 would plan: four of its eleven steps were a ratification programme that was
@@ -397,7 +404,7 @@ Off the path. Real work the versions do not sequence — nothing waited on the f
 | `T-144` | **`us-abdominal-visceral-j5-j8-v1` declares Alabama from a contractor-table row that lists forty-eight states.** L35755's table lists every state but Minnesota and New York under WPS's Part A contract 05901, and the ultrasound tree's jurisdiction note reads that row as *"Alabama under contract 05901"* — the first state of the list. L39529's table carries the same row. A beneficiary's state does not select a Part A contract with a national footprint, so either the tree should drop Alabama or it serves forty-seven more states, and the second would turn REQ-55's `NO_JURISDICTION_TREE` into `NO_POLICY_FOUND` for every out-of-state request in the corpus. No eval row reaches the ultrasound tree from Alabama, so nothing behavioural separates the readings; it is a decision about one committed tree and every row resolving through it, not part of the practice that found it (working rule 6) | not sequenced — discovered in `T-109` *(D154)*; nothing in v1.6's rows resolves a request in Alabama under the ultrasound tree |
 | `T-145` | **the live CLI verifier checks a history claim under the criterion instruction.** `cli._build_verifier` returns `LiveVerifierRunner(client_for(tier))`, whose instruction defaults to `INSTRUCTION`, and `history.run_review` hands it every yellow's `(candidate, quotes)` claim — so `--suggest` with a live extraction leaf asks the criterion question of a history claim, where `run_verifier_measurement.py --history` builds the runner with `HISTORY_INSTRUCTION`. The recorded path is unaffected: both recordings replay through one runner keyed by digest, and the two claim shapes share no key. No gate reaches the live path, and until `T-110` no chart produced a yellow for it to mis-route | not sequenced — discovered in `T-110` *(D155)*; no row reaches the live verifier |
 | `T-146` | **the agentic planner is offered `get_policy_context` and never told the policy version.** On Vertex, four of the twenty-five requests `T-110`'s differential measured aborted because the planner called it with a `policy_version_id` it invented — `some_version`, `v1.0`, `knee_osteoarthritis_v1`, a UUID — and the store's `KeyError` ended the run as `SOURCE_UNAVAILABLE` on every criterion (D90). On AI Studio, and on the seven bariatric charts it measured before, it never reached for the tool. The shapes are a decision: drop the tool from the planner's allowlist, put the version in the message, or answer an unknown id as a tool error the model can read. Each changes the planner's prompt, so each is a re-measurement of the differential on both tiers (D45) | **closed** (D156, D157) — sequenced by D156 as v1.6's row 5, because the owner reads A14 on both tiers; the planner is offered no policy tool, and the Vertex error the re-measurement found is `T-147`'s |
-| `T-147` | **the Vertex differential's one error, and the harness that cannot say what it was.** `T-146`'s re-measurement scored 24 of 25 on Vertex. `RA6`'s run aborted with `SOURCE_UNAVAILABLE` on every criterion, and `run_agentic_eval.py` records only `DeterminationAborted`'s summary, dropping each criterion's `error_detail`. A diagnostic of three planner-only runs on that chart all succeeded, and one made 11 tool calls against a budget of 12, re-reading observations and conditions four times each. The budget is the likeliest cause, and it is not measured. Its scope as numbered: record the cause of every error, decide on the repeated structured reads, re-measure once per tier | **sequenced** — v1.6's row 6 *(D157)*; the owner reads A14's *zero errors* on both tiers, so v1.6 closes on this row |
+| `T-147` | **the Vertex differential's one error, and the harness that cannot say what it was.** `T-146`'s re-measurement scored 24 of 25 on Vertex. `RA6`'s run aborted with `SOURCE_UNAVAILABLE` on every criterion, and `run_agentic_eval.py` records only `DeterminationAborted`'s summary, dropping each criterion's `error_detail`. A diagnostic of three planner-only runs on that chart all succeeded, and one made 11 tool calls against a budget of 12, re-reading observations and conditions four times each. The budget is the likeliest cause, and it is not measured. Its scope as numbered: record the cause of every error, decide on the repeated structured reads, re-measure once per tier | **closed** (D158, D159, D160) — sequenced by D157 as v1.6's row 6, and v1.6 closed on it. The planner reads notes alone, ends every run through the injected tool on both tiers, and retries a schema-invalid answer once; both tiers score 25 of 25 with zero errors |
 
 ### Path to v1.1 — spec §10's problems, one task each *(D97; named by D105)*
 
@@ -575,10 +582,10 @@ chose *(D131)*.
 
 ### v1.6 — Cross-practice round two: tree-declared extraction, two more practices
 
-**Five rows are closed and v1.6 is open, on row 6** *(D156, D157)*. `T-110`
-closed row 4 and read A14 on AI Studio *(D155)*. The owner reads it on both
-tiers, so `T-146` became row 5. The Vertex error its re-measurement found is
-row 6.
+**All six rows are closed; v1.6 is closed and A14 holds on both tiers** *(T-147,
+D160)*. `T-110` closed row 4 and read A14 on AI Studio *(D155)*. The owner
+read it on both tiers, so `T-146` became row 5 and the Vertex error its
+re-measurement found became row 6.
 
 The second test on different practices, and the engine change v1.2
 deferred: the tree declares its extraction schema, so `WmEvent` stops being
@@ -595,7 +602,7 @@ re-measured differential.
 | 3 | practice four | `T-109` | **closed** (D154) | hyaluronan injection for knee osteoarthritis under WPS's L39529 and A56157: source, tree, patients, notes, rows, recording on both tiers, the third fact kind; `run_eval.py` green. **Rewritten at open** *(D154)*: T-108's exit over this row's files |
 | 4 | the criteria v1.2 and v1.3 deferred to the re-measurement, and the four-practice account | `T-110` | **closed** (D155) | **Rewritten at open** *(D155)*: the five criteria claimed through two declared fact kinds on five declared clones, the yellow on a new row `H13` rather than an edit to `H4`'s chart, the differential widened to every note-bearing chart's request and measured once per tier, and *four practices* read as the four the rounds added with the control beside them (REQ-80). Was: Palmetto's `c4` (a weight field) and `d` (four components, set membership, a window) evaluated; the rheumatoid tree's `c`, `d`, `e` evaluated where a note states the fact and abstaining where none does; the ultrasound tree's `c`, `d`, `e` stay unclaimed *(D107)*; the measured yellow — `H4` on a note that states a table effect — with its `(candidate, quotes)` verifier claims; patients added in this round and never apart from it; `eval/report.md` carries the account over four practices; the differential re-measured — and measured twice on one tier with both kept, if the round wants a stability figure, decided at open; every gate green *(D120)* |
 | 5 | the planner's policy tools, and A14 on both tiers | `T-146` | **closed** (D156, D157) | the planner declares exactly the four patient tools, no module holds both toolsets, both recordings are at `t61-retrieval-v3` and the gate refuses another version, and the report renders from them. **Split at close** *(D157)*: the exit's *zero errors on both tiers* failed on Vertex by one run, and it moves to row 6 |
-| 6 | the Vertex differential's error | `T-147` | **open — no record yet** (D157) | the harness records the cause of every error it counts; the planner's repeated structured reads are decided on; the differential is re-measured once per tier with zero errors on both — written at open |
+| 6 | the Vertex differential's error | `T-147` | **closed** (D158, D159, D160) | the planner declares the note tools alone; it ends every run through the injected `set_model_response` on both tiers; it retries a schema-invalid answer once, and every attempt is counted; every recorded error carries its cause; both tiers score 25 of 25 with zero errors. **Twice extended at close** *(D159, D160)*: v4 measured a loop on Vertex, and v5 a malformed answer, each with its cause recorded and neither re-run |
 
 ### v2.0 — The payer axis: national and regional coverage *(D112, reordered by D125)*
 
@@ -3918,6 +3925,100 @@ between runs and the package checksummed after restore. All four were caught:
 - the gate's version check deleted;
 - the gate's version check inverted;
 - `PROMPT_VERSION` reverted to v2.
+
+### `[x] T-147` The planner reads notes and nothing else, ends its run the same way on both tiers, and every error carries its cause
+
+**REQ:** mints nothing; exercises 43, 46, 49, 50 · **Depends:** T-146 ·
+**Blocks:** v2.0 · **Discovered in:** T-146 *(D157)* · **Decided by:** D158 ·
+**Gates:** A14 (sixth row; closes v1.6) · **Timebox:** one day plus one
+measurement round per tier; it took three rounds, each decided before it ran
+**Status:** **closed** (D158, D159, D160). **v1.6 is closed and A14 holds on
+both tiers.** The exit was extended twice, each time by an entry written
+before the code (D159, D160).
+
+**Measured at open.**
+- The planner's observation and condition reads reach no criterion, because
+  `gather()` re-reads every structured resource from the ports (D66). The
+  recordings' equal counts on both sides show it.
+- In D157's diagnostic, the run that came within one call of the step budget
+  spent its extra calls repeating those two reads.
+- An errored row records `SOURCE_UNAVAILABLE` and nothing behind it, while
+  REQ-49 asks for the termination reason.
+
+**Exit:**
+
+```
+./venv/bin/python -m pytest tests/test_agentic_workflow.py tests/test_adk_agent.py tests/test_t110_corpus.py tests/test_build_report.py tests/test_docs_consistency.py -q --color=no \
+ && ./venv/bin/python eval/run_agentic_eval.py \
+ && ./venv/bin/python eval/build_report.py --verify \
+ && ./venv/bin/python scripts/check_gates.py
+```
+
+Green means:
+- the planner declares exactly `get_patient_notes` and
+  `get_patient_document`;
+- both recordings are at `t61-retrieval-v4`;
+- the gate refuses an errored row with no recorded cause;
+- both tiers score 25 of 25 with zero errors, every outcome and criterion
+  agreeing and every span slicing back;
+- `eval/report.md` renders from the new recordings;
+- *(D159)* both recordings are at `t61-retrieval-v5` (not v4), stamp
+  `output_schema_and_tools: false`, and end every scored run in
+  `set_model_response`;
+- *(D160)* both recordings carry `max_attempts: 2` in their bounds, a scripted
+  malformed first answer is retried and recovers, and two malformed answers
+  are an `ERROR` naming both.
+
+**What it delivers.**
+- `PATIENT_ALLOWLIST` is `get_patient_notes` and `get_patient_document`.
+- `injected_response_model` is ADK's documented `Gemini` override. It
+  declares `output_schema_and_tools=False`, so the planner ends a run by
+  calling `set_model_response` on every tier. It is scoped to this agent.
+- `SchemaInvalidPlan` is the one fault retried, within `max_attempts=2`.
+  Each attempt runs in a fresh session, and `_merged` counts every attempt's
+  calls and tokens.
+- `run_agentic_eval.py` records `error_cause`, `planner_attempts`, the bounds
+  and the mechanism stamp. The gate refuses:
+  - an error with no cause;
+  - other bounds;
+  - a native stamp;
+  - a scored run that does not end in the injected tool.
+
+**What it measured.** Three rounds per tier, each a new configuration (D45):
+- **v4, notes only:** AI Studio 25 of 25 with zero errors, at 117,998 input
+  tokens beyond the oracle against v3's 301,587. Vertex scored 17 of 25. All
+  8 errors were the same recorded loop: list, read, read, list again, until
+  16 calls. A diagnostic showed a looping run emits no text between cycles.
+- **v5, the injected tool on both tiers:** AI Studio 25 of 25. Vertex 24 of
+  25, with no loop. `E5` answered `<div>` and failed schema validation.
+- **v5 with the retry:** both tiers 25 of 25 with zero errors, every
+  outcome, criterion and span agreeing. 119,298 input tokens beyond the
+  oracle on AI Studio (1.9x) and 102,843 on Vertex (1.8x). **The retry did
+  not fire on either tier**, so this zero is a sample, not proof the retry
+  rescues a live run.
+
+**Mutation pass.** Eleven mutants, run against `test_agentic_workflow.py`,
+`test_adk_agent.py` and `test_t110_corpus.py`, with `__pycache__` cleared
+between runs and the package checksummed after restore.
+
+Eight were caught on the first pass:
+- a structured read put back;
+- the capability override emptied;
+- a plain `Gemini` built;
+- the schema-invalid classification removed;
+- the merged trace keeping only the last attempt's metrics;
+- the attempt budget made exclusive;
+- the gate's cause check removed;
+- the gate's bounds check removed.
+
+**Three survived, and each now has a test:**
+- **the budget no longer overriding a malformed answer**, so a run past its
+  step budget was retried;
+- **the cause dropped on `measure()`'s general branch.** `measure()` spends
+  model calls, so the check is a parse;
+- **the gate's mechanism-stamp check removed.**
+
+All three are caught now.
 
 ## Attached to no story
 

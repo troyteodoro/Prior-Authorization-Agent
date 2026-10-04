@@ -407,8 +407,10 @@ _ALLOWED_BROAD_SWALLOWS = {
         "the re-ask never raises: a transport fault is recorded classified on "
         "`reask.error` and the trace, and the first turn's result stands (D103); "
         "shared by the extraction and the quote turn since T-98 (D122)",
-    ("pa_agent/agent/retrieval_agent.py", "_run"):
-        "budget loop: stores the failure, re-raises classified at exhaustion",
+    ("pa_agent/agent/retrieval_agent.py", "_attempt"):
+        "one attempt: stores the failure, re-raises it classified — a "
+        "schema-invalid answer as `SchemaInvalidPlan`, which `_run` retries "
+        "within `max_attempts` and re-raises at exhaustion (D160)",
 }
 
 
